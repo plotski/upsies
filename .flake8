@@ -1,0 +1,15 @@
+[flake8]
+exclude = __init__.py
+ignore =
+    # whitespace before ':'
+    E203,
+    # missing whitespace after ','
+    E231,
+    # line too long
+    E501,
+    # expected 2 blank lines
+    E302,
+    # expected 2 blank lines after class or function definition
+    E305,
+    # line break before binary operator
+    W503,

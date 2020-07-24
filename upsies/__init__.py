@@ -1,0 +1,6 @@
+__project_name__ = 'upsies'
+__description__ = 'Collect and format media information'
+__homepage__ = 'https://homeless.example.org/'
+__version__ = '0.0.1'
+__author__ = 'plotski'
+__author_email__ = 'plotski@example.org'
