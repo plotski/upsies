@@ -136,6 +136,10 @@ def test_error_on_finished_job(job):
     assert job.errors == ('foo',)
 
 
+def test_info(job):
+    assert job.info == ''
+
+
 def test_exit_code_is_0_if_output_is_not_empty(job):
     job.send('foo')
     job.finish()
