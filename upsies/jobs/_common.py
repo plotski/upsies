@@ -41,7 +41,10 @@ class DaemonThread(abc.ABC):
 
     def unblock(self):
         """Tell the background worker thread that there is work to do"""
-        self._unblock_event.set()
+        if hasattr(self, '_unblock_event'):
+            self._unblock_event.set()
+        else:
+            raise RuntimeError(f'Not started yet: {self!r}')
 
     def initialize(self):
         """Do some background work once after :meth:`start` is called"""
@@ -54,17 +57,23 @@ class DaemonThread(abc.ABC):
     @property
     def is_alive(self):
         """Whether :meth:`start` was called and the thread has not terminated yet"""
-        return self._thread.is_alive()
+        if hasattr(self, '_thread'):
+            return self._thread.is_alive()
+        else:
+            return False
 
-    async def join(self):
+    async def join(self, timeout=None):
         """Block asynchronously until the thread exits"""
-        # We want to wait asyncronously for _run() to finish, but asyncio.Event
-        # is not thread-safe and threading.Event.wait() is synchronous. This
-        # uses a new thread to allow us to await threading.Event().wait().
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, self._thread.join)
-        if self._unhandled_exception:
-            raise self._unhandled_exception
+        if hasattr(self, '_unblock_event'):
+            # We want to wait asyncronously for _run() to finish, but asyncio.Event
+            # is not thread-safe and threading.Event.wait() is synchronous. This
+            # uses a new thread to allow us to await threading.Event().wait().
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, functools.partial(self._thread.join, timeout))
+            if self._unhandled_exception:
+                raise self._unhandled_exception
+        else:
+            raise RuntimeError(f'Not started yet: {self!r}')
 
     @property
     def running(self):
@@ -92,6 +101,7 @@ class DaemonThread(abc.ABC):
         except Exception as e:
             _log.debug('Reporting exception: %r', e)
             self._unhandled_exception = e
+            self.stop()
         finally:
             _log.debug('Finished: %r', self)
 
