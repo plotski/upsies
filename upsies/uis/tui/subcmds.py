@@ -25,7 +25,7 @@ class torrent(SubcommandBase):
     @cache.property
     def jobs(self):
         return (
-            _jobs.torrent.Torrent(
+            _jobs.torrent.CreateTorrentJob(
                 homedir=fs.projectdir(self.args.path, self.args.tracker),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.path,
@@ -41,7 +41,7 @@ class screenshots(SubcommandBase):
     @cache.property
     def jobs(self):
         return (
-            _jobs.screenshots.Screenshots(
+            _jobs.screenshots.ScreenshotsJob(
                 homedir=fs.projectdir(self.args.path, self.args.tracker),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.path,
@@ -57,7 +57,7 @@ def make_search_command(db_name):
     @cache.property
     def jobs(self):
         return (
-            _jobs.search.Search(
+            _jobs.search.SearchDbJob(
                 homedir=fs.projectdir(self.args.path, self.args.tracker),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.path,
@@ -76,9 +76,9 @@ class release_name(SubcommandBase):
     def jobs(self):
         # Include the original and English title in the release name.
         # IMDb seems to be best.
-        ImdbSearch = make_search_command('imdb')
-        imdb_job = ImdbSearch(args=self.args, config=self.config).jobs[0]
-        rn_job = _jobs.release_name.ReleaseName(
+        SearchImdbJob = make_search_command('imdb')
+        imdb_job = SearchImdbJob(args=self.args, config=self.config).jobs[0]
+        rn_job = _jobs.release_name.ReleaseNameJob(
             homedir=fs.projectdir(self.args.path, self.args.tracker),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.path,
@@ -96,8 +96,8 @@ class submit(SubcommandBase):
             raise ValueError(f'Unknown tracker: {self.args.tracker}')
 
         _log.debug('Tracker: %r', tracker)
-        _log.debug('Submission class: %r', tracker.Submission)
-        sub = tracker.Submission(
+        _log.debug('Submission class: %r', tracker.SubmissionJob)
+        sub = tracker.SubmissionJob(
             homedir=fs.projectdir(self.args.path, self.args.tracker),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.path,

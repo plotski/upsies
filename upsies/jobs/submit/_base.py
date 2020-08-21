@@ -6,7 +6,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class SubmissionBase(_base.JobBase, abc.ABC):
+class SubmissionJobBase(_base.JobBase, abc.ABC):
     name = 'submission'
     label = 'Submission'
 

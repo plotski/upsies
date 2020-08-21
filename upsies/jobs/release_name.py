@@ -7,7 +7,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class ReleaseName(_base.JobBase):
+class ReleaseNameJob(_base.JobBase):
     name = 'release-name'
     label = 'Release Name'
 

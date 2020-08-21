@@ -11,7 +11,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class Screenshots(_base.JobBase):
+class ScreenshotsJob(_base.JobBase):
     name = 'screenshots'
     label = 'Screenshots'
 

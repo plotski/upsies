@@ -7,10 +7,10 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class Submission(_base.SubmissionBase):
+class SubmissionJob(_base.SubmissionJobBase):
     @cache.property
     def torrent_job(self):
-        return torrent.Torrent(
+        return torrent.CreateTorrentJob(
             homedir=fs.projectdir(self.content_path, self.trackername),
             ignore_cache=False,
             content_path=self.content_path,
@@ -26,7 +26,7 @@ class Submission(_base.SubmissionBase):
 
     @cache.property
     def screenshots_job(self):
-        return screenshots.Screenshots(
+        return screenshots.ScreenshotsJob(
             homedir=fs.projectdir(self.content_path, self.trackername),
             ignore_cache=False,
             content_path=self.content_path,
@@ -46,7 +46,7 @@ class Submission(_base.SubmissionBase):
             db = 'imdb'
         else:
             db = 'tvmaze'
-        return search.Search(
+        return search.SearchDbJob(
             homedir=fs.projectdir(self.content_path, self.trackername),
             ignore_cache=False,
             content_path=self.content_path,

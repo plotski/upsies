@@ -9,7 +9,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class Torrent(_base.JobBase):
+class CreateTorrentJob(_base.JobBase):
     name = 'torrent'
     label = 'Torrent'
 

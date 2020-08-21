@@ -1,2 +1,2 @@
 from . import bb, nbl
-from ._base import SubmissionBase
+from ._base import SubmissionJobBase
