@@ -1,8 +1,8 @@
-from unittest.mock import Mock, call, patch
-
-import pytest
 import re
 import time
+from unittest.mock import Mock, call
+
+import pytest
 
 from upsies.jobs._common import DaemonProcess
 
