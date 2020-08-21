@@ -111,7 +111,7 @@ class DaemonProcess:
     Background worker process
 
     Intended to offload heavy jobs (e.g. torrent file creation) on a different
-    CPU core to keep the user interface responsive.
+    CPU core to keep the rest of the application smooth.
     """
 
     INIT = 'init'
@@ -134,12 +134,6 @@ class DaemonProcess:
         self._ctx = multiprocessing.get_context('spawn')
         self._input_queue = self._ctx.Queue()
         self._output_queue = self._ctx.Queue()
-        self._target_wrapped = functools.partial(
-            _target_process_wrapper,
-            self._target,
-            self._output_queue,
-            self._input_queue,
-        )
         self._process = None
         self._read_output_task = None
         self._loop = asyncio.get_event_loop()
@@ -147,8 +141,14 @@ class DaemonProcess:
     def start(self):
         """Start the process"""
         _log.debug('Starting process: %r', self._target)
+        target_wrapped = functools.partial(
+            _target_process_wrapper,
+            self._target,
+            self._output_queue,
+            self._input_queue,
+        )
         self._process = self._ctx.Process(
-            target=self._target_wrapped,
+            target=target_wrapped,
             args=self._target_args,
             kwargs=self._target_kwargs,
         )
@@ -174,7 +174,6 @@ class DaemonProcess:
                     self._finished_callback(msg)
                 break
             elif typ == self._TERMINATED:
-                _log.debug('Got terminate sentinel')
                 if self._finished_callback:
                     self._finished_callback()
                 break
@@ -200,7 +199,7 @@ class DaemonProcess:
         _log.debug('Process finished: %r', self._process)
         # Unblock _read_output()
         if not self._read_output_task.done():
-            self._output_queue.put_nowait((self._TERMINATED, None))
+            self._output_queue.put((self._TERMINATED, None))
             await self._read_output_task
 
 
@@ -209,5 +208,5 @@ def _target_process_wrapper(target, output_queue, input_queue, *args, **kwargs):
         target(output_queue, input_queue, *args, **kwargs)
     except BaseException as e:
         import traceback
-        msg = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
-        output_queue.put_nowait((DaemonProcess.ERROR, msg))
+        msg = ''.join(traceback.format_exception(type(e), e, e.__traceback__)).strip()
+        output_queue.put((DaemonProcess.ERROR, msg))
