@@ -36,6 +36,7 @@ class JobBase(abc.ABC):
         self._output = []
         self._output_callbacks = []
         self._finished_event = asyncio.Event()
+        self._kwargs = kwargs
         self.initialize(**kwargs)
 
     @abc.abstractmethod
@@ -141,42 +142,42 @@ class JobBase(abc.ABC):
 
     def write_output_cache(self):
         """
-        Store :attr:`output` in :attr:`cache_filepath`
+        Store :attr:`output` in :attr:`cache_file`
 
         The base class implementation caches output as JSON. Derivative classes
         may want to use other formats.
 
         :raise RuntimeError: if :attr:`output` is not JSON-encodable or
-            :attr:`cache_filepath` exists unwritable
+            :attr:`cache_file` exists unwritable
         """
         if self.output:
-            _log.debug('Writing output cache: %r: %r', self.cache_filepath, self.output)
+            _log.debug('Writing output cache: %r: %r', self.cache_file, self.output)
             try:
                 output_string = json.dumps(self.output)
             except (ValueError, TypeError) as e:
                 raise RuntimeError(f'Unable to encode output as JSON: {self.output!r}: {e}')
             else:
                 try:
-                    with open(self.cache_filepath, 'w') as f:
+                    with open(self.cache_file, 'w') as f:
                         f.write(output_string)
                         f.write('\n')
                 except OSError as e:
-                    raise RuntimeError(f'Unable to write cache {self.cache_filepath}: {e}')
+                    raise RuntimeError(f'Unable to write cache {self.cache_file}: {e}')
 
     def read_output_cache(self):
         """
-        Set :attr:`output` to data stored in :attr:`cache_filepath`
+        Set :attr:`output` to data stored in :attr:`cache_file`
 
-        :raise RuntimeError: if content of :attr:`cache_filepath` is not
-            JSON-decodable or :attr:`cache_filepath` exists unreadable
+        :raise RuntimeError: if content of :attr:`cache_file` is not
+            JSON-decodable or :attr:`cache_file` exists unreadable
         """
-        if not self._ignore_cache and os.path.exists(self.cache_filepath):
-            _log.debug('Reading output cache: %r', self.cache_filepath)
+        if not self._ignore_cache and os.path.exists(self.cache_file):
+            _log.debug('Reading output cache: %r', self.cache_file)
             try:
-                with open(self.cache_filepath, 'r') as f:
+                with open(self.cache_file, 'r') as f:
                     content = f.read()
             except OSError as e:
-                raise RuntimeError(f'Unable to read cache {self.cache_filepath}: {e}')
+                raise RuntimeError(f'Unable to read cache {self.cache_file}: {e}')
             else:
                 try:
                     self._output = json.loads(content)
@@ -184,18 +185,29 @@ class JobBase(abc.ABC):
                     raise RuntimeError(f'Unable to decode JSON: {content!r}: {e}')
             _log.debug('Read cached output: %r', self._output)
         else:
-            _log.debug('Not reading output cache: %r', self.cache_filepath)
+            _log.debug('Not reading output cache: %r', self.cache_file)
 
     @property
-    def cache_filepath(self):
-        """Path of file to store cached :attr:`output` in"""
-        parent = os.path.join(self.homedir, '.output')
-        if not os.path.exists(parent):
+    def cache_directory(self):
+        """Path to directory that stores cache files"""
+        path = os.path.join(self.homedir, '.output')
+        if not os.path.exists(path):
             try:
-                os.mkdir(parent)
+                os.mkdir(path)
             except OSError as e:
                 if getattr(e, 'strerror', None):
-                    raise errors.PermissionError(f'{parent}: {e.strerror}')
+                    raise errors.PermissionError(f'{path}: {e.strerror}')
                 else:
-                    raise errors.PermissionError(f'{parent}: Unable to create directory')
-        return os.path.join(parent, f'{self.name}.json')
+                    raise errors.PermissionError(f'{path}: Unable to create directory')
+        return path
+
+    @property
+    def cache_file(self):
+        """Path of file to store cached :attr:`output` in"""
+        kwargs_str = ','.join(f'{k}={v}' for k, v in self._kwargs.items())
+        if kwargs_str:
+            filename = f'{self.name}:{kwargs_str.replace("/", "_")}.json'
+        else:
+            filename = f'{self.name}.json'
+        _log.debug('Cache file name: %r', filename)
+        return os.path.join(self.cache_directory, filename)

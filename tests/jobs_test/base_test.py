@@ -160,26 +160,34 @@ def test_exit_code_is_1_if_errors_were_sent(job):
     assert job.exit_code == 1
 
 
-def test_cache_filepath_has_correct_parent(tmp_path):
-    job = FooJob(homedir=tmp_path, ignore_cache=False)
-    assert job.cache_filepath == str(tmp_path / '.output' / f'{job.name}.json')
+def test_cache_file_name_includes_keyword_arguments(tmp_path):
+    class BarJob(FooJob):
+        def initialize(self, bar, baz):
+            pass
 
-def test_cache_filepath_parent_exists(tmp_path):
-    job = FooJob(homedir=tmp_path, ignore_cache=False)
-    assert os.path.exists(os.path.dirname(job.cache_filepath))
+    job = BarJob(homedir=tmp_path, ignore_cache=False, bar=1, baz='asdf')
+    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}:bar=1,baz=asdf.json')
 
-def test_cache_filepath_is_writable(tmp_path):
+def test_cache_file_has_correct_parent(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
-    with open(job.cache_filepath, 'w') as f:
+    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.json')
+
+def test_cache_file_parent_exists(tmp_path):
+    job = FooJob(homedir=tmp_path, ignore_cache=False)
+    assert os.path.exists(os.path.dirname(job.cache_file))
+
+def test_cache_file_is_writable(tmp_path):
+    job = FooJob(homedir=tmp_path, ignore_cache=False)
+    with open(job.cache_file, 'w') as f:
         f.write('something')
-    assert open(job.cache_filepath, 'r').read() == 'something'
+    assert open(job.cache_file, 'r').read() == 'something'
 
-def test_cache_filepath_cannot_create_output_directory(tmp_path):
+def test_cache_file_cannot_create_output_directory(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
     tmp_path.chmod(0o440)
     try:
         with pytest.raises(errors.PermissionError, match=rf'^{tmp_path / ".output"}: Permission denied$'):
-            job.cache_filepath
+            job.cache_file
     finally:
         tmp_path.chmod(0o770)
 
@@ -193,30 +201,30 @@ def test_cache_is_written_if_output_is_not_empty(job):
     job.send('foo')
     assert job.output == ('foo',)
     job.finish()
-    assert os.path.exists(job.cache_filepath)
-    assert open(job.cache_filepath, 'r').read() == '["foo"]\n'
+    assert os.path.exists(job.cache_file)
+    assert open(job.cache_file, 'r').read() == '["foo"]\n'
 
 
 def test_cache_is_read_and_job_is_not_executed(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
-    open(job.cache_filepath, 'w').write('["foo"]\n')
+    open(job.cache_file, 'w').write('["foo"]\n')
     job.start()
     assert job.output == ('foo',)
     assert job.is_finished is True
     assert not hasattr(job, 'execute_was_called')
 
-def test_cache_is_not_read_if_cache_filepath_does_not_exist(tmp_path):
+def test_cache_is_not_read_if_cache_file_does_not_exist(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
     job.start()
     assert job.output == ()
     assert job.is_finished is False
-    assert not os.path.exists(job.cache_filepath)
+    assert not os.path.exists(job.cache_file)
     assert job.execute_was_called
 
 def test_cache_is_not_read_with_ignore_cache_argument(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=True)
-    open(job.cache_filepath, 'w').write('["foo"]\n')
-    assert os.path.exists(job.cache_filepath)
+    open(job.cache_file, 'w').write('["foo"]\n')
+    assert os.path.exists(job.cache_file)
     job.start()
     assert job.output == ()
     assert job.is_finished is False
