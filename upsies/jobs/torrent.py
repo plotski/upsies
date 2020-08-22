@@ -90,10 +90,10 @@ class CreateTorrentJob(_base.JobBase):
 
 def _torrent_process(output_queue, input_queue, *args, **kwargs):
     def init_callback(file_tree):
-        output_queue.put_nowait((_common.DaemonProcess.INIT, file_tree))
+        output_queue.put((_common.DaemonProcess.INIT, file_tree))
 
     def progress_callback(progress):
-        output_queue.put_nowait((_common.DaemonProcess.INFO, progress))
+        output_queue.put((_common.DaemonProcess.INFO, progress))
 
     kwargs['init_callback'] = init_callback
     kwargs['progress_callback'] = progress_callback
@@ -101,6 +101,6 @@ def _torrent_process(output_queue, input_queue, *args, **kwargs):
     try:
         torrent_path = torrent.create(*args, **kwargs)
     except errors.TorrentError as e:
-        output_queue.put_nowait((_common.DaemonProcess.ERROR, str(e)))
+        output_queue.put((_common.DaemonProcess.ERROR, str(e)))
     else:
-        output_queue.put_nowait((_common.DaemonProcess.RESULT, torrent_path))
+        output_queue.put((_common.DaemonProcess.RESULT, torrent_path))
