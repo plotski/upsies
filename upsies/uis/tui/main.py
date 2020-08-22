@@ -19,7 +19,6 @@ def _main(args=None):
     if args.debug:
         logging.basicConfig(format='%(asctime)s: %(name)s: %(message)s')
         logging.getLogger(__project_name__).setLevel(level=logging.DEBUG)
-        logging.getLogger('prompt_toolkit').setLevel(level=logging.DEBUG)
 
     try:
         cfg = config.Config(args.configfile)
