@@ -8,7 +8,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class TorrentJobWidget(_base.JobWidgetBase):
+class CreateTorrentJobWidget(_base.JobWidgetBase):
     def setup(self):
         self._progress = widgets.ProgressBar()
         self.job.on_progress_update(self.handle_progress_update)

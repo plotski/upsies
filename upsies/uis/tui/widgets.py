@@ -34,7 +34,7 @@ def JobWidget(job):
     elif isinstance(job, jobs.release_name.ReleaseNameJob):
         return jobwidgets.ReleaseNameJobWidget(job)
     elif isinstance(job, jobs.torrent.CreateTorrentJob):
-        return jobwidgets.TorrentJobWidget(job)
+        return jobwidgets.CreateTorrentJobWidget(job)
     elif isinstance(job, jobs.screenshots.ScreenshotsJob):
         return jobwidgets.ScreenshotsJobWidget(job)
     elif isinstance(job, jobs.submit.SubmissionJobBase):
