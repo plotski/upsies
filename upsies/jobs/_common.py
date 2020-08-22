@@ -156,11 +156,10 @@ class DaemonProcess:
         )
         self._process.start()
         self._read_output_task = self._loop.create_task(self._read_output())
-        self._read_output_task.add_done_callback(lambda task: task.result())
         _log.debug('Read output task: %r', self._read_output_task)
 
     async def _read_output(self):
-        while self.is_alive:
+        while True:
             typ, msg = await self._loop.run_in_executor(None, self._output_queue.get)
             if typ == self.INIT:
                 if self._init_callback:
@@ -184,23 +183,28 @@ class DaemonProcess:
 
     def stop(self):
         """Stop the process"""
-        if self._process is not None:
+        if self._process:
             self._process.terminate()
+            self._output_queue.put((DaemonProcess._TERMINATED, None))
 
     @property
     def is_alive(self):
         """Whether :meth:`start` was called and the process has not finished yet"""
-        if self._process is not None:
+        if self._process:
             return self._process.is_alive()
         else:
             return False
 
     async def join(self):
         """Block asynchronously until the process exits"""
-        await self._loop.run_in_executor(None, self._process.join)
-        _log.debug('Process finished: %r', self._process)
-        # Unblock _read_output()
-        if not self._read_output_task.done():
+        _log.debug('Joining %r', self._process)
+        if self._process:
+            _log.debug('Waiting for process: %r', self._process)
+            await self._loop.run_in_executor(None, self._process.join)
+            _log.debug('Process finished: %r', self._process)
+            self._process = None
+
+        if self._read_output_task and not self._read_output_task.done():
             self._output_queue.put((self._TERMINATED, None))
             await self._read_output_task
 
