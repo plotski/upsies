@@ -13,9 +13,11 @@ class ScreenshotsJobWidget(_base.JobWidgetBase):
     def setup(self):
         self._screenshot_progress = widgets.ProgressBar()
         self.job.on_screenshot_path(self.handle_screenshot_path)
+        self.job.on_screenshots_finished(lambda _: get_app().invalidate())
         if self.job.is_uploading:
             self._upload_progress = widgets.ProgressBar()
             self.job.on_upload_url(self.handle_screenshot_url)
+            self.job.on_uploads_finished(lambda _: get_app().invalidate())
 
     def activate(self):
         pass
