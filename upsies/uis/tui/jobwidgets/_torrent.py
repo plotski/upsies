@@ -12,6 +12,7 @@ class TorrentJobWidget(_base.JobWidgetBase):
     def setup(self):
         self._progress = widgets.ProgressBar()
         self.job.on_progress_update(self.handle_progress_update)
+        self.job.on_finished(lambda _: get_app().invalidate())
 
     def activate(self):
         pass
