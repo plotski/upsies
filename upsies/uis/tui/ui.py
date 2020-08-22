@@ -113,3 +113,4 @@ class UI:
             if wait:
                 _log.debug('Waiting for job: %r', job)
                 self._app.create_background_task(job.wait())
+                _log.debug('Job is now finished: %r', job)
