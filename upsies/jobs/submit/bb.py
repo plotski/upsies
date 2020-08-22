@@ -73,6 +73,4 @@ class SubmissionJob(_base.SubmissionJobBase):
         _log.debug('Screenshots: %r', self.screenshot_files)
         _log.debug('ID: %r', self.dbid)
         _log.debug('Mediainfo: %r', mediainfo.as_string(self.content_path))
-        if not self.is_finished:
-            self.send('<url to submitteded torrent>')
-            self.finish()
+        self.send('<url to submitteded torrent>')

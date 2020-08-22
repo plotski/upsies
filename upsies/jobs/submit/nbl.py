@@ -52,4 +52,3 @@ class SubmissionJob(_base.SubmissionJobBase):
         _log.debug('Torrent: %r', self.torrent_file)
         _log.debug('Mediainfo: %r', mediainfo.as_string(self.content_path))
         self.send('<url to submitteded torrent>')
-        self.finish()

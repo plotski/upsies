@@ -46,5 +46,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
                 _log.debug('Waiting for tracker job: %r', job)
                 await job.wait()
                 _log.debug('Done waiting for tracker job: %r', job)
+        # Maybe user aborted
         if not self.is_finished:
             await self.submit()
+            self.finish()
