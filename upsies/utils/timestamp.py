@@ -1,6 +1,6 @@
 def pretty(seconds):
     """
-    Format `seconds` as [HH:]MM:SS
+    Format `seconds` as H+:MM:SS
 
     Invalid values are returned unchanged.
 
@@ -8,7 +8,7 @@ def pretty(seconds):
         ":"-separated string
     :type seconds: int or float or "[[H+:]M+:]S+"
 
-    :return: "HH:MM:SS" or "MM:SS"
+    :return: "H+:MM:SS"
     """
     if isinstance(seconds, str):
         seconds = parse(seconds)
