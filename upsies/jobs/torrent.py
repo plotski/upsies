@@ -76,9 +76,9 @@ class CreateTorrentJob(_base.JobBase):
     def handle_finished(self, torrent_path=None):
         if torrent_path is not None:
             self.send(torrent_path, if_not_finished=True)
+        self.finish()
         for cb in self._finished_callbacks:
             cb(torrent_path)
-        self.finish()
 
     def handle_file_tree(self, file_tree):
         self._file_tree = fs.file_tree(file_tree)
