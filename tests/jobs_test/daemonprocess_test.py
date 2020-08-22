@@ -43,9 +43,10 @@ def target_sending_no_result_to_finished_callback(output_queue, input_queue):
     pass
 
 def target_never_terminating(output_queue, input_queue):
-    import time
     output_queue.put((DaemonProcess.INFO, 'something'))
-    time.sleep(1e6)
+    import time
+    while True:
+        time.sleep(1)
 
 def target_taking_arguments(output_queue, input_queue, foo, bar, *, baz):
     output_queue.put((DaemonProcess.INFO, foo))
@@ -153,7 +154,7 @@ async def test_stop_terminates_running_process():
     assert proc.is_alive
     proc.stop()
     await proc.join()
-    info_callback.assert_called_with('something')
+    info_callback.call_args_list == [call('something')]
 
 
 @pytest.mark.asyncio
