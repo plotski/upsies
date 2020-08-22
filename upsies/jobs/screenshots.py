@@ -15,12 +15,22 @@ class ScreenshotsJob(_base.JobBase):
     name = 'screenshots'
     label = 'Screenshots'
 
+    @property
+    def cache_file(self):
+        return os.path.join(
+            self.cache_directory,
+            f'{self.name}:{",".join(self._timestamps)}.json',
+        )
+
     def initialize(self, content_path, timestamps=(), number=0, upload_to=None):
-        self._content_path = content_path
-        self._timestamps = timestamps or ()
-        self._number = number or 0
+        self._video_file = video.first_video(content_path)
+        self._timestamps = _screenshot_timestamps(
+            video_file=self._video_file,
+            timestamps=timestamps,
+            number=number,
+        )
         self._screenshots_created = 0
-        self._screenshots_wanted = max(self._number, len(self._timestamps))
+        self._screenshots_wanted = len(self._timestamps)
         if self._screenshots_wanted <= 1:
             raise RuntimeError('No screenshots wanted')
 
@@ -45,9 +55,8 @@ class ScreenshotsJob(_base.JobBase):
         self._screenshot_process = _common.DaemonProcess(
             target=_screenshot_process,
             kwargs={
-                'video_file' : video.first_video(self._content_path),
+                'video_file' : self._video_file,
                 'timestamps' : self._timestamps,
-                'number'     : self._number,
                 'output_dir' : self.homedir,
             },
             info_callback=self.handle_screenshot_path,
@@ -160,9 +169,41 @@ class ScreenshotsJob(_base.JobBase):
             cb(self.output)
 
 
+def _screenshot_timestamps(video_file, timestamps, number):
+    timestamps_pretty = []
+    for ts in timestamps:
+        timestamps_pretty.append(timestamp.pretty(ts))
+
+    # Add more timestamps if the user didn't specify enough
+    if number > 0 and len(timestamps_pretty) < number:
+        total_secs = video.length(video_file)
+
+        # Convert timestamp strings to seconds
+        timestamps = sorted(timestamp.parse(ts) for ts in timestamps_pretty)
+
+        # Fractions of total video length
+        positions = [ts / total_secs for ts in timestamps]
+
+        # Include start and end of video
+        if 0.0 not in positions:
+            positions.insert(0, 0.0)
+        if 1.0 not in positions:
+            positions.append(1.0)
+
+        # Insert timestamps between the two with the largest distance
+        while len(timestamps_pretty) < number:
+            pairs = [(a, b) for a, b in zip(positions, positions[1:])]
+            max_distance, pos1, pos2 = max((b - a, a, b) for a, b in pairs)
+            position = ((pos2 - pos1) / 2) + pos1
+            timestamps_pretty.append(timestamp.pretty(total_secs * position))
+            positions.append(position)
+            positions.sort()
+
+    return natsort.natsorted(timestamps_pretty)
+
+
 def _screenshot_process(output_queue, input_queue,
-                        video_file, timestamps, number, output_dir):
-    timestamps = _screenshot_timestamps(output_queue, video_file, timestamps, number)
+                        video_file, timestamps, output_dir):
     for ts in timestamps:
         screenshotfile = os.path.join(
             output_dir,
@@ -171,36 +212,9 @@ def _screenshot_process(output_queue, input_queue,
         try:
             tools.screenshot.create(video_file, ts, screenshotfile)
         except (ValueError, errors.ScreenshotError) as e:
-            output_queue.put_nowait((_common.DaemonProcess.ERROR, str(e)))
+            output_queue.put((_common.DaemonProcess.ERROR, str(e)))
         else:
-            output_queue.put_nowait((_common.DaemonProcess.INFO, screenshotfile))
-
-
-def _screenshot_timestamps(output_queue, video_file, timestamps, number):
-    timestamps_pretty = []
-    for ts in timestamps:
-        try:
-            timestamps_pretty.append(timestamp.pretty(ts))
-        except (ValueError, TypeError) as e:
-            output_queue.put_nowait((_common.DaemonProcess.ERROR, str(e)))
-
-    # If the user didn't specify enough timestamps, add more until we have
-    # `number` timestamps.
-    if number > 0 and len(timestamps_pretty) < number:
-        try:
-            total_secs = video.length(video_file)
-        except Exception as e:
-            output_queue.put_nowait((_common.DaemonProcess.ERROR, str(e)))
-            return
-        else:
-            # Ignore first minute
-            offset = 60
-            missing = number - len(timestamps_pretty)
-            interval = int(total_secs - offset) / (missing + 1)
-            for i in range(1, missing + 1):
-                ts = timestamp.pretty(offset + (i * interval))
-                timestamps_pretty.append(ts)
-    return natsort.natsorted(timestamps_pretty)
+            output_queue.put((_common.DaemonProcess.INFO, screenshotfile))
 
 
 class UploadThread(_common.DaemonThread):
@@ -212,10 +226,10 @@ class UploadThread(_common.DaemonThread):
         self._finished_callback = finished_callback
 
     def upload(self, filepath):
-        self._filepaths_queue.put_nowait(filepath)
+        self._filepaths_queue.put(filepath)
 
     def finish(self):
-        self._filepaths_queue.put_nowait(None)
+        self._filepaths_queue.put(None)
 
     def initialize(self):
         self._uploader = self._imghost.Uploader()
