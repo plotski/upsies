@@ -120,10 +120,11 @@ class DaemonProcess:
     RESULT = 'result'
     _TERMINATED = 'terminated'
 
-    def __init__(self, target, args=(), kwargs={},
+    def __init__(self, target, name=None, args=(), kwargs={},
                  init_callback=None, info_callback=None,
                  error_callback=None, finished_callback=None):
         self._target = target
+        self._name = name
         self._target_args = args
         self._target_kwargs = kwargs
         self._init_callback = init_callback
@@ -148,6 +149,7 @@ class DaemonProcess:
             self._input_queue,
         )
         self._process = self._ctx.Process(
+            name=self._name,
             target=target_wrapped,
             args=self._target_args,
             kwargs=self._target_kwargs,

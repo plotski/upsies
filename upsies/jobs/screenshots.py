@@ -53,6 +53,7 @@ class ScreenshotsJob(_base.JobBase):
 
     def execute(self):
         self._screenshot_process = _common.DaemonProcess(
+            name=self.name,
             target=_screenshot_process,
             kwargs={
                 'video_file' : self._video_file,

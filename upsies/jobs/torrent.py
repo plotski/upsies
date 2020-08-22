@@ -30,6 +30,7 @@ class CreateTorrentJob(_base.JobBase):
 
     def execute(self):
         self._torrent_process = _common.DaemonProcess(
+            name=self.name,
             target=_torrent_process,
             kwargs={
                 'content_path'   : self._content_path,
