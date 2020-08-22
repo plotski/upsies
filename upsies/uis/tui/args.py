@@ -64,8 +64,9 @@ def parse(args):
     screenshots.add_argument('path', help='Path to release content')
     screenshots.add_argument(
         '--timestamps', '-t',
-        metavar='TIMESTAMP',
         help='Space-separated list of [HH:]MM:SS strings',
+        metavar='TIMESTAMP',
+        default=(),
         nargs='+',
         type=TIMESTAMP,
     )
