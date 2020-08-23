@@ -171,14 +171,15 @@ class ScreenshotsJob(_base.JobBase):
 
 
 def _screenshot_timestamps(video_file, timestamps, number):
+    total_secs = video.length(video_file)
+
     timestamps_pretty = []
     for ts in timestamps:
+        ts = max(0, min(total_secs, timestamp.parse(ts)))
         timestamps_pretty.append(timestamp.pretty(ts))
 
     # Add more timestamps if the user didn't specify enough
     if number > 0 and len(timestamps_pretty) < number:
-        total_secs = video.length(video_file)
-
         # Convert timestamp strings to seconds
         timestamps = sorted(timestamp.parse(ts) for ts in timestamps_pretty)
 
