@@ -31,7 +31,7 @@ class ScreenshotsJob(_base.JobBase):
         )
         self._screenshots_created = 0
         self._screenshots_wanted = len(self._timestamps)
-        if self._screenshots_wanted <= 1:
+        if not self._screenshots_wanted > 0:
             raise RuntimeError('No screenshots wanted')
 
         self._screenshots_uploaded = 0
