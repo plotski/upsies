@@ -173,7 +173,6 @@ class _SearchThread(_common.DaemonThread):
         if self._normalize_query(query) == self._normalize_query(self._query):
             return
         else:
-            # TODO: Move the cancel() to work()?
             if self._search_task:
                 self._search_task.cancel()
             self._query = query
