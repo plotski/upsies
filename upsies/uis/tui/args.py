@@ -74,7 +74,7 @@ def parse(args):
         '--number', '-n',
         help='How many screenshots to make (including those specified by --timestamps)',
         type=Number,
-        default=2,
+        default=0,
     )
     screenshots.add_argument(
         '--upload', '-u',

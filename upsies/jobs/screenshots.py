@@ -10,6 +10,8 @@ from . import _base, _common
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
+DEFAULT_NUMBER_OF_SCREENSHOTS = 2
+
 
 class ScreenshotsJob(_base.JobBase):
     name = 'screenshots'
@@ -177,6 +179,9 @@ def _screenshot_timestamps(video_file, timestamps, number):
     for ts in timestamps:
         ts = max(0, min(total_secs, timestamp.parse(ts)))
         timestamps_pretty.append(timestamp.pretty(ts))
+
+    if not timestamps and not number:
+        number = DEFAULT_NUMBER_OF_SCREENSHOTS
 
     # Add more timestamps if the user didn't specify enough
     if number > 0 and len(timestamps_pretty) < number:
