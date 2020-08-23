@@ -1,10 +1,13 @@
+import multiprocessing
+import os
 from unittest.mock import Mock, call, patch
 
 import pytest
 
+from upsies import errors
 from upsies.jobs._common import DaemonProcess
-from upsies.jobs.screenshots import (DEFAULT_NUMBER_OF_SCREENSHOTS,
-                                     ScreenshotsJob, _screenshot_timestamps)
+from upsies.jobs.screenshots import (ScreenshotsJob, _screenshot_process,
+                                     _screenshot_timestamps)
 
 
 @patch('upsies.utils.video.length')
@@ -60,3 +63,70 @@ def test_screenshot_timestamps_with_given_timestamp_out_of_bounds(video_length_m
     video_length_mock.return_value = 300
     timestamps = _screenshot_timestamps('foo.mkv', (3000,), 3)
     assert timestamps == ['0:02:30', '0:03:45', '0:05:00']
+
+
+@patch('upsies.tools.screenshot.create')
+def test_screenshot_process_fills_output_queue(screenshot_create_mock, tmp_path):
+    output_queue = multiprocessing.Queue()
+    input_queue = multiprocessing.Queue()
+    _screenshot_process(output_queue, input_queue,
+                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
+    assert screenshot_create_mock.call_args_list == [
+        call('foo.mkv', '0:10:00', 'path/to/destination/foo.mkv.0:10:00.png'),
+        call('foo.mkv', '0:20:00', 'path/to/destination/foo.mkv.0:20:00.png'),
+    ]
+    assert output_queue.get() == (DaemonProcess.INFO, 'path/to/destination/foo.mkv.0:10:00.png')
+    assert output_queue.get() == (DaemonProcess.INFO, 'path/to/destination/foo.mkv.0:20:00.png')
+    assert output_queue.empty()
+    assert input_queue.empty()
+
+@patch('upsies.tools.screenshot.create')
+def test_screenshot_process_catches_ScreenshotErrors(screenshot_create_mock, tmp_path):
+    def screenshot_create_side_effect(video_file, timestamp, screenshotfile):
+        raise errors.ScreenshotError('Error', video_file, timestamp)
+
+    screenshot_create_mock.side_effect = screenshot_create_side_effect
+
+    output_queue = multiprocessing.Queue()
+    input_queue = multiprocessing.Queue()
+    _screenshot_process(output_queue, input_queue,
+                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
+    assert screenshot_create_mock.call_args_list == [
+        call('foo.mkv', '0:10:00', 'path/to/destination/foo.mkv.0:10:00.png'),
+        call('foo.mkv', '0:20:00', 'path/to/destination/foo.mkv.0:20:00.png'),
+    ]
+    assert output_queue.get() == (DaemonProcess.ERROR, str(errors.ScreenshotError('Error', 'foo.mkv', '0:10:00')))
+    assert output_queue.get() == (DaemonProcess.ERROR, str(errors.ScreenshotError('Error', 'foo.mkv', '0:20:00')))
+    assert output_queue.empty()
+    assert input_queue.empty()
+
+@patch('upsies.tools.screenshot.create')
+def test_screenshot_process_catches_ValueErrors(screenshot_create_mock, tmp_path):
+    def screenshot_create_side_effect(video_file, timestamp, screenshotfile):
+        raise ValueError(f'Error: {video_file}, {timestamp}')
+
+    screenshot_create_mock.side_effect = screenshot_create_side_effect
+
+    output_queue = multiprocessing.Queue()
+    input_queue = multiprocessing.Queue()
+    _screenshot_process(output_queue, input_queue,
+                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
+    assert screenshot_create_mock.call_args_list == [
+        call('foo.mkv', '0:10:00', 'path/to/destination/foo.mkv.0:10:00.png'),
+        call('foo.mkv', '0:20:00', 'path/to/destination/foo.mkv.0:20:00.png'),
+    ]
+    assert output_queue.get() == (DaemonProcess.ERROR, 'Error: foo.mkv, 0:10:00')
+    assert output_queue.get() == (DaemonProcess.ERROR, 'Error: foo.mkv, 0:20:00')
+    assert output_queue.empty()
+    assert input_queue.empty()
+
+@patch('upsies.tools.screenshot.create')
+def test_screenshot_process_does_not_catche_other_errors(screenshot_create_mock, tmp_path):
+    screenshot_create_mock.side_effect = TypeError('asdf')
+    output_queue = multiprocessing.Queue()
+    input_queue = multiprocessing.Queue()
+    with pytest.raises(TypeError, match='^asdf$'):
+        _screenshot_process(output_queue, input_queue,
+                            'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
+    assert output_queue.empty()
+    assert input_queue.empty()
