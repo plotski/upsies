@@ -95,7 +95,8 @@ class ScreenshotsJob(_base.JobBase):
 
     @property
     def exit_code(self):
-        return 0 if len(self.output) == self.screenshots_wanted else 1
+        if self.is_finished:
+            return 0 if len(self.output) == self.screenshots_wanted else 1
 
     @property
     def screenshots_wanted(self):

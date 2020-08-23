@@ -140,6 +140,13 @@ def test_info(job):
     assert job.info == ''
 
 
+def test_exit_code_is_None_if_job_is_not_finished(job):
+    assert job.exit_code is None
+    job.start()
+    assert job.exit_code is None
+    job.finish()
+    assert job.exit_code is not None
+
 def test_exit_code_is_0_if_output_is_not_empty(job):
     job.send('foo')
     job.finish()

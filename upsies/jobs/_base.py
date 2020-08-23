@@ -107,7 +107,8 @@ class JobBase(abc.ABC):
     @property
     def exit_code(self):
         """`0` if job was successful, `> 0` otherwise"""
-        return 0 if self.output and not self.errors else 1
+        if self.is_finished:
+            return 0 if self.output and not self.errors else 1
 
     @property
     def errors(self):
