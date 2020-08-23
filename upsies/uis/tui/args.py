@@ -68,12 +68,12 @@ def parse(args):
         metavar='TIMESTAMP',
         default=(),
         nargs='+',
-        type=TIMESTAMP,
+        type=Timestamp,
     )
     screenshots.add_argument(
         '--number', '-n',
         help='How many screenshots to make (including those specified by --timestamps)',
-        type=NUMBER,
+        type=Number,
         default=2,
     )
     screenshots.add_argument(
@@ -111,10 +111,10 @@ def parse(args):
 
 # Type names should match metavar names and raise ValueError
 
-def NUMBER(string):
+def Number(string):
     return int(string)
 
-def TIMESTAMP(string):
+def Timestamp(string):
     try:
         return utils.timestamp.parse(string)
     except ValueError as e:
