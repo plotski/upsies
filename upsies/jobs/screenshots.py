@@ -33,6 +33,7 @@ class ScreenshotsJob(_base.JobBase):
         )
         self._screenshots_created = 0
         self._screenshots_wanted = len(self._timestamps)
+        self._screenshot_filepaths = []
         if not self._screenshots_wanted > 0:
             raise RuntimeError('No screenshots wanted')
 
@@ -69,13 +70,12 @@ class ScreenshotsJob(_base.JobBase):
         self._screenshot_process.start()
 
         if self._imghost:
-            self._upload_thread = UploadThread(
+            self._upload_thread = _UploadThread(
                 imghost=self._imghost,
                 url_callback=self.handle_upload_url,
                 error_callback=self.handle_upload_error,
                 finished_callback=self.handle_uploads_finished,
             )
-            _log.debug('Starting upload thread: %r', self._upload_thread)
             self._upload_thread.start()
 
     def finish(self):
@@ -86,7 +86,6 @@ class ScreenshotsJob(_base.JobBase):
         super().finish()
 
     async def wait(self):
-        _log.debug('Waiting for %r', self)
         if hasattr(self, '_screenshot_process'):
             await self._screenshot_process.join()
         if hasattr(self, '_upload_thread'):
@@ -110,16 +109,13 @@ class ScreenshotsJob(_base.JobBase):
     def screenshots_uploaded(self):
         return self._screenshots_uploaded
 
-    @property
-    def is_uploading(self):
-        return hasattr(self, '_upload_thread')
-
     def on_screenshot_path(self, callback):
         self._screenshot_path_callbacks.append(callback)
 
     def handle_screenshot_path(self, path):
         _log.debug('New screenshot: %r', path)
         self._screenshots_created += 1
+        self._screenshot_filepaths.append(path)
         if self.is_uploading:
             self._upload_thread.upload(path)
         else:
@@ -145,7 +141,12 @@ class ScreenshotsJob(_base.JobBase):
         else:
             self.finish()
         for cb in self._screenshots_finished_callbacks:
-            cb(self.output)
+            cb(tuple(self._screenshot_filepaths))
+
+    @property
+    def is_uploading(self):
+        return self._imghost is not None
+        # return hasattr(self, '_upload_thread')
 
     def on_upload_url(self, callback):
         self._upload_url_callbacks.append(callback)
@@ -225,7 +226,7 @@ def _screenshot_process(output_queue, input_queue,
             output_queue.put((_common.DaemonProcess.INFO, screenshotfile))
 
 
-class UploadThread(_common.DaemonThread):
+class _UploadThread(_common.DaemonThread):
     def __init__(self, imghost, url_callback, error_callback, finished_callback):
         self._imghost = imghost
         self._filepaths_queue = queue.Queue()
