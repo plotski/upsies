@@ -77,7 +77,7 @@ class TextField:
             dont_extend_height=True,
             dont_extend_width=not extend_width,
             wrap_lines=True,
-            style=' '.join(('class:text-field', style)),
+            style=' '.join(('class:textfield.info', style)),
         )
 
     @property
@@ -123,7 +123,7 @@ class InputField:
             width=width,
             dont_extend_height=True,
             dont_extend_width=not extend_width,
-            style='class:input-field',
+            style='class:textfield.input',
         )
         self.set_text(text, ignore_callback=True)
 
@@ -153,7 +153,7 @@ class HLabel:
     def __init__(self, label, content, group=None):
         label = Window(
             content=FormattedTextControl(text=f'{label} ',
-                                         style='class:field-label'),
+                                         style='class:textfield.label'),
             dont_extend_width=True,
             dont_extend_height=False,
             width=get_cwidth(label) + 1,
@@ -175,7 +175,7 @@ class HLabel:
 class VLabel:
     def __init__(self, label, content):
         self.container = HSplit([
-            Window(FormattedTextControl(text=label, style='class:field-label'),
+            Window(FormattedTextControl(text=label, style='class:textfield.label'),
                    dont_extend_height=True),
             content,
         ])
@@ -189,12 +189,12 @@ class ProgressBar:
         self.percent = 0
         self.container = VSplit([
             Window(
-                style='class:progress-bar class:progress-bar.progress',
+                style='class:progressbar class:progressbar.progress',
                 width=lambda: Dimension(weight=int(self.percent)),
                 height=1,
             ),
             Window(
-                style='class:progress-bar',
+                style='class:progressbar',
                 width=lambda: Dimension(weight=int(100 - self.percent)),
                 height=1,
             ),

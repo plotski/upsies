@@ -16,7 +16,7 @@ class JobWidgetBase(abc.ABC):
         self.job = job
         self.setup()
         self._main_widget = HSplit(
-            style='class:output',
+            style='class:job.output',
             children=[
                 # Status / Progress
                 ConditionalContainer(
@@ -62,7 +62,7 @@ class JobWidgetBase(abc.ABC):
     @property
     def info_widget(self):
         return Window(
-            style='class:result,info',
+            style='class:job.info',
             content=FormattedTextControl(lambda: str(self.job.info)),
             dont_extend_height=True,
             wrap_lines=True,
@@ -71,7 +71,7 @@ class JobWidgetBase(abc.ABC):
     @property
     def output_widget(self):
         return Window(
-            style='class:result',
+            style='class:job.result',
             content=FormattedTextControl(lambda: '\n'.join(self.job.output)),
             dont_extend_height=True,
             wrap_lines=True,
@@ -80,7 +80,7 @@ class JobWidgetBase(abc.ABC):
     @property
     def errors_widget(self):
         return Window(
-            style='class:error',
+            style='class:job.error',
             content=FormattedTextControl(lambda: '\n'.join(str(e) for e in self.job.errors)),
             dont_extend_height=True,
             wrap_lines=True,

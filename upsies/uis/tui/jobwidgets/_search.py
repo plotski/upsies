@@ -176,7 +176,7 @@ class _SearchResults(DynamicContainer):
             lambda: Window(
                 content=FormattedTextControl(self._get_text_fragments, focusable=False),
                 width=width,
-                style='class:search-result',
+                style='class:search.result',
             )
         )
 
@@ -220,13 +220,13 @@ class _SearchResults(DynamicContainer):
 
     def _get_text_fragments(self):
         if self._is_searching:
-            return [('class:search-result', 'Searching...')]
+            return [('class:search.result', 'Searching...')]
         elif not self._results:
             return 'No results'
 
         frags = []
         for i, result in enumerate(self._results):
-            title_style = 'class:search-result'
+            title_style = 'class:search.result'
 
             if i == self._focused_index:
                 frags.append(('[SetCursorPosition]', ''))
