@@ -43,9 +43,9 @@ def create(content_path, announce_url, torrent_path,
 def _make_file_tree(tree):
     files = []
     for name,file in tree.items():
-        if isinstance(file, torf.File):
-            files.append((name, file.size))
-        else:
+        if isinstance(file, dict):
             subtree = _make_file_tree(file)
             files.append((name, subtree))
+        else:
+            files.append((name, file.size))
     return tuple(files)
