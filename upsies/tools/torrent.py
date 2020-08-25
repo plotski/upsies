@@ -28,7 +28,7 @@ def create(content_path, announce_url, torrent_path,
             init_callback(_make_file_tree(torrent.filetree))
             success = torrent.generate(callback=cb, interval=0.5)
         except torf.TorfError as e:
-            raise errors.TorrentError(f'Failed to create {torrent_path}: {e}')
+            raise errors.TorrentError(e)
 
         if success:
             try:
