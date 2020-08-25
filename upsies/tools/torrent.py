@@ -1,4 +1,4 @@
-import os
+from os.path import exists as _path_exists
 
 import torf
 
@@ -15,7 +15,7 @@ def create(content_path, announce_url, torrent_path,
     def cb(torrent, filepath, pieces_done, pieces_total):
         return progress_callback(pieces_done / pieces_total * 100)
 
-    if os.path.exists(torrent_path):
+    if _path_exists(torrent_path):
         _log.debug('Torrent file already exists: %r', torrent_path)
     else:
         try:
@@ -36,7 +36,7 @@ def create(content_path, announce_url, torrent_path,
             except torf.TorfError as e:
                 raise errors.TorrentError(e)
 
-    assert os.path.exists(torrent_path)
+    assert _path_exists(torrent_path)
     return torrent_path
 
 
