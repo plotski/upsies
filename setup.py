@@ -31,11 +31,10 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        # imdbpie depends on attrs<20.*.
-        # aiohttp depends on attrs>=17.
-        # current version is 20.x.
-        # Unless imdbpie is installed first, setup will fail because attrs 20.x
-        # is installed via aiohttp.
+        # imdbpie depends on attrs>=18.1.0,<19.0.0
+        # aiohttp depends on attrs>=17.3.0
+        'attrs<19.*,>18.1.*',
+
         'imdbpie==5.6.*',
         'aiohttp==3.6.*',
         'async_lru==1.*',
