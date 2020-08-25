@@ -8,7 +8,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-def create(content_path, announce_url, torrent_path,
+def create(*, content_path, announce_url, torrent_path,
            init_callback, progress_callback,
            source=None, exclude_regexs=()):
 
