@@ -16,7 +16,7 @@ class UploadedImage(str):
 
     def __getattr__(self, name):
         try:
-            return self._info['name']
+            return self._info[name]
         except KeyError:
             raise AttributeError(name)
 
