@@ -71,6 +71,7 @@ class ScreenshotsJob(_base.JobBase):
 
         if self._imghost:
             self._upload_thread = _UploadThread(
+                homedir=self.homedir,
                 imghost=self._imghost,
                 url_callback=self.handle_upload_url,
                 error_callback=self.handle_upload_error,
@@ -227,7 +228,8 @@ def _screenshot_process(output_queue, input_queue,
 
 
 class _UploadThread(_common.DaemonThread):
-    def __init__(self, imghost, url_callback, error_callback, finished_callback):
+    def __init__(self, homedir, imghost, url_callback, error_callback, finished_callback):
+        self._homedir = homedir
         self._imghost = imghost
         self._filepaths_queue = queue.Queue()
         self._url_callback = url_callback
@@ -241,7 +243,7 @@ class _UploadThread(_common.DaemonThread):
         self._filepaths_queue.put(None)
 
     def initialize(self):
-        self._uploader = self._imghost.Uploader()
+        self._uploader = self._imghost.Uploader(cache_dir=self._homedir)
         self.unblock()
 
     def work(self):
