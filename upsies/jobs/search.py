@@ -188,6 +188,7 @@ class _SearchThread(_common.DaemonThread):
             try:
                 self._loop.run_until_complete(self._search_task)
             except asyncio.CancelledError:
+                # Previous search was cancelled
                 pass
             except RuntimeError:
                 # The loop was stopped by stop()
