@@ -226,7 +226,7 @@ class _SearchThread(_common.DaemonThread):
                     kwargs[kw] = match.group(1)
                     query = re.sub(regex, ' ', query)
 
-        query = query.strip().replace('  ', ' ')
+        query = ' '.join(query.strip().split())
 
         if kwargs.get('type') in ('series', 'tv', 'show', 'episode', 'season'):
             kwargs['type'] = 'series'
