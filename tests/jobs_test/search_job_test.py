@@ -542,7 +542,7 @@ def test_SearchThread_delay_for_first_search(sleep_mock):
     assert sleep_mock.call_args_list == []
     assert st._first_search is False
 
-@patch('asyncio.sleep')
+@patch('asyncio.sleep', new_callable=AsyncMock)
 def test_SearchThread_delay_for_subsequent_searches(sleep_mock):
     search_coro = AsyncMock()
     results_cb = Mock()
