@@ -215,10 +215,11 @@ class _SearchThread(_common.DaemonThread):
         'type': r'type:([a-z]+)',
     }
 
-    def _parse_query(self, query):
+    @classmethod
+    def _parse_query(cls, query):
         kwargs = {}
         for part in query.split():
-            for kw, regex in self._kwargs_regex.items():
+            for kw, regex in cls._kwargs_regex.items():
                 match = re.search(f'^{regex}$', part)
                 if match:
                     kwargs[kw] = match.group(1)
