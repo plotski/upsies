@@ -211,31 +211,39 @@ class _SearchThread(_common.DaemonThread):
             self._searching_callback(False)
         self._results_callback(results)
 
+    _movie_types = ('movie', 'film')
+    _series_types = ('series', 'tv', 'show', 'episode', 'season')
     _kwargs_regex = {
         'year': r'year:(\d{4})',
-        'type': r'type:([a-z]+)',
+        'type': rf'type:({"|".join(_movie_types + _series_types)})',
     }
 
     @classmethod
     def _parse_query(cls, query):
-        kwargs = {}
-        for part in query.split():
+
+        def get_kwarg(string):
             for kw, regex in cls._kwargs_regex.items():
                 match = re.search(f'^{regex}$', part)
                 if match:
-                    kwargs[kw] = match.group(1)
-                    query = re.sub(regex, ' ', query)
+                    value = match.group(1)
+                    if kw == 'type' and value in cls._movie_types:
+                        return kw, 'movie'
+                    elif kw == 'type' and value in cls._series_types:
+                        return kw, 'series'
+                    elif kw == 'year':
+                        return kw, value
+            return None, None
 
-        query = ' '.join(query.strip().split())
+        kwargs = {}
+        query_parts = []
+        for part in query.split():
+            kw, value = get_kwarg(part)
+            if (kw, value) != (None, None):
+                kwargs[kw] = value
+            else:
+                query_parts.append(part)
 
-        if kwargs.get('type') in ('series', 'tv', 'show', 'episode', 'season'):
-            kwargs['type'] = 'series'
-        elif kwargs.get('type') in ('movie', 'film'):
-            kwargs['type'] = 'movie'
-        elif 'type' in kwargs:
-            del kwargs['type']
-
-        return query, kwargs
+        return ' '.join(query_parts), kwargs
 
     _seconds_between_searches = 1
 
