@@ -66,15 +66,18 @@ class SearchDbJob(_base.JobBase):
         )
         self._search_thread.start()
         self._update_info_thread = _UpdateInfoThread(
-            id=lambda value: self.update_info('id', value),
-            summary=lambda value: self.update_info('summary', value),
-            title_original=lambda value: self.update_info('title_original', value),
-            title_english=lambda value: self.update_info('title_english', value),
-            keywords=lambda value: self.update_info('keywords', value),
-            cast=lambda value: self.update_info('cast', value),
-            country=lambda value: self.update_info('country', value),
+            id=self._make_update_info_func('id'),
+            summary=self._make_update_info_func('summary'),
+            title_original=self._make_update_info_func('title_original'),
+            title_english=self._make_update_info_func('title_english'),
+            keywords=self._make_update_info_func('keywords'),
+            cast=self._make_update_info_func('cast'),
+            country=self._make_update_info_func('country'),
         )
         self._update_info_thread.start()
+
+    def _make_update_info_func(self, key):
+        return lambda value: self.update_info(key, value)
 
     def finish(self):
         if hasattr(self, '_search_thread'):
