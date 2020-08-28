@@ -94,7 +94,7 @@ class SearchDbJob(_base.JobBase):
             await self._search_thread.join()
 
     def search(self, query):
-        if not self.is_finished:
+        if not self.is_finished and hasattr(self, '_search_thread'):
             self._search_thread.search(query)
 
     def on_searching_status(self, callback):
