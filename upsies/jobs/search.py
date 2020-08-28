@@ -162,7 +162,7 @@ class _SearchThread(_common.DaemonThread):
         self._search_task = None
 
     def stop(self):
-        self._loop.stop()
+        self._loop.close()
         super().stop()
 
     @staticmethod
@@ -261,7 +261,7 @@ class _UpdateInfoThread(_common.DaemonThread):
         self._loop = asyncio.new_event_loop()
 
     def stop(self):
-        self._loop.stop()
+        self._loop.close()
         super().stop()
 
     def __call__(self, result):
