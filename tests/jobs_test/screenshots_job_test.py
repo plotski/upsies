@@ -140,12 +140,13 @@ def test_screenshot_process_does_not_catche_other_errors(screenshot_create_mock,
     assert input_queue.empty()
 
 
-def test_UploadThread_creates_Uploader_instance_after_starting():
+def test_UploadThread_creates_Uploader_instance_after_starting(tmp_path):
     imghost_mock = Mock()
     url_callback = Mock()
     error_callback = Mock()
     finished_callback = Mock()
     uploader = _UploadThread(
+        homedir=tmp_path,
         imghost=imghost_mock,
         url_callback=url_callback,
         error_callback=error_callback,
@@ -153,16 +154,17 @@ def test_UploadThread_creates_Uploader_instance_after_starting():
     )
     assert imghost_mock.Uploader.call_args_list == []
     uploader.start()
-    assert imghost_mock.Uploader.call_args_list == [call()]
+    assert imghost_mock.Uploader.call_args_list == [call(cache_dir=tmp_path)]
 
 @pytest.mark.asyncio
-async def test_UploadThread_with_successful_upload():
+async def test_UploadThread_with_successful_upload(tmp_path):
     imghost_mock = Mock()
     imghost_mock.Uploader().upload.side_effect = ('http://foo.jpg', 'http://baz.png')
     url_callback = Mock()
     error_callback = Mock()
     finished_callback = Mock()
     uploader = _UploadThread(
+        homedir=tmp_path,
         imghost=imghost_mock,
         url_callback=url_callback,
         error_callback=error_callback,
@@ -178,13 +180,14 @@ async def test_UploadThread_with_successful_upload():
     assert error_callback.call_args_list == []
 
 @pytest.mark.asyncio
-async def test_UploadThread_with_failed_upload():
+async def test_UploadThread_with_failed_upload(tmp_path):
     imghost_mock = Mock()
     imghost_mock.Uploader().upload.side_effect = ('http://foo.jpg', errors.RequestError('The Error'))
     url_callback = Mock()
     error_callback = Mock()
     finished_callback = Mock()
     uploader = _UploadThread(
+        homedir=tmp_path,
         imghost=imghost_mock,
         url_callback=url_callback,
         error_callback=error_callback,
@@ -401,6 +404,7 @@ def test_ScreenshotsJob_handles_screenshots_uploaded(process_mock, upthread_mock
     )]
     assert process_mock.return_value.start.call_args_list == [call()]
     assert upthread_mock.call_args_list == [call(
+        homedir=tmp_path,
         imghost=imghost_mock.imgbox,
         url_callback=sj.handle_upload_url,
         error_callback=sj.handle_upload_error,
@@ -482,6 +486,7 @@ def test_ScreenshotsJob_handles_errors_screenshot_uploads(process_mock, upthread
     )]
     assert process_mock.return_value.start.call_args_list == [call()]
     assert upthread_mock.call_args_list == [call(
+        homedir=tmp_path,
         imghost=imghost_mock.imgbox,
         url_callback=sj.handle_upload_url,
         error_callback=sj.handle_upload_error,
