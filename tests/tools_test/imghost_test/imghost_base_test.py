@@ -91,7 +91,7 @@ def test_store_info_to_cache_fails_to_encode_json(tmp_path):
     uploader = make_TestUploader(cache_dir=tmp_path)
     cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
     with pytest.raises(RuntimeError, match=(rf'^Unable to write cache {cache_file}: '
-                                            r'Object of type function is not JSON serializable$')):
+                                            r"Object of type '?function'? is not JSON serializable$")):
         uploader._store_info_to_cache(
             image_path=os.path.join(tmp_path, 'foo.png'),
             info={'this': lambda: None},
