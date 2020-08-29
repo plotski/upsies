@@ -263,8 +263,8 @@ class _UpdateInfoThread(_common.DaemonThread):
         # `targets` maps names of SearchResult attributes to callbacks that get
         # the value of the corresponding SearchResult attribute.
         # Example: {"title" : lambda t: print(f'Title: {t}')}
-        # Values of SearchResult attributes may also be coroutine functions that
-        # return the actual value.
+        # NOTE: Values of SearchResult attributes may also be coroutine
+        # functions that return the actual value.
         self._targets = targets
         self._result = None
         self._update_task = None
