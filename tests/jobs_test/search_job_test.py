@@ -2,17 +2,22 @@ import asyncio
 import time
 from unittest.mock import Mock, call, patch
 
-try:
-    from unittest.mock import AsyncMock
-except ImportError:
-    class AsyncMock(Mock):
-        async def __call__(self, *args, **kwargs):
-            return super().__call__(*args, **kwargs)
-
 import pytest
 
 from upsies import errors
 from upsies.jobs import search
+
+
+# FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
+# not a subclass of typing.Awaitable.
+class AsyncMock(Mock):
+    def __call__(self, *args, **kwargs):
+        async def coro(_sup=super()):
+            return _sup.__call__(*args, **kwargs)
+        return coro()
+
+    def __await__(self):
+        return self().__await__()
 
 
 def test_name(tmp_path):
