@@ -344,7 +344,8 @@ class _UpdateInfoThread(_common.DaemonThread):
                 callback(self._cache[cache_key])
         return self._loop.create_task(coro(cache_key, value_getter, callback))
 
-    def _value_as_string(self, value):
+    @staticmethod
+    def _value_as_string(value):
         if not isinstance(value, str) and isinstance(value, collections.abc.Iterable):
             return ', '.join(str(v) for v in value)
         else:
