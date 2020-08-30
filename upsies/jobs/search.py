@@ -319,27 +319,30 @@ class _UpdateInfoThread(_common.DaemonThread):
         for attr, callback in self._targets.items():
             value = getattr(self._result, attr)
             if callable(value):
-                tasks.append(self._make_update_task(self._result, attr, callback, value))
+                tasks.append(self._make_update_task(
+                    cache_key=(self._result.id, attr),
+                    value_getter=value,
+                    callback=callback,
+                ))
         return tasks
 
     _cache = {}
     _delay_between_updates = 0.5
 
-    def _make_update_task(self, result, attr, callback, value):
-        async def coro(result, attr, callback, value):
-            key = (result.id, attr)
-            cached_value = self._cache.get(key, None)
+    def _make_update_task(self, cache_key, value_getter, callback):
+        async def coro(cache_key, value_getter, callback):
+            cached_value = self._cache.get(cache_key, None)
             if cached_value is not None:
                 callback(cached_value)
             else:
                 callback('Loading...')
                 await asyncio.sleep(self._delay_between_updates)
                 try:
-                    self._cache[key] = self._value_as_string(await value())
+                    self._cache[cache_key] = self._value_as_string(await value_getter())
                 except errors.RequestError as e:
-                    self._cache[key] = f'[ERROR] {str(e)}'
-                callback(self._cache[key])
-        return self._loop.create_task(coro(result, attr, callback, value))
+                    self._cache[cache_key] = f'ERROR: {str(e)}'
+                callback(self._cache[cache_key])
+        return self._loop.create_task(coro(cache_key, value_getter, callback))
 
     def _value_as_string(self, value):
         if not isinstance(value, str) and isinstance(value, collections.abc.Iterable):
