@@ -558,3 +558,231 @@ def test_SearchThread_delay_for_subsequent_searches(sleep_mock):
     asyncio.get_event_loop().run_until_complete(st._delay())
     assert sleep_mock.call_args_list == [call(st._seconds_between_searches)]
     assert st._first_search is False
+
+
+def test_UpdateInfoThread_stop():
+    uit = search._UpdateInfoThread()
+    uit.start()
+    assert uit.is_alive
+    assert not uit._loop.is_closed()
+    uit.stop()
+    asyncio.get_event_loop().run_until_complete(uit.join())
+    assert not uit.is_alive
+    assert uit._loop.is_closed()
+
+
+def test_UpdateInfoThread_updating_cancels_previous_update_task():
+    uit = search._UpdateInfoThread()
+    uit.start()
+    uit._update_task = Mock(done=lambda: False)
+    uit(Mock())
+    assert uit._update_task.cancel.call_args_list == [call()]
+
+def test_UpdateInfoThread_updating_does_not_cancel_previous_update_task():
+    # Previous task is done
+    uit = search._UpdateInfoThread()
+    uit.start()
+    uit._update_task = Mock(done=lambda: True)
+    uit(Mock())
+    assert uit._update_task.cancel.call_args_list == []
+    uit.stop()
+
+    # No previous task exists
+    uit = search._UpdateInfoThread()
+    uit.start()
+    uit._update_task = None
+    uit(Mock())
+    assert uit._update_task is None
+    uit.stop()
+
+def test_UpdateInfoThread_updating_sets_result():
+    uit = search._UpdateInfoThread()
+    uit.start()
+    search_result = Mock()
+    uit(search_result)
+    assert uit._result is search_result
+
+def test_UpdateInfoThread_updating_calls_unblock():
+    uit = search._UpdateInfoThread()
+    uit.start()
+    search_result = Mock()
+    with patch.object(uit, 'unblock') as unblock_mock:
+        uit(search_result)
+        assert unblock_mock.call_args_list == [call()]
+
+def test_UpdateInfoThread_updating_sets_noncallable_values_immediately():
+    targets = {'year': Mock(), 'summary': Mock(), 'cast': Mock()}
+    uit = search._UpdateInfoThread(**targets)
+    uit.start()
+    search_result = Mock(
+        year=2000,
+        summary='Something happens and then something else happens.',
+        cast=AsyncMock(),
+    )
+    uit(search_result)
+    assert targets['year'].call_args_list == [call('2000')]
+    assert targets['summary'].call_args_list == [call('Something happens and then something else happens.')]
+
+def test_UpdateInfoThread_updating_handles_search_result_being_None():
+    targets = {'year': Mock(), 'summary': Mock(), 'cast': Mock()}
+    uit = search._UpdateInfoThread(**targets)
+    uit.start()
+    search_result = None
+    uit(search_result)
+    assert targets['year'].call_args_list == []
+    assert targets['summary'].call_args_list == []
+    assert targets['cast'].call_args_list == []
+
+
+def test_UpdateInfoThread_work_handles_no_search_result():
+    targets = {'year': Mock(), 'summary': Mock(), 'cast': Mock()}
+    uit = search._UpdateInfoThread(**targets)
+    uit._result = None
+    uit.work()
+    for cb in targets.values():
+        assert cb.call_args_list == [call('')]
+
+def test_UpdateInfoThread_work_handles_no_targets():
+    targets = {'year': Mock(), 'summary': Mock(), 'cast': Mock()}
+    uit = search._UpdateInfoThread(**targets)
+    uit._result = Mock()
+    with patch.object(uit, '_make_update_tasks') as make_update_tasks_mock:
+        make_update_tasks_mock.return_value = ()
+        uit.work()
+    for cb in targets.values():
+        assert cb.call_args_list == []
+
+def test_UpdateInfoThread_work_gathers_update_tasks():
+    targets = {'year': Mock(), 'summary': Mock(), 'cast': Mock()}
+    uit = search._UpdateInfoThread(**targets)
+    asyncio.set_event_loop(uit._loop)
+    uit._result = Mock()
+    update_tasks = (AsyncMock(), AsyncMock(), AsyncMock())
+    with patch.object(uit, '_make_update_tasks') as make_update_tasks_mock:
+        make_update_tasks_mock.return_value = update_tasks
+        uit.work()
+    for task in update_tasks:
+        assert task.call_args_list == [call()]
+
+def test_UpdateInfoThread_work_tries_again_on_CancelledError():
+    targets = {'year': Mock(), 'summary': Mock(), 'cast': Mock()}
+    uit = search._UpdateInfoThread(**targets)
+    asyncio.set_event_loop(uit._loop)
+    uit._result = Mock()
+    update_tasks = (
+        AsyncMock(return_value='one'),
+        AsyncMock(
+            side_effect=(
+                asyncio.CancelledError(),
+                asyncio.CancelledError(),
+                'two',
+            ),
+        ),
+        AsyncMock(
+            side_effect=(
+                asyncio.CancelledError(),
+                'three',
+            ),
+        ),
+    )
+    with patch.object(uit, '_make_update_tasks') as make_update_tasks_mock:
+        make_update_tasks_mock.return_value = update_tasks
+        uit.work()
+    for task in update_tasks:
+        assert task.call_args_list == [call(), call(), call()]
+
+
+def test_make_update_tasks():
+    targets = {'year': Mock(), 'summary': Mock(), 'cast': Mock(), 'country': Mock()}
+    uit = search._UpdateInfoThread(**targets)
+    uit._result = Mock(
+        year=2003,
+        summary='Something happens.',
+        cast=AsyncMock(return_value=('She', 'He', 'Doggo')),
+        country=AsyncMock(return_value='Antarctica'),
+    )
+    with patch.object(uit, '_make_update_task') as make_update_task_mock:
+        make_update_task_mock.side_effect = ('cast task', 'country task')
+        tasks = uit._make_update_tasks()
+        assert make_update_task_mock.call_args_list == [
+            call(
+                cache_key=(uit._result.id, 'cast'),
+                value_getter=uit._result.cast,
+                callback=targets['cast'],
+            ),
+            call(
+                cache_key=(uit._result.id, 'country'),
+                value_getter=uit._result.country,
+                callback=targets['country'],
+            ),
+        ]
+        assert tasks == ['cast task', 'country task']
+
+
+@patch('asyncio.sleep', new_callable=AsyncMock)
+def test_make_update_task_gets_value_from_value_getter(sleep_mock):
+    search._UpdateInfoThread._cache.clear()
+    uit = search._UpdateInfoThread()
+    asyncio.set_event_loop(uit._loop)
+    value_getter = AsyncMock(return_value='1234')
+    callback = Mock()
+    task = uit._make_update_task(
+        cache_key=('id', 'key'),
+        value_getter=value_getter,
+        callback=callback,
+    )
+    uit._cache.clear()
+    asyncio.get_event_loop().run_until_complete(task)
+    assert value_getter.call_args_list == [call()]
+    assert callback.call_args_list == [call('Loading...'), call('1234')]
+    assert uit._cache[('id', 'key')] == '1234'
+    assert sleep_mock.call_args_list == [call(search._UpdateInfoThread._delay_between_updates)]
+    asyncio.get_event_loop().close()
+
+@patch('asyncio.sleep', new_callable=AsyncMock)
+def test_make_update_task_handles_RequestError(sleep_mock):
+    search._UpdateInfoThread._cache.clear()
+    uit = search._UpdateInfoThread()
+    asyncio.set_event_loop(uit._loop)
+    value_getter = AsyncMock(side_effect=errors.RequestError('Nah'))
+    callback = Mock()
+    task = uit._make_update_task(
+        cache_key=('id', 'key'),
+        value_getter=value_getter,
+        callback=callback,
+    )
+    asyncio.get_event_loop().run_until_complete(task)
+    assert value_getter.call_args_list == [call()]
+    assert callback.call_args_list == [call('Loading...'), call('ERROR: Nah')]
+    assert uit._cache[('id', 'key')] == 'ERROR: Nah'
+    assert sleep_mock.call_args_list == [call(search._UpdateInfoThread._delay_between_updates)]
+
+@patch('asyncio.sleep', new_callable=AsyncMock)
+def test_make_update_task_gets_value_from_cache(sleep_mock):
+    search._UpdateInfoThread._cache.clear()
+    uit = search._UpdateInfoThread()
+    asyncio.set_event_loop(uit._loop)
+    value_getter = AsyncMock(return_value='1234')
+    callback = Mock()
+    task = uit._make_update_task(
+        cache_key=('id', 'key'),
+        value_getter=value_getter,
+        callback=callback,
+    )
+    uit._cache[('id', 'key')] = '1234'
+    asyncio.get_event_loop().run_until_complete(task)
+    assert value_getter.call_args_list == []
+    assert callback.call_args_list == [call('1234')]
+    assert uit._cache[('id', 'key')] == '1234'
+    assert sleep_mock.call_args_list == []
+
+
+def test_value_as_string_with_string():
+    assert search._UpdateInfoThread._value_as_string('foo bar baz') == 'foo bar baz'
+
+def test_value_as_string_with_iterable():
+    assert search._UpdateInfoThread._value_as_string(('foo', 'bar', 'baz')) == 'foo, bar, baz'
+    assert search._UpdateInfoThread._value_as_string(['foo', 2, {3}]) == 'foo, 2, {3}'
+
+def test_value_as_string_with_other_type():
+    assert search._UpdateInfoThread._value_as_string(type) == str(type)
