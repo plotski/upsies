@@ -8,6 +8,20 @@ from upsies.tools import mediainfo
 
 
 @patch('upsies.utils.run.run')
+def test_run_mediainfo_does_not_chdir_if_path_is_in_current_directory(run_mock, tmp_path):
+    orig_cwd = os.getcwd()
+    try:
+        video_path = tmp_path / 'foo.mkv'
+        video_path.write_bytes(b'video data')
+        os.chdir(tmp_path)
+        assert os.getcwd() == str(video_path.parent)
+        mediainfo._run_mediainfo(video_path.name)
+        assert run_mock.call_args_list == [call((binaries.mediainfo, 'foo.mkv'), cache=True)]
+        assert os.getcwd() == os.path.dirname(video_path)
+    finally:
+        os.chdir(orig_cwd)
+
+@patch('upsies.utils.run.run')
 def test_run_mediainfo_fails_to_chdir(run_mock, tmp_path):
     orig_cwd = os.getcwd()
     video_path = tmp_path / 'foo.mkv'

@@ -10,13 +10,16 @@ _log = logging.getLogger(__name__)
 
 
 def _run_mediainfo(path, *args):
-    dir = os.path.dirname(path)
-    cwd = os.getcwd()
+    # Changing the working directory to `path`'s parent removes the path from
+    # mediainfo's output.
+    dirpath = os.path.dirname(path)
+    if dirpath:
+        cwd = os.getcwd()
+        try:
+            os.chdir(dirpath)
+        except OSError as e:
+            raise errors.MediainfoError(f'{dirpath}: {e.strerror}')
     try:
-        os.chdir(dir)
-    except OSError as e:
-        raise errors.MediainfoError(f'{dir}: {e.strerror}')
-    else:
         try:
             video_file_path = utils.video.first_video(path)
         except errors.NoContentError as e:
@@ -30,7 +33,8 @@ def _run_mediainfo(path, *args):
         except errors.ProcessError as e:
             raise errors.MediainfoError(f'{video_file_path}: {e}')
     finally:
-        os.chdir(cwd)
+        if dirpath:
+            os.chdir(cwd)
 
 
 def as_string(path):
