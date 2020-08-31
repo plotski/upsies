@@ -455,7 +455,7 @@
         <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194">
             
     
-      <img class="poster lazyload" data-src="https://image.tmdb.org/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg" data-srcset="https://image.tmdb.org/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 1x, https://image.tmdb.org/t/p/w188_and_h282_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 2x" alt="Star Wars: The Clone Wars">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 2x" alt="Star Wars: The Clone Wars">
     
   
 
@@ -502,7 +502,7 @@
         <a data-id="4bc8b4d4017a3c122d05f169" data-media-type="movie" data-media-adult="false" class="result" href="/movie/12180">
             
     
-      <img class="poster lazyload" data-src="https://image.tmdb.org/t/p/w94_and_h141_bestv2/veee7dll1xMwK14dGt0xsQekYYs.jpg" data-srcset="https://image.tmdb.org/t/p/w94_and_h141_bestv2/veee7dll1xMwK14dGt0xsQekYYs.jpg 1x, https://image.tmdb.org/t/p/w188_and_h282_bestv2/veee7dll1xMwK14dGt0xsQekYYs.jpg 2x" alt="Star Wars: The Clone Wars">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/veee7dll1xMwK14dGt0xsQekYYs.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/veee7dll1xMwK14dGt0xsQekYYs.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/veee7dll1xMwK14dGt0xsQekYYs.jpg 2x" alt="Star Wars: The Clone Wars">
     
   
 
@@ -635,7 +635,7 @@
         </div>
       </nav>
 
-      <section>Build b509aaa (285)</section>
+      <section>Build 24c287b (385)</section>
     </footer>
 
     
@@ -1158,7 +1158,7 @@
         <div class="image_content profile">
           <a class="result" href="/person/${data.url}" title="${data.name}" alt="${data.name}">
             # if (data.profile_path) { #
-              <img class="" src="https://image.tmdb.org/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="https://image.tmdb.org/t/p/w66_and_h66_face${data.profile_path} 1x, https://image.tmdb.org/t/p/w132_and_h132_face${data.profile_path} 2x">
+              <img class="" src="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path} 1x, //image.tmdb.org/t/p/w132_and_h132_face${data.profile_path} 2x">
             # } else { #
               <div class="glyphicons_v2 picture profile ${gender_lookup[data.gender]} grey no_image_holder w45_and_h45"></div>
             # } #
@@ -1179,7 +1179,7 @@
       <div class="item profile list_item known_for">
         <div class="image_content profile">
           # if (data.profile_path) { #
-            <img class="" src="https://image.tmdb.org/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="https://image.tmdb.org/t/p/w66_and_h66_face${data.profile_path} 1x, https://image.tmdb.org/t/p/w132_and_h132_face${data.profile_path} 2x">
+            <img class="" src="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path} 1x, //image.tmdb.org/t/p/w132_and_h132_face${data.profile_path} 2x">
           # } else { #
             <div class="glyphicons_v2 picture grey no_image_holder w45_and_h45 profile"></div>
           # } #
@@ -1201,7 +1201,7 @@
       <div class="ac_item profile list_item known_for">
         <div class="image_content profile">
           # if (data.profile_path) { #
-            <img class="" src="https://image.tmdb.org/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="https://image.tmdb.org/t/p/w66_and_h66_face${data.profile_path} 1x, https://image.tmdb.org/t/p/w132_and_h132_bestv2${data.profile_path} 2x">
+            <img class="" src="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path} 1x, //image.tmdb.org/t/p/w132_and_h132_bestv2${data.profile_path} 2x">
           # } else { #
             <div class="glyphicons_v2 picture grey no_image_holder w45_and_h45 profile"></div>
           # } #
@@ -1230,7 +1230,7 @@
         <div class="ac_item poster list_item">
           <div class="image_content poster">
             # if (data.poster_path) { #
-              <img class="" src="https://image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="https://image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path} 1x, https://image.tmdb.org/t/p/w90_and_h134_bestv2${data.poster_path} 2x">
+              <img class="" src="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path} 1x, //image.tmdb.org/t/p/w90_and_h134_bestv2${data.poster_path} 2x">
             # } else { #
               <div class="glyphicons_v2 picture grey no_image_holder w45_and_h67"></div>
             # } #
@@ -1258,7 +1258,7 @@
       <div class="ac_item poster list_item">
         <div class="image_content poster">
           # if (data.poster_path) { #
-            <img class="" src="https://image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="https://image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path} 1x, https://image.tmdb.org/t/p/w90_and_h134_bestv2${data.poster_path} 2x">
+            <img class="" src="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path} 1x, //image.tmdb.org/t/p/w90_and_h134_bestv2${data.poster_path} 2x">
           # } else { #
             <div class="glyphicons_v2 picture grey no_image_holder w45_and_h67"></div>
           # } #
@@ -1285,7 +1285,7 @@
       <div class="ac_item poster list_item">
         <div class="image_content poster">
           # if (data.poster_path) { #
-            <img class="" src="https://image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="https://image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path} 1x, https://image.tmdb.org/t/p/w90_and_h134_bestv2${data.poster_path} 2x">
+            <img class="" src="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path} 1x, //image.tmdb.org/t/p/w90_and_h134_bestv2${data.poster_path} 2x">
           # } else { #
             <div class="glyphicons_v2 picture grey no_image_holder w45_and_h67"></div>
           # } #
@@ -1407,7 +1407,7 @@
     <script id="network_combo_template" type="text/x-kendo-tmpl">
       <span class="k-state-default image">
         # if (data.logo_path) { #
-          <img src="https://image.tmdb.org/t/p/h15${data.logo_path}" alt="${data.name}" srcset="https://image.tmdb.org/t/p/h15${data.logo_path} 1x, https://image.tmdb.org/t/p/h30${data.logo_path} 2x" height="15">&nbsp;&nbsp;-&nbsp;
+          <img src="//image.tmdb.org/t/p/h15${data.logo_path}" alt="${data.name}" srcset="//image.tmdb.org/t/p/h15${data.logo_path} 1x, //image.tmdb.org/t/p/h30${data.logo_path} 2x" height="15">&nbsp;&nbsp;-&nbsp;
         # } #
         ${data.name}# if (data.origin_country) { # (${data.origin_country}) # } #
       </span>
