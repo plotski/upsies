@@ -22,19 +22,33 @@ async def test_session_uses_separate_cookie_jar_per_domain():
 
 
 @patch('upsies.utils.fs.tmpdir')
-def test_cache_file_without_params(tmpdir_mock):
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+def test_cache_file_without_params(tmpdir_mock, method):
     tmpdir_mock.return_value = '/tmp/foo'
     url = 'http://localhost:123/foo/bar'
-    exp_cache_file = '/tmp/foo/http:__localhost:123_foo_bar'
-    assert http._cache_file(url) == exp_cache_file
+    exp_cache_file = f'/tmp/foo/{method.upper()}.http:__localhost:123_foo_bar'
+    assert http._cache_file(url, method) == exp_cache_file
 
 @patch('upsies.utils.fs.tmpdir')
-def test_cache_file_with_params(tmpdir_mock):
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+def test_cache_file_with_params(tmpdir_mock, method):
     tmpdir_mock.return_value = '/tmp/foo'
     url = 'http://localhost:123'
     params = {'foo': 'a b c', 'bar': 12}
-    exp_cache_file = '/tmp/foo/http:__localhost:123?foo=a+b+c&bar=12'
-    assert http._cache_file(url, params=params) == exp_cache_file
+    exp_cache_file = f'/tmp/foo/{method.upper()}.http:__localhost:123?foo=a+b+c&bar=12'
+    assert http._cache_file(url, method, params=params) == exp_cache_file
+
+@patch('upsies.utils.fs.tmpdir')
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+def test_cache_file_with_very_long_params(tmpdir_mock, method):
+    tmpdir_mock.return_value = '/tmp/foo'
+    url = 'http://localhost:123'
+    params = {'foo': 'a b c ' * 100, 'bar': 12}
+    exp_cache_file = (
+        f'/tmp/foo/{method.upper()}.http:__localhost:123?'
+        f'[HASH:{http._semantic_hash(params)}]'
+    )
+    assert http._cache_file(url, method, params=params) == exp_cache_file
 
 
 @patch('builtins.open')

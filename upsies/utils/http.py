@@ -1,5 +1,6 @@
 import asyncio
 import collections
+import hashlib
 import os
 
 import aiohttp
@@ -77,14 +78,25 @@ async def get(url, params={}, cache=False):
         return text
 
 
-def _cache_file(url, params={}):
-    params_str = '&'.join((f'{k}={v}' for k,v in params.items()))
+def _cache_file(url, method, params={}):
+    def make_filename(url, method, params_str):
+        if params_str:
+            filename = f'{method.upper()}.{url}?{params_str}'
+        else:
+            filename = f'{method.upper()}.{url}'
+        return filename.replace('/', '_').replace(' ', '+')
+
     if params:
-        filename = f'{url}?{params_str}'
+        params_str = '&'.join((f'{k}={v}' for k,v in params.items()))
+        if len(make_filename(url, method, params_str)) > 250:
+            params_str = f'[HASH:{_semantic_hash(params)}]'
     else:
-        filename = f'{url}'
-    filename = filename.replace('/', '_').replace(' ', '+')
-    return os.path.join(fs.tmpdir(), filename)
+        params_str = ''
+
+    return os.path.join(
+        fs.tmpdir(),
+        make_filename(url, method, params_str),
+    )
 
 def _from_cache(cache_file):
     try:
@@ -104,3 +116,23 @@ def _to_cache(cache_file, string):
         raise RuntimeError(f'Unable to write cache file {cache_file}: {e}')
     else:
         _log.debug('Wrote %r', cache_file)
+
+
+def _semantic_hash(obj):
+    """
+    Return hash for `obj` that stays the same between sessions
+
+    https://github.com/schollii/sandals/blob/master/json_sem_hash.py
+    """
+    def sorted_dict_str(obj):
+        if isinstance(obj, collections.abc.Mapping):
+            return {k: sorted_dict_str(obj[k]) for k in sorted(obj.keys())}
+        elif isinstance(obj, str):
+            return str(obj)
+        elif isinstance(obj, collections.abc.Sequence):
+            return [sorted_dict_str(val) for val in obj]
+        else:
+            return str(obj)
+
+    return hashlib.sha256(bytes(repr(sorted_dict_str(obj)), 'UTF-8')).hexdigest()
+
