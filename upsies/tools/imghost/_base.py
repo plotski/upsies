@@ -25,17 +25,18 @@ class UploaderBase(abc.ABC):
         """Name of the image hosting service"""
         pass
 
-    def upload(self, image_path):
+    def upload(self, image_path, force=False):
         """
         Upload image to gallery
 
         :param str image_path: Path to image file
+        :param bool force: Whether to ignore cached URL from previous upload
 
         :raise RequestError: if the upload fails
 
         :return: :class:`UploadedImage`
         """
-        info = self._get_info_from_cache(image_path)
+        info = self._get_info_from_cache(image_path) if not force else {}
         if not info:
             info = self._upload(image_path)
             _log.debug('Upload %r: %r', image_path, info)

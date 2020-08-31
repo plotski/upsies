@@ -167,7 +167,28 @@ def test_upload_gets_info_from_cache():
     assert image == 'http://foo.bar'
     assert image.more == 'info'
 
-def test_upload_does_is_missing_url():
+def test_upload_ignores_cache():
+    uploader = make_TestUploader(mock_cache=True)
+    uploader._get_info_from_cache_mock.return_value = {
+        'url': 'http://foo.bar',
+        'more': 'info',
+    }
+    uploader._upload_mock.return_value = {
+        'url': 'http://baz.png',
+        'more': 'other info',
+    }
+    image = uploader.upload('path/to/foo.png', force=True)
+    assert uploader._get_info_from_cache_mock.call_args_list == []
+    assert uploader._upload_mock.call_args_list == [call('path/to/foo.png')]
+    assert uploader._store_info_to_cache_mock.call_args_list == [call(
+        'path/to/foo.png',
+        {'url': 'http://baz.png', 'more': 'other info'},
+    )]
+    assert isinstance(image, UploadedImage)
+    assert image == 'http://baz.png'
+    assert image.more == 'other info'
+
+def test_upload_is_missing_url():
     uploader = make_TestUploader(mock_cache=True)
     uploader._get_info_from_cache_mock.return_value = None
     uploader._upload_mock.return_value = {
