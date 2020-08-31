@@ -148,6 +148,7 @@ def test_UploadThread_creates_Uploader_instance_after_starting(tmp_path):
     uploader = _UploadThread(
         homedir=tmp_path,
         imghost=imghost_mock,
+        force=False,
         url_callback=url_callback,
         error_callback=error_callback,
         finished_callback=finished_callback,
@@ -166,6 +167,7 @@ async def test_UploadThread_with_successful_upload(tmp_path):
     uploader = _UploadThread(
         homedir=tmp_path,
         imghost=imghost_mock,
+        force=False,
         url_callback=url_callback,
         error_callback=error_callback,
         finished_callback=finished_callback,
@@ -189,6 +191,7 @@ async def test_UploadThread_with_failed_upload(tmp_path):
     uploader = _UploadThread(
         homedir=tmp_path,
         imghost=imghost_mock,
+        force=False,
         url_callback=url_callback,
         error_callback=error_callback,
         finished_callback=finished_callback,
@@ -204,6 +207,31 @@ async def test_UploadThread_with_failed_upload(tmp_path):
     assert len(error_callback.call_args_list[0][1]) == 0  # keyword args
     assert isinstance(error_callback.call_args_list[0][0][0], errors.RequestError)
     assert str(error_callback.call_args_list[0][0][0]) == 'The Error'
+
+@pytest.mark.asyncio
+async def test_UploadThread_passes_force_argument_to_upload_call(tmp_path):
+    imghost_mock = Mock()
+    imghost_mock.Uploader().upload.side_effect = ('http://foo.jpg', 'http://baz.png')
+    url_callback = Mock()
+    error_callback = Mock()
+    finished_callback = Mock()
+    uploader = _UploadThread(
+        homedir=tmp_path,
+        imghost=imghost_mock,
+        force='this is a boolean value',
+        url_callback=url_callback,
+        error_callback=error_callback,
+        finished_callback=finished_callback,
+    )
+    uploader.start()
+    uploader.upload('foo.jpg')
+    uploader.upload('baz.png')
+    uploader.finish()
+    await uploader.join()
+    assert imghost_mock.Uploader.return_value.upload.call_args_list == [
+        call('foo.jpg', force='this is a boolean value'),
+        call('baz.png', force='this is a boolean value'),
+    ]
 
 
 @patch('upsies.utils.video.length')
@@ -406,6 +434,7 @@ def test_ScreenshotsJob_handles_screenshots_uploaded(process_mock, upthread_mock
     assert upthread_mock.call_args_list == [call(
         homedir=tmp_path,
         imghost=imghost_mock.imgbox,
+        force=False,
         url_callback=sj.handle_upload_url,
         error_callback=sj.handle_upload_error,
         finished_callback=sj.handle_uploads_finished,
@@ -488,6 +517,7 @@ def test_ScreenshotsJob_handles_errors_screenshot_uploads(process_mock, upthread
     assert upthread_mock.call_args_list == [call(
         homedir=tmp_path,
         imghost=imghost_mock.imgbox,
+        force=False,
         url_callback=sj.handle_upload_url,
         error_callback=sj.handle_upload_error,
         finished_callback=sj.handle_uploads_finished,
