@@ -46,6 +46,13 @@ def test_abstract_methods(method):
         cls()
 
 
+def test_ignore_cache_property(tmp_path):
+    assert FooJob(homedir=tmp_path, ignore_cache=False).ignore_cache is False
+    assert FooJob(homedir=tmp_path, ignore_cache=True).ignore_cache is True
+    assert FooJob(homedir=tmp_path, ignore_cache='').ignore_cache is False
+    assert FooJob(homedir=tmp_path, ignore_cache=1).ignore_cache is True
+
+
 def test_initialize_is_called_after_object_creation(job):
     assert job.initialize_was_called
 

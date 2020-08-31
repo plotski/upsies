@@ -29,9 +29,14 @@ class JobBase(abc.ABC):
         """Directory where any output or other files should go in"""
         return self._homedir
 
+    @property
+    def ignore_cache(self):
+        """Whether to re-create output and any files from previous call"""
+        return self._ignore_cache
+
     def __init__(self, *, homedir, ignore_cache, **kwargs):
         self._homedir = homedir
-        self._ignore_cache = ignore_cache
+        self._ignore_cache = bool(ignore_cache)
         self._errors = []
         self._output = []
         self._output_callbacks = []
