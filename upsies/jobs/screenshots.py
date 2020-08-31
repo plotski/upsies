@@ -216,16 +216,20 @@ def _screenshot_timestamps(video_file, timestamps, number):
 def _screenshot_process(output_queue, input_queue,
                         video_file, timestamps, output_dir):
     for ts in timestamps:
-        screenshotfile = os.path.join(
+        screenshot_file = os.path.join(
             output_dir,
             os.path.basename(video_file) + f'.{ts}.png',
         )
         try:
-            tools.screenshot.create(video_file, ts, screenshotfile)
+            tools.screenshot.create(
+                video_file=video_file,
+                timestamp=ts,
+                screenshot_file=screenshot_file,
+            )
         except (ValueError, errors.ScreenshotError) as e:
             output_queue.put((_common.DaemonProcess.ERROR, str(e)))
         else:
-            output_queue.put((_common.DaemonProcess.INFO, screenshotfile))
+            output_queue.put((_common.DaemonProcess.INFO, screenshot_file))
 
 
 class _UploadThread(_common.DaemonThread):

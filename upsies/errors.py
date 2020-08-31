@@ -20,8 +20,8 @@ class NoContentError(Exception):
     pass
 
 class ScreenshotError(Exception):
-    def __init__(self, msg, videofile, timestamp):
-        super().__init__(f'{videofile}: Failed to create screenshot at {timestamp}: {msg}')
+    def __init__(self, msg, video_file, timestamp):
+        super().__init__(f'{video_file}: Failed to create screenshot at {timestamp}: {msg}')
 
 class TorrentError(Exception):
     pass

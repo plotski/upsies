@@ -80,8 +80,16 @@ def test_screenshot_process_fills_output_queue(screenshot_create_mock, tmp_path)
     _screenshot_process(output_queue, input_queue,
                         'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
     assert screenshot_create_mock.call_args_list == [
-        call('foo.mkv', '0:10:00', 'path/to/destination/foo.mkv.0:10:00.png'),
-        call('foo.mkv', '0:20:00', 'path/to/destination/foo.mkv.0:20:00.png'),
+        call(
+            video_file='foo.mkv',
+            timestamp='0:10:00',
+            screenshot_file='path/to/destination/foo.mkv.0:10:00.png',
+        ),
+        call(
+            video_file='foo.mkv',
+            timestamp='0:20:00',
+            screenshot_file='path/to/destination/foo.mkv.0:20:00.png',
+        ),
     ]
     assert output_queue.get() == (DaemonProcess.INFO, 'path/to/destination/foo.mkv.0:10:00.png')
     assert output_queue.get() == (DaemonProcess.INFO, 'path/to/destination/foo.mkv.0:20:00.png')
@@ -90,7 +98,7 @@ def test_screenshot_process_fills_output_queue(screenshot_create_mock, tmp_path)
 
 @patch('upsies.tools.screenshot.create')
 def test_screenshot_process_catches_ScreenshotErrors(screenshot_create_mock, tmp_path):
-    def screenshot_create_side_effect(video_file, timestamp, screenshotfile):
+    def screenshot_create_side_effect(video_file, timestamp, screenshot_file):
         raise errors.ScreenshotError('Error', video_file, timestamp)
 
     screenshot_create_mock.side_effect = screenshot_create_side_effect
@@ -100,8 +108,16 @@ def test_screenshot_process_catches_ScreenshotErrors(screenshot_create_mock, tmp
     _screenshot_process(output_queue, input_queue,
                         'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
     assert screenshot_create_mock.call_args_list == [
-        call('foo.mkv', '0:10:00', 'path/to/destination/foo.mkv.0:10:00.png'),
-        call('foo.mkv', '0:20:00', 'path/to/destination/foo.mkv.0:20:00.png'),
+        call(
+            video_file='foo.mkv',
+            timestamp='0:10:00',
+            screenshot_file='path/to/destination/foo.mkv.0:10:00.png',
+        ),
+        call(
+            video_file='foo.mkv',
+            timestamp='0:20:00',
+            screenshot_file='path/to/destination/foo.mkv.0:20:00.png',
+        ),
     ]
     assert output_queue.get() == (DaemonProcess.ERROR, str(errors.ScreenshotError('Error', 'foo.mkv', '0:10:00')))
     assert output_queue.get() == (DaemonProcess.ERROR, str(errors.ScreenshotError('Error', 'foo.mkv', '0:20:00')))
@@ -110,7 +126,7 @@ def test_screenshot_process_catches_ScreenshotErrors(screenshot_create_mock, tmp
 
 @patch('upsies.tools.screenshot.create')
 def test_screenshot_process_catches_ValueErrors(screenshot_create_mock, tmp_path):
-    def screenshot_create_side_effect(video_file, timestamp, screenshotfile):
+    def screenshot_create_side_effect(video_file, timestamp, screenshot_file):
         raise ValueError(f'Error: {video_file}, {timestamp}')
 
     screenshot_create_mock.side_effect = screenshot_create_side_effect
@@ -120,8 +136,16 @@ def test_screenshot_process_catches_ValueErrors(screenshot_create_mock, tmp_path
     _screenshot_process(output_queue, input_queue,
                         'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
     assert screenshot_create_mock.call_args_list == [
-        call('foo.mkv', '0:10:00', 'path/to/destination/foo.mkv.0:10:00.png'),
-        call('foo.mkv', '0:20:00', 'path/to/destination/foo.mkv.0:20:00.png'),
+        call(
+            video_file='foo.mkv',
+            timestamp='0:10:00',
+            screenshot_file='path/to/destination/foo.mkv.0:10:00.png',
+        ),
+        call(
+            video_file='foo.mkv',
+            timestamp='0:20:00',
+            screenshot_file='path/to/destination/foo.mkv.0:20:00.png',
+        ),
     ]
     assert output_queue.get() == (DaemonProcess.ERROR, 'Error: foo.mkv, 0:10:00')
     assert output_queue.get() == (DaemonProcess.ERROR, 'Error: foo.mkv, 0:20:00')
