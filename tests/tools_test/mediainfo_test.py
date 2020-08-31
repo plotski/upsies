@@ -9,6 +9,7 @@ from upsies.tools import mediainfo
 
 @patch('upsies.utils.run.run')
 def test_run_mediainfo_fails_to_chdir(run_mock, tmp_path):
+    orig_cwd = os.getcwd()
     video_path = tmp_path / 'foo.mkv'
     video_path.write_bytes(b'video data')
     video_path.parent.chmod(0o660)
@@ -18,6 +19,7 @@ def test_run_mediainfo_fails_to_chdir(run_mock, tmp_path):
         assert run_mock.call_args_list == []
     finally:
         video_path.parent.chmod(770)
+    assert os.getcwd() == orig_cwd
 
 @patch('upsies.utils.run.run')
 def test_run_mediainfo_returns_cwd_to_original_path(run_mock, tmp_path):
@@ -30,6 +32,7 @@ def test_run_mediainfo_returns_cwd_to_original_path(run_mock, tmp_path):
 
 @patch('upsies.utils.run.run')
 def test_run_mediainfo_fails_to_find_video_file(run_mock, tmp_path):
+    orig_cwd = os.getcwd()
     file1 = tmp_path / 'foo.txt'
     file1.write_text('some text')
     file2 = tmp_path / 'foo.jpg'
@@ -37,15 +40,18 @@ def test_run_mediainfo_fails_to_find_video_file(run_mock, tmp_path):
     with pytest.raises(errors.MediainfoError, match=rf'^{tmp_path}: No video file found$'):
         mediainfo._run_mediainfo(tmp_path)
     assert run_mock.call_args_list == []
+    assert os.getcwd() == orig_cwd
 
 @patch('upsies.utils.run.run')
 def test_run_mediainfo_fails_to_run_mediainfo(run_mock, tmp_path):
+    orig_cwd = os.getcwd()
     video_path = tmp_path / 'foo.mkv'
     video_path.write_bytes(b'video data')
     run_mock.side_effect = errors.ProcessError('Invalid argument: --abc')
     with pytest.raises(errors.MediainfoError, match=rf'^{video_path}: Invalid argument: --abc$'):
         mediainfo._run_mediainfo(video_path)
     assert run_mock.call_args_list == [call((binaries.mediainfo, video_path.name), cache=True)]
+    assert os.getcwd() == orig_cwd
 
 @patch('upsies.utils.run.run')
 def test_run_mediainfo_forwards_arguments(run_mock, tmp_path):
