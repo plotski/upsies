@@ -19,10 +19,12 @@ class ScreenshotsJob(_base.JobBase):
 
     @property
     def cache_file(self):
-        return os.path.join(
-            self.cache_directory,
-            f'{self.name}:{",".join(self._timestamps)}.json',
-        )
+        if self._imghost:
+            imghost_name = self._imghost.Uploader.name
+            filename = f'{self.name}.{imghost_name}.{",".join(self._timestamps)}.json'
+        else:
+            filename = f'{self.name}.{",".join(self._timestamps)}.json'
+        return os.path.join(self.cache_directory, filename)
 
     def initialize(self, content_path, timestamps=(), number=0, upload_to=None):
         self._video_file = video.first_video(content_path)

@@ -284,6 +284,24 @@ def test_ScreenshotsJob_cache_file_without_imghost(video_length_mock, tmp_path):
         'screenshots.0:02:00,0:03:00.json',
     )
 
+@patch('upsies.utils.video.length')
+def test_ScreenshotsJob_cache_file_with_imghost(video_length_mock, tmp_path):
+    video_length_mock.return_value = 240
+    sj = ScreenshotsJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        content_path='foo.mkv',
+        timestamps=(120,),
+        number=2,
+        upload_to='imgbox',
+    )
+    assert sj.cache_file == os.path.join(
+        tmp_path,
+        '.output',
+        'screenshots.imgbox.0:02:00,0:03:00.json',
+    )
+
+
 @patch('upsies.tools.imghost')
 @patch('upsies.utils.video.length')
 def test_ScreenshotsJob_state_before_execution(video_length_mock, imghost_mock, tmp_path):
