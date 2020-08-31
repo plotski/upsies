@@ -3,7 +3,7 @@ import os
 import re
 
 from .. import binaries, errors
-from ..utils import run
+from ..utils import subproc
 from ..utils import timestamp as ts
 from ..utils import video
 
@@ -59,6 +59,6 @@ def create(videofile, timestamp, screenshotfile):
                          f'{ts.pretty(timestamp)}')
 
     cmd = _make_ffmpeg_cmd(videofile, timestamp, screenshotfile)
-    output = run.run(cmd, ignore_stderr=True, join_output=True)
+    output = subproc.run(cmd, ignore_stderr=True, join_output=True)
     if not os.path.exists(screenshotfile):
         raise errors.ScreenshotError(output, videofile, timestamp)

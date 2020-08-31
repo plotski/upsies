@@ -6,7 +6,7 @@ from upsies.tools import screenshot
 
 
 @patch('os.path.exists')
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_make_screenshot_encounters_nonexisting_file(run_mock, exists_mock):
     mock_file = 'path/to/foo.mkv'
     exists_mock.return_value = False
@@ -17,7 +17,7 @@ def test_make_screenshot_encounters_nonexisting_file(run_mock, exists_mock):
 
 
 @patch('os.path.exists', Mock(return_value=True))
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_make_screenshot_gets_invalid_timestamp(run_mock):
     mock_file = 'path/to/foo.mkv'
     with pytest.raises(ValueError, match=r"^Invalid timestamp: 'anywhere'$"):
@@ -26,7 +26,7 @@ def test_make_screenshot_gets_invalid_timestamp(run_mock):
 
 
 @patch('os.path.exists')
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 @patch('upsies.utils.video.make_ffmpeg_input', Mock(side_effect=lambda f: f))
 @patch('upsies.utils.video.length')
 def test_make_screenshot_gets_valid_timestamp(videolength_mock, run_mock, exists_mock):
@@ -43,7 +43,7 @@ def test_make_screenshot_gets_valid_timestamp(videolength_mock, run_mock, exists
 
 
 @patch('os.path.exists')
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 @patch('upsies.utils.video.make_ffmpeg_input', Mock(side_effect=lambda f: f))
 @patch('upsies.utils.video.length')
 def test_make_screenshot_gets_timestamp_that_is_after_video_end(videolength_mock, run_mock, exists_mock):

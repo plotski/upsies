@@ -29,7 +29,7 @@ def _run_mediainfo(path, *args):
                                                   os.path.dirname(path))
         cmd = (binaries.mediainfo, video_file_path_rel) + args
         try:
-            return utils.run.run(cmd, cache=True)
+            return utils.subproc.run(cmd, cache=True)
         except errors.ProcessError as e:
             raise errors.MediainfoError(f'{video_file_path}: {e}')
     finally:

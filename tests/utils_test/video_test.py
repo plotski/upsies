@@ -62,7 +62,7 @@ def test_first_video_finds_all_video_file_extensions(walk_mock):
                 assert video.first_video('path/to/Foo') == f'path/to/Foo/Foo.{ext_}'
 
 
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_length_calls_ffprobe(run_mock, tmp_path):
     filepath = tmp_path / 'foo.mkv'
     filepath.write_bytes(b'foo data')
@@ -78,7 +78,7 @@ def test_length_calls_ffprobe(run_mock, tmp_path):
     assert length == 12345.098
     assert run_mock.call_args_list == [call(exp_cmd, ignore_stderr=True)]
 
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_length_crashes_if_ffprobe_returns_unexpected_value(run_mock, tmp_path):
     filepath = tmp_path / 'the foo.mkv'
     filepath.write_bytes(b'the data')

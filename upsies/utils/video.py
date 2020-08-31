@@ -6,7 +6,7 @@ import shlex
 import natsort
 
 from .. import binaries, errors
-from . import fs, run
+from . import fs, subproc
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ def length(filepath):
         '-of', 'default=noprint_wrappers=1:nokey=1',
         make_ffmpeg_input(filepath),
     )
-    length = run.run(cmd, ignore_stderr=True)
+    length = subproc.run(cmd, ignore_stderr=True)
     try:
         return float(length)
     except ValueError:

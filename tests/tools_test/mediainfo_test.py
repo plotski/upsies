@@ -7,7 +7,7 @@ from upsies import binaries, errors
 from upsies.tools import mediainfo
 
 
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_run_mediainfo_does_not_chdir_if_path_is_in_current_directory(run_mock, tmp_path):
     orig_cwd = os.getcwd()
     try:
@@ -21,7 +21,7 @@ def test_run_mediainfo_does_not_chdir_if_path_is_in_current_directory(run_mock, 
     finally:
         os.chdir(orig_cwd)
 
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_run_mediainfo_fails_to_chdir(run_mock, tmp_path):
     orig_cwd = os.getcwd()
     video_path = tmp_path / 'foo.mkv'
@@ -35,7 +35,7 @@ def test_run_mediainfo_fails_to_chdir(run_mock, tmp_path):
         video_path.parent.chmod(770)
     assert os.getcwd() == orig_cwd
 
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_run_mediainfo_returns_cwd_to_original_path(run_mock, tmp_path):
     orig_cwd = os.getcwd()
     video_path = tmp_path / 'foo.mkv'
@@ -44,7 +44,7 @@ def test_run_mediainfo_returns_cwd_to_original_path(run_mock, tmp_path):
     mediainfo._run_mediainfo(video_path)
     assert os.getcwd() == orig_cwd
 
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_run_mediainfo_fails_to_find_video_file(run_mock, tmp_path):
     orig_cwd = os.getcwd()
     file1 = tmp_path / 'foo.txt'
@@ -56,7 +56,7 @@ def test_run_mediainfo_fails_to_find_video_file(run_mock, tmp_path):
     assert run_mock.call_args_list == []
     assert os.getcwd() == orig_cwd
 
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_run_mediainfo_fails_to_run_mediainfo(run_mock, tmp_path):
     orig_cwd = os.getcwd()
     video_path = tmp_path / 'foo.mkv'
@@ -67,7 +67,7 @@ def test_run_mediainfo_fails_to_run_mediainfo(run_mock, tmp_path):
     assert run_mock.call_args_list == [call((binaries.mediainfo, video_path.name), cache=True)]
     assert os.getcwd() == orig_cwd
 
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_run_mediainfo_forwards_arguments(run_mock, tmp_path):
     video_path = tmp_path / 'foo.mkv'
     video_path.write_bytes(b'video data')
@@ -75,7 +75,7 @@ def test_run_mediainfo_forwards_arguments(run_mock, tmp_path):
     assert run_mock.call_args_list == [call((binaries.mediainfo, video_path.name,
                                              '--foo', '--bar'), cache=True)]
 
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_run_mediainfo_returns_mediainfo_output(run_mock, tmp_path):
     video_path = tmp_path / 'foo.mkv'
     video_path.write_bytes(b'video data')
@@ -83,7 +83,7 @@ def test_run_mediainfo_returns_mediainfo_output(run_mock, tmp_path):
     stdout = mediainfo._run_mediainfo(video_path)
     assert stdout == '<all the media info>'
 
-@patch('upsies.utils.run.run')
+@patch('upsies.utils.subproc.run')
 def test_run_mediainfo_contains_correct_relative_path_when_passed_directory(run_mock, tmp_path):
     video_path = tmp_path / 'foo' / 'bar.mkv'
     video_path.parent.mkdir()
