@@ -34,16 +34,20 @@ def _session(domain):
 _request_lock = collections.defaultdict(lambda: asyncio.Lock())
 
 
-async def get(url, params={}, cache=False):
+async def _request(method, url, params={}, cache=False):
     """
-    Perform HTTP GET request
+    Perform HTTP request
 
+    :param str method: "POST" or "GET" (case-insensitive)
     :param dict params: Query arguments
     :param bool cache: Whether to use cached response
 
     :return: Response text
     :rtype: str
     """
+    method = method.upper()
+    assert method in ('POST', 'GET'), repr(method)
+
     try:
         url = yarl.URL(url)
     except (ValueError, TypeError) as e:
@@ -53,17 +57,18 @@ async def get(url, params={}, cache=False):
     request_lock = _request_lock[request_lock_key]
     # _log.debug('Lock for %r: locked=%r', request_lock_key, request_lock.locked())
     async with request_lock:
-        cache_file = _cache_file(url, params)
+        cache_file = _cache_file(url, method, params)
         _log.debug('Cache file for %r is %r', (url, params), cache_file)
         if cache:
             response = _from_cache(cache_file)
             if response is not None:
                 return response
 
-        _log.debug('GET: %r: %r', url, params)
+        _log.debug('%s: %r: %r', method, url, params)
         async with _session(url.host) as session:
+            context_manager = getattr(session, method.lower())
             try:
-                async with session.get(str(url), params=params) as response:
+                async with context_manager(str(url), params=params) as response:
                     text = await response.text()
             except aiohttp.ClientResponseError as e:
                 raise errors.RequestError(f'{url}: {e.message}')
@@ -78,7 +83,30 @@ async def get(url, params={}, cache=False):
         return text
 
 
+async def get(url, params={}, cache=False):
+    """
+    Perform HTTP GET request
 
+    :param dict params: Query arguments
+    :param bool cache: Whether to use cached response
+
+    :return: Response text
+    :rtype: str
+    """
+    return await _request('GET', url, params=params, cache=cache)
+
+
+async def post(url, params={}, cache=False):
+    """
+    Perform HTTP POST request
+
+    :param dict params: Query arguments
+    :param bool cache: Whether to use cached response
+
+    :return: Response text
+    :rtype: str
+    """
+    return await _request('POST', url, params=params, cache=cache)
 
 
 def _from_cache(cache_file):
@@ -137,4 +165,3 @@ def _semantic_hash(obj):
             return str(obj)
 
     return hashlib.sha256(bytes(repr(sorted_dict_str(obj)), 'UTF-8')).hexdigest()
-
