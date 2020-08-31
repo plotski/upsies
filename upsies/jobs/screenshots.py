@@ -62,6 +62,7 @@ class ScreenshotsJob(_base.JobBase):
                 'video_file' : self._video_file,
                 'timestamps' : self._timestamps,
                 'output_dir' : self.homedir,
+                'overwrite'  : self.ignore_cache,
             },
             info_callback=self.handle_screenshot_path,
             error_callback=self.handle_screenshot_error,
@@ -214,7 +215,7 @@ def _screenshot_timestamps(video_file, timestamps, number):
 
 
 def _screenshot_process(output_queue, input_queue,
-                        video_file, timestamps, output_dir):
+                        video_file, timestamps, output_dir, overwrite):
     for ts in timestamps:
         screenshot_file = os.path.join(
             output_dir,
@@ -225,6 +226,7 @@ def _screenshot_process(output_queue, input_queue,
                 video_file=video_file,
                 timestamp=ts,
                 screenshot_file=screenshot_file,
+                overwrite=overwrite,
             )
         except (ValueError, errors.ScreenshotError) as e:
             output_queue.put((_common.DaemonProcess.ERROR, str(e)))

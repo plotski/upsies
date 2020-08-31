@@ -78,17 +78,20 @@ def test_screenshot_process_fills_output_queue(screenshot_create_mock, tmp_path)
     output_queue = multiprocessing.Queue()
     input_queue = multiprocessing.Queue()
     _screenshot_process(output_queue, input_queue,
-                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
+                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination',
+                        overwrite=False)
     assert screenshot_create_mock.call_args_list == [
         call(
             video_file='foo.mkv',
             timestamp='0:10:00',
             screenshot_file='path/to/destination/foo.mkv.0:10:00.png',
+            overwrite=False,
         ),
         call(
             video_file='foo.mkv',
             timestamp='0:20:00',
             screenshot_file='path/to/destination/foo.mkv.0:20:00.png',
+            overwrite=False,
         ),
     ]
     assert output_queue.get() == (DaemonProcess.INFO, 'path/to/destination/foo.mkv.0:10:00.png')
@@ -98,7 +101,7 @@ def test_screenshot_process_fills_output_queue(screenshot_create_mock, tmp_path)
 
 @patch('upsies.tools.screenshot.create')
 def test_screenshot_process_catches_ScreenshotErrors(screenshot_create_mock, tmp_path):
-    def screenshot_create_side_effect(video_file, timestamp, screenshot_file):
+    def screenshot_create_side_effect(video_file, timestamp, screenshot_file, overwrite=False):
         raise errors.ScreenshotError('Error', video_file, timestamp)
 
     screenshot_create_mock.side_effect = screenshot_create_side_effect
@@ -106,17 +109,20 @@ def test_screenshot_process_catches_ScreenshotErrors(screenshot_create_mock, tmp
     output_queue = multiprocessing.Queue()
     input_queue = multiprocessing.Queue()
     _screenshot_process(output_queue, input_queue,
-                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
+                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination',
+                        overwrite=False)
     assert screenshot_create_mock.call_args_list == [
         call(
             video_file='foo.mkv',
             timestamp='0:10:00',
             screenshot_file='path/to/destination/foo.mkv.0:10:00.png',
+            overwrite=False,
         ),
         call(
             video_file='foo.mkv',
             timestamp='0:20:00',
             screenshot_file='path/to/destination/foo.mkv.0:20:00.png',
+            overwrite=False,
         ),
     ]
     assert output_queue.get() == (DaemonProcess.ERROR, str(errors.ScreenshotError('Error', 'foo.mkv', '0:10:00')))
@@ -126,7 +132,7 @@ def test_screenshot_process_catches_ScreenshotErrors(screenshot_create_mock, tmp
 
 @patch('upsies.tools.screenshot.create')
 def test_screenshot_process_catches_ValueErrors(screenshot_create_mock, tmp_path):
-    def screenshot_create_side_effect(video_file, timestamp, screenshot_file):
+    def screenshot_create_side_effect(video_file, timestamp, screenshot_file, overwrite=False):
         raise ValueError(f'Error: {video_file}, {timestamp}')
 
     screenshot_create_mock.side_effect = screenshot_create_side_effect
@@ -134,17 +140,20 @@ def test_screenshot_process_catches_ValueErrors(screenshot_create_mock, tmp_path
     output_queue = multiprocessing.Queue()
     input_queue = multiprocessing.Queue()
     _screenshot_process(output_queue, input_queue,
-                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
+                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination',
+                        overwrite=True)
     assert screenshot_create_mock.call_args_list == [
         call(
             video_file='foo.mkv',
             timestamp='0:10:00',
             screenshot_file='path/to/destination/foo.mkv.0:10:00.png',
+            overwrite=True,
         ),
         call(
             video_file='foo.mkv',
             timestamp='0:20:00',
             screenshot_file='path/to/destination/foo.mkv.0:20:00.png',
+            overwrite=True,
         ),
     ]
     assert output_queue.get() == (DaemonProcess.ERROR, 'Error: foo.mkv, 0:10:00')
@@ -153,13 +162,14 @@ def test_screenshot_process_catches_ValueErrors(screenshot_create_mock, tmp_path
     assert input_queue.empty()
 
 @patch('upsies.tools.screenshot.create')
-def test_screenshot_process_does_not_catche_other_errors(screenshot_create_mock, tmp_path):
+def test_screenshot_process_does_not_catch_other_errors(screenshot_create_mock, tmp_path):
     screenshot_create_mock.side_effect = TypeError('asdf')
     output_queue = multiprocessing.Queue()
     input_queue = multiprocessing.Queue()
     with pytest.raises(TypeError, match='^asdf$'):
         _screenshot_process(output_queue, input_queue,
-                            'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination')
+                            'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination',
+                            overwrite=False)
     assert output_queue.empty()
     assert input_queue.empty()
 
@@ -326,6 +336,7 @@ def test_ScreenshotsJob_handles_screenshot_creation(process_mock, upthread_mock,
             'video_file' : sj._video_file,
             'timestamps' : sj._timestamps,
             'output_dir' : sj.homedir,
+            'overwrite'  : sj.ignore_cache,
         },
         info_callback=sj.handle_screenshot_path,
         error_callback=sj.handle_screenshot_error,
@@ -382,6 +393,7 @@ def test_ScreenshotsJob_handles_errors_from_screenshot_creation(process_mock, up
             'video_file' : sj._video_file,
             'timestamps' : sj._timestamps,
             'output_dir' : sj.homedir,
+            'overwrite'  : sj.ignore_cache,
         },
         info_callback=sj.handle_screenshot_path,
         error_callback=sj.handle_screenshot_error,
@@ -449,6 +461,7 @@ def test_ScreenshotsJob_handles_screenshots_uploaded(process_mock, upthread_mock
             'video_file' : sj._video_file,
             'timestamps' : sj._timestamps,
             'output_dir' : sj.homedir,
+            'overwrite'  : sj.ignore_cache,
         },
         info_callback=sj.handle_screenshot_path,
         error_callback=sj.handle_screenshot_error,
@@ -532,6 +545,7 @@ def test_ScreenshotsJob_handles_errors_screenshot_uploads(process_mock, upthread
             'video_file' : sj._video_file,
             'timestamps' : sj._timestamps,
             'output_dir' : sj.homedir,
+            'overwrite'  : sj.ignore_cache,
         },
         info_callback=sj.handle_screenshot_path,
         error_callback=sj.handle_screenshot_error,
