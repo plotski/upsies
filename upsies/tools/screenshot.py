@@ -28,7 +28,7 @@ def _make_ffmpeg_cmd(video_file, timestamp, screenshot_file):
     )
 
 
-def create(video_file, timestamp, screenshot_file):
+def create(video_file, timestamp, screenshot_file, overwrite=False):
     """
     Create screenshot from video file
 
@@ -36,6 +36,7 @@ def create(video_file, timestamp, screenshot_file):
     :param timestamp: Time location in the video
     :type timestamp: int or float or "[[H+:]MM:]SS"
     :param str screenshot_file: Path to screenshot file
+    :param bool overwrite: Whether to overwrite `screenshot_file` if it exists
 
     :raise FileNotFoundError: if `video_file` doesn't exist
     :raise ValueError: if `timestamp` is of unexpected type or format
@@ -49,7 +50,7 @@ def create(video_file, timestamp, screenshot_file):
     elif not isinstance(timestamp, (int, float)):
         raise ValueError(f'Invalid timestamp: {timestamp!r}')
 
-    if os.path.exists(screenshot_file):
+    if not overwrite and os.path.exists(screenshot_file):
         _log.debug('Screenshot already exists: %s', screenshot_file)
         return
 
