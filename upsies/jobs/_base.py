@@ -156,7 +156,7 @@ class JobBase(abc.ABC):
         :raise RuntimeError: if :attr:`output` is not JSON-encodable or
             :attr:`cache_file` exists unwritable
         """
-        if self.output:
+        if self.output and self.exit_code == 0:
             _log.debug('Writing output cache: %r: %r', self.cache_file, self.output)
             try:
                 output_string = json.dumps(self.output)

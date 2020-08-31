@@ -210,10 +210,17 @@ def test_cache_file_cannot_create_output_directory(tmp_path):
         tmp_path.chmod(0o770)
 
 
-def test_cache_is_not_written_if_output_is_empty(tmp_path, job):
+def test_cache_is_not_written_if_output_is_empty(job):
     assert job.output == ()
     job.write_output_cache()
-    assert not os.path.exists(os.path.join(job.homedir, f'{job.name}.json'))
+    assert not os.path.exists(job.cache_file)
+
+def test_cache_is_not_written_if_exit_code_is_nonzero(job):
+    job.send('Foo')
+    job.error('Bar!')
+    assert job.exit_code != 0
+    job.write_output_cache()
+    assert not os.path.exists(job.cache_file)
 
 def test_cache_is_written_if_output_is_not_empty(job):
     job.send('foo')
