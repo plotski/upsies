@@ -46,6 +46,10 @@ def test_abstract_methods(method):
         cls()
 
 
+def test_homedir_property(tmp_path):
+    job = FooJob(homedir=tmp_path, ignore_cache=False)
+    assert job.homedir == tmp_path
+
 def test_ignore_cache_property(tmp_path):
     assert FooJob(homedir=tmp_path, ignore_cache=False).ignore_cache is False
     assert FooJob(homedir=tmp_path, ignore_cache=True).ignore_cache is True
