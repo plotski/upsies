@@ -184,7 +184,7 @@ def test_cache_file_name_includes_keyword_arguments(tmp_path):
             pass
 
     job = BarJob(homedir=tmp_path, ignore_cache=False, bar=1, baz='asdf')
-    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}:bar=1,baz=asdf.json')
+    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.bar=1,baz=asdf.json')
 
 def test_cache_file_has_correct_parent(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)

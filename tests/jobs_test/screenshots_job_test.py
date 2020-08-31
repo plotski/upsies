@@ -269,7 +269,7 @@ async def test_UploadThread_passes_force_argument_to_upload_call(tmp_path):
 
 
 @patch('upsies.utils.video.length')
-def test_ScreenshotsJob_cache_file(video_length_mock, tmp_path):
+def test_ScreenshotsJob_cache_file_without_imghost(video_length_mock, tmp_path):
     video_length_mock.return_value = 240
     sj = ScreenshotsJob(
         homedir=tmp_path,
@@ -281,7 +281,7 @@ def test_ScreenshotsJob_cache_file(video_length_mock, tmp_path):
     assert sj.cache_file == os.path.join(
         tmp_path,
         '.output',
-        'screenshots:0:02:00,0:03:00.json',
+        'screenshots.0:02:00,0:03:00.json',
     )
 
 @patch('upsies.tools.imghost')

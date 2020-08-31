@@ -212,7 +212,7 @@ class JobBase(abc.ABC):
         """Path of file to store cached :attr:`output` in"""
         kwargs_str = ','.join(f'{k}={v}' for k, v in self._kwargs.items())
         if kwargs_str:
-            filename = f'{self.name}:{kwargs_str.replace("/", "_")}.json'
+            filename = f'{self.name}.{kwargs_str.replace("/", "_")}.json'
         else:
             filename = f'{self.name}.json'
         _log.debug('Cache file name: %r', filename)
