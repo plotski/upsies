@@ -78,25 +78,8 @@ async def get(url, params={}, cache=False):
         return text
 
 
-def _cache_file(url, method, params={}):
-    def make_filename(url, method, params_str):
-        if params_str:
-            filename = f'{method.upper()}.{url}?{params_str}'
-        else:
-            filename = f'{method.upper()}.{url}'
-        return filename.replace('/', '_').replace(' ', '+')
 
-    if params:
-        params_str = '&'.join((f'{k}={v}' for k,v in params.items()))
-        if len(make_filename(url, method, params_str)) > 250:
-            params_str = f'[HASH:{_semantic_hash(params)}]'
-    else:
-        params_str = ''
 
-    return os.path.join(
-        fs.tmpdir(),
-        make_filename(url, method, params_str),
-    )
 
 def _from_cache(cache_file):
     try:
@@ -117,6 +100,25 @@ def _to_cache(cache_file, string):
     else:
         _log.debug('Wrote %r', cache_file)
 
+def _cache_file(url, method, params={}):
+    def make_filename(url, method, params_str):
+        if params_str:
+            filename = f'{method.upper()}.{url}?{params_str}'
+        else:
+            filename = f'{method.upper()}.{url}'
+        return filename.replace('/', '_').replace(' ', '+')
+
+    if params:
+        params_str = '&'.join((f'{k}={v}' for k,v in params.items()))
+        if len(make_filename(url, method, params_str)) > 250:
+            params_str = f'[HASH:{_semantic_hash(params)}]'
+    else:
+        params_str = ''
+
+    return os.path.join(
+        fs.tmpdir(),
+        make_filename(url, method, params_str),
+    )
 
 def _semantic_hash(obj):
     """
