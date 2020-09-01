@@ -92,7 +92,7 @@ class Config:
                         cfg[section][option] = defaults[section][option]
         return cfg
 
-    def get(self, section, option):
+    def option(self, section, option):
         try:
             section_dct = self._cfg[section]
         except KeyError:

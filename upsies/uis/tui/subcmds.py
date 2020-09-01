@@ -29,10 +29,10 @@ class torrent(SubcommandBase):
                 homedir=fs.projectdir(self.args.path, self.args.tracker),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.path,
-                announce_url=self.config.get(self.args.tracker, 'announce'),
+                announce_url=self.config.option(self.args.tracker, 'announce'),
                 trackername=self.args.tracker,
-                source=self.args.source or self.config.get(self.args.tracker, 'source'),
-                exclude_regexs=self.config.get(self.args.tracker, 'exclude'),
+                source=self.args.source or self.config.option(self.args.tracker, 'source'),
+                exclude_regexs=self.config.option(self.args.tracker, 'exclude'),
             ),
         )
 
@@ -65,7 +65,7 @@ def make_search_command(db_name):
             ),
         )
 
-    clsname = f'{db_name.capitalize()}Search'
+    clsname = f'search_{db_name}'
     bases = (SubcommandBase,)
     attrs = {'jobs': jobs}
     return type(clsname, bases, attrs)
@@ -76,8 +76,8 @@ class release_name(SubcommandBase):
     def jobs(self):
         # Include the original and English title in the release name.
         # IMDb seems to be best.
-        SearchImdbJob = make_search_command('imdb')
-        imdb_job = SearchImdbJob(args=self.args, config=self.config).jobs[0]
+        search_imdb = make_search_command('imdb')
+        imdb_job = search_imdb(args=self.args, config=self.config).jobs[0]
         rn_job = _jobs.release_name.ReleaseNameJob(
             homedir=fs.projectdir(self.args.path, self.args.tracker),
             ignore_cache=self.args.ignore_cache,
