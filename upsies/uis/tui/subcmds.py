@@ -101,7 +101,8 @@ class submit(SubcommandBase):
             homedir=fs.projectdir(self.args.path, self.args.tracker),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.path,
-            announce_url=self.config.get('nbl', 'announce')
+            args=self.args,
+            config=self.config,
         )
         _log.debug('Tracker jobs: %r', sub.jobs)
         return sub.jobs

@@ -15,7 +15,7 @@ class SubmissionJob(_base.SubmissionJobBase):
             ignore_cache=False,
             content_path=self.content_path,
             trackername=self.trackername,
-            announce_url=self.announce_url,
+            announce_url=self.config.option(self.trackername, 'announce'),
             source='NBL',
         )
 
