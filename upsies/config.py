@@ -69,8 +69,14 @@ class Config:
         else:
             # Make normal dictionary from ConfigParser instance
             # https://stackoverflow.com/a/28990982
-            return {s : dict(cfg.items(s))
-                    for s in cfg.sections()}
+            cfg = {s : dict(cfg.items(s))
+                   for s in cfg.sections()}
+            # Line breaks are interpreted as list separators
+            for section in cfg.values():
+                for key in section:
+                    if '\n' in section[key]:
+                        section[key] = [item for item in section[key].split('\n') if item]
+            return cfg
 
     def _validate(self, cfg, defaults):
         for section in cfg:
