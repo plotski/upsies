@@ -210,10 +210,19 @@ class JobBase(abc.ABC):
     @property
     def cache_file(self):
         """Path of file to store cached :attr:`output` in"""
-        kwargs_str = ','.join(f'{k}={v}' for k, v in self._kwargs.items())
-        if kwargs_str:
-            filename = f'{self.name}.{kwargs_str.replace("/", "_")}.json'
+        if self._kwargs:
+            kwargs_str_max_len = 250 - len(self.name) - len('..json')
+            kwargs_str = ','.join(f'{k}={v}' for k, v in self._kwargs.items())
+            if len(kwargs_str) > kwargs_str_max_len:
+                kwargs_str = ''.join((
+                    kwargs_str[:int(kwargs_str_max_len / 2 - 1)],
+                    '…',
+                    kwargs_str[-int(kwargs_str_max_len / 2 - 1):],
+                ))
+            filename = f'{self.name}.{kwargs_str}.json'
         else:
             filename = f'{self.name}.json'
+        filename = filename.replace("/", "_")
+        assert len(filename) < 250
         _log.debug('Cache file name: %r', filename)
         return os.path.join(self.cache_directory, filename)

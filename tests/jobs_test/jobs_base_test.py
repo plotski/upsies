@@ -209,6 +209,15 @@ def test_cache_file_cannot_create_output_directory(tmp_path):
     finally:
         tmp_path.chmod(0o770)
 
+def test_cache_file_name_is_never_too_long(tmp_path):
+    class BarJob(FooJob):
+        def initialize(self, **kwargs):
+            pass
+
+    job = BarJob(homedir=tmp_path, ignore_cache=False,
+                 **{str(i):i for i in range(1000)})
+    assert len(os.path.basename(job.cache_file)) < 255
+
 
 def test_cache_is_not_written_if_output_is_empty(job):
     assert job.output == ()
