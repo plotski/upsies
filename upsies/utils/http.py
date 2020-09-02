@@ -19,7 +19,6 @@ headers = {
 _cookiejars = collections.defaultdict(lambda: aiohttp.CookieJar())
 
 def _session(domain):
-    _log.debug('Cookies for %s: %r', domain, _cookiejars[domain])
     return aiohttp.ClientSession(
         headers=headers,
         skip_auto_headers=('User-Agent',),
@@ -66,9 +65,9 @@ async def _request(method, url, params={}, cache=False):
 
         _log.debug('%s: %r: %r', method, url, params)
         async with _session(url.host) as session:
-            context_manager = getattr(session, method.lower())
+            method_cm = getattr(session, method.lower())  # session.get/post
             try:
-                async with context_manager(str(url), params=params) as response:
+                async with method_cm(str(url), params=params) as response:
                     text = await response.text()
             except aiohttp.ClientResponseError as e:
                 raise errors.RequestError(f'{url}: {e.message}')
