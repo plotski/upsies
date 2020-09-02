@@ -27,9 +27,10 @@ DEFAULTS = {
     'bb': _TrackerConfig(
         source='bB',
         exclude=[
-            r'\.(?i:nfo)$',
             r'\.(?i:jpg)$',
             r'\.(?i:png)$',
+            r'\.(?i:nfo)$',
+            r'\.(?i:txt)$',
             rf'(?:{os.path.sep}|^)(?i:sample)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
             rf'(?:{os.path.sep}|^)(?i:proof)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
         ],
