@@ -29,10 +29,10 @@ class torrent(SubcommandBase):
                 homedir=fs.projectdir(self.args.path, self.args.tracker),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.path,
-                announce_url=self.config.option(self.args.tracker, 'announce'),
+                announce_url=self.config.option(f'tracker:{self.args.tracker}', 'announce'),
                 trackername=self.args.tracker,
-                source=self.args.source or self.config.option(self.args.tracker, 'source'),
-                exclude_regexs=self.config.option(self.args.tracker, 'exclude'),
+                source=self.args.source or self.config.option(f'tracker:{self.args.tracker}', 'source'),
+                exclude_regexs=self.config.option(f'tracker:{self.args.tracker}', 'exclude'),
             ),
         )
 
@@ -102,7 +102,7 @@ class submit(SubcommandBase):
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.path,
             args=self.args,
-            config=self.config,
+            config=self.config.section(f'tracker:{self.args.tracker}'),
         )
         _log.debug('Tracker jobs: %r', sub.jobs)
         return sub.jobs

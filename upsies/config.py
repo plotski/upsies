@@ -21,10 +21,10 @@ class _TrackerConfig(dict):
 
 
 DEFAULTS = {
-    'nbl': _TrackerConfig(
+    'tracker:nbl': _TrackerConfig(
         source='NBL',
     ),
-    'bb': _TrackerConfig(
+    'tracker:bb': _TrackerConfig(
         source='bB',
         exclude=[
             r'\.(?i:jpg)$',
