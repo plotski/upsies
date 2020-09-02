@@ -186,11 +186,19 @@ def test_cache_file_name_includes_keyword_arguments(tmp_path):
     job = BarJob(homedir=tmp_path, ignore_cache=False, bar=1, baz='asdf')
     assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.bar=1,baz=asdf.json')
 
+def test_cache_file_name_does_not_contain_illegal_characters(tmp_path):
+    class BarJob(FooJob):
+        def initialize(self, baz):
+            pass
+
+    job = BarJob(homedir=tmp_path, ignore_cache=False, baz='hey/you')
+    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.baz=hey_you.json')
+
 def test_cache_file_has_correct_parent(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
     assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.json')
 
-def test_cache_file_parent_exists(tmp_path):
+def test_cache_file_parent_directory_exists(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
     assert os.path.exists(os.path.dirname(job.cache_file))
 
