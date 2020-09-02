@@ -112,3 +112,9 @@ class Config:
                     f'{self._filepath}: No such option for section {section}: {option}')
             else:
                 return value
+
+    def section(self, section):
+        try:
+            return self._cfg[section]
+        except KeyError:
+            raise errors.ConfigError(f'{self._filepath}: No such section: {section}')
