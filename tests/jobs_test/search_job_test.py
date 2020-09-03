@@ -7,7 +7,6 @@ import pytest
 from upsies import errors
 from upsies.jobs import search
 
-
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
 # not a subclass of typing.Awaitable.
 class AsyncMock(Mock):
