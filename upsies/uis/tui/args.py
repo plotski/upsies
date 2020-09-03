@@ -77,8 +77,9 @@ def parse(args):
         default=0,
     )
     screenshots.add_argument(
-        '--upload', '-u',
-        help='Upload screenshots to an image hosting service',
+        '--upload-to', '-u',
+        help='Upload screenshots to image hosting service',
+        metavar='SERVICE',
     )
     screenshots.set_defaults(subcmd=subcmds.screenshots)
 

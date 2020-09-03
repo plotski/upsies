@@ -47,7 +47,7 @@ class screenshots(SubcommandBase):
                 content_path=self.args.path,
                 timestamps=self.args.timestamps,
                 number=self.args.number,
-                upload_to=self.args.upload,
+                upload_to=self.args.upload_to,
             ),
         )
 
