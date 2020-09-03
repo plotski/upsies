@@ -197,16 +197,19 @@ class DaemonProcess:
 
     async def join(self):
         """Block asynchronously until the process exits"""
-        _log.debug('Joining %r', self._process)
         if self._process:
             _log.debug('Waiting for process: %r', self._process)
             await self._loop.run_in_executor(None, self._process.join)
             _log.debug('Process finished: %r', self._process)
             self._process = None
 
-        if self._read_output_task and not self._read_output_task.done():
-            self._output_queue.put((self._TERMINATED, None))
-            await self._read_output_task
+        if self._read_output_task:
+            if not self._read_output_task.done():
+                self._output_queue.put((self._TERMINATED, None))
+                await self._read_output_task
+            exc = self._read_output_task.exception()
+            if exc:
+                raise exc
 
 
 def _target_process_wrapper(target, output_queue, input_queue, *args, **kwargs):

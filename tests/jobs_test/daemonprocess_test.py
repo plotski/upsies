@@ -55,7 +55,7 @@ def target_taking_arguments(output_queue, input_queue, foo, bar, *, baz):
 
 
 @pytest.mark.asyncio
-async def test_targets_gets_positional_and_keyword_arguments():
+async def test_target_gets_positional_and_keyword_arguments():
     info_callback = Mock()
     proc = DaemonProcess(
         target=target_taking_arguments,
@@ -69,7 +69,7 @@ async def test_targets_gets_positional_and_keyword_arguments():
 
 
 @pytest.mark.asyncio
-async def test_exceptions_from_targets_are_pushed_to_error_queue():
+async def test_exceptions_from_target_are_pushed_to_error_queue():
     error_callback = Mock()
     proc = DaemonProcess(
         target=target_raising_exception,
@@ -185,3 +185,52 @@ async def test_is_alive_property():
     assert proc.is_alive is True
     await proc.join()
     assert proc.is_alive is False
+
+
+@pytest.mark.asyncio
+async def test_init_callback_raises_exception():
+    init_callback = Mock(side_effect=RuntimeError('Boo!'))
+    proc = DaemonProcess(
+        target=target_sending_to_init_callback,
+        init_callback=init_callback,
+    )
+    proc.start()
+    with pytest.raises(RuntimeError, match=r'^Boo!$'):
+        await proc.join()
+    assert init_callback.call_args_list == [call(0)]
+
+@pytest.mark.asyncio
+async def test_info_callback_raises_exception():
+    info_callback = Mock(side_effect=RuntimeError('Boo!'))
+    proc = DaemonProcess(
+        target=target_sending_to_info_callback,
+        info_callback=info_callback,
+    )
+    proc.start()
+    with pytest.raises(RuntimeError, match=r'^Boo!$'):
+        await proc.join()
+    assert info_callback.call_args_list == [call(0)]
+
+@pytest.mark.asyncio
+async def test_error_callback_raises_exception():
+    error_callback = Mock(side_effect=RuntimeError('Boo!'))
+    proc = DaemonProcess(
+        target=target_sending_to_error_callback,
+        error_callback=error_callback,
+    )
+    proc.start()
+    with pytest.raises(RuntimeError, match=r'^Boo!$'):
+        await proc.join()
+    assert error_callback.call_args_list == [call(0)]
+
+@pytest.mark.asyncio
+async def test_finished_callback_raises_exception():
+    finished_callback = Mock(side_effect=RuntimeError('Boo!'))
+    proc = DaemonProcess(
+        target=target_sending_result_to_finished_callback,
+        finished_callback=finished_callback,
+    )
+    proc.start()
+    with pytest.raises(RuntimeError, match=r'^Boo!$'):
+        await proc.join()
+    assert finished_callback.call_args_list == [call('foo')]
