@@ -21,9 +21,10 @@ def create(*, content_path, announce_url, torrent_path,
         try:
             torrent = torf.Torrent(
                 path=content_path,
-                trackers=((announce_url,),),
-                source=source,
                 exclude_regexs=exclude_regexs,
+                trackers=((announce_url,),),
+                private=True,
+                source=source,
             )
             init_callback(_make_file_tree(torrent.filetree))
             success = torrent.generate(callback=cb, interval=0.5)

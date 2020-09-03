@@ -80,6 +80,7 @@ def test_create_passes_arguments_to_Torrent_class(Torrent_mock, file_tree_mock, 
         trackers=(('http://announce.url',),),
         source=source or None,
         exclude_regexs=exclude_regexs or (),
+        private=True,
     )]
 
 @patch('upsies.tools.torrent._path_exists')
