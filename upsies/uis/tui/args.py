@@ -1,7 +1,6 @@
 import argparse
 import os
 import sys
-import textwrap
 
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 
@@ -44,15 +43,15 @@ def parse(args):
     release_name.add_argument('path', help='Path to release content')
     release_name.set_defaults(subcmd=subcmds.release_name)
 
-    imdb = subparsers.add_parser('imdb', help='Find IMDb ID')
+    imdb = subparsers.add_parser('imdb', help='Find IMDb ID', formatter_class=MyHelpFormatter)
     imdb.add_argument('path', help='Path to release content')
     imdb.set_defaults(subcmd=subcmds.make_search_command('imdb'))
 
-    tmdb = subparsers.add_parser('tmdb', help='Find TMDB ID')
+    tmdb = subparsers.add_parser('tmdb', help='Find TMDB ID', formatter_class=MyHelpFormatter)
     tmdb.add_argument('path', help='Path to release content')
     tmdb.set_defaults(subcmd=subcmds.make_search_command('tmdb'))
 
-    tvmaze = subparsers.add_parser('tvmaze', help='Find TVmaze ID')
+    tvmaze = subparsers.add_parser('tvmaze', help='Find TVmaze ID', formatter_class=MyHelpFormatter)
     tvmaze.add_argument('path', help='Path to release content')
     tvmaze.set_defaults(subcmd=subcmds.make_search_command('tvmaze'))
 
@@ -60,6 +59,7 @@ def parse(args):
         'screenshots', aliases=('ss',),
         help='Create screenshots',
         description='Wrapper around ffmpeg that dumps frames into PNG images.',
+        formatter_class=MyHelpFormatter,
     )
     screenshots.add_argument('path', help='Path to release content')
     screenshots.add_argument(
@@ -83,7 +83,7 @@ def parse(args):
     )
     screenshots.set_defaults(subcmd=subcmds.screenshots)
 
-    torrent = subparsers.add_parser('torrent', help='Create torrent file')
+    torrent = subparsers.add_parser('torrent', help='Create torrent file', formatter_class=MyHelpFormatter)
     torrent.add_argument('path', help='Path to release content')
     torrent.set_defaults(subcmd=subcmds.torrent)
     torrent.add_argument(
@@ -99,7 +99,8 @@ def parse(args):
 
     submit = subparsers.add_parser(
         'submit',
-        help='Produce all the necessary data to submit a torrent to a tracker'
+        help='Gather all metadata and upload to tracker',
+        formatter_class=MyHelpFormatter,
     )
     submit.add_argument('path', help='Path to release content')
     submit.set_defaults(subcmd=subcmds.submit)
@@ -129,6 +130,38 @@ def Timestamp(string):
 
 
 class MyHelpFormatter(argparse.HelpFormatter):
+    """Use "\n" to separate and preserve paragraphs and limit line width"""
+
+    MAX_WIDTH = 90
+
+    def __init__(self, *args, **kwargs):
+        import shutil
+        width_available = shutil.get_terminal_size().columns
+        super().__init__(*args,
+                         width=min(width_available, self.MAX_WIDTH),
+                         **kwargs)
+
     def _fill_text(self, text, width, indent):
-        return '\n'.join(textwrap.fill(paragraph, width=78)
-                         for paragraph in text.split('\n'))
+        return '\n'.join(self.__wrap_paragraphs(text, width))
+
+    def _split_lines(self, text, width):
+        return self.__wrap_paragraphs(text, width)
+
+    def __wrap_paragraphs(self, text, width, indent=''):
+        def wrap(text):
+            if not text:
+                return ['']
+            else:
+                import textwrap
+                return textwrap.wrap(
+                    text=text,
+                    width=min(width, self.MAX_WIDTH),
+                    replace_whitespace=False,
+                    initial_indent=indent,
+                    subsequent_indent=indent,
+                )
+
+        width = min(width, self.MAX_WIDTH) - len(indent)
+        return [line
+                for paragraph in text.split('\n')
+                for line in wrap(paragraph)]
