@@ -30,7 +30,7 @@ def parse(args):
                         help='Tracker name',
                         default=None)
 
-    subparsers = parser.add_subparsers(title='Commands', metavar='')
+    subparsers = parser.add_subparsers(title='subcommands', metavar='')
 
     release_name = subparsers.add_parser(
         'release-name', aliases=('rn',), help='Create normalized release name',
