@@ -1,6 +1,8 @@
 import functools
 
+from ... import errors
 from ... import jobs as _jobs
+from ...tools import client
 from ...utils import cache, fs
 
 import logging  # isort:skip
@@ -21,6 +23,17 @@ class SubcommandBase:
         return self._config
 
 
+def _make_client(args, config):
+    if args.add_to:
+        try:
+            client_module = getattr(client, args.add_to)
+        except AttributeError:
+            raise errors.TorrentError(f'No such client: {args.add_to}')
+        else:
+            _log.debug('Client config: %r', config.section(f'client:{args.add_to}'))
+            return client_module.ClientApi(**config.section(f'client:{args.add_to}'))
+
+
 class torrent(SubcommandBase):
     @cache.property
     def jobs(self):
@@ -33,6 +46,8 @@ class torrent(SubcommandBase):
                 trackername=self.args.tracker,
                 source=self.args.source or self.config.option(f'tracker:{self.args.tracker}', 'source'),
                 exclude_regexs=self.config.option(f'tracker:{self.args.tracker}', 'exclude'),
+                add_to=_make_client(self.args, self.config),
+                copy_to=self.args.copy_to,
             ),
         )
 

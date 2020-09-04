@@ -90,6 +90,16 @@ def parse(args):
         '--source', '-s',
         help='Metainfo "source" field',
     )
+    torrent.add_argument(
+        '--add-to', '-a',
+        help='Add created torrent to a running BitTorrent client instance',
+        metavar='CLIENT',
+    )
+    torrent.add_argument(
+        '--copy-to', '-c',
+        help='Copy created torrent to directory PATH',
+        metavar='PATH',
+    )
 
     submit = subparsers.add_parser(
         'submit',
