@@ -87,10 +87,6 @@ def parse(args):
     torrent.add_argument('path', help='Path to release content')
     torrent.set_defaults(subcmd=subcmds.torrent)
     torrent.add_argument(
-        '--source', '-s',
-        help='Metainfo "source" field',
-    )
-    torrent.add_argument(
         '--add-to', '-a',
         help='Add created torrent to a running BitTorrent client instance',
         metavar='CLIENT',
