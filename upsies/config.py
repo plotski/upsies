@@ -35,6 +35,11 @@ DEFAULTS = {
             rf'(?:{os.path.sep}|^)(?i:proof)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
         ],
     ),
+    'client:transmission': {
+        'username': '',
+        'password': '',
+        'url': '',
+    },
 }
 
 
