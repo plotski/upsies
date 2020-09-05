@@ -123,10 +123,7 @@ def Number(string):
     return int(string)
 
 def Timestamp(string):
-    try:
-        return utils.timestamp.parse(string)
-    except ValueError as e:
-        raise argparse.ArgumentTypeError(e)
+    return utils.timestamp.parse(string)
 
 
 class MyHelpFormatter(argparse.HelpFormatter):
