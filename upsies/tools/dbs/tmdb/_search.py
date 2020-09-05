@@ -29,7 +29,7 @@ class TmdbSearchResult(_common.SearchResult):
 @alru_cache(maxsize=None)
 async def search(title, type=None, year=None):
     """
-    Search TMDB
+    Search TMDb
 
     :param str title: Name of movie or series
     :param str type: "movie" "series" or "episode"

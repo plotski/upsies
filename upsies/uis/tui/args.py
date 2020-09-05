@@ -31,10 +31,11 @@ def parse(args):
                         help='Tracker name',
                         default=None)
 
-    subparsers = parser.add_subparsers(title='subcommands')
+    subparsers = parser.add_subparsers(title='commands')
 
     release_name = subparsers.add_parser(
-        'release-name', aliases=('rn',), help='Create normalized release name',
+        'release-name', aliases=('rn',),
+        help='Create standardized release name',
         description=('Print the full release name properly formatted to stdout.\n\n'
                      'IMDb is searched to get the correct title and an AKA if applicable. '
                      'Audio and video information is detected with mediainfo. '
@@ -45,28 +46,41 @@ def parse(args):
     release_name.add_argument('path', help='Path to release content')
     release_name.set_defaults(subcmd=subcmds.release_name)
 
-    imdb = subparsers.add_parser('imdb', help='Find IMDb ID', formatter_class=MyHelpFormatter)
+    imdb = subparsers.add_parser(
+        'imdb',
+        help='Pick IMDb ID from search results',
+        formatter_class=MyHelpFormatter,
+    )
     imdb.add_argument('path', help='Path to release content')
     imdb.set_defaults(subcmd=subcmds.make_search_command('imdb'))
 
-    tmdb = subparsers.add_parser('tmdb', help='Find TMDB ID', formatter_class=MyHelpFormatter)
+    tmdb = subparsers.add_parser(
+        'tmdb',
+        help='Pick TMDb ID from search results',
+        formatter_class=MyHelpFormatter,
+    )
     tmdb.add_argument('path', help='Path to release content')
     tmdb.set_defaults(subcmd=subcmds.make_search_command('tmdb'))
 
-    tvmaze = subparsers.add_parser('tvmaze', help='Find TVmaze ID', formatter_class=MyHelpFormatter)
+    tvmaze = subparsers.add_parser(
+        'tvmaze',
+        help='Pick TVmaze ID from search results',
+        formatter_class=MyHelpFormatter,
+    )
     tvmaze.add_argument('path', help='Path to release content')
     tvmaze.set_defaults(subcmd=subcmds.make_search_command('tvmaze'))
 
     screenshots = subparsers.add_parser(
         'screenshots', aliases=('ss',),
-        help='Create screenshots',
-        description='Wrapper around ffmpeg that dumps frames into PNG images.',
+        help='Create and optionally upload screenshots',
+        description=('Create PNG screenshots with ffmpeg and optionally '
+                     'upload them to an image hosting service.'),
         formatter_class=MyHelpFormatter,
     )
     screenshots.add_argument('path', help='Path to release content')
     screenshots.add_argument(
         '--timestamps', '-t',
-        help='Space-separated list of [HH:]MM:SS strings',
+        help='Space-separated list of [[HH:]MM:]SS strings',
         metavar='TIMESTAMP',
         default=(),
         nargs='+',
@@ -74,7 +88,7 @@ def parse(args):
     )
     screenshots.add_argument(
         '--number', '-n',
-        help='How many screenshots to make (including those specified by --timestamps)',
+        help='How many screenshots to make in total',
         type=Number,
         default=0,
     )
@@ -87,25 +101,31 @@ def parse(args):
     )
     screenshots.set_defaults(subcmd=subcmds.screenshots)
 
-    torrent = subparsers.add_parser('torrent', help='Create torrent file', formatter_class=MyHelpFormatter)
+    torrent = subparsers.add_parser(
+        'torrent', aliases=('tor',),
+        help='Create torrent file',
+        description=('Create torrent for a specific tracker with all the appropriate '
+                     'requirements like a "source" field.'),
+        formatter_class=MyHelpFormatter,
+    )
     torrent.add_argument('path', help='Path to release content')
     torrent.set_defaults(subcmd=subcmds.torrent)
     torrent.add_argument(
         '--add-to', '-a',
-        help=('Add created torrent to a running BitTorrent client instance.\n'
+        help=('Add the created torrent to a running BitTorrent client instance.\n'
               'Supported clients are: ' + ', '.join(_get_names(client, 'ClientApi'))),
         metavar='CLIENT',
         choices=_get_names(client, 'ClientApi'),
     )
     torrent.add_argument(
         '--copy-to', '-c',
-        help='Copy created torrent to directory PATH',
+        help='Copy the created torrent to directory PATH',
         metavar='PATH',
     )
 
     submit = subparsers.add_parser(
         'submit',
-        help='Gather all metadata and upload to tracker',
+        help='Gather all required metadata and upload PATH to tracker',
         formatter_class=MyHelpFormatter,
     )
     submit.add_argument('path', help='Path to release content')
