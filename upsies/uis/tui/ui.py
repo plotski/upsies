@@ -18,6 +18,7 @@ class UI:
         self._jobs_added = []
         self.log = widgets.Log()
         self._app = self._make_app()
+        self._exception = None
 
     def error(self, exception):
         self.log.error(exception)
@@ -64,10 +65,22 @@ class UI:
         return app
 
     def run(self):
-        self._app.create_background_task(self.do_jobs())
-        return self._app.run()
+        task = self._app.create_background_task(self._do_jobs())
+        task.add_done_callback(self._jobs_done)
+        exit_code = self._app.run(set_exception_handler=False)
+        if self._exception:
+            raise self._exception
+        else:
+            return exit_code
 
-    async def do_jobs(self):
+    def _jobs_done(self, fut):
+        try:
+            fut.result()
+        except Exception as e:
+            self._exception = e
+            self._app.exit(1)
+
+    async def _do_jobs(self):
         # Create all job widgets first so they can set up callbacks early before
         # they miss any events
         jobws = [widgets.JobWidget(job) for job in self._jobs]
