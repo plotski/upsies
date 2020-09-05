@@ -27,7 +27,7 @@ class ReleaseNameJobWidget(_base.JobWidgetBase):
         self.job.on_release_name_updated(release_name_changed_callback)
 
     def activate(self):
-        pass
+        get_app().invalidate()
 
     def handle_release_name(self, buffer):
         _log.debug('Approved release name: %r', self._release_name.text)
