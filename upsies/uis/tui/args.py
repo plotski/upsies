@@ -1,10 +1,12 @@
 import argparse
+import functools
 import os
 import sys
 
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 
 from ... import __project_name__, utils
+from ...tools import client, imghost
 from . import subcmds
 
 import logging  # isort:skip
@@ -78,8 +80,10 @@ def parse(args):
     )
     screenshots.add_argument(
         '--upload-to', '-u',
-        help='Upload screenshots to image hosting service',
+        help=('Upload screenshots to image hosting service.\n'
+              'Supported services are: ' + ', '.join(_get_names(imghost, 'Uploader'))),
         metavar='SERVICE',
+        choices=_get_names(imghost, 'Uploader'),
     )
     screenshots.set_defaults(subcmd=subcmds.screenshots)
 
@@ -88,8 +92,10 @@ def parse(args):
     torrent.set_defaults(subcmd=subcmds.torrent)
     torrent.add_argument(
         '--add-to', '-a',
-        help='Add created torrent to a running BitTorrent client instance',
+        help=('Add created torrent to a running BitTorrent client instance.\n'
+              'Supported clients are: ' + ', '.join(_get_names(client, 'ClientApi'))),
         metavar='CLIENT',
+        choices=_get_names(client, 'ClientApi'),
     )
     torrent.add_argument(
         '--copy-to', '-c',
@@ -162,3 +168,12 @@ class MyHelpFormatter(argparse.HelpFormatter):
         return [line
                 for paragraph in text.split('\n')
                 for line in wrap(paragraph)]
+
+
+@functools.lru_cache(maxsize=None)
+def _get_names(module, clsname):
+    """Return list `module.submodule.clsname.name` values for each public submodule"""
+    import inspect
+    modules = (module for name, module in inspect.getmembers(module, inspect.ismodule)
+               if not name.startswith('_'))
+    return [getattr(module, clsname).name for module in modules]
