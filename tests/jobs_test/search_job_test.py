@@ -414,11 +414,10 @@ def test_SearchThread_stop():
     st = search._SearchThread(search_coro, results_cb, error_cb, searching_cb)
     st.start()
     assert st.is_alive
-    assert not st._loop.is_closed()
     st.stop()
     asyncio.get_event_loop().run_until_complete(st.join())
     assert not st.is_alive
-    assert st._loop.is_closed()
+    assert not st._loop.is_running()
 
 
 def test_SearchThread_search_ignores_same_search_term():
@@ -564,11 +563,10 @@ def test_UpdateInfoThread_stop():
     uit = search._UpdateInfoThread()
     uit.start()
     assert uit.is_alive
-    assert not uit._loop.is_closed()
     uit.stop()
     asyncio.get_event_loop().run_until_complete(uit.join())
     assert not uit.is_alive
-    assert uit._loop.is_closed()
+    assert not uit._loop.is_running()
 
 
 def test_UpdateInfoThread_updating_cancels_previous_update_task():
