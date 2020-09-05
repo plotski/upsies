@@ -52,7 +52,7 @@ class UI:
         def _(event, self=self):
             self._cancel_all_jobs(wait=False)
             if self._app.is_running:
-                self._app.exit(1)
+                self._exit(1)
 
         app = Application(layout=layout,
                           key_bindings=kb,
@@ -64,6 +64,10 @@ class UI:
         app.timeoutlen = 0.1
         app.ttimeoutlen = 0.1
         return app
+
+    def _exit(self, exit_code):
+        if not self._app.is_done:
+            self._app.exit(exit_code)
 
     def run(self):
         with self._log_to_buffer(self._log.buffer):
@@ -80,7 +84,7 @@ class UI:
             fut.result()
         except Exception as e:
             self._exception = e
-            self._app.exit(1)
+            self._exit(1)
 
     async def _do_jobs(self):
         # Create all job widgets first so they can set up callbacks early before
@@ -119,7 +123,7 @@ class UI:
             await asyncio.sleep(0)
 
         # Return last job's exit code
-        self._app.exit(jobw.job.exit_code)
+        self._exit(jobw.job.exit_code)
 
     def _cancel_all_jobs(self, wait=True):
         for job in self._jobs_added:
