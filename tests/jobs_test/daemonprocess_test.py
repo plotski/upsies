@@ -22,7 +22,7 @@ class regex:
 # DaemonProcess' targets must be picklable and nested functions aren't.
 
 def target_raising_exception(output_queue, input_queue):
-    raise Exception('Kaboom!')
+    raise ValueError('Kaboom!')
 
 def target_sending_to_init_callback(output_queue, input_queue):
     for i in range(3):
@@ -69,17 +69,19 @@ async def test_target_gets_positional_and_keyword_arguments():
 
 
 @pytest.mark.asyncio
-async def test_exceptions_from_target_are_pushed_to_error_queue():
+async def test_exceptions_from_target_are_reraised_when_process_is_joined():
     error_callback = Mock()
     proc = DaemonProcess(
         target=target_raising_exception,
         error_callback=error_callback,
     )
     proc.start()
-    await proc.join()
-    msg = error_callback.call_args_list[0][0][0].split('\n')
-    assert msg[0] == regex(r'^Traceback')
-    assert msg[-1] == regex(r'Exception: Kaboom!$')
+    with pytest.raises(Exception) as exc_info:
+        await proc.join()
+    assert str(exc_info.value).startswith('Traceback')
+    assert str(exc_info.value).endswith('ValueError: Kaboom!\n')
+    assert "raise ValueError('Kaboom!')\n" in str(exc_info.value)
+    assert error_callback.call_args_list == []
 
 
 @pytest.mark.asyncio

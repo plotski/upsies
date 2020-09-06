@@ -168,8 +168,11 @@ class DaemonProcess:
                 if self._info_callback:
                     self._info_callback(msg)
             elif typ == self.ERROR:
-                if self._error_callback:
-                    self._error_callback(msg)
+                if isinstance(msg, Exception):
+                    raise msg
+                else:
+                    if self._error_callback:
+                        self._error_callback(msg)
             elif typ == self.RESULT:
                 if self._finished_callback:
                     self._finished_callback(msg)
@@ -215,7 +218,15 @@ class DaemonProcess:
 def _target_process_wrapper(target, output_queue, input_queue, *args, **kwargs):
     try:
         target(output_queue, input_queue, *args, **kwargs)
-    except BaseException as e:
+    except Exception as e:
+        # Because tracebacks are not picklable, format the exception in the
+        # child process before we send it.
+        output_queue.put((DaemonProcess.ERROR, _PickledException(e)))
+
+class _PickledException(Exception):
+    def __init__(self, exc):
         import traceback
-        msg = ''.join(traceback.format_exception(type(e), e, e.__traceback__)).strip()
-        output_queue.put((DaemonProcess.ERROR, msg))
+        self._formatted = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+
+    def __str__(self):
+        return self._formatted
