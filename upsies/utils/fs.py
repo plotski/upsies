@@ -37,20 +37,17 @@ def tmpdir():
 
 
 @functools.lru_cache(maxsize=None)
-def projectdir(content_path, trackername=None):
+def projectdir(content_path):
     """
-    Return path to directory where files are stored for submission
+    Return path to existing directory in which jobs put their files
 
     :param str content_path: Path to torrent content
-    :param str trackername: Name of the receiving tracker
 
     :raise RuntimeError: if `content_path` exists and is not a directory or has
         insufficient permissions
     """
     if content_path:
         path = os.path.basename(content_path)
-        if trackername:
-            path += f'.{trackername}'
         path += '.upsies'
     else:
         path = '.'

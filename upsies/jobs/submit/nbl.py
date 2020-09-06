@@ -11,7 +11,7 @@ class SubmissionJob(_base.SubmissionJobBase):
     @cache.property
     def torrent_job(self):
         return torrent.CreateTorrentJob(
-            homedir=fs.projectdir(self.content_path, self.trackername),
+            homedir=fs.projectdir(self.content_path),
             ignore_cache=False,
             content_path=self.content_path,
             exclude_regexs=self.config['exclude'],
@@ -28,7 +28,7 @@ class SubmissionJob(_base.SubmissionJobBase):
     @cache.property
     def search_job(self):
         return search.SearchDbJob(
-            homedir=fs.projectdir(self.content_path, self.trackername),
+            homedir=fs.projectdir(self.content_path),
             ignore_cache=False,
             content_path=self.content_path,
             db='tvmaze',

@@ -39,7 +39,7 @@ class torrent(SubcommandBase):
     def jobs(self):
         return (
             _jobs.torrent.CreateTorrentJob(
-                homedir=fs.projectdir(self.args.path, self.args.tracker),
+                homedir=fs.projectdir(self.args.path),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.path,
                 announce_url=self.config.option(f'tracker:{self.args.tracker}', 'announce'),
@@ -57,7 +57,7 @@ class screenshots(SubcommandBase):
     def jobs(self):
         return (
             _jobs.screenshots.ScreenshotsJob(
-                homedir=fs.projectdir(self.args.path, self.args.tracker),
+                homedir=fs.projectdir(self.args.path),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.path,
                 timestamps=self.args.timestamps,
@@ -73,7 +73,7 @@ def make_search_command(db_name):
     def jobs(self):
         return (
             _jobs.search.SearchDbJob(
-                homedir=fs.projectdir(self.args.path, self.args.tracker),
+                homedir=fs.projectdir(self.args.path),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.path,
                 db=db_name,
@@ -94,7 +94,7 @@ class release_name(SubcommandBase):
         search_imdb = make_search_command('imdb')
         imdb_job = search_imdb(args=self.args, config=self.config).jobs[0]
         rn_job = _jobs.release_name.ReleaseNameJob(
-            homedir=fs.projectdir(self.args.path, self.args.tracker),
+            homedir=fs.projectdir(self.args.path),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.path,
         )
@@ -113,7 +113,7 @@ class submit(SubcommandBase):
         _log.debug('Tracker: %r', tracker)
         _log.debug('Submission class: %r', tracker.SubmissionJob)
         sub = tracker.SubmissionJob(
-            homedir=fs.projectdir(self.args.path, self.args.tracker),
+            homedir=fs.projectdir(self.args.path),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.path,
             args=self.args,

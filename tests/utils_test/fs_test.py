@@ -84,29 +84,27 @@ def test_tmpdir_removes_redundant_temp_dir(mkdtemp_mock, tmp_path):
 
 
 projectdir_test_cases = (
-    ('path/to/foo', 'abc', 'foo.abc.upsies'),
-    ('path/to/foo', None, 'foo.upsies'),
-    (None, None, '.'),
-    (None, 'abc', '.'),
+    ('path/to/foo', 'foo.upsies'),
+    (None, '.'),
 )
 
-@pytest.mark.parametrize('content_path, trackername, exp_path', projectdir_test_cases)
+@pytest.mark.parametrize('content_path, exp_path', projectdir_test_cases)
 @patch('upsies.utils.fs._check_dir_access')
-def test_projectdir_does_not_exist(check_dir_access_mock, tmp_path, content_path, trackername, exp_path):
+def test_projectdir_does_not_exist(check_dir_access_mock, tmp_path, content_path, exp_path):
     fs.projectdir.cache_clear()
     cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
-        path = fs.projectdir(content_path, trackername)
+        path = fs.projectdir(content_path)
         assert path == exp_path
         assert os.path.exists(path)
         assert os.access(path, os.R_OK | os.W_OK | os.X_OK)
     finally:
         os.chdir(cwd)
 
-@pytest.mark.parametrize('content_path, trackername, exp_path', projectdir_test_cases)
+@pytest.mark.parametrize('content_path, exp_path', projectdir_test_cases)
 @patch('upsies.utils.fs._check_dir_access')
-def test_projectdir_exists(check_dir_access_mock, tmp_path, content_path, trackername, exp_path):
+def test_projectdir_exists(check_dir_access_mock, tmp_path, content_path, exp_path):
     fs.projectdir.cache_clear()
     cwd = os.getcwd()
     os.chdir(tmp_path)
@@ -114,7 +112,7 @@ def test_projectdir_exists(check_dir_access_mock, tmp_path, content_path, tracke
         os.mkdir(exp_path)
     assert os.path.exists(tmp_path / exp_path)
     try:
-        path = fs.projectdir(content_path, trackername)
+        path = fs.projectdir(content_path)
         assert path == exp_path
         assert os.path.exists(path)
         assert os.access(path, os.R_OK | os.W_OK | os.X_OK)

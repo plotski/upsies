@@ -11,7 +11,7 @@ class SubmissionJob(_base.SubmissionJobBase):
     @cache.property
     def torrent_job(self):
         return torrent.CreateTorrentJob(
-            homedir=fs.projectdir(self.content_path, self.trackername),
+            homedir=fs.projectdir(self.content_path),
             ignore_cache=False,
             content_path=self.content_path,
             trackername=self.trackername,
@@ -27,7 +27,7 @@ class SubmissionJob(_base.SubmissionJobBase):
     @cache.property
     def screenshots_job(self):
         return screenshots.ScreenshotsJob(
-            homedir=fs.projectdir(self.content_path, self.trackername),
+            homedir=fs.projectdir(self.content_path),
             ignore_cache=False,
             content_path=self.content_path,
             number=2,
@@ -47,7 +47,7 @@ class SubmissionJob(_base.SubmissionJobBase):
         else:
             db = 'tvmaze'
         return search.SearchDbJob(
-            homedir=fs.projectdir(self.content_path, self.trackername),
+            homedir=fs.projectdir(self.content_path),
             ignore_cache=False,
             content_path=self.content_path,
             db=db,
