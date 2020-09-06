@@ -6,7 +6,8 @@ import sys
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 
 from ... import __project_name__, utils
-from ...tools import client, imghost
+from ...tools import client as clients
+from ...tools import imghost as imghosts
 from . import subcmds
 
 import logging  # isort:skip
@@ -98,9 +99,9 @@ def parse(args):
     screenshots.add_argument(
         '--upload-to', '-u',
         help=('Upload screenshots to image hosting service.\n'
-              'Supported services are: ' + ', '.join(_get_names(imghost, 'Uploader'))),
+              'Supported services are: ' + ', '.join(_get_names(imghosts, 'Uploader'))),
         metavar='SERVICE',
-        choices=_get_names(imghost, 'Uploader'),
+        choices=_get_names(imghosts, 'Uploader'),
     )
 
     torrent = subparsers.add_parser(
@@ -119,9 +120,9 @@ def parse(args):
     torrent.add_argument(
         '--add-to', '-a',
         help=('Add the created torrent to a running BitTorrent client instance.\n'
-              'Supported clients are: ' + ', '.join(_get_names(client, 'ClientApi'))),
+              'Supported clients are: ' + ', '.join(_get_names(clients, 'ClientApi'))),
         metavar='CLIENT',
-        choices=_get_names(client, 'ClientApi'),
+        choices=_get_names(clients, 'ClientApi'),
     )
     torrent.add_argument(
         '--copy-to', '-c',
