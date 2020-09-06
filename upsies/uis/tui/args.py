@@ -48,32 +48,32 @@ def parse(args):
                      'e.g. "UNKNOWN_RESOLUTION".'),
         formatter_class=MyHelpFormatter,
     )
-    release_name.add_argument('path', help='Path to release content')
     release_name.set_defaults(subcmd=subcmds.release_name)
+    release_name.add_argument('path', help='Path to release content')
 
     imdb = subparsers.add_parser(
         'imdb',
         help='Pick IMDb ID from search results',
         formatter_class=MyHelpFormatter,
     )
-    imdb.add_argument('path', help='Path to release content')
     imdb.set_defaults(subcmd=subcmds.make_search_command('imdb'))
+    imdb.add_argument('path', help='Path to release content')
 
     tmdb = subparsers.add_parser(
         'tmdb',
         help='Pick TMDb ID from search results',
         formatter_class=MyHelpFormatter,
     )
-    tmdb.add_argument('path', help='Path to release content')
     tmdb.set_defaults(subcmd=subcmds.make_search_command('tmdb'))
+    tmdb.add_argument('path', help='Path to release content')
 
     tvmaze = subparsers.add_parser(
         'tvmaze',
         help='Pick TVmaze ID from search results',
         formatter_class=MyHelpFormatter,
     )
-    tvmaze.add_argument('path', help='Path to release content')
     tvmaze.set_defaults(subcmd=subcmds.make_search_command('tvmaze'))
+    tvmaze.add_argument('path', help='Path to release content')
 
     screenshots = subparsers.add_parser(
         'screenshots', aliases=('ss',),
@@ -82,6 +82,7 @@ def parse(args):
                      'upload them to an image hosting service.'),
         formatter_class=MyHelpFormatter,
     )
+    screenshots.set_defaults(subcmd=subcmds.screenshots)
     screenshots.add_argument('path', help='Path to release content')
     screenshots.add_argument(
         '--timestamps', '-t',
@@ -104,7 +105,6 @@ def parse(args):
         metavar='SERVICE',
         choices=_get_names(imghost, 'Uploader'),
     )
-    screenshots.set_defaults(subcmd=subcmds.screenshots)
 
     torrent = subparsers.add_parser(
         'torrent', aliases=('tor',),
@@ -113,8 +113,8 @@ def parse(args):
                      'requirements like a "source" field.'),
         formatter_class=MyHelpFormatter,
     )
-    torrent.add_argument('path', help='Path to release content')
     torrent.set_defaults(subcmd=subcmds.torrent)
+    torrent.add_argument('path', help='Path to release content')
     torrent.add_argument(
         '--add-to', '-a',
         help=('Add the created torrent to a running BitTorrent client instance.\n'
@@ -133,8 +133,8 @@ def parse(args):
         help='Gather all required metadata and upload PATH to tracker',
         formatter_class=MyHelpFormatter,
     )
-    submit.add_argument('path', help='Path to release content')
     submit.set_defaults(subcmd=subcmds.submit)
+    submit.add_argument('path', help='Path to release content')
 
     if args is None:
         parsed = parser.parse_args()
