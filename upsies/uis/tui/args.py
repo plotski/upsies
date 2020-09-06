@@ -32,9 +32,6 @@ def parse(args):
     parser.add_argument('--ignore-cache', '-ic',
                         help='Do not use previously gathered information',
                         action='store_true')
-    parser.add_argument('--tracker', '-t',
-                        help='Tracker name',
-                        default=None)
 
     subparsers = parser.add_subparsers(title='commands')
 
@@ -116,6 +113,10 @@ def parse(args):
     torrent.set_defaults(subcmd=subcmds.torrent)
     torrent.add_argument('path', help='Path to release content')
     torrent.add_argument(
+        'tracker',
+        help='Case-insensitive tracker name',
+    )
+    torrent.add_argument(
         '--add-to', '-a',
         help=('Add the created torrent to a running BitTorrent client instance.\n'
               'Supported clients are: ' + ', '.join(_get_names(client, 'ClientApi'))),
@@ -135,6 +136,10 @@ def parse(args):
     )
     submit.set_defaults(subcmd=subcmds.submit)
     submit.add_argument('path', help='Path to release content')
+    submit.add_argument(
+        'tracker',
+        help='Case-insensitive tracker name',
+    )
 
     if args is None:
         parsed = parser.parse_args()
