@@ -12,7 +12,9 @@ from . import subcmds
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-_config_filepath = os.path.join(XDG_CONFIG_HOME, 'upsies', 'config.ini')
+_main_config_filepath = os.path.join(XDG_CONFIG_HOME, 'upsies', 'config.ini')
+_trackers_config_filepath = os.path.join(XDG_CONFIG_HOME, 'upsies', 'trackers.ini')
+_clients_config_filepath = os.path.join(XDG_CONFIG_HOME, 'upsies', 'clients.ini')
 
 
 def parse(args):
@@ -21,9 +23,12 @@ def parse(args):
     parser.add_argument('--debug', '-d',
                         help='Print debugging messages',
                         action='store_true')
-    parser.add_argument('--configfile', '-c',
-                        help='Configuration file path',
-                        default=_config_filepath)
+    parser.add_argument('--trackers-file', '-t',
+                        help='Tracker configuration file path',
+                        default=_trackers_config_filepath)
+    parser.add_argument('--clients-file', '-c',
+                        help='BitTorrent client configuration file path',
+                        default=_clients_config_filepath)
     parser.add_argument('--ignore-cache', '-ic',
                         help='Do not use previously gathered information',
                         action='store_true')

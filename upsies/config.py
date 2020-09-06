@@ -21,25 +21,30 @@ class _TrackerConfig(dict):
 
 
 DEFAULTS = {
-    'tracker:nbl': _TrackerConfig(
-        source='NBL',
-    ),
-    'tracker:bb': _TrackerConfig(
-        source='bB',
-        exclude=[
-            r'\.(?i:jpg)$',
-            r'\.(?i:png)$',
-            r'\.(?i:nfo)$',
-            r'\.(?i:txt)$',
-            rf'(?:{os.path.sep}|^)(?i:sample)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
-            rf'(?:{os.path.sep}|^)(?i:proof)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
-        ],
-    ),
-    'client:transmission': {
-        'username': '',
-        'password': '',
-        'url': '',
+    'trackers': {
+        'nbl': _TrackerConfig(
+            source='NBL',
+        ),
+        'bb': _TrackerConfig(
+            source='bB',
+            exclude=[
+                r'\.(?i:jpg)$',
+                r'\.(?i:png)$',
+                r'\.(?i:nfo)$',
+                r'\.(?i:txt)$',
+                rf'(?:{os.path.sep}|^)(?i:sample)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
+                rf'(?:{os.path.sep}|^)(?i:proof)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
+            ],
+        ),
     },
+
+    'clients': {
+        'transmission': {
+            'url': 'http://localhost:9091/transmission/rpc',
+            'username': '',
+            'password': '',
+        },
+    }
 }
 
 
@@ -51,75 +56,72 @@ class Config:
 
     :raises ConfigError: if reading or parsing `filepath` fails
     """
-    def __init__(self, filepath):
-        self._filepath = str(filepath)
+    def __init__(self, **files):
+        self._files = files
+        self._cfg = {}
+        for section in self._files:
+            self._cfg[section] = self._read(section)
 
-        try:
-            with open(filepath, 'r') as f:
-                string = f.read()
-        except OSError as e:
-            raise errors.ConfigError(f'{filepath}: {e.strerror}')
+    def defaults(self, section):
+        return DEFAULTS[section]
 
-        cfg = self._parse(string)
-        cfg = self._validate(cfg, DEFAULTS)
-        self._cfg = self._apply_defaults(cfg, DEFAULTS)
+    def _read(self, section):
+        if os.path.exists(self._files[section]):
+            try:
+                with open(self._files[section], 'r') as f:
+                    string = f.read()
+            except OSError as e:
+                raise errors.ConfigError(f'{self._files[section]}: {e.strerror}')
+            else:
+                cfg = self._parse(section, string)
+        else:
+            cfg = {}
+        cfg = self._validate(section, cfg)
+        return self._apply_defaults(section, cfg)
 
-    def _parse(self, string):
+    def _parse(self, section, string):
         cfg = configparser.ConfigParser(
             default_section=None,
         )
         try:
-            cfg.read_string(string, source=self._filepath)
+            cfg.read_string(string, source=self._files[section])
         except configparser.Error as e:
-            raise errors.ConfigError(f'{self._filepath}: {e}')
+            raise errors.ConfigError(f'{self._files[section]}: {e}')
         else:
             # Make normal dictionary from ConfigParser instance
             # https://stackoverflow.com/a/28990982
             cfg = {s : dict(cfg.items(s))
                    for s in cfg.sections()}
+
             # Line breaks are interpreted as list separators
             for section in cfg.values():
                 for key in section:
                     if '\n' in section[key]:
                         section[key] = [item for item in section[key].split('\n') if item]
+
             return cfg
 
-    def _validate(self, cfg, defaults):
+    def _validate(self, section, cfg):
+        defaults = self.defaults(section)
         for section in cfg:
             if section not in defaults:
-                raise errors.ConfigError(f'{self._filepath}: Unknown section: {section}')
+                raise errors.ConfigError(f'{self._files[section]}: Unknown section: {section}')
             for option in cfg[section]:
                 if option not in defaults[section]:
                     raise errors.ConfigError(
-                        f'{self._filepath}: Unknown option in section {section}: {option}')
+                        f'{self._files[section]}: Unknown option in section {section}: {option}')
         return cfg
 
-    def _apply_defaults(self, cfg, defaults):
-        for section in defaults:
-            if section not in cfg:
-                cfg[section] = defaults[section]
+    def _apply_defaults(self, section, cfg):
+        defaults = self.defaults(section)
+        for sect in defaults:
+            if sect not in cfg:
+                cfg[sect] = defaults[sect]
             else:
-                for option in defaults[section]:
-                    if option not in cfg[section]:
-                        cfg[section][option] = defaults[section][option]
+                for option in defaults[sect]:
+                    if option not in cfg[sect]:
+                        cfg[sect][option] = defaults[sect][option]
         return cfg
 
-    def option(self, section, option):
-        try:
-            section_dct = self._cfg[section]
-        except KeyError:
-            raise errors.ConfigError(f'{self._filepath}: No such section: {section}')
-        else:
-            try:
-                value = section_dct[option]
-            except KeyError:
-                raise errors.ConfigError(
-                    f'{self._filepath}: No such option for section {section}: {option}')
-            else:
-                return value
-
-    def section(self, section):
-        try:
-            return self._cfg[section]
-        except KeyError:
-            raise errors.ConfigError(f'{self._filepath}: No such section: {section}')
+    def __getitem__(self, key):
+        return self._cfg[key]

@@ -9,6 +9,36 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
+def _get_client(config, clientname):
+    if clientname:
+        try:
+            client_module = getattr(client, clientname)
+        except AttributeError:
+            raise errors.ConfigError(f'No such client: {clientname}')
+        else:
+            client_config = config['clients'][clientname]
+            _log.debug('Client config: %r', client_config)
+            return client_module.ClientApi(**client_config)
+
+
+def _get_tracker_section(config, trackername):
+    try:
+        return config['trackers'][trackername]
+    except KeyError:
+        raise errors.ConfigError(f'Unknown tracker: {trackername!r}')
+
+
+def _get_tracker_option(config, trackername, option):
+    if trackername is None:
+        raise errors.ConfigError('Missing argument: --tracker, -t')
+    try:
+        tracker = config['trackers'][trackername]
+    except KeyError:
+        raise errors.ConfigError(f'Unknown tracker: {trackername!r}')
+    else:
+        return tracker[option]
+
+
 class SubcommandBase:
     def __init__(self, args, config):
         self._args = args
@@ -23,30 +53,20 @@ class SubcommandBase:
         return self._config
 
 
-def _make_client(args, config):
-    if args.add_to:
-        try:
-            client_module = getattr(client, args.add_to)
-        except AttributeError:
-            raise errors.TorrentError(f'No such client: {args.add_to}')
-        else:
-            _log.debug('Client config: %r', config.section(f'client:{args.add_to}'))
-            return client_module.ClientApi(**config.section(f'client:{args.add_to}'))
-
-
 class torrent(SubcommandBase):
     @cache.property
     def jobs(self):
+        tracker = _get_tracker_section(self.config, self.args.tracker)
         return (
             _jobs.torrent.CreateTorrentJob(
                 homedir=fs.projectdir(self.args.path),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.path,
-                announce_url=self.config.option(f'tracker:{self.args.tracker}', 'announce'),
+                announce_url=tracker['announce'],
                 trackername=self.args.tracker,
-                source=self.args.source or self.config.option(f'tracker:{self.args.tracker}', 'source'),
-                exclude_regexs=self.config.option(f'tracker:{self.args.tracker}', 'exclude'),
-                add_to=_make_client(self.args, self.config),
+                source=tracker['source'],
+                exclude_regexs=tracker['exclude'],
+                add_to=_get_client(self.config, self.args.add_to),
                 copy_to=self.args.copy_to,
             ),
         )
@@ -110,14 +130,14 @@ class submit(SubcommandBase):
         except AttributeError:
             raise ValueError(f'Unknown tracker: {self.args.tracker}')
 
-        _log.debug('Tracker: %r', tracker)
+        _log.debug('Tracker: %r', self.args.tracker)
         _log.debug('Submission class: %r', tracker.SubmissionJob)
         sub = tracker.SubmissionJob(
             homedir=fs.projectdir(self.args.path),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.path,
             args=self.args,
-            config=self.config.section(f'tracker:{self.args.tracker}'),
+            config=_get_tracker_section(self.config, self.args.tracker),
         )
         _log.debug('Tracker jobs: %r', sub.jobs)
         return sub.jobs
