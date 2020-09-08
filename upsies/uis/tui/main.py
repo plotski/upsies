@@ -1,6 +1,6 @@
 import sys
 
-from ... import __homepage__, __project_name__, config, errors
+from ... import __homepage__, __project_name__, config, defaults, errors
 from .args import parse as parse_args
 from .subcmds import SubcommandBase
 from .ui import UI
@@ -21,6 +21,7 @@ def _main(args=None):
 
     try:
         cfg = config.Config(
+            defaults=defaults.config,
             trackers=args.trackers_file,
             clients=args.clients_file,
         )

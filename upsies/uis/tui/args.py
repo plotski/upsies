@@ -1,21 +1,14 @@
 import argparse
 import functools
-import os
 import sys
 
-from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
-
-from ... import __project_name__, utils
+from ... import __project_name__, defaults, utils
 from ...tools import client as clients
 from ...tools import imghost as imghosts
 from . import subcmds
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
-
-_main_config_filepath = os.path.join(XDG_CONFIG_HOME, 'upsies', 'config.ini')
-_trackers_config_filepath = os.path.join(XDG_CONFIG_HOME, 'upsies', 'trackers.ini')
-_clients_config_filepath = os.path.join(XDG_CONFIG_HOME, 'upsies', 'clients.ini')
 
 
 def parse(args):
@@ -26,10 +19,10 @@ def parse(args):
                         action='store_true')
     parser.add_argument('--trackers-file', '-t',
                         help='Tracker configuration file path',
-                        default=_trackers_config_filepath)
+                        default=defaults.trackers_filepath)
     parser.add_argument('--clients-file', '-c',
                         help='BitTorrent client configuration file path',
-                        default=_clients_config_filepath)
+                        default=defaults.clients_filepath)
     parser.add_argument('--ignore-cache', '-ic',
                         help='Do not use previously gathered information',
                         action='store_true')

@@ -7,47 +7,6 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class _TrackerConfig(dict):
-    _defaults = {
-        'username' : '',
-        'password' : '',
-        'announce' : '',
-        'source'   : '',
-        'exclude'  : [],
-    }
-
-    def __new__(cls, **kwargs):
-        return {**cls._defaults, **kwargs}
-
-
-DEFAULTS = {
-    'trackers': {
-        'nbl': _TrackerConfig(
-            source='NBL',
-        ),
-        'bb': _TrackerConfig(
-            source='bB',
-            exclude=[
-                r'\.(?i:jpg)$',
-                r'\.(?i:png)$',
-                r'\.(?i:nfo)$',
-                r'\.(?i:txt)$',
-                rf'(?:{os.path.sep}|^)(?i:sample)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
-                rf'(?:{os.path.sep}|^)(?i:proof)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
-            ],
-        ),
-    },
-
-    'clients': {
-        'transmission': {
-            'url': 'http://localhost:9091/transmission/rpc',
-            'username': '',
-            'password': '',
-        },
-    }
-}
-
-
 class Config:
     """
     Provide configuration file options
@@ -56,14 +15,15 @@ class Config:
 
     :raises ConfigError: if reading or parsing `filepath` fails
     """
-    def __init__(self, **files):
+    def __init__(self, defaults, **files):
+        self._defaults = defaults
         self._files = files
         self._cfg = {}
         for section in self._files:
             self._cfg[section] = self._read(section)
 
     def defaults(self, section):
-        return DEFAULTS[section]
+        return self._defaults[section]
 
     def _read(self, section):
         if os.path.exists(self._files[section]):
