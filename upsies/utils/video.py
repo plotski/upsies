@@ -109,4 +109,4 @@ def make_ffmpeg_input(path):
     except OSError:
         pass
 
-    return path
+    return str(path)
