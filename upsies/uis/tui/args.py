@@ -3,6 +3,7 @@ import functools
 import sys
 
 from ... import __project_name__, defaults, utils
+from ...jobs import submit as trackers
 from ...tools import client as clients
 from ...tools import imghost as imghosts
 from . import subcmds
@@ -93,7 +94,7 @@ def parse(args):
         '--upload-to', '-u',
         type=IMGHOST,
         help=('Upload screenshots to image hosting service.\n'
-              'Supported services: ' + ', '.join(_get_names(imghosts, 'Uploader'))),
+              'Supported services: ' + ', '.join(_get_names(imghosts, 'Uploader', 'name'))),
         metavar='IMGHOST',
     )
 
@@ -110,13 +111,13 @@ def parse(args):
         'tracker',
         type=TRACKER,
         help=('Case-insensitive tracker name.\n'
-              'Supported trackers: ' + ', '.join(defaults.config['trackers'])),
+              'Supported trackers: ' + ', '.join(_get_names(trackers, 'SubmissionJob', 'trackername'))),
     )
     torrent.add_argument(
         '--add-to', '-a',
         type=CLIENT,
         help=('Add the created torrent to a running BitTorrent client instance.\n'
-              'Supported clients: ' + ', '.join(_get_names(clients, 'ClientApi'))),
+              'Supported clients: ' + ', '.join(_get_names(clients, 'ClientApi', 'name'))),
         metavar='CLIENT',
     )
     torrent.add_argument(
@@ -134,7 +135,9 @@ def parse(args):
     submit.add_argument('path', help='Path to release content')
     submit.add_argument(
         'tracker',
-        help='Case-insensitive tracker name',
+        type=TRACKER,
+        help=('Case-insensitive tracker name.\n'
+              'Supported trackers: ' + ', '.join(_get_names(trackers, 'SubmissionJob', 'trackername'))),
     )
 
     if args is None:
@@ -158,19 +161,19 @@ def TIMESTAMP(string):
     return utils.timestamp.parse(string)
 
 def TRACKER(string):
-    if string.casefold() in defaults.config['trackers']:
+    if string in _get_names(trackers, 'SubmissionJob', 'trackername'):
         return string.casefold()
     else:
         raise ValueError(f'Unsupported tracker: {string}')
 
 def CLIENT(string):
-    if string.casefold() in _get_names(clients, 'ClientApi'):
+    if string in _get_names(clients, 'ClientApi', 'name'):
         return string.casefold()
     else:
         raise ValueError(f'Unsupported client: {string}')
 
 def IMGHOST(string):
-    if string.casefold() in _get_names(imghosts, 'Uploader'):
+    if string in _get_names(imghosts, 'Uploader', 'name'):
         return string.casefold()
     else:
         raise ValueError(f'Unsupported image hosting service: {string}')
@@ -215,9 +218,11 @@ class MyHelpFormatter(argparse.HelpFormatter):
 
 
 @functools.lru_cache(maxsize=None)
-def _get_names(module, clsname):
-    """Return list `module.submodule.clsname.name` values for each public submodule"""
+def _get_names(module, clsname, name_attribute):
+    """Return attribute values of classes from public submodules within `module`"""
     import inspect
     modules = (module for name, module in inspect.getmembers(module, inspect.ismodule)
                if not name.startswith('_'))
-    return [getattr(module, clsname).name for module in modules]
+    clsses = [getattr(module, clsname) for module in modules]
+    return [utils.CaseInsensitiveString(getattr(cls, name_attribute))
+            for cls in clsses]
