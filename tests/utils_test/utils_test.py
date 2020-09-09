@@ -20,3 +20,27 @@ def test_closest_number():
         assert utils.closest_number(n, numbers) == 20
     for n in range(26, 50):
         assert utils.closest_number(n, numbers) == 30
+
+
+def test_CaseInsensitiveString_equality():
+    assert utils.CaseInsensitiveString('Foo') == 'foo'
+    assert utils.CaseInsensitiveString('fOo') == 'FOO'
+    assert utils.CaseInsensitiveString('foO') == 'foo'
+    assert utils.CaseInsensitiveString('foo') != 'fooo'
+
+def test_CaseInsensitiveString_identity():
+    assert utils.CaseInsensitiveString('Foo') in ('foo', 'bar', 'baz')
+    assert utils.CaseInsensitiveString('fOo') in ('FOO', 'BAR', 'BAZ')
+    assert utils.CaseInsensitiveString('foO') not in ('fooo', 'bar', 'baz')
+
+def test_CaseInsensitiveString_lt():
+    assert utils.CaseInsensitiveString('foo') < 'Fooo'
+
+def test_CaseInsensitiveString_le():
+    assert utils.CaseInsensitiveString('foo') <= 'Foo'
+
+def test_CaseInsensitiveString_gt():
+    assert utils.CaseInsensitiveString('Fooo') > 'foo'
+
+def test_CaseInsensitiveString_ge():
+    assert utils.CaseInsensitiveString('Foo') >= 'foo'

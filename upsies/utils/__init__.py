@@ -22,3 +22,31 @@ def pretty_bytes(b):
         if b >= bytes:
             return f'{b / bytes:.2f} {unit}'
     return f'{int(b)} B'
+
+
+class CaseInsensitiveString(str):
+    """String that ignores case when compared or sorted"""
+
+    def __hash__(self):
+        return hash(self.casefold())
+
+    def __eq__(self, other):
+        if not isinstance(other, str):
+            return NotImplemented
+        else:
+            return self.casefold() == other.casefold()
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        return self.casefold() < other.casefold()
+
+    def __le__(self, other):
+        return self.casefold() <= other.casefold()
+
+    def __gt__(self, other):
+        return self.casefold() > other.casefold()
+
+    def __ge__(self, other):
+        return self.casefold() >= other.casefold()
