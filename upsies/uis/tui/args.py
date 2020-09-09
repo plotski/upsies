@@ -77,24 +77,24 @@ def parse(args):
     screenshots.add_argument('path', help='Path to release content')
     screenshots.add_argument(
         '--timestamps', '-t',
+        type=TIMESTAMP,
         help='Space-separated list of [[HH:]MM:]SS strings',
         metavar='TIMESTAMP',
         default=(),
         nargs='+',
-        type=Timestamp,
     )
     screenshots.add_argument(
         '--number', '-n',
+        type=NUMBER,
         help='How many screenshots to make in total',
-        type=Number,
         default=0,
     )
     screenshots.add_argument(
         '--upload-to', '-u',
+        type=IMGHOST,
         help=('Upload screenshots to image hosting service.\n'
-              'Supported services are: ' + ', '.join(_get_names(imghosts, 'Uploader'))),
-        metavar='SERVICE',
-        choices=_get_names(imghosts, 'Uploader'),
+              'Supported services: ' + ', '.join(_get_names(imghosts, 'Uploader'))),
+        metavar='IMGHOST',
     )
 
     torrent = subparsers.add_parser(
@@ -108,14 +108,16 @@ def parse(args):
     torrent.add_argument('path', help='Path to release content')
     torrent.add_argument(
         'tracker',
-        help='Case-insensitive tracker name',
+        type=TRACKER,
+        help=('Case-insensitive tracker name.\n'
+              'Supported trackers: ' + ', '.join(defaults.config['trackers'])),
     )
     torrent.add_argument(
         '--add-to', '-a',
+        type=CLIENT,
         help=('Add the created torrent to a running BitTorrent client instance.\n'
-              'Supported clients are: ' + ', '.join(_get_names(clients, 'ClientApi'))),
+              'Supported clients: ' + ', '.join(_get_names(clients, 'ClientApi'))),
         metavar='CLIENT',
-        choices=_get_names(clients, 'ClientApi'),
     )
     torrent.add_argument(
         '--copy-to', '-c',
@@ -149,11 +151,29 @@ def parse(args):
 
 # Type names should match metavar names and raise ValueError
 
-def Number(string):
+def NUMBER(string):
     return int(string)
 
-def Timestamp(string):
+def TIMESTAMP(string):
     return utils.timestamp.parse(string)
+
+def TRACKER(string):
+    if string.casefold() in defaults.config['trackers']:
+        return string.casefold()
+    else:
+        raise ValueError(f'Unsupported tracker: {string}')
+
+def CLIENT(string):
+    if string.casefold() in _get_names(clients, 'ClientApi'):
+        return string.casefold()
+    else:
+        raise ValueError(f'Unsupported client: {string}')
+
+def IMGHOST(string):
+    if string.casefold() in _get_names(imghosts, 'Uploader'):
+        return string.casefold()
+    else:
+        raise ValueError(f'Unsupported image hosting service: {string}')
 
 
 class MyHelpFormatter(argparse.HelpFormatter):
