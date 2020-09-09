@@ -125,3 +125,22 @@ def test_make_ffmpeg_input_gets_bluray_directory(tmp_path):
     (path / 'BDMV').mkdir(parents=True)
     exp_ffmpeg_input = f'bluray:{path}'
     assert video.make_ffmpeg_input(path) == exp_ffmpeg_input
+
+@patch('upsies.utils.video.length')
+def test_make_ffmpeg_input_gets_dvd_directory(length_mock, tmp_path):
+    path = tmp_path / 'foo'
+    (path / 'VIDEO_TS').mkdir(parents=True)
+    (path / 'VIDEO_TS' / '1.VOB').write_text('video data')
+    (path / 'VIDEO_TS' / '2.VOB').write_text('video data')
+    (path / 'VIDEO_TS' / '3.VOB').write_text('video data')
+    length_mock.side_effect = (100, 300, 200)
+    assert video.make_ffmpeg_input(path) == str(path / 'VIDEO_TS' / '2.VOB')
+    assert length_mock.call_args_list == [
+        call(str(path / 'VIDEO_TS' / '1.VOB')),
+        call(str(path / 'VIDEO_TS' / '2.VOB')),
+        call(str(path / 'VIDEO_TS' / '3.VOB')),
+    ]
+
+def test_make_ffmpeg_input_something_else(tmp_path):
+    path = tmp_path / 'foo'
+    assert video.make_ffmpeg_input(path) == str(path)
