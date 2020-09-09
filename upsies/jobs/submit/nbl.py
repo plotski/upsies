@@ -8,6 +8,8 @@ _log = logging.getLogger(__name__)
 
 
 class SubmissionJob(_base.SubmissionJobBase):
+    trackername = 'NBL'
+
     @cache.property
     def torrent_job(self):
         return torrent.CreateTorrentJob(

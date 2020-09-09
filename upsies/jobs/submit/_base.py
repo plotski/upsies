@@ -10,12 +10,6 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
     name = 'submission'
     label = 'Submission'
 
-    @property
-    def trackername(self):
-        cls = type(self)
-        if cls.__module__:
-            return cls.__module__.split('.')[-1]
-
     def initialize(self, args, config, content_path):
         self._args = args
         self._config = config
@@ -35,6 +29,11 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
     @property
     def content_path(self):
         return self._content_path
+
+    @property
+    @abc.abstractmethod
+    def trackername(self):
+        pass
 
     @property
     @abc.abstractmethod
