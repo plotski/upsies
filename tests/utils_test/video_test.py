@@ -30,6 +30,17 @@ def test_first_video_selects_correct_video_from_directory(walk_mock):
     )
     assert video.first_video('path/to/Foo') == 'path/to/Foo/Foo 2.mp4'
 
+def test_first_video_selects_first_video_from_subdirectory(tmp_path):
+    foo = tmp_path / 'foo'
+    foo.mkdir()
+    bar = foo / 'bar'
+    bar.mkdir()
+    nothing_txt = bar / 'nothing.txt'
+    nothing_txt.write_text('nothing')
+    video_mp4 = bar / 'video.mp4'
+    video_mp4.write_text('video data')
+    assert video.first_video(foo) == str(video_mp4)
+
 @patch('os.path.isdir', Mock(side_effect=(True, False)))
 @patch('os.walk')
 def test_first_video_gets_directory_without_videos(walk_mock):
