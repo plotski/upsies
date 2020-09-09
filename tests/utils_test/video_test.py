@@ -49,17 +49,21 @@ def test_first_video_gets_empty_directory(walk_mock):
         video.first_video('path/to/Foo')
 
 @patch('os.walk')
-def test_first_video_finds_all_video_file_extensions(walk_mock):
+@pytest.mark.parametrize(
+    argnames=('extension',),
+    argvalues=((ext,)
+               for extension in video._video_file_extensions
+               for ext in (extension.lower(), extension.upper())),
+)
+def test_first_video_finds_all_video_file_extensions(walk_mock, extension):
     def shuffle(*items):
         return sorted(items, key=lambda _: random.random())
 
-    for ext in video._video_file_extensions:
-        for ext_ in (ext.lower(), ext.upper()):
-            walk_mock.return_value = (
-                ('path/to/Foo', (), shuffle(f'Foo.{ext_}', 'Foo.jpg', 'Foo.txt')),
-            )
-            with patch('os.path.isdir', Mock(side_effect=(True, False))):
-                assert video.first_video('path/to/Foo') == f'path/to/Foo/Foo.{ext_}'
+    walk_mock.return_value = (
+        ('path/to/Foo', (), shuffle(f'Foo.{extension}', 'Foo.jpg', 'Foo.txt')),
+    )
+    with patch('os.path.isdir', Mock(side_effect=(True, False))):
+        assert video.first_video('path/to/Foo') == f'path/to/Foo/Foo.{extension}'
 
 
 @patch('upsies.utils.subproc.run')
