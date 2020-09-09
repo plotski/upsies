@@ -67,8 +67,6 @@ class UploaderBase(abc.ABC):
             except (OSError, ValueError):
                 # We'll overwrite the corrupted cache file later
                 pass
-                # _log.debug('Deleting malformed or inaccessible cache file: %r', cache_path)
-                # os.remove(cache_path)
 
     def _store_info_to_cache(self, image_path, info):
         cache_file = self._cache_file(image_path)
