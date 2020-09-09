@@ -302,6 +302,20 @@ def test_ScreenshotsJob_cache_file_with_imghost(video_length_mock, tmp_path):
     )
 
 
+@patch('upsies.utils.video.length')
+def test_ScreenshotsJob_with_unknown_imghost(video_length_mock, tmp_path):
+    video_length_mock.return_value = 240
+    with pytest.raises(ValueError, match=r'^Unknown image hosting service: imgfoo$'):
+        ScreenshotsJob(
+            homedir=tmp_path,
+            ignore_cache=False,
+            content_path='foo.mkv',
+            timestamps=(120,),
+            number=2,
+            upload_to='imgfoo',
+        )
+
+
 @patch('upsies.tools.imghost')
 @patch('upsies.utils.video.length')
 def test_ScreenshotsJob_state_before_execution(video_length_mock, imghost_mock, tmp_path):
