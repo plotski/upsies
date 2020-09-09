@@ -86,12 +86,19 @@ def test_length_calls_ffprobe(run_mock, tmp_path):
         '-v', 'error',
         '-show_entries', 'format=duration',
         '-of', 'default=noprint_wrappers=1:nokey=1',
-        filepath,
+        str(filepath),
     )
     run_mock.return_value = '12345.098'
     length = video.length(filepath)
     assert length == 12345.098
     assert run_mock.call_args_list == [call(exp_cmd, ignore_stderr=True)]
+
+@patch('upsies.utils.subproc.run')
+def test_length_gets_nonexisting_file(run_mock, tmp_path):
+    filepath = tmp_path / 'the foo.mkv'
+    with pytest.raises(FileNotFoundError, match=rf'^{filepath}: No such file or directory$'):
+        video.length(filepath)
+    assert run_mock.call_args_list == []
 
 @patch('upsies.utils.subproc.run')
 def test_length_crashes_if_ffprobe_returns_unexpected_value(run_mock, tmp_path):
