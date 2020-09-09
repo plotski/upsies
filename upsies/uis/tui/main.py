@@ -20,11 +20,9 @@ def _main(args=None):
         logging.getLogger(__project_name__).setLevel(level=logging.DEBUG)
 
     try:
-        cfg = config.Config(
-            defaults=defaults.config,
-            trackers=args.trackers_file,
-            clients=args.clients_file,
-        )
+        cfg = config.Config(defaults=defaults.config)
+        cfg.read('trackers', filepath=args.trackers_file, ignore_missing=True)
+        cfg.read('clients', filepath=args.clients_file, ignore_missing=True)
     except errors.ConfigError as e:
         print(e, file=sys.stderr)
         sys.exit(1)
