@@ -16,6 +16,7 @@ class SubmissionJob(_base.SubmissionJobBase):
             homedir=fs.projectdir(self.content_path),
             ignore_cache=False,
             content_path=self.content_path,
+            exclude_regexs=self.config['exclude'],
             trackername=self.trackername,
             announce_url=self.config['announce'],
             source='bB',
