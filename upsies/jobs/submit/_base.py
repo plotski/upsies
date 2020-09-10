@@ -20,19 +20,23 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
 
     @property
     def config(self):
+        """Configuration from config file as dictionary"""
         return self._config
 
     @property
     def args(self):
+        """CLI arguments as namespace"""
         return self._args
 
     @property
     def content_path(self):
+        """Path to content file(s)"""
         return self._content_path
 
     @property
     @abc.abstractmethod
     def trackername(self):
+        """Tracker name abbreviation"""
         pass
 
     @property
