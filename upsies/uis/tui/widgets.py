@@ -40,7 +40,7 @@ def JobWidget(job):
     elif isinstance(job, jobs.submit.SubmissionJobBase):
         return jobwidgets.SubmissionJobWidget(job)
     else:
-        raise RuntimeError('Unsupported job class: {type(job).__name__}')
+        raise RuntimeError(f'Unsupported job class: {type(job).__name__}')
 
 
 class Log:
