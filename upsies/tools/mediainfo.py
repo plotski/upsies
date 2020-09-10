@@ -10,31 +10,39 @@ _log = logging.getLogger(__name__)
 
 
 def _run_mediainfo(path, *args):
+    # Reporing an error now means the given path is in the error message.
+    # Because we chdir(), error messages from other functions will use the
+    # relative path.
+    if not os.path.exists(path):
+        raise errors.MediainfoError(f'{path}: No such file or directory')
+
     # Changing the working directory to `path`'s parent removes the path from
     # mediainfo's output.
     dirpath = os.path.dirname(path)
-    if dirpath:
-        cwd = os.getcwd()
+    if dirpath and os.path.exists(dirpath):
+        orig_cwd = os.getcwd()
         try:
             os.chdir(dirpath)
         except OSError as e:
             raise errors.MediainfoError(f'{dirpath}: {e.strerror}')
+    else:
+        orig_cwd = None
+
     try:
+        relpath = os.path.relpath(path, os.path.dirname(path))
         try:
-            video_file_path = utils.video.first_video(path)
+            video_file_path = utils.video.first_video(relpath)
         except errors.NoContentError as e:
             raise errors.MediainfoError(e)
-        else:
-            video_file_path_rel = os.path.relpath(video_file_path,
-                                                  os.path.dirname(path))
-        cmd = (binaries.mediainfo, video_file_path_rel) + args
+
+        cmd = (binaries.mediainfo, video_file_path) + args
         try:
             return utils.subproc.run(cmd, cache=True)
         except errors.ProcessError as e:
             raise errors.MediainfoError(f'{video_file_path}: {e}')
     finally:
-        if dirpath:
-            os.chdir(cwd)
+        if orig_cwd:
+            os.chdir(orig_cwd)
 
 
 def as_string(path):

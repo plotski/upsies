@@ -8,6 +8,15 @@ from upsies.tools import mediainfo
 
 
 @patch('upsies.utils.subproc.run')
+def test_run_mediainfo_gets_nonexisting_path(run_mock, tmp_path):
+    path = tmp_path / 'does' / 'not' / 'exist'
+    orig_cwd = os.getcwd()
+    with pytest.raises(errors.MediainfoError, match=rf'^{path}: No such file or directory$'):
+        mediainfo._run_mediainfo(path)
+    assert run_mock.call_args_list == []
+    assert os.getcwd() == orig_cwd
+
+@patch('upsies.utils.subproc.run')
 def test_run_mediainfo_does_not_chdir_if_path_is_in_current_directory(run_mock, tmp_path):
     orig_cwd = os.getcwd()
     try:
@@ -21,13 +30,15 @@ def test_run_mediainfo_does_not_chdir_if_path_is_in_current_directory(run_mock, 
     finally:
         os.chdir(orig_cwd)
 
+@patch('os.path.exists')
 @patch('upsies.utils.subproc.run')
-def test_run_mediainfo_fails_to_chdir(run_mock, tmp_path):
+def test_run_mediainfo_fails_to_chdir(run_mock, path_exists_mock, tmp_path):
     orig_cwd = os.getcwd()
     video_path = tmp_path / 'foo.mkv'
     video_path.write_bytes(b'video data')
     video_path.parent.chmod(0o660)
     try:
+        path_exists_mock.return_value = True
         with pytest.raises(errors.MediainfoError, match=rf'^{video_path.parent}: Permission denied$'):
             mediainfo._run_mediainfo(video_path)
         assert run_mock.call_args_list == []
@@ -51,7 +62,7 @@ def test_run_mediainfo_fails_to_find_video_file(run_mock, tmp_path):
     file1.write_text('some text')
     file2 = tmp_path / 'foo.jpg'
     file2.write_bytes(b'image data')
-    with pytest.raises(errors.MediainfoError, match=rf'^{tmp_path}: No video file found$'):
+    with pytest.raises(errors.MediainfoError, match=rf'^{tmp_path.name}: No video file found$'):
         mediainfo._run_mediainfo(tmp_path)
     assert run_mock.call_args_list == []
     assert os.getcwd() == orig_cwd
@@ -62,7 +73,7 @@ def test_run_mediainfo_fails_to_run_mediainfo(run_mock, tmp_path):
     video_path = tmp_path / 'foo.mkv'
     video_path.write_bytes(b'video data')
     run_mock.side_effect = errors.ProcessError('Invalid argument: --abc')
-    with pytest.raises(errors.MediainfoError, match=rf'^{video_path}: Invalid argument: --abc$'):
+    with pytest.raises(errors.MediainfoError, match=rf'^{video_path.name}: Invalid argument: --abc$'):
         mediainfo._run_mediainfo(video_path)
     assert run_mock.call_args_list == [call((binaries.mediainfo, video_path.name), cache=True)]
     assert os.getcwd() == orig_cwd
