@@ -207,9 +207,11 @@ class _SearchThread(_common.DaemonThread):
             results = await self._search_coro(title, **kwargs)
         except errors.RequestError as e:
             self._error_callback(e)
+            results = []
         finally:
             self._searching_callback(False)
-        self._results_callback(results)
+            if results:
+                self._results_callback(results)
 
     _movie_types = ('movie', 'film')
     _series_types = ('series', 'tv', 'show', 'episode', 'season')
