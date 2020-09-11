@@ -145,7 +145,7 @@ async def test_request_handles_ClientResponseError(from_cache_mock, to_cache_moc
 async def test_request_handles_ClientConnectionError(from_cache_mock, to_cache_mock, method):
     with patch(f'aiohttp.ClientSession.{method.lower()}') as request_mock:
         _set_request_response(request_mock, side_effect=aiohttp.ClientConnectionError('foo'))
-        with pytest.raises(errors.RequestError, match=r'^http://localhost:123/foo: Failed to connect$'):
+        with pytest.raises(errors.RequestError, match=r'^http://localhost:123/foo: foo$'):
             await http._request(method, 'http://localhost:123/foo')
         assert request_mock.call_args_list == [call('http://localhost:123/foo', params={})]
 
