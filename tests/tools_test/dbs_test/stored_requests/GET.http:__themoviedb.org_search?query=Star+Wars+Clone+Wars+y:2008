@@ -316,7 +316,7 @@
         <form id="search_form" action="/search" method="get" accept-charset="utf-8">
           
           <label>
-            <input dir="auto" id="search_v4" name="query" type="text" tabindex="1" autocorrect="off" autofill="off" autocomplete="off" spellcheck="false" placeholder="Search for a movie, tv show, person..." value="Star Wars Clone Wars y:2003">
+            <input dir="auto" id="search_v4" name="query" type="text" tabindex="1" autocorrect="off" autofill="off" autocomplete="off" spellcheck="false" placeholder="Search for a movie, tv show, person..." value="Star Wars Clone Wars y:2008">
           </label>
           <input type="submit" disabled>
         </form>
@@ -346,7 +346,7 @@
         
 
         
-          History.pushState({ media_type: active_nav_item }, document.title, '/search?query=Star Wars Clone Wars y:2003');
+          History.pushState({ media_type: active_nav_item }, document.title, '/search?query=Star Wars Clone Wars y:2008');
         
 
         selected_media_type = $(this).prop('id')
@@ -356,7 +356,7 @@
         $(this).parent().addClass('selected');
 
         
-          History.pushState({ media_type: selected_media_type }, document.title, '/search/' + selected_media_type + '?query=Star Wars Clone Wars y:2003');
+          History.pushState({ media_type: selected_media_type }, document.title, '/search/' + selected_media_type + '?query=Star Wars Clone Wars y:2008');
         
 
         
@@ -401,37 +401,37 @@
             <ul class="settings panel with_counts scroller">
               
                 <li class="selected">
-                  <a id="tv" href="/search/tv?query=Star Wars Clone Wars y:2003" class="search_tab active" title="TV Shows" alt="TV Shows">TV Shows</a>
+                  <a id="tv" href="/search/tv?query=Star Wars Clone Wars y:2008" class="search_tab active" title="TV Shows" alt="TV Shows">TV Shows</a>
                     <span>1</span>
                 </li>
               
                 <li class="">
-                  <a id="movie" href="/search/movie?query=Star Wars Clone Wars y:2003" class="search_tab " title="Movies" alt="Movies">Movies</a>
+                  <a id="movie" href="/search/movie?query=Star Wars Clone Wars y:2008" class="search_tab " title="Movies" alt="Movies">Movies</a>
+                    <span>1</span>
+                </li>
+              
+                <li class="">
+                  <a id="person" href="/search/person?query=Star Wars Clone Wars y:2008" class="search_tab " title="People" alt="People">People</a>
                     <span>0</span>
                 </li>
               
                 <li class="">
-                  <a id="person" href="/search/person?query=Star Wars Clone Wars y:2003" class="search_tab " title="People" alt="People">People</a>
+                  <a id="collection" href="/search/collection?query=Star Wars Clone Wars y:2008" class="search_tab " title="Collections" alt="Collections">Collections</a>
                     <span>0</span>
                 </li>
               
                 <li class="">
-                  <a id="collection" href="/search/collection?query=Star Wars Clone Wars y:2003" class="search_tab " title="Collections" alt="Collections">Collections</a>
+                  <a id="company" href="/search/company?query=Star Wars Clone Wars y:2008" class="search_tab " title="Companies" alt="Companies">Companies</a>
                     <span>0</span>
                 </li>
               
                 <li class="">
-                  <a id="company" href="/search/company?query=Star Wars Clone Wars y:2003" class="search_tab " title="Companies" alt="Companies">Companies</a>
+                  <a id="keyword" href="/search/keyword?query=Star Wars Clone Wars y:2008" class="search_tab " title="Keywords" alt="Keywords">Keywords</a>
                     <span>0</span>
                 </li>
               
                 <li class="">
-                  <a id="keyword" href="/search/keyword?query=Star Wars Clone Wars y:2003" class="search_tab " title="Keywords" alt="Keywords">Keywords</a>
-                    <span>0</span>
-                </li>
-              
-                <li class="">
-                  <a id="network" href="/search/network?query=Star Wars Clone Wars y:2003" class="search_tab " title="Networks" alt="Networks">Networks</a>
+                  <a id="network" href="/search/network?query=Star Wars Clone Wars y:2008" class="search_tab " title="Networks" alt="Networks">Networks</a>
                     <span>0</span>
                 </li>
               
@@ -448,14 +448,14 @@
               <div class="results flex">
   
     
-      <div id="card_tv_52574c88760ee36aaa156298" class="card v4 tight">
+      <div id="card_tv_52575d9719c29531db1a9b9f" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="52574c88760ee36aaa156298" data-media-type="tv" data-media-adult="false" class="result" href="/tv/3122">
+        <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/2lsuke69bRdyB1sxtKmavtwkc35.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/2lsuke69bRdyB1sxtKmavtwkc35.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/2lsuke69bRdyB1sxtKmavtwkc35.jpg 2x" alt="Star Wars: Clone Wars">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 2x" alt="Star Wars: The Clone Wars">
     
   
 
@@ -466,16 +466,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="52574c88760ee36aaa156298" data-media-type="tv" data-media-adult="false" class="result" href="/tv/3122"><h2>Star Wars: Clone Wars</h2></a>
+          <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194"><h2>Star Wars: The Clone Wars</h2></a>
 
           
-            <span class="release_date">November  7, 2003</span>
+            <span class="release_date">October  3, 2008</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Star Wars: Clone Wars is an Emmy Award- and Annie Award-winning American animated micro-series set in the Star Wars universe.</p><p></p><p>Chronologically, the series takes place during the three-year time period between the prequel films Attack of the Clones and Revenge of the Sith. The show depicted the actions of various characters in the Star Wars prequel trilogy, including Anakin Skywalker, Obi-Wan Kenobi, Mace Windu, and other Knights of the Jedi Order during the conflict, leading the clone trooper forces of the Galactic Republic against the battle droid armies of the Confederacy of Independent Systems and the Sith.</p>
+        <p>Yoda, Obi-Wan Kenobi, Anakin Skywalker, Mace Windu and other Jedi Knights lead the Grand Army of the Republic against the droid army of the Separatists.</p>
       </div>
     </div>
   </div>
@@ -494,7 +494,46 @@
             <div class="search_results movie hide">
               <div class="results flex">
   
-    <p>There are no movies that matched your query.</p>
+    
+      <div id="card_movie_4bc8b4d4017a3c122d05f169" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="4bc8b4d4017a3c122d05f169" data-media-type="movie" data-media-adult="false" class="result" href="/movie/12180">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/veee7dll1xMwK14dGt0xsQekYYs.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/veee7dll1xMwK14dGt0xsQekYYs.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/veee7dll1xMwK14dGt0xsQekYYs.jpg 2x" alt="Star Wars: The Clone Wars">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="4bc8b4d4017a3c122d05f169" data-media-type="movie" data-media-adult="false" class="result" href="/movie/12180"><h2>Star Wars: The Clone Wars</h2></a>
+
+          
+            <span class="release_date">August  5, 2008</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Set between Episode II and III, The Clone Wars is the first computer animated Star Wars film. Anakin and Obi Wan must find out who kidnapped Jabba the Hutt's son and return him safely. The Seperatists will try anything to stop them and ruin any chance of a diplomatic agreement between the Hutts and the Republic.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+
+    <div class="pagination_wrapper">
+  
+</div>
   
 </div>
             </div>
@@ -596,7 +635,7 @@
         </div>
       </nav>
 
-      <section>Build 24c287b (385)</section>
+      <section>Build b887a8e (420)</section>
     </footer>
 
     

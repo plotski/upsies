@@ -12,7 +12,7 @@ async def test_year(store_request_cache):
     assert await imdb.year('tt0076759') == '1977'
 
 title_test_cases = (
-    ('tt0076759', 'Star Wars: A New Hope', 'Star Wars'),
+    ('tt0076759', 'Star Wars: Episode IV - A New Hope', 'Star Wars'),
     ('tt2209300', 'Aftermath', 'Poklosie'),
     ('tt3286052', "The Blackcoat's Daughter", 'February'),
     ('tt1405737', 'Traffic Light', 'Ramzor'),

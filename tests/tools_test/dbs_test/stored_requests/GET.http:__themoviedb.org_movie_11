@@ -428,8 +428,8 @@
       Media
 
       <ul class="media number_group">
-        <li><a href="/movie/11-star-wars/images/backdrops">Backdrops <span class="count">54</span></a></li>
-        <li><a href="/movie/11-star-wars/images/posters">Posters <span class="count">137</span></a></li>
+        <li><a href="/movie/11-star-wars/images/backdrops">Backdrops <span class="count">53</span></a></li>
+        <li><a href="/movie/11-star-wars/images/posters">Posters <span class="count">138</span></a></li>
         <li>
           Videos
 
@@ -452,7 +452,7 @@
 
           <ul class="number_group">
             <li><a href="/movie/11-star-wars/discuss">Overview</a></li>
-            <li><a href="/movie/11-star-wars/discuss/category/5047951f760ee3318900009a">General <span class="count">28</span></a></li>
+            <li><a href="/movie/11-star-wars/discuss/category/5047951f760ee3318900009a">General <span class="count">29</span></a></li>
             <li><a href="/movie/11-star-wars/discuss/category/504794a319c29527aa000640">Content Issues <span class="count">32</span></a></li>
           </ul>
         </li>
@@ -959,7 +959,7 @@
                 <h3 dir="auto">Social</h3>
                 <ul>
                   <li class="active" dir="auto"><a id="reviews" class="media_panel" href="#">Reviews <span>3</span></a></li>
-                  <li class="" dir="auto"><a id="discussions" class="media_panel" href="#">Discussions <span>64</span></a></li>
+                  <li class="" dir="auto"><a id="discussions" class="media_panel" href="#">Discussions <span>65</span></a></li>
                 </ul>
               </div>
 
@@ -1026,8 +1026,8 @@
                 <ul>
                   <li class="active" dir="auto"><a id="popular" class="media_panel" href="#">Most Popular</a></li>
                   <li dir="auto"><a id="videos" class="media_panel" href="#">Videos <span>3</span></a></li>
-                  <li dir="auto"><a id="backdrops" class="media_panel" href="#">Backdrops <span>54</span></a></li>
-                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>137</span></a></li>
+                  <li dir="auto"><a id="backdrops" class="media_panel" href="#">Backdrops <span>53</span></a></li>
+                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>138</span></a></li>
                   <li class="view_all"></li>
                 </ul>
               </div>
@@ -1237,7 +1237,7 @@
     
       <div class="edit_leader">
         <div class="avatar">
-          <a href="/u/TMDb+Bot">
+          <a href="/u/TMDb-Bot">
             
               <span class="round initials background_color green">TB</span>
             
@@ -1246,7 +1246,7 @@
         <div class="info">
           <p class="edit_count">
             186<br>
-            <a href="/u/TMDb+Bot">TMDb Bot</a>
+            <a href="/u/TMDb-Bot">TMDb Bot</a>
           </p>
         </div>
       </div>
@@ -1869,7 +1869,7 @@
         </div>
       </nav>
 
-      <section>Build 24c287b (385)</section>
+      <section>Build b887a8e (420)</section>
     </footer>
 
     

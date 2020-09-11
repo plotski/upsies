@@ -1,3 +1,5 @@
+import collections
+
 from async_lru import alru_cache
 
 from . import _imdbpie
@@ -55,22 +57,38 @@ async def title_english(id):
     :param str id: IMDb ID (starts with "tt")
     """
     info = await _imdbpie.get_info(id, 'title_versions')
+    # Only consider titles with "imdbDisplay" type
+    display_titles = [i for i in info.get('alternateTitles', ())
+                      if 'imdbDisplay' in i.get('types', '')]
+    titles = collections.defaultdict(lambda: [])
 
-    def get_region_title(region):
-        for title in info.get('alternateTitles', ()):
-            if title.get('region') == region:
-                if title.get('language', '').casefold() == 'en' or \
-                   title.get('region', '').casefold() == 'us':
-                    return title.get('title')
+    # Map titles to region and language.
+    # Both region and language may not exist or be undefined.
+    # Ensure regions are upper case and languages are lower case.
+    for i in display_titles:
+        key = (i.get('region', '').upper(),
+               i.get('language', '').lower())
+        titles[key] = i['title']
+
+    # for key,title in sorted(titles.items()):
+    #     _log.debug(f'{key}: {title}')
 
     original_title = await title_original(id)
+    _log.debug('Original title: %r', original_title)
 
-    title = get_region_title('XWW')
-    if title and title != original_title:
-        return title
+    # US titles seem to be the most common
+    priorities = (
+        ('US', 'en'),
+        ('XWW', 'en'),  # World-wide
+        ('US', ''),
+        ('', 'en'),
+    )
 
-    title = get_region_title('US')
-    if title and title != original_title:
-        return title
+    # Find English US title (US titles can also be Spanish)
+    for key in priorities:
+        if key in titles:
+            if titles[key] != original_title:
+                _log.debug('Found english title: %s: %r', key, titles[key])
+                return titles[key]
 
     return ''
