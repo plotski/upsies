@@ -71,8 +71,6 @@ async def _request(method, url, params={}, cache=False):
                     text = await response.text()
             except aiohttp.ClientResponseError as e:
                 raise errors.RequestError(f'{url}: {e.message}')
-            except aiohttp.ClientConnectionError:
-                raise errors.RequestError(f'{url}: Failed to connect')
             except aiohttp.ClientError as e:
                 raise errors.RequestError(f'{url}: {e}')
 
