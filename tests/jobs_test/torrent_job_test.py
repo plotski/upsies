@@ -72,7 +72,7 @@ def test_CreateTorrentJob_initialize_without_handling_torrent(torrent_process_mo
         ignore_cache=False,
         content_path='path/to/foo',
         announce_url='http://foo.bar',
-        trackername='asdf',
+        trackername='ASDF',
         source='AsdF',
         exclude_regexs=('a', 'b'),
     )

@@ -24,7 +24,7 @@ class CreateTorrentJob(_base.JobBase):
         self._source = source
         self._torrent_path = os.path.join(
             self.homedir,
-            f'{os.path.basename(content_path)}.{trackername}.torrent',
+            f'{os.path.basename(content_path)}.{trackername.lower()}.torrent',
         )
         if add_to is not None:
             assert isinstance(add_to, client.ClientApiBase)
