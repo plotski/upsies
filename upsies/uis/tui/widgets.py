@@ -33,6 +33,8 @@ def JobWidget(job):
         return jobwidgets.SearchJobWidget(job)
     elif isinstance(job, jobs.release_name.ReleaseNameJob):
         return jobwidgets.ReleaseNameJobWidget(job)
+    elif isinstance(job, jobs.mediainfo.MediainfoJob):
+        return jobwidgets.MediainfoJobWidget(job)
     elif isinstance(job, jobs.torrent.CreateTorrentJob):
         return jobwidgets.CreateTorrentJobWidget(job)
     elif isinstance(job, jobs.screenshots.ScreenshotsJob):

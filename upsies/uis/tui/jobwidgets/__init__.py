@@ -1,3 +1,4 @@
+from ._mediainfo import MediainfoJobWidget
 from ._release_name import ReleaseNameJobWidget
 from ._screenshots import ScreenshotsJobWidget
 from ._search import SearchJobWidget

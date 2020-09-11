@@ -98,6 +98,18 @@ def parse(args):
         metavar='IMGHOST',
     )
 
+    mediainfo = subparsers.add_parser(
+        'mediainfo', aliases=('mi',),
+        help='Print mediainfo output',
+        description=('If PATH is a directory, it is recursively searched '
+                     'for the first video file in natural order, '
+                     'i.e. "File1.mp4" comes before "File10.mp4".\n\n'
+                     'Any irrelevant parts in the file path are removed from the output.'),
+        formatter_class=MyHelpFormatter,
+    )
+    mediainfo.set_defaults(subcmd=subcmds.mediainfo)
+    mediainfo.add_argument('path', help='Path to release content')
+
     torrent = subparsers.add_parser(
         'torrent', aliases=('tor',),
         help='Create torrent file',

@@ -87,6 +87,18 @@ class screenshots(SubcommandBase):
         )
 
 
+class mediainfo(SubcommandBase):
+    @cache.property
+    def jobs(self):
+        return (
+            _jobs.mediainfo.MediainfoJob(
+                homedir=fs.projectdir(self.args.path),
+                ignore_cache=self.args.ignore_cache,
+                content_path=self.args.path,
+            ),
+        )
+
+
 @functools.lru_cache(maxsize=None)
 def make_search_command(db_name):
     @cache.property
