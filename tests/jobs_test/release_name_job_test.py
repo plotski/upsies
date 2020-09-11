@@ -1,14 +1,14 @@
 import asyncio
 from unittest.mock import Mock, call, patch
 
+from upsies.jobs.release_name import ReleaseNameJob
+
 try:
     from unittest.mock import AsyncMock
 except ImportError:
     class AsyncMock(Mock):
         async def __call__(self, *args, **kwargs):
             return super().__call__(*args, **kwargs)
-
-from upsies.jobs.release_name import ReleaseNameJob
 
 
 @patch('upsies.tools.release_name.ReleaseName')

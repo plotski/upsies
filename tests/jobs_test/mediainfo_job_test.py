@@ -1,7 +1,7 @@
 from unittest.mock import call, patch
 
-from upsies.jobs.mediainfo import MediainfoJob
 from upsies import errors
+from upsies.jobs.mediainfo import MediainfoJob
 
 
 @patch('upsies.jobs.mediainfo.mediainfo')
