@@ -2,7 +2,7 @@ import argparse
 import functools
 import sys
 
-from ... import __project_name__, defaults, utils
+from ... import defaults, utils
 from ...jobs import submit as trackers
 from ...tools import client as clients
 from ...tools import imghost as imghosts
@@ -13,8 +13,10 @@ _log = logging.getLogger(__name__)
 
 
 def parse(args):
-    parser = argparse.ArgumentParser(usage=f'{__project_name__} [command] [options]',
-                                     formatter_class=MyHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description='Collect metadata for uploading content to private trackers',
+        formatter_class=MyHelpFormatter,
+    )
     parser.add_argument('--debug', '-d',
                         help='Print debugging messages',
                         action='store_true')
