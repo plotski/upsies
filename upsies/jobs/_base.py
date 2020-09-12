@@ -141,7 +141,8 @@ class JobBase(abc.ABC):
             True
         """
         if not self.is_finished:
-            self._output.append(str(output))
+            if output:
+                self._output.append(str(output))
         else:
             if not if_not_finished:
                 raise RuntimeError('send() called on finished job')

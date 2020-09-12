@@ -116,6 +116,14 @@ def test_send_and_output(job):
     job.send([1, 2])
     assert job.output == ('foo', '[1, 2]')
 
+def test_send_ignores_falsy_values(job):
+    job.start()
+    assert job.output == ()
+    job.send('')
+    assert job.output == ()
+    job.send(None)
+    assert job.output == ()
+
 def test_send_on_finished_job(job):
     job.start()
     job.send('foo')
