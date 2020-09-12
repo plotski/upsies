@@ -26,7 +26,6 @@ def run(argv, ignore_stderr=False, join_output=False, cache=False):
     :rtype: str
     """
     argv = tuple(str(arg) for arg in argv)
-    _log.debug('Running: %s', ' '.join(shlex.quote(arg) for arg in argv))
     if cache and argv in _run_output_cache:
         stdout, stderr = _run_output_cache[argv]
     else:
@@ -36,6 +35,7 @@ def run(argv, ignore_stderr=False, join_output=False, cache=False):
         else:
             stderr = subprocess.PIPE
         try:
+            _log.debug('Running: %s', ' '.join(shlex.quote(arg) for arg in argv))
             proc = subprocess.run(argv,
                                   shell=False,
                                   encoding='utf-8',
