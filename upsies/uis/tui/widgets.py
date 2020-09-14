@@ -25,7 +25,7 @@ def JobWidget(job):
     Factory that returns JobWidgetBase instances based on job type
 
     :param job: Job instance
-    :type job: :class:`JobBase` derivative
+    :type job: :class:`JobBase`
 
     :raise RuntimeError: if `job`'s type is not supported
     """

@@ -10,12 +10,21 @@ _log = logging.getLogger(__name__)
 
 
 class JobBase(abc.ABC):
-    """Base class for all jobs"""
+    """
+    Base class for all jobs
+
+    :param str homedir: Directory that is used to store files. Cached output is
+        stored in a subdirectory called ".output".
+    :param str ignore_cache: Whether cached output and previously created files
+        should not be re-used
+
+    Any additional keyword arguments are passed on to :func:`initialize`.
+    """
 
     @property
     @abc.abstractmethod
     def name(self):
-        """Internal name"""
+        """Internal name (e.g. for the cache file name)"""
         pass
 
     @property
@@ -47,15 +56,15 @@ class JobBase(abc.ABC):
     @abc.abstractmethod
     def initialize(self):
         """
-        Called after job creation
+        Called after job creation with custom keyword arguments
 
-        This method should do handle arguments and return quickly.
+        This method should handle its arguments and return quickly.
         """
         pass
 
     @abc.abstractmethod
     def execute(self):
-        """Called when this job is supposed to do work"""
+        """Called to do background or interactive work"""
         pass
 
     def start(self):
@@ -63,10 +72,10 @@ class JobBase(abc.ABC):
         Called by the main entry point when this job is executed
 
         If there is cached output available, load it and mark this job as
-        finished. Otherwise, call :meth:`execute`.
+        finished. Otherwise, call :func:`execute`.
         """
         _log.debug('Running %r', self)
-        self.read_output_cache()
+        self._read_output_cache()
         if self.output:
             _log.debug('Job was already done previously %r', self)
             self._finished_event.set()
@@ -84,15 +93,10 @@ class JobBase(abc.ABC):
         await self._finished_event.wait()
 
     def finish(self):
-        """
-        Mark this job as finished
-
-        When this method is called, :meth:`wait` must return and
-        :attr:`is_finished` must be `True`.
-        """
+        """Mark this job as finished and unblock :func:`wait`"""
         if not self.is_finished:
             self._finished_event.set()
-            self.write_output_cache()
+            self._write_output_cache()
 
     @property
     def is_finished(self):
@@ -100,20 +104,29 @@ class JobBase(abc.ABC):
         return self._finished_event.is_set()
 
     @property
-    def output(self):
-        """Result of this job as a sequence of strings"""
-        return tuple(self._output)
-
-    @property
-    def info(self):
-        """Additional information that is only displayed but not the job's result"""
-        return ''
-
-    @property
     def exit_code(self):
         """`0` if job was successful, `> 0` otherwise"""
         if self.is_finished:
             return 0 if self.output and not self.errors else 1
+
+    @property
+    def output(self):
+        """Result of this job as a sequence of strings"""
+        return tuple(self._output)
+
+    def send(self, output, if_not_finished=False):
+        """
+        Append `output` to :attr:`output`
+
+        :param bool if_not_finished: Ignore this call if :attr:`is_finished` is
+            True (`RuntimeError` is raised otherwise)
+        """
+        if not self.is_finished:
+            if output:
+                self._output.append(str(output))
+        else:
+            if not if_not_finished:
+                raise RuntimeError('send() called on finished job')
 
     @property
     def errors(self):
@@ -133,29 +146,23 @@ class JobBase(abc.ABC):
             if not if_not_finished:
                 raise RuntimeError('error() called on finished job')
 
-    def send(self, output, if_not_finished=False):
+    @property
+    def info(self):
         """
-        Append `output` to :attr:`output`
-
-        :param bool if_not_finished: Ignore this call if :attr:`is_finished` is
-            True
+        Additional information that is only displayed in the UI and not part of the
+        job's result
         """
-        if not self.is_finished:
-            if output:
-                self._output.append(str(output))
-        else:
-            if not if_not_finished:
-                raise RuntimeError('send() called on finished job')
+        return ''
 
-    def write_output_cache(self):
+    def _write_output_cache(self):
         """
         Store :attr:`output` in :attr:`cache_file`
 
-        The base class implementation caches output as JSON. Derivative classes
-        may want to use other formats.
+        The base class implementation stores output as JSON. Child classes may
+        want to use other formats.
 
         :raise RuntimeError: if :attr:`output` is not JSON-encodable or
-            :attr:`cache_file` exists unwritable
+            :attr:`cache_file` is not writable
         """
         if self.output and self.exit_code == 0:
             _log.debug('Writing output cache: %r: %r', self.cache_file, self.output)
@@ -171,12 +178,12 @@ class JobBase(abc.ABC):
                 except OSError as e:
                     raise RuntimeError(f'Unable to write cache {self.cache_file}: {e}')
 
-    def read_output_cache(self):
+    def _read_output_cache(self):
         """
         Set :attr:`output` to data stored in :attr:`cache_file`
 
-        :raise RuntimeError: if content of :attr:`cache_file` is not
-            JSON-decodable or :attr:`cache_file` exists unreadable
+        :raise RuntimeError: if :attr:`cache_file` exists and is unreadable or
+            unparsable
         """
         if not self._ignore_cache and os.path.exists(self.cache_file):
             _log.debug('Reading output cache: %r', self.cache_file)
@@ -191,12 +198,16 @@ class JobBase(abc.ABC):
                 except (ValueError, TypeError) as e:
                     raise RuntimeError(f'Unable to decode JSON: {content!r}: {e}')
             _log.debug('Read cached output: %r', self._output)
-        else:
-            _log.debug('Not reading output cache: %r', self.cache_file)
 
     @property
     def cache_directory(self):
-        """Path to directory that stores cache files"""
+        """
+        Path to directory that stores cache files
+
+        The directory is created if it doesn't exist.
+
+        :raise PermissionError: if directory creation fails
+        """
         path = os.path.join(self.homedir, '.output')
         if not os.path.exists(path):
             try:
@@ -210,7 +221,14 @@ class JobBase(abc.ABC):
 
     @property
     def cache_file(self):
-        """Path of file to store cached :attr:`output` in"""
+        """
+        File path in :attr:`cache_directory` to store cached :attr:`output` in
+
+        It is important that the file name is unique for each output. By
+        default, this is achieved by including the keyword arguments for
+        :func:`initialize`. See `ScreenshotsJob.cache_file` for a different
+        implementation.
+        """
         if self._kwargs:
             kwargs_str_max_len = 250 - len(self.name) - len('..json')
             kwargs_str = ','.join(f'{k}={v}' for k, v in self._kwargs.items())

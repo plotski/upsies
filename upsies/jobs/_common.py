@@ -13,13 +13,13 @@ class DaemonThread(abc.ABC):
     Base class for background worker thread
 
     Intended for blocking stuff (e.g. network requests) to keep the user
-    interface responsive.
+    interface responsive. (Asynchronous calls can still block the main thread.)
 
-    To raise any exceptions from the thread, :meth:`stop` and :meth:`join`
+    To raise any exceptions from the thread, :func:`stop` and :func:`join`
     should be called when the thread is no longer needed.
 
-    :meth:`work` must be implemented by the subclass. It is called every time
-    :meth:`unblock` is called or if it returns `True`.
+    :func:`work` must be implemented by the subclass. It is called every time
+    :func:`unblock` is called or if :func:`work` returns `True`.
     """
 
     def start(self):
@@ -47,7 +47,7 @@ class DaemonThread(abc.ABC):
             raise RuntimeError(f'Not started yet: {self!r}')
 
     def initialize(self):
-        """Do some background work once after :meth:`start` is called"""
+        """Do some background work once after :func:`start` is called"""
         pass
 
     def terminate(self):
@@ -56,7 +56,7 @@ class DaemonThread(abc.ABC):
 
     @property
     def is_alive(self):
-        """Whether :meth:`start` was called and the thread has not terminated yet"""
+        """Whether :func:`start` was called and the thread has not terminated yet"""
         if hasattr(self, '_thread'):
             return self._thread.is_alive()
         else:
@@ -77,7 +77,7 @@ class DaemonThread(abc.ABC):
 
     @property
     def running(self):
-        """Whether :meth:`work` is going to be called again"""
+        """Whether :func:`work` is going to be called again"""
         return getattr(self, '_running', False)
 
     @abc.abstractmethod
@@ -110,8 +110,8 @@ class DaemonProcess:
     """
     Background worker process
 
-    Intended to offload heavy jobs (e.g. torrent file creation) on a different
-    CPU core to keep the rest of the application smooth.
+    Intended to offload heavy work (e.g. torrent creation) onto a different
+    process. (Threads can still make the UI unresponsive because of the GIL.)
     """
 
     INIT = 'init'
@@ -192,7 +192,7 @@ class DaemonProcess:
 
     @property
     def is_alive(self):
-        """Whether :meth:`start` was called and the process has not finished yet"""
+        """Whether :func:`start` was called and the process has not finished yet"""
         if self._process:
             return self._process.is_alive()
         else:
@@ -220,7 +220,7 @@ def _target_process_wrapper(target, output_queue, input_queue, *args, **kwargs):
         target(output_queue, input_queue, *args, **kwargs)
     except Exception as e:
         # Because tracebacks are not picklable, format the exception in the
-        # child process before we send it.
+        # child process before we send it to the parent.
         output_queue.put((DaemonProcess.ERROR, _PickledException(e)))
 
 class _PickledException(Exception):

@@ -62,7 +62,7 @@ def test_initialize_is_called_after_object_creation(job):
 
 def test_start_reads_output_cache_from_previous_job(tmp_path):
     class BarJob(FooJob):
-        def read_output_cache(self):
+        def _read_output_cache(self):
             self._output = ['cached output']
 
     job = BarJob(homedir=tmp_path, ignore_cache=False)
@@ -237,14 +237,14 @@ def test_cache_file_name_is_never_too_long(tmp_path):
 
 def test_cache_is_not_written_if_output_is_empty(job):
     assert job.output == ()
-    job.write_output_cache()
+    job._write_output_cache()
     assert not os.path.exists(job.cache_file)
 
 def test_cache_is_not_written_if_exit_code_is_nonzero(job):
     job.send('Foo')
     job.error('Bar!')
     assert job.exit_code != 0
-    job.write_output_cache()
+    job._write_output_cache()
     assert not os.path.exists(job.cache_file)
 
 def test_cache_is_written_if_output_is_not_empty(job):
@@ -291,9 +291,9 @@ async def test_cache_is_properly_written_when_repeating_command(tmp_path):
             self.send('asdf')
             self.finish()
 
-        def read_output_cache(self):
+        def _read_output_cache(self):
             self.read_output_cache_counter += 1
-            super().read_output_cache()
+            super()._read_output_cache()
 
     for i in range(5):
         job = BarJob(homedir=tmp_path, ignore_cache=False)
