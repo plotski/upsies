@@ -139,6 +139,7 @@ def test_CreateTorrentJob_execute(process_mock, tmp_path):
         kwargs={
             'content_path'   : 'path/to/foo',
             'torrent_path'   : os.path.join(tmp_path, 'foo.asdf.torrent'),
+            'overwrite'      : False,
             'announce_url'   : 'http://foo.bar',
             'source'         : 'AsdF',
             'exclude_regexs' : ('a', 'b'),

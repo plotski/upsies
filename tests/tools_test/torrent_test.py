@@ -43,15 +43,45 @@ class Callable:
 @patch('torf.Torrent')
 def test_create_handles_existing_torrent_file(Torrent_mock, file_tree_mock, path_exists_mock):
     path_exists_mock.return_value = True
+    init_cb = Mock()
+    progress_cb = Mock()
     torrent_path = create(
         content_path='path/to/content',
         announce_url='http://announce.url',
         torrent_path='path/to/torrent',
-        init_callback=Mock(),
-        progress_callback=Mock()
+        init_callback=init_cb,
+        progress_callback=progress_cb,
     )
     assert torrent_path == 'path/to/torrent'
     assert Torrent_mock.call_args_list == []
+    assert init_cb.call_args_list == []
+    assert progress_cb.call_args_list == []
+
+@patch('upsies.tools.torrent._path_exists')
+@patch('upsies.tools.torrent._make_file_tree')
+@patch('torf.Torrent')
+def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, path_exists_mock):
+    path_exists_mock.return_value = True
+    init_cb = Mock()
+    progress_cb = Mock()
+    torrent_path = create(
+        content_path='path/to/content',
+        overwrite=True,
+        announce_url='http://announce.url',
+        torrent_path='path/to/torrent',
+        init_callback=init_cb,
+        progress_callback=progress_cb,
+    )
+    assert torrent_path == 'path/to/torrent'
+    assert Torrent_mock.call_args_list == [call(
+        path='path/to/content',
+        trackers=(('http://announce.url',),),
+        source=None,
+        exclude_regexs=(),
+        private=True,
+    )]
+    assert init_cb.call_args_list == [call(file_tree_mock.return_value)]
+    assert Torrent_mock.return_value.write.call_args_list == [call('path/to/torrent', overwrite=True)]
 
 @patch('upsies.tools.torrent._path_exists')
 @patch('upsies.tools.torrent._make_file_tree')
@@ -148,7 +178,7 @@ def test_create_writes_torrent_file_after_successful_generation(Torrent_mock, fi
         progress_callback=Mock(),
     )
     assert torrent_path == 'path/to/torrent'
-    assert Torrent_mock.return_value.write.call_args_list == [call('path/to/torrent')]
+    assert Torrent_mock.return_value.write.call_args_list == [call('path/to/torrent', overwrite=False)]
 
 @patch('upsies.tools.torrent._path_exists')
 @patch('upsies.tools.torrent._make_file_tree')
@@ -164,4 +194,4 @@ def test_create_catches_error_when_writing_torrent_file(Torrent_mock, file_tree_
             init_callback=Mock(),
             progress_callback=Mock(),
         )
-    assert Torrent_mock.return_value.write.call_args_list == [call('path/to/torrent')]
+    assert Torrent_mock.return_value.write.call_args_list == [call('path/to/torrent', overwrite=False)]

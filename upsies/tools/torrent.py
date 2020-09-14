@@ -10,12 +10,12 @@ _log = logging.getLogger(__name__)
 
 def create(*, content_path, announce_url, torrent_path,
            init_callback, progress_callback,
-           source=None, exclude_regexs=()):
+           overwrite=False, source=None, exclude_regexs=()):
 
     def cb(torrent, filepath, pieces_done, pieces_total):
         return progress_callback(pieces_done / pieces_total * 100)
 
-    if _path_exists(torrent_path):
+    if not overwrite and _path_exists(torrent_path):
         _log.debug('Torrent file already exists: %r', torrent_path)
     else:
         try:
@@ -33,7 +33,7 @@ def create(*, content_path, announce_url, torrent_path,
 
         if success:
             try:
-                torrent.write(torrent_path)
+                torrent.write(torrent_path, overwrite=overwrite)
             except torf.TorfError as e:
                 raise errors.TorrentError(e)
 

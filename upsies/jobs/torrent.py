@@ -42,6 +42,7 @@ class CreateTorrentJob(_base.JobBase):
             kwargs={
                 'content_path'   : self._content_path,
                 'torrent_path'   : self._torrent_path,
+                'overwrite'      : self.ignore_cache,
                 'announce_url'   : self._announce_url,
                 'source'         : self._source,
                 'exclude_regexs' : self._exclude_regexs,
