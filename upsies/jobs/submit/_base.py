@@ -146,11 +146,11 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
 
         # Maybe user aborted
         if not self.is_finished:
-            await self.submit()
+            await self._submit()
             self.finish()
 
-    async def submit(self):
-        _log.debug('Submitting %s to %s', self.content_path, self.trackername)
+    async def _submit(self):
+        _log.debug('%s: Submitting %s', self.trackername, self.content_path)
         try:
             self._call_callbacks(self.signal.logging_in)
             await self.login()
