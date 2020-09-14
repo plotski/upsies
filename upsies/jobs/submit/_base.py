@@ -166,6 +166,9 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
                 self._call_callbacks(self.signal.logged_out)
         except errors.RequestError as e:
             self.error(e)
+        finally:
+            await self._http_session.close()
+            assert self._http_session.closed
 
     class signal(enum.Enum):
         logging_in = 1
