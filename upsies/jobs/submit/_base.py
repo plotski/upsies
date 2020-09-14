@@ -140,9 +140,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
     async def wait(self):
         for job in self.jobs:
             if job is not self:
-                _log.debug('Waiting for tracker job: %r', job)
                 await job.wait()
-                _log.debug('Done waiting for tracker job: %r', job)
 
         # Maybe user aborted
         if not self.is_finished:
