@@ -158,8 +158,8 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
             try:
                 self._call_callbacks(self.signal.submitting)
                 torrent_page_url = await self.upload()
-                self._call_callbacks(self.signal.submitted)
                 self.send(torrent_page_url)
+                self._call_callbacks(self.signal.submitted)
             finally:
                 self._call_callbacks(self.signal.logging_out)
                 await self.logout()
