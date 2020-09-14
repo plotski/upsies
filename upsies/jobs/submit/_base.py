@@ -13,18 +13,11 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
     label = 'Submission'
 
     @property
-    def http_session(self):
-        """
-        :class:`aiohttp.ClientSession` instance that should be used for
-        communication with the tracker
-
-        Use a separate session or :mod:`utils.http` for other sites if
-        necessary.
-        """
-        session = getattr(self, '_http_session', None)
+    def _http_session(self):
+        session = getattr(self, '_http_session_', None)
         if not session:
             import aiohttp
-            self._http_session = session = aiohttp.ClientSession(
+            self._http_session_ = session = aiohttp.ClientSession(
                 headers={'User-Agent': f'{__project_name__}/{__version__}'},
                 raise_for_status=True,
                 timeout=aiohttp.ClientTimeout(total=60),
@@ -35,6 +28,9 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         """
         Send HTTP GET request
 
+        Use this method for sending requests to the tracker.
+        Use :mod:`utils.http` for other domains.
+
         :param str url: Request URL
         :param params: Arguments for `aiohttp.ClientSession.get`
 
@@ -43,7 +39,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         """
         import aiohttp
         try:
-            return await self.http_session.get(url, **params)
+            return await self._http_session.get(url, **params)
         except aiohttp.ClientResponseError as e:
             raise errors.RequestError(f'{url}: {e.message}')
         except aiohttp.ClientError as e:
@@ -53,6 +49,9 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         """
         Send HTTP POST request
 
+        Use this method for sending requests to the tracker.
+        Use :mod:`utils.http` for other domains.
+
         :param str url: Request URL
         :param params: Arguments for `aiohttp.ClientSession.post`
 
@@ -61,7 +60,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         """
         import aiohttp
         try:
-            return await self.http_session.post(url, **params)
+            return await self._http_session.post(url, **params)
         except aiohttp.ClientResponseError as e:
             raise errors.RequestError(f'{url}: {e.message}')
         except aiohttp.ClientError as e:
