@@ -2,6 +2,7 @@ import abc
 import enum
 
 from ... import __project_name__, __version__, errors
+from ...utils import cache
 from .. import _base
 
 import logging  # isort:skip
@@ -12,17 +13,14 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
     name = 'submission'
     label = 'Submission'
 
-    @property
+    @cache.property
     def _http_session(self):
-        session = getattr(self, '_http_session_', None)
-        if not session:
-            import aiohttp
-            self._http_session_ = session = aiohttp.ClientSession(
-                headers={'User-Agent': f'{__project_name__}/{__version__}'},
-                raise_for_status=True,
-                timeout=aiohttp.ClientTimeout(total=60),
-            )
-        return session
+        import aiohttp
+        return aiohttp.ClientSession(
+            headers={'User-Agent': f'{__project_name__}/{__version__}'},
+            raise_for_status=True,
+            timeout=aiohttp.ClientTimeout(total=60),
+        )
 
     async def http_get(self, url, **params):
         """
