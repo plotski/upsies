@@ -12,6 +12,7 @@ _log = logging.getLogger(__name__)
 class SubmissionJobBase(_base.JobBase, abc.ABC):
     name = 'submission'
     label = 'Submission'
+    timeout = 180
 
     @cache.property
     def _http_session(self):
@@ -19,7 +20,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         return aiohttp.ClientSession(
             headers={'User-Agent': f'{__project_name__}/{__version__}'},
             raise_for_status=True,
-            timeout=aiohttp.ClientTimeout(total=60),
+            timeout=aiohttp.ClientTimeout(total=self.timeout),
         )
 
     async def http_get(self, url, **params):
