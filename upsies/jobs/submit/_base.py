@@ -82,7 +82,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
 
         Used for debugging unexpected exceptions.
         """
-        with open('login.html', 'w') as f:
+        with open(filepath, 'w') as f:
             f.write(html)
 
     def initialize(self, args, config, content_path):
