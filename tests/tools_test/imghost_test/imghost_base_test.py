@@ -12,7 +12,7 @@ abstract_methods = (
 )
 
 @pytest.mark.parametrize('method', abstract_methods)
-def test_abstract_methods(method):
+def test_abstract_method(method):
     attrs = {name:lambda self: None for name in abstract_methods}
     del attrs[method]
     cls = type('TestUploader', (UploaderBase,), attrs)
