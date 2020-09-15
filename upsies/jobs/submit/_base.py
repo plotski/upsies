@@ -88,7 +88,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
     def initialize(self, args, config, content_path):
         self._args = args
         self._config = config
-        self._content_path = str(content_path)
+        self._content_path = content_path
         self._callbacks = {
             self.signal.logging_in: [],
             self.signal.logged_in: [],
