@@ -75,9 +75,10 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         from bs4 import BeautifulSoup
         return BeautifulSoup(string, features='html.parser')
 
-    def dump_html(self, filename, html):
+    @staticmethod
+    def dump_html(filepath, html):
         """
-        Write `html` to `filename`
+        Write `html` to `filepath`
 
         Used for debugging unexpected exceptions.
         """
