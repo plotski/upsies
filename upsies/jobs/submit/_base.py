@@ -66,6 +66,16 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         except aiohttp.ClientError as e:
             raise errors.RequestError(f'{url}: {e}')
 
+    @staticmethod
+    def parse_html(string):
+        """
+        Return `BeautifulSoup` instance
+
+        :param string: HTML document
+        """
+        from bs4 import BeautifulSoup
+        return BeautifulSoup(string, features='html.parser')
+
     def dump_html(self, filename, html):
         """
         Write `html` to `filename`

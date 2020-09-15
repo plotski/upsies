@@ -11,11 +11,6 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-def _make_soup(text):
-    from bs4 import BeautifulSoup
-    return BeautifulSoup(text, features='html.parser')
-
-
 class SubmissionJob(_base.SubmissionJobBase):
     trackername = 'NBL'
 
@@ -81,7 +76,7 @@ class SubmissionJob(_base.SubmissionJobBase):
                 },
             )
             text = await response.text()
-            html = _make_soup(text)
+            html = self.parse_html(text)
             self._report_login_error(html)
             self._store_auth_key(html)
             self._store_logout_url(html)
@@ -170,7 +165,7 @@ class SubmissionJob(_base.SubmissionJobBase):
         )
         response = await self.http_post(upload_url, data=formdata)
         text = await response.text()
-        html = _make_soup(text)
+        html = self.parse_html(text)
 
         # The upload form should have redirected use to the torrent page
         if response.url.path.strip('/') == self._url_path['torrent'].strip('/'):
