@@ -147,6 +147,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         pass
 
     async def wait(self):
+        # Wait for all subjobs (e.g. torrent creation)
         for job in self.jobs:
             if job is not self:
                 await job.wait()
