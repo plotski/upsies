@@ -118,13 +118,14 @@ class SubmissionJob(_base.SubmissionJobBase):
                    for attr in ('_logout_url', '_auth_key'))
 
     async def logout(self):
-        if hasattr(self, '_logout_url'):
-            _log.debug('%s: Logging out: %r', self.trackername, self._logout_url)
-            await self.http_get(self._logout_url)
-            delattr(self, '_logout_url')
-            _log.debug('%s: Logged out', self.trackername)
         if hasattr(self, '_auth_key'):
             delattr(self, '_auth_key')
+        if hasattr(self, '_logout_url'):
+            logout_url = self._logout_url
+            delattr(self, '_logout_url')
+            _log.debug('%s: Logging out: %r', self.trackername, logout_url)
+            await self.http_get(logout_url)
+            _log.debug('%s: Logged out', self.trackername)
 
     @property
     def mediainfo(self):
