@@ -64,7 +64,7 @@ class JobBase(abc.ABC):
 
     @abc.abstractmethod
     def execute(self):
-        """Called to do background or interactive work"""
+        """Do work, e.g. request user input or start background threads"""
         pass
 
     def start(self):
