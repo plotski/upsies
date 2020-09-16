@@ -26,17 +26,6 @@ config = {
             base_url=base64.b64decode('aHR0cHM6Ly9uZWJ1bGFuY2UuaW8=').decode('ascii'),
             source='NBL',
         ),
-        'bb': _TrackerConfig(
-            source='bB',
-            exclude=[
-                r'\.(?i:jpg)$',
-                r'\.(?i:png)$',
-                r'\.(?i:nfo)$',
-                r'\.(?i:txt)$',
-                rf'(?:{os.path.sep}|^)(?i:sample)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
-                rf'(?:{os.path.sep}|^)(?i:proof)(?:{os.path.sep}|\.[a-zA-Z0-9]+$)',
-            ],
-        ),
     },
 
     'clients': {
