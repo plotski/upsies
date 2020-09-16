@@ -85,7 +85,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         with open(filepath, 'w') as f:
             f.write(html)
 
-    def initialize(self, args, config, content_path):
+    def initialize(self, *, args, config, content_path):
         self._args = args
         self._config = config
         self._content_path = content_path
