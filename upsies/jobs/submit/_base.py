@@ -187,19 +187,19 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         logging_out = 5
         logged_out = 6
 
-    def on(self, status, callback):
+    def on(self, signal, callback):
         """
-        Run `callback` when status is set to `status`
+        Run `callback` when `signal` happens
 
-        :param status: When to call `callback`
-        :type status: Any attribute of :attr:`signal`
+        :param signal: When to call `callback`
+        :type signal: Any attribute of :attr:`signal`
         :param callable callback: Callable that doesn't take any arguments
         """
-        if not isinstance(status, self.signal):
-            raise RuntimeError(f'Unknown callback: {status!r}')
+        if not isinstance(signal, self.signal):
+            raise RuntimeError(f'Unknown callback: {signal!r}')
         else:
-            self._callbacks[status].append(callback)
+            self._callbacks[signal].append(callback)
 
-    def _call_callbacks(self, status):
-        for cb in self._callbacks[status]:
+    def _call_callbacks(self, signal):
+        for cb in self._callbacks[signal]:
             cb()
