@@ -31,7 +31,8 @@ def test_abstract_method(method):
     attrs = {name:lambda self: None for name in abstract_methods}
     del attrs[method]
     cls = type('TestSubmissionJob', (_base.SubmissionJobBase,), attrs)
-    exp_msg = rf"^Can't instantiate abstract class TestSubmissionJob with abstract methods {method}$"
+    # Python 3.9 changed "methods" to "method"
+    exp_msg = rf"^Can't instantiate abstract class TestSubmissionJob with abstract methods? {method}$"
     with pytest.raises(TypeError, match=exp_msg):
         cls()
 
