@@ -53,6 +53,10 @@ class SubmissionJob(_base.SubmissionJobBase):
         if self._search_job.output:
             return self._search_job.output[0]
 
+    @property
+    def mediainfo(self):
+        return mediainfo.as_string(self.content_path)
+
     _url_path = {
         'login': '/login.php',
         'upload': '/upload.php',
@@ -126,10 +130,6 @@ class SubmissionJob(_base.SubmissionJobBase):
             _log.debug('%s: Logging out: %r', self.trackername, logout_url)
             await self.http_get(logout_url)
             _log.debug('%s: Logged out', self.trackername)
-
-    @property
-    def mediainfo(self):
-        return mediainfo.as_string(self.content_path)
 
     async def upload(self):
         if not self.torrent_filepath:
