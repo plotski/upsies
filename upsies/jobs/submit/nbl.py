@@ -132,12 +132,15 @@ class SubmissionJob(_base.SubmissionJobBase):
             _log.debug('%s: Logged out', self.trackername)
 
     async def upload(self):
+        if not self.logged_in:
+            raise RuntimeError('upload() called before login()')
+
         if not self.torrent_filepath:
-            raise RuntimeError('upload() was called before torrent file creation finished')
+            raise RuntimeError('upload() called before torrent file creation finished')
         _log.debug('%s: Torrent: %r', self.trackername, self.torrent_filepath)
 
         if not self.tvmaze_id:
-            raise RuntimeError('upload() called before TVmaze ID search finished')
+            raise RuntimeError('upload() called before TVmaze ID was picked')
         _log.debug('%s: TVmaze ID: %r', self.trackername, self.tvmaze_id)
 
         import aiohttp
