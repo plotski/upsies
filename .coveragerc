@@ -1,0 +1,9 @@
+[run]
+source = upsies
+command_line = -m pytest
+branch = True
+concurrency = multithreading
+
+[report]
+show_missing = True
+skip_covered = True

@@ -7,6 +7,7 @@ clean:
 	rm -rf dist build
 	rm -rf .pytest_cache
 	rm -rf .tox
+	rm -rf .coverage htmlcov
 	rm -rf "$(VENV_PATH)"
 
 venv:
