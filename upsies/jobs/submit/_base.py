@@ -14,57 +14,6 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
     label = 'Submission'
     timeout = 180
 
-    @cache.property
-    def _http_session(self):
-        import aiohttp
-        return aiohttp.ClientSession(
-            headers={'User-Agent': f'{__project_name__}/{__version__}'},
-            raise_for_status=True,
-            timeout=aiohttp.ClientTimeout(total=self.timeout),
-        )
-
-    async def http_get(self, url, **params):
-        """
-        Send HTTP GET request
-
-        Use this method for sending requests to the tracker.
-        Use :mod:`utils.http` for other domains.
-
-        :param str url: Request URL
-        :param params: Arguments for `aiohttp.ClientSession.get`
-
-        :raise RequestError: if the request fails for any reason
-        :return: `aiohttp.ClientResponse` object
-        """
-        import aiohttp
-        try:
-            return await self._http_session.get(url, **params)
-        except aiohttp.ClientResponseError as e:
-            raise errors.RequestError(f'{url}: {e.message}')
-        except aiohttp.ClientError as e:
-            raise errors.RequestError(f'{url}: {e}')
-
-    async def http_post(self, url, **params):
-        """
-        Send HTTP POST request
-
-        Use this method for sending requests to the tracker.
-        Use :mod:`utils.http` for other domains.
-
-        :param str url: Request URL
-        :param params: Arguments for `aiohttp.ClientSession.post`
-
-        :raise RequestError: if the request fails for any reason
-        :return: `aiohttp.ClientResponse` object
-        """
-        import aiohttp
-        try:
-            return await self._http_session.post(url, **params)
-        except aiohttp.ClientResponseError as e:
-            raise errors.RequestError(f'{url}: {e.message}')
-        except aiohttp.ClientError as e:
-            raise errors.RequestError(f'{url}: {e}')
-
     @staticmethod
     def parse_html(string):
         """
@@ -72,8 +21,11 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
 
         :param string: HTML document
         """
-        from bs4 import BeautifulSoup
-        return BeautifulSoup(string, features='html.parser')
+        try:
+            from bs4 import BeautifulSoup
+            return BeautifulSoup(string, features='html.parser')
+        except Exception as e:
+            raise RuntimeError(f'Failed to parse HTML: {e}')
 
     @staticmethod
     def dump_html(filepath, html):
@@ -158,26 +110,33 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
             await self._submit()
             self.finish()
 
+    @cache.property
+    def _http_session(self):
+        import aiohttp
+        return aiohttp.ClientSession(
+            headers={'User-Agent': f'{__project_name__}/{__version__}'},
+            raise_for_status=True,
+            timeout=aiohttp.ClientTimeout(total=self.timeout),
+        )
+
     async def _submit(self):
         _log.debug('%s: Submitting %s', self.trackername, self.content_path)
         try:
-            self._call_callbacks(self.signal.logging_in)
-            await self.login()
-            self._call_callbacks(self.signal.logged_in)
-            try:
-                self._call_callbacks(self.signal.submitting)
-                torrent_page_url = await self.upload()
-                self.send(torrent_page_url)
-                self._call_callbacks(self.signal.submitted)
-            finally:
-                self._call_callbacks(self.signal.logging_out)
-                await self.logout()
-                self._call_callbacks(self.signal.logged_out)
+            async with self._http_session as client:
+                self._call_callbacks(self.signal.logging_in)
+                await self.login(client)
+                self._call_callbacks(self.signal.logged_in)
+                try:
+                    self._call_callbacks(self.signal.submitting)
+                    torrent_page_url = await self.upload(client)
+                    self.send(torrent_page_url)
+                    self._call_callbacks(self.signal.submitted)
+                finally:
+                    self._call_callbacks(self.signal.logging_out)
+                    await self.logout(client)
+                    self._call_callbacks(self.signal.logged_out)
         except errors.RequestError as e:
             self.error(e)
-        finally:
-            await self._http_session.close()
-            assert self._http_session.closed
 
     class signal(enum.Enum):
         logging_in = 1
@@ -196,7 +155,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         :param callable callback: Callable that doesn't take any arguments
         """
         if not isinstance(signal, self.signal):
-            raise RuntimeError(f'Unknown callback: {signal!r}')
+            raise RuntimeError(f'Unknown signal: {signal!r}')
         else:
             self._callbacks[signal].append(callback)
 

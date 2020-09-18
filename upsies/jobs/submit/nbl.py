@@ -63,14 +63,14 @@ class SubmissionJob(_base.SubmissionJobBase):
         'torrent': '/torrents.php',
     }
 
-    async def login(self):
+    async def login(self, client):
         if not self.logged_in:
             _log.debug('%s: Logging in as %r', self.trackername, self.config['username'])
             login_url = urllib.parse.urljoin(
                 self.config['base_url'],
                 self._url_path['login'],
             )
-            response = await self.http_post(
+            response = await client.post(
                 url=login_url,
                 data={
                     'username': self.config['username'],
@@ -121,17 +121,17 @@ class SubmissionJob(_base.SubmissionJobBase):
         return all(hasattr(self, attr)
                    for attr in ('_logout_url', '_auth_key'))
 
-    async def logout(self):
+    async def logout(self, client):
         if hasattr(self, '_auth_key'):
             delattr(self, '_auth_key')
         if hasattr(self, '_logout_url'):
             logout_url = self._logout_url
             delattr(self, '_logout_url')
             _log.debug('%s: Logging out: %r', self.trackername, logout_url)
-            await self.http_get(logout_url)
+            await client.get(logout_url)
             _log.debug('%s: Logged out', self.trackername)
 
-    async def upload(self):
+    async def upload(self, client):
         if not self.logged_in:
             raise RuntimeError('upload() called before login()')
 
@@ -167,15 +167,19 @@ class SubmissionJob(_base.SubmissionJobBase):
             self.config['base_url'],
             self._url_path['upload'],
         )
-        response = await self.http_post(upload_url, data=formdata)
-        text = await response.text()
-        html = self.parse_html(text)
+        response = await client.post(upload_url, data=formdata, allow_redirects=False)
 
-        # The upload form should have redirected use to the torrent page
-        if response.url.path.strip('/') == self._url_path['torrent'].strip('/'):
-            return response.url
+        # Upload response should redirect to torrent page via "Location" header
+        torrent_page_url = urllib.parse.urljoin(
+            self.config['base_url'],
+            response.headers.get('Location', ''),
+        )
+        if urllib.parse.urlparse(torrent_page_url).path == self._url_path['torrent']:
+            return str(torrent_page_url)
         else:
-            _log.debug('Unexpected torrent page URL: %r', response.url)
+            _log.debug('Unexpected torrent page URL: %r', torrent_page_url)
+            text = await response.text()
+            html = self.parse_html(text)
             # Try to find error message
             error = html.find(id='messagebar')
             if error and error.string:
