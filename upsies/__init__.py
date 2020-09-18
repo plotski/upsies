@@ -1,5 +1,5 @@
 __project_name__ = 'upsies'
-__description__ = 'Media information aggregator'
+__description__ = 'Media metadata aggregator'
 __homepage__ = 'https://github.com/plotski/upsies'
 __version__ = '0.0.1'
 __author__ = 'plotski'
