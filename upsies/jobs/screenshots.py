@@ -4,7 +4,7 @@ import queue
 import natsort
 
 from .. import errors, tools
-from ..utils import timestamp, video
+from ..utils import fs, timestamp, video
 from . import _base, _common
 
 import logging  # isort:skip
@@ -221,7 +221,7 @@ def _screenshot_process(output_queue, input_queue,
     for ts in timestamps:
         screenshot_file = os.path.join(
             output_dir,
-            os.path.basename(video_file) + f'.{ts}.png',
+            fs.basename(video_file) + f'.{ts}.png',
         )
         try:
             tools.screenshot.create(

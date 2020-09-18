@@ -85,6 +85,9 @@ def test_tmpdir_removes_redundant_temp_dir(mkdtemp_mock, tmp_path):
 
 projectdir_test_cases = (
     ('path/to/foo', 'foo.upsies'),
+    ('path/to/foo/', 'foo.upsies'),
+    ('path/to//foo/', 'foo.upsies'),
+    ('path/to//foo//', 'foo.upsies'),
     (None, '.'),
 )
 

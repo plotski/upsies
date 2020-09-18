@@ -47,7 +47,7 @@ def projectdir(content_path):
         insufficient permissions
     """
     if content_path:
-        path = os.path.basename(content_path)
+        path = basename(content_path)
         path += '.upsies'
     else:
         path = '.'

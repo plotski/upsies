@@ -4,6 +4,8 @@ import re
 
 import guessit as _guessit
 
+from ..utils import fs
+
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
@@ -12,8 +14,8 @@ logging.getLogger('rebulk').setLevel(logging.WARNING)
 
 
 def _file_and_parent(path):
-    """Yield `os.path.basename` and `os.path.dirname` of `path`"""
-    basename = os.path.basename(path)
+    """Yield `basename` and `dirname` of `path`"""
+    basename = fs.basename(path)
     dirname = os.path.dirname(path)
     yield basename
     if dirname and dirname != basename:

@@ -24,7 +24,7 @@ class CreateTorrentJob(_base.JobBase):
         self._source = source
         self._torrent_path = os.path.join(
             self.homedir,
-            f'{os.path.basename(content_path)}.{trackername.lower()}.torrent',
+            f'{fs.basename(content_path)}.{trackername.lower()}.torrent',
         )
         if add_to is not None:
             assert isinstance(add_to, client.ClientApiBase)
@@ -137,7 +137,7 @@ class CreateTorrentJob(_base.JobBase):
                 download_path=download_path,
             )
         except errors.RequestError as e:
-            self.handle_error(f'Failed to add {os.path.basename(self._torrent_path)} '
+            self.handle_error(f'Failed to add {fs.basename(self._torrent_path)} '
                               f'to {self._client.name}: {e}')
         else:
             _log.debug('Added torrent to %s', client.name)
@@ -158,7 +158,7 @@ class CreateTorrentJob(_base.JobBase):
                 msg = e.strerror
             else:
                 msg = str(e)
-            self.handle_error(f'Failed to copy {os.path.basename(torrent_path)} '
+            self.handle_error(f'Failed to copy {fs.basename(torrent_path)} '
                               f'to {destination_path}: {msg}')
             # Default to original torrent path
             self.send(torrent_path, if_not_finished=True)
