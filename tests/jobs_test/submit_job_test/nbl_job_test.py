@@ -77,10 +77,10 @@ def test_search_job(SearchDbJob_mock, projectdir_mock, tmp_path):
     )]
     assert projectdir_mock.call_args_list == [call(tmp_path / 'foo')]
 
-@patch('upsies.utils.fs.projectdir')
+@patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.search.SearchDbJob')
 @patch('upsies.jobs.torrent.CreateTorrentJob')
-def test_jobs(CreateTorrentJob_mock, SearchDbJob_mock, projectdir_mock, tmp_path):
+def test_jobs(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
     job = make_job(tmp_path)
     assert len(job.jobs) == 3
     assert job.jobs[0] is CreateTorrentJob_mock.return_value
@@ -88,6 +88,7 @@ def test_jobs(CreateTorrentJob_mock, SearchDbJob_mock, projectdir_mock, tmp_path
     assert job.jobs[2] is job
 
 
+@patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.torrent.CreateTorrentJob')
 def test_torrent_filepath(CreateTorrentJob_mock, tmp_path):
     job = make_job(tmp_path)
@@ -97,6 +98,7 @@ def test_torrent_filepath(CreateTorrentJob_mock, tmp_path):
     assert job.torrent_filepath == 'path/to/torrent'
 
 
+@patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.search.SearchDbJob')
 def test_tvmaze_id(SearchDbJob_mock, tmp_path):
     job = make_job(tmp_path)
@@ -228,6 +230,7 @@ async def test_logout(CreateTorrentJob_mock, SearchDbJob_mock, logout_url, auth_
     assert not hasattr(job, '_auth_key')
 
 
+@patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.search.SearchDbJob')
 @patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
@@ -239,6 +242,7 @@ async def test_upload_without_being_logged_in(CreateTorrentJob_mock, SearchDbJob
     assert client_session_mock.get.call_args_list == []
     assert client_session_mock.post.call_args_list == []
 
+@patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.search.SearchDbJob')
 @patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
@@ -254,6 +258,7 @@ async def test_upload_without_torrent_filepath(CreateTorrentJob_mock, SearchDbJo
     assert client_session_mock.post.call_args_list == []
 
 @needs_python38
+@patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.search.SearchDbJob')
 @patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
@@ -316,6 +321,7 @@ class MockServer(aiohttp.test_utils.TestServer):
 
 
 @needs_python38
+@patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.submit.nbl.mediainfo')
 @patch('upsies.jobs.search.SearchDbJob')
 @patch('upsies.jobs.torrent.CreateTorrentJob')
@@ -372,6 +378,7 @@ async def test_upload_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, mediainf
         }]
 
 @needs_python38
+@patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.submit.nbl.mediainfo')
 @patch('upsies.jobs.search.SearchDbJob')
 @patch('upsies.jobs.torrent.CreateTorrentJob')
