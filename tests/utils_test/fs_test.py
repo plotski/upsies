@@ -121,6 +121,15 @@ def test_projectdir_exists(check_dir_access_mock, tmp_path, content_path, exp_pa
         os.chdir(cwd)
 
 
+def test_basename():
+    import pathlib
+    assert fs.basename('a/b/c') == 'c'
+    assert fs.basename('a/b/c/') == 'c'
+    assert fs.basename('a/b/c///') == 'c'
+    assert fs.basename('a/b/c//d/') == 'd'
+    assert fs.basename(pathlib.Path('a/b/c//d/')) == 'd'
+
+
 def test_file_extension():
     assert fs.file_extension('Something.x264-GRP.mkv') == 'mkv'
     assert fs.file_extension('Something.x264-GRP.mp4') == 'mp4'

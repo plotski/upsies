@@ -58,6 +58,21 @@ def projectdir(content_path):
     return path
 
 
+def basename(path):
+    """
+    Return last segment in `path`
+
+    Unlike :func:`os.path.basename`, this `rstrip`s any directory separators
+    first.
+
+    >>> os.path.basename('a/b/c/')
+    ''
+    >>> os.path.basename('a/b/c/'.rstrip('/'))
+    'c'
+    """
+    return os.path.basename(str(path).rstrip(os.sep))
+
+
 def file_extension(path):
     """
     Extract file extension
