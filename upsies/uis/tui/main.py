@@ -16,7 +16,10 @@ def main(args=None):
 def _main(args=None):
     args = parse_args(args)
     if args.debug:
-        logging.basicConfig(format='%(asctime)s: %(name)s: %(message)s')
+        logging.basicConfig(
+            format='%(asctime)s: %(name)s: %(message)s',
+            filename=args.debug,
+        )
         logging.getLogger(__project_name__).setLevel(level=logging.DEBUG)
 
     try:

@@ -1,5 +1,4 @@
 import asyncio
-import contextlib
 
 from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
@@ -70,14 +69,13 @@ class UI:
             self._app.exit(exit_code)
 
     def run(self):
-        with self._log_to_buffer(self._log.buffer):
-            task = self._app.create_background_task(self._do_jobs())
-            task.add_done_callback(self._jobs_done)
-            exit_code = self._app.run(set_exception_handler=False)
-            if self._exception:
-                raise self._exception
-            else:
-                return exit_code
+        task = self._app.create_background_task(self._do_jobs())
+        task.add_done_callback(self._jobs_done)
+        exit_code = self._app.run(set_exception_handler=False)
+        if self._exception:
+            raise self._exception
+        else:
+            return exit_code
 
     def _jobs_done(self, fut):
         try:
@@ -133,42 +131,3 @@ class UI:
                 _log.debug('Waiting for job: %r', job)
                 self._app.create_background_task(job.wait())
                 _log.debug('Job is now finished: %r', job)
-
-    @staticmethod
-    @contextlib.contextmanager
-    def _log_to_buffer(buffer):
-        """
-        Context manager that redirects `logging` output
-
-        :param buffer: :class:`Buffer` instance
-        """
-
-        class LogRecordHandler(logging.Handler):
-            def emit(self, record, _buffer=buffer):
-                msg = f'{self.format(record)}\n'
-                _buffer.insert_text(msg, fire_event=False)
-
-        # Stash original log handlers
-        root_logger = logging.getLogger()
-        original_handlers = []
-        for h in tuple(root_logger.handlers):
-            original_handlers.append(h)
-            root_logger.removeHandler(h)
-
-        if original_handlers:
-            # Install new log handler with original formatter
-            handler = LogRecordHandler()
-            original_formatter = original_handlers[0].formatter
-            handler.setFormatter(original_formatter)
-            root_logger.addHandler(handler)
-            _log.debug('Redirected logging')
-
-        # Run application
-        yield
-
-        if original_handlers:
-            # Restore original handlers
-            root_logger.handlers.remove(handler)
-            for h in original_handlers:
-                root_logger.addHandler(h)
-            _log.debug('Restored logging')

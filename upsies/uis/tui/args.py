@@ -21,8 +21,8 @@ def parse(args):
                         action='version',
                         version=f'{__project_name__} {__version__}')
     parser.add_argument('--debug', '-d',
-                        help='Print debugging messages',
-                        action='store_true')
+                        metavar='FILE',
+                        help='Write debugging messages to FILE')
     parser.add_argument('--trackers-file', '-t',
                         help='Tracker configuration file path',
                         default=defaults.trackers_filepath)
