@@ -30,7 +30,7 @@ def parse(args):
                         help='BitTorrent client configuration file path',
                         default=defaults.clients_filepath)
     parser.add_argument('--ignore-cache', '-ic',
-                        help='Do not use previously gathered information',
+                        help='Ignore existing files and information from previous calls',
                         action='store_true')
 
     subparsers = parser.add_subparsers(title='commands')
@@ -38,11 +38,11 @@ def parse(args):
     release_name = subparsers.add_parser(
         'release-name', aliases=('rn',),
         help='Create standardized release name',
-        description=('Print the full release name properly formatted to stdout.\n\n'
-                     'IMDb is searched to get the correct title and an AKA if applicable. '
-                     'Audio and video information is detected with mediainfo. '
-                     'Missing required information is highlighted with placeholders, '
-                     'e.g. "UNKNOWN_RESOLUTION".'),
+        description=('Print the properly formatted release name.\n\n'
+                     'IMDb is searched to get the correct title, year and alternative '
+                     'title if applicable. Audio and video information is detected with '
+                     'mediainfo. Missing required information is highlighted with '
+                     'placeholders, e.g. "UNKNOWN_RESOLUTION".'),
         formatter_class=MyHelpFormatter,
     )
     release_name.set_defaults(subcmd=subcmds.release_name)
