@@ -2,7 +2,7 @@ import argparse
 import functools
 import sys
 
-from ... import defaults, utils
+from ... import __project_name__, __version__, defaults, utils
 from ...jobs import submit as trackers
 from ...tools import client as clients
 from ...tools import imghost as imghosts
@@ -17,6 +17,9 @@ def parse(args):
         description='Collect metadata for uploading content to private trackers',
         formatter_class=MyHelpFormatter,
     )
+    parser.add_argument('--version',
+                        action='version',
+                        version=f'{__project_name__} {__version__}')
     parser.add_argument('--debug', '-d',
                         help='Print debugging messages',
                         action='store_true')
