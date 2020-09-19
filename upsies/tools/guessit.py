@@ -28,6 +28,8 @@ def guessit(path):
     Ameliorate guessit
 
     - Return regular `dict`.
+    - The ``alternative_title`` is replaced by ``aka`` and its value comes from
+      splitting the title at "AKA".
     - ``type`` is "season" if ``season`` is known but ``episode`` isn't.
     - ``year``, ``season`` and ``episode`` are `str`, not `int`.
     - ``source`` is "WEB-DL" or "WEBRip", not just "Web".
@@ -46,6 +48,7 @@ def guessit(path):
     guess = dict(_guessit.guessit(path))
     _log.debug('Original guess: %r', guess)
 
+    _correct_alternative_title(guess)
     _enforce_list_fields(guess, 'other')
     _enforce_list_fields(guess, 'edition')
     _enforce_str(guess, 'year', 'season', 'episode')
@@ -61,6 +64,22 @@ def guessit(path):
 
     _log.debug('Improved guess: %r', guess)
     return guess
+
+
+_title_aka_regex = re.compile(r' +AKA +')
+
+def _correct_alternative_title(guess):
+    # Guess it splits AKA at " - ", we want to split at " AKA "
+    _enforce_list_fields(guess, 'alternative_title')
+    if 'title' in guess:
+        title_parts = [guess['title']]
+        title_parts.extend(guess.get('alternative_title', ()))
+        title = ' - '.join(title_parts)
+        title_parts = _title_aka_regex.split(title, maxsplit=1)
+        if len(title_parts) > 1:
+            guess['title'], guess['aka'] = title_parts
+        else:
+            guess['title'] = title_parts[0]
 
 
 def _enforce_list_fields(guess, key):

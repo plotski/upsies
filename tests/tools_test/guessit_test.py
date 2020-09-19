@@ -34,7 +34,7 @@ def test_preserve_other_field_as_list(guessit_mock):
 
 
 def assert_guess(release_name,
-                 type=None, title=None, year=None, season=None, episode=None,
+                 type=None, title=None, aka=None, year=None, season=None, episode=None,
                  edition=None, screen_size=None, streaming_service=None, source=None,
                  audio_codec=None, audio_channels=None, video_codec=None, group=None):
     # Test space- and dot-separated release name
@@ -44,6 +44,7 @@ def assert_guess(release_name,
             guess = guessit.guessit(path)
             assert guess['type'] == type
             assert guess['title'] == title
+            assert guess.get('aka') == aka
             assert guess.get('year') == year
             assert guess.get('season') == season
             assert guess.get('episode') == episode
@@ -97,6 +98,28 @@ def test_type_and_year_season_and_episode(release_name, expected):
       'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
 ))
 def test_title_and_year(release_name, expected):
+    assert_guess(release_name, **expected)
+
+
+@pytest.mark.parametrize('release_name, expected', (
+    ('The Foo - The Bar 1984 1080p BluRay DTS-ASDF',
+     {'type': 'movie', 'title': 'The Foo - The Bar', 'year': '1984', 'season': None, 'episode': None,
+      'screen_size': '1080p', 'streaming_service': None, 'source': 'BluRay',
+      'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
+    ('The Foo - The Bar - The Baz 1984 1080p BluRay DTS-ASDF',
+     {'type': 'movie', 'title': 'The Foo - The Bar - The Baz', 'year': '1984', 'season': None, 'episode': None,
+      'screen_size': '1080p', 'streaming_service': None, 'source': 'BluRay',
+      'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
+    ('1984 AKA Nineteen Eighty-Four 1984 1080p BluRay DTS-ASDF',
+     {'type': 'movie', 'title': '1984', 'aka': 'Nineteen Eighty-Four', 'year': '1984',
+      'season': None, 'episode': None, 'screen_size': '1080p', 'streaming_service': None,
+      'source': 'BluRay', 'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
+    ('1984 - Foo AKA Nineteen Eighty-Four 1984 1080p BluRay DTS-ASDF',
+     {'type': 'movie', 'title': '1984 - Foo', 'aka': 'Nineteen Eighty-Four', 'year': '1984',
+      'season': None, 'episode': None, 'screen_size': '1080p', 'streaming_service': None,
+      'source': 'BluRay', 'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
+))
+def test_title_and_alternative_title(release_name, expected):
     assert_guess(release_name, **expected)
 
 
