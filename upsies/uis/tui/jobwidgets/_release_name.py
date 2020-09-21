@@ -24,7 +24,7 @@ class ReleaseNameJobWidget(_base.JobWidgetBase):
             if rn:
                 self._release_name.text = rn
                 get_app().invalidate()
-        self.job.on_release_name_updated(release_name_changed_callback)
+        self.job.on_release_name_update(release_name_changed_callback)
 
     def activate(self):
         get_app().invalidate()

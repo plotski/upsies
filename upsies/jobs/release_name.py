@@ -43,5 +43,5 @@ class ReleaseNameJob(_base.JobBase):
         for cb in self._release_name_update_callbacks:
             cb(release_name)
 
-    def on_release_name_updated(self, callback):
+    def on_release_name_update(self, callback):
         self._release_name_update_callbacks.append(callback)
