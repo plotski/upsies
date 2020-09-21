@@ -1,8 +1,21 @@
+from types import SimpleNamespace
 from unittest.mock import Mock, call, patch
 
 import pytest
 
 from upsies.tools.release_name import ReleaseName
+
+
+# FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
+# not a subclass of typing.Awaitable.
+class AsyncMock(Mock):
+    def __call__(self, *args, **kwargs):
+        async def coro(_sup=super()):
+            return _sup.__call__(*args, **kwargs)
+        return coro()
+
+    def __await__(self):
+        return self().__await__()
 
 
 @patch('upsies.tools.guessit.guessit', new_callable=lambda: Mock(return_value={}))
@@ -548,3 +561,48 @@ def test_group_setter(guessit_mock):
     assert rn.group == 'NOGROUP'
     rn.group = 123
     assert rn.group == '123'
+
+
+@patch('upsies.tools.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@pytest.mark.asyncio
+async def test_update_attributes(guessit_mock):
+    id_mock = '12345'
+    info_mock = {
+        'title_original': 'Le Foo',
+        'title_english': 'The Foo',
+        'year': '2010',
+    }
+    db_mock = Mock(info=AsyncMock(return_value=info_mock))
+    rn = ReleaseName('path/to/something')
+    await rn._update_attributes(id_mock, db_mock)
+    assert rn.title == 'Le Foo'
+    assert rn.title_aka == 'The Foo'
+    assert rn.year == '2010'
+    assert db_mock.info.call_args_list == [
+        call(id_mock, db_mock.title_english, db_mock.title_original, db_mock.year),
+    ]
+
+
+_unique_titles = (SimpleNamespace(title='The Foo'), SimpleNamespace(title='The Bar'))
+_same_titles = (SimpleNamespace(title='The Foo'), SimpleNamespace(title='The Foo'))
+
+@patch('upsies.tools.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    argnames='type, results, exp_year_required',
+    argvalues=(
+        ('movie', _unique_titles, False),
+        ('movie', _same_titles, False),
+        ('season', _unique_titles, False),
+        ('season', _same_titles, True),
+        ('episode', _unique_titles, False),
+        ('episode', _same_titles, True),
+    ),
+)
+async def test_update_year_required(guessit_mock, type, results, exp_year_required):
+    db_mock = Mock(search=AsyncMock(return_value=results))
+    guessit_mock.return_value = {'type': type, 'title': 'The Foo'}
+    rn = ReleaseName('path/to/something')
+    assert rn.year_required is False
+    await rn._update_year_required(db_mock)
+    assert rn.year_required is exp_year_required

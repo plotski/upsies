@@ -1,3 +1,4 @@
+import asyncio
 import collections
 
 from . import guessit, mediainfo
@@ -285,8 +286,15 @@ class ReleaseName(collections.abc.Mapping):
         - :attr:`year`
         - :attr:`year_required`
         """
-        _log.debug('fetch_info called with %r, %r, %r', id, db, callback)
-        # Get English title, orignal title and release year
+        await asyncio.gather(
+            self._update_attributes(id, db),
+            self._update_year_required(db),
+        )
+        _log.debug('Release name updated: %s', self)
+        if callback is not None:
+            callback(self)
+
+    async def _update_attributes(self, id, db):
         info = await db.info(
             id,
             db.title_english,
@@ -297,6 +305,7 @@ class ReleaseName(collections.abc.Mapping):
         self.title_aka = info['title_english']
         self.year = info['year']
 
+    async def _update_year_required(self, db):
         if self.type in ('season', 'episode'):
             # Find out if there are multiple series with this title
             results = await db.search(self.title, type='series')
@@ -309,10 +318,6 @@ class ReleaseName(collections.abc.Mapping):
                 self.year_required = True
             else:
                 self.year_required = False
-
-        _log.debug('Release name updated: %s', self)
-        if callback is not None:
-            callback(self)
 
     def format(self, aka=True, aka_first=False, sep=' '):
         """
