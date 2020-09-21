@@ -121,8 +121,8 @@ def make_search_command(db_name):
 class release_name(SubcommandBase):
     @cache.property
     def jobs(self):
-        # Include the original and English title in the release name.
-        # IMDb seems to be best.
+        # To be able to fetch the correct title, original title, year, etc, we
+        # need to prompt for an ID first. IMDb seems to be best.
         search_imdb = make_search_command('imdb')
         imdb_job = search_imdb(args=self.args, config=self.config).jobs[0]
         rn_job = _jobs.release_name.ReleaseNameJob(

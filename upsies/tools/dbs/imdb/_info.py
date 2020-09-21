@@ -73,7 +73,7 @@ async def title_english(id):
     original_title = await title_original(id)
     _log.debug('Original title: %r', original_title)
 
-    # US titles seem to be the most common
+    # US titles seem to be the most commonly used
     priorities = (
         ('US', 'en'),
         ('XWW', 'en'),  # World-wide
