@@ -33,29 +33,15 @@ class ReleaseNameJob(_base.JobBase):
             self.send(name, if_not_finished=True)
         self.finish()
 
-    def fetch_info(self, id, db):
-        """
-        Fill in some information from IMDb or similar service
+    def fetch_info(self, *args, **kwargs):
+        kwargs['callback'] = self.handle_release_name_update
+        asyncio.ensure_future(
+            self.release_name.fetch_info(*args, **kwargs),
+        )
 
-        :param str id: ID to query DB for
-        :param str db: One of the modules in :mod:`tools`
-        """
-        async def fetch_info(id, db, self=self):
-            info = await db.info(
-                id,
-                db.title_english,
-                db.title_original,
-                db.year,
-            )
-            rn = self.release_name
-            rn.title = info['title_original']
-            rn.title_aka = info['title_english']
-            rn.year = info['year']
-            _log.debug('Release name updated: %s', rn)
-            for cb in self._release_name_update_callbacks:
-                cb(rn)
-
-        asyncio.ensure_future(fetch_info(id, db))
+    def handle_release_name_update(self, release_name):
+        for cb in self._release_name_update_callbacks:
+            cb(release_name)
 
     def on_release_name_updated(self, callback):
         self._release_name_update_callbacks.append(callback)

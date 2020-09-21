@@ -269,6 +269,51 @@ class ReleaseName(collections.abc.Mapping):
     def group(self, value):
         self._guess['release_group'] = str(value)
 
+    async def fetch_info(self, id, db, callback=None):
+        """
+        Fill in information from online database
+
+        :param str id: ID to query `db` for
+        :param db: One of the packages in :mod:`tools.dbs`
+        :param callable callback: Function to call after fetching; gets the
+            instance (`self`) as a keyword argument
+
+        Calling this coroutine function overrides these attributes:
+
+        - :attr:`title`
+        - :attr:`title_aka`
+        - :attr:`year`
+        - :attr:`year_required`
+        """
+        _log.debug('fetch_info called with %r, %r, %r', id, db, callback)
+        # Get English title, orignal title and release year
+        info = await db.info(
+            id,
+            db.title_english,
+            db.title_original,
+            db.year,
+        )
+        self.title = info['title_original']
+        self.title_aka = info['title_english']
+        self.year = info['year']
+
+        if self.type in ('season', 'episode'):
+            # Find out if there are multiple series with this title
+            results = await db.search(self.title, type='series')
+            same_titles = tuple(
+                r.title for r in results
+                if r.title.casefold() == self.title.casefold()
+            )
+            _log.debug('Found multiple search results for %r', self.title)
+            if len(same_titles) >= 2:
+                self.year_required = True
+            else:
+                self.year_required = False
+
+        _log.debug('Release name updated: %s', self)
+        if callback is not None:
+            callback(self)
+
     def format(self, aka=True, aka_first=False, sep=' '):
         """
         Assemble all the parts into a string
