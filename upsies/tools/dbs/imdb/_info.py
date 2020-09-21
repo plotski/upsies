@@ -70,9 +70,6 @@ async def title_english(id):
                i.get('language', '').lower())
         titles[key] = i['title']
 
-    # for key,title in sorted(titles.items()):
-    #     _log.debug(f'{key}: {title}')
-
     original_title = await title_original(id)
     _log.debug('Original title: %r', original_title)
 
