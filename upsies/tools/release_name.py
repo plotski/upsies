@@ -1,11 +1,25 @@
+import collections
+
 from . import guessit, mediainfo
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class ReleaseName:
-    """Properly formatted release name"""
+class ReleaseName(collections.abc.Mapping):
+    """
+    Extract information from release name re-assemble it
+
+    :param str path: Path to release content
+
+    Example:
+
+    >>> rn = ReleaseName("The Foo 1984 1080p BluRay DTS-ASDF")
+    >>> rn.source
+    'BluRay'
+    >>> "{title} ({year})".format(**rn)
+    'The Foo (1984)'
+    """
 
     def __init__(self, path):
         self._path = str(path)
@@ -20,62 +34,36 @@ class ReleaseName:
     def __len__(self):
         return len(self.format())
 
-    def format(self, aka=True, aka_first=False, sep=' '):
-        parts = [self.title]
-        if (aka or aka_first) and self.title_aka:
-            if aka_first:
-                parts.insert(0, f'{self.title_aka} AKA')
-            else:
-                parts.append(f'AKA {self.title_aka}')
-
-        if self.type == 'movie':
-            parts.append(self.year)
-
-        elif self.type in ('season', 'episode'):
-            # TODO: Find out if we need to include the year
-            if self.type == 'season':
-                parts.append(f'S{self.season.rjust(2, "0")}')
-            elif self.type == 'episode':
-                parts.append(f'S{self.season.rjust(2, "0")}E{self.episode.rjust(2, "0")}')
-
-        if self.edition:
-            parts.append(self.edition)
-
-        parts.append(self.resolution)
-
-        if self.service:
-            parts.append(self.service)
-        parts.append(self.source)
-
-        parts.append(self.audio_format)
-        if self.audio_channels:
-            parts.append(self.audio_channels)
-        parts.append(self.video_format)
-
-        return sep.join(parts) + f'-{self.group}'
+    def __iter__(self):
+        # Non-private properties are dictionary keys
+        cls = type(self)
+        return iter(attr for attr in dir(self)
+                    if (not attr.startswith('_')
+                        and isinstance(getattr(cls, attr), property)))
 
     def __getitem__(self, name):
         if not isinstance(name, str):
             raise TypeError(f'Not a string: {name!r}')
-        try:
+
+        if isinstance(getattr(type(self), name), property):
             return getattr(self, name)
-        except AttributeError:
+        else:
             raise KeyError(name)
 
     @property
     def type(self):
-        '''"movie", "season" or "episode"'''
-        return self._guess['type']
+        '''"movie", "season", "episode" or empty string'''
+        return self._guess.get('type', '')
 
     @type.setter
     def type(self, value):
-        if value not in ('movie', 'season', 'episode'):
-            raise ValueError('Must be one of ("movie", "season", "episode"): {value!r}')
+        if value not in ('movie', 'season', 'episode', ''):
+            raise ValueError(f'Invalid type: {value!r}')
         self._guess['type'] = value
 
     @property
     def title(self):
-        '''Movie or series name or "UNKNOWN_TITLE"'''
+        '''Original name of movie or series or "UNKNOWN_TITLE"'''
         return self._guess.get('title') or 'UNKNOWN_TITLE'
 
     @title.setter
@@ -87,10 +75,10 @@ class ReleaseName:
         """
         Alternative name of movie or series or empty string
 
-        For non-English titles, this should be the English title. If
+        For non-English original titles, this should be the English title. If
         :attr:`title` is identical, this is an empty string.
         """
-        aka = self._guess.get('alternative_title') or ''
+        aka = self._guess.get('aka') or ''
         if aka and aka != self.title:
             return aka
         else:
@@ -98,20 +86,11 @@ class ReleaseName:
 
     @title_aka.setter
     def title_aka(self, value):
-        self._guess['alternative_title'] = str(value) if value else ''
-
-    @property
-    def title_english(self):
-        '''English title of movie or series or "UNKNOWN_TITLE"'''
-        return self._guess.get('english_title') or 'UNKNOWN_TITLE'
-
-    @title_english.setter
-    def title_english(self, value):
-        self._guess['alternative_title'] = str(value) if value else ''
+        self._guess['aka'] = str(value)
 
     @property
     def year(self):
-        """Release year, "UNKNOWN_YEAR" for movies or empty string for series"""
+        """Release year or "UNKNOWN_YEAR" for movies, empty string for series"""
         if self.type == 'movie':
             return self._guess.get('year') or 'UNKNOWN_YEAR'
         else:
@@ -120,45 +99,73 @@ class ReleaseName:
     @year.setter
     def year(self, value):
         if not isinstance(value, (str, int)):
-            raise TypeError('Not a number: {value!r}')
+            raise TypeError(f'Not a number: {value!r}')
         self._guess['year'] = str(value)
 
     @property
     def season(self):
         """Season number, "UNKNOWN_SEASON" for series or empty string for movies"""
-        if self.type == 'movie':
-            return ''
-        else:
+        if self.type in ('season', 'episode'):
             return self._guess.get('season') or 'UNKNOWN_SEASON'
+        else:
+            return ''
 
     @season.setter
     def season(self, value):
-        if not isinstance(value, (str, int)):
-            raise TypeError('Not a number: {value!r}')
-        elif not value:
-            self._guess['season'] = ''
-        else:
-            self._guess['season'] = str(value)
+        try:
+            self._guess['season'] = self._season_or_episode_number(value)
+        except ValueError:
+            raise ValueError(f'Invalid season: {value!r}')
+        except TypeError:
+            raise TypeError(f'Invalid season: {value!r}')
 
     @property
     def episode(self):
         """Episode number or empty string"""
-        return self._guess.get('episode') or ''
+        if self.type in ('season', 'episode'):
+            return self._guess.get('episode') or ''
+        else:
+            return ''
 
     @episode.setter
     def episode(self, value):
-        if value and not isinstance(value, (str, int)):
-            raise TypeError('Not a number: {value!r}')
-        self._guess['episode'] = str(value) if value else ''
+        try:
+            if isinstance(value, collections.abc.Sequence) and not isinstance(value, str):
+                self._guess['episode'] = [self._season_or_episode_number(e)
+                                          for e in value]
+            else:
+                self._guess['episode'] = self._season_or_episode_number(value)
+        except ValueError:
+            raise ValueError(f'Invalid episode: {value!r}')
+        except TypeError:
+            raise TypeError(f'Invalid episode: {value!r}')
+
+    @staticmethod
+    def _season_or_episode_number(value):
+        if isinstance(value, int):
+            if value >= 0:
+                return str(value)
+            else:
+                raise ValueError(f'Invalid value: {value!r}')
+        elif isinstance(value, str):
+            if (value == '' or value.isdigit()):
+                return str(value)
+            else:
+                raise ValueError(f'Invalid value: {value!r}')
+        else:
+            raise TypeError(f'Invalid value: {value!r}')
 
     @property
     def episode_title(self):
-        """Episode title or empty string"""
-        return self._guess.get('episode_title') or ''
+        """Episode title if :attr:`type` is "episode" or empty string"""
+        if self.type == 'episode':
+            return self._guess.get('episode_title') or ''
+        else:
+            return ''
 
     @episode_title.setter
     def episode_title(self, value):
-        self._guess['episode_title'] = str(value) if value else ''
+        self._guess['episode_title'] = str(value)
 
     @property
     def service(self):
@@ -167,16 +174,18 @@ class ReleaseName:
 
     @service.setter
     def service(self, value):
-        self._guess['streaming_service'] = str(value) if value else ''
+        self._guess['streaming_service'] = str(value)
 
     @property
     def edition(self):
-        """Edition (e.g. "Unrated") or empty string"""
-        return ' '.join(self._guess.get('edition', ()))
+        """List of "DC", "Uncut", "Unrated", etc"""
+        if 'edition' not in self._guess:
+            self._guess['edition'] = []
+        return self._guess['edition']
 
     @edition.setter
     def edition(self, value):
-        self._guess['edition'] = list(value) if value else ''
+        self._guess['edition'] = [str(v) for v in value]
 
     @property
     def source(self):
@@ -185,7 +194,7 @@ class ReleaseName:
 
     @source.setter
     def source(self, value):
-        self._guess['source'] = str(value) if value else ''
+        self._guess['source'] = str(value)
 
     @property
     def resolution(self):
@@ -197,7 +206,7 @@ class ReleaseName:
 
     @resolution.setter
     def resolution(self, value):
-        self._guess['screen_size'] = str(value) if value else ''
+        self._guess['screen_size'] = str(value)
 
     @property
     def audio_format(self):
@@ -209,7 +218,7 @@ class ReleaseName:
 
     @audio_format.setter
     def audio_format(self, value):
-        self._guess['audio_codec'] = str(value) if value else ''
+        self._guess['audio_codec'] = str(value)
 
     @property
     def audio_channels(self):
@@ -242,4 +251,41 @@ class ReleaseName:
 
     @group.setter
     def group(self, value):
-        self._guess['release_group'] = str(value) if value else 'NOGROUP'
+        self._guess['release_group'] = str(value)
+
+    def format(self, aka=True, aka_first=False, sep=' '):
+        """
+        Assemble all the parts into a string
+        """
+        parts = [self.title]
+        if (aka or aka_first) and self.title_aka:
+            if aka_first:
+                parts[0:0] = (self.title_aka, 'AKA')
+            else:
+                parts[1:] = ('AKA', self.title_aka)
+
+        if self.type == 'movie':
+            parts.append(self.year)
+
+        elif self.type in ('season', 'episode'):
+            # TODO: Find out if we need to include the year
+            if self.type == 'season':
+                parts.append(f'S{self.season.rjust(2, "0")}')
+            elif self.type == 'episode':
+                parts.append(f'S{self.season.rjust(2, "0")}E{self.episode.rjust(2, "0")}')
+
+        if self.edition:
+            parts.append(self.edition)
+
+        parts.append(self.resolution)
+
+        if self.service:
+            parts.append(self.service)
+        parts.append(self.source)
+
+        parts.append(self.audio_format)
+        if self.audio_channels:
+            parts.append(self.audio_channels)
+        parts.append(self.video_format)
+
+        return sep.join(parts) + f'-{self.group}'

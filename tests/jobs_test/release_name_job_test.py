@@ -61,6 +61,5 @@ def test_fetch_info(ReleaseName_mock, tmp_path):
     )]
     assert rn.release_name.title == 'Original Title'
     assert rn.release_name.title_aka == 'English Title'
-    assert rn.release_name.title_english == 'English Title'
     assert rn.release_name.year == '1234'
     assert cb.call_args_list == [call(rn.release_name)]

@@ -50,7 +50,6 @@ class ReleaseNameJob(_base.JobBase):
             rn = self.release_name
             rn.title = info['title_original']
             rn.title_aka = info['title_english']
-            rn.title_english = info['title_english']
             rn.year = info['year']
             _log.debug('Release name updated: %s', rn)
             for cb in self._release_name_update_callbacks:
