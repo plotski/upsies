@@ -91,7 +91,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def year(self):
         """Release year or "UNKNOWN_YEAR" for movies, empty string for series"""
-        if self.type == 'movie':
+        if self.type == 'movie' or self.year_required:
             return self._guess.get('year') or 'UNKNOWN_YEAR'
         else:
             return self._guess.get('year') or ''
@@ -101,6 +101,22 @@ class ReleaseName(collections.abc.Mapping):
         if not isinstance(value, (str, int)):
             raise TypeError(f'Not a number: {value!r}')
         self._guess['year'] = str(value)
+
+    @property
+    def year_required(self):
+        """
+        Whether release year is needed to make :attr:`title` unique
+
+        For TV series, :attr:`year` should only be added to the release name if
+        multiple series with the same title exist.
+
+        This property is automatically set by :func:`fetch_info`.
+        """
+        return getattr(self, '_year_required', False)
+
+    @year_required.setter
+    def year_required(self, value):
+        self._year_required = bool(value)
 
     @property
     def season(self):

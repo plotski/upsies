@@ -150,6 +150,32 @@ def test_year_setter(guessit_mock):
 
 @patch('upsies.tools.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
+    argnames='type, year_required, year, exp_year',
+    argvalues=(
+        ('movie', False, '1234', '1234'),
+        ('movie', False, '', 'UNKNOWN_YEAR'),
+        ('movie', True, '1234', '1234'),
+        ('movie', True, '', 'UNKNOWN_YEAR'),
+        ('season', False, '1234', '1234'),
+        ('season', False, '', ''),
+        ('season', True, '1234', '1234'),
+        ('season', True, '', 'UNKNOWN_YEAR'),
+        ('episode', False, '1234', '1234'),
+        ('episode', False, '', ''),
+        ('episode', True, '1234', '1234'),
+        ('episode', True, '', 'UNKNOWN_YEAR'),
+    ),
+)
+def test_year_required(guessit_mock, type, year_required, year, exp_year):
+    guessit_mock.return_value = {'year': year, 'type': type}
+    rn = ReleaseName('path/to/something')
+    assert rn.year_required is False
+    rn.year_required = year_required
+    assert rn.year == exp_year
+
+
+@patch('upsies.tools.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@pytest.mark.parametrize(
     argnames='type, season, exp_season',
     argvalues=(
         ('movie', '3', ''),
