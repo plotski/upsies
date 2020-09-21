@@ -329,7 +329,8 @@ class ReleaseName(collections.abc.Mapping):
             parts.append(self.year)
 
         elif self.type in ('season', 'episode'):
-            # TODO: Find out if we need to include the year
+            if self.year_required:
+                parts.append(self.year)
             if self.type == 'season':
                 parts.append(f'S{self.season.rjust(2, "0")}')
             elif self.type == 'episode':
