@@ -125,7 +125,8 @@ async def test_wait(tmp_path):
         assert job.is_finished
 
 
-def test_http_session_is_ClientSession(tmp_path):
+@pytest.mark.asyncio
+async def test_http_session_is_ClientSession(tmp_path):
     job = make_TestSubmissionJob_instance(tmp_path)
     assert isinstance(job._http_session, aiohttp.ClientSession)
 
@@ -140,7 +141,8 @@ def test_http_session_is_created_correctly(ClientSession_mock, tmp_path):
         timeout=aiohttp.ClientTimeout(total=job.timeout),
     )]
 
-def test_http_session_is_singleton(tmp_path):
+@pytest.mark.asyncio
+async def test_http_session_is_singleton(tmp_path):
     job = make_TestSubmissionJob_instance(tmp_path)
     assert job._http_session is job._http_session
 
