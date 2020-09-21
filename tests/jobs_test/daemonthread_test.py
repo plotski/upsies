@@ -93,7 +93,7 @@ async def test_stop_terminates_endless_work():
     thread = BarThread()
     thread.start()
     thread.stop()
-    await thread.join(timeout=1)
+    await thread.join(timeout=5)
     assert thread.counter > 0
     assert thread.is_alive is False
 
