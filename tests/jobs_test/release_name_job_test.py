@@ -54,7 +54,6 @@ def test_fetch_info(ReleaseName_mock, tmp_path):
     asyncio.get_event_loop().run_until_complete(asyncio.sleep(0))
     assert rn_mock.fetch_info.call_args_list == [call(
         'arg1', 'arg2', kw='arg3',
-        callback=rnj.handle_release_name_update,
     )]
 
 @patch('upsies.tools.release_name.ReleaseName')
@@ -66,5 +65,5 @@ def test_release_name_update_callback(ReleaseName_mock, tmp_path):
     )
     cb = Mock()
     rnj.on_release_name_update(cb)
-    rnj.handle_release_name_update('mock release name')
-    assert cb.call_args_list == [call('mock release name')]
+    rnj.handle_release_name_update()
+    assert cb.call_args_list == [call(rnj.release_name)]

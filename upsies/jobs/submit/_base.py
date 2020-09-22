@@ -2,7 +2,7 @@ import abc
 import enum
 
 import aiohttp
-from bs4 import BeautifulSoup
+import bs4
 
 from ... import __project_name__, __version__, errors
 from ...utils import cache
@@ -25,7 +25,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         :param string: HTML document
         """
         try:
-            return BeautifulSoup(string, features='html.parser')
+            return bs4.BeautifulSoup(string, features='html.parser')
         except Exception as e:
             raise RuntimeError(f'Failed to parse HTML: {e}')
 

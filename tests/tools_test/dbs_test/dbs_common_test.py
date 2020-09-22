@@ -94,7 +94,6 @@ all_dbs = movie_dbs | series_dbs
 @pytest.mark.asyncio
 @pytest.mark.parametrize('db', all_dbs, ids=(db.label for db in all_dbs))
 async def test_search_returns_SearchResults(db, store_request_cache):
-    db.search.cache_clear()
     results = await db.search('Star Wars')
     for r in results:
         assert isinstance(r, dbs._common.SearchResult)
@@ -102,7 +101,6 @@ async def test_search_returns_SearchResults(db, store_request_cache):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('db', all_dbs, ids=(db.label for db in all_dbs))
 async def test_search_for_specific_year(db, store_request_cache):
-    db.search.cache_clear()
     results = await db.search('Star Wars Clone Wars', year=2008)
     assert results[0].year == '2008'
     results = await db.search('Star Wars Clone Wars', year=2003)
@@ -111,14 +109,12 @@ async def test_search_for_specific_year(db, store_request_cache):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('db', movie_dbs, ids=(db.label for db in movie_dbs))
 async def test_search_for_movie(db, store_request_cache):
-    db.search.cache_clear()
     results = await db.search('Star Wars', type='movie')
     assert results[0].type == 'movie'
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('db', series_dbs, ids=(db.label for db in series_dbs))
 async def test_search_for_series(db, store_request_cache):
-    db.search.cache_clear()
     results = await db.search('Star Wars', type='series')
     assert results[0].type == 'series'
 
