@@ -37,7 +37,6 @@ setuptools.setup(
 
         'imdbpie==5.6.*',
         'aiohttp==3.6.*',
-        'async_lru==1.*',
         'beautifulsoup4==4.*',
         'guessit==3.*',
         'natsort==7.*',
