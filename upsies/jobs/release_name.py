@@ -34,14 +34,21 @@ class ReleaseNameJob(_base.JobBase):
         self.finish()
 
     def fetch_info(self, *args, **kwargs):
-        kwargs['callback'] = self.handle_release_name_update
-        asyncio.ensure_future(
+        task = asyncio.ensure_future(
             self.release_name.fetch_info(*args, **kwargs),
         )
 
-    def handle_release_name_update(self, release_name):
+        def fetch_info_done(task):
+            exc = task.exception()
+            if exc:
+                self.exception(exc)
+            self.handle_release_name_update()
+
+        task.add_done_callback(fetch_info_done)
+
+    def handle_release_name_update(self):
         for cb in self._release_name_update_callbacks:
-            cb(release_name)
+            cb(self.release_name)
 
     def on_release_name_update(self, callback):
         self._release_name_update_callbacks.append(callback)
