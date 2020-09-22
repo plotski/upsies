@@ -52,9 +52,8 @@ async def _request(method, url, params={}, cache=False):
     except (ValueError, TypeError) as e:
         raise errors.RequestError(f'{url}: {e}')
 
-    request_lock_key = (url, tuple(sorted(params.items())))
+    request_lock_key = (url, tuple(sorted(params.items())), id(asyncio.get_event_loop()))
     request_lock = _request_lock[request_lock_key]
-    # _log.debug('Lock for %r: locked=%r', request_lock_key, request_lock.locked())
     async with request_lock:
         cache_file = _cache_file(url, method, params)
         _log.debug('Cache file for %r is %r', (url, params), cache_file)

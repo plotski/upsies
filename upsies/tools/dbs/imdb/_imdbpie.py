@@ -1,4 +1,5 @@
 import asyncio
+import builtins
 import collections
 import json
 import os
@@ -26,7 +27,8 @@ async def get_info(id, key='title'):
     # By using one Lock per requested information, we can savely call this
     # method multiple times concurrently without downloading the same data more
     # than once.
-    async with _request_lock[(key, id)]:
+    request_lock_key = (id, key, builtins.id(asyncio.get_event_loop()))
+    async with _request_lock[request_lock_key]:
         cache_file = os.path.join(fs.tmpdir(), f'imdb.{id}.{key}.json')
 
         # Try to read info from cache
