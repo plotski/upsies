@@ -1,5 +1,6 @@
 import functools
 import re
+import time
 
 from bs4 import BeautifulSoup
 
@@ -70,7 +71,6 @@ async def search(title, type=None, year=None):
     html = await http.get(url, params=params, cache=True)
     soup = BeautifulSoup(html, features='html.parser')
 
-    import time
     start = time.monotonic()
     items = soup.find_all('div', class_='lister-item-content')
     results = tuple(_make_result(item) for item in items)
