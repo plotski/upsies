@@ -187,6 +187,36 @@ def test_exit_code_is_1_if_errors_were_sent(job):
     assert job.exit_code == 1
 
 
+@pytest.mark.asyncio
+async def test_exception_without_output(job):
+    job.exception(TypeError('Sorry, not my type.'))
+    job.finish()
+    with pytest.raises(TypeError, match=r'^Sorry, not my type\.$'):
+        await job.wait()
+    assert job.is_finished
+    assert job.output == ()
+    assert job.errors == ()
+    assert job.exit_code == 1
+
+@pytest.mark.asyncio
+async def test_exception_with_output(job):
+    job.send('foo')
+    job.exception(TypeError('Sorry, not my type.'))
+    job.finish()
+    with pytest.raises(TypeError, match=r'^Sorry, not my type\.$'):
+        await job.wait()
+    assert job.is_finished
+    assert job.output == ('foo',)
+    assert job.errors == ()
+    assert job.exit_code == 1
+
+@pytest.mark.asyncio
+async def test_exception_with_finished_job(job):
+    job.finish()
+    with pytest.raises(RuntimeError, match=r'^exception\(\) called on finished job$'):
+        job.exception(TypeError('Sorry, not my type.'))
+
+
 def test_cache_file_name_includes_keyword_arguments(tmp_path):
     class BarJob(FooJob):
         def initialize(self, bar, baz):

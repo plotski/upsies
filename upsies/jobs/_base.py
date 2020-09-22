@@ -46,6 +46,7 @@ class JobBase(abc.ABC):
     def __init__(self, *, homedir, ignore_cache, **kwargs):
         self._homedir = homedir
         self._ignore_cache = bool(ignore_cache)
+        self._exception = None
         self._errors = []
         self._output = []
         self._output_callbacks = []
@@ -89,8 +90,12 @@ class JobBase(abc.ABC):
 
         This method must be called. :attr:`is_finished` must be `False` before
         this method returns and `True` afterwards.
+
+        :raises: Any exceptions given to :func:`exception`
         """
         await self._finished_event.wait()
+        if self._exception is not None:
+            raise self._exception
 
     def finish(self):
         """Mark this job as finished and unblock :func:`wait`"""
@@ -107,7 +112,10 @@ class JobBase(abc.ABC):
     def exit_code(self):
         """`0` if job was successful, `> 0` otherwise"""
         if self.is_finished:
-            return 0 if self.output and not self.errors else 1
+            if not self.output or self.errors or self._exception:
+                return 1
+            else:
+                return 0
 
     @property
     def output(self):
@@ -145,6 +153,20 @@ class JobBase(abc.ABC):
         else:
             if not if_not_finished:
                 raise RuntimeError('error() called on finished job')
+
+    def exception(self, exception):
+        """
+        Set exception to raise in :func:`wait`
+
+        :param Exception exception: Exception instance
+        """
+        if not self.is_finished:
+            import traceback
+            _log.debug(''.join(traceback.format_exception(
+                type(exception), exception, exception.__traceback__)))
+            self._exception = exception
+        else:
+            raise RuntimeError('exception() called on finished job')
 
     @property
     def info(self):
