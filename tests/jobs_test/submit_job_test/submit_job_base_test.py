@@ -22,7 +22,7 @@ class AsyncMock(Mock):
         return self().__await__()
 
 
-needs_pytyon38_because_missing_async_mock_support = pytest.mark.skipif(
+needs_python38_because_missing_async_mock_support = pytest.mark.skipif(
     sys.version_info < (3, 8),
     reason='Python <3.8 does not support AsyncMock',
 )
@@ -108,7 +108,7 @@ def test_argument_as_attribute(attribute, tmp_path):
     assert getattr(job, attribute) is mock_obj
 
 
-@needs_pytyon38_because_missing_async_mock_support
+@needs_python38_because_missing_async_mock_support
 @pytest.mark.asyncio
 async def test_wait(tmp_path):
     job_mocks = (AsyncMock(), AsyncMock(), AsyncMock())
