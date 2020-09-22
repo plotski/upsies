@@ -1,6 +1,8 @@
 import re
 import urllib
 
+import aiohttp
+
 from ... import errors
 from ...tools import mediainfo
 from ...utils import cache, fs
@@ -143,7 +145,6 @@ class SubmissionJob(_base.SubmissionJobBase):
             raise RuntimeError('upload() called before TVmaze ID was picked')
         _log.debug('%s: TVmaze ID: %r', self.trackername, self.tvmaze_id)
 
-        import aiohttp
         formdata = aiohttp.FormData()
         formdata.add_field(name='file_input',
                            value=open(self.torrent_filepath, 'rb'),

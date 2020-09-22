@@ -1,6 +1,9 @@
 import abc
 import enum
 
+import aiohttp
+from bs4 import BeautifulSoup
+
 from ... import __project_name__, __version__, errors
 from ...utils import cache
 from .. import _base
@@ -22,7 +25,6 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         :param string: HTML document
         """
         try:
-            from bs4 import BeautifulSoup
             return BeautifulSoup(string, features='html.parser')
         except Exception as e:
             raise RuntimeError(f'Failed to parse HTML: {e}')
@@ -112,7 +114,6 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
 
     @cache.property
     def _http_session(self):
-        import aiohttp
         return aiohttp.ClientSession(
             headers={'User-Agent': f'{__project_name__}/{__version__}'},
             raise_for_status=True,
