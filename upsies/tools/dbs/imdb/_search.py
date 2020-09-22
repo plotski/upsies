@@ -1,7 +1,6 @@
 import functools
 import re
 
-from async_lru import alru_cache
 from bs4 import BeautifulSoup
 
 from ....utils import http
@@ -37,7 +36,6 @@ _title_types = {
 _title_types[None] = ','.join(_title_types.values())
 
 
-@alru_cache(maxsize=None)
 async def search(title, type=None, year=None):
     """
     Search IMDb

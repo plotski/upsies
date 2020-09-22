@@ -1,8 +1,6 @@
 import functools
 import json
 
-from async_lru import alru_cache
-
 from .... import errors
 from ....utils import http
 from .. import _common
@@ -12,7 +10,6 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-@alru_cache(maxsize=None)
 async def search(title, type=None, year=None):
     """
     Search TVmaze

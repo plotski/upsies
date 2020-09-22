@@ -1,7 +1,6 @@
 import functools
 import re
 
-from async_lru import alru_cache
 from bs4 import BeautifulSoup
 
 from ....utils import http
@@ -26,7 +25,6 @@ class TmdbSearchResult(_common.SearchResult):
         return functools.partial(_info.cast, self.id)
 
 
-@alru_cache(maxsize=None)
 async def search(title, type=None, year=None):
     """
     Search TMDb
