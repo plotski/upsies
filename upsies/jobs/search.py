@@ -205,11 +205,11 @@ class _SearchThread(_common.DaemonThread):
         self._results_callback(())
         self._searching_callback(True)
         title, kwargs = self._parse_query(self._query)
+        results = []
         try:
             results = await self._search_coro(title, **kwargs)
         except errors.RequestError as e:
             self._error_callback(e)
-            results = []
         finally:
             self._searching_callback(False)
             if results:
