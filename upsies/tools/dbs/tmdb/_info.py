@@ -1,4 +1,3 @@
-from async_lru import alru_cache
 from bs4 import BeautifulSoup
 
 from .... import errors
@@ -9,7 +8,6 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-@alru_cache(maxsize=None)
 async def summary(id):
     """
     Get summary for movie or series
@@ -28,7 +26,6 @@ async def summary(id):
     return overview
 
 
-@alru_cache(maxsize=None)
 async def year(id):
     """
     Return release year
@@ -49,7 +46,6 @@ async def year(id):
         return ''
 
 
-@alru_cache(maxsize=None)
 async def title_original(id):
     """
     Return original title (e.g. non-English) or empty string
@@ -62,7 +58,6 @@ async def title_original(id):
     return ''
 
 
-@alru_cache(maxsize=None)
 async def title_english(id):
     """
     Return English title if it differs from original title
@@ -75,7 +70,6 @@ async def title_english(id):
     return ''
 
 
-@alru_cache(maxsize=None)
 async def keywords(id):
     """
     Get list of keywords, e.g. genres for movie or series
@@ -100,7 +94,6 @@ async def keywords(id):
         return keywords
 
 
-@alru_cache(maxsize=None)
 async def cast(id):
     """
     Get list of names of cast members

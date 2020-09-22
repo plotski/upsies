@@ -1,7 +1,5 @@
 import json
 
-from async_lru import alru_cache
-
 from .... import errors
 from ....utils import http
 from .. import imdb
@@ -24,7 +22,6 @@ async def _get_show(id):
         return show
 
 
-@alru_cache(maxsize=None)
 async def summary(id):
     """
     Get summary for movie or series
@@ -35,7 +32,6 @@ async def summary(id):
     return _get.summary(show)
 
 
-@alru_cache(maxsize=None)
 async def year(id):
     """
     Return release year
@@ -46,7 +42,6 @@ async def year(id):
     return _get.year(show)
 
 
-@alru_cache(maxsize=None)
 async def title_original(id):
     """
     Return original title (e.g. non-English) or empty string
@@ -62,7 +57,6 @@ async def title_original(id):
         return ''
 
 
-@alru_cache(maxsize=None)
 async def title_english(id):
     """
     Return English title if it differs from original title
@@ -77,7 +71,6 @@ async def title_english(id):
         return ''
 
 
-@alru_cache(maxsize=None)
 async def cast(id):
     show = await _get_show(id)
     cast = show.get('_embedded', {}).get('cast', ())

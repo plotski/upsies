@@ -1,14 +1,11 @@
 import collections
 
-from async_lru import alru_cache
-
 from . import _imdbpie
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-@alru_cache(maxsize=None)
 async def summary(id):
     """
     Get summary for movie or series
@@ -27,7 +24,6 @@ async def summary(id):
     return ''
 
 
-@alru_cache(maxsize=None)
 async def year(id):
     """
     Return release year
@@ -38,7 +34,6 @@ async def year(id):
     return str(info.get('base', {}).get('year', ''))
 
 
-@alru_cache(maxsize=None)
 async def title_original(id):
     """
     Return original title (e.g. non-English) or empty string
@@ -49,7 +44,6 @@ async def title_original(id):
     return info.get('originalTitle', '')
 
 
-@alru_cache(maxsize=None)
 async def title_english(id):
     """
     Return English title if it differs from original title
