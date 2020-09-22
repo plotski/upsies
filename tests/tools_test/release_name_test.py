@@ -1,3 +1,4 @@
+import sys
 from types import SimpleNamespace
 from unittest.mock import Mock, call, patch
 
@@ -586,6 +587,10 @@ async def test_update_attributes(guessit_mock):
 _unique_titles = (SimpleNamespace(title='The Foo'), SimpleNamespace(title='The Bar'))
 _same_titles = (SimpleNamespace(title='The Foo'), SimpleNamespace(title='The Foo'))
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 8),
+    reason='Python < 3.8 refuses to mock guessit',
+)
 @patch('upsies.tools.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
