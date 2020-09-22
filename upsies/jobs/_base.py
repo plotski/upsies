@@ -243,5 +243,4 @@ class JobBase(abc.ABC):
             filename = f'{self.name}.json'
         filename = filename.replace("/", "_")
         assert len(filename) < 250
-        _log.debug('Cache file name: %r', filename)
         return os.path.join(self.cache_directory, filename)

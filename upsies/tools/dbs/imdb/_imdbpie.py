@@ -13,9 +13,7 @@ _log = logging.getLogger(__name__)
 
 async def _async_imdbpie(method, id):
     def func():
-        _log.debug('Getting %r for %r', method, id)
         value = getattr(imdbpie.Imdb(), f'get_{method}')(id)
-        _log.debug('Done getting %r for %r', method, id)
         return value
 
     loop = asyncio.get_event_loop()
