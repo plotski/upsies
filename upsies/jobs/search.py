@@ -182,6 +182,8 @@ class _SearchThread(_common.DaemonThread):
             self.unblock()
 
     def work(self):
+        asyncio.set_event_loop(self._loop)
+
         # Retry searching until the search operation is not canceled
         while True:
             self._search_task = self._loop.create_task(self._delay_search())
@@ -292,6 +294,8 @@ class _UpdateInfoThread(_common.DaemonThread):
                     callback(self._value_as_string(value))
 
     def work(self):
+        asyncio.set_event_loop(self._loop)
+
         if self._result is None:
             for callback in self._targets.values():
                 callback('')
