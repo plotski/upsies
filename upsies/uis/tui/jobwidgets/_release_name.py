@@ -11,7 +11,7 @@ _log = logging.getLogger(__name__)
 class ReleaseNameJobWidget(_base.JobWidgetBase):
     def setup(self):
         self._release_name = widgets.InputField(
-            text=str(self.job.release_name),
+            text='',
             on_accepted=self.handle_release_name,
         )
 
@@ -20,10 +20,8 @@ class ReleaseNameJobWidget(_base.JobWidgetBase):
         # selected.
         def release_name_changed_callback(release_name):
             rn = release_name.format()
-            _log.debug('Release name changed: %r', rn)
-            if rn:
-                self._release_name.text = rn
-                get_app().invalidate()
+            self._release_name.text = rn
+            get_app().invalidate()
         self.job.on_release_name_update(release_name_changed_callback)
 
     def activate(self):
