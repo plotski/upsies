@@ -2,14 +2,14 @@ import functools
 import re
 import time
 
-from bs4 import BeautifulSoup
-
-from ....utils import http
+from ....utils import LazyModule, http
 from .. import _common
 from . import _info, _url_base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 class ImdbSearchResult(_common.SearchResult):
@@ -69,7 +69,7 @@ async def search(title, type=None, year=None):
         params['release_date'] = f'{year}-01-01,{year}-12-31'
 
     html = await http.get(url, params=params, cache=True)
-    soup = BeautifulSoup(html, features='html.parser')
+    soup = bs4.BeautifulSoup(html, features='html.parser')
 
     start = time.monotonic()
     items = soup.find_all('div', class_='lister-item-content')

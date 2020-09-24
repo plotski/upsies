@@ -1,11 +1,11 @@
-from bs4 import BeautifulSoup
-
 from .... import errors
-from ....utils import http
+from ....utils import LazyModule, http
 from . import _url_base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 async def summary(id):
@@ -19,7 +19,7 @@ async def summary(id):
     except errors.RequestError:
         return ''
 
-    soup = BeautifulSoup(html, features='html.parser')
+    soup = bs4.BeautifulSoup(html, features='html.parser')
     overview = ''.join(soup.find('div', class_='overview').stripped_strings)
     if overview == 'No overview found.':
         overview = ''
@@ -37,7 +37,7 @@ async def year(id):
     except errors.RequestError:
         return ''
 
-    soup = BeautifulSoup(html, features='html.parser')
+    soup = bs4.BeautifulSoup(html, features='html.parser')
     year = ''.join(soup.find(class_='release_date').stripped_strings).strip('()')
     _log.debug(year)
     if len(year) == 4 and year.isdigit():
@@ -81,7 +81,7 @@ async def keywords(id):
     except errors.RequestError:
         return ''
 
-    soup = BeautifulSoup(html, features='html.parser')
+    soup = bs4.BeautifulSoup(html, features='html.parser')
     keywords = soup.find(class_='keywords')
     if not keywords:
         return []
@@ -105,7 +105,7 @@ async def cast(id):
     except errors.RequestError:
         return ''
 
-    soup = BeautifulSoup(html, features='html.parser')
+    soup = bs4.BeautifulSoup(html, features='html.parser')
     cards = soup.select('.people > .card')
     cast = []
     for card in cards:

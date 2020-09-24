@@ -1,13 +1,15 @@
-from bs4 import BeautifulSoup
+from ....utils import LazyModule
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 def summary(show):
     summary = show.get('summary', None)
     if summary:
-        soup = BeautifulSoup(summary, 'html.parser')
+        soup = bs4.BeautifulSoup(summary, 'html.parser')
         return '\n'.join(paragraph.text for paragraph in soup.find_all('p'))
     else:
         return ''

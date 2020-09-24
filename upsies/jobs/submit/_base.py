@@ -1,8 +1,6 @@
 import abc
 import enum
 
-import bs4
-
 from ... import __project_name__, __version__, errors
 from ...utils import LazyModule, cache
 from .. import _base
@@ -11,6 +9,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 aiohttp = LazyModule(module='aiohttp', namespace=globals())
+bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 class SubmissionJobBase(_base.JobBase, abc.ABC):

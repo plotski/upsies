@@ -1,14 +1,14 @@
 import functools
 import re
 
-from bs4 import BeautifulSoup
-
-from ....utils import http
+from ....utils import LazyModule, http
 from .. import _common
 from . import _info, _url_base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 class TmdbSearchResult(_common.SearchResult):
@@ -55,7 +55,7 @@ async def search(title, type=None, year=None):
     params = {'query': query}
 
     html = await http.get(url, params=params, cache=True)
-    soup = BeautifulSoup(html, features='html.parser')
+    soup = bs4.BeautifulSoup(html, features='html.parser')
 
     items = soup.find_all('div', class_='card')
     return tuple(_make_result(item) for item in items)

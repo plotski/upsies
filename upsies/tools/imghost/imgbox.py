@@ -1,10 +1,11 @@
-import pyimgbox
-
 from ... import errors
+from ...utils import LazyModule
 from . import _base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+pyimgbox = LazyModule(module='pyimgbox', namespace=globals())
 
 
 class Uploader(_base.UploaderBase):
