@@ -1,11 +1,14 @@
 import os
-import shlex
-import subprocess
 
 from .. import errors
+from ..utils import LazyModule
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+subprocess = LazyModule(module='subprocess', namespace=globals())
+shlex = LazyModule(module='shlex', namespace=globals())
+
 
 _run_output_cache = {}
 
