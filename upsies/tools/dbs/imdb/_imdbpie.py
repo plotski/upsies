@@ -4,12 +4,12 @@ import collections
 import json
 import os
 
-import imdbpie
-
-from ....utils import fs
+from ....utils import LazyModule, fs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+imdbpie = LazyModule(module='imdbpie', namespace=globals())
 
 
 async def _async_imdbpie(method, id):
