@@ -1,6 +1,7 @@
 import asyncio
 import collections
 import os
+from unittest.mock import Mock, call
 
 import pytest
 
@@ -136,6 +137,32 @@ def test_send_on_finished_job(job):
     assert job.output == ('foo',)
     job.send('bar', if_not_finished=True)
     assert job.output == ('foo',)
+
+def test_on_output_callback_is_called_when_output_is_sent(job):
+    cb = Mock()
+    job.on_output(cb)
+    job.start()
+    assert cb.call_args_list == []
+    job.send('foo')
+    assert cb.call_args_list == [call('foo')]
+    job.send('bar')
+    assert cb.call_args_list == [call('foo'), call('bar')]
+    job.finish()
+
+def test_on_output_callback_is_called_with_cached_output(tmp_path):
+    job1 = FooJob(homedir=tmp_path, ignore_cache=False)
+    job1.start()
+    job1.send('foo')
+    job1.send('bar')
+    job1.finish()
+
+    job2 = FooJob(homedir=tmp_path, ignore_cache=False)
+    cb = Mock()
+    job2.on_output(cb)
+    job2.start()
+    assert job2.is_finished
+    assert cb.call_args_list == [call('foo'), call('bar')]
+
 
 def test_error_and_errors(job):
     assert job.errors == ()

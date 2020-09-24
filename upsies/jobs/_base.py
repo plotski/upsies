@@ -80,6 +80,9 @@ class JobBase(abc.ABC):
         if self.output:
             _log.debug('Job was already done previously %r', self)
             self._finished_event.set()
+            for output in self.output:
+                for cb in self._output_callbacks:
+                    cb(output)
         else:
             _log.debug('Executing %r', self)
             self.execute()
@@ -131,10 +134,26 @@ class JobBase(abc.ABC):
         """
         if not self.is_finished:
             if output:
-                self._output.append(str(output))
+                output_str = str(output)
+                self._output.append(output_str)
+                for cb in self._output_callbacks:
+                    cb(output_str)
         else:
             if not if_not_finished:
                 raise RuntimeError('send() called on finished job')
+
+    def on_output(self, callback):
+        """
+        Call `callback` with output
+
+        :param callable callback: Any callable that takes a single positional
+            argument
+
+        `callback` is called when :func:`send` is called and when cached output
+        is read.
+        """
+        assert callable(callback)
+        self._output_callbacks.append(callback)
 
     @property
     def errors(self):
