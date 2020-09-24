@@ -2,7 +2,7 @@ import functools
 
 from ... import errors
 from ... import jobs as _jobs
-from ...tools import client
+from ...tools import client, dbs
 from ...utils import cache, fs
 
 import logging  # isort:skip
@@ -130,6 +130,8 @@ class release_name(SubcommandBase):
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.path,
         )
+        db = getattr(dbs, 'imdb')
+        imdb_job.on_output(functools.partial(rn_job.fetch_info, db=db))
         return (imdb_job, rn_job)
 
 
