@@ -252,8 +252,16 @@ class JobBase(abc.ABC):
         implementation.
         """
         if self._kwargs:
+            def string_value(v):
+                v = str(v)
+                # Use same cache file for absolute and relative paths
+                if os.path.exists(v):
+                    v = os.path.realpath(v)
+                return v
+
             kwargs_str_max_len = 250 - len(self.name) - len('..json')
-            kwargs_str = ','.join(f'{k}={v}' for k, v in self._kwargs.items())
+            kwargs_str = ','.join(f'{k}={string_value(v)}'
+                                  for k, v in self._kwargs.items())
             if len(kwargs_str) > kwargs_str_max_len:
                 kwargs_str = ''.join((
                     kwargs_str[:int(kwargs_str_max_len / 2 - 1)],

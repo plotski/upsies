@@ -233,6 +233,26 @@ def test_cache_file_name_does_not_contain_illegal_characters(tmp_path):
     job = BarJob(homedir=tmp_path, ignore_cache=False, baz='hey/you')
     assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.baz=hey_you.json')
 
+def test_cache_file_normalizes_existing_paths(tmp_path):
+    class BarJob(FooJob):
+        def initialize(self, some_path):
+            pass
+
+    some_dir = tmp_path / 'foo' / 'bar'
+    some_path = some_dir / 'baz.txt'
+    some_dir.mkdir(parents=True)
+    some_path.write_text('some thing')
+    abs_path = some_path
+    rel_path = some_path.relative_to(tmp_path)
+    orig_cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        job1 = BarJob(homedir=tmp_path, ignore_cache=False, some_path=abs_path)
+        job2 = BarJob(homedir=tmp_path, ignore_cache=False, some_path=rel_path)
+        assert job1.cache_file == job2.cache_file
+    finally:
+        os.chdir(orig_cwd)
+
 def test_cache_file_has_correct_parent(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
     assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.json')
