@@ -1,16 +1,16 @@
 import os
 import queue
 
-import natsort
-
 from .. import errors, tools
-from ..utils import fs, timestamp, video
+from ..utils import LazyModule, fs, timestamp, video
 from . import _base, _common
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 DEFAULT_NUMBER_OF_SCREENSHOTS = 2
+
+natsort = LazyModule(module='natsort', namespace=globals())
 
 
 class ScreenshotsJob(_base.JobBase):

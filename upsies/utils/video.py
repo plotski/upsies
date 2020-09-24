@@ -3,13 +3,13 @@ import functools
 import os
 import shlex
 
-import natsort
-
 from .. import binaries, errors
-from . import fs, subproc
+from . import LazyModule, fs, subproc
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+natsort = LazyModule(module='natsort', namespace=globals())
 
 
 _video_file_extensions = ('mkv', 'mp4', 'ts', 'avi', 'vob')
