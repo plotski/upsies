@@ -355,21 +355,6 @@ def test_result_focused(UpdateInfoThread_mock, tmp_path):
     assert UpdateInfoThread_mock.return_value.call_args_list == [call('The Result')]
 
 
-def test_no_id_selected(tmp_path):
-    sj = search.SearchDbJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        db='imdb',
-        content_path='path/to/foo',
-    )
-    cb = Mock()
-    assert not sj.is_finished
-    sj.on_id_selected(cb)
-    sj.id_selected(None)
-    assert sj.is_finished
-    assert cb.call_args_list == [call(None, search.dbs.imdb)]
-    assert sj.output == ()
-
 def test_id_selected(tmp_path):
     sj = search.SearchDbJob(
         homedir=tmp_path,
@@ -377,12 +362,9 @@ def test_id_selected(tmp_path):
         db='imdb',
         content_path='path/to/foo',
     )
-    cb = Mock()
     assert not sj.is_finished
-    sj.on_id_selected(cb)
     sj.id_selected('The ID')
     assert sj.is_finished
-    assert cb.call_args_list == [call('The ID', search.dbs.imdb)]
     assert sj.output == ('The ID',)
 
 def test_id_selected_while_searching(tmp_path):
@@ -392,13 +374,10 @@ def test_id_selected_while_searching(tmp_path):
         db='imdb',
         content_path='path/to/foo',
     )
-    cb = Mock()
     assert not sj.is_finished
-    sj.on_id_selected(cb)
     sj._is_searching = True
     sj.id_selected('The ID')
     assert not sj.is_finished
-    assert cb.call_args_list == []
     assert sj.output == ()
 
 

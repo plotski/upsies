@@ -130,7 +130,6 @@ class release_name(SubcommandBase):
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.path,
         )
-        imdb_job.on_id_selected(rn_job.fetch_info)
         return (imdb_job, rn_job)
 
 

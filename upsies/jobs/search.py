@@ -55,7 +55,6 @@ class SearchDbJob(_base.JobBase):
         self._searching_status_callbacks = []
         self._info_updated_callbacks = []
         self._error_callbacks = []
-        self._id_selected_callbacks = []
 
     def execute(self):
         self._search_thread = _SearchThread(
@@ -138,16 +137,11 @@ class SearchDbJob(_base.JobBase):
     def result_focused(self, result):
         self._update_info_thread(result)
 
-    def on_id_selected(self, callback):
-        self._id_selected_callbacks.append(callback)
-
     def id_selected(self, id=None):
         if not self.is_searching:
             if id is not None:
                 self.send(str(id), if_not_finished=True)
             self.finish()
-            for cb in self._id_selected_callbacks:
-                cb(id, self._db)
 
 
 class _SearchThread(_common.DaemonThread):
