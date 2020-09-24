@@ -1,11 +1,12 @@
 from os.path import exists as _path_exists
 
-import torf
-
 from .. import errors
+from ..utils import LazyModule
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+torf = LazyModule(module='torf', namespace=globals())
 
 
 def create(*, content_path, announce_url, torrent_path,
