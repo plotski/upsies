@@ -2,15 +2,15 @@ import functools
 import os
 import re
 
-import guessit as _guessit
-
-from ..utils import fs
+from ..utils import LazyModule, fs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 # Disable debugging messages from rebulk
 logging.getLogger('rebulk').setLevel(logging.WARNING)
+
+_guessit = LazyModule(module='guessit', name='_guessit', namespace=globals())
 
 
 def _file_and_parent(path):
