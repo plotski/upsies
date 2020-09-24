@@ -2,13 +2,14 @@ import base64
 import json
 import os
 
-import aiohttp
-
 from ... import errors
+from ...utils import LazyModule
 from . import _base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+aiohttp = LazyModule(module='aiohttp', namespace=globals())
 
 
 DEFAULT_URL = 'http://localhost:9091/transmission/rpc'

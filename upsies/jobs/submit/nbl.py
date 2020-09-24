@@ -1,16 +1,16 @@
 import re
 import urllib
 
-import aiohttp
-
 from ... import errors
 from ...tools import mediainfo
-from ...utils import cache, fs
+from ...utils import LazyModule, cache, fs
 from .. import search, torrent
 from . import _base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+aiohttp = LazyModule(module='aiohttp', namespace=globals())
 
 
 class SubmissionJob(_base.SubmissionJobBase):

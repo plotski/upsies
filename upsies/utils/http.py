@@ -3,14 +3,15 @@ import collections
 import hashlib
 import os
 
-import aiohttp
-import yarl
-
 from .. import errors
+from ..utils import LazyModule
 from . import fs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+aiohttp = LazyModule(module='aiohttp', namespace=globals())
+yarl = LazyModule(module='yarl', namespace=globals())
 
 
 headers = {
