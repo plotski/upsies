@@ -1,13 +1,14 @@
 import functools
 import os
 import re
-import tempfile
 
 from .. import __project_name__
-from . import pretty_bytes
+from . import LazyModule, pretty_bytes
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+tempfile = LazyModule(module='tempfile', namespace=globals())
 
 
 def _check_dir_access(path):
