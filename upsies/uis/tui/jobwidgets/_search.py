@@ -1,5 +1,3 @@
-import webbrowser
-
 from prompt_toolkit.application import get_app
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings
@@ -10,12 +8,14 @@ from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.dimension import Dimension
 from prompt_toolkit.utils import get_cwidth
 
-from ....utils import cache
+from ....utils import LazyModule, cache
 from .. import widgets
 from . import _base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+webbrowser = LazyModule(module='webbrowser', namespace=globals())
 
 
 class SearchJobWidget(_base.JobWidgetBase):
