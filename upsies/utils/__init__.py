@@ -2,6 +2,47 @@
 Low-level wrappers and helper functions
 """
 
+import importlib
+import types
+
+
+# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/util/lazy_loader.py
+class LazyModule(types.ModuleType):
+    """
+    Lazily import module to decrease execution time
+
+    :param str module: Name of the module
+    :param mapping namespace: Usually the return value of `globals()`
+    :param str name: Name of the module in `namespace`; defaults to `module`
+    """
+
+    def __init__(self, module, namespace, name=None):
+        self._module = module
+        self._namespace = namespace
+        self._name = name or module
+        super().__init__(module)
+
+    def _load(self):
+        # Import the target module and insert it into the parent's namespace
+        module = importlib.import_module(self.__name__)
+        self._namespace[self._name] = module
+
+        # Update this object's dict so that if someone keeps a reference to the
+        # LazyLoader, lookups are efficient (__getattr__ is only called on
+        # lookups that fail).
+        self.__dict__.update(module.__dict__)
+
+        return module
+
+    def __getattr__(self, item):
+        module = self._load()
+        return getattr(module, item)
+
+    def __dir__(self):
+        module = self._load()
+        return dir(module)
+
+
 def closest_number(n, ns):
     """Return the number from `ns` that is closest to `n`"""
     # https://stackoverflow.com/a/12141207
