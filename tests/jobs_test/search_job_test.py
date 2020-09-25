@@ -484,7 +484,7 @@ def test_SearchThread_delay_search_handles_RequestError():
         assert searching_cb.call_args_list == []
         assert search_coro.call_args_list == []
         asyncio.get_event_loop().run_until_complete(asyncio.sleep(0.2))
-        assert results_cb.call_args_list == [call(())]
+        assert results_cb.call_args_list == [call(()), call(())]
         assert isinstance(error_cb.call_args_list[0][0][0], errors.RequestError)
         assert str(error_cb.call_args_list[0][0][0]) == 'Bam!'
         assert searching_cb.call_args_list == [call(True), call(False)]
