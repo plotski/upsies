@@ -12,7 +12,27 @@ torf = LazyModule(module='torf', namespace=globals())
 def create(*, content_path, announce_url, torrent_path,
            init_callback, progress_callback,
            overwrite=False, source=None, exclude_regexs=()):
+    """
+    Generate and write torrent file
 
+    :param str content_path: Path to the torrent's content
+    :param str announce_url: Announce URL
+    :param str torrent_path: Path of the generated torrent file
+    :param str init_callback: Callable that is called once before torrent
+        generation commences, gets a nested sequence of `(directory_name,
+        ((file_name, file_size), ...))` `(file_name, file_size)` tuples
+    :param str progress_callback: Callable that gets the generation progress as
+        a number between 0 and 100
+    :param bool overwrite: Whether to overwrite `torrent_path` if it exists
+    :param str source: Value of the "source" field in the torrent or `None` to
+        leave it out
+    :param exclude_regexs: Sequence of regular expressions; matching files are
+        not included in the torrent
+
+    :raise TorrentError: if anything goes wrong
+
+    :return: `torrent_path`
+    """
     if not announce_url:
         raise errors.TorrentError('Announce URL is empty')
 
