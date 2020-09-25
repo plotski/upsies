@@ -28,3 +28,8 @@ async def test_title_original_english(id, english, original, store_request_cache
 @pytest.mark.asyncio
 async def test_cast(store_request_cache):
     assert 'Bryan Cranston' in await _info.cast('169')
+
+@pytest.mark.asyncio
+async def test_type(store_request_cache):
+    with pytest.raises(NotImplementedError, match=r'^Type lookup is not implemented for TVmaze$'):
+        await tvmaze.type(id)

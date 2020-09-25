@@ -75,3 +75,13 @@ async def cast(id):
     show = await _get_show(id)
     cast = show.get('_embedded', {}).get('cast', ())
     return tuple(str(c['person']['name']) for c in cast)
+
+
+async def type(id):
+    """
+    Always raise :exc:`NotImplementedError`
+
+    TVmaze does not support movies and we can't distinguish between "season" and
+    "episode" by ID.
+    """
+    raise NotImplementedError('Type lookup is not implemented for TVmaze')

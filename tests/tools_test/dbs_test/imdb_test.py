@@ -25,3 +25,17 @@ async def test_year(store_request_cache):
 async def test_title_original_english(id, english, original, store_request_cache):
     assert await imdb.title_english(id) == english
     assert await imdb.title_original(id) == original
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_type'),
+    argvalues=(
+        ('tt0076759', 'movie'),    # "movie"
+        ('tt0192802', 'movie'),    # "tvMovie"
+        ('tt2372162', 'season'),   # "tvSeries"
+        ('tt1453159', 'season'),   # "tvMiniSeries"
+        ('tt5440238', 'episode'),  # "tvEpisode"
+    ),
+)
+@pytest.mark.asyncio
+async def test_type(id, exp_type, store_request_cache):
+    assert await imdb.type(id) == exp_type

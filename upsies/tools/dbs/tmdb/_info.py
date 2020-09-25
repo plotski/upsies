@@ -114,3 +114,13 @@ async def cast(id):
             if strings:
                 cast.append(strings[0])
     return cast
+
+
+async def type(id):
+    """
+    Always raise :exc:`NotImplementedError`
+
+    We can't reliably distringuish between "season" and "episode" because TMDb
+    doesn't support single episodes.
+    """
+    raise NotImplementedError('Type lookup is not implemented for TMDb')

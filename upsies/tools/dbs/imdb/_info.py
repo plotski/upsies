@@ -83,3 +83,21 @@ async def title_english(id):
                 return titles[key]
 
     return ''
+
+
+async def type(id):
+    """
+    Get type: "movie", "season" "episode" or ""
+
+    :param str id: IMDb ID (starts with "tt")
+    """
+    info = await _imdbpie.get_info(id)
+    title_type = info.get('base', {}).get('titleType', '').casefold()
+    if 'movie' in title_type:
+        return 'movie'
+    elif 'series' in title_type:
+        return 'season'
+    elif 'episode' in title_type:
+        return 'episode'
+    else:
+        return ''
