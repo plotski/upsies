@@ -564,23 +564,47 @@ def test_group_setter(guessit_mock):
     assert rn.group == '123'
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 8),
+    reason='Python < 3.8 refuses to mock with pytest.mark.asyncio',
+)
+@patch('upsies.tools.dbs.imdb')
 @patch('upsies.tools.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.asyncio
-async def test_update_attributes(guessit_mock):
+@pytest.mark.parametrize(
+    argnames='guessit_type, imdb_type, exp_type',
+    argvalues=(
+        ('movie', 'movie', 'movie'),
+        ('movie', 'season', 'season'),
+        ('movie', 'episode', 'episode'),
+        ('season', 'movie', 'movie'),
+        ('season', 'season', 'season'),
+        ('season', 'episode', 'episode'),
+        # For episodes, we trust guessit more than IMDb
+        ('episode', 'movie', 'episode'),
+        ('episode', 'season', 'episode'),
+        ('episode', 'episode', 'episode'),
+    ),
+)
+async def test_update_attributes(guessit_mock, imdb_mock, guessit_type, imdb_type, exp_type):
     id_mock = '12345'
     info_mock = {
+        'type': imdb_type,
         'title_original': 'Le Foo',
         'title_english': 'The Foo',
         'year': '2010',
     }
-    db_mock = Mock(info=AsyncMock(return_value=info_mock))
+    imdb_mock.info = AsyncMock(return_value=info_mock)
+    guessit_mock.return_value = {'type': guessit_type}
     rn = ReleaseName('path/to/something')
-    await rn._update_attributes(id_mock, db_mock)
+    assert rn.type == guessit_type
+    await rn._update_attributes(id_mock)
     assert rn.title == 'Le Foo'
     assert rn.title_aka == 'The Foo'
     assert rn.year == '2010'
-    assert db_mock.info.call_args_list == [
-        call(id_mock, db_mock.title_english, db_mock.title_original, db_mock.year),
+    assert rn.type == exp_type
+    assert imdb_mock.info.call_args_list == [
+        call(id_mock, imdb_mock.type, imdb_mock.title_english, imdb_mock.title_original, imdb_mock.year),
     ]
 
 
@@ -589,8 +613,9 @@ _same_titles = (SimpleNamespace(title='The Foo'), SimpleNamespace(title='The Foo
 
 @pytest.mark.skipif(
     sys.version_info < (3, 8),
-    reason='Python < 3.8 refuses to mock guessit',
+    reason='Python < 3.8 refuses to mock with pytest.mark.asyncio',
 )
+@patch('upsies.tools.dbs.imdb')
 @patch('upsies.tools.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -604,10 +629,10 @@ _same_titles = (SimpleNamespace(title='The Foo'), SimpleNamespace(title='The Foo
         ('episode', _same_titles, True),
     ),
 )
-async def test_update_year_required(guessit_mock, type, results, exp_year_required):
-    db_mock = Mock(search=AsyncMock(return_value=results))
+async def test_update_year_required(guessit_mock, imdb_mock, type, results, exp_year_required):
+    imdb_mock.search = AsyncMock(return_value=results)
     guessit_mock.return_value = {'type': type, 'title': 'The Foo'}
     rn = ReleaseName('path/to/something')
     assert rn.year_required is False
-    await rn._update_year_required(db_mock)
+    await rn._update_year_required()
     assert rn.year_required is exp_year_required
