@@ -296,16 +296,26 @@ class ReleaseName(collections.abc.Mapping):
     async def _update_attributes(self, id):
         info = await dbs.imdb.info(
             id,
+            dbs.imdb.type,
             dbs.imdb.title_english,
             dbs.imdb.title_original,
             dbs.imdb.year,
         )
-        for attr, key in (('title', 'title_original'),
-                          ('title_aka', 'title_english'),
-                          ('year', 'year')):
+        for attr, key in (
+                ('title', 'title_original'),
+                ('title_aka', 'title_english'),
+                ('year', 'year')
+        ):
             # Test that "no info" doesn't overload existing attrs
             if info[key]:
                 setattr(self, attr, info[key])
+
+        # guessit can misdetect type (e.g. if mini-series doesn't contain
+        # "S01"). But if guessit detected an episode (e.g. "S04E03"), it's
+        # unlikely to be wrong. Also, `id` could be the ID for the whole
+        # "series" or a single "episode".
+        if self.type != 'episode':
+            self.type = info['type']
 
     async def _update_year_required(self):
         if self.type in ('season', 'episode'):
