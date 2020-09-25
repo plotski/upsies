@@ -1,7 +1,7 @@
 import asyncio
 import collections
 
-from . import guessit, mediainfo
+from . import dbs, guessit, mediainfo
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -270,12 +270,11 @@ class ReleaseName(collections.abc.Mapping):
     def group(self, value):
         self._guess['release_group'] = str(value)
 
-    async def fetch_info(self, id, db, callback=None):
+    async def fetch_info(self, id, callback=None):
         """
         Fill in information from online database
 
         :param str id: ID to query `db` for
-        :param db: One of the packages in :mod:`tools.dbs`
         :param callable callback: Function to call after fetching; gets the
             instance (`self`) as a keyword argument
 
@@ -287,28 +286,31 @@ class ReleaseName(collections.abc.Mapping):
         - :attr:`year_required`
         """
         await asyncio.gather(
-            self._update_attributes(id, db),
-            self._update_year_required(db),
+            self._update_attributes(id),
+            self._update_year_required(),
         )
         _log.debug('Release name updated: %s', self)
         if callback is not None:
             callback(self)
 
-    async def _update_attributes(self, id, db):
-        info = await db.info(
+    async def _update_attributes(self, id):
+        info = await dbs.imdb.info(
             id,
-            db.title_english,
-            db.title_original,
-            db.year,
+            dbs.imdb.title_english,
+            dbs.imdb.title_original,
+            dbs.imdb.year,
         )
-        self.title = info['title_original']
-        self.title_aka = info['title_english']
-        self.year = info['year']
+        for attr, key in (('title', 'title_original'),
+                          ('title_aka', 'title_english'),
+                          ('year', 'year')):
+            # Test that "no info" doesn't overload existing attrs
+            if info[key]:
+                setattr(self, attr, info[key])
 
-    async def _update_year_required(self, db):
+    async def _update_year_required(self):
         if self.type in ('season', 'episode'):
             # Find out if there are multiple series with this title
-            results = await db.search(self.title, type='series')
+            results = await dbs.imdb.search(self.title, type='series')
             same_titles = tuple(
                 r.title for r in results
                 if r.title.casefold() == self.title.casefold()
