@@ -351,7 +351,12 @@ class ReleaseName(collections.abc.Mapping):
             if self.type == 'season':
                 parts.append(f'S{self.season.rjust(2, "0")}')
             elif self.type == 'episode':
-                parts.append(f'S{self.season.rjust(2, "0")}E{self.episode.rjust(2, "0")}')
+                # Episode may be multiple numbers, e.g. for double-long pilots
+                if not isinstance(self.episode, str):
+                    episode_string = ''.join(f'E{e.rjust(2, "0")}' for e in self.episode)
+                else:
+                    episode_string = self.episode
+                parts.append(f'S{self.season.rjust(2, "0")}{episode_string}')
 
         if self.edition:
             parts.append(self.edition)
