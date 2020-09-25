@@ -78,6 +78,10 @@ def assert_guess(release_name,
      {'type': 'episode', 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': '2',
       'screen_size': '1080p', 'streaming_service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
+    ('The Foo 2000 S01E01E02 1080p NF WEB-DL AAC2.0 H.264-ASDF',
+     {'type': 'episode', 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': ['1', '2'],
+      'screen_size': '1080p', 'streaming_service': 'NF', 'source': 'WEB-DL',
+      'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
 ))
 def test_type_and_year_season_and_episode(release_name, expected):
     assert_guess(release_name, **expected)

@@ -92,9 +92,13 @@ def _enforce_list_fields(guess, key):
 
 
 def _enforce_str(guess, *keys):
+    # For lists, make all items strings
     for key in keys:
         if key in guess and not isinstance(guess[key], str):
-            guess[key] = str(guess[key])
+            if isinstance(guess[key], list):
+                guess[key] = [str(v) for v in guess[key]]
+            else:
+                guess[key] = str(guess[key])
 
 
 def _add_season_type(guess):
