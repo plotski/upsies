@@ -385,7 +385,7 @@
               
                 <li class="">
                   <a id="movie" href="/search/movie?query=Star Wars" class="search_tab " title="Movies" alt="Movies">Movies</a>
-                    <span>140</span>
+                    <span>139</span>
                 </li>
               
                 <li class="">
@@ -678,7 +678,7 @@
         <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg 2x" alt="Lego Star Wars: The Freemaker Adventures">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg 2x" alt="LEGO Star Wars: The Freemaker Adventures">
     
   
 
@@ -689,7 +689,7 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837"><h2>Lego Star Wars: The Freemaker Adventures</h2></a>
+          <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837"><h2>LEGO Star Wars: The Freemaker Adventures</h2></a>
 
           
             <span class="release_date">June 20, 2016</span>
@@ -713,7 +713,7 @@
         <a data-id="55d91d1d92514143de00379e" data-media-type="tv" data-media-adult="false" class="result" href="/tv/63722">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/boQ3kgn7jzjKkIK5gAf6HA9vU1U.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/boQ3kgn7jzjKkIK5gAf6HA9vU1U.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/boQ3kgn7jzjKkIK5gAf6HA9vU1U.jpg 2x" alt="Lego Star Wars: Droid Tales">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/boQ3kgn7jzjKkIK5gAf6HA9vU1U.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/boQ3kgn7jzjKkIK5gAf6HA9vU1U.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/boQ3kgn7jzjKkIK5gAf6HA9vU1U.jpg 2x" alt="LEGO Star Wars: Droid Tales">
     
   
 
@@ -724,7 +724,7 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="55d91d1d92514143de00379e" data-media-type="tv" data-media-adult="false" class="result" href="/tv/63722"><h2>Lego Star Wars: Droid Tales</h2></a>
+          <a data-id="55d91d1d92514143de00379e" data-media-type="tv" data-media-adult="false" class="result" href="/tv/63722"><h2>LEGO Star Wars: Droid Tales</h2></a>
 
           
             <span class="release_date">October  5, 2015</span>
@@ -776,76 +776,6 @@
   
 </div>
     
-      <div id="card_tv_5bd737c90e0a2622c3045a73" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 2x" alt="LEGO Star Wars: All-Stars">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558"><h2>LEGO Star Wars: All-Stars</h2></a>
-
-          
-            <span class="release_date">November 10, 2018</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>An adventure series that spans all Star Wars eras featuring LEGO versions of the fresh faces of the Star Wars galaxy alongside iconic heroes including Kylo Ren, R2-D2, Young Han, Chewie, Young Lando, BB-8 and General Leia.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_5b676b8b92514168b6032255" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5b676b8b92514168b6032255" data-media-type="tv" data-media-adult="false" class="result" href="/tv/81401">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg 2x" alt="Science of Star Wars">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5b676b8b92514168b6032255" data-media-type="tv" data-media-adult="false" class="result" href="/tv/81401"><h2>Science of Star Wars</h2></a>
-
-          
-            <span class="release_date">May 16, 2005</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>This documentary series takes a look at the science of "Star Wars" and shows how many of the technologies depicted in the films are becoming reality.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
       <div id="card_tv_5c3246bfc3a36879cfa6edcf" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -874,6 +804,76 @@
 
       <div class="overview">
         <p>A series of animated shorts celebrating the characters and stories of a galaxy far, far away, featuring a bright and colorful art style, exciting action, and insight into the saga's greatest themes!</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5de6ef4c3faba00019127b92" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5de6ef4c3faba00019127b92" data-media-type="tv" data-media-adult="false" class="result" href="/tv/96101">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg 2x" alt="Star Wars: Jedi Temple Challenge">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="5de6ef4c3faba00019127b92" data-media-type="tv" data-media-adult="false" class="result" href="/tv/96101"><h2>Star Wars: Jedi Temple Challenge</h2></a>
+
+          
+            <span class="release_date">June 10, 2020</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>A game show set in a galaxy far, far away, which tests young contestants’ abilities in the core Jedi principles of strength, knowledge, and bravery as they face thrilling and fun obstacles in an attempt to achieve the rank of Jedi Knight</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5bd737c90e0a2622c3045a73" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 2x" alt="LEGO Star Wars: All-Stars">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558"><h2>LEGO Star Wars: All-Stars</h2></a>
+
+          
+            <span class="release_date">November 10, 2018</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>An adventure series that spans all Star Wars eras featuring LEGO versions of the fresh faces of the Star Wars galaxy alongside iconic heroes including Kylo Ren, R2-D2, Young Han, Chewie, Young Lando, BB-8 and General Leia.</p>
       </div>
     </div>
   </div>
@@ -951,14 +951,14 @@
   
 </div>
     
-      <div id="card_tv_5de6ef4c3faba00019127b92" class="card v4 tight">
+      <div id="card_tv_5b676b8b92514168b6032255" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5de6ef4c3faba00019127b92" data-media-type="tv" data-media-adult="false" class="result" href="/tv/96101">
+        <a data-id="5b676b8b92514168b6032255" data-media-type="tv" data-media-adult="false" class="result" href="/tv/81401">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg 2x" alt="Star Wars: Jedi Temple Challenge">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg 2x" alt="Science of Star Wars">
     
   
 
@@ -969,16 +969,51 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5de6ef4c3faba00019127b92" data-media-type="tv" data-media-adult="false" class="result" href="/tv/96101"><h2>Star Wars: Jedi Temple Challenge</h2></a>
+          <a data-id="5b676b8b92514168b6032255" data-media-type="tv" data-media-adult="false" class="result" href="/tv/81401"><h2>Science of Star Wars</h2></a>
 
           
-            <span class="release_date">June 10, 2020</span>
+            <span class="release_date">May 16, 2005</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>A game show set in a galaxy far, far away, which tests young contestants’ abilities in the core Jedi principles of strength, knowledge, and bravery as they face thrilling and fun obstacles in an attempt to achieve the rank of Jedi Knight</p>
+        <p>This documentary series takes a look at the science of "Star Wars" and shows how many of the technologies depicted in the films are becoming reality.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5f0c92f55e12000035e6d244" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg 2x" alt="Star Wars: The Bad Batch">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971"><h2>Star Wars: The Bad Batch</h2></a>
+
+          
+            <span class="release_date">June  1, 2021</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Follow the elite and experimental Clones of the Bad Batch as they find their way in a rapidly changing galaxy in the aftermath of the Clone Wars.</p>
       </div>
     </div>
   </div>
@@ -1019,41 +1054,6 @@
   
 </div>
     
-      <div id="card_tv_57364ed99251410b24000eb1" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/iWTvTLpA83iNj2fG9TxomEo7b5M.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/iWTvTLpA83iNj2fG9TxomEo7b5M.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/iWTvTLpA83iNj2fG9TxomEo7b5M.jpg 2x" alt="LEGO Star Wars: The Resistance Rises">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487"><h2>LEGO Star Wars: The Resistance Rises</h2></a>
-
-          
-            <span class="release_date">February 15, 2016</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>A series of animated shorts that take place prior to the First Order's attack on Jakku and tell never-before-told stories including Kylo Ren, Han Solo, Finn, Rey, BB-8, Maz Kanata and more.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
       <div id="card_tv_52570c2919c295711400d867" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -1085,13 +1085,15 @@
   
 </div>
     
-      <div id="card_tv_5be55e02c3a36810c60456ab" class="card v4 tight">
+      <div id="card_tv_57364ed99251410b24000eb1" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5be55e02c3a36810c60456ab" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83867">
+        <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487">
             
-    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/iWTvTLpA83iNj2fG9TxomEo7b5M.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/iWTvTLpA83iNj2fG9TxomEo7b5M.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/iWTvTLpA83iNj2fG9TxomEo7b5M.jpg 2x" alt="LEGO Star Wars: The Resistance Rises">
+    
   
 
         </a>
@@ -1101,14 +1103,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5be55e02c3a36810c60456ab" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83867"><h2>Untitled Star Wars: Rogue One Prequel Series</h2></a>
+          <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487"><h2>LEGO Star Wars: The Resistance Rises</h2></a>
 
+          
+            <span class="release_date">February 15, 2016</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>The adventures of rebel spy Cassian Andor during the formative years of the Rebellion prior to the events of Rogue One: A Star Wars Story. The series explores tales filled with espionage and daring missions to restore hope to a galaxy in the grip of a ruthless Empire.</p>
+        <p>A series of animated shorts that take place prior to the First Order's attack on Jakku and tell never-before-told stories including Kylo Ren, Han Solo, Finn, Rey, BB-8, Maz Kanata and more.</p>
       </div>
     </div>
   </div>

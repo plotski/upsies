@@ -428,8 +428,8 @@
       Media
 
       <ul class="media number_group">
-        <li><a href="/movie/11-star-wars/images/backdrops">Backdrops <span class="count">53</span></a></li>
-        <li><a href="/movie/11-star-wars/images/posters">Posters <span class="count">138</span></a></li>
+        <li><a href="/movie/11-star-wars/images/backdrops">Backdrops <span class="count">55</span></a></li>
+        <li><a href="/movie/11-star-wars/images/posters">Posters <span class="count">141</span></a></li>
         <li>
           Videos
 
@@ -452,7 +452,7 @@
 
           <ul class="number_group">
             <li><a href="/movie/11-star-wars/discuss">Overview</a></li>
-            <li><a href="/movie/11-star-wars/discuss/category/5047951f760ee3318900009a">General <span class="count">29</span></a></li>
+            <li><a href="/movie/11-star-wars/discuss/category/5047951f760ee3318900009a">General <span class="count">30</span></a></li>
             <li><a href="/movie/11-star-wars/discuss/category/504794a319c29527aa000640">Content Issues <span class="count">32</span></a></li>
           </ul>
         </li>
@@ -828,7 +828,7 @@
                       <a href="/person/2-mark-hamill">
                           
     
-      <img class="profile lazyload" data-src="//image.tmdb.org/t/p/w138_and_h175_face/fk8OfdReNltKZqOk2TZgkofCUFq.jpg" data-srcset="//image.tmdb.org/t/p/w138_and_h175_face/fk8OfdReNltKZqOk2TZgkofCUFq.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/fk8OfdReNltKZqOk2TZgkofCUFq.jpg 2x" alt="Mark Hamill">
+      <img class="profile lazyload" data-src="//image.tmdb.org/t/p/w138_and_h175_face/9Wws35pCsT0KoZpiV4Gk5nbn9ZD.jpg" data-srcset="//image.tmdb.org/t/p/w138_and_h175_face/9Wws35pCsT0KoZpiV4Gk5nbn9ZD.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/9Wws35pCsT0KoZpiV4Gk5nbn9ZD.jpg 2x" alt="Mark Hamill">
     
   
 
@@ -842,7 +842,7 @@
                       <a href="/person/3-harrison-ford">
                           
     
-      <img class="profile lazyload" data-src="//image.tmdb.org/t/p/w138_and_h175_face/5M7oN3sznp99hWYQ9sX0xheswWX.jpg" data-srcset="//image.tmdb.org/t/p/w138_and_h175_face/5M7oN3sznp99hWYQ9sX0xheswWX.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/5M7oN3sznp99hWYQ9sX0xheswWX.jpg 2x" alt="Harrison Ford">
+      <img class="profile lazyload" data-src="//image.tmdb.org/t/p/w138_and_h175_face/klPehAfaQDatLLQ8dN4lMcb4ESo.jpg" data-srcset="//image.tmdb.org/t/p/w138_and_h175_face/klPehAfaQDatLLQ8dN4lMcb4ESo.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/klPehAfaQDatLLQ8dN4lMcb4ESo.jpg 2x" alt="Harrison Ford">
     
   
 
@@ -959,7 +959,7 @@
                 <h3 dir="auto">Social</h3>
                 <ul>
                   <li class="active" dir="auto"><a id="reviews" class="media_panel" href="#">Reviews <span>3</span></a></li>
-                  <li class="" dir="auto"><a id="discussions" class="media_panel" href="#">Discussions <span>65</span></a></li>
+                  <li class="" dir="auto"><a id="discussions" class="media_panel" href="#">Discussions <span>66</span></a></li>
                 </ul>
               </div>
 
@@ -1026,8 +1026,8 @@
                 <ul>
                   <li class="active" dir="auto"><a id="popular" class="media_panel" href="#">Most Popular</a></li>
                   <li dir="auto"><a id="videos" class="media_panel" href="#">Videos <span>3</span></a></li>
-                  <li dir="auto"><a id="backdrops" class="media_panel" href="#">Backdrops <span>53</span></a></li>
-                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>138</span></a></li>
+                  <li dir="auto"><a id="backdrops" class="media_panel" href="#">Backdrops <span>55</span></a></li>
+                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>141</span></a></li>
                   <li class="view_all"></li>
                 </ul>
               </div>

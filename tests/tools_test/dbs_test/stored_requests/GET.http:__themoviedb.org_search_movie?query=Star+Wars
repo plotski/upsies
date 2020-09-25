@@ -385,7 +385,7 @@
               
                 <li class="selected">
                   <a id="movie" href="/search/movie?query=Star Wars" class="search_tab active" title="Movies" alt="Movies">Movies</a>
-                    <span>140</span>
+                    <span>139</span>
                 </li>
               
                 <li class="">
@@ -496,14 +496,14 @@
   
 </div>
     
-      <div id="card_movie_51589cc619c2956e650dca36" class="card v4 tight">
+      <div id="card_movie_55a1af3b925141296b001f92" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="51589cc619c2956e650dca36" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181808">
+        <a data-id="55a1af3b925141296b001f92" data-media-type="movie" data-media-adult="false" class="result" href="/movie/348350">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg 2x" alt="Star Wars: The Last Jedi">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/4oD6VEccFkorEBTEDXtpLAaz0Rl.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/4oD6VEccFkorEBTEDXtpLAaz0Rl.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/4oD6VEccFkorEBTEDXtpLAaz0Rl.jpg 2x" alt="Solo: A Star Wars Story">
     
   
 
@@ -514,16 +514,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="51589cc619c2956e650dca36" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181808"><h2>Star Wars: The Last Jedi</h2></a>
+          <a data-id="55a1af3b925141296b001f92" data-media-type="movie" data-media-adult="false" class="result" href="/movie/348350"><h2>Solo: A Star Wars Story</h2></a>
 
           
-            <span class="release_date">December 13, 2017</span>
+            <span class="release_date">May 15, 2018</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Rey develops her newly discovered abilities with the guidance of Luke Skywalker, who is unsettled by the strength of her powers. Meanwhile, the Resistance prepares to do battle with the First Order.</p>
+        <p>Through a series of daring escapades deep within a dark and dangerous criminal underworld, Han Solo meets his mighty future copilot Chewbacca and encounters the notorious gambler Lando Calrissian.</p>
       </div>
     </div>
   </div>
@@ -566,14 +566,14 @@
   
 </div>
     
-      <div id="card_movie_55a1af3b925141296b001f92" class="card v4 tight">
+      <div id="card_movie_51589cc619c2956e650dca36" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="55a1af3b925141296b001f92" data-media-type="movie" data-media-adult="false" class="result" href="/movie/348350">
+        <a data-id="51589cc619c2956e650dca36" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181808">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/4oD6VEccFkorEBTEDXtpLAaz0Rl.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/4oD6VEccFkorEBTEDXtpLAaz0Rl.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/4oD6VEccFkorEBTEDXtpLAaz0Rl.jpg 2x" alt="Solo: A Star Wars Story">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg 2x" alt="Star Wars: The Last Jedi">
     
   
 
@@ -584,16 +584,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="55a1af3b925141296b001f92" data-media-type="movie" data-media-adult="false" class="result" href="/movie/348350"><h2>Solo: A Star Wars Story</h2></a>
+          <a data-id="51589cc619c2956e650dca36" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181808"><h2>Star Wars: The Last Jedi</h2></a>
 
           
-            <span class="release_date">May 15, 2018</span>
+            <span class="release_date">December 13, 2017</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Through a series of daring escapades deep within a dark and dangerous criminal underworld, Han Solo meets his mighty future copilot Chewbacca and encounters the notorious gambler Lando Calrissian.</p>
+        <p>Rey develops her newly discovered abilities with the guidance of Luke Skywalker, who is unsettled by the strength of her powers. Meanwhile, the Resistance prepares to do battle with the First Order.</p>
       </div>
     </div>
   </div>
@@ -629,6 +629,41 @@
 
       <div class="overview">
         <p>A rogue band of resistance fighters unite for a mission to steal the Death Star plans and bring a new hope to the galaxy.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_4bc8975c017a3c122d0180e5" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="4bc8975c017a3c122d0180e5" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1893">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg 2x" alt="Star Wars: Episode I - The Phantom Menace">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="4bc8975c017a3c122d0180e5" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1893"><h2>Star Wars: Episode I - The Phantom Menace</h2></a>
+
+          
+            <span class="release_date">May 19, 1999</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Anakin Skywalker, a young slave strong with the Force, is discovered on Tatooine. Meanwhile, the evil Sith have returned, enacting their plot for revenge against the Jedi.</p>
       </div>
     </div>
   </div>
@@ -706,14 +741,14 @@
   
 </div>
     
-      <div id="card_movie_4bc8975c017a3c122d0180e5" class="card v4 tight">
+      <div id="card_movie_4bc8975f017a3c122d018142" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="4bc8975c017a3c122d0180e5" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1893">
+        <a data-id="4bc8975f017a3c122d018142" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1894">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg 2x" alt="Star Wars: Episode I - The Phantom Menace">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg 2x" alt="Star Wars: Episode II - Attack of the Clones">
     
   
 
@@ -724,51 +759,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4bc8975c017a3c122d0180e5" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1893"><h2>Star Wars: Episode I - The Phantom Menace</h2></a>
+          <a data-id="4bc8975f017a3c122d018142" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1894"><h2>Star Wars: Episode II - Attack of the Clones</h2></a>
 
           
-            <span class="release_date">May 19, 1999</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Anakin Skywalker, a young slave strong with the Force, is discovered on Tatooine. Meanwhile, the evil Sith have returned, enacting their plot for revenge against the Jedi.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_4bc89762017a3c122d0181b0" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="4bc89762017a3c122d0181b0" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1895">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg 2x" alt="Star Wars: Episode III - Revenge of the Sith">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="4bc89762017a3c122d0181b0" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1895"><h2>Star Wars: Episode III - Revenge of the Sith</h2></a>
-
-          
-            <span class="release_date">May 17, 2005</span>
+            <span class="release_date">May 15, 2002</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>The evil Darth Sidious enacts his final plan for unlimited power -- and the heroic Jedi Anakin Skywalker must choose a side.</p>
+        <p>Following an assassination attempt on Senator Padmé Amidala, Jedi Knights Anakin Skywalker and Obi-Wan Kenobi investigate a mysterious plot that could change the galaxy forever.</p>
       </div>
     </div>
   </div>
@@ -811,14 +811,14 @@
   
 </div>
     
-      <div id="card_movie_4bc8975f017a3c122d018142" class="card v4 tight">
+      <div id="card_movie_4bc89762017a3c122d0181b0" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="4bc8975f017a3c122d018142" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1894">
+        <a data-id="4bc89762017a3c122d0181b0" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1895">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg 2x" alt="Star Wars: Episode II - Attack of the Clones">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg 2x" alt="Star Wars: Episode III - Revenge of the Sith">
     
   
 
@@ -829,51 +829,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4bc8975f017a3c122d018142" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1894"><h2>Star Wars: Episode II - Attack of the Clones</h2></a>
+          <a data-id="4bc89762017a3c122d0181b0" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1895"><h2>Star Wars: Episode III - Revenge of the Sith</h2></a>
 
           
-            <span class="release_date">May 15, 2002</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Following an assassination attempt on Senator Padmé Amidala, Jedi Knights Anakin Skywalker and Obi-Wan Kenobi investigate a mysterious plot that could change the galaxy forever.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_5e2fc83efd140b00196cb48a" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5e2fc83efd140b00196cb48a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/667574">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg 2x" alt="Battle Star Wars">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5e2fc83efd140b00196cb48a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/667574"><h2>Battle Star Wars</h2></a>
-
-          
-            <span class="release_date">January 28, 2020</span>
+            <span class="release_date">May 17, 2005</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>When the leader of the evil Coalition threatens to destroy a Rebel planet for its resources, his daughter will have no choice but to join the Rebel side and fight for what is right.</p>
+        <p>The evil Darth Sidious enacts his final plan for unlimited power -- and the heroic Jedi Anakin Skywalker must choose a side.</p>
       </div>
     </div>
   </div>
@@ -916,6 +881,41 @@
   
 </div>
     
+      <div id="card_movie_4ef4e6fd760ee304a1000229" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="4ef4e6fd760ee304a1000229" data-media-type="movie" data-media-adult="false" class="result" href="/movie/81418">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/dhTb1CYXdfxMT2RAPCeFAvfmWiT.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/dhTb1CYXdfxMT2RAPCeFAvfmWiT.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/dhTb1CYXdfxMT2RAPCeFAvfmWiT.jpg 2x" alt="Star Wars: Deleted Magic">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="4ef4e6fd760ee304a1000229" data-media-type="movie" data-media-adult="false" class="result" href="/movie/81418"><h2>Star Wars: Deleted Magic</h2></a>
+
+          
+            <span class="release_date">March  1, 2005</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>This is a very interesting Star Wars documentary about the making of the first Star Wars film (and to a lesser extent Empire and Jedi) including a look at some of the deleted scenes, behind the scenes footage, and notes on subtle things that you might have never seen or noticed before.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
       <div id="card_movie_4d0f11115e73d63710001e50" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -944,76 +944,6 @@
 
       <div class="overview">
         <p>Robot Chicken: Star Wars Episode III, directed by Chris McKay, combines the satirical sensibilities of Green and Matthew Senreich's Robot Chicken with characters of the Star Wars universe.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_4e2d02aa5e73d6198900099c" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="4e2d02aa5e73d6198900099c" data-media-type="movie" data-media-adult="false" class="result" href="/movie/70608">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/lcAA36kzOahKXVwWeJLaepMr58M.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/lcAA36kzOahKXVwWeJLaepMr58M.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/lcAA36kzOahKXVwWeJLaepMr58M.jpg 2x" alt="Lego Star Wars: The Padawan Menace">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="4e2d02aa5e73d6198900099c" data-media-type="movie" data-media-adult="false" class="result" href="/movie/70608"><h2>Lego Star Wars: The Padawan Menace</h2></a>
-
-          
-            <span class="release_date">July 22, 2011</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>A routine Jedi Academy field trip is turned into a rip-roaring comic adventure in LEGO Star Wars: The Padawan Menace. Tour guide Master Yoda leads a group of rambunctious Jedi Younglings through Senate chambers when he senses a disturbance in the Force. Summoned to help save the Republic, he discovers that one of the Younglings secretly boarded his ship...and has a taste for adventure! Meanwhile, C-3PO and R2-D2 are put in charge of the boisterous group and find themselves in over their heads. As the evil Sith prepare to wreak havoc, it's up to Yoda and the Droids to ensure that their young charges aren't torn to bricks!</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_5039bd62760ee35fb5007d2d" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5039bd62760ee35fb5007d2d" data-media-type="movie" data-media-adult="false" class="result" href="/movie/128295">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/dFvudLgvS0Upn2X6wPBRnntXCBy.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/dFvudLgvS0Upn2X6wPBRnntXCBy.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/dFvudLgvS0Upn2X6wPBRnntXCBy.jpg 2x" alt="Star Wars: The Legacy Revealed">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5039bd62760ee35fb5007d2d" data-media-type="movie" data-media-adult="false" class="result" href="/movie/128295"><h2>Star Wars: The Legacy Revealed</h2></a>
-
-          
-            <span class="release_date">May 28, 2007</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Film-makers and academics discuss the use of mythology in Star Wars and the impact of the films on society</p>
       </div>
     </div>
   </div>
@@ -1056,14 +986,14 @@
   
 </div>
     
-      <div id="card_movie_5511eb06c3a3681db200e800" class="card v4 tight">
+      <div id="card_movie_5e2fc83efd140b00196cb48a" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5511eb06c3a3681db200e800" data-media-type="movie" data-media-adult="false" class="result" href="/movie/332479">
+        <a data-id="5e2fc83efd140b00196cb48a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/667574">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/mL1Ce07IxrTdvSEqw2kDJ0dMtrN.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/mL1Ce07IxrTdvSEqw2kDJ0dMtrN.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/mL1Ce07IxrTdvSEqw2kDJ0dMtrN.jpg 2x" alt="Star Wars: TIE Fighter">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg 2x" alt="Battle Star Wars">
     
   
 
@@ -1074,16 +1004,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5511eb06c3a3681db200e800" data-media-type="movie" data-media-adult="false" class="result" href="/movie/332479"><h2>Star Wars: TIE Fighter</h2></a>
+          <a data-id="5e2fc83efd140b00196cb48a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/667574"><h2>Battle Star Wars</h2></a>
 
           
-            <span class="release_date">March 24, 2015</span>
+            <span class="release_date">January 28, 2020</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Paul “OtaKing” Johnson drops a real treat in the form of this “Star Wars: TIE Fighter” animated short fan film. Complete with appropriately radical electric guitar solos and impressive attention to detail, “TIE Fighter” casts the forces of the Galactic Empire not in the role of disposable cannon fodder seen in the Star Wars films, but as near-suicidal reckless angels of death.  Johnson animated this 7-minute short over the course of “four years’ worth of weekends,” and his love and attention-to-detail shows.</p>
+        <p>When the leader of the evil Coalition threatens to destroy a Rebel planet for its resources, his daughter will have no choice but to join the Rebel side and fight for what is right.</p>
       </div>
     </div>
   </div>
@@ -1091,14 +1021,14 @@
   
 </div>
     
-      <div id="card_movie_4ef4e6fd760ee304a1000229" class="card v4 tight">
+      <div id="card_movie_53f3c12ac3a36822fd0003e1" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="4ef4e6fd760ee304a1000229" data-media-type="movie" data-media-adult="false" class="result" href="/movie/81418">
+        <a data-id="53f3c12ac3a36822fd0003e1" data-media-type="movie" data-media-adult="false" class="result" href="/movie/287663">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/dhTb1CYXdfxMT2RAPCeFAvfmWiT.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/dhTb1CYXdfxMT2RAPCeFAvfmWiT.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/dhTb1CYXdfxMT2RAPCeFAvfmWiT.jpg 2x" alt="Star Wars: Deleted Magic">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/ApPuHAhH4wYGb4YCLChJYQvHUEF.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/ApPuHAhH4wYGb4YCLChJYQvHUEF.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/ApPuHAhH4wYGb4YCLChJYQvHUEF.jpg 2x" alt="Star Wars Rebels: Spark of Rebellion">
     
   
 
@@ -1109,16 +1039,86 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4ef4e6fd760ee304a1000229" data-media-type="movie" data-media-adult="false" class="result" href="/movie/81418"><h2>Star Wars: Deleted Magic</h2></a>
+          <a data-id="53f3c12ac3a36822fd0003e1" data-media-type="movie" data-media-adult="false" class="result" href="/movie/287663"><h2>Star Wars Rebels: Spark of Rebellion</h2></a>
 
           
-            <span class="release_date">March  1, 2005</span>
+            <span class="release_date">October  3, 2014</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>This is a very interesting Star Wars documentary about the making of the first Star Wars film (and to a lesser extent Empire and Jedi) including a look at some of the deleted scenes, behind the scenes footage, and notes on subtle things that you might have never seen or noticed before.</p>
+        <p>Ezra Bridger encounters the Ghost crew and joins them on a mission to free Wookiees from an Imperial Star Destroyer.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_4e2d02aa5e73d6198900099c" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="4e2d02aa5e73d6198900099c" data-media-type="movie" data-media-adult="false" class="result" href="/movie/70608">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/lcAA36kzOahKXVwWeJLaepMr58M.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/lcAA36kzOahKXVwWeJLaepMr58M.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/lcAA36kzOahKXVwWeJLaepMr58M.jpg 2x" alt="Lego Star Wars: The Padawan Menace">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="4e2d02aa5e73d6198900099c" data-media-type="movie" data-media-adult="false" class="result" href="/movie/70608"><h2>Lego Star Wars: The Padawan Menace</h2></a>
+
+          
+            <span class="release_date">July 22, 2011</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>A routine Jedi Academy field trip is turned into a rip-roaring comic adventure in LEGO Star Wars: The Padawan Menace. Tour guide Master Yoda leads a group of rambunctious Jedi Younglings through Senate chambers when he senses a disturbance in the Force. Summoned to help save the Republic, he discovers that one of the Younglings secretly boarded his ship...and has a taste for adventure! Meanwhile, C-3PO and R2-D2 are put in charge of the boisterous group and find themselves in over their heads. As the evil Sith prepare to wreak havoc, it's up to Yoda and the Droids to ensure that their young charges aren't torn to bricks!</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_4c676a8b7b9aa172d9000c1e" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="4c676a8b7b9aa172d9000c1e" data-media-type="movie" data-media-adult="false" class="result" href="/movie/42982">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/jbm1HQPHZJC9uGpncp15Efzsohy.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/jbm1HQPHZJC9uGpncp15Efzsohy.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/jbm1HQPHZJC9uGpncp15Efzsohy.jpg 2x" alt="Robot Chicken: Star Wars Episode II">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="4c676a8b7b9aa172d9000c1e" data-media-type="movie" data-media-adult="false" class="result" href="/movie/42982"><h2>Robot Chicken: Star Wars Episode II</h2></a>
+
+          
+            <span class="release_date">November 16, 2008</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Seth Green and Matthew Senreich serve up more hilarious Star Wars-inspired satire in this second compilation of sketches featuring the zany stop-motion animation of Adult Swim's "Robot Chicken." Gary the stormtrooper deals with irascible boss Darth Vader on Take Your Daughter to Work Day, while Anakin babysits a certain up-and-coming Jedi. Carrie Fisher, Billy Dee Williams, Conan O'Brien and other stars provide voices.</p>
       </div>
     </div>
   </div>
