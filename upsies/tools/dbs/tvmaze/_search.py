@@ -12,7 +12,7 @@ _log = logging.getLogger(__name__)
 
 async def search(title, type=None, year=None):
     """
-    Search TVmaze
+    Search for TVmaze ID
 
     :param str title: Name of movie or series
     :param type: Ignored for compatibility with signature of other `search`

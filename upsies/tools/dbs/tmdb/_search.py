@@ -27,7 +27,7 @@ class TmdbSearchResult(_common.SearchResult):
 
 async def search(title, type=None, year=None):
     """
-    Search TMDb
+    Search for TMDb ID
 
     :param str title: Name of movie or series
     :param str type: "movie" "series" or "episode"

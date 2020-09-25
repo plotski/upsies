@@ -39,7 +39,7 @@ _title_types[None] = ','.join(_title_types.values())
 
 async def search(title, type=None, year=None):
     """
-    Search IMDb
+    Search for IMDb ID
 
     :param str title: Name of movie or series
     :param str type: "movie" "series" or "episode"
