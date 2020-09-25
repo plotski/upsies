@@ -5,7 +5,7 @@ class UploadedImage(str):
 
     The instance itself is supposed to be the URL of an uploaded image. Keyword
     arguments can be additional URLs (e.g. thumbnail URL, delete URL) or other
-    information that can be useful internally.
+    userful information.
     """
 
     def __new__(cls, url, **kwargs):

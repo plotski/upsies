@@ -13,7 +13,8 @@ class UploaderBase(abc.ABC):
     """
     Base class for uploading images to image hosting services
 
-    :param int thumb_width: Horizontal width of the thumbnails
+    :param str cache_dir: Where to store URLs in JSON files; defaults to the
+        return value of :func:`upsies.utils.fs.tmpdir`
     """
 
     def __init__(self, cache_dir=None):
