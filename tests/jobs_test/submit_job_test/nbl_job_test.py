@@ -242,6 +242,7 @@ async def test_upload_without_being_logged_in(CreateTorrentJob_mock, SearchDbJob
     assert client_session_mock.get.call_args_list == []
     assert client_session_mock.post.call_args_list == []
 
+@needs_python38
 @patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.search.SearchDbJob')
 @patch('upsies.jobs.torrent.CreateTorrentJob')
