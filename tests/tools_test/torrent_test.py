@@ -183,6 +183,21 @@ def test_create_writes_torrent_file_after_successful_generation(Torrent_mock, fi
 @patch('upsies.tools.torrent._path_exists')
 @patch('upsies.tools.torrent._make_file_tree')
 @patch('torf.Torrent')
+def test_create_does_not_accept_empty_announce_url(Torrent_mock, file_tree_mock, path_exists_mock):
+    path_exists_mock.side_effect = (False, True)
+    with pytest.raises(errors.TorrentError, match=r'^Announce URL is empty$'):
+        create(
+            content_path='path/to/content',
+            announce_url='',
+            torrent_path='path/to/torrent',
+            init_callback=Mock(),
+            progress_callback=Mock(),
+        )
+    assert Torrent_mock.call_args_list == []
+
+@patch('upsies.tools.torrent._path_exists')
+@patch('upsies.tools.torrent._make_file_tree')
+@patch('torf.Torrent')
 def test_create_catches_error_when_writing_torrent_file(Torrent_mock, file_tree_mock, path_exists_mock):
     path_exists_mock.side_effect = (False, True)
     Torrent_mock.return_value.write.side_effect = torf.TorfError('Nada')

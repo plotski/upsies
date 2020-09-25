@@ -13,6 +13,9 @@ def create(*, content_path, announce_url, torrent_path,
            init_callback, progress_callback,
            overwrite=False, source=None, exclude_regexs=()):
 
+    if not announce_url:
+        raise errors.TorrentError('Announce URL is empty')
+
     def cb(torrent, filepath, pieces_done, pieces_total):
         return progress_callback(pieces_done / pieces_total * 100)
 
