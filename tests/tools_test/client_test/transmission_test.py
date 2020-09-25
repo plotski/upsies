@@ -74,7 +74,7 @@ async def test_authentication_fails():
             username='foo',
             password='bar',
         )
-        with pytest.raises(errors.RequestError, match='^Authentication failed$'):
+        with pytest.raises(errors.TorrentError, match='^Authentication failed$'):
             await api._request('request data')
         assert srv.requests_seen == [
             {'method': 'POST', 'csrf_token': None, 'text': 'request data'},
@@ -88,7 +88,7 @@ async def test_connection_refused():
         username='foo',
         password='bar',
     )
-    with pytest.raises(errors.RequestError, match=f'^{re.escape(url)}: Failed to connect$'):
+    with pytest.raises(errors.TorrentError, match=f'^{re.escape(url)}: Failed to connect$'):
         await api._request('request data')
 
 @pytest.mark.asyncio
@@ -100,7 +100,7 @@ async def test_response_is_not_json():
         api = transmission.ClientApi(
             url=f'http://localhost:{srv.port}/transmission/rpc',
         )
-        with pytest.raises(errors.RequestError, match='^Malformed JSON response: this is not json$'):
+        with pytest.raises(errors.TorrentError, match='^Malformed JSON response: this is not json$'):
             await api._request('request data')
         assert srv.requests_seen == [
             {'method': 'POST', 'csrf_token': None, 'text': 'request data'},
@@ -161,7 +161,7 @@ async def test_add_torrent_uses_result_field_as_error_message():
     request_mock = AsyncMock(return_value=response)
     read_torrent_file_mock = Mock(return_value=b'torrent metainfo')
     with patch.multiple(api, _request=request_mock, read_torrent_file=read_torrent_file_mock):
-        with pytest.raises(errors.RequestError, match=r'^Klonk$'):
+        with pytest.raises(errors.TorrentError, match=r'^Klonk$'):
             await api.add_torrent('file.torrent', '/path/to/file')
         assert read_torrent_file_mock.call_args_list == [call('file.torrent')]
         assert request_mock.call_args_list == [call(
@@ -181,7 +181,7 @@ async def test_add_torrent_reports_generic_error():
     request_mock = AsyncMock(return_value=response)
     read_torrent_file_mock = Mock(return_value=b'torrent metainfo')
     with patch.multiple(api, _request=request_mock, read_torrent_file=read_torrent_file_mock):
-        with pytest.raises(errors.RequestError, match=r'^Adding failed for unknown reason$'):
+        with pytest.raises(errors.TorrentError, match=r'^Adding failed for unknown reason$'):
             await api.add_torrent('file.torrent', '/path/to/file')
         assert read_torrent_file_mock.call_args_list == [call('file.torrent')]
         assert request_mock.call_args_list == [call(

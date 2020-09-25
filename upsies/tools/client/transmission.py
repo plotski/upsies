@@ -51,9 +51,9 @@ class ClientApi(_base.ClientApiBase):
             try:
                 request = await session.post(url=self._url, data=data)
             except aiohttp.ClientConnectionError:
-                raise errors.RequestError(f'{self._url}: Failed to connect')
+                raise errors.TorrentError(f'{self._url}: Failed to connect')
             except aiohttp.ClientError as e:
-                raise errors.RequestError(f'{self._url}: {e}')
+                raise errors.TorrentError(f'{self._url}: {e}')
 
         if request.status == CSRF_ERROR_CODE:
             # Send request again with CSRF header
@@ -61,13 +61,13 @@ class ClientApi(_base.ClientApiBase):
             _log.debug('Setting CSRF header: %s = %s', CSRF_HEADER, self._headers[CSRF_HEADER])
             return await self._request(data)
         elif request.status == AUTH_ERROR_CODE:
-            raise errors.RequestError('Authentication failed')
+            raise errors.TorrentError('Authentication failed')
 
         try:
             return await request.json()
         except aiohttp.ClientResponseError:
             text = await request.text()
-            raise errors.RequestError(f'Malformed JSON response: {text}')
+            raise errors.TorrentError(f'Malformed JSON response: {text}')
 
     async def add_torrent(self, torrent_path, download_path):
         torrent_data = str(
@@ -85,6 +85,6 @@ class ClientApi(_base.ClientApiBase):
         _log.debug('Response: %r', response)
         if not any(key in response.get('arguments', {}) for key in ('torrent-added', 'torrent-duplicate')):
             if 'result' in response:
-                raise errors.RequestError(str(response["result"]).capitalize())
+                raise errors.TorrentError(str(response["result"]).capitalize())
             else:
-                raise errors.RequestError('Adding failed for unknown reason')
+                raise errors.TorrentError('Adding failed for unknown reason')
