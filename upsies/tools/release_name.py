@@ -322,10 +322,10 @@ class ReleaseName(collections.abc.Mapping):
             # Find out if there are multiple series with this title
             results = await dbs.imdb.search(self.title, type='series')
             same_titles = tuple(
-                r.title for r in results
+                r for r in results
                 if r.title.casefold() == self.title.casefold()
             )
-            _log.debug('Found multiple search results for %r', self.title)
+            _log.debug('Found multiple search results for %r', same_titles)
             if len(same_titles) >= 2:
                 self.year_required = True
             else:
