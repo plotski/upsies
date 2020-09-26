@@ -43,8 +43,6 @@ def guessit(path):
       of "WEB-DL"/"WEBRip".
     - ``other`` is always a list.
     - ``edition`` is always a list.
-    - Some ``edition`` items are abbreviated, e.g. ("DC" instead of "Director's
-      Cut").
     """
     guess = dict(_guessit.guessit(path))
     _log.debug('Original guess: %r', guess)
