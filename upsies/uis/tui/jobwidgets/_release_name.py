@@ -11,16 +11,17 @@ _log = logging.getLogger(__name__)
 class ReleaseNameJobWidget(_base.JobWidgetBase):
     def setup(self):
         self._release_name = widgets.InputField(
-            text='',
+            text='Loading...',
             on_accepted=self.handle_release_name,
+            read_only=True,
         )
 
         # The global Release instance can run a callback whenever the release
         # name changes. This happens when a database entry (e.g. from IMDb) is
         # selected.
         def release_name_changed_callback(release_name):
-            rn = release_name.format()
-            self._release_name.text = rn
+            self._release_name.read_only = False
+            self._release_name.text = release_name.format()
             get_app().invalidate()
         self.job.on_release_name_update(release_name_changed_callback)
 
