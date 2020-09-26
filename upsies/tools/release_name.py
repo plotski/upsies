@@ -359,7 +359,7 @@ class ReleaseName(collections.abc.Mapping):
                 parts.append(f'S{self.season.rjust(2, "0")}{episode_string}')
 
         if self.edition:
-            parts.append(self.edition)
+            parts.append(' '.join(self.edition))
 
         parts.append(self.resolution)
 
