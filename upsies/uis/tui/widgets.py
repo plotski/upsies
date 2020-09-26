@@ -3,6 +3,7 @@ import textwrap
 
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.document import Document
+from prompt_toolkit.filters import Condition
 from prompt_toolkit.layout.containers import (HSplit, VSplit, Window,
                                               WindowAlign)
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
@@ -93,21 +94,25 @@ class TextField:
 class InputField:
     """Single line of user-editable text"""
 
-    def __init__(self, text='', width=None, extend_width=True,
+    def __init__(self, text='', width=None, extend_width=True, read_only=False,
                  on_accepted=None, on_changed=None):
+        self.read_only = read_only
         self.buffer = Buffer(
             multiline=False,
             accept_handler=on_accepted,
-            on_text_changed=on_changed
+            on_text_changed=on_changed,
+            read_only=Condition(lambda: self.read_only),
         )
         self.container = Window(
             content=BufferControl(self.buffer),
+            always_hide_cursor=Condition(lambda: self.read_only),
             width=width,
             dont_extend_height=True,
             dont_extend_width=not extend_width,
             style='class:textfield.input',
         )
-        self.set_text(text, ignore_callback=True)
+        if text:
+            self.set_text(text, ignore_callback=True)
 
     @property
     def text(self):
@@ -121,9 +126,17 @@ class InputField:
         if ignore_callback:
             handlers = self.buffer.on_text_changed._handlers
             self.buffer.on_text_changed._handlers = []
-        self.buffer.set_document(Document(text))
+        self.buffer.set_document(Document(text), bypass_readonly=True)
         if ignore_callback:
             self.buffer.on_text_changed._handlers = handlers
+
+    @property
+    def read_only(self):
+        return self._read_only
+
+    @read_only.setter
+    def read_only(self, read_only):
+        self._read_only = bool(read_only)
 
     def __pt_container__(self):
         return self.container
