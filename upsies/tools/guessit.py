@@ -33,6 +33,7 @@ def guessit(path):
     - ``type`` is "season" if ``season`` is known but ``episode`` isn't.
     - ``year``, ``season`` and ``episode`` are `str`, not `int`.
     - ``source`` is "WEB-DL" or "WEBRip", not just "Web".
+    - ``source`` is "Web" is uppercased to "WEB"
     - ``source`` is "DVDRip", "DVD9" and "DVD5", not just "DVD"
     - ``source`` includes "Hybrid" and "Remux" if applicable.
     - ``audio_codec`` is never a list.
@@ -124,6 +125,7 @@ _source_translation = {
     re.compile(r'(?i:Blu-?ray)') : 'BluRay',
     re.compile(r'(?i:WEB-?DL)')  : 'WEB-DL',
     re.compile(r'(?i:WEB-?Rip)') : 'WEBRip',
+    re.compile(r'(?i:Web)')      : 'WEB',
 }
 
 _hybrid_regex = re.compile(r'(?i:hybrid[\. ]+blu-?ray|blu-?ray[\. ]+hybrid)')

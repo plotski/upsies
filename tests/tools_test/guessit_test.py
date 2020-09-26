@@ -132,6 +132,7 @@ source_samples = (
     ('BluRay', 'BluRay'), ('bluray', 'BluRay'), ('Blu-ray', 'BluRay'), ('Ultra HD Blu-ray', 'BluRay'),
     ('WEB-DL', 'WEB-DL'), ('WEBDL', 'WEB-DL'), ('web-dl', 'WEB-DL'), ('webdl', 'WEB-DL'),
     ('WEBRip', 'WEBRip'), ('WEBRIP', 'WEBRip'), ('web-rip', 'WEBRip'), ('webrip', 'WEBRip'),
+    ('WEB', 'WEB'), ('Web', 'WEB'), ('web', 'WEB'),
     ('DVD', 'DVD'), ('DVD9', 'DVD9'), ('DVD5', 'DVD5'),
     # TODO: Blu-ray images. guessit doesn't support it. Can we just look for
     #       "AVC" and "video_codec=H.264"?
