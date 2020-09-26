@@ -45,26 +45,6 @@ def JobWidget(job):
         raise RuntimeError(f'Unsupported job class: {type(job).__name__}')
 
 
-class Log:
-    """List of info/error messages"""
-
-    def __init__(self, height=None):
-        self.buffer = Buffer()
-        self.container = Window(
-            content=BufferControl(self.buffer, focusable=False),
-            wrap_lines=True,
-        )
-
-    def info(self, msg):
-        self.buffer.insert_text(f'{msg}\n')
-
-    def error(self, msg):
-        self.buffer.insert_text(f'{msg}\n')
-
-    def __pt_container__(self):
-        return self.container
-
-
 class TextField:
     """Single line of non-editable text"""
 

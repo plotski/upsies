@@ -3,7 +3,7 @@ import asyncio
 from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout import Layout
-from prompt_toolkit.layout.containers import HSplit, VSplit, to_container
+from prompt_toolkit.layout.containers import HSplit, Window, to_container
 from prompt_toolkit.layout.dimension import Dimension
 
 from . import style, widgets
@@ -16,27 +16,22 @@ class UI:
     def __init__(self, jobs):
         self._jobs = jobs
         self._jobs_added = []
-        self._log = widgets.Log()
         self._app = self._make_app()
         self._exception = None
-
-    def error(self, exception):
-        self._log.error(exception)
 
     _max_width = 120
 
     def _make_app(self):
+        # Layout does not accept any empty containers. We add an empty Window
+        # and remove it once we've added the first real child.
+        # https://github.com/prompt-toolkit/python-prompt-toolkit/issues/1257
+        self._initial_placeholder = Window()
         self._container = HSplit(
             width=Dimension(max=self._max_width),
-            children=[],
+            children=[self._initial_placeholder],
         )
         layout = Layout(
-            HSplit([
-                # The VSplit is only needed because max_width is ignored otherwise
-                # https://github.com/prompt-toolkit/python-prompt-toolkit/issues/1192
-                VSplit([self._container]),
-                self._log,
-            ])
+            self._container,
         )
 
         kb = KeyBindings()
@@ -97,7 +92,11 @@ class UI:
             _log.debug('Activating job widget: %r', jobw)
             jobw.activate()
             self._jobs_added.append(jobw.job)
+
             self._container.children.append(to_container(jobw))
+            if self._initial_placeholder in self._container.children:
+                self._container.children.remove(self._initial_placeholder)
+
             try:
                 self._app.layout.focus(jobw)
             except ValueError:
