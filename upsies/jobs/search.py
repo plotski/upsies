@@ -139,8 +139,6 @@ class SearchDbJob(_base.JobBase):
 
     def id_selected(self, id=None):
         if not self.is_searching:
-            self._search_thread.stop()
-            self._update_info_thread.stop()
             if id is not None:
                 self.send(str(id), if_not_finished=True)
             self.finish()
