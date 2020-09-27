@@ -30,18 +30,18 @@ def JobWidget(job):
 
     :raise RuntimeError: if `job`'s type is not supported
     """
-    if isinstance(job, jobs.search.SearchDbJob):
-        return jobwidgets.SearchJobWidget(job)
+    if isinstance(job, jobs.mediainfo.MediainfoJob):
+        return jobwidgets.MediainfoJobWidget(job)
     elif isinstance(job, jobs.release_name.ReleaseNameJob):
         return jobwidgets.ReleaseNameJobWidget(job)
-    elif isinstance(job, jobs.mediainfo.MediainfoJob):
-        return jobwidgets.MediainfoJobWidget(job)
-    elif isinstance(job, jobs.torrent.CreateTorrentJob):
-        return jobwidgets.CreateTorrentJobWidget(job)
     elif isinstance(job, jobs.screenshots.ScreenshotsJob):
         return jobwidgets.ScreenshotsJobWidget(job)
+    elif isinstance(job, jobs.search.SearchDbJob):
+        return jobwidgets.SearchJobWidget(job)
     elif isinstance(job, jobs.submit.SubmissionJobBase):
         return jobwidgets.SubmissionJobWidget(job)
+    elif isinstance(job, jobs.torrent.CreateTorrentJob):
+        return jobwidgets.CreateTorrentJobWidget(job)
     else:
         raise RuntimeError(f'Unsupported job class: {type(job).__name__}')
 
