@@ -94,7 +94,7 @@ class JobBase(abc.ABC):
         This method must be called. :attr:`is_finished` must be `False` before
         this method returns and `True` afterwards.
 
-        :raises: Any exceptions given to :func:`exception`
+        :raise: Any exceptions given to :func:`exception`
         """
         await self._finished_event.wait()
         if self._exception is not None:
