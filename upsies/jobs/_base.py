@@ -205,7 +205,7 @@ class JobBase(abc.ABC):
         :raise RuntimeError: if :attr:`output` is not JSON-encodable or
             :attr:`cache_file` is not writable
         """
-        if self.output and self.exit_code == 0:
+        if self.output and self.exit_code == 0 and self.cache_file:
             _log.debug('Writing output cache: %r: %r', self.cache_file, self.output)
             try:
                 output_string = json.dumps(self.output)
@@ -226,7 +226,7 @@ class JobBase(abc.ABC):
         :raise RuntimeError: if :attr:`cache_file` exists and is unreadable or
             unparsable
         """
-        if not self._ignore_cache and os.path.exists(self.cache_file):
+        if not self._ignore_cache and self.cache_file and os.path.exists(self.cache_file):
             _log.debug('Reading output cache: %r', self.cache_file)
             try:
                 with open(self.cache_file, 'r') as f:
@@ -269,6 +269,9 @@ class JobBase(abc.ABC):
         default, this is achieved by including the keyword arguments for
         :func:`initialize`. See `ScreenshotsJob.cache_file` for a different
         implementation.
+
+        If this property returns a falsy value, no cache file is read or
+        written.
         """
         if self._kwargs:
             def string_value(v):

@@ -1,7 +1,7 @@
 import asyncio
 import collections
 import os
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch
 
 import pytest
 
@@ -313,6 +313,19 @@ def test_cache_file_name_is_never_too_long(tmp_path):
     assert len(os.path.basename(job.cache_file)) < 255
 
 
+@pytest.mark.parametrize('cache_file_value', (None, ''))
+def test_cache_is_not_written_if_cache_file_property_is_falsy(cache_file_value, tmp_path):
+    class BarJob(FooJob):
+        cache_file = cache_file_value
+
+    job = BarJob(homedir=tmp_path, ignore_cache=False)
+    job.send('Foo')
+    job.finish()
+    assert job.cache_file is cache_file_value
+    with patch('upsies.jobs._base.open') as open_mock:
+        job._write_output_cache()
+        assert open_mock.call_args_list == []
+
 def test_cache_is_not_written_if_output_is_empty(job):
     assert job.output == ()
     job._write_output_cache()
@@ -357,6 +370,18 @@ def test_cache_is_not_read_with_ignore_cache_argument(tmp_path):
     assert job.output == ()
     assert job.is_finished is False
     assert job.execute_was_called
+
+@pytest.mark.parametrize('cache_file_value', (None, ''))
+def test_cache_is_not_read_if_cache_file_property_is_falsy(cache_file_value, tmp_path):
+    class BarJob(FooJob):
+        cache_file = cache_file_value
+
+    with patch('upsies.jobs._base.open') as open_mock:
+        job = BarJob(homedir=tmp_path, ignore_cache=False)
+        assert job.cache_file is cache_file_value
+        job.start()
+        assert open_mock.call_args_list == []
+
 
 @pytest.mark.asyncio
 async def test_cache_is_properly_written_when_repeating_command(tmp_path):
