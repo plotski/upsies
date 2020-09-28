@@ -50,6 +50,7 @@ class JobBase(abc.ABC):
         self._errors = []
         self._output = []
         self._output_callbacks = []
+        self._finished_callbacks = []
         self._finished_event = asyncio.Event()
         self._kwargs = kwargs
         self.initialize(**kwargs)
@@ -83,6 +84,8 @@ class JobBase(abc.ABC):
             for output in self.output:
                 for cb in self._output_callbacks:
                     cb(output)
+            for cb in self._finished_callbacks:
+                cb(self)
         else:
             _log.debug('Executing %r', self)
             self.execute()
@@ -104,7 +107,22 @@ class JobBase(abc.ABC):
         """Mark this job as finished and unblock :func:`wait`"""
         if not self.is_finished:
             self._finished_event.set()
+            for cb in self._finished_callbacks:
+                cb(self)
             self._write_output_cache()
+
+    def on_finished(self, callback):
+        """
+        Call `callback` when job is finished
+
+        :param callable callback: Callable that takes an instance of this class
+            as a positional argument
+
+        `callback` is called when :func:`finish` is called and when cached
+        output is read (i.e. :func:`executed` is never called).
+        """
+        assert callable(callback)
+        self._finished_callbacks.append(callback)
 
     @property
     def is_finished(self):
