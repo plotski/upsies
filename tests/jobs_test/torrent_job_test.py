@@ -172,7 +172,7 @@ def test_CreateTorrentJob_finish_with_torrent_created(process_mock, tmp_path):
     ctj.finish()
     assert process_mock.return_value.stop.call_args_list == [call()]
     assert ctj.is_finished
-    assert finished_cb.call_args_list == [call('mock/output.torrent')]
+    assert finished_cb.call_args_list == [call(ctj)]
 
 @patch('upsies.jobs._common.DaemonProcess')
 def test_CreateTorrentJob_finish_without_torrent_created(process_mock, tmp_path):
@@ -193,7 +193,7 @@ def test_CreateTorrentJob_finish_without_torrent_created(process_mock, tmp_path)
     ctj.finish()
     assert process_mock.return_value.stop.call_args_list == [call()]
     assert ctj.is_finished
-    assert finished_cb.call_args_list == [call(None)]
+    assert finished_cb.call_args_list == [call(ctj)]
 
 
 @patch('upsies.jobs._common.DaemonProcess', return_value=Mock(join=AsyncMock()))
@@ -311,7 +311,7 @@ def test_CreateTorrentJob_handle_torrent_created_successfully_without_torrent_ha
         ctj.handle_torrent_created('path/to/torrent')
     assert add_torrent_mock.call_args_list == []
     assert copy_torrent_mock.call_args_list == []
-    assert finished_cb.call_args_list == [call('path/to/torrent')]
+    assert finished_cb.call_args_list == [call(ctj)]
     assert ctj.output == ('path/to/torrent',)
     assert ctj.is_finished
 
@@ -396,7 +396,7 @@ def test_CreateTorrentJob_handle_torrent_created_unsuccessfully_without_torrent_
         ctj.handle_torrent_created(None)
     assert add_torrent_mock.call_args_list == []
     assert copy_torrent_mock.call_args_list == []
-    assert finished_cb.call_args_list == [call(None)]
+    assert finished_cb.call_args_list == [call(ctj)]
     assert ctj.output == ()
     assert ctj.is_finished
 
@@ -422,7 +422,7 @@ def test_CreateTorrentJob_handle_torrent_created_unsuccessfully_with_add_to_argu
         ctj.handle_torrent_created(None)
     assert add_torrent_mock.call_args_list == []
     assert copy_torrent_mock.call_args_list == []
-    assert finished_cb.call_args_list == [call(None)]
+    assert finished_cb.call_args_list == [call(ctj)]
     assert ctj.output == ()
     assert ctj.is_finished
 
@@ -447,7 +447,7 @@ def test_CreateTorrentJob_handle_torrent_created_unsuccessfully_with_copy_to_arg
         ctj.handle_torrent_created(None)
     assert add_torrent_mock.call_args_list == []
     assert copy_torrent_mock.call_args_list == []
-    assert finished_cb.call_args_list == [call(None)]
+    assert finished_cb.call_args_list == [call(ctj)]
     assert ctj.output == ()
     assert ctj.is_finished
 
