@@ -1,5 +1,4 @@
 import os
-import queue
 
 from .. import errors, tools
 from ..utils import LazyModule, fs, timestamp, video
@@ -19,14 +18,10 @@ class ScreenshotsJob(_base.JobBase):
 
     @property
     def cache_file(self):
-        if self._imghost:
-            imghost_name = self._imghost.Uploader.name
-            filename = f'{self.name}.{imghost_name}.{",".join(self._timestamps)}.json'
-        else:
-            filename = f'{self.name}.{",".join(self._timestamps)}.json'
+        filename = f'{self.name}.{",".join(self._timestamps)}.json'
         return os.path.join(self.cache_directory, filename)
 
-    def initialize(self, content_path, timestamps=(), number=0, upload_to=None):
+    def initialize(self, content_path, timestamps=(), number=0):
         self._video_file = video.first_video(content_path)
         self._timestamps = _screenshot_timestamps(
             video_file=self._video_file,
@@ -34,27 +29,14 @@ class ScreenshotsJob(_base.JobBase):
             number=number,
         )
         self._screenshots_created = 0
-        self._screenshots_wanted = len(self._timestamps)
+        self._screenshots_total = len(self._timestamps)
         self._screenshot_filepaths = []
-        if not self._screenshots_wanted > 0:
-            raise RuntimeError('No screenshots wanted')
-
-        self._screenshots_uploaded = 0
-        if upload_to:
-            _log.debug('Uploading screenshots to %r', upload_to)
-            try:
-                self._imghost = getattr(tools.imghost, upload_to)
-            except AttributeError:
-                raise ValueError(f'Unknown image hosting service: {upload_to}')
-        else:
-            self._imghost = None
+        if not self._screenshots_total > 0:
+            raise RuntimeError('No screenshots wanted?')
 
         self._screenshot_path_callbacks = []
         self._screenshot_error_callbacks = []
         self._screenshots_finished_callbacks = []
-        self._upload_url_callbacks = []
-        self._upload_error_callbacks = []
-        self._uploads_finished_callbacks = []
 
     def execute(self):
         self._screenshot_process = _common.DaemonProcess(
@@ -72,47 +54,28 @@ class ScreenshotsJob(_base.JobBase):
         )
         self._screenshot_process.start()
 
-        if self._imghost:
-            self._upload_thread = _UploadThread(
-                homedir=self.homedir,
-                imghost=self._imghost,
-                force=self.ignore_cache,
-                url_callback=self.handle_upload_url,
-                error_callback=self.handle_upload_error,
-                finished_callback=self.handle_uploads_finished,
-            )
-            self._upload_thread.start()
-
     def finish(self):
         if hasattr(self, '_screenshot_process'):
             self._screenshot_process.stop()
-        if hasattr(self, '_upload_thread'):
-            self._upload_thread.stop()
         super().finish()
 
     async def wait(self):
         if hasattr(self, '_screenshot_process'):
             await self._screenshot_process.join()
-        if hasattr(self, '_upload_thread'):
-            await self._upload_thread.join()
         await super().wait()
 
     @property
     def exit_code(self):
         if self.is_finished:
-            return 0 if len(self.output) == self.screenshots_wanted else 1
+            return 0 if len(self.output) == self.screenshots_total else 1
 
     @property
-    def screenshots_wanted(self):
-        return self._screenshots_wanted
+    def screenshots_total(self):
+        return self._screenshots_total
 
     @property
     def screenshots_created(self):
         return self._screenshots_created
-
-    @property
-    def screenshots_uploaded(self):
-        return self._screenshots_uploaded
 
     def on_screenshot_path(self, callback):
         self._screenshot_path_callbacks.append(callback)
@@ -121,10 +84,7 @@ class ScreenshotsJob(_base.JobBase):
         _log.debug('New screenshot: %r', path)
         self._screenshots_created += 1
         self._screenshot_filepaths.append(path)
-        if self.is_uploading:
-            self._upload_thread.upload(path)
-        else:
-            self.send(path, if_not_finished=True)
+        self.send(path, if_not_finished=True)
         for cb in self._screenshot_path_callbacks:
             cb(path)
 
@@ -140,43 +100,9 @@ class ScreenshotsJob(_base.JobBase):
         self._screenshots_finished_callbacks.append(callback)
 
     def handle_screenshots_finished(self):
-        if self.is_uploading:
-            # Tell upload thread that this is the end
-            self._upload_thread.finish()
-        else:
-            self.finish()
+        self.finish()
         for cb in self._screenshots_finished_callbacks:
             cb(tuple(self._screenshot_filepaths))
-
-    @property
-    def is_uploading(self):
-        return self._imghost is not None
-        # return hasattr(self, '_upload_thread')
-
-    def on_upload_url(self, callback):
-        self._upload_url_callbacks.append(callback)
-
-    def handle_upload_url(self, url):
-        self._screenshots_uploaded += 1
-        self.send(url, if_not_finished=True)
-        for cb in self._upload_url_callbacks:
-            cb(url)
-
-    def on_upload_error(self, callback):
-        self._upload_error_callbacks.append(callback)
-
-    def handle_upload_error(self, error):
-        self.error(error, if_not_finished=True)
-        for cb in self._upload_error_callbacks:
-            cb(error)
-
-    def on_uploads_finished(self, callback):
-        self._uploads_finished_callbacks.append(callback)
-
-    def handle_uploads_finished(self):
-        self.finish()
-        for cb in self._uploads_finished_callbacks:
-            cb(self.output)
 
 
 def _screenshot_timestamps(video_file, timestamps, number):
@@ -234,46 +160,3 @@ def _screenshot_process(output_queue, input_queue,
             output_queue.put((_common.DaemonProcess.ERROR, str(e)))
         else:
             output_queue.put((_common.DaemonProcess.INFO, screenshot_file))
-
-
-class _UploadThread(_common.DaemonThread):
-    def __init__(self, homedir, imghost, force,
-                 url_callback, error_callback, finished_callback):
-        self._homedir = homedir
-        self._imghost = imghost
-        self._force = force
-        self._filepaths_queue = queue.Queue()
-        self._url_callback = url_callback
-        self._error_callback = error_callback
-        self._finished_callback = finished_callback
-
-    def upload(self, filepath):
-        self._filepaths_queue.put(filepath)
-
-    def finish(self):
-        self._filepaths_queue.put(None)
-
-    def initialize(self):
-        self._uploader = self._imghost.Uploader(cache_dir=self._homedir)
-        self.unblock()
-
-    def work(self):
-        try:
-            filepath = self._filepaths_queue.get(timeout=0.1)
-        except queue.Empty:
-            return True  # Call work() again
-
-        if filepath:
-            _log.debug('Uploading %r', filepath)
-            try:
-                info = self._uploader.upload(filepath, force=self._force)
-            except errors.RequestError as e:
-                self._error_callback(e)
-            else:
-                self._url_callback(info)
-
-            return True  # Call work() again
-        else:
-            _log.debug('Upload queue is empty')
-            self.stop()
-            self._finished_callback()

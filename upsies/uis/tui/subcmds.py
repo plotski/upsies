@@ -74,17 +74,43 @@ class torrent(SubcommandBase):
 
 class screenshots(SubcommandBase):
     @cache.property
-    def jobs(self):
-        return (
-            _jobs.screenshots.ScreenshotsJob(
+    def _screenshots_job(self):
+        return _jobs.screenshots.ScreenshotsJob(
+            homedir=fs.projectdir(self.args.path),
+            ignore_cache=self.args.ignore_cache,
+            content_path=self.args.path,
+            timestamps=self.args.timestamps,
+            number=self.args.number,
+        )
+
+    @cache.property
+    def _imghost_job(self):
+        image_host = self.args.upload_to
+        if image_host:
+            imghost_job = _jobs.imghost.ImageHostJob(
                 homedir=fs.projectdir(self.args.path),
                 ignore_cache=self.args.ignore_cache,
-                content_path=self.args.path,
-                timestamps=self.args.timestamps,
-                number=self.args.number,
-                upload_to=self.args.upload_to,
-            ),
-        )
+                image_host=image_host,
+                images_total=self._screenshots_job.screenshots_total,
+            )
+            # Connect ScreenshotsJob's output to ImageHostJob.upload
+            _jobs.Pipe(
+                sender=self._screenshots_job,
+                receiver=imghost_job.upload,
+            )
+            return imghost_job
+
+    @cache.property
+    def jobs(self):
+        if self.args.upload_to:
+            return (
+                self._screenshots_job,
+                self._imghost_job,
+            )
+        else:
+            return (
+                self._screenshots_job,
+            )
 
 
 class mediainfo(SubcommandBase):
