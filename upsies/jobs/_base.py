@@ -78,7 +78,7 @@ class JobBase(abc.ABC):
         _log.debug('Running %r', self)
         self._read_output_cache()
         if self.output:
-            _log.debug('Job was already done previously %r', self)
+            _log.debug('Job was already done previously: %r', self)
             self._finished_event.set()
             for output in self.output:
                 for cb in self._output_callbacks:
