@@ -57,7 +57,7 @@ class JobBase(abc.ABC):
     @abc.abstractmethod
     def initialize(self):
         """
-        Called after job creation with custom keyword arguments
+        Called by :func:`__init__` with additional keyword arguments
 
         This method should handle its arguments and return quickly.
         """
