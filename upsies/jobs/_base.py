@@ -164,11 +164,11 @@ class JobBase(abc.ABC):
         """
         Call `callback` with output
 
-        :param callable callback: Any callable that takes a single positional
-            argument
+        :param callable callback: Callable that takes an instance of this class
+            as a positional argument
 
         `callback` is called when :func:`send` is called and when cached output
-        is read.
+        is read (i.e. :func:`executed` is never called).
         """
         assert callable(callback)
         self._output_callbacks.append(callback)
