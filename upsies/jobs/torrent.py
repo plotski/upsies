@@ -32,7 +32,6 @@ class CreateTorrentJob(_base.JobBase):
         self._destination_path = str(copy_to) if copy_to else None
         self._progress_update_callbacks = []
         self._error_callbacks = []
-        self._finished_callbacks = []
         self._file_tree = ''
         self._torrent_process = _common.DaemonProcess(
             name=self.name,
@@ -55,14 +54,9 @@ class CreateTorrentJob(_base.JobBase):
     def execute(self):
         self._torrent_process.start()
 
-    def on_finished(self, callback):
-        self._finished_callbacks.append(callback)
-
     def finish(self):
         self._torrent_process.stop()
         super().finish()
-        for cb in self._finished_callbacks:
-            cb(self._output[0] if self._output else None)
 
     async def wait(self):
         await self._torrent_process.join()
