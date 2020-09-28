@@ -334,14 +334,15 @@ def test_cache_is_not_written_if_output_is_empty(job):
 def test_cache_is_not_written_if_exit_code_is_nonzero(job):
     job.send('Foo')
     job.error('Bar!')
+    job.finish()
     assert job.exit_code != 0
     job._write_output_cache()
     assert not os.path.exists(job.cache_file)
 
 def test_cache_is_written_if_output_is_not_empty(job):
     job.send('foo')
-    assert job.output == ('foo',)
     job.finish()
+    assert job.output == ('foo',)
     assert os.path.exists(job.cache_file)
     assert open(job.cache_file, 'r').read() == '["foo"]\n'
 
