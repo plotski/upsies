@@ -35,6 +35,7 @@ def parse(args):
 
     subparsers = parser.add_subparsers(title='commands')
 
+    # Command: release-name
     release_name = subparsers.add_parser(
         'release-name', aliases=('rn',),
         help='Create standardized release name',
@@ -48,6 +49,7 @@ def parse(args):
     release_name.set_defaults(subcmd=subcmds.release_name)
     release_name.add_argument('path', help='Path to release content')
 
+    # Command: imdb
     imdb = subparsers.add_parser(
         'imdb',
         help='Pick IMDb ID from search results',
@@ -56,6 +58,7 @@ def parse(args):
     imdb.set_defaults(subcmd=subcmds.make_search_command('imdb'))
     imdb.add_argument('path', help='Path to release content')
 
+    # Command: tmdb
     tmdb = subparsers.add_parser(
         'tmdb',
         help='Pick TMDb ID from search results',
@@ -64,6 +67,7 @@ def parse(args):
     tmdb.set_defaults(subcmd=subcmds.make_search_command('tmdb'))
     tmdb.add_argument('path', help='Path to release content')
 
+    # Command: tvmaze
     tvmaze = subparsers.add_parser(
         'tvmaze',
         help='Pick TVmaze ID from search results',
@@ -72,6 +76,7 @@ def parse(args):
     tvmaze.set_defaults(subcmd=subcmds.make_search_command('tvmaze'))
     tvmaze.add_argument('path', help='Path to release content')
 
+    # Command: screenshots
     screenshots = subparsers.add_parser(
         'screenshots', aliases=('ss',),
         help='Create and optionally upload screenshots',
@@ -103,6 +108,7 @@ def parse(args):
         metavar='IMGHOST',
     )
 
+    # Command: mediainfo
     mediainfo = subparsers.add_parser(
         'mediainfo', aliases=('mi',),
         help='Print mediainfo output',
@@ -115,6 +121,7 @@ def parse(args):
     mediainfo.set_defaults(subcmd=subcmds.mediainfo)
     mediainfo.add_argument('path', help='Path to release content')
 
+    # Command: torrent
     torrent = subparsers.add_parser(
         'torrent', aliases=('tor',),
         help='Create torrent file',
@@ -143,6 +150,7 @@ def parse(args):
         metavar='PATH',
     )
 
+    # Command: submit
     submit = subparsers.add_parser(
         'submit',
         help='Gather all required metadata and upload PATH to tracker',
