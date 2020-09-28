@@ -34,8 +34,6 @@ class CreateTorrentJob(_base.JobBase):
         self._error_callbacks = []
         self._finished_callbacks = []
         self._file_tree = ''
-
-    def execute(self):
         self._torrent_process = _common.DaemonProcess(
             name=self.name,
             target=_torrent_process,
@@ -52,21 +50,21 @@ class CreateTorrentJob(_base.JobBase):
             error_callback=self.handle_error,
             finished_callback=self.handle_torrent_created,
         )
+
+    def execute(self):
         self._torrent_process.start()
 
     def on_finished(self, callback):
         self._finished_callbacks.append(callback)
 
     def finish(self):
-        if hasattr(self, '_torrent_process'):
-            self._torrent_process.stop()
+        self._torrent_process.stop()
         super().finish()
         for cb in self._finished_callbacks:
             cb(self._output[0] if self._output else None)
 
     async def wait(self):
-        if hasattr(self, '_torrent_process'):
-            await self._torrent_process.join()
+        await self._torrent_process.join()
         if hasattr(self, '_handle_torrent_task'):
             await self._handle_torrent_task
         await super().wait()
