@@ -1,11 +1,59 @@
 import abc
 import asyncio
+import collections
 import functools
 import multiprocessing
 import threading
+import types
+
+from ._base import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+
+class Pipe:
+    """
+    Connect job's output to another job's method
+
+    When `sender` is finished, :func:`finish` is called on `receiver`'s object.
+
+    .. note:: Instances do not have to be assigned to variables because they add
+              themselves as callbacks to `sender`.
+
+    :param sender: Job to collect output from
+    :type sender: :class:`JobBase` child class instance
+    :param receiver: Callable to send output to
+    :type receiver: Method of a :class:`JobBase` child class instance
+    """
+
+    def __init__(self, sender, receiver):
+        assert isinstance(sender, JobBase)
+        assert isinstance(receiver, types.MethodType)
+        assert isinstance(receiver.__self__, JobBase)
+        _log.debug('Piping output from %r to %r', type(sender).__name__, receiver.__qualname__)
+        self._sender = sender
+        self._receiver = receiver.__self__
+        self._receiver_method = receiver
+        self._sender_output_cache = collections.deque()
+        self._sender.on_output(self._handle_sender_output)
+        self._sender.on_finished(self._handle_sender_finished)
+
+    def _handle_sender_output(self, output):
+        self._sender_output_cache.append(output)
+        self._flush_sender_output_cache()
+
+    def _handle_sender_finished(self, sender):
+        self._sender_output_cache.append(None)
+        self._flush_sender_output_cache()
+
+    def _flush_sender_output_cache(self):
+        while self._sender_output_cache:
+            output = self._sender_output_cache.popleft()
+            if output is None:
+                self._receiver.finish()
+            else:
+                self._receiver_method(output)
 
 
 class DaemonThread(abc.ABC):
