@@ -50,6 +50,7 @@ class CreateTorrentJob(_base.JobBase):
             error_callback=self.handle_error,
             finished_callback=self.handle_torrent_created,
         )
+        self._handle_torrent_task = None
 
     def execute(self):
         self._torrent_process.start()
@@ -65,7 +66,7 @@ class CreateTorrentJob(_base.JobBase):
 
     async def wait(self):
         await self._torrent_process.join()
-        if hasattr(self, '_handle_torrent_task'):
+        if self._handle_torrent_task:
             await self._handle_torrent_task
         await super().wait()
 
