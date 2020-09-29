@@ -174,6 +174,26 @@ def test_screenshot_process_does_not_catch_other_errors(screenshot_create_mock, 
     assert input_queue.empty()
 
 
+@pytest.fixture
+def job(tmp_path):
+    DaemonProcess_mock = Mock(
+        return_value=Mock(
+            join=AsyncMock(),
+        ),
+    )
+    with patch('upsies.jobs._common.DaemonProcess', DaemonProcess_mock):
+        with patch('upsies.utils.video.first_video', Mock()):
+            with patch('upsies.jobs.screenshots._screenshot_timestamps', Mock(return_value=(60, 120, 180))):
+                return ScreenshotsJob(
+                    homedir=tmp_path,
+                    ignore_cache=False,
+                    content_path='some/path',
+                    timestamps=(120,),
+                    number=2,
+                )
+
+
+@patch('upsies.jobs._common.DaemonProcess', Mock())
 @patch('upsies.utils.video.length')
 def test_ScreenshotsJob_cache_file(video_length_mock, tmp_path):
     video_length_mock.return_value = 240
@@ -190,49 +210,65 @@ def test_ScreenshotsJob_cache_file(video_length_mock, tmp_path):
         'screenshots.0:02:00,0:03:00.json',
     )
 
-
-@patch('upsies.tools.imghost')
-@patch('upsies.utils.video.length')
-def test_ScreenshotsJob_state_before_execution(video_length_mock, imghost_mock, tmp_path):
-    video_length_mock.return_value = 240
+@patch('upsies.jobs._common.DaemonProcess', Mock())
+@patch('upsies.utils.video.first_video')
+@patch('upsies.jobs.screenshots._screenshot_timestamps', Mock(return_value=(60, 120, 180)))
+def test_ScreenshotsJob_initialize_uses_first_video_file(first_video_mock, tmp_path):
     sj = ScreenshotsJob(
         homedir=tmp_path,
         ignore_cache=False,
-        content_path='foo.mkv',
+        content_path='some/path',
         timestamps=(120,),
         number=2,
     )
-    assert sj.exit_code is None
-    assert sj.screenshots_total == 2
+    assert sj._video_file == first_video_mock.return_value
+    assert first_video_mock.call_args_list == [call('some/path')]
+
+@patch('upsies.jobs._common.DaemonProcess', Mock())
+@patch('upsies.utils.video.first_video')
+@patch('upsies.jobs.screenshots._screenshot_timestamps')
+def test_ScreenshotsJob_initialize_gets_timestamps(screenshot_timestamps_mock, first_video_mock, tmp_path):
+    screenshot_timestamps_mock.return_value = (60, 120, 180)
+    sj = ScreenshotsJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        content_path='some/path',
+        timestamps=(120,),
+        number=2,
+    )
+    assert sj._timestamps == screenshot_timestamps_mock.return_value
+    assert screenshot_timestamps_mock.call_args_list == [call(
+        video_file=first_video_mock.return_value,
+        timestamps=(120,),
+        number=2,
+    )]
+
+@patch('upsies.jobs._common.DaemonProcess', Mock())
+@patch('upsies.utils.video.first_video', Mock())
+@patch('upsies.jobs.screenshots._screenshot_timestamps', Mock(return_value=(60, 120, 180)))
+def test_ScreenshotsJob_initialize_sets_initial_status(tmp_path):
+    sj = ScreenshotsJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        content_path='some/path',
+        timestamps=(120,),
+        number=2,
+    )
     assert sj.screenshots_created == 0
-    assert not sj.is_finished
-    assert sj.output == ()
+    assert sj.screenshots_total == 3
 
-@patch('upsies.utils.video.length')
-@patch('upsies.tools.imghost')
-@patch('upsies.jobs._common.DaemonProcess', return_value=Mock(join=AsyncMock()))
-def test_ScreenshotsJob_handles_screenshot_creation(process_mock, imghost_mock, video_length_mock, tmp_path):
-    video_length_mock.return_value = 240
+@patch('upsies.jobs._common.DaemonProcess')
+@patch('upsies.utils.video.first_video', Mock())
+@patch('upsies.jobs.screenshots._screenshot_timestamps', Mock(return_value=(60, 120, 180)))
+def test_ScreenshotsJob_initialize_creates_screenshot_process(DaemonProcess_mock, tmp_path):
     sj = ScreenshotsJob(
         homedir=tmp_path,
         ignore_cache=False,
-        content_path='foo.mkv',
+        content_path='some/path',
         timestamps=(120,),
         number=2,
     )
-    assert not sj.is_finished
-    screenshot_path_cb = Mock()
-    sj.on_screenshot_path(screenshot_path_cb)
-    screenshot_error_cb = Mock()
-    sj.on_screenshot_error(screenshot_error_cb)
-    screenshots_finished_cb = Mock()
-    sj.on_screenshots_finished(screenshots_finished_cb)
-    assert screenshot_path_cb.call_args_list == []
-    assert screenshot_error_cb.call_args_list == []
-    assert screenshots_finished_cb.call_args_list == []
-    sj.start()
-    assert not sj.is_finished
-    assert process_mock.call_args_list == [call(
+    assert DaemonProcess_mock.call_args_list == [call(
         name=sj.name,
         target=_screenshot_process,
         kwargs={
@@ -241,75 +277,45 @@ def test_ScreenshotsJob_handles_screenshot_creation(process_mock, imghost_mock, 
             'output_dir' : sj.homedir,
             'overwrite'  : sj.ignore_cache,
         },
-        info_callback=sj.handle_screenshot_path,
-        error_callback=sj.handle_screenshot_error,
-        finished_callback=sj.handle_screenshots_finished,
+        info_callback=sj.handle_screenshot,
+        error_callback=sj.error,
+        finished_callback=sj.finish,
     )]
-    assert process_mock.return_value.start.call_args_list == [call()]
-    sj.handle_screenshot_path('foo.1.png')
-    assert sj.screenshots_created == 1
-    assert sj.output == ('foo.1.png',)
-    sj.handle_screenshot_path('foo.2.png')
-    assert sj.screenshots_created == 2
-    assert sj.output == ('foo.1.png', 'foo.2.png')
-    sj.handle_screenshots_finished()
-    asyncio.get_event_loop().run_until_complete(sj.wait())
-    assert sj.is_finished
-    assert sj.output == ('foo.1.png', 'foo.2.png')
-    assert sj.exit_code == 0
-    assert screenshot_path_cb.call_args_list == [call('foo.1.png'), call('foo.2.png')]
-    assert screenshot_error_cb.call_args_list == []
-    assert screenshots_finished_cb.call_args_list == [call(('foo.1.png', 'foo.2.png'))]
+    assert sj._screenshot_process is DaemonProcess_mock.return_value
 
-@patch('upsies.utils.video.length')
-@patch('upsies.tools.imghost')
-@patch('upsies.jobs._common.DaemonProcess', return_value=Mock(join=AsyncMock()))
-def test_ScreenshotsJob_handles_errors_from_screenshot_creation(process_mock, imghost_mock, video_length_mock, tmp_path):
-    video_length_mock.return_value = 240
-    sj = ScreenshotsJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        content_path='foo.mkv',
-        timestamps=(120,),
-        number=2,
-    )
-    assert not sj.is_finished
-    screenshot_path_cb = Mock()
-    sj.on_screenshot_path(screenshot_path_cb)
-    screenshot_error_cb = Mock()
-    sj.on_screenshot_error(screenshot_error_cb)
-    screenshots_finished_cb = Mock()
-    sj.on_screenshots_finished(screenshots_finished_cb)
-    assert screenshot_path_cb.call_args_list == []
-    assert screenshot_error_cb.call_args_list == []
-    assert screenshots_finished_cb.call_args_list == []
-    sj.start()
-    assert not sj.is_finished
-    assert process_mock.call_args_list == [call(
-        name=sj.name,
-        target=_screenshot_process,
-        kwargs={
-            'video_file' : sj._video_file,
-            'timestamps' : sj._timestamps,
-            'output_dir' : sj.homedir,
-            'overwrite'  : sj.ignore_cache,
-        },
-        info_callback=sj.handle_screenshot_path,
-        error_callback=sj.handle_screenshot_error,
-        finished_callback=sj.handle_screenshots_finished,
-    )]
-    assert process_mock.return_value.start.call_args_list == [call()]
-    sj.handle_screenshot_path('foo.1.png')
-    assert sj.screenshots_created == 1
-    assert sj.output == ('foo.1.png',)
-    sj.handle_screenshot_error('Something went wrong')
-    assert sj.screenshots_created == 1
-    assert sj.output == ('foo.1.png',)
-    sj.handle_screenshots_finished()
-    asyncio.get_event_loop().run_until_complete(sj.wait())
-    assert sj.is_finished
-    assert sj.output == ('foo.1.png',)
-    assert sj.exit_code == 1
-    assert screenshot_path_cb.call_args_list == [call('foo.1.png')]
-    assert screenshot_error_cb.call_args_list == [call('Something went wrong')]
-    assert screenshots_finished_cb.call_args_list == [call(('foo.1.png',))]
+
+def test_ScreenshotsJob_execute(job):
+    assert job.execute() is None
+    assert job._screenshot_process.start.call_args_list == [call()]
+
+
+def test_ScreenshotsJob_finish(job):
+    assert not job.is_finished
+    job.finish()
+    assert job._screenshot_process.stop.call_args_list == [call()]
+    assert job.is_finished
+
+
+@pytest.mark.asyncio
+async def test_ScreenshotsJob_wait(job):
+    assert not job.is_finished
+    asyncio.get_event_loop().call_soon(job.finish())
+    await job.wait()
+    assert job._screenshot_process.join.call_args_list == [call()]
+    assert job.is_finished
+
+
+def test_exit_code(job):
+    assert job.exit_code is None
+    job.finish()
+    assert job.exit_code == 1
+    job._screenshots_total = job.screenshots_created
+    assert job.exit_code == 0
+
+
+def test_screenshots_total(job):
+    assert job.screenshots_total is job._screenshots_total
+
+
+def test_screenshots_created(job):
+    assert job.screenshots_created is job._screenshots_created

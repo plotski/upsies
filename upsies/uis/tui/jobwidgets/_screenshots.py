@@ -11,8 +11,8 @@ _log = logging.getLogger(__name__)
 class ScreenshotsJobWidget(_base.JobWidgetBase):
     def setup(self):
         self._screenshot_progress = widgets.ProgressBar()
-        self.job.on_screenshot_path(self.handle_screenshot_path)
-        self.job.on_screenshots_finished(lambda _: get_app().invalidate())
+        self.job.on_output(self.handle_screenshot_path)
+        self.job.on_finished(lambda _: get_app().invalidate())
 
     def activate(self):
         pass

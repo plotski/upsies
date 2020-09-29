@@ -30,15 +30,8 @@ class ScreenshotsJob(_base.JobBase):
         )
         self._screenshots_created = 0
         self._screenshots_total = len(self._timestamps)
-        self._screenshot_filepaths = []
         if not self._screenshots_total > 0:
             raise RuntimeError('No screenshots wanted?')
-
-        self._screenshot_path_callbacks = []
-        self._screenshot_error_callbacks = []
-        self._screenshots_finished_callbacks = []
-
-    def execute(self):
         self._screenshot_process = _common.DaemonProcess(
             name=self.name,
             target=_screenshot_process,
@@ -48,20 +41,20 @@ class ScreenshotsJob(_base.JobBase):
                 'output_dir' : self.homedir,
                 'overwrite'  : self.ignore_cache,
             },
-            info_callback=self.handle_screenshot_path,
-            error_callback=self.handle_screenshot_error,
-            finished_callback=self.handle_screenshots_finished,
+            info_callback=self.handle_screenshot,
+            error_callback=self.error,
+            finished_callback=self.finish,
         )
+
+    def execute(self):
         self._screenshot_process.start()
 
     def finish(self):
-        if hasattr(self, '_screenshot_process'):
-            self._screenshot_process.stop()
+        self._screenshot_process.stop()
         super().finish()
 
     async def wait(self):
-        if hasattr(self, '_screenshot_process'):
-            await self._screenshot_process.join()
+        await self._screenshot_process.join()
         await super().wait()
 
     @property
@@ -77,32 +70,9 @@ class ScreenshotsJob(_base.JobBase):
     def screenshots_created(self):
         return self._screenshots_created
 
-    def on_screenshot_path(self, callback):
-        self._screenshot_path_callbacks.append(callback)
-
-    def handle_screenshot_path(self, path):
-        _log.debug('New screenshot: %r', path)
+    def handle_screenshot(self, path):
         self._screenshots_created += 1
-        self._screenshot_filepaths.append(path)
         self.send(path, if_not_finished=True)
-        for cb in self._screenshot_path_callbacks:
-            cb(path)
-
-    def on_screenshot_error(self, callback):
-        self._screenshot_error_callbacks.append(callback)
-
-    def handle_screenshot_error(self, msg):
-        self.error(msg, if_not_finished=True)
-        for cb in self._screenshot_error_callbacks:
-            cb(msg)
-
-    def on_screenshots_finished(self, callback):
-        self._screenshots_finished_callbacks.append(callback)
-
-    def handle_screenshots_finished(self):
-        self.finish()
-        for cb in self._screenshots_finished_callbacks:
-            cb(tuple(self._screenshot_filepaths))
 
 
 def _screenshot_timestamps(video_file, timestamps, number):
