@@ -101,7 +101,7 @@ def test_execute_starts_search_thread(SearchThread_mock, UpdateInfoThread_mock, 
     assert SearchThread_mock.call_args_list == [call(
         search_coro=search.dbs.imdb.search,
         results_callback=sj.handle_search_results,
-        error_callback=sj.handle_search_error,
+        error_callback=sj.error,
         searching_callback=sj.handle_searching_status,
     )]
     assert SearchThread_mock.return_value.start.call_args_list == [call()]
@@ -313,20 +313,6 @@ def test_no_search_results(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
     sj.handle_search_results(results)
     assert cb.call_args_list == [call(results)]
     assert UpdateInfoThread_mock.return_value.call_args_list == [call(None)]
-
-
-def test_error_handling(tmp_path):
-    sj = search.SearchDbJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        db='imdb',
-        content_path='path/to/foo',
-    )
-    cb = Mock()
-    sj.on_error(cb)
-    sj.handle_search_error('Nothing')
-    assert cb.call_args_list == [call('Nothing')]
-    assert sj.errors == ('Nothing',)
 
 
 def test_update_info(tmp_path):

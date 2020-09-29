@@ -54,13 +54,12 @@ class SearchDbJob(_base.JobBase):
         self._search_results_callbacks = []
         self._searching_status_callbacks = []
         self._info_updated_callbacks = []
-        self._error_callbacks = []
 
     def execute(self):
         self._search_thread = _SearchThread(
             search_coro=self._db.search,
             results_callback=self.handle_search_results,
-            error_callback=self.handle_search_error,
+            error_callback=self.error,
             searching_callback=self.handle_searching_status,
         )
         self._search_thread.start()
@@ -118,14 +117,6 @@ class SearchDbJob(_base.JobBase):
             self._update_info_thread(None)
         for cb in self._search_results_callbacks:
             cb(results)
-
-    def on_error(self, callback):
-        self._error_callbacks.append(callback)
-
-    def handle_search_error(self, error):
-        self.error(error, if_not_finished=True)
-        for cb in self._error_callbacks:
-            cb(error)
 
     def on_info_updated(self, callback):
         self._info_updated_callbacks.append(callback)
