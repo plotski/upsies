@@ -10,36 +10,47 @@ _log = logging.getLogger(__name__)
 
 class ImageHostJob(_base.JobBase):
     name = 'imghost'
-    label = 'Upload'
+    label = 'Image URLs'
 
     @property
     def cache_file(self):
-        # No cache file since we don't know which files we're going to upload
+        # No cache file since we may not know which files we're going to upload
         # before execution. This is not a problem because the abstract base
         # class for image uploaders implements caching.
         return None
 
-    def initialize(self, image_host, images_total=0):
-        _log.debug('Uploading %r images to %r', images_total, image_host)
+    def initialize(self, image_host, image_paths=(), images_total=0):
+        if image_paths and images_total:
+            raise TypeError('You must not specify both "image_paths" and "images_total".')
+        elif not image_paths and not images_total:
+            raise TypeError('You must specify "image_paths" or "images_total".')
+
         self._images_uploaded = 0
-        self._images_total = images_total
         self._exit_code = 1
         try:
             self._imghost = getattr(imghost, image_host)
         except AttributeError:
             raise ValueError(f'Unknown image hosting service: {image_host}')
         self._url_callbacks = []
-        self._error_callbacks = []
-        self._finished_callbacks = []
 
         self._upload_thread = _UploadThread(
             homedir=self.homedir,
             imghost=self._imghost,
             force=self.ignore_cache,
             url_callback=self.handle_image_url,
-            error_callback=self.handle_upload_error,
+            error_callback=self.error,
             finished_callback=self.handle_uploads_finished,
         )
+
+        if images_total:
+            # Expect calls to pipe_input() and pipe_closed()
+            self._images_total = images_total
+        else:
+            # Upload images and finish()
+            self._images_total = len(image_paths)
+            for path in image_paths:
+                self._upload_thread.upload(path)
+            self._upload_thread.finish()
 
     def execute(self):
         self._upload_thread.start()
@@ -75,31 +86,13 @@ class ImageHostJob(_base.JobBase):
     def images_total(self, images_total):
         self._images_total = int(images_total)
 
-    def on_image_url(self, callback):
-        self._url_callbacks.append(callback)
-
     def handle_image_url(self, url):
         self._images_uploaded += 1
         self.send(url, if_not_finished=True)
-        for cb in self._url_callbacks:
-            cb(url)
-
-    def on_upload_error(self, callback):
-        self._error_callbacks.append(callback)
-
-    def handle_upload_error(self, error):
-        self.error(error, if_not_finished=True)
-        for cb in self._error_callbacks:
-            cb(error)
-
-    def on_uploads_finished(self, callback):
-        self._finished_callbacks.append(callback)
 
     def handle_uploads_finished(self):
-        self.finish()
         self._exit_code = 0
-        for cb in self._finished_callbacks:
-            cb(self.output)
+        self.finish()
 
 
 class _UploadThread(_common.DaemonThread):

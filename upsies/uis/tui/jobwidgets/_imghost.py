@@ -11,8 +11,8 @@ _log = logging.getLogger(__name__)
 class ImageHostJobWidget(_base.JobWidgetBase):
     def setup(self):
         self._upload_progress = widgets.ProgressBar()
-        self.job.on_image_url(self.handle_image_url)
-        self.job.on_uploads_finished(lambda _: get_app().invalidate())
+        self.job.on_output(self.handle_image_url)
+        self.job.on_finished(lambda _: get_app().invalidate())
 
     def activate(self):
         pass

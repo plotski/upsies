@@ -30,7 +30,9 @@ def JobWidget(job):
 
     :raise RuntimeError: if `job`'s type is not supported
     """
-    if isinstance(job, jobs.imghost.ImageHostJob):
+    if isinstance(job, jobs.torrent.AddTorrentJob):
+        return jobwidgets.AddTorrentJobWidget(job)
+    elif isinstance(job, jobs.imghost.ImageHostJob):
         return jobwidgets.ImageHostJobWidget(job)
     elif isinstance(job, jobs.mediainfo.MediainfoJob):
         return jobwidgets.MediainfoJobWidget(job)

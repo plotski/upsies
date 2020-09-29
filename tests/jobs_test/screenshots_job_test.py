@@ -8,7 +8,7 @@ import pytest
 from upsies import errors
 from upsies.jobs._common import DaemonProcess
 from upsies.jobs.screenshots import (ScreenshotsJob, _screenshot_process,
-                                     _screenshot_timestamps, _UploadThread)
+                                     _screenshot_timestamps)
 
 try:
     from unittest.mock import AsyncMock
@@ -174,102 +174,8 @@ def test_screenshot_process_does_not_catch_other_errors(screenshot_create_mock, 
     assert input_queue.empty()
 
 
-def test_UploadThread_creates_Uploader_instance_after_starting(tmp_path):
-    imghost_mock = Mock()
-    url_callback = Mock()
-    error_callback = Mock()
-    finished_callback = Mock()
-    uploader = _UploadThread(
-        homedir=tmp_path,
-        imghost=imghost_mock,
-        force=False,
-        url_callback=url_callback,
-        error_callback=error_callback,
-        finished_callback=finished_callback,
-    )
-    assert imghost_mock.Uploader.call_args_list == []
-    uploader.start()
-    assert imghost_mock.Uploader.call_args_list == [call(cache_dir=tmp_path)]
-
-@pytest.mark.asyncio
-async def test_UploadThread_with_successful_upload(tmp_path):
-    imghost_mock = Mock()
-    imghost_mock.Uploader().upload.side_effect = ('http://foo.jpg', 'http://baz.png')
-    url_callback = Mock()
-    error_callback = Mock()
-    finished_callback = Mock()
-    uploader = _UploadThread(
-        homedir=tmp_path,
-        imghost=imghost_mock,
-        force=False,
-        url_callback=url_callback,
-        error_callback=error_callback,
-        finished_callback=finished_callback,
-    )
-    uploader.start()
-    uploader.upload('foo.jpg')
-    uploader.upload('baz.png')
-    uploader.finish()
-    await uploader.join()
-    assert url_callback.call_args_list == [call('http://foo.jpg'), call('http://baz.png')]
-    assert finished_callback.call_args_list == [call()]
-    assert error_callback.call_args_list == []
-
-@pytest.mark.asyncio
-async def test_UploadThread_with_failed_upload(tmp_path):
-    imghost_mock = Mock()
-    imghost_mock.Uploader().upload.side_effect = ('http://foo.jpg', errors.RequestError('The Error'))
-    url_callback = Mock()
-    error_callback = Mock()
-    finished_callback = Mock()
-    uploader = _UploadThread(
-        homedir=tmp_path,
-        imghost=imghost_mock,
-        force=False,
-        url_callback=url_callback,
-        error_callback=error_callback,
-        finished_callback=finished_callback,
-    )
-    uploader.start()
-    uploader.upload('foo.jpg')
-    uploader.upload('baz.png')
-    uploader.finish()
-    await uploader.join()
-    assert url_callback.call_args_list == [call('http://foo.jpg')]
-    assert finished_callback.call_args_list == [call()]
-    assert len(error_callback.call_args_list[0][0]) == 1  # positional args
-    assert len(error_callback.call_args_list[0][1]) == 0  # keyword args
-    assert isinstance(error_callback.call_args_list[0][0][0], errors.RequestError)
-    assert str(error_callback.call_args_list[0][0][0]) == 'The Error'
-
-@pytest.mark.asyncio
-async def test_UploadThread_passes_force_argument_to_upload_call(tmp_path):
-    imghost_mock = Mock()
-    imghost_mock.Uploader().upload.side_effect = ('http://foo.jpg', 'http://baz.png')
-    url_callback = Mock()
-    error_callback = Mock()
-    finished_callback = Mock()
-    uploader = _UploadThread(
-        homedir=tmp_path,
-        imghost=imghost_mock,
-        force='this is a boolean value',
-        url_callback=url_callback,
-        error_callback=error_callback,
-        finished_callback=finished_callback,
-    )
-    uploader.start()
-    uploader.upload('foo.jpg')
-    uploader.upload('baz.png')
-    uploader.finish()
-    await uploader.join()
-    assert imghost_mock.Uploader.return_value.upload.call_args_list == [
-        call('foo.jpg', force='this is a boolean value'),
-        call('baz.png', force='this is a boolean value'),
-    ]
-
-
 @patch('upsies.utils.video.length')
-def test_ScreenshotsJob_cache_file_without_imghost(video_length_mock, tmp_path):
+def test_ScreenshotsJob_cache_file(video_length_mock, tmp_path):
     video_length_mock.return_value = 240
     sj = ScreenshotsJob(
         homedir=tmp_path,
@@ -284,37 +190,6 @@ def test_ScreenshotsJob_cache_file_without_imghost(video_length_mock, tmp_path):
         'screenshots.0:02:00,0:03:00.json',
     )
 
-@patch('upsies.utils.video.length')
-def test_ScreenshotsJob_cache_file_with_imghost(video_length_mock, tmp_path):
-    video_length_mock.return_value = 240
-    sj = ScreenshotsJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        content_path='foo.mkv',
-        timestamps=(120,),
-        number=2,
-        upload_to='imgbox',
-    )
-    assert sj.cache_file == os.path.join(
-        tmp_path,
-        '.output',
-        'screenshots.imgbox.0:02:00,0:03:00.json',
-    )
-
-
-@patch('upsies.utils.video.length')
-def test_ScreenshotsJob_with_unknown_imghost(video_length_mock, tmp_path):
-    video_length_mock.return_value = 240
-    with pytest.raises(ValueError, match=r'^Unknown image hosting service: imgfoo$'):
-        ScreenshotsJob(
-            homedir=tmp_path,
-            ignore_cache=False,
-            content_path='foo.mkv',
-            timestamps=(120,),
-            number=2,
-            upload_to='imgfoo',
-        )
-
 
 @patch('upsies.tools.imghost')
 @patch('upsies.utils.video.length')
@@ -328,18 +203,15 @@ def test_ScreenshotsJob_state_before_execution(video_length_mock, imghost_mock, 
         number=2,
     )
     assert sj.exit_code is None
-    assert sj.screenshots_wanted == 2
+    assert sj.screenshots_total == 2
     assert sj.screenshots_created == 0
-    assert sj.screenshots_uploaded == 0
-    assert sj.is_uploading is False
     assert not sj.is_finished
     assert sj.output == ()
 
 @patch('upsies.utils.video.length')
 @patch('upsies.tools.imghost')
-@patch('upsies.jobs.screenshots._UploadThread')
 @patch('upsies.jobs._common.DaemonProcess', return_value=Mock(join=AsyncMock()))
-def test_ScreenshotsJob_handles_screenshot_creation(process_mock, upthread_mock, imghost_mock, video_length_mock, tmp_path):
+def test_ScreenshotsJob_handles_screenshot_creation(process_mock, imghost_mock, video_length_mock, tmp_path):
     video_length_mock.return_value = 240
     sj = ScreenshotsJob(
         homedir=tmp_path,
@@ -349,7 +221,6 @@ def test_ScreenshotsJob_handles_screenshot_creation(process_mock, upthread_mock,
         number=2,
     )
     assert not sj.is_finished
-    assert not sj.is_uploading
     screenshot_path_cb = Mock()
     sj.on_screenshot_path(screenshot_path_cb)
     screenshot_error_cb = Mock()
@@ -375,8 +246,6 @@ def test_ScreenshotsJob_handles_screenshot_creation(process_mock, upthread_mock,
         finished_callback=sj.handle_screenshots_finished,
     )]
     assert process_mock.return_value.start.call_args_list == [call()]
-    assert upthread_mock.call_args_list == []
-    assert upthread_mock.return_value.start.call_args_list == []
     sj.handle_screenshot_path('foo.1.png')
     assert sj.screenshots_created == 1
     assert sj.output == ('foo.1.png',)
@@ -394,9 +263,8 @@ def test_ScreenshotsJob_handles_screenshot_creation(process_mock, upthread_mock,
 
 @patch('upsies.utils.video.length')
 @patch('upsies.tools.imghost')
-@patch('upsies.jobs.screenshots._UploadThread')
 @patch('upsies.jobs._common.DaemonProcess', return_value=Mock(join=AsyncMock()))
-def test_ScreenshotsJob_handles_errors_from_screenshot_creation(process_mock, upthread_mock, imghost_mock, video_length_mock, tmp_path):
+def test_ScreenshotsJob_handles_errors_from_screenshot_creation(process_mock, imghost_mock, video_length_mock, tmp_path):
     video_length_mock.return_value = 240
     sj = ScreenshotsJob(
         homedir=tmp_path,
@@ -406,7 +274,6 @@ def test_ScreenshotsJob_handles_errors_from_screenshot_creation(process_mock, up
         number=2,
     )
     assert not sj.is_finished
-    assert not sj.is_uploading
     screenshot_path_cb = Mock()
     sj.on_screenshot_path(screenshot_path_cb)
     screenshot_error_cb = Mock()
@@ -432,9 +299,6 @@ def test_ScreenshotsJob_handles_errors_from_screenshot_creation(process_mock, up
         finished_callback=sj.handle_screenshots_finished,
     )]
     assert process_mock.return_value.start.call_args_list == [call()]
-    assert upthread_mock.call_args_list == []
-    assert upthread_mock.start.call_args_list == []
-    assert upthread_mock.return_value.start.call_args_list == []
     sj.handle_screenshot_path('foo.1.png')
     assert sj.screenshots_created == 1
     assert sj.output == ('foo.1.png',)
@@ -449,171 +313,3 @@ def test_ScreenshotsJob_handles_errors_from_screenshot_creation(process_mock, up
     assert screenshot_path_cb.call_args_list == [call('foo.1.png')]
     assert screenshot_error_cb.call_args_list == [call('Something went wrong')]
     assert screenshots_finished_cb.call_args_list == [call(('foo.1.png',))]
-
-@patch('upsies.utils.video.length')
-@patch('upsies.tools.imghost')
-@patch('upsies.jobs.screenshots._UploadThread', return_value=Mock(join=AsyncMock()))
-@patch('upsies.jobs._common.DaemonProcess', return_value=Mock(join=AsyncMock()))
-def test_ScreenshotsJob_handles_screenshots_uploaded(process_mock, upthread_mock, imghost_mock, video_length_mock, tmp_path):
-    video_length_mock.return_value = 240
-    sj = ScreenshotsJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        content_path='foo.mkv',
-        timestamps=(120,),
-        number=2,
-        upload_to='imgbox',
-    )
-    assert not sj.is_finished
-    assert sj.is_uploading
-    screenshot_path_cb = Mock()
-    sj.on_screenshot_path(screenshot_path_cb)
-    screenshot_error_cb = Mock()
-    sj.on_screenshot_error(screenshot_error_cb)
-    screenshots_finished_cb = Mock()
-    sj.on_screenshots_finished(screenshots_finished_cb)
-    assert screenshot_path_cb.call_args_list == []
-    assert screenshot_error_cb.call_args_list == []
-    assert screenshots_finished_cb.call_args_list == []
-    upload_url_cb = Mock()
-    sj.on_upload_url(upload_url_cb)
-    upload_error_cb = Mock()
-    sj.on_upload_error(upload_error_cb)
-    uploads_finished_cb = Mock()
-    sj.on_uploads_finished(uploads_finished_cb)
-    assert upload_url_cb.call_args_list == []
-    assert upload_error_cb.call_args_list == []
-    assert uploads_finished_cb.call_args_list == []
-    sj.start()
-    assert not sj.is_finished
-    assert process_mock.call_args_list == [call(
-        name=sj.name,
-        target=_screenshot_process,
-        kwargs={
-            'video_file' : sj._video_file,
-            'timestamps' : sj._timestamps,
-            'output_dir' : sj.homedir,
-            'overwrite'  : sj.ignore_cache,
-        },
-        info_callback=sj.handle_screenshot_path,
-        error_callback=sj.handle_screenshot_error,
-        finished_callback=sj.handle_screenshots_finished,
-    )]
-    assert process_mock.return_value.start.call_args_list == [call()]
-    assert upthread_mock.call_args_list == [call(
-        homedir=tmp_path,
-        imghost=imghost_mock.imgbox,
-        force=False,
-        url_callback=sj.handle_upload_url,
-        error_callback=sj.handle_upload_error,
-        finished_callback=sj.handle_uploads_finished,
-    )]
-    assert upthread_mock.return_value.start.call_args_list == [call()]
-    sj.handle_screenshot_path('foo.1.png')
-    assert sj.screenshots_created == 1
-    assert upthread_mock.return_value.upload.call_args_list == [call('foo.1.png')]
-    sj.handle_upload_url('http://foo.1.png')
-    assert sj.output == ('http://foo.1.png',)
-    sj.handle_screenshot_path('foo.2.png')
-    assert sj.screenshots_created == 2
-    assert upthread_mock.return_value.upload.call_args_list == [call('foo.1.png'), call('foo.2.png')]
-    sj.handle_upload_url('http://foo.2.png')
-    assert sj.output == ('http://foo.1.png', 'http://foo.2.png')
-    sj.handle_screenshots_finished()
-    assert not sj.is_finished
-    assert upthread_mock.return_value.finish.call_args_list == [call()]
-    sj.handle_uploads_finished()
-    asyncio.get_event_loop().run_until_complete(sj.wait())
-    assert sj.is_finished
-    assert sj.output == ('http://foo.1.png', 'http://foo.2.png')
-    assert sj.exit_code == 0
-    assert screenshot_path_cb.call_args_list == [call('foo.1.png'), call('foo.2.png')]
-    assert screenshot_error_cb.call_args_list == []
-    assert screenshots_finished_cb.call_args_list == [call(('foo.1.png', 'foo.2.png'))]
-    assert upload_url_cb.call_args_list == [call('http://foo.1.png'), call('http://foo.2.png')]
-    assert upload_error_cb.call_args_list == []
-    assert uploads_finished_cb.call_args_list == [call(('http://foo.1.png', 'http://foo.2.png'))]
-
-@patch('upsies.utils.video.length')
-@patch('upsies.tools.imghost')
-@patch('upsies.jobs.screenshots._UploadThread', return_value=Mock(join=AsyncMock()))
-@patch('upsies.jobs._common.DaemonProcess', return_value=Mock(join=AsyncMock()))
-def test_ScreenshotsJob_handles_errors_screenshot_uploads(process_mock, upthread_mock, imghost_mock, video_length_mock, tmp_path):
-    video_length_mock.return_value = 240
-    sj = ScreenshotsJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        content_path='foo.mkv',
-        timestamps=(120,),
-        number=2,
-        upload_to='imgbox',
-    )
-    assert not sj.is_finished
-    assert sj.is_uploading
-    screenshot_path_cb = Mock()
-    sj.on_screenshot_path(screenshot_path_cb)
-    screenshot_error_cb = Mock()
-    sj.on_screenshot_error(screenshot_error_cb)
-    screenshots_finished_cb = Mock()
-    sj.on_screenshots_finished(screenshots_finished_cb)
-    assert screenshot_path_cb.call_args_list == []
-    assert screenshot_error_cb.call_args_list == []
-    assert screenshots_finished_cb.call_args_list == []
-    upload_url_cb = Mock()
-    sj.on_upload_url(upload_url_cb)
-    upload_error_cb = Mock()
-    sj.on_upload_error(upload_error_cb)
-    uploads_finished_cb = Mock()
-    sj.on_uploads_finished(uploads_finished_cb)
-    assert upload_url_cb.call_args_list == []
-    assert upload_error_cb.call_args_list == []
-    assert uploads_finished_cb.call_args_list == []
-    sj.start()
-    assert not sj.is_finished
-    assert process_mock.call_args_list == [call(
-        name=sj.name,
-        target=_screenshot_process,
-        kwargs={
-            'video_file' : sj._video_file,
-            'timestamps' : sj._timestamps,
-            'output_dir' : sj.homedir,
-            'overwrite'  : sj.ignore_cache,
-        },
-        info_callback=sj.handle_screenshot_path,
-        error_callback=sj.handle_screenshot_error,
-        finished_callback=sj.handle_screenshots_finished,
-    )]
-    assert process_mock.return_value.start.call_args_list == [call()]
-    assert upthread_mock.call_args_list == [call(
-        homedir=tmp_path,
-        imghost=imghost_mock.imgbox,
-        force=False,
-        url_callback=sj.handle_upload_url,
-        error_callback=sj.handle_upload_error,
-        finished_callback=sj.handle_uploads_finished,
-    )]
-    assert upthread_mock.return_value.start.call_args_list == [call()]
-    sj.handle_screenshot_path('foo.1.png')
-    assert sj.screenshots_created == 1
-    assert upthread_mock.return_value.upload.call_args_list == [call('foo.1.png')]
-    sj.handle_upload_url('http://foo.1.png')
-    assert sj.output == ('http://foo.1.png',)
-    sj.handle_screenshot_path('foo.2.png')
-    assert sj.screenshots_created == 2
-    assert upthread_mock.return_value.upload.call_args_list == [call('foo.1.png'), call('foo.2.png')]
-    sj.handle_upload_error('Network error')
-    assert sj.output == ('http://foo.1.png',)
-    sj.handle_screenshots_finished()
-    assert not sj.is_finished
-    assert upthread_mock.return_value.finish.call_args_list == [call()]
-    sj.handle_uploads_finished()
-    asyncio.get_event_loop().run_until_complete(sj.wait())
-    assert sj.is_finished
-    assert sj.output == ('http://foo.1.png',)
-    assert sj.exit_code == 1
-    assert screenshot_path_cb.call_args_list == [call('foo.1.png'), call('foo.2.png')]
-    assert screenshot_error_cb.call_args_list == []
-    assert screenshots_finished_cb.call_args_list == [call(('foo.1.png', 'foo.2.png'))]
-    assert upload_url_cb.call_args_list == [call('http://foo.1.png')]
-    assert upload_error_cb.call_args_list == [call('Network error')]
-    assert uploads_finished_cb.call_args_list == [call(('http://foo.1.png',))]
