@@ -102,10 +102,10 @@ def parse(args):
     )
     screenshots.add_argument(
         '--upload-to', '-u',
-        type=IMGHOST,
+        type=IMAGEHOST,
         help=('Upload screenshots to image hosting service.\n'
               'Supported services: ' + ', '.join(_get_names(imghosts, 'Uploader', 'name'))),
-        metavar='IMGHOST',
+        metavar='IMAGEHOST',
     )
 
     # Command: mediainfo
@@ -197,7 +197,7 @@ def CLIENT(string):
     else:
         raise ValueError(f'Unsupported client: {string}')
 
-def IMGHOST(string):
+def IMAGEHOST(string):
     if string in _get_names(imghosts, 'Uploader', 'name'):
         return string.casefold()
     else:
