@@ -113,6 +113,19 @@ class screenshots(SubcommandBase):
             )
 
 
+class upload_images(SubcommandBase):
+    @cache.property
+    def jobs(self):
+        return (
+            _jobs.imghost.ImageHostJob(
+                homedir=fs.tmpdir(),
+                ignore_cache=self.args.ignore_cache,
+                image_host=self.args.imagehost,
+                image_paths=self.args.path,
+            ),
+        )
+
+
 class mediainfo(SubcommandBase):
     @cache.property
     def jobs(self):

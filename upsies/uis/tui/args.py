@@ -165,6 +165,25 @@ def parse(args):
               'Supported trackers: ' + ', '.join(_get_names(trackers, 'SubmissionJob', 'trackername'))),
     )
 
+    # Command: upload-images
+    upload_images = subparsers.add_parser(
+        'upload-images', aliases=('ui',),
+        help='Upload image to image hosting service',
+        formatter_class=MyHelpFormatter,
+    )
+    upload_images.set_defaults(subcmd=subcmds.upload_images)
+    upload_images.add_argument(
+        'imagehost',
+        type=IMAGEHOST,
+        help=('Case-insensitive name of image hosting service.\n'
+              'Supported services: ' + ', '.join(_get_names(imghosts, 'Uploader', 'name'))),
+    )
+    upload_images.add_argument(
+        'path',
+        nargs='+',
+        help='Path to image file',
+    )
+
     if args is None:
         parsed = parser.parse_args()
     else:
