@@ -50,6 +50,7 @@ class JobBase(abc.ABC):
         self._errors = []
         self._output = []
         self._output_callbacks = []
+        self._error_callbacks = []
         self._finished_callbacks = []
         self._finished_event = asyncio.Event()
         self._kwargs = kwargs
@@ -201,9 +202,21 @@ class JobBase(abc.ABC):
         """
         if not self.is_finished:
             self._errors.append(error)
+            for cb in self._error_callbacks:
+                cb(error)
         else:
             if not if_not_finished:
                 raise RuntimeError('error() called on finished job')
+
+    def on_error(self, callback):
+        """
+        Call `callback` with error
+
+        :param callable callback: Callable that takes the argument given to
+            :func:`error`
+        """
+        assert callable(callback)
+        self._error_callbacks.append(callback)
 
     def exception(self, exception):
         """

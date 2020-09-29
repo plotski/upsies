@@ -206,6 +206,15 @@ def test_error_on_finished_job(job):
     job.error('bar', if_not_finished=True)
     assert job.errors == ('foo',)
 
+def test_on_error_callback(job):
+    assert job.errors == ()
+    cb = Mock()
+    job.on_error(cb)
+    job.error('Owie!')
+    assert cb.call_args_list == [call('Owie!')]
+    job.error((1, 2, 3))
+    assert cb.call_args_list == [call('Owie!'), call((1, 2, 3))]
+
 
 def test_info(job):
     assert job.info == ''
