@@ -4,7 +4,6 @@ import collections
 import functools
 import multiprocessing
 import threading
-import types
 
 from ._base import JobBase
 
