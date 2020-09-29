@@ -29,27 +29,34 @@ class Pipe:
     """
 
     def __init__(self, sender, receiver):
-        assert isinstance(sender, JobBase)
-        assert isinstance(receiver, JobBase)
+        if not isinstance(sender, JobBase):
+            raise TypeError(f'Not a JobBase instance: {sender!r}')
+        if not isinstance(receiver, JobBase):
+            raise TypeError(f'Not a JobBase instance: {receiver!r}')
+
         self._sender = sender
         self._receiver = receiver
         self._sender_output_cache = collections.deque()
         self._sender.on_output(self._handle_sender_output)
         self._sender.on_finished(self._handle_sender_finished)
+        self._is_closed = False
 
     def _handle_sender_output(self, output):
         self._sender_output_cache.append(output)
-        self._flush_sender_output_cache()
+        self._flush()
 
     def _handle_sender_finished(self, sender):
         self._sender_output_cache.append(None)
-        self._flush_sender_output_cache()
+        self._flush()
 
-    def _flush_sender_output_cache(self):
+    def _flush(self):
         while self._sender_output_cache:
             output = self._sender_output_cache.popleft()
             if output is None:
+                self._is_closed = True
                 self._receiver.pipe_closed()
+            elif self._is_closed:
+                raise RuntimeError('Output received on closed pipe')
             else:
                 self._receiver.pipe_input(output)
 
