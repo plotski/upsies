@@ -1,4 +1,5 @@
 import functools
+import os
 
 from ... import errors
 from ... import jobs as _jobs
@@ -55,20 +56,41 @@ class SubcommandBase:
 
 class torrent(SubcommandBase):
     @cache.property
-    def jobs(self):
+    def _create_job(self):
         tracker = _get_tracker_section(self.config, self.args.tracker)
-        return (
-            _jobs.torrent.CreateTorrentJob(
+        return _jobs.torrent.CreateTorrentJob(
+            homedir=fs.projectdir(self.args.path),
+            ignore_cache=self.args.ignore_cache,
+            content_path=self.args.path,
+            announce_url=tracker['announce'],
+            trackername=self.args.tracker,
+            source=tracker['source'],
+            exclude_regexs=tracker['exclude'],
+        )
+
+    @cache.property
+    def _download_job(self):
+        client = _get_client(self.config, self.args.add_to)
+        if client:
+            download_job = _jobs.torrent.AddTorrentJob(
                 homedir=fs.projectdir(self.args.path),
                 ignore_cache=self.args.ignore_cache,
-                content_path=self.args.path,
-                announce_url=tracker['announce'],
-                trackername=self.args.tracker,
-                source=tracker['source'],
-                exclude_regexs=tracker['exclude'],
-                add_to=_get_client(self.config, self.args.add_to),
-                copy_to=self.args.copy_to,
-            ),
+                client=client,
+                download_path=os.path.dirname(self.args.path),
+            )
+            _jobs.Pipe(
+                sender=self._create_job,
+                receiver=download_job,
+            )
+            return download_job
+
+    # TODO: Add --copy-to job
+
+    @cache.property
+    def jobs(self):
+        return tuple(
+            job for job in (self._create_job, self._download_job)
+            if job is not None
         )
 
 

@@ -1,9 +1,9 @@
 import asyncio
 import os
-import shutil
 
 from .. import errors
-from ..tools import client, torrent
+from ..tools import torrent
+from ..tools.client import ClientApiBase
 from ..utils import fs
 from . import _base, _common
 
@@ -16,8 +16,7 @@ class CreateTorrentJob(_base.JobBase):
     label = 'Torrent'
 
     def initialize(self, *, content_path, announce_url, trackername,
-                   exclude_regexs=(), source=None,
-                   add_to=None, copy_to=None):
+                   exclude_regexs=(), source=None):
         self._content_path = content_path
         self._announce_url = announce_url
         self._exclude_regexs = exclude_regexs
@@ -26,12 +25,7 @@ class CreateTorrentJob(_base.JobBase):
             self.homedir,
             f'{fs.basename(content_path)}.{trackername.lower()}.torrent',
         )
-        if add_to is not None:
-            assert isinstance(add_to, client.ClientApiBase)
-        self._client = add_to
-        self._destination_path = str(copy_to) if copy_to else None
         self._progress_update_callbacks = []
-        self._error_callbacks = []
         self._file_tree = ''
         self._torrent_process = _common.DaemonProcess(
             name=self.name,
@@ -46,10 +40,9 @@ class CreateTorrentJob(_base.JobBase):
             },
             init_callback=self.handle_file_tree,
             info_callback=self.handle_progress_update,
-            error_callback=self.handle_error,
+            error_callback=self.error,
             finished_callback=self.handle_torrent_created,
         )
-        self._handle_torrent_task = None
 
     def execute(self):
         self._torrent_process.start()
@@ -60,8 +53,6 @@ class CreateTorrentJob(_base.JobBase):
 
     async def wait(self):
         await self._torrent_process.join()
-        if self._handle_torrent_task:
-            await self._handle_torrent_task
         await super().wait()
 
     def handle_file_tree(self, file_tree):
@@ -78,86 +69,11 @@ class CreateTorrentJob(_base.JobBase):
         for cb in self._progress_update_callbacks:
             cb(percent_done)
 
-    def on_error(self, callback):
-        self._error_callbacks.append(callback)
-
-    def handle_error(self, error):
-        self.error(error, if_not_finished=True)
-        for cb in self._error_callbacks:
-            cb(error)
-
     def handle_torrent_created(self, torrent_path=None):
         _log.debug('Torrent created: %r', torrent_path)
-        if torrent_path is None:
-            self.finish()
-        else:
-            tasks = []
-            if self.is_adding_torrent:
-                tasks.append(asyncio.ensure_future(
-                    self._add_torrent(
-                        torrent_path=torrent_path,
-                        download_path=os.path.dirname(self._content_path),
-                        client=self._client,
-                    )
-                ))
-            if self.is_copying_torrent:
-                tasks.append(asyncio.ensure_future(
-                    self._copy_torrent(
-                        torrent_path=torrent_path,
-                        destination_path=self._destination_path,
-                    )
-                ))
-
-            if not tasks:
-                self.send(torrent_path, if_not_finished=True)
-                self.finish()
-            else:
-                self._handle_torrent_task = asyncio.ensure_future(
-                    asyncio.gather(*tasks)
-                )
-                self._handle_torrent_task.add_done_callback(lambda fut: self.finish())
-
-    @property
-    def is_adding_torrent(self):
-        """Whether the created torrent will be added to a BitTorrent client"""
-        return bool(self._client)
-
-    async def _add_torrent(self, torrent_path, download_path, client):
-        _log.debug('Adding torrent to %s', client.name)
-        try:
-            await client.add_torrent(
-                torrent_path=torrent_path,
-                download_path=download_path,
-            )
-        except errors.RequestError as e:
-            self.handle_error(f'Failed to add {fs.basename(self._torrent_path)} '
-                              f'to {self._client.name}: {e}')
-        else:
-            _log.debug('Added torrent to %s', client.name)
-        finally:
+        if torrent_path:
             self.send(torrent_path, if_not_finished=True)
-
-    @property
-    def is_copying_torrent(self):
-        """Whether the created torrent will be copied somewhere"""
-        return bool(self._destination_path)
-
-    async def _copy_torrent(self, torrent_path, destination_path):
-        _log.debug('Copying %s to %s', torrent_path, destination_path)
-        try:
-            new_path = shutil.copy2(torrent_path, destination_path)
-        except OSError as e:
-            if e.strerror:
-                msg = e.strerror
-            else:
-                msg = str(e)
-            self.handle_error(f'Failed to copy {fs.basename(torrent_path)} '
-                              f'to {destination_path}: {msg}')
-            # Default to original torrent path
-            self.send(torrent_path, if_not_finished=True)
-        else:
-            _log.debug('New torrent path: %s', new_path)
-            self.send(new_path, if_not_finished=True)
+        self.finish()
 
 
 def _torrent_process(output_queue, input_queue, *args, **kwargs):
