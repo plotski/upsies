@@ -93,16 +93,16 @@ class screenshots(SubcommandBase):
                 image_host=image_host,
                 images_total=self._screenshots_job.screenshots_total,
             )
-            # Connect ScreenshotsJob's output to ImageHostJob.upload
+            # Connect ScreenshotsJob's output to ImageHostJob input
             _jobs.Pipe(
                 sender=self._screenshots_job,
-                receiver=imghost_job.upload,
+                receiver=imghost_job,
             )
             return imghost_job
 
     @cache.property
     def jobs(self):
-        if self.args.upload_to:
+        if self._imghost_job:
             return (
                 self._screenshots_job,
                 self._imghost_job,

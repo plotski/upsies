@@ -44,13 +44,12 @@ class ImageHostJob(_base.JobBase):
     def execute(self):
         self._upload_thread.start()
 
-    def upload(self, filepath):
+    def pipe_input(self, filepath):
         self._upload_thread.upload(filepath)
 
-    def finish(self):
-        # Do not actually finish by calling super().finish() because the upload
-        # thread is still uploading and we are not finished until it is done and
-        # has sent us the final URL.
+    def pipe_closed(self):
+        # Tell the upload thread to terminate after uploading all currently
+        # queued images.
         self._upload_thread.finish()
 
     async def wait(self):

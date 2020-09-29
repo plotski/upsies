@@ -16,7 +16,8 @@ class Pipe:
     """
     Connect job's output to another job's method
 
-    When `sender` is finished, :func:`finish` is called on `receiver`'s object.
+    When `sender` is finished, :func:`pipe_closed` is called on `receiver`'s
+    object.
 
     .. note:: Instances do not have to be assigned to variables because they add
               themselves as callbacks to `sender`.
@@ -29,12 +30,9 @@ class Pipe:
 
     def __init__(self, sender, receiver):
         assert isinstance(sender, JobBase)
-        assert isinstance(receiver, types.MethodType)
-        assert isinstance(receiver.__self__, JobBase)
-        _log.debug('Piping output from %r to %r', type(sender).__name__, receiver.__qualname__)
+        assert isinstance(receiver, JobBase)
         self._sender = sender
-        self._receiver = receiver.__self__
-        self._receiver_method = receiver
+        self._receiver = receiver
         self._sender_output_cache = collections.deque()
         self._sender.on_output(self._handle_sender_output)
         self._sender.on_finished(self._handle_sender_finished)
@@ -51,9 +49,9 @@ class Pipe:
         while self._sender_output_cache:
             output = self._sender_output_cache.popleft()
             if output is None:
-                self._receiver.finish()
+                self._receiver.pipe_closed()
             else:
-                self._receiver_method(output)
+                self._receiver.pipe_input(output)
 
 
 class DaemonThread(abc.ABC):

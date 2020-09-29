@@ -173,6 +173,20 @@ class JobBase(abc.ABC):
         assert callable(callback)
         self._output_callbacks.append(callback)
 
+    def pipe_input(self):
+        """
+        Called by :class:`Pipe` on the receiving job for each output from sending
+        job
+        """
+        raise NotImplementedError(f'pipe_input() is not implemented in {type(self).__name__}')
+
+    def pipe_closed(self):
+        """
+        Called by :class:`Pipe` on the receiving job when the sending job is
+        finished
+        """
+        raise NotImplementedError(f'pipe_closed() is not implemented in {type(self).__name__}')
+
     @property
     def errors(self):
         """Sequence of reported errors (strings or exceptions)"""
