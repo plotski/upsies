@@ -74,6 +74,21 @@ def basename(path):
     return os.path.basename(str(path).rstrip(os.sep))
 
 
+def dirname(path):
+    """
+    Remove last segment in `path`
+
+    Unlike :func:`os.path.dirname`, this `rstrip`s any directory separators
+    first.
+
+    >>> os.path.dirname('a/b/c/')
+    'a/b/c'
+    >>> os.path.dirname('a/b/c/'.rstrip('/'))
+    'a/b'
+    """
+    return os.path.dirname(str(path).rstrip(os.sep))
+
+
 def file_extension(path):
     """
     Extract file extension

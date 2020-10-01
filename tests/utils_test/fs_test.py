@@ -133,6 +133,15 @@ def test_basename():
     assert fs.basename(pathlib.Path('a/b/c//d/')) == 'd'
 
 
+def test_dirname():
+    import pathlib
+    assert fs.dirname('a/b/c') == 'a/b'
+    assert fs.dirname('a/b/c/') == 'a/b'
+    assert fs.dirname('a/b/c///') == 'a/b'
+    assert fs.dirname('a/b/c//d/') == 'a/b/c'
+    assert fs.dirname(pathlib.Path('a/b/c//d/')) == 'a/b/c'
+
+
 def test_file_extension():
     assert fs.file_extension('Something.x264-GRP.mkv') == 'mkv'
     assert fs.file_extension('Something.x264-GRP.mp4') == 'mp4'
