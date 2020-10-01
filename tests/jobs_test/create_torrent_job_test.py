@@ -7,7 +7,6 @@ import pytest
 from upsies import errors
 from upsies.jobs._common import DaemonProcess
 from upsies.jobs.torrent import CreateTorrentJob, _torrent_process
-from upsies.tools import btclient
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -25,16 +24,6 @@ class AsyncMock(Mock):
 class Callable:
     def __eq__(self, other):
         return callable(other)
-
-def make_MockClient():
-    class MockClient(btclient.ClientApiBase):
-        name = 'mocksy'
-        add_torrent = AsyncMock()
-
-        def __repr__(self):
-            return '<MockClient instance>'
-
-    return MockClient()
 
 
 @patch('upsies.tools.torrent.create')
