@@ -67,7 +67,7 @@ class ClientApi(_base.ClientApiBase):
             text = await request.text()
             raise errors.TorrentError(f'Malformed JSON response: {text}')
 
-    async def add_torrent(self, torrent_path, download_path):
+    async def add_torrent(self, torrent_path, download_path=None):
         torrent_data = str(
             base64.b64encode(self.read_torrent_file(torrent_path)),
             encoding='ascii',
@@ -76,9 +76,11 @@ class ClientApi(_base.ClientApiBase):
             'method' : 'torrent-add',
             'arguments' : {
                 'metainfo': torrent_data,
-                'download-dir': str(os.path.realpath(download_path)),
             },
         }
+        if download_path:
+            request['arguments']['download-dir'] = str(download_path)
+
         response = await self._request(json.dumps(request))
         _log.debug('Response: %r', response)
         arguments = response.get('arguments', {})

@@ -11,12 +11,13 @@ class ClientApiBase(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def add_torrent(self, torrent_path, download_path):
+    def add_torrent(self, torrent_path, download_path=None):
         """
         Add torrent to client
 
         :param str torrent_path: Path to torrent file
-        :param str download_path: Path to the file(s) of the torrent
+        :param str download_path: Path to the directory where the torrent's
+            content is or `None` to use the client's default
 
         :raise TorrentError: if adding `torrent_path` fails
 

@@ -108,7 +108,7 @@ async def test_response_is_not_json():
 
 
 @pytest.mark.asyncio
-async def test_add_torrent_adds_torrent():
+async def test_add_torrent_with_download_path_argument():
     response = {
         'arguments': {'torrent-added': {'id': 1234}},
         'result': 'success',
@@ -126,6 +126,28 @@ async def test_add_torrent_adds_torrent():
                 'arguments' : {
                     'metainfo': str(base64.b64encode(b'torrent metainfo'), encoding='ascii'),
                     'download-dir': '/path/to/file',
+                },
+            })
+        )]
+
+@pytest.mark.asyncio
+async def test_add_torrent_without_download_path_argument():
+    response = {
+        'arguments': {'torrent-added': {'id': 1234}},
+        'result': 'success',
+    }
+    api = transmission.ClientApi()
+    request_mock = AsyncMock(return_value=response)
+    read_torrent_file_mock = Mock(return_value=b'torrent metainfo')
+    with patch.multiple(api, _request=request_mock, read_torrent_file=read_torrent_file_mock):
+        torrent_id = await api.add_torrent('file.torrent')
+        assert torrent_id == 1234
+        assert read_torrent_file_mock.call_args_list == [call('file.torrent')]
+        assert request_mock.call_args_list == [call(
+            json.dumps({
+                'method' : 'torrent-add',
+                'arguments' : {
+                    'metainfo': str(base64.b64encode(b'torrent metainfo'), encoding='ascii'),
                 },
             })
         )]
