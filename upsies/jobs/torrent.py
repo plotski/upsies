@@ -92,3 +92,96 @@ def _torrent_process(output_queue, input_queue, *args, **kwargs):
         output_queue.put((_common.DaemonProcess.ERROR, str(e)))
     else:
         output_queue.put((_common.DaemonProcess.RESULT, torrent_path))
+
+
+class AddTorrentJob(_base.JobBase):
+    name = 'add-torrent'
+    label = 'Add Torrent'
+
+    @property
+    def cache_file(self):
+        return None
+
+    def initialize(self, *, client, download_path=None, torrents=()):
+        assert isinstance(client, ClientApiBase)
+        self._client = client
+        self._download_path = download_path
+        self._add_task = None
+        self._adding_callbacks = []
+        self._added_callbacks = []
+        self._torrent_path_queue = asyncio.Queue()
+        if torrents:
+            for t in torrents:
+                self.add(t)
+            self.pipe_closed()
+        self._add_torrents_task = asyncio.ensure_future(self._add_torrents())
+
+    def execute(self):
+        pass
+
+    def finish(self):
+        self._torrent_path_queue.put_nowait((None, None))
+
+    async def wait(self):
+        await self._add_torrents_task
+        super().finish()
+        await super().wait()
+
+    def pipe_input(self, torrent_path):
+        self.add(torrent_path)
+
+    def pipe_closed(self):
+        self._torrent_path_queue.put_nowait((None, None))
+
+    def on_adding(self, callback):
+        assert callable(callback)
+        self._adding_callbacks.append(callback)
+
+    def on_added(self, callback):
+        assert callable(callback)
+        self._added_callbacks.append(callback)
+
+    def add(self, torrent_path, download_path=None):
+        self._torrent_path_queue.put_nowait((
+            torrent_path,
+            download_path or self._download_path,
+        ))
+
+    MAX_TORRENT_SIZE = 10 * 2**20
+
+    async def add_async(self, torrent_path, download_path=None):
+        _log.debug('Adding %s to %s', torrent_path, self._client.name)
+        for cb in self._adding_callbacks:
+            cb(torrent_path)
+
+        if os.path.exists(torrent_path) and os.path.getsize(torrent_path) > self.MAX_TORRENT_SIZE:
+            self.error(f'File is too large: {torrent_path}')
+            return
+
+        try:
+            torrent_id = await self._client.add_torrent(
+                torrent_path=torrent_path,
+                download_path=download_path or self._download_path,
+            )
+        except errors.TorrentError as e:
+            self.error(f'Failed to add {fs.basename(torrent_path)} '
+                       f'to {self._client.name}: {e}')
+        else:
+            self.send(torrent_id)
+            for cb in self._added_callbacks:
+                cb(torrent_id)
+
+    async def _add_torrents(self):
+        while True:
+            try:
+                torrent_path, download_path = await asyncio.wait_for(
+                    self._torrent_path_queue.get(),
+                    timeout=0.1,
+                )
+            except asyncio.TimeoutError:
+                pass
+            else:
+                if torrent_path is None:
+                    break
+                else:
+                    await self.add_async(torrent_path, download_path)

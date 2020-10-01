@@ -1,6 +1,6 @@
 from prompt_toolkit.application import get_app
 
-from ....utils import cache
+from ....utils import cache, fs
 from .. import widgets
 from . import _base
 
@@ -24,3 +24,25 @@ class CreateTorrentJobWidget(_base.JobWidgetBase):
     @cache.property
     def runtime_widget(self):
         return self._progress
+
+
+class AddTorrentJobWidget(_base.JobWidgetBase):
+    def setup(self):
+        self._status = widgets.TextField()
+        self.job.on_adding(self.handle_adding_torrent)
+        self.job.on_finished(self.handle_finished)
+
+    def activate(self):
+        pass
+
+    def handle_adding_torrent(self, torrent_path):
+        self._status.text = f'Adding {fs.basename(torrent_path)}...'
+        get_app().invalidate()
+
+    def handle_finished(self, percent_done):
+        self._status.text = 'Done.'
+        get_app().invalidate()
+
+    @cache.property
+    def runtime_widget(self):
+        return self._status
