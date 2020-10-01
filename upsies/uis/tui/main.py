@@ -35,7 +35,7 @@ def _main(args=None):
         assert isinstance(cmd, SubcommandBase)
         ui = UI(jobs=cmd.jobs)
         exit_code = ui.run()
-    except (errors.ConfigError, errors.DependencyError) as e:
+    except (errors.ConfigError, errors.DependencyError, errors.NoContentError) as e:
         print(e, file=sys.stderr)
         exit_code = 1
     except Exception as e:
