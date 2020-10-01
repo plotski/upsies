@@ -1,6 +1,5 @@
 import base64
 import json
-import os
 
 from ... import errors
 from ...utils import LazyModule
@@ -56,7 +55,6 @@ class ClientApi(_base.ClientApiBase):
         if request.status == CSRF_ERROR_CODE:
             # Send request again with CSRF header
             self._headers[CSRF_HEADER] = request.headers[CSRF_HEADER]
-            _log.debug('Setting CSRF header: %s = %s', CSRF_HEADER, self._headers[CSRF_HEADER])
             return await self._request(data)
         elif request.status == AUTH_ERROR_CODE:
             raise errors.TorrentError('Authentication failed')
@@ -82,13 +80,10 @@ class ClientApi(_base.ClientApiBase):
             request['arguments']['download-dir'] = str(download_path)
 
         response = await self._request(json.dumps(request))
-        _log.debug('Response: %r', response)
         arguments = response.get('arguments', {})
         if 'torrent-added' in arguments:
-            _log.debug('Returning %r', arguments['torrent-added']['id'])
             return arguments['torrent-added']['id']
         elif 'torrent-duplicate' in arguments:
-            _log.debug('Returning: %r', arguments['torrent-duplicate']['id'])
             return arguments['torrent-duplicate']['id']
         elif 'result' in response:
             raise errors.TorrentError(str(response['result']).capitalize())
