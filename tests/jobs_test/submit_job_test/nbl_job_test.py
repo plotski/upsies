@@ -1,4 +1,5 @@
 import sys
+import types
 from unittest.mock import Mock, call, patch
 
 import aiohttp
@@ -324,10 +325,11 @@ class MockServer(aiohttp.test_utils.TestServer):
 @needs_python38
 @patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.submit.nbl.mediainfo')
+@patch('upsies.jobs.submit.nbl.release_name')
 @patch('upsies.jobs.search.SearchDbJob')
 @patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
-async def test_upload_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, mediainfo_mock, tmp_path):
+async def test_upload_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, release_name_mock, mediainfo_mock, tmp_path):
     tvmaze_id = '12345'
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
@@ -350,6 +352,7 @@ async def test_upload_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, mediainf
         job._auth_key = 'mocked auth key'
         CreateTorrentJob_mock.return_value.output = (torrent_file,)
         SearchDbJob_mock.return_value.output = (tvmaze_id,)
+        release_name_mock.ReleaseName.return_value = types.SimpleNamespace(type='season')
         mediainfo_mock.as_string.return_value = 'mocked mediainfo'
 
         async with aiohttp.ClientSession(headers={'User-Agent': 'test client'}) as client:
@@ -381,10 +384,11 @@ async def test_upload_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, mediainf
 @needs_python38
 @patch('upsies.utils.fs.projectdir', Mock())
 @patch('upsies.jobs.submit.nbl.mediainfo')
+@patch('upsies.jobs.submit.nbl.release_name')
 @patch('upsies.jobs.search.SearchDbJob')
 @patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
-async def test_upload_fails(CreateTorrentJob_mock, SearchDbJob_mock, mediainfo_mock, tmp_path):
+async def test_upload_fails(CreateTorrentJob_mock, SearchDbJob_mock, release_name_mock, mediainfo_mock, tmp_path):
     tvmaze_id = '12345'
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
@@ -410,8 +414,28 @@ async def test_upload_fails(CreateTorrentJob_mock, SearchDbJob_mock, mediainfo_m
         job._auth_key = 'mocked auth key'
         CreateTorrentJob_mock.return_value.output = (torrent_file,)
         SearchDbJob_mock.return_value.output = (tvmaze_id,)
+        release_name_mock.ReleaseName.return_value = types.SimpleNamespace(type='season')
         mediainfo_mock.as_string.return_value = 'mocked mediainfo'
 
         with pytest.raises(errors.RequestError, match=r'^Upload failed: Something went wrong$'):
             async with aiohttp.ClientSession() as client:
                 await job.upload(client)
+
+
+@pytest.mark.parametrize(
+    argnames=('type', 'exp_category'),
+    argvalues=(
+        ('episode', '1'),
+        ('season', '3'),
+    ),
+)
+def test_valid_request_category(type, exp_category, tmp_path):
+    job = make_job(tmp_path)
+    job.release_name.type = type
+    assert job._request_category() == exp_category
+
+def test_invalid_request_category(tmp_path):
+    job = make_job(tmp_path)
+    job.release_name.type = 'movie'
+    with pytest.raises(errors.RequestError, match=r'^Unsupported type: movie$'):
+        job._request_category()

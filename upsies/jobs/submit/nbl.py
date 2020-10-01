@@ -2,7 +2,7 @@ import re
 import urllib
 
 from ... import errors
-from ...tools import mediainfo
+from ...tools import mediainfo, release_name
 from ...utils import LazyModule, cache, fs
 from .. import search, torrent
 from . import _base
@@ -55,9 +55,13 @@ class SubmissionJob(_base.SubmissionJobBase):
         if self._search_job.output:
             return self._search_job.output[0]
 
-    @property
+    @cache.property
     def mediainfo(self):
         return mediainfo.as_string(self.content_path)
+
+    @cache.property
+    def release_name(self):
+        return release_name.ReleaseName(self.content_path)
 
     _url_path = {
         'login': '/login.php',
@@ -157,7 +161,7 @@ class SubmissionJob(_base.SubmissionJobBase):
         formdata.add_field('mediaclean', f'[mediainfo]{self.mediainfo}[/mediainfo]')
         formdata.add_field('submit', 'true')
         formdata.add_field('MAX_FILE_SIZE', '1048576')
-        formdata.add_field('category', '3')
+        formdata.add_field('category', self._request_category())
         formdata.add_field('genre_tags', '')
         formdata.add_field('tags', '')
         formdata.add_field('image', '')
@@ -188,3 +192,11 @@ class SubmissionJob(_base.SubmissionJobBase):
             else:
                 self.dump_html('upload.html', html.prettify())
                 raise RuntimeError('Failed to find error message')
+
+    def _request_category(self):
+        if self.release_name.type == 'episode':
+            return '1'
+        elif self.release_name.type == 'season':
+            return '3'
+        else:
+            raise errors.RequestError(f'Unsupported type: {self.release_name.type}')
