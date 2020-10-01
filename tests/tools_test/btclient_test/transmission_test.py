@@ -8,7 +8,7 @@ import aiohttp.test_utils
 import pytest
 
 from upsies import errors
-from upsies.tools.client import transmission
+from upsies.tools.btclient import transmission
 
 
 def test_name(tmp_path):

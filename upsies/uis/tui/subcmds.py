@@ -3,7 +3,7 @@ import os
 
 from ... import errors
 from ... import jobs as _jobs
-from ...tools import client
+from ...tools import btclient
 from ...utils import cache, fs
 
 import logging  # isort:skip
@@ -13,7 +13,7 @@ _log = logging.getLogger(__name__)
 def _get_client(config, clientname):
     if clientname:
         try:
-            client_module = getattr(client, clientname)
+            client_module = getattr(btclient, clientname)
         except AttributeError:
             raise errors.ConfigError(f'No such client: {clientname}')
         else:

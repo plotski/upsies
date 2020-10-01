@@ -3,7 +3,7 @@ import os
 
 from .. import errors
 from ..tools import torrent
-from ..tools.client import ClientApiBase
+from ..tools.btclient import ClientApiBase
 from ..utils import fs
 from . import _base, _common
 

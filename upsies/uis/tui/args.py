@@ -4,7 +4,7 @@ import sys
 
 from ... import __project_name__, __version__, defaults, utils
 from ...jobs import submit as trackers
-from ...tools import client as clients
+from ...tools import btclient as btclients
 from ...tools import imghost as imghosts
 from . import subcmds
 
@@ -141,7 +141,7 @@ def parse(args):
         '--add-to', '-a',
         type=CLIENT,
         help=('Add the created torrent to a running BitTorrent client instance.\n'
-              'Supported clients: ' + ', '.join(_get_names(clients, 'ClientApi', 'name'))),
+              'Supported clients: ' + ', '.join(_get_names(btclients, 'ClientApi', 'name'))),
         metavar='CLIENT',
     )
     torrent.add_argument(
@@ -211,7 +211,7 @@ def TRACKER(string):
         raise ValueError(f'Unsupported tracker: {string}')
 
 def CLIENT(string):
-    if string in _get_names(clients, 'ClientApi', 'name'):
+    if string in _get_names(btclients, 'ClientApi', 'name'):
         return string.casefold()
     else:
         raise ValueError(f'Unsupported client: {string}')

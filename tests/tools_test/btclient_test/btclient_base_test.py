@@ -1,7 +1,7 @@
 import pytest
 
 from upsies import errors
-from upsies.tools.client._base import ClientApiBase
+from upsies.tools.btclient._base import ClientApiBase
 
 abstract_methods = (
     'name', 'add_torrent'
