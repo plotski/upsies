@@ -19,6 +19,8 @@ class ClientApiBase(abc.ABC):
         :param str download_path: Path to the file(s) of the torrent
 
         :raise TorrentError: if adding `torrent_path` fails
+
+        :return: ID of the added torrent in the client or `None`
         """
         pass
 

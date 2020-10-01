@@ -34,8 +34,6 @@ class ClientApi(_base.ClientApiBase):
         self._headers = {'content-type': 'application/json'}
 
     async def _request(self, data):
-        _log.debug('Sending request: %r', data)
-
         if self._username or self._password:
             auth = aiohttp.BasicAuth(self._username,
                                      self._password,
@@ -83,8 +81,14 @@ class ClientApi(_base.ClientApiBase):
         }
         response = await self._request(json.dumps(request))
         _log.debug('Response: %r', response)
-        if not any(key in response.get('arguments', {}) for key in ('torrent-added', 'torrent-duplicate')):
-            if 'result' in response:
-                raise errors.TorrentError(str(response["result"]).capitalize())
-            else:
-                raise errors.TorrentError('Adding failed for unknown reason')
+        arguments = response.get('arguments', {})
+        if 'torrent-added' in arguments:
+            _log.debug('Returning %r', arguments['torrent-added']['id'])
+            return arguments['torrent-added']['id']
+        elif 'torrent-duplicate' in arguments:
+            _log.debug('Returning: %r', arguments['torrent-duplicate']['id'])
+            return arguments['torrent-duplicate']['id']
+        elif 'result' in response:
+            raise errors.TorrentError(str(response['result']).capitalize())
+        else:
+            raise errors.TorrentError('Adding failed for unknown reason')

@@ -110,14 +110,15 @@ async def test_response_is_not_json():
 @pytest.mark.asyncio
 async def test_add_torrent_adds_torrent():
     response = {
-        'arguments': {'torrent-added': '<info>'},
+        'arguments': {'torrent-added': {'id': 1234}},
         'result': 'success',
     }
     api = transmission.ClientApi()
     request_mock = AsyncMock(return_value=response)
     read_torrent_file_mock = Mock(return_value=b'torrent metainfo')
     with patch.multiple(api, _request=request_mock, read_torrent_file=read_torrent_file_mock):
-        assert (await api.add_torrent('file.torrent', '/path/to/file')) is None
+        torrent_id = await api.add_torrent('file.torrent', '/path/to/file')
+        assert torrent_id == 1234
         assert read_torrent_file_mock.call_args_list == [call('file.torrent')]
         assert request_mock.call_args_list == [call(
             json.dumps({
@@ -132,14 +133,15 @@ async def test_add_torrent_adds_torrent():
 @pytest.mark.asyncio
 async def test_add_torrent_ignores_existing_torrent():
     response = {
-        'arguments': {'torrent-duplicate': '<info>'},
+        'arguments': {'torrent-added': {'id': 'abcd'}},
         'result': 'success',
     }
     api = transmission.ClientApi()
     request_mock = AsyncMock(return_value=response)
     read_torrent_file_mock = Mock(return_value=b'torrent metainfo')
     with patch.multiple(api, _request=request_mock, read_torrent_file=read_torrent_file_mock):
-        assert await api.add_torrent('file.torrent', '/path/to/file') is None
+        torrent_id = await api.add_torrent('file.torrent', '/path/to/file')
+        assert torrent_id == 'abcd'
         assert read_torrent_file_mock.call_args_list == [call('file.torrent')]
         assert request_mock.call_args_list == [call(
             json.dumps({
