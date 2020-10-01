@@ -1,5 +1,4 @@
 import functools
-import os
 
 from ... import errors
 from ... import jobs as _jobs
@@ -10,7 +9,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-def _get_client(config, clientname):
+def _get_btclient(config, clientname):
     if clientname:
         try:
             client_module = getattr(btclient, clientname)
@@ -54,7 +53,22 @@ class SubcommandBase:
         return self._config
 
 
-class torrent(SubcommandBase):
+class add_torrent(SubcommandBase):
+    @cache.property
+    def jobs(self):
+        client = _get_btclient(self.config, self.args.client)
+        return (
+            _jobs.torrent.AddTorrentJob(
+                homedir=fs.tmpdir(),
+                ignore_cache=self.args.ignore_cache,
+                client=client,
+                download_path=self.args.download_path,
+                torrents=self.args.torrent,
+            ),
+        )
+
+
+class create_torrent(SubcommandBase):
     @cache.property
     def _create_job(self):
         tracker = _get_tracker_section(self.config, self.args.tracker)
@@ -69,27 +83,27 @@ class torrent(SubcommandBase):
         )
 
     @cache.property
-    def _download_job(self):
-        client = _get_client(self.config, self.args.add_to)
+    def _add_job(self):
+        client = _get_btclient(self.config, self.args.add_to)
         if client:
-            download_job = _jobs.torrent.AddTorrentJob(
+            add_job = _jobs.torrent.AddTorrentJob(
                 homedir=fs.projectdir(self.args.path),
                 ignore_cache=self.args.ignore_cache,
                 client=client,
-                download_path=os.path.dirname(self.args.path),
+                download_path=fs.dirname(self.args.path),
             )
             _jobs.Pipe(
                 sender=self._create_job,
-                receiver=download_job,
+                receiver=add_job,
             )
-            return download_job
+            return add_job
 
     # TODO: Add --copy-to job
 
     @cache.property
     def jobs(self):
         return tuple(
-            job for job in (self._create_job, self._download_job)
+            job for job in (self._create_job, self._add_job)
             if job is not None
         )
 

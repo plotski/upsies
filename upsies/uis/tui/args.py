@@ -121,32 +121,55 @@ def parse(args):
     mediainfo.set_defaults(subcmd=subcmds.mediainfo)
     mediainfo.add_argument('path', help='Path to release content')
 
-    # Command: torrent
-    torrent = subparsers.add_parser(
-        'torrent', aliases=('tor',),
+    # Command: create-torrent
+    create_torrent = subparsers.add_parser(
+        'create-torrent', aliases=('ct',),
         help='Create torrent file',
-        description=('Create torrent for a specific tracker with all the appropriate '
-                     'requirements like a "source" field.'),
+        description='Create torrent for a specific tracker.',
         formatter_class=MyHelpFormatter,
     )
-    torrent.set_defaults(subcmd=subcmds.torrent)
-    torrent.add_argument('path', help='Path to release content')
-    torrent.add_argument(
+    create_torrent.set_defaults(subcmd=subcmds.create_torrent)
+    create_torrent.add_argument(
         'tracker',
         type=TRACKER,
         help=('Case-insensitive tracker name.\n'
               'Supported trackers: ' + ', '.join(_get_names(trackers, 'SubmissionJob', 'trackername'))),
     )
-    torrent.add_argument(
+    create_torrent.add_argument('path', help='Path to release content')
+    create_torrent.add_argument(
         '--add-to', '-a',
         type=CLIENT,
         help=('Add the created torrent to a running BitTorrent client instance.\n'
               'Supported clients: ' + ', '.join(_get_names(btclients, 'ClientApi', 'name'))),
         metavar='CLIENT',
     )
-    torrent.add_argument(
+    create_torrent.add_argument(
         '--copy-to', '-c',
         help='Copy the created torrent to directory PATH',
+        metavar='PATH',
+    )
+
+    # Command: add-torrent
+    add_torrent = subparsers.add_parser(
+        'add-torrent', aliases=('at',),
+        help='Send torrent file to BitTorrent Client',
+        formatter_class=MyHelpFormatter,
+    )
+    add_torrent.set_defaults(subcmd=subcmds.add_torrent)
+    add_torrent.add_argument(
+        'client',
+        type=CLIENT,
+        help=('Case-insensitive client name.\n'
+              'Supported clients: ' + ', '.join(_get_names(btclients, 'ClientApi', 'name'))),
+    )
+    add_torrent.add_argument(
+        'torrent',
+        nargs='+',
+        help='Path to torrent file',
+    )
+    add_torrent.add_argument(
+        '--download-path', '-p',
+        help="Parent directory of the torrent's content",
         metavar='PATH',
     )
 
@@ -157,13 +180,13 @@ def parse(args):
         formatter_class=MyHelpFormatter,
     )
     submit.set_defaults(subcmd=subcmds.submit)
-    submit.add_argument('path', help='Path to release content')
     submit.add_argument(
         'tracker',
         type=TRACKER,
         help=('Case-insensitive tracker name.\n'
               'Supported trackers: ' + ', '.join(_get_names(trackers, 'SubmissionJob', 'trackername'))),
     )
+    submit.add_argument('path', help='Path to release content')
 
     # Command: upload-images
     upload_images = subparsers.add_parser(
