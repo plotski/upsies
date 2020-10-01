@@ -9,7 +9,7 @@ _log = logging.getLogger(__name__)
 
 class ReleaseName(collections.abc.Mapping):
     """
-    Extract information from release name re-assemble it
+    Extract information from release name and re-assemble it
 
     :param str path: Path to release content
 
