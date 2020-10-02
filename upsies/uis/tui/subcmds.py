@@ -53,19 +53,39 @@ class SubcommandBase:
         return self._config
 
 
-class add_torrent(SubcommandBase):
+@functools.lru_cache(maxsize=None)
+def make_search_command(db_name):
     @cache.property
     def jobs(self):
-        client = _get_btclient(self.config, self.args.CLIENT)
         return (
-            _jobs.torrent.AddTorrentJob(
-                homedir=fs.tmpdir(),
+            _jobs.search.SearchDbJob(
+                homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
-                client=client,
-                download_path=self.args.download_path,
-                torrents=self.args.TORRENT,
+                content_path=self.args.CONTENT,
+                db=db_name,
             ),
         )
+
+    clsname = f'search_{db_name}'
+    bases = (SubcommandBase,)
+    attrs = {'jobs': jobs}
+    return type(clsname, bases, attrs)
+
+
+class release_name(SubcommandBase):
+    @cache.property
+    def jobs(self):
+        # To be able to fetch the correct title, original title, year, etc, we
+        # need to prompt for an ID first. IMDb seems to be best.
+        search_imdb = make_search_command('imdb')
+        imdb_job = search_imdb(args=self.args, config=self.config).jobs[0]
+        rn_job = _jobs.release_name.ReleaseNameJob(
+            homedir=fs.projectdir(self.args.CONTENT),
+            ignore_cache=self.args.ignore_cache,
+            content_path=self.args.CONTENT,
+        )
+        imdb_job.on_output(rn_job.fetch_info)
+        return (imdb_job, rn_job)
 
 
 class create_torrent(SubcommandBase):
@@ -105,6 +125,21 @@ class create_torrent(SubcommandBase):
         return tuple(
             job for job in (self._create_job, self._add_job)
             if job is not None
+        )
+
+
+class add_torrent(SubcommandBase):
+    @cache.property
+    def jobs(self):
+        client = _get_btclient(self.config, self.args.CLIENT)
+        return (
+            _jobs.torrent.AddTorrentJob(
+                homedir=fs.tmpdir(),
+                ignore_cache=self.args.ignore_cache,
+                client=client,
+                download_path=self.args.download_path,
+                torrents=self.args.TORRENT,
+            ),
         )
 
 
@@ -172,41 +207,6 @@ class mediainfo(SubcommandBase):
                 content_path=self.args.CONTENT,
             ),
         )
-
-
-@functools.lru_cache(maxsize=None)
-def make_search_command(db_name):
-    @cache.property
-    def jobs(self):
-        return (
-            _jobs.search.SearchDbJob(
-                homedir=fs.projectdir(self.args.CONTENT),
-                ignore_cache=self.args.ignore_cache,
-                content_path=self.args.CONTENT,
-                db=db_name,
-            ),
-        )
-
-    clsname = f'search_{db_name}'
-    bases = (SubcommandBase,)
-    attrs = {'jobs': jobs}
-    return type(clsname, bases, attrs)
-
-
-class release_name(SubcommandBase):
-    @cache.property
-    def jobs(self):
-        # To be able to fetch the correct title, original title, year, etc, we
-        # need to prompt for an ID first. IMDb seems to be best.
-        search_imdb = make_search_command('imdb')
-        imdb_job = search_imdb(args=self.args, config=self.config).jobs[0]
-        rn_job = _jobs.release_name.ReleaseNameJob(
-            homedir=fs.projectdir(self.args.CONTENT),
-            ignore_cache=self.args.ignore_cache,
-            content_path=self.args.CONTENT,
-        )
-        imdb_job.on_output(rn_job.fetch_info)
-        return (imdb_job, rn_job)
 
 
 class submit(SubcommandBase):
