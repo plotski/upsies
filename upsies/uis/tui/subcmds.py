@@ -56,14 +56,14 @@ class SubcommandBase:
 class add_torrent(SubcommandBase):
     @cache.property
     def jobs(self):
-        client = _get_btclient(self.config, self.args.client)
+        client = _get_btclient(self.config, self.args.CLIENT)
         return (
             _jobs.torrent.AddTorrentJob(
                 homedir=fs.tmpdir(),
                 ignore_cache=self.args.ignore_cache,
                 client=client,
                 download_path=self.args.download_path,
-                torrents=self.args.torrent,
+                torrents=self.args.TORRENT,
             ),
         )
 
@@ -71,13 +71,13 @@ class add_torrent(SubcommandBase):
 class create_torrent(SubcommandBase):
     @cache.property
     def _create_job(self):
-        tracker = _get_tracker_section(self.config, self.args.tracker)
+        tracker = _get_tracker_section(self.config, self.args.TRACKER)
         return _jobs.torrent.CreateTorrentJob(
-            homedir=fs.projectdir(self.args.path),
+            homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
-            content_path=self.args.path,
+            content_path=self.args.CONTENT,
             announce_url=tracker['announce'],
-            trackername=self.args.tracker,
+            trackername=self.args.TRACKER,
             source=tracker['source'],
             exclude_regexs=tracker['exclude'],
         )
@@ -87,10 +87,10 @@ class create_torrent(SubcommandBase):
         client = _get_btclient(self.config, self.args.add_to)
         if client:
             add_job = _jobs.torrent.AddTorrentJob(
-                homedir=fs.projectdir(self.args.path),
+                homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 client=client,
-                download_path=fs.dirname(self.args.path),
+                download_path=fs.dirname(self.args.CONTENT),
             )
             _jobs.Pipe(
                 sender=self._create_job,
@@ -112,9 +112,9 @@ class screenshots(SubcommandBase):
     @cache.property
     def _screenshots_job(self):
         return _jobs.screenshots.ScreenshotsJob(
-            homedir=fs.projectdir(self.args.path),
+            homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
-            content_path=self.args.path,
+            content_path=self.args.CONTENT,
             timestamps=self.args.timestamps,
             number=self.args.number,
         )
@@ -156,8 +156,8 @@ class upload_images(SubcommandBase):
             _jobs.imghost.ImageHostJob(
                 homedir=fs.tmpdir(),
                 ignore_cache=self.args.ignore_cache,
-                image_host=self.args.imagehost,
-                image_paths=self.args.path,
+                image_host=self.args.IMAGEHOST,
+                image_paths=self.args.CONTENT,
             ),
         )
 
@@ -167,9 +167,9 @@ class mediainfo(SubcommandBase):
     def jobs(self):
         return (
             _jobs.mediainfo.MediainfoJob(
-                homedir=fs.projectdir(self.args.path),
+                homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
-                content_path=self.args.path,
+                content_path=self.args.CONTENT,
             ),
         )
 
@@ -180,9 +180,9 @@ def make_search_command(db_name):
     def jobs(self):
         return (
             _jobs.search.SearchDbJob(
-                homedir=fs.projectdir(self.args.path),
+                homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
-                content_path=self.args.path,
+                content_path=self.args.CONTENT,
                 db=db_name,
             ),
         )
@@ -201,9 +201,9 @@ class release_name(SubcommandBase):
         search_imdb = make_search_command('imdb')
         imdb_job = search_imdb(args=self.args, config=self.config).jobs[0]
         rn_job = _jobs.release_name.ReleaseNameJob(
-            homedir=fs.projectdir(self.args.path),
+            homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
-            content_path=self.args.path,
+            content_path=self.args.CONTENT,
         )
         imdb_job.on_output(rn_job.fetch_info)
         return (imdb_job, rn_job)
@@ -213,18 +213,18 @@ class submit(SubcommandBase):
     @cache.property
     def jobs(self):
         try:
-            tracker = getattr(_jobs.submit, self.args.tracker)
+            tracker = getattr(_jobs.submit, self.args.TRACKER)
         except AttributeError:
-            raise ValueError(f'Unknown tracker: {self.args.tracker}')
+            raise ValueError(f'Unknown tracker: {self.args.TRACKER}')
 
-        _log.debug('Tracker: %r', self.args.tracker)
+        _log.debug('Tracker: %r', self.args.TRACKER)
         _log.debug('Submission class: %r', tracker.SubmissionJob)
         sub = tracker.SubmissionJob(
-            homedir=fs.projectdir(self.args.path),
+            homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
-            content_path=self.args.path,
+            content_path=self.args.CONTENT,
             args=self.args,
-            config=_get_tracker_section(self.config, self.args.tracker),
+            config=_get_tracker_section(self.config, self.args.TRACKER),
         )
         _log.debug('Tracker jobs: %r', sub.jobs)
         return sub.jobs

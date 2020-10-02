@@ -33,178 +33,192 @@ def parse(args):
                         help='Ignore existing files and information from previous calls',
                         action='store_true')
 
+    tracker_names = ', '.join(_get_names(trackers, 'SubmissionJob', 'trackername'))
+    imghost_names = ', '.join(_get_names(imghosts, 'Uploader', 'name'))
+    btclient_names = ', '.join(_get_names(btclients, 'ClientApi', 'name'))
+
     subparsers = parser.add_subparsers(title='commands')
 
+    def add_subcmd(handler, names, help, description='', args={}):
+        parser = subparsers.add_parser(
+            names[0],
+            aliases=names[1:],
+            help=help,
+            description=description,
+            formatter_class=MyHelpFormatter,
+        )
+        parser.set_defaults(subcmd=handler)
+        for argname,argopts in args.items():
+            names = (argname,) if isinstance(argname, str) else argname
+            parser.add_argument(*names, **argopts)
+
+    # Command: imdb
+    add_subcmd(
+        handler=subcmds.make_search_command('imdb'),
+        names=('imdb',),
+        help='Pick IMDb ID from search results',
+        args={
+            'CONTENT': {'help': 'Path to release content'},
+        },
+    )
+
+    # Command: tmdb
+    add_subcmd(
+        handler=subcmds.make_search_command('tmdb'),
+        names=('tmdb',),
+        help='Pick TMDb ID from search results',
+        args={
+            'CONTENT': {'help': 'Path to release content'},
+        },
+    )
+
+    # Command: tvmaze
+    add_subcmd(
+        handler=subcmds.make_search_command('tvmaze'),
+        names=('tvmaze',),
+        help='Pick TVmaze ID from search results',
+        args={
+            'CONTENT': {'help': 'Path to release content'},
+        },
+    )
+
     # Command: release-name
-    release_name = subparsers.add_parser(
-        'release-name', aliases=('rn',),
+    add_subcmd(
+        handler=subcmds.release_name,
+        names=('release-name', 'rn'),
         help='Create standardized release name',
         description=('Print the properly formatted release name.\n\n'
                      'IMDb is searched to get the correct title, year and alternative '
                      'title if applicable. Audio and video information is detected with '
                      'mediainfo. Missing required information is highlighted with '
                      'placeholders, e.g. "UNKNOWN_RESOLUTION".'),
-        formatter_class=MyHelpFormatter,
+        args={
+            'CONTENT': {'help': 'Path to release content'},
+        },
     )
-    release_name.set_defaults(subcmd=subcmds.release_name)
-    release_name.add_argument('path', help='Path to release content')
-
-    # Command: imdb
-    imdb = subparsers.add_parser(
-        'imdb',
-        help='Pick IMDb ID from search results',
-        formatter_class=MyHelpFormatter,
-    )
-    imdb.set_defaults(subcmd=subcmds.make_search_command('imdb'))
-    imdb.add_argument('path', help='Path to release content')
-
-    # Command: tmdb
-    tmdb = subparsers.add_parser(
-        'tmdb',
-        help='Pick TMDb ID from search results',
-        formatter_class=MyHelpFormatter,
-    )
-    tmdb.set_defaults(subcmd=subcmds.make_search_command('tmdb'))
-    tmdb.add_argument('path', help='Path to release content')
-
-    # Command: tvmaze
-    tvmaze = subparsers.add_parser(
-        'tvmaze',
-        help='Pick TVmaze ID from search results',
-        formatter_class=MyHelpFormatter,
-    )
-    tvmaze.set_defaults(subcmd=subcmds.make_search_command('tvmaze'))
-    tvmaze.add_argument('path', help='Path to release content')
-
-    # Command: screenshots
-    screenshots = subparsers.add_parser(
-        'screenshots', aliases=('ss',),
-        help='Create and optionally upload screenshots',
-        description=('Create PNG screenshots with ffmpeg and optionally '
-                     'upload them to an image hosting service.'),
-        formatter_class=MyHelpFormatter,
-    )
-    screenshots.set_defaults(subcmd=subcmds.screenshots)
-    screenshots.add_argument('path', help='Path to release content')
-    screenshots.add_argument(
-        '--timestamps', '-t',
-        type=TIMESTAMP,
-        help='Space-separated list of [[HH:]MM:]SS strings',
-        metavar='TIMESTAMP',
-        default=(),
-        nargs='+',
-    )
-    screenshots.add_argument(
-        '--number', '-n',
-        type=NUMBER,
-        help='How many screenshots to make in total',
-        default=0,
-    )
-    screenshots.add_argument(
-        '--upload-to', '-u',
-        type=IMAGEHOST,
-        help=('Upload screenshots to image hosting service.\n'
-              'Supported services: ' + ', '.join(_get_names(imghosts, 'Uploader', 'name'))),
-        metavar='IMAGEHOST',
-    )
-
-    # Command: mediainfo
-    mediainfo = subparsers.add_parser(
-        'mediainfo', aliases=('mi',),
-        help='Print mediainfo output',
-        description=('If PATH is a directory, it is recursively searched '
-                     'for the first video file in natural order, '
-                     'i.e. "File1.mp4" comes before "File10.mp4".\n\n'
-                     'Any irrelevant parts in the file path are removed from the output.'),
-        formatter_class=MyHelpFormatter,
-    )
-    mediainfo.set_defaults(subcmd=subcmds.mediainfo)
-    mediainfo.add_argument('path', help='Path to release content')
 
     # Command: create-torrent
-    create_torrent = subparsers.add_parser(
-        'create-torrent', aliases=('ct',),
-        help='Create torrent file',
+    add_subcmd(
+        handler=subcmds.create_torrent,
+        names=('create-torrent', 'ct'),
+        help='Create torrent file and optionally add it to a client',
         description='Create torrent for a specific tracker.',
-        formatter_class=MyHelpFormatter,
-    )
-    create_torrent.set_defaults(subcmd=subcmds.create_torrent)
-    create_torrent.add_argument(
-        'tracker',
-        type=TRACKER,
-        help=('Case-insensitive tracker name.\n'
-              'Supported trackers: ' + ', '.join(_get_names(trackers, 'SubmissionJob', 'trackername'))),
-    )
-    create_torrent.add_argument('path', help='Path to release content')
-    create_torrent.add_argument(
-        '--add-to', '-a',
-        type=CLIENT,
-        help=('Add the created torrent to a running BitTorrent client instance.\n'
-              'Supported clients: ' + ', '.join(_get_names(btclients, 'ClientApi', 'name'))),
-        metavar='CLIENT',
-    )
-    create_torrent.add_argument(
-        '--copy-to', '-c',
-        help='Copy the created torrent to directory PATH',
-        metavar='PATH',
+        args={
+            'TRACKER': {
+                'type': TRACKER,
+                'help': ('Case-insensitive tracker name.\n'
+                         'Supported trackers: ' + tracker_names),
+            },
+            'CONTENT': {'help': 'Path to release content'},
+            ('--add-to', '-a'): {
+                'type': CLIENT,
+                'metavar': 'CLIENT',
+                'help': ('Add the created torrent to a running BitTorrent client instance.\n'
+                         'Supported clients: ' + btclient_names),
+            },
+            ('--copy-to', '-c'): {
+                'metavar': 'DIRECTORY',
+                'help': 'Copy the created torrent to DIRECTORY',
+            },
+        },
     )
 
     # Command: add-torrent
-    add_torrent = subparsers.add_parser(
-        'add-torrent', aliases=('at',),
+    add_subcmd(
+        handler=subcmds.add_torrent,
+        names=('add-torrent', 'at'),
         help='Send torrent file to BitTorrent Client',
-        formatter_class=MyHelpFormatter,
+        args={
+            'CLIENT': {
+                'type': CLIENT,
+                'help': ('Case-insensitive client name.\n'
+                         'Supported clients: ' + btclient_names),
+            },
+            'TORRENT': {
+                'nargs': '+',
+                'help': 'Path to torrent file',
+            },
+            ('--download-path', '-p'): {
+                'help': "Parent directory of the torrent's content",
+                'metavar': 'DIRECTORY',
+            },
+        },
     )
-    add_torrent.set_defaults(subcmd=subcmds.add_torrent)
-    add_torrent.add_argument(
-        'client',
-        type=CLIENT,
-        help=('Case-insensitive client name.\n'
-              'Supported clients: ' + ', '.join(_get_names(btclients, 'ClientApi', 'name'))),
+
+    # Command: screenshots
+    add_subcmd(
+        handler=subcmds.screenshots,
+        names=('screenshots', 'ss'),
+        help='Create and optionally upload screenshots',
+        description=('Create PNG screenshots with ffmpeg and optionally '
+                     'upload them to an image hosting service.'),
+        args={
+            'CONTENT': {'help': 'Path to release content'},
+            ('--timestamps', '-t'): {
+                'nargs': '+',
+                'default': (),
+                'type': TIMESTAMP,
+                'metavar': 'TIMESTAMP',
+                'help': 'Space-separated list of [[HH:]MM:]SS strings',
+            },
+            ('--number', '-n'): {
+                'type': NUMBER,
+                'help': 'How many screenshots to make in total',
+                'default': 0,
+            },
+            ('--upload-to', '-u'): {
+                'type': IMAGEHOST,
+                'metavar': 'IMAGEHOST',
+                'help': ('Upload screenshots to image hosting service.\n'
+                         'Supported services: ' + imghost_names),
+            },
+        }
     )
-    add_torrent.add_argument(
-        'torrent',
-        nargs='+',
-        help='Path to torrent file',
+
+    # Command: upload-images
+    add_subcmd(
+        handler=subcmds.upload_images,
+        names=('upload-images', 'ui'),
+        help='Upload image to image hosting service',
+        args={
+            'IMAGEHOST': {
+                'type': IMAGEHOST,
+                'help': ('Case-insensitive name of image hosting service.\n'
+                         'Supported services: ' + imghost_names),
+            },
+            'IMAGE': {
+                'nargs': '+',
+                'help': 'Path to image file',
+            },
+        },
     )
-    add_torrent.add_argument(
-        '--download-path', '-p',
-        help="Parent directory of the torrent's content",
-        metavar='PATH',
+
+    # Command: mediainfo
+    add_subcmd(
+        handler=subcmds.mediainfo,
+        names=('mediainfo', 'mi'),
+        help='Print mediainfo output',
+        description=('If PATH is a directory, it is recursively searched for the first video '
+                     'file in natural order, i.e. "File1.mp4" comes before "File10.mp4".\n\n'
+                     'Any irrelevant parts in the file path are removed from the output.'),
+        args={
+            'CONTENT': {'help': 'Path to release content'},
+        },
     )
 
     # Command: submit
-    submit = subparsers.add_parser(
-        'submit',
+    add_subcmd(
+        handler=subcmds.submit,
+        names=('submit',),
         help='Gather all required metadata and upload PATH to tracker',
-        formatter_class=MyHelpFormatter,
-    )
-    submit.set_defaults(subcmd=subcmds.submit)
-    submit.add_argument(
-        'tracker',
-        type=TRACKER,
-        help=('Case-insensitive tracker name.\n'
-              'Supported trackers: ' + ', '.join(_get_names(trackers, 'SubmissionJob', 'trackername'))),
-    )
-    submit.add_argument('path', help='Path to release content')
-
-    # Command: upload-images
-    upload_images = subparsers.add_parser(
-        'upload-images', aliases=('ui',),
-        help='Upload image to image hosting service',
-        formatter_class=MyHelpFormatter,
-    )
-    upload_images.set_defaults(subcmd=subcmds.upload_images)
-    upload_images.add_argument(
-        'imagehost',
-        type=IMAGEHOST,
-        help=('Case-insensitive name of image hosting service.\n'
-              'Supported services: ' + ', '.join(_get_names(imghosts, 'Uploader', 'name'))),
-    )
-    upload_images.add_argument(
-        'path',
-        nargs='+',
-        help='Path to image file',
+        args={
+            'TRACKER': {
+                'type': TRACKER,
+                'help': ('Case-insensitive tracker name.\n'
+                         'Supported trackers: ' + tracker_names),
+            },
+            'CONTENT': {'help': 'Path to release content'},
+        },
     )
 
     if args is None:
