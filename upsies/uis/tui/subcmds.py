@@ -9,18 +9,6 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-def _get_btclient(config, client_name):
-    if client_name:
-        try:
-            client_module = getattr(btclient, client_name)
-        except AttributeError:
-            raise ValueError(f'Unknown client: {client_name}')
-        else:
-            client_config = config['clients'][client_name]
-            _log.debug('Client config: %r', client_config)
-            return client_module.ClientApi(**client_config)
-
-
 def _get_tracker_section(config, trackername):
     try:
         return config['trackers'][trackername]
@@ -87,12 +75,14 @@ class create_torrent(SubcommandBase):
 
     @cache.property
     def _add_job(self):
-        client = _get_btclient(self.config, self.args.add_to)
-        if client:
+        if self.args.add_to:
             add_job = _jobs.torrent.AddTorrentJob(
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
-                client=client,
+                client=btclient.client(
+                    name=self.args.add_to,
+                    **self.config['clients'][self.args.add_to],
+                ),
                 download_path=fs.dirname(self.args.CONTENT),
             )
             _jobs.Pipe(
@@ -114,12 +104,14 @@ class create_torrent(SubcommandBase):
 class add_torrent(SubcommandBase):
     @cache.property
     def jobs(self):
-        client = _get_btclient(self.config, self.args.CLIENT)
         return (
             _jobs.torrent.AddTorrentJob(
                 homedir=fs.tmpdir(),
                 ignore_cache=self.args.ignore_cache,
-                client=client,
+                client=btclient.client(
+                    name=self.args.CLIENT,
+                    **self.config['clients'][self.args.CLIENT],
+                ),
                 download_path=self.args.download_path,
                 torrents=self.args.TORRENT,
             ),
