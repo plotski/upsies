@@ -151,7 +151,7 @@ class AddTorrentJob(_base.JobBase):
             cb(torrent_path)
 
         if os.path.exists(torrent_path) and os.path.getsize(torrent_path) > self.MAX_TORRENT_SIZE:
-            self.error(f'File is too large: {torrent_path}')
+            self.error(f'{torrent_path}: File is too large')
             return
 
         try:
