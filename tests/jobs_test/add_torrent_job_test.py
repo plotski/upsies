@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -194,6 +195,10 @@ async def test_add_async_sends_torrent_id(make_AddTorrentJob):
     assert job.errors == ()
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 8),
+    reason='Python < 3.8 refuses to mock with pytest.mark.asyncio',
+)
 @patch('asyncio.ensure_future', Mock())
 @patch('upsies.jobs.torrent.AddTorrentJob.initialize', Mock())
 @patch('upsies.jobs.torrent.AddTorrentJob.add_async', new_callable=AsyncMock)
