@@ -15,15 +15,11 @@ class CreateTorrentJob(_base.JobBase):
     name = 'torrent'
     label = 'Torrent'
 
-    def initialize(self, *, content_path, announce_url, trackername,
-                   exclude_regexs=(), source=None):
+    def initialize(self, *, content_path, tracker_name, tracker_config):
         self._content_path = content_path
-        self._announce_url = announce_url
-        self._exclude_regexs = exclude_regexs
-        self._source = source
         self._torrent_path = os.path.join(
             self.homedir,
-            f'{fs.basename(content_path)}.{trackername.lower()}.torrent',
+            f'{fs.basename(content_path)}.{tracker_name.lower()}.torrent',
         )
         self._progress_update_callbacks = []
         self._file_tree = ''
@@ -31,12 +27,12 @@ class CreateTorrentJob(_base.JobBase):
             name=self.name,
             target=_torrent_process,
             kwargs={
-                'content_path'   : self._content_path,
-                'torrent_path'   : self._torrent_path,
-                'overwrite'      : self.ignore_cache,
-                'announce_url'   : self._announce_url,
-                'source'         : self._source,
-                'exclude_regexs' : self._exclude_regexs,
+                'content_path' : self._content_path,
+                'torrent_path' : self._torrent_path,
+                'overwrite'    : self.ignore_cache,
+                'announce'     : tracker_config['announce'],
+                'source'       : tracker_config['source'],
+                'exclude'      : tracker_config['exclude'],
             },
             init_callback=self.handle_file_tree,
             info_callback=self.handle_progress_update,

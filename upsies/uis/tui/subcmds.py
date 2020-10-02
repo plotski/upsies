@@ -9,13 +9,6 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-def _get_tracker_section(config, trackername):
-    try:
-        return config['trackers'][trackername]
-    except KeyError:
-        raise errors.ConfigError(f'Unknown tracker: {trackername!r}')
-
-
 class SubcommandBase:
     def __init__(self, args, config):
         self._args = args
@@ -62,15 +55,12 @@ class release_name(SubcommandBase):
 class create_torrent(SubcommandBase):
     @cache.property
     def _create_job(self):
-        tracker = _get_tracker_section(self.config, self.args.TRACKER)
         return _jobs.torrent.CreateTorrentJob(
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
-            announce_url=tracker['announce'],
-            trackername=self.args.TRACKER,
-            source=tracker['source'],
-            exclude_regexs=tracker['exclude'],
+            tracker_name=self.args.TRACKER,
+            tracker_config=self.config['trackers'][self.args.TRACKER],
         )
 
     @cache.property

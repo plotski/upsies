@@ -1,5 +1,6 @@
 import asyncio
 import multiprocessing
+import os
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -59,16 +60,16 @@ def test_CreateTorrentJob_initialize_sets_variables(torrent_process_mock, tmp_pa
         homedir=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
-        announce_url='http://foo.bar',
-        trackername='ASDF',
-        source='AsdF',
-        exclude_regexs=('a', 'b'),
+        tracker_name='ASDF',
+        tracker_config={
+            'announce' : 'http://foo.bar',
+            'source'   : 'AsdF',
+            'exclude'  : ('a', 'b'),
+        },
     )
     assert ctj.homedir == tmp_path
     assert ctj.ignore_cache is False
     assert ctj._content_path == 'path/to/foo'
-    assert ctj._announce_url == 'http://foo.bar'
-    assert ctj._exclude_regexs == ('a', 'b')
     assert ctj._torrent_path == f'{tmp_path / "foo"}.asdf.torrent'
     assert ctj._file_tree == ''
 
@@ -78,21 +79,23 @@ def test_CreateTorrentJob_initialize_creates_torrent_process(DaemonProcess_mock,
         homedir=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
-        announce_url='http://foo.bar',
-        trackername='ASDF',
-        source='AsdF',
-        exclude_regexs=('a', 'b'),
+        tracker_name='ASDF',
+        tracker_config={
+            'announce' : 'http://foo.bar',
+            'source'   : 'AsdF',
+            'exclude'  : ('a', 'b'),
+        },
     )
     assert DaemonProcess_mock.call_args_list == [call(
         name=ctj.name,
         target=_torrent_process,
         kwargs={
-            'content_path'   : ctj._content_path,
-            'torrent_path'   : ctj._torrent_path,
-            'overwrite'      : ctj.ignore_cache,
-            'announce_url'   : ctj._announce_url,
-            'source'         : ctj._source,
-            'exclude_regexs' : ctj._exclude_regexs,
+            'content_path' : 'path/to/foo',
+            'torrent_path' : os.path.join(ctj.homedir, 'foo.asdf.torrent'),
+            'overwrite'    : False,
+            'announce'     : 'http://foo.bar',
+            'source'       : 'AsdF',
+            'exclude'      : ('a', 'b'),
         },
         init_callback=ctj.handle_file_tree,
         info_callback=ctj.handle_progress_update,
@@ -113,10 +116,12 @@ def job(tmp_path):
             homedir=tmp_path,
             ignore_cache=False,
             content_path='path/to/foo',
-            announce_url='http://foo.bar',
-            trackername='ASDF',
-            source='AsdF',
-            exclude_regexs=('a', 'b'),
+            tracker_name='ASDF',
+            tracker_config={
+                'announce' : 'http://foo.bar',
+                'source'   : 'AsdF',
+                'exclude'  : ('a', 'b'),
+            },
         )
 
 def test_CreateTorrentJob_execute(job):
