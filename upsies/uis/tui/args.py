@@ -13,7 +13,77 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
+@functools.lru_cache(maxsize=None)
+def _get_names(package, clsname, name_attribute):
+    """
+    Get user-facing names from modules or classes in a package
+
+    :param package package: Package from where to collect names
+    :param str clsname: Common class name of every module in `package`; if this is
+        falsy, get `name_attribute` from the modules directly
+    :param str name_attribute: Name of the attribute that stores the name we
+        want
+    """
+    import inspect
+    modules = (module for name, module in inspect.getmembers(package, inspect.ismodule)
+               if not name.startswith('_'))
+    if clsname:
+        # Get name from a common class name
+        clsses = [getattr(module, clsname) for module in modules]
+        return [utils.CaseInsensitiveString(getattr(cls, name_attribute))
+                for cls in clsses]
+    else:
+        # Get name from each module
+        return [utils.CaseInsensitiveString(getattr(mod, name_attribute))
+                for mod in modules]
+
+DB_NAMES = _get_names(dbs, '', 'label')
+TRACKER_NAMES = _get_names(trackers, 'SubmissionJob', 'trackername')
+IMGHOST_NAMES = _get_names(imghosts, 'Uploader', 'name')
+BTCLIENT_NAMES = _get_names(btclients, 'ClientApi', 'name')
+
+
+# Argument types should match metavar names and raise ValueError
+
+def NUMBER(string):
+    return int(string)
+
+def TIMESTAMP(string):
+    return utils.timestamp.parse(string)
+
+def DB(string):
+    if string in DB_NAMES:
+        return string.casefold()
+    else:
+        raise ValueError(f'Unsupported databasae: {string}')
+
+def TRACKER(string):
+    if string in TRACKER_NAMES:
+        return string.casefold()
+    else:
+        raise ValueError(f'Unsupported tracker: {string}')
+
+def CLIENT(string):
+    if string in BTCLIENT_NAMES:
+        return string.casefold()
+    else:
+        raise ValueError(f'Unsupported client: {string}')
+
+def IMAGEHOST(string):
+    if string in IMGHOST_NAMES:
+        return string.casefold()
+    else:
+        raise ValueError(f'Unsupported image hosting service: {string}')
+
+
 def parse(args):
+    """
+    Parse CLI arguments
+
+    :param args: Sequence of strings (`sys.argv[1:]`)
+
+    :return: :class:`argparse.Namespace` instance
+    """
     parser = argparse.ArgumentParser(
         description='Collect metadata for uploading content to private trackers',
         formatter_class=MyHelpFormatter,
@@ -33,11 +103,6 @@ def parse(args):
     parser.add_argument('--ignore-cache', '-ic',
                         help='Ignore existing files and information from previous calls',
                         action='store_true')
-
-    db_names = ', '.join(_get_names(dbs, '', 'label'))
-    tracker_names = ', '.join(_get_names(trackers, 'SubmissionJob', 'trackername'))
-    imghost_names = ', '.join(_get_names(imghosts, 'Uploader', 'name'))
-    btclient_names = ', '.join(_get_names(btclients, 'ClientApi', 'name'))
 
     subparsers = parser.add_subparsers(title='commands')
 
@@ -63,7 +128,7 @@ def parse(args):
             'DB': {
                 'type': DB,
                 'help': ('Case-insensitive database name.\n'
-                         'Supported databases: ' + db_names),
+                         'Supported databases: ' + ', '.join(DB_NAMES)),
             },
             'CONTENT': {'help': 'Path to release content'},
         },
@@ -94,14 +159,14 @@ def parse(args):
             'TRACKER': {
                 'type': TRACKER,
                 'help': ('Case-insensitive tracker name.\n'
-                         'Supported trackers: ' + tracker_names),
+                         'Supported trackers: ' + ', '.join(TRACKER_NAMES)),
             },
             'CONTENT': {'help': 'Path to release content'},
             ('--add-to', '-a'): {
                 'type': CLIENT,
                 'metavar': 'CLIENT',
                 'help': ('Add the created torrent to a running BitTorrent client instance.\n'
-                         'Supported clients: ' + btclient_names),
+                         'Supported clients: ' + ', '.join(BTCLIENT_NAMES)),
             },
             ('--copy-to', '-c'): {
                 'metavar': 'DIRECTORY',
@@ -119,7 +184,7 @@ def parse(args):
             'CLIENT': {
                 'type': CLIENT,
                 'help': ('Case-insensitive client name.\n'
-                         'Supported clients: ' + btclient_names),
+                         'Supported clients: ' + ', '.join(BTCLIENT_NAMES)),
             },
             'TORRENT': {
                 'nargs': '+',
@@ -157,7 +222,7 @@ def parse(args):
                 'type': IMAGEHOST,
                 'metavar': 'IMAGEHOST',
                 'help': ('Upload screenshots to image hosting service.\n'
-                         'Supported services: ' + imghost_names),
+                         'Supported services: ' + ', '.join(IMGHOST_NAMES)),
             },
         }
     )
@@ -171,7 +236,7 @@ def parse(args):
             'IMAGEHOST': {
                 'type': IMAGEHOST,
                 'help': ('Case-insensitive name of image hosting service.\n'
-                         'Supported services: ' + imghost_names),
+                         'Supported services: ' + ', '.join(IMGHOST_NAMES)),
             },
             'IMAGE': {
                 'nargs': '+',
@@ -202,7 +267,7 @@ def parse(args):
             'TRACKER': {
                 'type': TRACKER,
                 'help': ('Case-insensitive tracker name.\n'
-                         'Supported trackers: ' + tracker_names),
+                         'Supported trackers: ' + ', '.join(TRACKER_NAMES)),
             },
             'CONTENT': {'help': 'Path to release content'},
         },
@@ -218,39 +283,6 @@ def parse(args):
         sys.exit(0)
     else:
         return parsed
-
-
-# Type names should match metavar names and raise ValueError
-
-def NUMBER(string):
-    return int(string)
-
-def TIMESTAMP(string):
-    return utils.timestamp.parse(string)
-
-def TRACKER(string):
-    if string in _get_names(trackers, 'SubmissionJob', 'trackername'):
-        return string.casefold()
-    else:
-        raise ValueError(f'Unsupported tracker: {string}')
-
-def CLIENT(string):
-    if string in _get_names(btclients, 'ClientApi', 'name'):
-        return string.casefold()
-    else:
-        raise ValueError(f'Unsupported client: {string}')
-
-def IMAGEHOST(string):
-    if string in _get_names(imghosts, 'Uploader', 'name'):
-        return string.casefold()
-    else:
-        raise ValueError(f'Unsupported image hosting service: {string}')
-
-def DB(string):
-    if string in _get_names(dbs, '', 'label'):
-        return string.casefold()
-    else:
-        raise ValueError(f'Unsupported databasae: {string}')
 
 
 class MyHelpFormatter(argparse.HelpFormatter):
@@ -289,29 +321,3 @@ class MyHelpFormatter(argparse.HelpFormatter):
         return [line
                 for paragraph in text.split('\n')
                 for line in wrap(paragraph)]
-
-
-@functools.lru_cache(maxsize=None)
-def _get_names(package, clsname, name_attribute):
-    """
-    Get user-facing names from modules or classes in a package
-
-    :param package package: Package from where to collect names
-    :param str clsname: Common class name of every module in `package`; if this is
-        falsy, get `name_attribute` from the modules directly
-    :param str name_attribute: Name of the attribute that stores the name we
-        want
-    """
-    import inspect
-    modules = (module for name, module in inspect.getmembers(package, inspect.ismodule)
-               if not name.startswith('_'))
-    if clsname:
-        # Get name from a common class name
-        clsses = [getattr(module, clsname) for module in modules]
-        return [utils.CaseInsensitiveString(getattr(cls, name_attribute))
-                for cls in clsses]
-    else:
-        # Get name from each module
-        return [utils.CaseInsensitiveString(getattr(mod, name_attribute))
-                for mod in modules]
-
