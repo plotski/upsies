@@ -53,8 +53,7 @@ class SubcommandBase:
         return self._config
 
 
-@functools.lru_cache(maxsize=None)
-def make_search_command(db_name):
+class search_db(SubcommandBase):
     @cache.property
     def jobs(self):
         return (
@@ -62,14 +61,9 @@ def make_search_command(db_name):
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.CONTENT,
-                db=db_name,
+                db=self.args.DB,
             ),
         )
-
-    clsname = f'search_{db_name}'
-    bases = (SubcommandBase,)
-    attrs = {'jobs': jobs}
-    return type(clsname, bases, attrs)
 
 
 class release_name(SubcommandBase):
