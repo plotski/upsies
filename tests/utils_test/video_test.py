@@ -8,27 +8,32 @@ from upsies import binaries, errors
 from upsies.utils import video
 
 
-@patch('os.path.isdir', Mock(return_value=False))
-def test_first_video_gets_video_file():
+def test_first_video_gets_nonexisting_directory():
+    with pytest.raises(errors.NoContentError, match=r'^/no/such/dir: No such file or directory$'):
+        video.first_video('/no/such/dir')
+
+def test_first_video_gets_video_file(tmp_path):
     for ext in video._video_file_extensions:
-        assert video.first_video(f'Foo.{ext}') == f'Foo.{ext}'
+        path = tmp_path / f'Foo.{ext}'
+        assert video.first_video(path) == str(path)
 
-@patch('os.path.isdir', Mock(return_value=False))
-def test_first_video_gets_nonvideo_file():
-    with pytest.raises(errors.NoContentError, match=r'^Foo.txt: Not a video file$'):
-        video.first_video('Foo.txt')
+def test_first_video_gets_nonvideo_file(tmp_path):
+    path = tmp_path / 'foo.txt'
+    path.write_text('foo')
+    with pytest.raises(errors.NoContentError, match=rf'^{path}: Not a video file$'):
+        video.first_video(path)
 
-@patch('os.path.isdir', Mock(side_effect=(True, True)))
-def test_first_video_bluray_copy():
-    assert video.first_video('path/to/Foo') == 'path/to/Foo'
+def test_first_video_bluray_copy(tmp_path):
+    path = tmp_path / 'foo'
+    (path / 'BDMV').mkdir(parents=True)
+    assert video.first_video(path) == str(path)
 
-@patch('os.path.isdir', Mock(side_effect=(True, False)))
-@patch('os.walk')
-def test_first_video_selects_correct_video_from_directory(walk_mock):
-    walk_mock.return_value = (
-        ('path/to/Foo', (), ('Foo 2.mp4', 'Foo 10.mp4')),
-    )
-    assert video.first_video('path/to/Foo') == 'path/to/Foo/Foo 2.mp4'
+def test_first_video_selects_correct_video_from_directory(tmp_path):
+    path = tmp_path / 'foo'
+    path.mkdir()
+    (path / 'foo2.mp4').write_bytes(b'bleep bloop')
+    (path / 'foo10.mp4').write_bytes(b'bloop bleep')
+    assert video.first_video(tmp_path) == str(path / 'foo2.mp4')
 
 def test_first_video_selects_first_video_from_subdirectory(tmp_path):
     foo = tmp_path / 'foo'
@@ -41,40 +46,37 @@ def test_first_video_selects_first_video_from_subdirectory(tmp_path):
     video_mp4.write_text('video data')
     assert video.first_video(foo) == str(video_mp4)
 
-@patch('os.path.isdir', Mock(side_effect=(True, False)))
-@patch('os.walk')
-def test_first_video_gets_directory_without_videos(walk_mock):
-    walk_mock.return_value = (
-        ('path/to/Foo', (), ('Foo.jpg', 'Foo.txt')),
-    )
-    with pytest.raises(errors.NoContentError, match=r'^path/to/Foo: No video file found$'):
-        video.first_video('path/to/Foo')
+def test_first_video_gets_directory_without_videos(tmp_path):
+    path = tmp_path / 'foo'
+    path.mkdir()
+    (path / 'foo.txt').write_text('bleep bloop')
+    (path / 'bar.jpg').write_bytes(b'bloop bleep')
 
-@patch('os.path.isdir', Mock(side_effect=(True, False)))
-@patch('os.walk')
-def test_first_video_gets_empty_directory(walk_mock):
-    walk_mock.return_value = (
-        ('path/to/Foo', (), ()),
-    )
-    with pytest.raises(errors.NoContentError, match=r'^path/to/Foo: No video file found$'):
-        video.first_video('path/to/Foo')
+    with pytest.raises(errors.NoContentError, match=rf'^{path}: No video file found$'):
+        video.first_video(path)
 
-@patch('os.walk')
+def test_first_video_gets_empty_directory(tmp_path):
+    path = tmp_path / 'foo'
+    path.mkdir()
+    with pytest.raises(errors.NoContentError, match=rf'^{path}: No video file found$'):
+        video.first_video(path)
+
 @pytest.mark.parametrize(
     argnames=('extension',),
     argvalues=((ext,)
                for extension in video._video_file_extensions
                for ext in (extension.lower(), extension.upper())),
 )
-def test_first_video_finds_all_video_file_extensions(walk_mock, extension):
+def test_first_video_finds_all_video_file_extensions(extension, tmp_path):
     def shuffle(*items):
         return sorted(items, key=lambda _: random.random())
 
-    walk_mock.return_value = (
-        ('path/to/Foo', (), shuffle(f'Foo.{extension}', 'Foo.jpg', 'Foo.txt')),
-    )
-    with patch('os.path.isdir', Mock(side_effect=(True, False))):
-        assert video.first_video('path/to/Foo') == f'path/to/Foo/Foo.{extension}'
+    path = tmp_path / 'foo'
+    path.mkdir()
+    (path / f'foo.{extension}').write_text('bleep bloop')
+    (path / 'bar.jpg').write_bytes(b'bloop bleep')
+    (path / 'baz.jpg').write_bytes(b'nerrhg')
+    assert video.first_video(path) == str(path / f'foo.{extension}')
 
 
 @patch('upsies.utils.subproc.run')
