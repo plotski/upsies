@@ -181,3 +181,63 @@ class AddTorrentJob(_base.JobBase):
                     break
                 else:
                     await self.add_async(torrent_path, download_path)
+
+
+class CopyTorrentJob(_base.JobBase):
+    name = 'copy-torrent'
+    label = 'Copy Torrent'
+
+    @property
+    def cache_file(self):
+        return None
+
+    def initialize(self, *, destination, files=()):
+        self._destination = destination
+        self._copying_callbacks = []
+        self._copied_callbacks = []
+        if files:
+            for f in files:
+                self.copy(f)
+            self.pipe_closed()
+
+    def execute(self):
+        pass
+
+    def pipe_input(self, file_path):
+        self.copy(file_path)
+
+    def pipe_closed(self):
+        self.finish()
+
+    def on_copying(self, callback):
+        assert callable(callback)
+        self._copying_callbacks.append(callback)
+
+    def on_copied(self, callback):
+        assert callable(callback)
+        self._copied_callbacks.append(callback)
+
+    MAX_FILE_SIZE = 10 * 2**20
+
+    def copy(self, file_path, destination=None):
+        dest = destination or self._destination
+        _log.debug('Copying %s to %s', file_path, dest)
+
+        if os.path.exists(file_path) and os.path.getsize(file_path) > self.MAX_FILE_SIZE:
+            self.error(f'{file_path}: File is too large')
+            return
+
+        import shutil
+        try:
+            new_path = shutil.copy2(file_path, dest)
+        except OSError as e:
+            if e.strerror:
+                msg = e.strerror
+            else:
+                msg = str(e)
+            self.error(f'Failed to copy {fs.basename(file_path)} '
+                       f'to {dest}: {msg}')
+            # Default to original torrent path
+            self.send(file_path, if_not_finished=True)
+        else:
+            self.send(new_path, if_not_finished=True)

@@ -39,7 +39,29 @@ class AddTorrentJobWidget(_base.JobWidgetBase):
         self._status.text = f'Adding {fs.basename(torrent_path)}...'
         get_app().invalidate()
 
-    def handle_finished(self, percent_done):
+    def handle_finished(self, _):
+        self._status.text = 'Done.'
+        get_app().invalidate()
+
+    @cache.property
+    def runtime_widget(self):
+        return self._status
+
+
+class CopyTorrentJobWidget(_base.JobWidgetBase):
+    def setup(self):
+        self._status = widgets.TextField()
+        self.job.on_copying(self.handle_copying_torrent)
+        self.job.on_finished(self.handle_finished)
+
+    def activate(self):
+        pass
+
+    def handle_copying_torrent(self, file_path):
+        self._status.text = f'Copying {fs.basename(file_path)}...'
+        get_app().invalidate()
+
+    def handle_finished(self, _):
         self._status.text = 'Done.'
         get_app().invalidate()
 

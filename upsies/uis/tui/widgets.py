@@ -32,6 +32,8 @@ def JobWidget(job):
     """
     if isinstance(job, jobs.torrent.AddTorrentJob):
         return jobwidgets.AddTorrentJobWidget(job)
+    elif isinstance(job, jobs.torrent.CopyTorrentJob):
+        return jobwidgets.CopyTorrentJobWidget(job)
     elif isinstance(job, jobs.imghost.ImageHostJob):
         return jobwidgets.ImageHostJobWidget(job)
     elif isinstance(job, jobs.mediainfo.MediainfoJob):
