@@ -9,14 +9,14 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-def _get_btclient(config, clientname):
-    if clientname:
+def _get_btclient(config, client_name):
+    if client_name:
         try:
-            client_module = getattr(btclient, clientname)
+            client_module = getattr(btclient, client_name)
         except AttributeError:
-            raise errors.ConfigError(f'No such client: {clientname}')
+            raise ValueError(f'Unknown client: {client_name}')
         else:
-            client_config = config['clients'][clientname]
+            client_config = config['clients'][client_name]
             _log.debug('Client config: %r', client_config)
             return client_module.ClientApi(**client_config)
 
