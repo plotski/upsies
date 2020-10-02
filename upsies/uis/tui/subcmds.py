@@ -1,6 +1,3 @@
-import functools
-
-from ... import errors
 from ... import jobs as _jobs
 from ...tools import btclient
 from ...utils import cache, fs
