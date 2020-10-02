@@ -28,17 +28,6 @@ def _get_tracker_section(config, trackername):
         raise errors.ConfigError(f'Unknown tracker: {trackername!r}')
 
 
-def _get_tracker_option(config, trackername, option):
-    if trackername is None:
-        raise errors.ConfigError('Missing argument: --tracker, -t')
-    try:
-        tracker = config['trackers'][trackername]
-    except KeyError:
-        raise errors.ConfigError(f'Unknown tracker: {trackername!r}')
-    else:
-        return tracker[option]
-
-
 class SubcommandBase:
     def __init__(self, args, config):
         self._args = args
