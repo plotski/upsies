@@ -9,14 +9,14 @@ _log = logging.getLogger(__name__)
 torf = LazyModule(module='torf', namespace=globals())
 
 
-def create(*, content_path, announce_url, torrent_path,
+def create(*, content_path, announce, torrent_path,
            init_callback, progress_callback,
-           overwrite=False, source=None, exclude_regexs=()):
+           overwrite=False, source=None, exclude=()):
     """
     Generate and write torrent file
 
     :param str content_path: Path to the torrent's content
-    :param str announce_url: Announce URL
+    :param str announce: Announce URL
     :param str torrent_path: Path of the generated torrent file
     :param str init_callback: Callable that is called once before torrent
         generation commences, gets a nested sequence of `(directory_name,
@@ -26,14 +26,14 @@ def create(*, content_path, announce_url, torrent_path,
     :param bool overwrite: Whether to overwrite `torrent_path` if it exists
     :param str source: Value of the "source" field in the torrent or `None` to
         leave it out
-    :param exclude_regexs: Sequence of regular expressions; matching files are
-        not included in the torrent
+    :param exclude: Sequence of regular expressions; matching files are not
+        included in the torrent
 
     :raise TorrentError: if anything goes wrong
 
     :return: `torrent_path`
     """
-    if not announce_url:
+    if not announce:
         raise errors.TorrentError('Announce URL is empty')
 
     def cb(torrent, filepath, pieces_done, pieces_total):
@@ -45,8 +45,8 @@ def create(*, content_path, announce_url, torrent_path,
         try:
             torrent = torf.Torrent(
                 path=content_path,
-                exclude_regexs=exclude_regexs,
-                trackers=((announce_url,),),
+                exclude_regexs=exclude,
+                trackers=((announce,),),
                 private=True,
                 source=source,
             )
