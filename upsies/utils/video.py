@@ -31,7 +31,7 @@ def first_video(path):
     if os.path.isdir(path):
         if os.path.isdir(os.path.join(path, 'BDMV')):
             # Blu-ray copy
-            return path
+            return str(path)
 
         for root, dirnames, filenames in os.walk(path):
             # Check all files in this directory
@@ -46,8 +46,11 @@ def first_video(path):
         raise errors.NoContentError(f'{path}: No video file found')
     else:
         if fs.file_extension(path) in _video_file_extensions:
-            return path
-        raise errors.NoContentError(f'{path}: Not a video file')
+            return str(path)
+        elif not os.path.exists(path):
+            raise errors.NoContentError(f'{path}: No such file or directory')
+        else:
+            raise errors.NoContentError(f'{path}: Not a video file')
 
 
 @functools.lru_cache(maxsize=None)
