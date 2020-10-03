@@ -355,7 +355,7 @@ class ReleaseName(collections.abc.Mapping):
                 if not isinstance(self.episode, str):
                     episode_string = ''.join(f'E{e.rjust(2, "0")}' for e in self.episode)
                 else:
-                    episode_string = self.episode
+                    episode_string = ''.join(f'E{self.episode.rjust(2, "0")}')
                 parts.append(f'S{self.season.rjust(2, "0")}{episode_string}')
 
         if self.edition:
