@@ -42,7 +42,7 @@ def _main(args=None):
         import traceback
         traceback.print_exception(type(e), e, e.__traceback__)
         print()
-        print(f'Please report the traceback above as a bug: {__homepage__}')
+        print(f'Please report the traceback above as a bug: {__homepage__}', file=sys.stderr)
         exit_code = 1
     else:
         # Print last job's output to stdout
