@@ -169,7 +169,7 @@ async def test_add_async_complains_about_large_torrent_file(make_AddTorrentJob, 
     f.close()
     job = make_AddTorrentJob()
     await job.add_async(torrent_file)
-    assert job.errors == (f'File is too large: {torrent_file}',)
+    assert job.errors == (f'{torrent_file}: File is too large',)
     assert job.output == ()
 
 @patch('asyncio.ensure_future', Mock())
