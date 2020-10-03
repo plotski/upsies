@@ -22,7 +22,7 @@ class SearchDbJob(_base.JobBase):
 
     @property
     def name(self):
-        return self._db.label.lower()
+        return f'{self._db.label.lower()}-id'
 
     @property
     def label(self):
