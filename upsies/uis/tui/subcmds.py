@@ -36,21 +36,28 @@ class search_db(SubcommandBase):
 class release_name(SubcommandBase):
     @cache.property
     def jobs(self):
-        # To be able to fetch the correct title, original title, year, etc, we
-        # need to prompt for an ID first. IMDb seems to be best.
+        return (self._imdb_job, self._release_name_job)
+
+    @cache.property
+    def _release_name_job(self):
+        return _jobs.release_name.ReleaseNameJob(
+            homedir=fs.projectdir(self.args.CONTENT),
+            ignore_cache=self.args.ignore_cache,
+            content_path=self.args.CONTENT,
+        )
+
+    @cache.property
+    def _imdb_job(self):
+        # To be able to fetch the original title, year, etc, we need to prompt
+        # for an ID first. IMDb seems to be best.
         imdb_job = _jobs.search.SearchDbJob(
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
             db='imdb',
         )
-        rn_job = _jobs.release_name.ReleaseNameJob(
-            homedir=fs.projectdir(self.args.CONTENT),
-            ignore_cache=self.args.ignore_cache,
-            content_path=self.args.CONTENT,
-        )
-        imdb_job.on_output(rn_job.fetch_info)
-        return (imdb_job, rn_job)
+        imdb_job.on_output(self._release_name_job.fetch_info)
+        return imdb_job
 
 
 class create_torrent(SubcommandBase):
