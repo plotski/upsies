@@ -12,8 +12,8 @@ _log = logging.getLogger(__name__)
 
 
 class CreateTorrentJob(_base.JobBase):
-    name = 'torrent'
-    label = 'Torrent'
+    name = 'create-torrent'
+    label = 'Create Torrent'
 
     def initialize(self, *, content_path, tracker_name, tracker_config):
         self._content_path = content_path
