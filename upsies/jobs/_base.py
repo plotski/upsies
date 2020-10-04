@@ -18,7 +18,7 @@ class JobBase(abc.ABC):
         should not be re-used
     :param bool quiet: Whether to hide this job's output
 
-    Any additional keyword arguments are passed on to :func:`initialize`.
+    Any additional keyword arguments are passed on to :meth:`initialize`.
     """
 
     @property
@@ -69,7 +69,7 @@ class JobBase(abc.ABC):
     @abc.abstractmethod
     def initialize(self):
         """
-        Called by :func:`__init__` with additional keyword arguments
+        Called by :meth:`__init__` with additional keyword arguments
 
         This method should handle its arguments and return quickly.
         """
@@ -85,7 +85,7 @@ class JobBase(abc.ABC):
         Called by the main entry point when this job is executed
 
         If there is cached output available, load it and mark this job as
-        finished. Otherwise, call :func:`execute`.
+        finished. Otherwise, call :meth:`execute`.
         """
         _log.debug('Running %r', self)
         self._read_output_cache()
@@ -110,14 +110,14 @@ class JobBase(abc.ABC):
 
         It must be safe to call this method multiple times simultaneously.
 
-        :raise: Any exceptions given to :func:`exception`
+        :raise: Any exceptions given to :meth:`exception`
         """
         await self._finished_event.wait()
         if self._exception is not None:
             raise self._exception
 
     def finish(self):
-        """Mark this job as finished and unblock :func:`wait`"""
+        """Mark this job as finished and unblock :meth:`wait`"""
         if not self.is_finished:
             self._finished_event.set()
             for cb in self._finished_callbacks:
@@ -131,8 +131,8 @@ class JobBase(abc.ABC):
         :param callable callback: Callable that takes an instance of this class
             as a positional argument
 
-        `callback` is called when :func:`finish` is called and when cached
-        output is read (i.e. :func:`executed` is never called).
+        `callback` is called when :meth:`finish` is called and when cached
+        output is read (i.e. :meth:`executed` is never called).
         """
         assert callable(callback)
         self._finished_callbacks.append(callback)
@@ -180,8 +180,8 @@ class JobBase(abc.ABC):
         :param callable callback: Callable that takes an instance of this class
             as a positional argument
 
-        `callback` is called when :func:`send` is called and when cached output
-        is read (i.e. :func:`executed` is never called).
+        `callback` is called when :meth:`send` is called and when cached output
+        is read (i.e. :meth:`executed` is never called).
         """
         assert callable(callback)
         self._output_callbacks.append(callback)
@@ -225,14 +225,14 @@ class JobBase(abc.ABC):
         Call `callback` with error
 
         :param callable callback: Callable that takes the argument given to
-            :func:`error`
+            :meth:`error`
         """
         assert callable(callback)
         self._error_callbacks.append(callback)
 
     def exception(self, exception):
         """
-        Set exception to raise in :func:`wait`
+        Set exception to raise in :meth:`wait`
 
         :param Exception exception: Exception instance
         """
@@ -323,8 +323,8 @@ class JobBase(abc.ABC):
 
         It is important that the file name is unique for each output. By
         default, this is achieved by including the keyword arguments for
-        :func:`initialize`. See `ScreenshotsJob.cache_file` for a different
-        implementation.
+        :meth:`initialize`. See :attr:`ScreenshotsJob.cache_file` for a
+        different implementation.
 
         If this property returns a falsy value, no cache file is read or
         written.

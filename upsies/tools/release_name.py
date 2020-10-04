@@ -111,7 +111,7 @@ class ReleaseName(collections.abc.Mapping):
         For TV series, :attr:`year` should only be added to the release name if
         multiple series with the same title exist.
 
-        This property is automatically set by :func:`fetch_info`.
+        This property is set by :meth:`fetch_info`.
         """
         return getattr(self, '_year_required', False)
 
