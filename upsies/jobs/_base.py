@@ -288,7 +288,6 @@ class JobBase(abc.ABC):
                     self._output = json.loads(content)
                 except (ValueError, TypeError) as e:
                     raise RuntimeError(f'Unable to decode JSON: {content!r}: {e}')
-            _log.debug('Read cached output: %r', self._output)
 
     @property
     def cache_directory(self):
