@@ -1,4 +1,5 @@
 import abc
+import asyncio
 import enum
 
 from ... import __project_name__, __version__, errors
@@ -39,10 +40,10 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         with open(filepath, 'w') as f:
             f.write(html)
 
-    def initialize(self, *, args, config, content_path):
-        self._args = args
-        self._config = config
-        self._content_path = content_path
+    def initialize(self, *, tracker_config, required_jobs):
+        self._tracker_config = tracker_config
+        self._required_jobs = required_jobs
+        self._metadata = {}
         self._callbacks = {
             self.signal.logging_in: [],
             self.signal.logged_in: [],
@@ -56,29 +57,19 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         pass
 
     @property
-    def config(self):
-        """Configuration from config file as dictionary"""
-        return self._config
-
-    @property
-    def args(self):
-        """CLI arguments as namespace"""
-        return self._args
-
-    @property
-    def content_path(self):
-        """Path to content file(s)"""
-        return self._content_path
-
-    @property
     @abc.abstractmethod
-    def trackername(self):
+    def tracker_name(self):
         """Tracker name abbreviation"""
         pass
 
+    @property
+    def tracker_config(self):
+        """Tracker configuration that was passed as a keyword argument"""
+        return self._tracker_config
+
     @abc.abstractmethod
     async def login(self):
-        """Authenticate a user and start a session"""
+        """Start user session"""
         pass
 
     @abc.abstractmethod
@@ -92,25 +83,26 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         pass
 
     @property
-    @abc.abstractmethod
-    def jobs(self):
+    def metadata(self):
         """
-        Sequence of instances of :class:`JobBase`
+        Dictionary that maps job names to their output
 
-        The last job must be the instance of this class.
+        This dictionary is empty until all required jobs are finished.
+
+        Keys are the jobs' `name` attributes.
+        Values are the jobs' `output` attributes.
         """
-        pass
+        return self._metadata
 
     async def wait(self):
-        # Wait for all subjobs (e.g. torrent creation)
-        for job in self.jobs:
-            if job is not self:
-                await job.wait()
-
-        # Maybe user aborted
-        if not self.is_finished:
-            await self._submit()
-            self.finish()
+        _log.debug('Waiting for required jobs: %r', self._required_jobs)
+        await asyncio.gather(*(job.wait() for job in self._required_jobs))
+        outputs = [job.output for job in self._required_jobs]
+        names = [job.name for job in self._required_jobs]
+        self._metadata.update(zip(names, outputs))
+        await self._submit()
+        self.finish()
+        await super().wait()
 
     @cache.property
     def _http_session(self):
@@ -121,7 +113,7 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         )
 
     async def _submit(self):
-        _log.debug('%s: Submitting %s', self.trackername, self.content_path)
+        _log.debug('%s: Submitting %s', self.tracker_name, self.metadata['create-torrent'])
         try:
             async with self._http_session as client:
                 self._call_callbacks(self.signal.logging_in)

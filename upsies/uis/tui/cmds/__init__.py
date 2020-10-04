@@ -1,12 +1,12 @@
-from ... import jobs as _jobs
-from ...tools import btclient
-from ...utils import cache, fs
+from .... import jobs as _jobs
+from ....tools import btclient
+from ....utils import cache, fs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class SubcommandBase:
+class CommandBase:
     def __init__(self, args, config):
         self._args = args
         self._config = config
@@ -20,7 +20,7 @@ class SubcommandBase:
         return self._config
 
 
-class search_db(SubcommandBase):
+class search_db(CommandBase):
     @cache.property
     def jobs(self):
         return (
@@ -33,13 +33,13 @@ class search_db(SubcommandBase):
         )
 
 
-class release_name(SubcommandBase):
+class release_name(CommandBase):
     @cache.property
     def jobs(self):
-        return (self._imdb_job, self._release_name_job)
+        return (self.imdb_job, self.release_name_job)
 
     @cache.property
-    def _release_name_job(self):
+    def release_name_job(self):
         return _jobs.release_name.ReleaseNameJob(
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
@@ -47,7 +47,7 @@ class release_name(SubcommandBase):
         )
 
     @cache.property
-    def _imdb_job(self):
+    def imdb_job(self):
         # To be able to fetch the original title, year, etc, we need to prompt
         # for an ID first. IMDb seems to be best.
         imdb_job = _jobs.search.SearchDbJob(
@@ -56,13 +56,13 @@ class release_name(SubcommandBase):
             content_path=self.args.CONTENT,
             db='imdb',
         )
-        imdb_job.on_output(self._release_name_job.fetch_info)
+        imdb_job.on_output(self.release_name_job.fetch_info)
         return imdb_job
 
 
-class create_torrent(SubcommandBase):
+class create_torrent(CommandBase):
     @cache.property
-    def _create_job(self):
+    def create_torrent_job(self):
         return _jobs.torrent.CreateTorrentJob(
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
@@ -72,7 +72,7 @@ class create_torrent(SubcommandBase):
         )
 
     @cache.property
-    def _add_job(self):
+    def add_torrent_job(self):
         if self.args.add_to:
             add_job = _jobs.torrent.AddTorrentJob(
                 homedir=fs.projectdir(self.args.CONTENT),
@@ -84,22 +84,37 @@ class create_torrent(SubcommandBase):
                 download_path=fs.dirname(self.args.CONTENT),
             )
             _jobs.Pipe(
-                sender=self._create_job,
+                sender=self.create_torrent_job,
                 receiver=add_job,
             )
             return add_job
 
-    # TODO: Add --copy-to job
+    @cache.property
+    def copy_torrent_job(self):
+        if self.args.copy_to:
+            copy_job = _jobs.torrent.CopyTorrentJob(
+                homedir=fs.projectdir(self.args.CONTENT),
+                ignore_cache=self.args.ignore_cache,
+                destination=self.args.copy_to,
+            )
+            _jobs.Pipe(
+                sender=self.create_torrent_job,
+                receiver=copy_job,
+            )
+            return copy_job
 
     @cache.property
     def jobs(self):
-        return tuple(
-            job for job in (self._create_job, self._add_job)
-            if job is not None
+        all_jobs = (
+            self.create_torrent_job,
+            self.add_torrent_job,
+            self.copy_torrent_job,
         )
+        return tuple(job for job in all_jobs
+                     if job is not None)
 
 
-class add_torrent(SubcommandBase):
+class add_torrent(CommandBase):
     @cache.property
     def jobs(self):
         return (
@@ -116,9 +131,9 @@ class add_torrent(SubcommandBase):
         )
 
 
-class screenshots(SubcommandBase):
+class screenshots(CommandBase):
     @cache.property
-    def _screenshots_job(self):
+    def screenshots_job(self):
         return _jobs.screenshots.ScreenshotsJob(
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
@@ -128,36 +143,36 @@ class screenshots(SubcommandBase):
         )
 
     @cache.property
-    def _imghost_job(self):
+    def imghost_job(self):
         image_host = self.args.upload_to
         if image_host:
             imghost_job = _jobs.imghost.ImageHostJob(
                 homedir=fs.projectdir(self.args.path),
                 ignore_cache=self.args.ignore_cache,
                 image_host=image_host,
-                images_total=self._screenshots_job.screenshots_total,
+                images_total=self.screenshots_job.screenshots_total,
             )
             # Connect ScreenshotsJob's output to ImageHostJob input
             _jobs.Pipe(
-                sender=self._screenshots_job,
+                sender=self.screenshots_job,
                 receiver=imghost_job,
             )
             return imghost_job
 
     @cache.property
     def jobs(self):
-        if self._imghost_job:
+        if self.imghost_job:
             return (
-                self._screenshots_job,
-                self._imghost_job,
+                self.screenshots_job,
+                self.imghost_job,
             )
         else:
             return (
-                self._screenshots_job,
+                self.screenshots_job,
             )
 
 
-class upload_images(SubcommandBase):
+class upload_images(CommandBase):
     @cache.property
     def jobs(self):
         return (
@@ -170,7 +185,7 @@ class upload_images(SubcommandBase):
         )
 
 
-class mediainfo(SubcommandBase):
+class mediainfo(CommandBase):
     @cache.property
     def jobs(self):
         return (
@@ -182,22 +197,13 @@ class mediainfo(SubcommandBase):
         )
 
 
-class submit(SubcommandBase):
-    @cache.property
-    def jobs(self):
+class submit(CommandBase):
+    def __new__(cls, args, config):
+        from . import _submit
         try:
-            tracker = getattr(_jobs.submit, self.args.TRACKER)
+            module = getattr(_submit, args.TRACKER.lower())
         except AttributeError:
-            raise ValueError(f'Unknown tracker: {self.args.TRACKER}')
-
-        _log.debug('Tracker: %r', self.args.TRACKER)
-        _log.debug('Submission class: %r', tracker.SubmissionJob)
-        sub = tracker.SubmissionJob(
-            homedir=fs.projectdir(self.args.CONTENT),
-            ignore_cache=self.args.ignore_cache,
-            content_path=self.args.CONTENT,
-            args=self.args,
-            config=_get_tracker_section(self.config, self.args.TRACKER),
-        )
-        _log.debug('Tracker jobs: %r', sub.jobs)
-        return sub.jobs
+            raise ValueError(f'Unknown tracker: {args.TRACKER}')
+        else:
+            _log.debug('submit module: %r', module)
+            return module.submit(args=args, config=config)

@@ -2,9 +2,7 @@ import re
 import urllib
 
 from ... import errors
-from ...tools import mediainfo, release_name
-from ...utils import LazyModule, cache, fs
-from .. import search, torrent
+from ...utils import LazyModule
 from . import _base
 
 import logging  # isort:skip
@@ -14,54 +12,7 @@ aiohttp = LazyModule(module='aiohttp', namespace=globals())
 
 
 class SubmissionJob(_base.SubmissionJobBase):
-    trackername = 'NBL'
-
-    @cache.property
-    def jobs(self):
-        return (
-            self._torrent_job,
-            self._search_job,
-            self,
-        )
-
-    @cache.property
-    def _torrent_job(self):
-        return torrent.CreateTorrentJob(
-            homedir=fs.projectdir(self.content_path),
-            ignore_cache=False,
-            content_path=self.content_path,
-            exclude_regexs=self.config['exclude'],
-            trackername=self.trackername,
-            announce_url=self.config['announce'],
-            source='NBL',
-        )
-
-    @property
-    def torrent_filepath(self):
-        if self._torrent_job.output:
-            return self._torrent_job.output[0]
-
-    @cache.property
-    def _search_job(self):
-        return search.SearchDbJob(
-            homedir=fs.projectdir(self.content_path),
-            ignore_cache=False,
-            content_path=self.content_path,
-            db='tvmaze',
-        )
-
-    @property
-    def tvmaze_id(self):
-        if self._search_job.output:
-            return self._search_job.output[0]
-
-    @cache.property
-    def mediainfo(self):
-        return mediainfo.as_string(self.content_path)
-
-    @cache.property
-    def release_name(self):
-        return release_name.ReleaseName(self.content_path)
+    tracker_name = 'NBL'
 
     _url_path = {
         'login': '/login.php',
@@ -71,16 +22,16 @@ class SubmissionJob(_base.SubmissionJobBase):
 
     async def login(self, client):
         if not self.logged_in:
-            _log.debug('%s: Logging in as %r', self.trackername, self.config['username'])
+            _log.debug('%s: Logging in as %r', self.tracker_name, self.tracker_config['username'])
             login_url = urllib.parse.urljoin(
-                self.config['base_url'],
+                self.tracker_config['base_url'],
                 self._url_path['login'],
             )
             response = await client.post(
                 url=login_url,
                 data={
-                    'username': self.config['username'],
-                    'password': self.config['password'],
+                    'username': self.tracker_config['username'],
+                    'password': self.tracker_config['password'],
                     'twofa': '',
                     'login': 'Login',
                 },
@@ -107,7 +58,7 @@ class SubmissionJob(_base.SubmissionJobBase):
             raise RuntimeError('Failed to find input tag named "auth"')
         else:
             self._auth_key = auth_input['value']
-            _log.debug('%s: Auth key: %s', self.trackername, self._auth_key)
+            _log.debug('%s: Auth key: %s', self.tracker_name, self._auth_key)
 
     def _store_logout_url(self, html):
         logout_url = html.find('a', text=re.compile(r'(?i:Logout)'))
@@ -115,12 +66,12 @@ class SubmissionJob(_base.SubmissionJobBase):
             self.dump_html('login.html', html.prettify())
             raise RuntimeError('Failed to find logout URL')
         else:
-            _log.debug('%s: Logged in as %r', self.trackername, self.config['username'])
+            _log.debug('%s: Logged in as %r', self.tracker_name, self.tracker_config['username'])
             self._logout_url = urllib.parse.urljoin(
-                self.config['base_url'],
+                self.tracker_config['base_url'],
                 logout_url['href'],
             )
-            _log.debug('%s: Logout URL: %s', self.trackername, self._logout_url)
+            _log.debug('%s: Logout URL: %s', self.tracker_name, self._logout_url)
 
     @property
     def logged_in(self):
@@ -133,21 +84,22 @@ class SubmissionJob(_base.SubmissionJobBase):
         if hasattr(self, '_logout_url'):
             logout_url = self._logout_url
             delattr(self, '_logout_url')
-            _log.debug('%s: Logging out: %r', self.trackername, logout_url)
+            _log.debug('%s: Logging out: %r', self.tracker_name, logout_url)
             await client.get(logout_url)
-            _log.debug('%s: Logged out', self.trackername)
+            _log.debug('%s: Logged out', self.tracker_name)
 
     async def upload(self, client):
+        _log.debug('Uploading: %r', self.metadata)
         if not self.logged_in:
             raise RuntimeError('upload() called before login()')
 
-        if not self.torrent_filepath:
+        if not self.metadata['create-torrent']:
             raise RuntimeError('upload() called before torrent file creation finished')
-        _log.debug('%s: Torrent: %r', self.trackername, self.torrent_filepath)
+        _log.debug('%s: Torrent: %r', self.tracker_name, self.metadata['create-torrent'])
 
-        if not self.tvmaze_id:
+        if not self.metadata['tvmaze-id']:
             raise RuntimeError('upload() called before TVmaze ID was picked')
-        _log.debug('%s: TVmaze ID: %r', self.trackername, self.tvmaze_id)
+        _log.debug('%s: TVmaze ID: %r', self.tracker_name, self.metadata['tvmaze-id'])
 
         formdata = aiohttp.FormData()
         formdata.add_field(name='file_input',
@@ -155,10 +107,10 @@ class SubmissionJob(_base.SubmissionJobBase):
                            content_type='application/x-bittorrent')
         formdata.add_field('auth', self._auth_key)
         formdata.add_field('title', '')  # Ignored by server
-        formdata.add_field('tvmazeid', self.tvmaze_id)
-        formdata.add_field('media', self.mediainfo)
-        formdata.add_field('desc', self.mediainfo)
-        formdata.add_field('mediaclean', f'[mediainfo]{self.mediainfo}[/mediainfo]')
+        formdata.add_field('tvmazeid', self.metadata['tvmaze-id'])
+        formdata.add_field('media', self.metadata['mediainfo'])
+        formdata.add_field('desc', self.metadata['mediainfo'])
+        formdata.add_field('mediaclean', f'[mediainfo]{self.metadata["mediainfo"]}[/mediainfo]')
         formdata.add_field('submit', 'true')
         formdata.add_field('MAX_FILE_SIZE', '1048576')
         formdata.add_field('category', self._request_category())
@@ -169,14 +121,14 @@ class SubmissionJob(_base.SubmissionJobBase):
         formdata.add_field('fontsize', '-1')
 
         upload_url = urllib.parse.urljoin(
-            self.config['base_url'],
+            self.tracker_config['base_url'],
             self._url_path['upload'],
         )
         response = await client.post(upload_url, data=formdata, allow_redirects=False)
 
         # Upload response should redirect to torrent page via "Location" header
         torrent_page_url = urllib.parse.urljoin(
-            self.config['base_url'],
+            self.tracker_config['base_url'],
             response.headers.get('Location', ''),
         )
         if urllib.parse.urlparse(torrent_page_url).path == self._url_path['torrent']:

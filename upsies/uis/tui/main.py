@@ -2,7 +2,7 @@ import sys
 
 from ... import __homepage__, __project_name__, config, defaults, errors
 from .args import parse as parse_args
-from .subcmds import SubcommandBase
+from .cmds import CommandBase
 from .ui import UI
 
 import logging  # isort:skip
@@ -32,7 +32,7 @@ def _main(args=None):
 
     try:
         cmd = args.subcmd(args=args, config=cfg)
-        assert isinstance(cmd, SubcommandBase)
+        assert isinstance(cmd, CommandBase)
         ui = UI(jobs=cmd.jobs)
         exit_code = ui.run()
     except (errors.ConfigError, errors.DependencyError, errors.NoContentError) as e:

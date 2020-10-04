@@ -7,7 +7,7 @@ from ...jobs import submit as trackers
 from ...tools import btclient as btclients
 from ...tools import dbs
 from ...tools import imghost as imghosts
-from . import subcmds
+from . import cmds
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ def _get_names(package, clsname, name_attribute):
                 for mod in modules]
 
 DB_NAMES = _get_names(dbs, '', 'label')
-TRACKER_NAMES = _get_names(trackers, 'SubmissionJob', 'trackername')
+TRACKER_NAMES = _get_names(trackers, 'SubmissionJob', 'tracker_name')
 IMGHOST_NAMES = _get_names(imghosts, 'Uploader', 'name')
 BTCLIENT_NAMES = _get_names(btclients, 'ClientApi', 'name')
 
@@ -121,7 +121,7 @@ def parse(args):
 
     # Command: id
     add_subcmd(
-        handler=subcmds.search_db,
+        handler=cmds.search_db,
         names=('id',),
         help='Pick ID from search results from IMDb, TMDb, etc',
         args={
@@ -136,7 +136,7 @@ def parse(args):
 
     # Command: release-name
     add_subcmd(
-        handler=subcmds.release_name,
+        handler=cmds.release_name,
         names=('release-name', 'rn'),
         help='Create standardized release name',
         description=('Print the properly formatted release name.\n\n'
@@ -151,7 +151,7 @@ def parse(args):
 
     # Command: create-torrent
     add_subcmd(
-        handler=subcmds.create_torrent,
+        handler=cmds.create_torrent,
         names=('create-torrent', 'ct'),
         help='Create torrent file and optionally add it to a client',
         description='Create torrent for a specific tracker.',
@@ -177,7 +177,7 @@ def parse(args):
 
     # Command: add-torrent
     add_subcmd(
-        handler=subcmds.add_torrent,
+        handler=cmds.add_torrent,
         names=('add-torrent', 'at'),
         help='Send torrent file to BitTorrent Client',
         args={
@@ -199,7 +199,7 @@ def parse(args):
 
     # Command: screenshots
     add_subcmd(
-        handler=subcmds.screenshots,
+        handler=cmds.screenshots,
         names=('screenshots', 'ss'),
         help='Create and optionally upload screenshots',
         description=('Create PNG screenshots with ffmpeg and optionally '
@@ -229,7 +229,7 @@ def parse(args):
 
     # Command: upload-images
     add_subcmd(
-        handler=subcmds.upload_images,
+        handler=cmds.upload_images,
         names=('upload-images', 'ui'),
         help='Upload image to image hosting service',
         args={
@@ -247,7 +247,7 @@ def parse(args):
 
     # Command: mediainfo
     add_subcmd(
-        handler=subcmds.mediainfo,
+        handler=cmds.mediainfo,
         names=('mediainfo', 'mi'),
         help='Print mediainfo output',
         description=('If PATH is a directory, it is recursively searched for the first video '
@@ -260,7 +260,7 @@ def parse(args):
 
     # Command: submit
     add_subcmd(
-        handler=subcmds.submit,
+        handler=cmds.submit,
         names=('submit',),
         help='Gather all required metadata and upload PATH to tracker',
         args={
