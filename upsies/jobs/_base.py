@@ -13,8 +13,7 @@ class JobBase(abc.ABC):
     """
     Base class for all jobs
 
-    :param str homedir: Directory that is used to store files. Cached output is
-        stored in a subdirectory called ".output".
+    :param str homedir: Directory that is used to store files
     :param str ignore_cache: Whether cached output and previously created files
         should not be re-used
 
@@ -35,12 +34,16 @@ class JobBase(abc.ABC):
 
     @property
     def homedir(self):
-        """Directory where any output or other files should go in"""
+        """
+        Directory that is used to store files
+
+        Cached output is stored in a subdirectory called ".output".
+        """
         return self._homedir
 
     @property
     def ignore_cache(self):
-        """Whether to re-create output and any files from previous call"""
+        """Whether cached output and previously created files should not be re-used"""
         return self._ignore_cache
 
     def __init__(self, *, homedir, ignore_cache, **kwargs):
@@ -97,6 +100,8 @@ class JobBase(abc.ABC):
 
         This method must be called. :attr:`is_finished` must be `False` before
         this method returns and `True` afterwards.
+
+        It must be safe to call this method multiple times simultaneously.
 
         :raise: Any exceptions given to :func:`exception`
         """
