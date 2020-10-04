@@ -270,6 +270,16 @@ def parse(args):
                          'Supported trackers: ' + ', '.join(TRACKER_NAMES)),
             },
             'CONTENT': {'help': 'Path to release content'},
+            ('--add-to', '-a'): {
+                'type': CLIENT,
+                'metavar': 'CLIENT',
+                'help': ('Add the created torrent to a running BitTorrent client instance.\n'
+                         'Supported clients: ' + ', '.join(BTCLIENT_NAMES)),
+            },
+            ('--copy-to', '-c'): {
+                'metavar': 'DIRECTORY',
+                'help': 'Copy the created torrent to DIRECTORY',
+            },
         },
     )
 
