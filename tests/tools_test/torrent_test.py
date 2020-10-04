@@ -3,7 +3,7 @@ from unittest.mock import Mock, call, patch
 import pytest
 import torf
 
-from upsies import errors
+from upsies import __project_name__, __version__, errors
 from upsies.tools.torrent import _make_file_tree, create
 
 
@@ -79,6 +79,7 @@ def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, p
         source=None,
         exclude_regexs=(),
         private=True,
+        created_by=f'{__project_name__} {__version__}',
     )]
     assert init_cb.call_args_list == [call(file_tree_mock.return_value)]
     assert Torrent_mock.return_value.write.call_args_list == [call('path/to/torrent', overwrite=True)]
@@ -111,6 +112,7 @@ def test_create_passes_arguments_to_Torrent_class(Torrent_mock, file_tree_mock, 
         source=source or None,
         exclude_regexs=exclude or (),
         private=True,
+        created_by=f'{__project_name__} {__version__}',
     )]
 
 @patch('upsies.tools.torrent._path_exists')

@@ -1,6 +1,6 @@
 from os.path import exists as _path_exists
 
-from .. import errors
+from .. import __project_name__, __version__, errors
 from ..utils import LazyModule
 
 import logging  # isort:skip
@@ -49,6 +49,7 @@ def create(*, content_path, announce, torrent_path,
                 trackers=((announce,),),
                 private=True,
                 source=source,
+                created_by=f'{__project_name__} {__version__}',
             )
             init_callback(_make_file_tree(torrent.filetree))
             success = torrent.generate(callback=cb, interval=0.5)
