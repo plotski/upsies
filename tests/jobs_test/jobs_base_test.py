@@ -58,6 +58,12 @@ def test_ignore_cache_property(tmp_path):
     assert FooJob(homedir=tmp_path, ignore_cache='').ignore_cache is False
     assert FooJob(homedir=tmp_path, ignore_cache=1).ignore_cache is True
 
+def test_quiet_property(tmp_path):
+    assert FooJob(homedir=tmp_path, ignore_cache=False, quiet=False).quiet is False
+    assert FooJob(homedir=tmp_path, ignore_cache=False, quiet=True).quiet is True
+    assert FooJob(homedir=tmp_path, ignore_cache=False, quiet='').quiet is False
+    assert FooJob(homedir=tmp_path, ignore_cache=False, quiet=1).quiet is True
+
 
 def test_initialize_is_called_after_object_creation(job):
     assert job.initialize_was_called
