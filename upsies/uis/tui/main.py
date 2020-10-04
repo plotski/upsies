@@ -2,7 +2,7 @@ import sys
 
 from ... import __homepage__, __project_name__, config, defaults, errors
 from .args import parse as parse_args
-from .cmds import CommandBase
+from .commands import CommandBase
 from .ui import UI
 
 import logging  # isort:skip

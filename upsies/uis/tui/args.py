@@ -8,7 +8,7 @@ from ...jobs import submit as trackers
 from ...tools import btclient as btclients
 from ...tools import dbs
 from ...tools import imghost as imghosts
-from . import cmds
+from . import commands
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -124,7 +124,7 @@ def parse(args):
 
     # Command: id
     add_subcmd(
-        command=cmds.search_db,
+        command=commands.search_db,
         names=('id',),
         args={
             'DB': {
@@ -138,7 +138,7 @@ def parse(args):
 
     # Command: release-name
     add_subcmd(
-        command=cmds.release_name,
+        command=commands.release_name,
         names=('release-name', 'rn'),
         args={
             'CONTENT': {'help': 'Path to release content'},
@@ -147,7 +147,7 @@ def parse(args):
 
     # Command: create-torrent
     add_subcmd(
-        command=cmds.create_torrent,
+        command=commands.create_torrent,
         names=('create-torrent', 'ct'),
         args={
             'TRACKER': {
@@ -171,7 +171,7 @@ def parse(args):
 
     # Command: add-torrent
     add_subcmd(
-        command=cmds.add_torrent,
+        command=commands.add_torrent,
         names=('add-torrent', 'at'),
         args={
             'CLIENT': {
@@ -192,7 +192,7 @@ def parse(args):
 
     # Command: screenshots
     add_subcmd(
-        command=cmds.screenshots,
+        command=commands.screenshots,
         names=('screenshots', 'ss'),
         args={
             'CONTENT': {'help': 'Path to release content'},
@@ -219,7 +219,7 @@ def parse(args):
 
     # Command: upload-images
     add_subcmd(
-        command=cmds.upload_images,
+        command=commands.upload_images,
         names=('upload-images', 'ui'),
         args={
             'IMAGEHOST': {
@@ -236,7 +236,7 @@ def parse(args):
 
     # Command: mediainfo
     add_subcmd(
-        command=cmds.mediainfo,
+        command=commands.mediainfo,
         names=('mediainfo', 'mi'),
         args={
             'CONTENT': {'help': 'Path to release content'},
@@ -245,7 +245,7 @@ def parse(args):
 
     # Command: submit
     add_subcmd(
-        command=cmds.submit,
+        command=commands.submit,
         names=('submit',),
         args={
             'TRACKER': {
