@@ -179,7 +179,7 @@ class JobBase(abc.ABC):
         assert callable(callback)
         self._output_callbacks.append(callback)
 
-    def pipe_input(self):
+    def pipe_input(self, value):
         """
         Called by :class:`Pipe` on the receiving job for each output from sending
         job
