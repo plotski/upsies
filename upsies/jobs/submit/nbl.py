@@ -43,13 +43,20 @@ class SubmissionJob(_base.SubmissionJobBase):
             self._store_logout_url(html)
 
     def _report_login_error(self, html):
-        form = html.find(id='loginform')
-        if form:
-            error = form.find(class_='warning')
-            if error:
-                msg = error.string.strip()
-                if msg:
-                    raise errors.RequestError(f'Login failed: {msg}')
+        def error_tag(tag):
+            class_ = tag.get('class', ())
+            return (
+                'warning' in class_
+                and 'hidden' not in class_
+                and 'noscript' not in (p.name for p in tag.parents)
+            )
+
+        error = html.find(error_tag)
+        if error:
+            msg = ' '.join(error.stripped_strings).strip()
+            if msg:
+                self.dump_html('login.html', html.prettify())
+                raise errors.RequestError(f'Login failed: {msg}')
 
     def _store_auth_key(self, html):
         auth_input = html.find('input', {'name': 'auth'})
