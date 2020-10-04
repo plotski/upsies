@@ -16,6 +16,7 @@ class JobBase(abc.ABC):
     :param str homedir: Directory that is used to store files
     :param str ignore_cache: Whether cached output and previously created files
         should not be re-used
+    :param bool quiet: Whether to hide this job's output
 
     Any additional keyword arguments are passed on to :func:`initialize`.
     """
@@ -46,9 +47,15 @@ class JobBase(abc.ABC):
         """Whether cached output and previously created files should not be re-used"""
         return self._ignore_cache
 
-    def __init__(self, *, homedir, ignore_cache, **kwargs):
+    @property
+    def quiet(self):
+        """Whether to hide this job's output"""
+        return self._quiet
+
+    def __init__(self, *, homedir, ignore_cache, quiet=False, **kwargs):
         self._homedir = homedir
         self._ignore_cache = bool(ignore_cache)
+        self._quiet = quiet
         self._exception = None
         self._errors = []
         self._output = []
