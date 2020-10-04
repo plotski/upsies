@@ -1,6 +1,7 @@
 import argparse
 import functools
 import sys
+import textwrap
 
 from ... import __project_name__, __version__, defaults, utils
 from ...jobs import submit as trackers
@@ -106,7 +107,9 @@ def parse(args):
 
     subparsers = parser.add_subparsers(title='commands')
 
-    def add_subcmd(handler, names, help, description='', args={}):
+    def add_subcmd(command, names, help='', description='', args={}):
+        description = textwrap.dedent(command.__doc__.strip('\n'))
+        help = description.split('\n', 1)[0]
         parser = subparsers.add_parser(
             names[0],
             aliases=names[1:],
@@ -114,16 +117,15 @@ def parse(args):
             description=description,
             formatter_class=MyHelpFormatter,
         )
-        parser.set_defaults(subcmd=handler)
+        parser.set_defaults(subcmd=command)
         for argname,argopts in args.items():
             names = (argname,) if isinstance(argname, str) else argname
             parser.add_argument(*names, **argopts)
 
     # Command: id
     add_subcmd(
-        handler=cmds.search_db,
+        command=cmds.search_db,
         names=('id',),
-        help='Pick ID from search results from IMDb, TMDb, etc',
         args={
             'DB': {
                 'type': DB,
@@ -136,14 +138,8 @@ def parse(args):
 
     # Command: release-name
     add_subcmd(
-        handler=cmds.release_name,
+        command=cmds.release_name,
         names=('release-name', 'rn'),
-        help='Create standardized release name',
-        description=('Print the properly formatted release name.\n\n'
-                     'IMDb is searched to get the correct title, year and alternative '
-                     'title if applicable. Audio and video information is detected with '
-                     'mediainfo. Missing required information is highlighted with '
-                     'placeholders, e.g. "UNKNOWN_RESOLUTION".'),
         args={
             'CONTENT': {'help': 'Path to release content'},
         },
@@ -151,10 +147,8 @@ def parse(args):
 
     # Command: create-torrent
     add_subcmd(
-        handler=cmds.create_torrent,
+        command=cmds.create_torrent,
         names=('create-torrent', 'ct'),
-        help='Create torrent file and optionally add it to a client',
-        description='Create torrent for a specific tracker.',
         args={
             'TRACKER': {
                 'type': TRACKER,
@@ -177,9 +171,8 @@ def parse(args):
 
     # Command: add-torrent
     add_subcmd(
-        handler=cmds.add_torrent,
+        command=cmds.add_torrent,
         names=('add-torrent', 'at'),
-        help='Send torrent file to BitTorrent Client',
         args={
             'CLIENT': {
                 'type': CLIENT,
@@ -199,11 +192,8 @@ def parse(args):
 
     # Command: screenshots
     add_subcmd(
-        handler=cmds.screenshots,
+        command=cmds.screenshots,
         names=('screenshots', 'ss'),
-        help='Create and optionally upload screenshots',
-        description=('Create PNG screenshots with ffmpeg and optionally '
-                     'upload them to an image hosting service.'),
         args={
             'CONTENT': {'help': 'Path to release content'},
             ('--timestamps', '-t'): {
@@ -229,9 +219,8 @@ def parse(args):
 
     # Command: upload-images
     add_subcmd(
-        handler=cmds.upload_images,
+        command=cmds.upload_images,
         names=('upload-images', 'ui'),
-        help='Upload image to image hosting service',
         args={
             'IMAGEHOST': {
                 'type': IMAGEHOST,
@@ -247,12 +236,8 @@ def parse(args):
 
     # Command: mediainfo
     add_subcmd(
-        handler=cmds.mediainfo,
+        command=cmds.mediainfo,
         names=('mediainfo', 'mi'),
-        help='Print mediainfo output',
-        description=('If PATH is a directory, it is recursively searched for the first video '
-                     'file in natural order, i.e. "File1.mp4" comes before "File10.mp4".\n\n'
-                     'Any irrelevant parts in the file path are removed from the output.'),
         args={
             'CONTENT': {'help': 'Path to release content'},
         },
@@ -260,9 +245,8 @@ def parse(args):
 
     # Command: submit
     add_subcmd(
-        handler=cmds.submit,
+        command=cmds.submit,
         names=('submit',),
-        help='Gather all required metadata and upload PATH to tracker',
         args={
             'TRACKER': {
                 'type': TRACKER,
@@ -318,7 +302,6 @@ class MyHelpFormatter(argparse.HelpFormatter):
             if not text:
                 return ['']
             else:
-                import textwrap
                 return textwrap.wrap(
                     text=text,
                     width=min(width, self.MAX_WIDTH),
