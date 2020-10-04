@@ -1,3 +1,14 @@
+"""
+A command is a class with a :attr:`JobBase.jobs` property that returns a sequence of
+jobs.
+
+It is important that the jobs returned by :attr:`JobBase.jobs` are singletons,
+for example by using the :func:`utils.cache.property` decorator.
+
+The jobs are configured using CLI arguments or the config file. Both are
+provided by :class:`CommandBase`.
+"""
+
 from .... import jobs as _jobs
 from ....tools import btclient
 from ....utils import cache, fs
@@ -7,20 +18,24 @@ _log = logging.getLogger(__name__)
 
 
 class CommandBase:
+    """Base class for all commands"""
     def __init__(self, args, config):
         self._args = args
         self._config = config
 
     @property
     def args(self):
+        """CLI arguments as a :class:`argparse.Namespace` object"""
         return self._args
 
     @property
     def config(self):
+        """Config file options as :class:`config.Config` object"""
         return self._config
 
 
 class search_db(CommandBase):
+    """Search online database like IMDb to get an ID"""
     @cache.property
     def jobs(self):
         return (
@@ -34,6 +49,17 @@ class search_db(CommandBase):
 
 
 class release_name(CommandBase):
+    """
+    Generate properly formatted release name
+
+    IMDb is searched to get the correct title, year and alternative title if
+    applicable.
+
+    Audio and video information is detected with mediainfo.
+
+    Missing required information is highlighted with placeholders,
+    e.g. "UNKNOWN_RESOLUTION"
+    """
     @cache.property
     def jobs(self):
         return (self.imdb_job, self.release_name_job)
@@ -61,6 +87,7 @@ class release_name(CommandBase):
 
 
 class create_torrent(CommandBase):
+    """Create torrent file and optionally add it or move it"""
     @cache.property
     def create_torrent_job(self):
         return _jobs.torrent.CreateTorrentJob(
@@ -115,6 +142,7 @@ class create_torrent(CommandBase):
 
 
 class add_torrent(CommandBase):
+    """Add torrent file to BitTorrent client"""
     @cache.property
     def jobs(self):
         return (
@@ -132,6 +160,7 @@ class add_torrent(CommandBase):
 
 
 class screenshots(CommandBase):
+    """Create screenshots and optionally upload them"""
     @cache.property
     def screenshots_job(self):
         return _jobs.screenshots.ScreenshotsJob(
@@ -173,6 +202,7 @@ class screenshots(CommandBase):
 
 
 class upload_images(CommandBase):
+    """Upload images to image hosting service"""
     @cache.property
     def jobs(self):
         return (
@@ -186,6 +216,14 @@ class upload_images(CommandBase):
 
 
 class mediainfo(CommandBase):
+    """
+    Get mediainfo output
+
+    Directories are recursively searched for the first video file in natural
+    order, e.g. "File1.mp4" comes before "File10.mp4".
+
+    Any irrelevant leading parts in the file path are removed from the output.
+    """
     @cache.property
     def jobs(self):
         return (
@@ -198,6 +236,9 @@ class mediainfo(CommandBase):
 
 
 class submit(CommandBase):
+    """
+    Collect all required metadata and upload to tracker
+    """
     def __new__(cls, args, config):
         from . import _submit
         try:
