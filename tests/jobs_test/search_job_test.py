@@ -52,7 +52,7 @@ def test_query(make_query_mock, tmp_path):
     assert sj.query == 'query string'
 
 
-@patch('upsies.tools.guessit.guessit')
+@patch('upsies.utils.guessit.guessit')
 @pytest.mark.parametrize(
     argnames=('guess', 'exp_query'),
     argvalues=(

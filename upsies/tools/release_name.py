@@ -1,7 +1,8 @@
 import asyncio
 import collections
 
-from . import dbs, guessit, mediainfo
+from ..utils import guessit
+from . import dbs, mediainfo
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)

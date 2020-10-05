@@ -2,7 +2,7 @@ from unittest.mock import call, patch
 
 import pytest
 
-from upsies.tools import guessit
+from upsies.utils import guessit
 
 
 # guessit() is memoized so we must clear its cache before every test.
@@ -11,7 +11,7 @@ def clear_guessit_cache():
     guessit.guessit.cache_clear()
 
 
-@patch('upsies.tools.guessit._guessit')
+@patch('upsies.utils.guessit._guessit')
 def test_return_value_is_regular_dict(guessit_mock):
     guessit_mock.guessit.return_value = (('type', 'movie'),)
     guess = guessit.guessit('path/to/foo.mkv')
@@ -19,13 +19,13 @@ def test_return_value_is_regular_dict(guessit_mock):
     assert guess == {'type': 'movie'}
     assert guessit_mock.guessit.call_args_list == [call('path/to/foo.mkv')]
 
-@patch('upsies.tools.guessit._guessit')
+@patch('upsies.utils.guessit._guessit')
 def test_turn_other_field_into_list(guessit_mock):
     guessit_mock.guessit.return_value = {'type': 'movie', 'other': 'Rip'}
     guess = guessit.guessit('path/to/foo.mkv')
     assert guess['other'] == ['Rip']
 
-@patch('upsies.tools.guessit._guessit')
+@patch('upsies.utils.guessit._guessit')
 def test_preserve_other_field_as_list(guessit_mock):
     guessit_mock.guessit.return_value = {'other': 'info'}
     guessit_mock.guessit.return_value = {'other': ['more', 'info']}
