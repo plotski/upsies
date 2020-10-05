@@ -10,7 +10,6 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.dimension import Dimension
 from prompt_toolkit.utils import get_cwidth
 
-from ... import jobs
 from . import jobwidgets
 
 import logging  # isort:skip
@@ -25,31 +24,21 @@ def JobWidget(job):
     """
     Factory that returns JobWidgetBase instances based on job type
 
+    The widget class name is created by adding "Widget" to `job`'s class name.
+    The widget class is imported from :mod:`jobwidgets`.
+
     :param job: Job instance
     :type job: :class:`JobBase`
 
     :raise RuntimeError: if `job`'s type is not supported
     """
-    if isinstance(job, jobs.torrent.AddTorrentJob):
-        return jobwidgets.AddTorrentJobWidget(job)
-    elif isinstance(job, jobs.torrent.CopyTorrentJob):
-        return jobwidgets.CopyTorrentJobWidget(job)
-    elif isinstance(job, jobs.imghost.ImageHostJob):
-        return jobwidgets.ImageHostJobWidget(job)
-    elif isinstance(job, jobs.mediainfo.MediainfoJob):
-        return jobwidgets.MediainfoJobWidget(job)
-    elif isinstance(job, jobs.release_name.ReleaseNameJob):
-        return jobwidgets.ReleaseNameJobWidget(job)
-    elif isinstance(job, jobs.screenshots.ScreenshotsJob):
-        return jobwidgets.ScreenshotsJobWidget(job)
-    elif isinstance(job, jobs.search.SearchDbJob):
-        return jobwidgets.SearchJobWidget(job)
-    elif isinstance(job, jobs.submit.SubmissionJobBase):
-        return jobwidgets.SubmissionJobWidget(job)
-    elif isinstance(job, jobs.torrent.CreateTorrentJob):
-        return jobwidgets.CreateTorrentJobWidget(job)
+    widget_cls_name = type(job).__name__ + 'Widget'
+    try:
+        widget_cls = getattr(jobwidgets, widget_cls_name)
+    except AttributeError:
+        raise RuntimeError(f'Unknown widget class: {widget_cls_name}')
     else:
-        raise RuntimeError(f'Unsupported job class: {type(job).__name__}')
+        return widget_cls(job)
 
 
 class TextField:

@@ -18,7 +18,7 @@ _log = logging.getLogger(__name__)
 webbrowser = LazyModule(module='webbrowser', namespace=globals())
 
 
-class SearchJobWidget(_base.JobWidgetBase):
+class SearchDbJobWidget(_base.JobWidgetBase):
     def setup(self):
         right_column_width = 40
         self._widgets = {
