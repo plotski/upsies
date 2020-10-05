@@ -1,6 +1,5 @@
 import os
-import sys
-from unittest.mock import Mock, PropertyMock, call, patch
+from unittest.mock import Mock, call, patch
 
 import aiohttp
 import aiohttp.test_utils
@@ -22,12 +21,6 @@ class AsyncMock(Mock):
         return self().__await__()
 
 
-needs_python38_because_missing_async_mock_support = pytest.mark.skipif(
-    sys.version_info < (3, 8),
-    reason='Python <3.8 does not support AsyncMock',
-)
-
-
 @pytest.mark.parametrize('method', _base.SubmissionJobBase.__abstractmethods__)
 def test_abstract_method(method):
     attrs = {name:lambda self: None for name in _base.SubmissionJobBase.__abstractmethods__}
@@ -41,11 +34,10 @@ def test_abstract_method(method):
 
 def make_TestSubmissionJob_class(**kwargs):
     attrs = {
-        'trackername': 'TEST',
+        'tracker_name': 'TEST',
         'login': AsyncMock(),
         'logout': AsyncMock(),
         'upload': AsyncMock(),
-        'jobs': PropertyMock(return_value=()),
     }
     attrs.update(kwargs)
     clsname = 'TestSubmission'
@@ -54,18 +46,16 @@ def make_TestSubmissionJob_class(**kwargs):
 
 def make_TestSubmissionJob_instance(tmp_path, **kwargs):
     cls = make_TestSubmissionJob_class(
-        trackername=kwargs.pop('trackername', 'TEST'),
+        tracker_name=kwargs.pop('tracker_name', 'TEST'),
         login=kwargs.pop('login', AsyncMock()),
         logout=kwargs.pop('logout', AsyncMock()),
         upload=kwargs.pop('upload', AsyncMock()),
-        jobs=kwargs.pop('jobs', PropertyMock(return_value=())),
     )
     kw = {
         'homedir': tmp_path / 'foo.mkv.project',
         'ignore_cache': False,
-        'args': Mock(),
-        'config': Mock(),
-        'content_path': tmp_path / 'foo.mkv',
+        'tracker_config': {},
+        'required_jobs': (),
     }
     kw.update(kwargs)
     return cls(**kw)
@@ -96,36 +86,50 @@ def test_dump_html(tmp_path):
     assert open(filepath, 'r').read() == html
 
 
-@pytest.mark.parametrize('attribute', ('args', 'config', 'content_path'))
-def test_argument_as_attribute(attribute, tmp_path):
+@pytest.mark.parametrize('attribute', ('tracker_config', 'required_jobs'))
+def test_initialize_argument_as_properties(attribute, tmp_path):
     mock_obj = object()
     kwargs = {attribute: mock_obj}
     job = make_TestSubmissionJob_instance(tmp_path, **kwargs)
     assert getattr(job, attribute) is mock_obj
 
+def test_properties(tmp_path):
+    job = make_TestSubmissionJob_instance(tmp_path, tracker_name='ASDF')
+    assert job.tracker_name == 'ASDF'
+    assert job.metadata is job._metadata
+    assert job.metadata == {}
 
-@needs_python38_because_missing_async_mock_support
+
 @pytest.mark.asyncio
 async def test_wait(tmp_path):
-    job_mocks = (AsyncMock(), AsyncMock(), AsyncMock())
+    mocks = Mock()
+    mocks.job1 = AsyncMock()
+    mocks.job2 = AsyncMock()
+    mocks._submit = AsyncMock()
     job = make_TestSubmissionJob_instance(
         tmp_path,
-        jobs=PropertyMock(return_value=job_mocks),
+        required_jobs=(mocks.job1, mocks.job2),
     )
     assert not job.is_finished
-    with patch.object(job, '_submit'):
+    with patch.object(job, '_submit', mocks._submit):
         await job.wait()
-        for job_mock in job_mocks:
-            assert job_mock.wait.call_args_list == [call()]
-        assert job._submit.call_args_list == [call()]
-        assert job.is_finished
+    # The order of jobX.wait() calls is not predictable.
+    # We can't use sets because call() objects are not hashable.
+    assert call.job1.wait() in mocks.method_calls[:2]
+    assert call.job2.wait() in mocks.method_calls[:2]
+    assert mocks.method_calls[-1] == call._submit()
+    assert len(mocks.method_calls) == 3
+    assert job.metadata == {
+        mocks.job1.name: mocks.job1.output,
+        mocks.job2.name: mocks.job2.output,
+    }
+    assert job.is_finished
 
 
 @pytest.mark.asyncio
 async def test_http_session_is_ClientSession(tmp_path):
     job = make_TestSubmissionJob_instance(tmp_path)
     assert isinstance(job._http_session, aiohttp.ClientSession)
-
 
 @patch('aiohttp.ClientSession')
 def test_http_session_is_created_correctly(ClientSession_mock, tmp_path):
@@ -144,21 +148,6 @@ async def test_http_session_is_singleton(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_submit_calls_abstract_methods_in_correct_order(tmp_path):
-    calls = []
-    login_mock = AsyncMock(side_effect=lambda session: calls.append('login'))
-    logout_mock = AsyncMock(side_effect=lambda session: calls.append('logout'))
-    upload_mock = AsyncMock(side_effect=lambda session: calls.append('upload'))
-    job = make_TestSubmissionJob_instance(
-        tmp_path,
-        login=login_mock,
-        logout=logout_mock,
-        upload=upload_mock,
-    )
-    assert await job._submit() is None
-    assert calls == ['login', 'upload', 'logout']
-
-@pytest.mark.asyncio
 async def test_submit_passes_http_session_to_abstract_methods(tmp_path):
     sessions = []
     login_mock = AsyncMock(side_effect=lambda session: sessions.append(session))
@@ -170,6 +159,7 @@ async def test_submit_passes_http_session_to_abstract_methods(tmp_path):
         logout=logout_mock,
         upload=upload_mock,
     )
+    job._metadata = {'create-torrent': 'file.torrent'}
     assert await job._submit() is None
     assert all(s is job._http_session for s in sessions)
 
@@ -180,6 +170,7 @@ async def test_submit_sends_upload_return_value_as_output(tmp_path):
         tmp_path,
         upload=upload_mock,
     )
+    job._metadata = {'create-torrent': 'file.torrent'}
     assert await job._submit() is None
     assert job.output == ('http://torrent.url/',)
 
@@ -189,6 +180,7 @@ async def test_submit_handles_RequestError_from_abstract_method(method, tmp_path
     mock = AsyncMock(side_effect=errors.RequestError('No connection'))
     kwargs = {method: mock}
     job = make_TestSubmissionJob_instance(tmp_path, **kwargs)
+    job._metadata = {'create-torrent': 'file.torrent'}
     assert await job._submit() is None
     if method == 'logout':
         assert job.output == (str(job.upload.return_value),)
@@ -199,18 +191,37 @@ async def test_submit_handles_RequestError_from_abstract_method(method, tmp_path
     assert isinstance(job.errors[0], errors.RequestError)
 
 @pytest.mark.asyncio
-async def test_submit_calls_callbacks(tmp_path):
-    job = make_TestSubmissionJob_instance(tmp_path)
-    with patch.object(job, '_call_callbacks'):
+async def test_submit_calls_methods_and_callbacks_in_correct_order(tmp_path):
+    mocks = Mock()
+    mocks.login = AsyncMock()
+    mocks.logout = AsyncMock()
+    mocks.upload = AsyncMock()
+
+    job = make_TestSubmissionJob_instance(
+        tmp_path,
+        login=mocks.login,
+        logout=mocks.logout,
+        upload=mocks.upload,
+
+    )
+    job._metadata = {'create-torrent': 'file.torrent'}
+
+    with patch.object(job, '_call_callbacks', mocks._call_callbacks):
         await job._submit()
-        assert job._call_callbacks.call_args_list == [
-            call(job.signal.logging_in),
-            call(job.signal.logged_in),
-            call(job.signal.submitting),
-            call(job.signal.submitted),
-            call(job.signal.logging_out),
-            call(job.signal.logged_out),
-        ]
+    assert mocks.method_calls == [
+        call._call_callbacks(job.signal.logging_in),
+        call.login(job._http_session),
+        call._call_callbacks(job.signal.logged_in),
+
+        call._call_callbacks(job.signal.uploading),
+        call.upload(job._http_session),
+        call._call_callbacks(job.signal.uploaded),
+
+        call._call_callbacks(job.signal.logging_out),
+        call.logout(job._http_session),
+        call._call_callbacks(job.signal.logged_out),
+    ]
+
 
 @pytest.mark.parametrize('signal', _base.SubmissionJobBase.signal, ids=lambda v: v.name)
 def test_callback_with_valid_signal(signal, tmp_path):

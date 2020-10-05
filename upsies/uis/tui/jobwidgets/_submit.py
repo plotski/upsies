@@ -18,8 +18,8 @@ class SubmissionJobWidget(_base.JobWidgetBase):
         callbacks = (
             (self.job.signal.logging_in, 'Logging in...'),
             (self.job.signal.logged_in, 'Logged in successfully.'),
-            (self.job.signal.submitting, 'Submitting torrent...'),
-            (self.job.signal.submitted, 'Submitted torrent successfully.'),
+            (self.job.signal.uploading, 'Uploading...'),
+            (self.job.signal.uploaded, 'Uploaded successfully.'),
             (self.job.signal.logging_out, 'Logging out...'),
             (self.job.signal.logged_out, 'Logged out successfully.'),
         )

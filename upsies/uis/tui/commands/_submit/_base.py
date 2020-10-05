@@ -19,13 +19,13 @@ class SubmitCommandBase(CommandBase, abc.ABC):
     by overriding the :attr:`jobs` property.
     """
 
-    @abc.abstractmethod
     @cache.property
+    @abc.abstractmethod
     def jobs(self):
         pass
 
-    @abc.abstractmethod
     @cache.property
+    @abc.abstractmethod
     def required_jobs(self):
         """
         Dictionary of jobs that must finish before :attr:`submission_job` can start
@@ -69,8 +69,3 @@ class SubmitCommandBase(CommandBase, abc.ABC):
             tracker_config=self.config['trackers'][self.args.TRACKER],
             required_jobs=self.required_jobs,
         )
-        # _jobs.Pipe(
-        #     sender=self.create_torrent_job,
-        #     receiver=submission_job,
-        # )
-        # return submission_job

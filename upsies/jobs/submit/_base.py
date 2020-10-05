@@ -47,8 +47,8 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
         self._callbacks = {
             self.signal.logging_in: [],
             self.signal.logged_in: [],
-            self.signal.submitting: [],
-            self.signal.submitted: [],
+            self.signal.uploading: [],
+            self.signal.uploaded: [],
             self.signal.logging_out: [],
             self.signal.logged_out: [],
         }
@@ -66,6 +66,14 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
     def tracker_config(self):
         """Tracker configuration that was passed as a keyword argument"""
         return self._tracker_config
+
+    @property
+    def required_jobs(self):
+        """
+        Sequence of :class:`JobBase` instances that must finish before
+        :meth:`upload` is called
+        """
+        return self._required_jobs
 
     @abc.abstractmethod
     async def login(self):
@@ -97,8 +105,8 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
     async def wait(self):
         _log.debug('Waiting for required jobs: %r', self._required_jobs)
         await asyncio.gather(*(job.wait() for job in self._required_jobs))
-        outputs = [job.output for job in self._required_jobs]
         names = [job.name for job in self._required_jobs]
+        outputs = [job.output for job in self._required_jobs]
         self._metadata.update(zip(names, outputs))
         await self._submit()
         self.finish()
@@ -120,10 +128,10 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
                 await self.login(client)
                 self._call_callbacks(self.signal.logged_in)
                 try:
-                    self._call_callbacks(self.signal.submitting)
+                    self._call_callbacks(self.signal.uploading)
                     torrent_page_url = await self.upload(client)
                     self.send(torrent_page_url)
-                    self._call_callbacks(self.signal.submitted)
+                    self._call_callbacks(self.signal.uploaded)
                 finally:
                     self._call_callbacks(self.signal.logging_out)
                     await self.logout(client)
@@ -134,8 +142,8 @@ class SubmissionJobBase(_base.JobBase, abc.ABC):
     class signal(enum.Enum):
         logging_in = 1
         logged_in = 2
-        submitting = 3
-        submitted = 4
+        uploading = 3
+        uploaded = 4
         logging_out = 5
         logged_out = 6
 
