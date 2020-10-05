@@ -4,11 +4,11 @@ from upsies.tools.dbs import imdb
 
 
 @pytest.mark.asyncio
-async def test_summary(store_request_cache):
+async def test_summary(store_response):
     assert 'Luke Skywalker' in await imdb.summary('tt0076759')
 
 @pytest.mark.asyncio
-async def test_year(store_request_cache):
+async def test_year(store_response):
     assert await imdb.year('tt0076759') == '1977'
 
 @pytest.mark.asyncio
@@ -22,7 +22,7 @@ async def test_year(store_request_cache):
         ('tt0080455', '', 'The Blues Brothers'),
     ),
 )
-async def test_title_original_english(id, english, original, store_request_cache):
+async def test_title_original_english(id, english, original, store_response):
     assert await imdb.title_english(id) == english
     assert await imdb.title_original(id) == original
 
@@ -37,5 +37,5 @@ async def test_title_original_english(id, english, original, store_request_cache
     ),
 )
 @pytest.mark.asyncio
-async def test_type(id, exp_type, store_request_cache):
+async def test_type(id, exp_type, store_response):
     assert await imdb.type(id) == exp_type

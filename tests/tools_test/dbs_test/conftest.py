@@ -20,8 +20,8 @@ def disable_aiohttp_ClientSession(pytestconfig):
 
 
 @pytest.fixture
-def store_request_cache():
-    tmpdir = os.path.join(os.path.dirname(__file__), 'stored_requests')
+def store_response():
+    tmpdir = os.path.join(os.path.dirname(__file__), 'cached_responses')
     if not os.path.exists(tmpdir):
         os.mkdir(tmpdir)
     with patch('upsies.utils.fs.tmpdir', Mock(return_value=tmpdir)):
