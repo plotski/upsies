@@ -3,13 +3,10 @@ import pytest
 from upsies import errors
 from upsies.tools.btclient._base import ClientApiBase
 
-abstract_methods = (
-    'name', 'add_torrent'
-)
 
-@pytest.mark.parametrize('method', abstract_methods)
+@pytest.mark.parametrize('method', ClientApiBase.__abstractmethods__)
 def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in abstract_methods}
+    attrs = {name:lambda self: None for name in ClientApiBase.__abstractmethods__}
     del attrs[method]
     cls = type('ClientApi', (ClientApiBase,), attrs)
     # Python 3.9 changed "methods" to "method"

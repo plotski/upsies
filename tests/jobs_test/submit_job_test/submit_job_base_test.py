@@ -28,13 +28,9 @@ needs_python38_because_missing_async_mock_support = pytest.mark.skipif(
 )
 
 
-abstract_methods = (
-    'trackername', 'login', 'logout', 'upload', 'jobs',
-)
-
-@pytest.mark.parametrize('method', abstract_methods)
+@pytest.mark.parametrize('method', _base.SubmissionJobBase.__abstractmethods__)
 def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in abstract_methods}
+    attrs = {name:lambda self: None for name in _base.SubmissionJobBase.__abstractmethods__}
     del attrs[method]
     cls = type('TestSubmissionJob', (_base.SubmissionJobBase,), attrs)
     # Python 3.9 changed "methods" to "method"

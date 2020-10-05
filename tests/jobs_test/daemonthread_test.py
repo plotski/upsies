@@ -10,13 +10,9 @@ class FooThread(DaemonThread):
         pass
 
 
-abstract_methods = (
-    'work',
-)
-
-@pytest.mark.parametrize('method', abstract_methods)
+@pytest.mark.parametrize('method', DaemonThread.__abstractmethods__)
 def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in abstract_methods}
+    attrs = {name:lambda self: None for name in DaemonThread.__abstractmethods__}
     del attrs[method]
     cls = type('Foo', (DaemonThread,), attrs)
     # Python 3.9 changed "methods" to "method"

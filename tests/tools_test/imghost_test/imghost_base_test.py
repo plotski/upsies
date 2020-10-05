@@ -7,13 +7,10 @@ import pytest
 from upsies.tools.imghost._base import UploaderBase
 from upsies.tools.imghost._common import UploadedImage
 
-abstract_methods = (
-    'name', '_upload'
-)
 
-@pytest.mark.parametrize('method', abstract_methods)
+@pytest.mark.parametrize('method', UploaderBase.__abstractmethods__)
 def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in abstract_methods}
+    attrs = {name:lambda self: None for name in UploaderBase.__abstractmethods__}
     del attrs[method]
     cls = type('TestUploader', (UploaderBase,), attrs)
     # Python 3.9 changed "methods" to "method"
