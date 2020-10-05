@@ -53,7 +53,7 @@ class JobBase(abc.ABC):
         return self._quiet
 
     def __init__(self, *, homedir, ignore_cache, quiet=False, **kwargs):
-        self._homedir = homedir
+        self._homedir = str(homedir)
         self._ignore_cache = bool(ignore_cache)
         self._quiet = bool(quiet)
         self._exception = None

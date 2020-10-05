@@ -46,7 +46,8 @@ def test_abstract_method(method):
 
 def test_homedir_property(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
-    assert job.homedir == tmp_path
+    assert job.homedir == str(tmp_path)
+    assert isinstance(job.homedir, str)
 
 def test_ignore_cache_property(tmp_path):
     assert FooJob(homedir=tmp_path, ignore_cache=False).ignore_cache is False
