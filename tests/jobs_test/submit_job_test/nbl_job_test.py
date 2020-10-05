@@ -1,18 +1,13 @@
-import sys
-import types
+import os
 from unittest.mock import Mock, call, patch
 
 import aiohttp
 import aiohttp.test_utils
+import bs4
 import pytest
 
 from upsies import errors
 from upsies.jobs.submit import nbl
-
-needs_python38 = pytest.mark.skipif(
-    sys.version_info < (3, 8),
-    reason='Python < 3.8 refuses to mock',
-)
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -31,9 +26,8 @@ def make_job(tmp_path, **kwargs):
     kw = {
         'homedir': tmp_path / 'foo.project',
         'ignore_cache': False,
-        'content_path': tmp_path / 'foo',
-        'args': Mock(),
-        'config': {
+        'required_jobs': (),
+        'tracker_config': {
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://foo',
@@ -46,110 +40,45 @@ def make_job(tmp_path, **kwargs):
 
 
 def test_trackername():
-    assert nbl.SubmissionJob.trackername == 'NBL'
+    assert nbl.SubmissionJob.tracker_name == 'NBL'
 
 
-@patch('upsies.utils.fs.projectdir')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
-def test_torrent_job(CreateTorrentJob_mock, projectdir_mock, tmp_path):
-    job = make_job(tmp_path)
-    assert job._torrent_job is CreateTorrentJob_mock.return_value
-    assert CreateTorrentJob_mock.call_args_list == [call(
-        homedir=projectdir_mock.return_value,
-        ignore_cache=False,
-        content_path=tmp_path / 'foo',
-        exclude_regexs='some files',
-        trackername=job.trackername,
-        announce_url='http://foo/announce',
-        source='NBL',
-    )]
-    assert projectdir_mock.call_args_list == [call(tmp_path / 'foo')]
-
-@patch('upsies.utils.fs.projectdir')
-@patch('upsies.jobs.search.SearchDbJob')
-def test_search_job(SearchDbJob_mock, projectdir_mock, tmp_path):
-    job = make_job(tmp_path)
-    assert job._search_job is SearchDbJob_mock.return_value
-    assert SearchDbJob_mock.call_args_list == [call(
-        homedir=projectdir_mock.return_value,
-        ignore_cache=False,
-        content_path=tmp_path / 'foo',
-        db='tvmaze',
-    )]
-    assert projectdir_mock.call_args_list == [call(tmp_path / 'foo')]
-
-@patch('upsies.utils.fs.projectdir', Mock())
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
-def test_jobs(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
-    job = make_job(tmp_path)
-    assert len(job.jobs) == 3
-    assert job.jobs[0] is CreateTorrentJob_mock.return_value
-    assert job.jobs[1] is SearchDbJob_mock.return_value
-    assert job.jobs[2] is job
+def _get_response(name):
+    filepath = os.path.join(
+        os.path.dirname(__file__),
+        'cached_responses',
+        f'nbl.{name}.html',
+    )
+    return open(filepath, 'r').read()
 
 
-@patch('upsies.utils.fs.projectdir', Mock())
-@patch('upsies.jobs.torrent.CreateTorrentJob')
-def test_torrent_filepath(CreateTorrentJob_mock, tmp_path):
-    job = make_job(tmp_path)
-    CreateTorrentJob_mock.return_value.output = ()
-    assert job.torrent_filepath is None
-    CreateTorrentJob_mock.return_value.output = ('path/to/torrent',)
-    assert job.torrent_filepath == 'path/to/torrent'
-
-
-@patch('upsies.utils.fs.projectdir', Mock())
-@patch('upsies.jobs.search.SearchDbJob')
-def test_tvmaze_id(SearchDbJob_mock, tmp_path):
-    job = make_job(tmp_path)
-    SearchDbJob_mock.return_value.output = ()
-    assert job.tvmaze_id is None
-    SearchDbJob_mock.return_value.output = ('1234',)
-    assert job.tvmaze_id == '1234'
-
-
-@patch('upsies.jobs.submit.nbl.mediainfo')
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
-def test_mediainfo(CreateTorrentJob_mock, SearchDbJob_mock, mediainfo_mock, tmp_path):
-    job = make_job(tmp_path)
-    mediainfo_mock.as_string.return_value = '<mediainfo>'
-    assert job.mediainfo == '<mediainfo>'
-    assert mediainfo_mock.as_string.call_args_list == [call(job.content_path)]
-
-
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
-async def test_login_does_nothing_if_already_logged_in(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
+async def test_login_does_nothing_if_already_logged_in(tmp_path):
     job = make_job(tmp_path)
     job._logout_url = 'anything'
     job._auth_key = 'something'
     assert job.logged_in
-    client_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
-    await job.login(client_session_mock)
+    http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
+    await job.login(http_session_mock)
     assert job.logged_in
-    assert client_session_mock.get.call_args_list == []
-    assert client_session_mock.post.call_args_list == []
+    assert http_session_mock.get.call_args_list == []
+    assert http_session_mock.post.call_args_list == []
     assert job._logout_url == 'anything'
     assert job._auth_key == 'something'
 
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
-async def test_login_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
+async def test_login_succeeds(tmp_path):
     job = make_job(tmp_path)
-    client_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
-    client_session_mock.post.return_value.text = AsyncMock(return_value='''
+    http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
+    http_session_mock.post.return_value.text = AsyncMock(return_value='''
     <html>
       <input name="auth" value="12345" />
       <a href="logout.php?asdfasdf">logout</a>
     </html>
     ''')
-    await job.login(client_session_mock)
-    assert client_session_mock.get.call_args_list == []
-    assert client_session_mock.post.call_args_list == [call(
+    await job.login(http_session_mock)
+    assert http_session_mock.get.call_args_list == []
+    assert http_session_mock.post.call_args_list == [call(
         url='http://foo' + job._url_path['login'],
         data={
             'username': 'bunny',
@@ -163,34 +92,35 @@ async def test_login_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path)
     assert job._auth_key == '12345'
 
 
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
-def test_report_login_error_reports_error(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
+@pytest.mark.parametrize(
+    argnames='error, exp_message',
+    argvalues=(
+        pytest.param(
+            'login.auth-failed',
+            r'Your username or password was incorrect\.',
+            id='login.auth-failed',
+        ),
+        pytest.param(
+            'login.banned',
+            (r'Your account has been disabled\. This is either due '
+             r'to inactivity or rule violation\.'),
+            id='login.banned',
+        ),
+    ),
+)
+def test_report_login_error(error, exp_message, tmp_path):
     job = make_job(tmp_path)
-    html = Mock()
-    html.find.return_value.find.return_value.string.strip.return_value = 'An error message'
-    with pytest.raises(errors.RequestError, match=r'^Login failed: An error message$'):
+    html = bs4.BeautifulSoup(
+        markup=_get_response(error),
+        features='html.parser',
+    )
+    with pytest.raises(errors.RequestError, match=rf'^Login failed: {exp_message}$'):
         job._report_login_error(html)
-    assert html.find.call_args_list == [call(id='loginform')]
-    assert html.find.return_value.find.call_args_list == [call(class_='warning')]
 
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
-def test_report_login_error_does_not_find_error(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
+
+def test_logged_in(tmp_path):
     job = make_job(tmp_path)
-    html = Mock()
-    html.find.return_value.find.return_value.string.strip.return_value = ''
-    assert job._report_login_error(html) is None
-    html.find.return_value.find.return_value = None
-    assert job._report_login_error(html) is None
-    html.find.return_value = None
-    assert job._report_login_error(html) is None
-
-
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
-def test_logged_in(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
-    job = make_job(tmp_path)
+    # job.logged_in must be True if "_logout_url" and "_auth_key" are set
     assert job.logged_in is False
     job._logout_url = 'asdf'
     assert job.logged_in is False
@@ -203,9 +133,6 @@ def test_logged_in(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
     delattr(job, '_auth_key')
     assert job.logged_in is False
 
-
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     argnames=('logout_url', 'auth_key'),
@@ -216,65 +143,29 @@ def test_logged_in(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
         (None, None),
     ),
 )
-async def test_logout(CreateTorrentJob_mock, SearchDbJob_mock, logout_url, auth_key, tmp_path):
+async def test_logout(logout_url, auth_key, tmp_path):
     job = make_job(tmp_path)
     if logout_url is not None:
         job._logout_url = logout_url
     if auth_key is not None:
         job._auth_key = auth_key
-    client_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
-    await job.logout(client_session_mock)
+    http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
+    await job.logout(http_session_mock)
     if logout_url is not None:
-        assert client_session_mock.get.call_args_list == [call(logout_url)]
-    assert client_session_mock.post.call_args_list == []
+        assert http_session_mock.get.call_args_list == [call(logout_url)]
+    assert http_session_mock.post.call_args_list == []
     assert not hasattr(job, '_logout_url')
     assert not hasattr(job, '_auth_key')
 
 
-@patch('upsies.utils.fs.projectdir', Mock())
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
-async def test_upload_without_being_logged_in(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
+async def test_upload_without_being_logged_in(tmp_path):
     job = make_job(tmp_path)
-    client_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
+    http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
     with pytest.raises(RuntimeError, match=r'^upload\(\) called before login\(\)$'):
-        await job.upload(client_session_mock)
-    assert client_session_mock.get.call_args_list == []
-    assert client_session_mock.post.call_args_list == []
-
-@needs_python38
-@patch('upsies.utils.fs.projectdir', Mock())
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
-@pytest.mark.asyncio
-async def test_upload_without_torrent_filepath(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
-    job = make_job(tmp_path)
-    job._logout_url = 'logout.php'
-    job._auth_key = 'asdf'
-    CreateTorrentJob_mock.return_value.output = ()
-    client_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
-    with pytest.raises(RuntimeError, match=r'^upload\(\) called before torrent file creation finished$'):
-        await job.upload(client_session_mock)
-    assert client_session_mock.get.call_args_list == []
-    assert client_session_mock.post.call_args_list == []
-
-@needs_python38
-@patch('upsies.utils.fs.projectdir', Mock())
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
-@pytest.mark.asyncio
-async def test_upload_without_tvmaze_id(CreateTorrentJob_mock, SearchDbJob_mock, tmp_path):
-    job = make_job(tmp_path)
-    job._logout_url = 'logout.php'
-    job._auth_key = 'asdf'
-    CreateTorrentJob_mock.return_value.output = ('path/to/torrent',)
-    SearchDbJob_mock.return_value.output = ()
-    client_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
-    with pytest.raises(RuntimeError, match=r'^upload\(\) called before TVmaze ID was picked$'):
-        await job.upload(client_session_mock)
-    assert client_session_mock.post.call_args_list == []
-    assert client_session_mock.get.call_args_list == []
+        await job.upload(http_session_mock)
+    assert http_session_mock.get.call_args_list == []
+    assert http_session_mock.post.call_args_list == []
 
 
 class MockServer(aiohttp.test_utils.TestServer):
@@ -322,25 +213,17 @@ class MockServer(aiohttp.test_utils.TestServer):
         return f'http://localhost:{self.port}{path}'
 
 
-@needs_python38
-@patch('upsies.utils.fs.projectdir', Mock())
-@patch('upsies.jobs.submit.nbl.mediainfo')
-@patch('upsies.jobs.submit.nbl.release_name')
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
-async def test_upload_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, release_name_mock, mediainfo_mock, tmp_path):
-    tvmaze_id = '12345'
-    torrent_file = tmp_path / 'foo.torrent'
-    torrent_file.write_bytes(b'mocked torrent metainfo')
-
+async def test_upload_succeeds(tmp_path):
     responses = (
         (('post',), '/upload.php', aiohttp.web.HTTPTemporaryRedirect('/torrents.php?id=123')),
     )
+    torrent_file = tmp_path / 'foo.torrent'
+    torrent_file.write_bytes(b'mocked torrent metainfo')
     async with MockServer(responses) as srv:
         job = make_job(
             tmp_path,
-            config={
+            tracker_config={
                 'username': 'bunny',
                 'password': 'hunter2',
                 'base_url': srv.url(''),
@@ -350,14 +233,16 @@ async def test_upload_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, release_
         )
         job._logout_url = 'logout.php'
         job._auth_key = 'mocked auth key'
-        CreateTorrentJob_mock.return_value.output = (torrent_file,)
-        SearchDbJob_mock.return_value.output = (tvmaze_id,)
-        release_name_mock.ReleaseName.return_value = types.SimpleNamespace(type='season')
-        mediainfo_mock.as_string.return_value = 'mocked mediainfo'
-
+        job._metadata = {
+            'create-torrent': str(torrent_file),
+            'mediainfo': 'mocked mediainfo',
+            'tvmaze-id': '12345',
+            'category': 'mocked category',
+        }
+        translate_category_mock = Mock(return_value=b'mocked category')
         async with aiohttp.ClientSession(headers={'User-Agent': 'test client'}) as client:
-            torrent_page_url = await job.upload(client)
-
+            with patch.object(job, '_translate_category', translate_category_mock):
+                torrent_page_url = await job.upload(client)
         assert torrent_page_url == srv.url('/torrents.php?id=123')
         assert srv.requests_seen == [{
             'method': 'POST',
@@ -365,7 +250,7 @@ async def test_upload_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, release_
             'multipart/form-data': {
                 'MAX_FILE_SIZE': bytearray(b'1048576'),
                 'auth': bytearray(b'mocked auth key'),
-                'category': bytearray(b'3'),
+                'category': bytearray(translate_category_mock.return_value),
                 'desc': bytearray(b'mocked mediainfo'),
                 'file_input': bytearray(b'mocked torrent metainfo'),
                 'fontfont': bytearray(b'-1'),
@@ -381,17 +266,8 @@ async def test_upload_succeeds(CreateTorrentJob_mock, SearchDbJob_mock, release_
             },
         }]
 
-@needs_python38
-@patch('upsies.utils.fs.projectdir', Mock())
-@patch('upsies.jobs.submit.nbl.mediainfo')
-@patch('upsies.jobs.submit.nbl.release_name')
-@patch('upsies.jobs.search.SearchDbJob')
-@patch('upsies.jobs.torrent.CreateTorrentJob')
 @pytest.mark.asyncio
-async def test_upload_fails(CreateTorrentJob_mock, SearchDbJob_mock, release_name_mock, mediainfo_mock, tmp_path):
-    tvmaze_id = '12345'
-    torrent_file = tmp_path / 'foo.torrent'
-    torrent_file.write_bytes(b'mocked torrent metainfo')
+async def test_upload_fails(tmp_path):
     responses = (
         (('post',), '/upload.php', aiohttp.web.Response(text='''
         <html>
@@ -399,10 +275,12 @@ async def test_upload_fails(CreateTorrentJob_mock, SearchDbJob_mock, release_nam
         </html>
         ''')),
     )
+    torrent_file = tmp_path / 'foo.torrent'
+    torrent_file.write_bytes(b'mocked torrent metainfo')
     async with MockServer(responses) as srv:
         job = make_job(
             tmp_path,
-            config={
+            tracker_config={
                 'username': 'bunny',
                 'password': 'hunter2',
                 'base_url': srv.url(''),
@@ -412,30 +290,35 @@ async def test_upload_fails(CreateTorrentJob_mock, SearchDbJob_mock, release_nam
         )
         job._logout_url = 'logout.php'
         job._auth_key = 'mocked auth key'
-        CreateTorrentJob_mock.return_value.output = (torrent_file,)
-        SearchDbJob_mock.return_value.output = (tvmaze_id,)
-        release_name_mock.ReleaseName.return_value = types.SimpleNamespace(type='season')
-        mediainfo_mock.as_string.return_value = 'mocked mediainfo'
-
+        job._metadata = {
+            'create-torrent': str(torrent_file),
+            'mediainfo': 'mocked mediainfo',
+            'tvmaze-id': '12345',
+            'category': 'mocked category',
+        }
+        translate_category_mock = Mock(return_value=b'mocked category')
         with pytest.raises(errors.RequestError, match=r'^Upload failed: Something went wrong$'):
             async with aiohttp.ClientSession() as client:
-                await job.upload(client)
+                with patch.object(job, '_translate_category', translate_category_mock):
+                    await job.upload(client)
 
 
 @pytest.mark.parametrize(
-    argnames=('type', 'exp_category'),
+    argnames=('category', 'exp_category'),
     argvalues=(
         ('episode', '1'),
+        ('Episode', '1'),
+        ('EPISODE', '1'),
         ('season', '3'),
+        ('Season', '3'),
+        ('SEASON', '3'),
     ),
 )
-def test_valid_request_category(type, exp_category, tmp_path):
+def test_valid_request_category(category, exp_category, tmp_path):
     job = make_job(tmp_path)
-    job.release_name.type = type
-    assert job._request_category() == exp_category
+    assert job._translate_category(category) == exp_category
 
 def test_invalid_request_category(tmp_path):
     job = make_job(tmp_path)
-    job.release_name.type = 'movie'
     with pytest.raises(errors.RequestError, match=r'^Unsupported type: movie$'):
-        job._request_category()
+        job._translate_category('movie')
