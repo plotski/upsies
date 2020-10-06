@@ -3,7 +3,7 @@ import threading
 
 import pytest
 
-from upsies.jobs._common import DaemonThread
+from upsies.utils.daemon import DaemonThread
 
 
 class FooThread(DaemonThread):

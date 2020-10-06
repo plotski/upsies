@@ -4,8 +4,8 @@ import os
 from .. import errors
 from ..tools import torrent
 from ..tools.btclient import ClientApiBase
-from ..utils import fs
-from . import _base, _common
+from ..utils import daemon, fs
+from . import _base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ class CreateTorrentJob(_base.JobBase):
         )
         self._progress_update_callbacks = []
         self._file_tree = ''
-        self._torrent_process = _common.DaemonProcess(
+        self._torrent_process = daemon.DaemonProcess(
             name=self.name,
             target=_torrent_process,
             kwargs={
@@ -74,10 +74,10 @@ class CreateTorrentJob(_base.JobBase):
 
 def _torrent_process(output_queue, input_queue, *args, **kwargs):
     def init_callback(file_tree):
-        output_queue.put((_common.DaemonProcess.INIT, file_tree))
+        output_queue.put((daemon.DaemonProcess.INIT, file_tree))
 
     def progress_callback(progress):
-        output_queue.put((_common.DaemonProcess.INFO, progress))
+        output_queue.put((daemon.DaemonProcess.INFO, progress))
 
     kwargs['init_callback'] = init_callback
     kwargs['progress_callback'] = progress_callback
@@ -85,9 +85,9 @@ def _torrent_process(output_queue, input_queue, *args, **kwargs):
     try:
         torrent_path = torrent.create(*args, **kwargs)
     except errors.TorrentError as e:
-        output_queue.put((_common.DaemonProcess.ERROR, str(e)))
+        output_queue.put((daemon.DaemonProcess.ERROR, str(e)))
     else:
-        output_queue.put((_common.DaemonProcess.RESULT, torrent_path))
+        output_queue.put((daemon.DaemonProcess.RESULT, torrent_path))
 
 
 class AddTorrentJob(_base.JobBase):

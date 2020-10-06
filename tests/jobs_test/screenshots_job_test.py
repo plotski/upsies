@@ -6,9 +6,9 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 from upsies import errors
-from upsies.jobs._common import DaemonProcess
 from upsies.jobs.screenshots import (ScreenshotsJob, _screenshot_process,
                                      _screenshot_timestamps)
+from upsies.utils.daemon import DaemonProcess
 
 try:
     from unittest.mock import AsyncMock
@@ -181,7 +181,7 @@ def job(tmp_path):
             join=AsyncMock(),
         ),
     )
-    with patch('upsies.jobs._common.DaemonProcess', DaemonProcess_mock):
+    with patch('upsies.utils.daemon.DaemonProcess', DaemonProcess_mock):
         with patch('upsies.utils.video.first_video', Mock()):
             with patch('upsies.jobs.screenshots._screenshot_timestamps', Mock(return_value=(60, 120, 180))):
                 return ScreenshotsJob(
@@ -193,7 +193,7 @@ def job(tmp_path):
                 )
 
 
-@patch('upsies.jobs._common.DaemonProcess', Mock())
+@patch('upsies.utils.daemon.DaemonProcess', Mock())
 @patch('upsies.utils.video.length')
 def test_ScreenshotsJob_cache_file(video_length_mock, tmp_path):
     video_length_mock.return_value = 240
@@ -210,7 +210,7 @@ def test_ScreenshotsJob_cache_file(video_length_mock, tmp_path):
         'screenshots.0:02:00,0:03:00.json',
     )
 
-@patch('upsies.jobs._common.DaemonProcess', Mock())
+@patch('upsies.utils.daemon.DaemonProcess', Mock())
 @patch('upsies.utils.video.first_video')
 @patch('upsies.jobs.screenshots._screenshot_timestamps', Mock(return_value=(60, 120, 180)))
 def test_ScreenshotsJob_initialize_uses_first_video_file(first_video_mock, tmp_path):
@@ -224,7 +224,7 @@ def test_ScreenshotsJob_initialize_uses_first_video_file(first_video_mock, tmp_p
     assert sj._video_file == first_video_mock.return_value
     assert first_video_mock.call_args_list == [call('some/path')]
 
-@patch('upsies.jobs._common.DaemonProcess', Mock())
+@patch('upsies.utils.daemon.DaemonProcess', Mock())
 @patch('upsies.utils.video.first_video')
 @patch('upsies.jobs.screenshots._screenshot_timestamps')
 def test_ScreenshotsJob_initialize_gets_timestamps(screenshot_timestamps_mock, first_video_mock, tmp_path):
@@ -243,7 +243,7 @@ def test_ScreenshotsJob_initialize_gets_timestamps(screenshot_timestamps_mock, f
         number=2,
     )]
 
-@patch('upsies.jobs._common.DaemonProcess', Mock())
+@patch('upsies.utils.daemon.DaemonProcess', Mock())
 @patch('upsies.utils.video.first_video', Mock())
 @patch('upsies.jobs.screenshots._screenshot_timestamps', Mock(return_value=(60, 120, 180)))
 def test_ScreenshotsJob_initialize_sets_initial_status(tmp_path):
@@ -257,7 +257,7 @@ def test_ScreenshotsJob_initialize_sets_initial_status(tmp_path):
     assert sj.screenshots_created == 0
     assert sj.screenshots_total == 3
 
-@patch('upsies.jobs._common.DaemonProcess')
+@patch('upsies.utils.daemon.DaemonProcess')
 @patch('upsies.utils.video.first_video', Mock())
 @patch('upsies.jobs.screenshots._screenshot_timestamps', Mock(return_value=(60, 120, 180)))
 def test_ScreenshotsJob_initialize_creates_screenshot_process(DaemonProcess_mock, tmp_path):

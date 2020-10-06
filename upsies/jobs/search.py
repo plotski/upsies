@@ -4,8 +4,8 @@ import re
 
 from .. import errors
 from ..tools import dbs
-from ..utils import guessit
-from . import _base, _common
+from ..utils import daemon, guessit
+from . import _base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -136,7 +136,7 @@ class SearchDbJob(_base.JobBase):
             self.finish()
 
 
-class _SearchThread(_common.DaemonThread):
+class _SearchThread(daemon.DaemonThread):
     def __init__(self, search_coro, results_callback, error_callback, searching_callback):
         self._search_coro = search_coro
         self._results_callback = results_callback
@@ -247,7 +247,7 @@ class _SearchThread(_common.DaemonThread):
                 raise
 
 
-class _UpdateInfoThread(_common.DaemonThread):
+class _UpdateInfoThread(daemon.DaemonThread):
     def __init__(self, **targets):
         # `targets` maps names of SearchResult attributes to callbacks that get
         # the value of the corresponding SearchResult attribute.

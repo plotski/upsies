@@ -6,8 +6,8 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 from upsies import errors
-from upsies.jobs._common import DaemonProcess
 from upsies.jobs.torrent import CreateTorrentJob, _torrent_process
+from upsies.utils.daemon import DaemonProcess
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -71,7 +71,7 @@ def test_CreateTorrentJob_initialize_sets_variables(torrent_process_mock, tmp_pa
     assert ctj._torrent_path == f'{tmp_path / "foo"}.asdf.torrent'
     assert ctj._file_tree == ''
 
-@patch('upsies.jobs._common.DaemonProcess')
+@patch('upsies.utils.daemon.DaemonProcess')
 def test_CreateTorrentJob_initialize_creates_torrent_process(DaemonProcess_mock, tmp_path):
     ctj = CreateTorrentJob(
         homedir=tmp_path,
@@ -109,7 +109,7 @@ def job(tmp_path):
             join=AsyncMock(),
         ),
     )
-    with patch('upsies.jobs._common.DaemonProcess', DaemonProcess_mock):
+    with patch('upsies.utils.daemon.DaemonProcess', DaemonProcess_mock):
         return CreateTorrentJob(
             homedir=tmp_path,
             ignore_cache=False,

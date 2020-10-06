@@ -4,7 +4,7 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies.jobs._common import DaemonProcess
+from upsies.utils.daemon import DaemonProcess
 
 
 # https://kalnytskyi.com/howto/assert-str-matches-regex-in-pytest/

@@ -1,8 +1,8 @@
 import os
 
 from .. import errors, tools
-from ..utils import LazyModule, fs, timestamp, video
-from . import _base, _common
+from ..utils import LazyModule, daemon, fs, timestamp, video
+from . import _base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class ScreenshotsJob(_base.JobBase):
         self._screenshots_total = len(self._timestamps)
         if not self._screenshots_total > 0:
             raise RuntimeError('No screenshots wanted?')
-        self._screenshot_process = _common.DaemonProcess(
+        self._screenshot_process = daemon.DaemonProcess(
             name=self.name,
             target=_screenshot_process,
             kwargs={
@@ -127,6 +127,6 @@ def _screenshot_process(output_queue, input_queue,
                 overwrite=overwrite,
             )
         except (ValueError, errors.ScreenshotError) as e:
-            output_queue.put((_common.DaemonProcess.ERROR, str(e)))
+            output_queue.put((daemon.DaemonProcess.ERROR, str(e)))
         else:
-            output_queue.put((_common.DaemonProcess.INFO, screenshot_file))
+            output_queue.put((daemon.DaemonProcess.INFO, screenshot_file))

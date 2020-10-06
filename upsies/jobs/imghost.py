@@ -2,7 +2,8 @@ import queue
 
 from .. import errors
 from ..tools import imghost
-from . import _base, _common
+from ..utils import daemon
+from . import _base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -95,7 +96,7 @@ class ImageHostJob(_base.JobBase):
         self.finish()
 
 
-class _UploadThread(_common.DaemonThread):
+class _UploadThread(daemon.DaemonThread):
     def __init__(self, homedir, imghost, force,
                  url_callback, error_callback, finished_callback):
         self._homedir = homedir
