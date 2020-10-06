@@ -184,7 +184,6 @@ async def test_is_alive_property():
     time.sleep(1)
     assert proc.is_alive is True
     proc.stop()
-    assert proc.is_alive is True
     await proc.join()
     assert proc.is_alive is False
 
