@@ -188,14 +188,14 @@ class JobBase(abc.ABC):
 
     def pipe_input(self, value):
         """
-        Called by :class:`Pipe` on the receiving job for each output from sending
+        Called by :class:`~utils.pipe.Pipe` on the receiving job for each output from sending
         job
         """
         raise NotImplementedError(f'pipe_input() is not implemented in {type(self).__name__}')
 
     def pipe_closed(self):
         """
-        Called by :class:`Pipe` on the receiving job when the sending job is
+        Called by :class:`~utils.pipe.Pipe` on the receiving job when the sending job is
         finished
         """
         raise NotImplementedError(f'pipe_closed() is not implemented in {type(self).__name__}')

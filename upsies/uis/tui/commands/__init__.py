@@ -11,7 +11,7 @@ provided by :class:`CommandBase`.
 
 from .... import jobs as _jobs
 from ....tools import btclient
-from ....utils import cache, fs
+from ....utils import cache, fs, pipe
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -110,7 +110,7 @@ class create_torrent(CommandBase):
                 ),
                 download_path=fs.dirname(self.args.CONTENT),
             )
-            _jobs.Pipe(
+            pipe.Pipe(
                 sender=self.create_torrent_job,
                 receiver=add_job,
             )
@@ -124,7 +124,7 @@ class create_torrent(CommandBase):
                 ignore_cache=self.args.ignore_cache,
                 destination=self.args.copy_to,
             )
-            _jobs.Pipe(
+            pipe.Pipe(
                 sender=self.create_torrent_job,
                 receiver=copy_job,
             )
@@ -182,7 +182,7 @@ class screenshots(CommandBase):
                 images_total=self.screenshots_job.screenshots_total,
             )
             # Connect ScreenshotsJob's output to ImageHostJob input
-            _jobs.Pipe(
+            pipe.Pipe(
                 sender=self.screenshots_job,
                 receiver=imghost_job,
             )

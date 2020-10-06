@@ -3,8 +3,8 @@ from unittest.mock import call, patch
 
 import pytest
 
-from upsies.jobs._base import JobBase
-from upsies.jobs._common import Pipe
+from upsies.jobs import JobBase
+from upsies.utils.pipe import Pipe
 
 
 class MockJob(JobBase):

@@ -1,6 +1,6 @@
 import collections
 
-from ._base import JobBase
+from ..jobs import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -8,18 +8,19 @@ _log = logging.getLogger(__name__)
 
 class Pipe:
     """
-    Connect job's output to another job's method
+    Connect one job's output to another job's :meth:`~JobBase.pipe_input`
 
     When `sender` is finished, :meth:`pipe_closed` is called on `receiver`'s
     object.
 
-    .. note:: Instances do not have to be assigned to variables because they add
-              themselves as callbacks to `sender`.
+    .. note:: :class:`Pipe` instances do not have to be assigned to variables
+              because `sender` keeps references of them as callbacks.
 
     :param sender: Job to collect output from
     :type sender: :class:`JobBase` child class instance
-    :param receiver: Callable to send output to
-    :type receiver: Method of a :class:`JobBase` child class instance
+    :param receiver: Job to send output to
+    :type receiver: :class:`JobBase` instance with a :meth:`~JobBase.pipe_input`
+        method
     """
 
     def __init__(self, sender, receiver):
