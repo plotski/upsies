@@ -67,8 +67,6 @@ def test_CreateTorrentJob_initialize_sets_variables(torrent_process_mock, tmp_pa
             'exclude'  : ('a', 'b'),
         },
     )
-    assert ctj.homedir == tmp_path
-    assert ctj.ignore_cache is False
     assert ctj._content_path == 'path/to/foo'
     assert ctj._torrent_path == f'{tmp_path / "foo"}.asdf.torrent'
     assert ctj._file_tree == ''
