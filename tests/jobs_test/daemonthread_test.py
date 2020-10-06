@@ -1,3 +1,4 @@
+import asyncio
 import threading
 
 import pytest
@@ -88,8 +89,8 @@ async def test_stop_terminates_endless_work():
 
     thread = BarThread()
     thread.start()
-    thread.stop()
-    await thread.join(timeout=5)
+    asyncio.get_event_loop().call_later(0.1, thread.stop)
+    await thread.join(timeout=1)
     assert thread.counter > 0
     assert thread.is_alive is False
 
