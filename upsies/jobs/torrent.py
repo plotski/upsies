@@ -5,13 +5,13 @@ from .. import errors
 from ..tools import torrent
 from ..tools.btclient import ClientApiBase
 from ..utils import daemon, fs
-from . import _base
+from . import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class CreateTorrentJob(_base.JobBase):
+class CreateTorrentJob(JobBase):
     name = 'create-torrent'
     label = 'Create Torrent'
 
@@ -90,7 +90,7 @@ def _torrent_process(output_queue, input_queue, *args, **kwargs):
         output_queue.put((daemon.DaemonProcess.RESULT, torrent_path))
 
 
-class AddTorrentJob(_base.JobBase):
+class AddTorrentJob(JobBase):
     name = 'add-torrent'
     label = 'Add Torrent'
 
@@ -183,7 +183,7 @@ class AddTorrentJob(_base.JobBase):
                     await self.add_async(torrent_path, download_path)
 
 
-class CopyTorrentJob(_base.JobBase):
+class CopyTorrentJob(JobBase):
     name = 'copy-torrent'
     label = 'Copy Torrent'
 

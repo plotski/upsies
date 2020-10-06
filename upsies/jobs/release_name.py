@@ -1,13 +1,13 @@
 import asyncio
 
 from ..tools import release_name
-from . import _base
+from . import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class ReleaseNameJob(_base.JobBase):
+class ReleaseNameJob(JobBase):
     name = 'release-name'
     label = 'Release Name'
 

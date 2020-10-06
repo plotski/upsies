@@ -4,7 +4,7 @@ import enum
 
 from ... import __project_name__, __version__, errors
 from ...utils import LazyModule, cache
-from .. import _base
+from .. import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ aiohttp = LazyModule(module='aiohttp', namespace=globals())
 bs4 = LazyModule(module='bs4', namespace=globals())
 
 
-class SubmitJobBase(_base.JobBase, abc.ABC):
+class SubmitJobBase(JobBase, abc.ABC):
     name = 'submit'
     label = 'Submit'
     timeout = 180

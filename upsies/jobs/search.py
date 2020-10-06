@@ -5,13 +5,13 @@ import re
 from .. import errors
 from ..tools import dbs
 from ..utils import daemon, guessit
-from . import _base
+from . import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class SearchDbJob(_base.JobBase):
+class SearchDbJob(JobBase):
     """
     Prompt user to select a specific search result from an internet database
 

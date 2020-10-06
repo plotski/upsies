@@ -6,7 +6,7 @@ import aiohttp.test_utils
 import pytest
 
 from upsies import __project_name__, __version__, errors
-from upsies.jobs.submit import _base
+from upsies.jobs.submit import SubmitJobBase
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -21,11 +21,11 @@ class AsyncMock(Mock):
         return self().__await__()
 
 
-@pytest.mark.parametrize('method', _base.SubmitJobBase.__abstractmethods__)
+@pytest.mark.parametrize('method', SubmitJobBase.__abstractmethods__)
 def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in _base.SubmitJobBase.__abstractmethods__}
+    attrs = {name:lambda self: None for name in SubmitJobBase.__abstractmethods__}
     del attrs[method]
-    cls = type('TestSubmitJob', (_base.SubmitJobBase,), attrs)
+    cls = type('TestSubmitJob', (SubmitJobBase,), attrs)
     # Python 3.9 changed "methods" to "method"
     exp_msg = rf"^Can't instantiate abstract class TestSubmitJob with abstract methods? {method}$"
     with pytest.raises(TypeError, match=exp_msg):
@@ -41,7 +41,7 @@ def make_TestSubmitJob_class(**kwargs):
     }
     attrs.update(kwargs)
     clsname = 'TestSubmitJob'
-    bases = (_base.SubmitJobBase,)
+    bases = (SubmitJobBase,)
     return type(clsname, bases, attrs)
 
 def make_TestSubmitJob_instance(tmp_path, **kwargs):
@@ -64,7 +64,7 @@ def make_TestSubmitJob_instance(tmp_path, **kwargs):
 @patch('bs4.BeautifulSoup')
 def test_parse_html_succeeds(bs_mock):
     bs_mock.return_value = {'html': 'foo'}
-    html = _base.SubmitJobBase.parse_html('<html>foo</html>')
+    html = SubmitJobBase.parse_html('<html>foo</html>')
     assert html == {'html': 'foo'}
     assert bs_mock.call_args_list == [call(
         '<html>foo</html>',
@@ -75,13 +75,13 @@ def test_parse_html_succeeds(bs_mock):
 def test_parse_html_fails(bs_mock):
     bs_mock.side_effect = ValueError('Invalid HTML')
     with pytest.raises(RuntimeError, match=r'^Failed to parse HTML: Invalid HTML$'):
-        _base.SubmitJobBase.parse_html('<html>foo</html')
+        SubmitJobBase.parse_html('<html>foo</html')
 
 
 def test_dump_html(tmp_path):
     filepath = tmp_path / 'foo'
     html = '<html>foo</html>'
-    assert _base.SubmitJobBase.dump_html(filepath, html) is None
+    assert SubmitJobBase.dump_html(filepath, html) is None
     assert os.path.exists(filepath)
     assert open(filepath, 'r').read() == html
 
@@ -223,7 +223,7 @@ async def test_submit_calls_methods_and_callbacks_in_correct_order(tmp_path):
     ]
 
 
-@pytest.mark.parametrize('signal', _base.SubmitJobBase.signal, ids=lambda v: v.name)
+@pytest.mark.parametrize('signal', SubmitJobBase.signal, ids=lambda v: v.name)
 def test_callback_with_valid_signal(signal, tmp_path):
     job = make_TestSubmitJob_instance(tmp_path)
     cb = Mock()
@@ -233,7 +233,7 @@ def test_callback_with_valid_signal(signal, tmp_path):
     job._call_callbacks(signal)
     assert cb.call_args_list == [call(), call()]
 
-@pytest.mark.parametrize('signal', _base.SubmitJobBase.signal, ids=lambda v: v.name)
+@pytest.mark.parametrize('signal', SubmitJobBase.signal, ids=lambda v: v.name)
 def test_callback_with_invalid_signal(signal, tmp_path):
     job = make_TestSubmitJob_instance(tmp_path)
     cb = Mock()

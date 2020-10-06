@@ -2,7 +2,7 @@ import os
 
 from .. import errors, tools
 from ..utils import LazyModule, daemon, fs, timestamp, video
-from . import _base
+from . import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ DEFAULT_NUMBER_OF_SCREENSHOTS = 2
 natsort = LazyModule(module='natsort', namespace=globals())
 
 
-class ScreenshotsJob(_base.JobBase):
+class ScreenshotsJob(JobBase):
     name = 'screenshots'
     label = 'Screenshots'
 

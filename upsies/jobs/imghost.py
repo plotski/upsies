@@ -3,13 +3,13 @@ import queue
 from .. import errors
 from ..tools import imghost
 from ..utils import daemon
-from . import _base
+from . import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class ImageHostJob(_base.JobBase):
+class ImageHostJob(JobBase):
     name = 'imghost'
     label = 'Image URLs'
 

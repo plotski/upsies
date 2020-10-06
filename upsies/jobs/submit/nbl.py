@@ -3,7 +3,7 @@ import urllib
 
 from ... import errors
 from ...utils import LazyModule
-from . import _base
+from . import SubmitJobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ _log = logging.getLogger(__name__)
 aiohttp = LazyModule(module='aiohttp', namespace=globals())
 
 
-class SubmitJob(_base.SubmitJobBase):
+class SubmitJob(SubmitJobBase):
     tracker_name = 'NBL'
 
     _url_path = {

@@ -1,10 +1,10 @@
-from . import _base
+from . import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class ChoiceJob(_base.JobBase):
+class ChoiceJob(JobBase):
     """
     Prompt the user to make a choice between a fixed set of values
 

@@ -1,12 +1,12 @@
 from .. import errors
 from ..tools import mediainfo
-from . import _base
+from . import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class MediainfoJob(_base.JobBase):
+class MediainfoJob(JobBase):
     name = 'mediainfo'
     label = 'Mediainfo'
 
