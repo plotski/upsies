@@ -21,18 +21,18 @@ class AsyncMock(Mock):
         return self().__await__()
 
 
-@pytest.mark.parametrize('method', _base.SubmissionJobBase.__abstractmethods__)
+@pytest.mark.parametrize('method', _base.SubmitJobBase.__abstractmethods__)
 def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in _base.SubmissionJobBase.__abstractmethods__}
+    attrs = {name:lambda self: None for name in _base.SubmitJobBase.__abstractmethods__}
     del attrs[method]
-    cls = type('TestSubmissionJob', (_base.SubmissionJobBase,), attrs)
+    cls = type('TestSubmitJob', (_base.SubmitJobBase,), attrs)
     # Python 3.9 changed "methods" to "method"
-    exp_msg = rf"^Can't instantiate abstract class TestSubmissionJob with abstract methods? {method}$"
+    exp_msg = rf"^Can't instantiate abstract class TestSubmitJob with abstract methods? {method}$"
     with pytest.raises(TypeError, match=exp_msg):
         cls()
 
 
-def make_TestSubmissionJob_class(**kwargs):
+def make_TestSubmitJob_class(**kwargs):
     attrs = {
         'tracker_name': 'TEST',
         'login': AsyncMock(),
@@ -40,12 +40,12 @@ def make_TestSubmissionJob_class(**kwargs):
         'upload': AsyncMock(),
     }
     attrs.update(kwargs)
-    clsname = 'TestSubmission'
-    bases = (_base.SubmissionJobBase,)
+    clsname = 'TestSubmitJob'
+    bases = (_base.SubmitJobBase,)
     return type(clsname, bases, attrs)
 
-def make_TestSubmissionJob_instance(tmp_path, **kwargs):
-    cls = make_TestSubmissionJob_class(
+def make_TestSubmitJob_instance(tmp_path, **kwargs):
+    cls = make_TestSubmitJob_class(
         tracker_name=kwargs.pop('tracker_name', 'TEST'),
         login=kwargs.pop('login', AsyncMock()),
         logout=kwargs.pop('logout', AsyncMock()),
@@ -64,7 +64,7 @@ def make_TestSubmissionJob_instance(tmp_path, **kwargs):
 @patch('bs4.BeautifulSoup')
 def test_parse_html_succeeds(bs_mock):
     bs_mock.return_value = {'html': 'foo'}
-    html = _base.SubmissionJobBase.parse_html('<html>foo</html>')
+    html = _base.SubmitJobBase.parse_html('<html>foo</html>')
     assert html == {'html': 'foo'}
     assert bs_mock.call_args_list == [call(
         '<html>foo</html>',
@@ -75,13 +75,13 @@ def test_parse_html_succeeds(bs_mock):
 def test_parse_html_fails(bs_mock):
     bs_mock.side_effect = ValueError('Invalid HTML')
     with pytest.raises(RuntimeError, match=r'^Failed to parse HTML: Invalid HTML$'):
-        _base.SubmissionJobBase.parse_html('<html>foo</html')
+        _base.SubmitJobBase.parse_html('<html>foo</html')
 
 
 def test_dump_html(tmp_path):
     filepath = tmp_path / 'foo'
     html = '<html>foo</html>'
-    assert _base.SubmissionJobBase.dump_html(filepath, html) is None
+    assert _base.SubmitJobBase.dump_html(filepath, html) is None
     assert os.path.exists(filepath)
     assert open(filepath, 'r').read() == html
 
@@ -90,11 +90,11 @@ def test_dump_html(tmp_path):
 def test_initialize_argument_as_properties(attribute, tmp_path):
     mock_obj = object()
     kwargs = {attribute: mock_obj}
-    job = make_TestSubmissionJob_instance(tmp_path, **kwargs)
+    job = make_TestSubmitJob_instance(tmp_path, **kwargs)
     assert getattr(job, attribute) is mock_obj
 
 def test_properties(tmp_path):
-    job = make_TestSubmissionJob_instance(tmp_path, tracker_name='ASDF')
+    job = make_TestSubmitJob_instance(tmp_path, tracker_name='ASDF')
     assert job.tracker_name == 'ASDF'
     assert job.metadata is job._metadata
     assert job.metadata == {}
@@ -106,7 +106,7 @@ async def test_wait(tmp_path):
     mocks.job1 = AsyncMock()
     mocks.job2 = AsyncMock()
     mocks._submit = AsyncMock()
-    job = make_TestSubmissionJob_instance(
+    job = make_TestSubmitJob_instance(
         tmp_path,
         required_jobs=(mocks.job1, mocks.job2),
     )
@@ -128,12 +128,12 @@ async def test_wait(tmp_path):
 
 @pytest.mark.asyncio
 async def test_http_session_is_ClientSession(tmp_path):
-    job = make_TestSubmissionJob_instance(tmp_path)
+    job = make_TestSubmitJob_instance(tmp_path)
     assert isinstance(job._http_session, aiohttp.ClientSession)
 
 @patch('aiohttp.ClientSession')
 def test_http_session_is_created_correctly(ClientSession_mock, tmp_path):
-    job = make_TestSubmissionJob_instance(tmp_path)
+    job = make_TestSubmitJob_instance(tmp_path)
     job._http_session
     assert ClientSession_mock.call_args_list == [call(
         headers={'User-Agent': f'{__project_name__}/{__version__}'},
@@ -143,7 +143,7 @@ def test_http_session_is_created_correctly(ClientSession_mock, tmp_path):
 
 @pytest.mark.asyncio
 async def test_http_session_is_singleton(tmp_path):
-    job = make_TestSubmissionJob_instance(tmp_path)
+    job = make_TestSubmitJob_instance(tmp_path)
     assert job._http_session is job._http_session
 
 
@@ -153,7 +153,7 @@ async def test_submit_passes_http_session_to_abstract_methods(tmp_path):
     login_mock = AsyncMock(side_effect=lambda session: sessions.append(session))
     logout_mock = AsyncMock(side_effect=lambda session: sessions.append(session))
     upload_mock = AsyncMock(side_effect=lambda session: sessions.append(session))
-    job = make_TestSubmissionJob_instance(
+    job = make_TestSubmitJob_instance(
         tmp_path,
         login=login_mock,
         logout=logout_mock,
@@ -166,7 +166,7 @@ async def test_submit_passes_http_session_to_abstract_methods(tmp_path):
 @pytest.mark.asyncio
 async def test_submit_sends_upload_return_value_as_output(tmp_path):
     upload_mock = AsyncMock(return_value='http://torrent.url/')
-    job = make_TestSubmissionJob_instance(
+    job = make_TestSubmitJob_instance(
         tmp_path,
         upload=upload_mock,
     )
@@ -179,7 +179,7 @@ async def test_submit_sends_upload_return_value_as_output(tmp_path):
 async def test_submit_handles_RequestError_from_abstract_method(method, tmp_path):
     mock = AsyncMock(side_effect=errors.RequestError('No connection'))
     kwargs = {method: mock}
-    job = make_TestSubmissionJob_instance(tmp_path, **kwargs)
+    job = make_TestSubmitJob_instance(tmp_path, **kwargs)
     job._metadata = {'create-torrent': 'file.torrent'}
     assert await job._submit() is None
     if method == 'logout':
@@ -197,7 +197,7 @@ async def test_submit_calls_methods_and_callbacks_in_correct_order(tmp_path):
     mocks.logout = AsyncMock()
     mocks.upload = AsyncMock()
 
-    job = make_TestSubmissionJob_instance(
+    job = make_TestSubmitJob_instance(
         tmp_path,
         login=mocks.login,
         logout=mocks.logout,
@@ -223,9 +223,9 @@ async def test_submit_calls_methods_and_callbacks_in_correct_order(tmp_path):
     ]
 
 
-@pytest.mark.parametrize('signal', _base.SubmissionJobBase.signal, ids=lambda v: v.name)
+@pytest.mark.parametrize('signal', _base.SubmitJobBase.signal, ids=lambda v: v.name)
 def test_callback_with_valid_signal(signal, tmp_path):
-    job = make_TestSubmissionJob_instance(tmp_path)
+    job = make_TestSubmitJob_instance(tmp_path)
     cb = Mock()
     job.on(signal, cb)
     job._call_callbacks(signal)
@@ -233,9 +233,9 @@ def test_callback_with_valid_signal(signal, tmp_path):
     job._call_callbacks(signal)
     assert cb.call_args_list == [call(), call()]
 
-@pytest.mark.parametrize('signal', _base.SubmissionJobBase.signal, ids=lambda v: v.name)
+@pytest.mark.parametrize('signal', _base.SubmitJobBase.signal, ids=lambda v: v.name)
 def test_callback_with_invalid_signal(signal, tmp_path):
-    job = make_TestSubmissionJob_instance(tmp_path)
+    job = make_TestSubmitJob_instance(tmp_path)
     cb = Mock()
     with pytest.raises(RuntimeError, match=r"^Unknown signal: 'foo'$"):
         job.on('foo', cb)

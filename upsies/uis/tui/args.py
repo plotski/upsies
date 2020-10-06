@@ -39,7 +39,7 @@ def _get_names(package, clsname, name_attribute):
                 for mod in modules]
 
 DB_NAMES = _get_names(dbs, '', 'label')
-TRACKER_NAMES = _get_names(trackers, 'SubmissionJob', 'tracker_name')
+TRACKER_NAMES = _get_names(trackers, 'SubmitJob', 'tracker_name')
 IMGHOST_NAMES = _get_names(imghosts, 'Uploader', 'name')
 BTCLIENT_NAMES = _get_names(btclients, 'ClientApi', 'name')
 

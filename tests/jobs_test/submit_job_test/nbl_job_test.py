@@ -36,11 +36,11 @@ def make_job(tmp_path, **kwargs):
         },
     }
     kw.update(kwargs)
-    return nbl.SubmissionJob(**kw)
+    return nbl.SubmitJob(**kw)
 
 
 def test_trackername():
-    assert nbl.SubmissionJob.tracker_name == 'NBL'
+    assert nbl.SubmitJob.tracker_name == 'NBL'
 
 
 def _get_response(name):

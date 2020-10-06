@@ -10,7 +10,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class SubmissionJobWidget(_base.JobWidgetBase):
+class SubmitJobWidget(_base.JobWidgetBase):
     def setup(self):
         self._status_info = widgets.TextField(
             text='Waiting...',

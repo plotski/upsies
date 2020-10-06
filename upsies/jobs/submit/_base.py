@@ -13,9 +13,9 @@ aiohttp = LazyModule(module='aiohttp', namespace=globals())
 bs4 = LazyModule(module='bs4', namespace=globals())
 
 
-class SubmissionJobBase(_base.JobBase, abc.ABC):
-    name = 'submission'
-    label = 'Submission'
+class SubmitJobBase(_base.JobBase, abc.ABC):
+    name = 'submit'
+    label = 'Submit'
     timeout = 180
 
     @staticmethod

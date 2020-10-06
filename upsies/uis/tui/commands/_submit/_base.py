@@ -31,7 +31,7 @@ class SubmitCommandBase(CommandBase, abc.ABC):
         Dictionary of jobs that must finish before :attr:`submission_job` can start
 
         Keys can be anything hashable and are only used by the
-        :class:`SubmissionJob` instance.
+        :class:`SubmitJob` instance.
         """
         pass
 
@@ -61,9 +61,9 @@ class SubmitCommandBase(CommandBase, abc.ABC):
         except AttributeError:
             raise RuntimeError(f'Unknown tracker: {self.args.TRACKER}')
         else:
-            SubmissionJob = module.SubmissionJob
+            SubmitJob = module.SubmitJob
 
-        return SubmissionJob(
+        return SubmitJob(
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             tracker_config=self.config['trackers'][self.args.TRACKER],

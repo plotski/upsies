@@ -11,7 +11,7 @@ _log = logging.getLogger(__name__)
 aiohttp = LazyModule(module='aiohttp', namespace=globals())
 
 
-class SubmissionJob(_base.SubmissionJobBase):
+class SubmitJob(_base.SubmitJobBase):
     tracker_name = 'NBL'
 
     _url_path = {
