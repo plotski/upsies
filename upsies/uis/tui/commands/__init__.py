@@ -176,7 +176,7 @@ class screenshots(CommandBase):
         image_host = self.args.upload_to
         if image_host:
             imghost_job = _jobs.imghost.ImageHostJob(
-                homedir=fs.projectdir(self.args.path),
+                homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 image_host=image_host,
                 images_total=self.screenshots_job.screenshots_total,
@@ -210,7 +210,7 @@ class upload_images(CommandBase):
                 homedir=fs.tmpdir(),
                 ignore_cache=self.args.ignore_cache,
                 image_host=self.args.IMAGEHOST,
-                image_paths=self.args.CONTENT,
+                image_paths=self.args.IMAGE,
             ),
         )
 
