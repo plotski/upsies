@@ -27,7 +27,7 @@ def test_name(tmp_path):
         db='imdb',
         content_path='path/to/foo',
     )
-    assert sj.name == 'imdb'
+    assert sj.name == 'imdb-id'
 
 
 def test_label(tmp_path):
