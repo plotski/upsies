@@ -105,8 +105,10 @@ class JobBase(abc.ABC):
         """
         Wait for this job to finish
 
-        This method must be called. :attr:`is_finished` must be `False` before
-        this method returns and `True` afterwards.
+        This method must be called.
+
+        :attr:`is_finished` must be `False` before this method returns and
+        `True` afterwards.
 
         It must be safe to call this method multiple times simultaneously.
 
