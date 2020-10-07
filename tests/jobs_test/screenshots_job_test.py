@@ -293,22 +293,34 @@ def test_ScreenshotsJob_finish(job):
     assert not job.is_finished
     job.finish()
     assert job._screenshot_process.stop.call_args_list == [call()]
-    assert job.is_finished
+    assert not job.is_finished
 
 
 @pytest.mark.asyncio
-async def test_ScreenshotsJob_wait(job):
+async def test_ScreenshotsJob_wait_finishes(job):
     assert not job.is_finished
-    asyncio.get_event_loop().call_soon(job.finish())
     await job.wait()
     assert job._screenshot_process.join.call_args_list == [call()]
     assert job.is_finished
 
+@pytest.mark.asyncio
+async def test_ScreenshotsJob_wait_can_be_called_multiple_times(job):
+    await job.wait()
+    assert job.is_finished
+    await job.wait()
+    await job.wait()
 
-def test_exit_code(job):
+
+@pytest.mark.asyncio
+async def test_exit_code(job):
     assert job.exit_code is None
     job.finish()
-    assert job.exit_code == 1
+    if not job.is_finished:
+        assert job.exit_code is None
+    else:
+        assert job.exit_code is not None
+    await job.wait()
+    assert job.is_finished
     job._screenshots_total = job.screenshots_created
     assert job.exit_code == 0
 
