@@ -14,3 +14,8 @@ venv:
 	"$(PYTHON)" -m venv "$(VENV_PATH)"
 	"$(VENV_PATH)"/bin/pip install --upgrade pytest pytest-asyncio tox flake8 isort coverage
 	"$(VENV_PATH)"/bin/pip install --editable .
+
+coverage:
+	coverage run
+	coverage combine
+	coverage html
