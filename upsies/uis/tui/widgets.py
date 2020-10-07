@@ -166,6 +166,7 @@ class RadioList:
             self.focused_index = min(len(self.choices) - 1, self.focused_index + 1)
 
         @kb.add('enter')
+        @kb.add('c-j')
         @kb.add(' ')
         def _(event):
             if on_accepted is not None:
