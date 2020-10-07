@@ -112,7 +112,7 @@ class UI:
             try:
                 self._app.layout.focus(jobw)
             except ValueError:
-                # Container cannot be focused
+                # Container cannot be focused - must be non-interactive job
                 background_jobs.append(jobw.job)
             else:
                 _log.debug('Waiting for interactive job to finish: %r', jobw.job.name)
