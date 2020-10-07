@@ -100,13 +100,13 @@ class SubmitJob(SubmitJobBase):
         if not self.logged_in:
             raise RuntimeError('upload() called before login()')
 
-        torrent_filepath = self.metadata['create-torrent']
+        torrent_filepath = self.metadata['create-torrent'][0]
         _log.debug('%s: Torrent: %r', self.tracker_name, torrent_filepath)
-        tvmaze_id = self.metadata['tvmaze-id']
+        tvmaze_id = self.metadata['tvmaze-id'][0]
         _log.debug('%s: TVmaze ID: %r', self.tracker_name, tvmaze_id)
-        mediainfo = self.metadata['mediainfo']
+        mediainfo = self.metadata['mediainfo'][0]
         _log.debug('%s: TVmaze ID: %r', self.tracker_name, mediainfo[:100] + '...')
-        category = self.metadata['category']
+        category = self.metadata['category'][0]
         _log.debug('%s: Category: %r', self.tracker_name, category)
 
         formdata = aiohttp.FormData()

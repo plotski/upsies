@@ -234,10 +234,10 @@ async def test_upload_succeeds(tmp_path):
         job._logout_url = 'logout.php'
         job._auth_key = 'mocked auth key'
         job._metadata = {
-            'create-torrent': str(torrent_file),
-            'mediainfo': 'mocked mediainfo',
-            'tvmaze-id': '12345',
-            'category': 'mocked category',
+            'create-torrent': (str(torrent_file),),
+            'mediainfo': ('mocked mediainfo',),
+            'tvmaze-id': ('12345',),
+            'category': ('mocked category',),
         }
         translate_category_mock = Mock(return_value=b'mocked category')
         async with aiohttp.ClientSession(headers={'User-Agent': 'test client'}) as client:
@@ -291,10 +291,10 @@ async def test_upload_fails(tmp_path):
         job._logout_url = 'logout.php'
         job._auth_key = 'mocked auth key'
         job._metadata = {
-            'create-torrent': str(torrent_file),
-            'mediainfo': 'mocked mediainfo',
-            'tvmaze-id': '12345',
-            'category': 'mocked category',
+            'create-torrent': (str(torrent_file),),
+            'mediainfo': ('mocked mediainfo',),
+            'tvmaze-id': ('12345',),
+            'category': ('mocked category',),
         }
         translate_category_mock = Mock(return_value=b'mocked category')
         with pytest.raises(errors.RequestError, match=r'^Upload failed: Something went wrong$'):
