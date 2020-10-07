@@ -130,17 +130,31 @@ def test_CreateTorrentJob_execute(job):
 def test_CreateTorrentJob_finish(job):
     assert not job.is_finished
     job.finish()
-    assert job.is_finished
+    assert not job.is_finished
     assert job._torrent_process.stop.call_args_list == [call()]
 
 
 @pytest.mark.asyncio
-async def test_CreateTorrentJob_wait(job):
+async def test_CreateTorrentJob_wait_finishes(job):
     assert not job.is_finished
     asyncio.get_event_loop().call_soon(job.finish)
     await job.wait()
     assert job.is_finished
+
+@pytest.mark.asyncio
+async def test_CreateTorrentJob_wait_joins_torrent_process(job):
+    asyncio.get_event_loop().call_soon(job.finish)
+    await job.wait()
     assert job._torrent_process.join.call_args_list == [call()]
+
+@pytest.mark.asyncio
+async def test_CreateTorrentJob_wait_can_be_called_multiple_times(job):
+    asyncio.get_event_loop().call_soon(job.finish)
+    await job.wait()
+    assert job.is_finished
+    await job.wait()
+    await job.wait()
+    assert job.is_finished
 
 
 @patch('upsies.utils.fs.file_tree')
