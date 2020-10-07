@@ -70,7 +70,8 @@ class ImageHostJob(JobBase):
     async def wait(self):
         # We are finished as soon as the upload thread has uploaded all images.
         await self._upload_thread.join()
-        super().finish()
+        if not self.is_finished:
+            super().finish()
         await super().wait()
 
     @property

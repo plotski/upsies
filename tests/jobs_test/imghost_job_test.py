@@ -131,10 +131,19 @@ def test_execute(job):
 
 
 @pytest.mark.asyncio
-async def test_wait(job):
+async def test_wait_finishes(job):
     assert not job.is_finished
     await job.wait()
     assert job._upload_thread.join.call_args_list == [call()]
+    assert job.is_finished
+
+@pytest.mark.asyncio
+async def test_wait_can_be_called_multiple_times(job):
+    assert not job.is_finished
+    await job.wait()
+    assert job.is_finished
+    await job.wait()
+    await job.wait()
     assert job.is_finished
 
 
