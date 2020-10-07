@@ -76,6 +76,18 @@ def test_start_reads_output_cache_from_previous_job(tmp_path):
     assert job.is_finished is True
     assert not hasattr(job, 'execute_was_called')
 
+def test_start_finishes_if_reading_from_cache_fails(tmp_path):
+    class BarJob(FooJob):
+        def _read_output_cache(self):
+            raise RuntimeError('I found god')
+
+    job = BarJob(homedir=tmp_path, ignore_cache=False)
+    with pytest.raises(RuntimeError, match=r'I found god'):
+        job.start()
+    assert job.output == ()
+    assert job.is_finished is True
+    assert not hasattr(job, 'execute_was_called')
+
 def test_start_executes_job_if_no_cached_output_is_found(job):
     job.start()
     assert job.execute_was_called is True

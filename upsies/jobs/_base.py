@@ -89,7 +89,12 @@ class JobBase(abc.ABC):
         finished. Otherwise, call :meth:`execute`.
         """
         _log.debug('Running %r', self)
-        self._read_output_cache()
+        try:
+            self._read_output_cache()
+        except Exception:
+            self.finish()
+            raise
+
         if self.output:
             _log.debug('Job was already done previously: %r', self)
             self._finished_event.set()
