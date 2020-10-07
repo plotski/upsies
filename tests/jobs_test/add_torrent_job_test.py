@@ -161,7 +161,7 @@ async def test_add_async_call_order(make_AddTorrentJob):
 async def test_add_async_complains_about_large_torrent_file(make_AddTorrentJob, tmp_path):
     torrent_file = tmp_path / 'foo.torrent'
     f = open(torrent_file, 'wb')
-    f.truncate(1048576 * 100)  # Sparse file
+    f.truncate(AddTorrentJob.MAX_TORRENT_SIZE + 1)  # Sparse file
     f.close()
     job = make_AddTorrentJob()
     await job.add_async(torrent_file)
