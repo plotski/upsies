@@ -1,12 +1,12 @@
 from ....utils import cache
 from .. import widgets
-from . import _base
+from . import JobWidgetBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class MediainfoJobWidget(_base.JobWidgetBase):
+class MediainfoJobWidget(JobWidgetBase):
     def setup(self):
         pass
 

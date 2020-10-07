@@ -2,13 +2,13 @@ from prompt_toolkit.application import get_app
 
 from ....utils import cache
 from .. import widgets
-from . import _base
+from . import JobWidgetBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class ReleaseNameJobWidget(_base.JobWidgetBase):
+class ReleaseNameJobWidget(JobWidgetBase):
     def setup(self):
         self._release_name = widgets.InputField(
             text='Loading...',

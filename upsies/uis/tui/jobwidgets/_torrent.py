@@ -2,13 +2,13 @@ from prompt_toolkit.application import get_app
 
 from ....utils import cache, fs
 from .. import widgets
-from . import _base
+from . import JobWidgetBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class CreateTorrentJobWidget(_base.JobWidgetBase):
+class CreateTorrentJobWidget(JobWidgetBase):
     def setup(self):
         self._progress = widgets.ProgressBar()
         self.job.on_progress_update(self.handle_progress_update)
@@ -26,7 +26,7 @@ class CreateTorrentJobWidget(_base.JobWidgetBase):
         return self._progress
 
 
-class AddTorrentJobWidget(_base.JobWidgetBase):
+class AddTorrentJobWidget(JobWidgetBase):
     def setup(self):
         self._status = widgets.TextField()
         self.job.on_adding(self.handle_adding_torrent)
@@ -48,7 +48,7 @@ class AddTorrentJobWidget(_base.JobWidgetBase):
         return self._status
 
 
-class CopyTorrentJobWidget(_base.JobWidgetBase):
+class CopyTorrentJobWidget(JobWidgetBase):
     def setup(self):
         self._status = widgets.TextField()
         self.job.on_copying(self.handle_copying_torrent)

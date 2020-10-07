@@ -10,7 +10,7 @@ from prompt_toolkit.utils import get_cwidth
 
 from ....utils import LazyModule, cache
 from .. import widgets
-from . import _base
+from . import JobWidgetBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ _log = logging.getLogger(__name__)
 webbrowser = LazyModule(module='webbrowser', namespace=globals())
 
 
-class SearchDbJobWidget(_base.JobWidgetBase):
+class SearchDbJobWidget(JobWidgetBase):
     def setup(self):
         right_column_width = 40
         self._widgets = {

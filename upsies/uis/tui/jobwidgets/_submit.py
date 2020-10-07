@@ -4,13 +4,13 @@ from prompt_toolkit.application import get_app
 
 from ....utils import cache
 from .. import widgets
-from . import _base
+from . import JobWidgetBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class SubmitJobWidget(_base.JobWidgetBase):
+class SubmitJobWidget(JobWidgetBase):
     def setup(self):
         self._status_info = widgets.TextField(
             text='Waiting...',
