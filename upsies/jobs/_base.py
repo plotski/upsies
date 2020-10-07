@@ -4,6 +4,7 @@ import json
 import os
 
 from .. import errors
+from ..utils import cache
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -307,7 +308,7 @@ class JobBase(abc.ABC):
                 except (ValueError, TypeError) as e:
                     raise RuntimeError(f'Unable to decode JSON: {content!r}: {e}')
 
-    @property
+    @cache.property
     def cache_directory(self):
         """
         Path to directory that stores cache files
@@ -327,7 +328,7 @@ class JobBase(abc.ABC):
                     raise errors.PermissionError(f'{path}: Unable to create directory')
         return path
 
-    @property
+    @cache.property
     def cache_file(self):
         """
         File path in :attr:`cache_directory` to store cached :attr:`output` in
