@@ -97,12 +97,10 @@ class JobBase(abc.ABC):
 
         if self.output:
             _log.debug('Job was already done previously: %r', self)
-            self._finished_event.set()
             for output in self.output:
                 for cb in self._output_callbacks:
                     cb(output)
-            for cb in self._finished_callbacks:
-                cb(self)
+            self.finish()
         else:
             _log.debug('Executing %r', self)
             self.execute()
