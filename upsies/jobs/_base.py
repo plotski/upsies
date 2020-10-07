@@ -117,7 +117,16 @@ class JobBase(abc.ABC):
             raise self._exception
 
     def finish(self):
-        """Mark this job as finished and unblock :meth:`wait`"""
+        """
+        Mark this job as finished and unblock :meth:`wait`
+
+        This function must not block.
+
+        .. not: Depending on the subclass implementation, :attr:`is_finished`
+                may still be `False` after this method was called. For example,
+                a job may want to finish as soon as a thread is joined, and
+                blocking operations should be done in :meth:`wait`.
+        """
         if not self.is_finished:
             self._finished_event.set()
             for cb in self._finished_callbacks:
