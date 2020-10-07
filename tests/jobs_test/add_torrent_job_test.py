@@ -21,10 +21,6 @@ class AsyncMock(Mock):
         return self().__await__()
 
 
-class Callable:
-    def __eq__(self, other):
-        return callable(other)
-
 @pytest.fixture
 def client(tmp_path):
     class MockClient(btclient.ClientApiBase):
