@@ -424,8 +424,9 @@ async def test_cache_is_properly_written_when_repeating_command(tmp_path):
 def test_writing_cache_that_is_not_JSON_serializable(job):
     job.finish()
     job._output = (object(),)
+    # Python 3.6 quotes the type name in the error message
     with pytest.raises(RuntimeError, match=(rf'^Unable to serialize JSON: {re.escape(str(job._output))}: '
-                                            'Object of type object is not JSON serializable$')):
+                                            'Object of type \'?object\'? is not JSON serializable$')):
         job._write_output_cache()
 
 def test_writing_unwritable_cache_file(tmp_path):
