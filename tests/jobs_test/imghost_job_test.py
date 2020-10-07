@@ -119,6 +119,12 @@ def test_waiting_for_images_on_pipe(_UploadThread_mock, tmp_path):
     assert _UploadThread_mock.return_value.finish.call_args_list == [call()]
 
 
+def test_finish(job):
+    assert job.finish() is None
+    assert job._upload_thread.stop.call_args_list == [call()]
+    assert not job.is_finished
+
+
 def test_execute(job):
     assert job.execute() is None
     assert job._upload_thread.start.call_args_list == [call()]

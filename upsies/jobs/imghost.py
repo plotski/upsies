@@ -56,6 +56,9 @@ class ImageHostJob(JobBase):
     def execute(self):
         self._upload_thread.start()
 
+    def finish(self):
+        self._upload_thread.stop()
+
     def pipe_input(self, filepath):
         self._upload_thread.upload(filepath)
 
