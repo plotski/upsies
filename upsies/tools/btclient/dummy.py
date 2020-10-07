@@ -2,6 +2,7 @@ import asyncio
 
 from . import ClientApiBase
 
+
 class ClientApi(ClientApiBase):
     """Dummy client API for testing and debugging"""
 

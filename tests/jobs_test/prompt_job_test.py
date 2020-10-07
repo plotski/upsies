@@ -1,4 +1,5 @@
 import re
+
 import pytest
 
 from upsies.jobs import prompt
@@ -8,7 +9,7 @@ def test_Choice_choices_argument_is_shorter_than_two(tmp_path):
     choices = ('foo',)
     with pytest.raises(ValueError, match=(r'^choices must contain at least 2 items: '
                                           rf'{re.escape(str(choices))}$')):
-        job = prompt.ChoiceJob(
+        prompt.ChoiceJob(
             homedir=tmp_path,
             ignore_cache=True,
             name='foo',
@@ -42,7 +43,7 @@ def test_Choice_focused_argument_is_valid(tmp_path):
 def test_Choice_focused_argument_is_in(tmp_path):
     choices = ('foo', 'bar', 'baz')
     with pytest.raises(ValueError, match=(r'^Invalid choice: asdf$')):
-        job = prompt.ChoiceJob(
+        prompt.ChoiceJob(
             homedir=tmp_path,
             ignore_cache=True,
             name='foo',
