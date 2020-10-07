@@ -192,7 +192,7 @@ class CopyTorrentJob(JobBase):
         return None
 
     def initialize(self, *, destination, files=()):
-        self._destination = destination
+        self._destination = None if not destination else str(destination)
         self._copying_callbacks = []
         self._copied_callbacks = []
         if files:
@@ -217,13 +217,22 @@ class CopyTorrentJob(JobBase):
         assert callable(callback)
         self._copied_callbacks.append(callback)
 
-    MAX_FILE_SIZE = 10 * 2**20
+    MAX_FILE_SIZE = 10 * 2**20  # 10 MiB
 
     def copy(self, file_path, destination=None):
+        if self.is_finished:
+            raise RuntimeError(f'{type(self).__name__} is already finished')
+
         dest = destination or self._destination
+        if not dest:
+            raise RuntimeError('Cannot copy without destination')
         _log.debug('Copying %s to %s', file_path, dest)
 
-        if os.path.exists(file_path) and os.path.getsize(file_path) > self.MAX_FILE_SIZE:
+        if not os.path.exists(file_path):
+            self.error(f'{file_path}: No such file')
+            return
+
+        elif os.path.getsize(file_path) > self.MAX_FILE_SIZE:
             self.error(f'{file_path}: File is too large')
             return
 
@@ -235,8 +244,7 @@ class CopyTorrentJob(JobBase):
                 msg = e.strerror
             else:
                 msg = str(e)
-            self.error(f'Failed to copy {fs.basename(file_path)} '
-                       f'to {dest}: {msg}')
+            self.error(f'Failed to copy {file_path} to {dest}: {msg}')
             # Default to original torrent path
             self.send(file_path, if_not_finished=True)
         else:
