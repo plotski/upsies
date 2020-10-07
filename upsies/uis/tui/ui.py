@@ -136,9 +136,10 @@ class UI:
 
     def _cancel_all_jobs(self, wait=True):
         for job in self._jobs_added:
-            _log.debug('Finishing job: %r', job)
-            job.finish()
-            if wait:
-                _log.debug('Waiting for job: %r', job)
-                self._app.create_background_task(job.wait())
-                _log.debug('Job is now finished: %r', job)
+            if not job.is_finished:
+                _log.debug('Finishing job: %r', job)
+                job.finish()
+                if wait:
+                    _log.debug('Waiting for job: %r', job)
+                    self._app.create_background_task(job.wait())
+                    _log.debug('Job is now finished: %r', job)
