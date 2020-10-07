@@ -283,6 +283,19 @@ def test_ScreenshotsJob_initialize_creates_screenshot_process(DaemonProcess_mock
     assert sj._screenshot_process is DaemonProcess_mock.return_value
 
 
+def test_ScreenshotsJob_handle_screenshot(job):
+    assert job.output == ()
+    assert job.screenshots_created == 0
+
+    job.handle_screenshot('foo.jpg')
+    assert job.output == ('foo.jpg',)
+    assert job.screenshots_created == 1
+
+    job.handle_screenshot('bar.jpg')
+    assert job.output == ('foo.jpg', 'bar.jpg')
+    assert job.screenshots_created == 2
+
+
 def test_ScreenshotsJob_execute(job):
     assert job.execute() is None
     assert job._screenshot_process.start.call_args_list == [call()]
