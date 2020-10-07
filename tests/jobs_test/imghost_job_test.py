@@ -138,10 +138,13 @@ async def test_wait(job):
     assert job.is_finished
 
 
-def test_exit_code(job):
+@pytest.mark.asyncio
+async def test_exit_code(job):
     assert job.exit_code is None
     job.finish()
-    assert job.exit_code is job._exit_code
+    assert job.exit_code is None
+    await job.wait()
+    assert job.exit_code is not None
 
 
 def test_images_uploaded(job):
@@ -169,11 +172,8 @@ def test_image_url_handling(job):
 
 
 def test_uploads_finished_handling(job):
-    cb = Mock()
-    job.on_finished(cb)
     job.handle_uploads_finished()
-    assert job.is_finished
-    assert job.exit_code == 0
+    assert job._exit_code == 0
 
 
 def test_UploadThread_creates_Uploader_instance_after_starting(tmp_path):
