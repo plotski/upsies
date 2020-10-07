@@ -171,4 +171,4 @@ def test_torrent_created_handling(job):
     assert not job.is_finished
     job.handle_torrent_created('mock torrent')
     assert job.output == ('mock torrent',)
-    assert job.is_finished
+    assert not job.is_finished

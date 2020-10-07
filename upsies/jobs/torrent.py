@@ -70,7 +70,6 @@ class CreateTorrentJob(JobBase):
         _log.debug('Torrent created: %r', torrent_path)
         if torrent_path:
             self.send(torrent_path, if_not_finished=True)
-        self.finish()
 
 
 def _torrent_process(output_queue, input_queue, *args, **kwargs):
