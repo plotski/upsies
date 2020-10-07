@@ -3,7 +3,7 @@ import json
 
 from ... import errors
 from ...utils import LazyModule
-from . import _base
+from . import ClientApiBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ CSRF_ERROR_CODE = 409
 CSRF_HEADER = 'X-Transmission-Session-Id'
 
 
-class ClientApi(_base.ClientApiBase):
+class ClientApi(ClientApiBase):
     """
     RPC for Transmission daemon
 
