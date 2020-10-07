@@ -2,7 +2,7 @@
 source = upsies
 command_line = -m pytest
 branch = True
-concurrency = multithreading
+concurrency = multiprocessing
 
 [report]
 show_missing = True
