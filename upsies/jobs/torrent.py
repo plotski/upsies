@@ -45,10 +45,11 @@ class CreateTorrentJob(JobBase):
 
     def finish(self):
         self._torrent_process.stop()
-        super().finish()
 
     async def wait(self):
         await self._torrent_process.join()
+        if not self.is_finished:
+            super().finish()
         await super().wait()
 
     def handle_file_tree(self, file_tree):
