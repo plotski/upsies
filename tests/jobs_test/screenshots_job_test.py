@@ -1,4 +1,3 @@
-import asyncio
 import multiprocessing
 import os
 from unittest.mock import Mock, call, patch
