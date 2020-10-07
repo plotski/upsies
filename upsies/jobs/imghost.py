@@ -93,7 +93,6 @@ class ImageHostJob(JobBase):
 
     def handle_uploads_finished(self):
         self._exit_code = 0
-        self.finish()
 
 
 class _UploadThread(daemon.DaemonThread):
