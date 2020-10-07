@@ -34,6 +34,7 @@ config = {
     },
 
     'clients': {
+        'dummy': {},
         'transmission': {
             'url': 'http://localhost:9091/transmission/rpc',
             'username': '',

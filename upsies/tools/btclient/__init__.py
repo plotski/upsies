@@ -3,7 +3,7 @@ Communication with BitTorrent clients
 """
 
 from ._base import ClientApiBase  # isort:skip
-from . import transmission
+from . import transmission, dummy
 
 
 def client(name, **kwargs):
