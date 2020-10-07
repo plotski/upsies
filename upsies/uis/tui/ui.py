@@ -121,9 +121,10 @@ class UI:
 
         # Wait for all non-interactive jobs to finish
         for job in background_jobs:
-            _log.debug('Waiting for background job to finish: %r', job.name)
-            await job.wait()
-            _log.debug('Background job finished: %r', job.name)
+            if not job.is_finished:
+                _log.debug('Waiting for background job to finish: %r', job.name)
+                await job.wait()
+                _log.debug('Background job finished: %r', job.name)
 
         # If this coroutine is finished before self._app.run() has set
         # self._app.is_running to True, self._app.exit() is not called and the
