@@ -282,14 +282,17 @@ class JobBase(abc.ABC):
             try:
                 output_string = json.dumps(self.output)
             except (ValueError, TypeError) as e:
-                raise RuntimeError(f'Unable to encode output as JSON: {self.output!r}: {e}')
+                raise RuntimeError(f'Unable to serialize JSON: {self.output!r}: {e}')
             else:
                 try:
                     with open(self.cache_file, 'w') as f:
                         f.write(output_string)
                         f.write('\n')
                 except OSError as e:
-                    raise RuntimeError(f'Unable to write cache {self.cache_file}: {e}')
+                    if e.strerror:
+                        raise RuntimeError(f'Unable to write cache {self.cache_file}: {e.strerror}')
+                    else:
+                        raise RuntimeError(f'Unable to write cache {self.cache_file}: {e}')
 
     def _read_output_cache(self):
         """
@@ -304,7 +307,10 @@ class JobBase(abc.ABC):
                 with open(self.cache_file, 'r') as f:
                     content = f.read()
             except OSError as e:
-                raise RuntimeError(f'Unable to read cache {self.cache_file}: {e}')
+                if e.strerror:
+                    raise RuntimeError(f'Unable to read cache {self.cache_file}: {e.strerror}')
+                else:
+                    raise RuntimeError(f'Unable to read cache {self.cache_file}: {e}')
             else:
                 try:
                     self._output = json.loads(content)

@@ -1,6 +1,7 @@
 import asyncio
 import collections
 import os
+import re
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -394,6 +395,51 @@ def test_cache_is_written_if_output_is_not_empty(job):
     assert os.path.exists(job.cache_file)
     assert open(job.cache_file, 'r').read() == '["foo"]\n'
 
+@pytest.mark.asyncio
+async def test_cache_is_properly_written_when_repeating_command(tmp_path):
+    class BarJob(FooJob):
+        execute_counter = 0
+        read_output_cache_counter = 0
+
+        def execute(self):
+            self.execute_counter += 1
+            self.send('asdf')
+            self.finish()
+
+        def _read_output_cache(self):
+            self.read_output_cache_counter += 1
+            super()._read_output_cache()
+
+    for i in range(5):
+        job = BarJob(homedir=tmp_path, ignore_cache=False)
+        assert job.is_finished is False
+        assert job.output == ()
+        job.start()
+        await job.wait()
+        assert job.is_finished is True
+        assert job.output == ('asdf',)
+        assert job.execute_counter == (1 if i == 0 else 0)
+        assert job.read_output_cache_counter == 1
+
+def test_writing_cache_that_is_not_JSON_serializable(job):
+    job.finish()
+    job._output = (object(),)
+    with pytest.raises(RuntimeError, match=(rf'^Unable to serialize JSON: {re.escape(str(job._output))}: '
+                                            'Object of type object is not JSON serializable$')):
+        job._write_output_cache()
+
+def test_writing_unwritable_cache_file(tmp_path):
+    class BarJob(FooJob):
+        @property
+        def cache_directory(self):
+            return os.path.join('non', 'existing', 'path')
+    job = BarJob(homedir=tmp_path, ignore_cache=False)
+    job.finish()
+    job._output = ['foo']
+    with pytest.raises(RuntimeError, match=(rf'^Unable to write cache {re.escape(job.cache_file)}: '
+                                            'No such file or directory$')):
+        job._write_output_cache()
+
 
 def test_cache_is_read_and_job_is_not_executed(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
@@ -431,29 +477,21 @@ def test_cache_is_not_read_if_cache_file_property_is_falsy(cache_file_value, tmp
         job.start()
         assert open_mock.call_args_list == []
 
+def test_reading_unreadable_cache_file(tmp_path):
+    job = FooJob(homedir=tmp_path, ignore_cache=False)
+    open(job.cache_file, 'w').write('["foo"]\n')
+    os.chmod(job.cache_file, 0o000)
+    try:
+        with pytest.raises(RuntimeError, match=(rf'^Unable to read cache {re.escape(job.cache_file)}: '
+                                                'Permission denied')):
+            job._read_output_cache()
+    finally:
+        os.chmod(job.cache_file, 0o600)
+    assert job.output == ()
 
-@pytest.mark.asyncio
-async def test_cache_is_properly_written_when_repeating_command(tmp_path):
-    class BarJob(FooJob):
-        execute_counter = 0
-        read_output_cache_counter = 0
-
-        def execute(self):
-            self.execute_counter += 1
-            self.send('asdf')
-            self.finish()
-
-        def _read_output_cache(self):
-            self.read_output_cache_counter += 1
-            super()._read_output_cache()
-
-    for i in range(5):
-        job = BarJob(homedir=tmp_path, ignore_cache=False)
-        assert job.is_finished is False
-        assert job.output == ()
-        job.start()
-        await job.wait()
-        assert job.is_finished is True
-        assert job.output == ('asdf',)
-        assert job.execute_counter == (1 if i == 0 else 0)
-        assert job.read_output_cache_counter == 1
+def test_reading_from_cache_file_with_invalid_JSON(tmp_path):
+    job = FooJob(homedir=tmp_path, ignore_cache=False)
+    open(job.cache_file, 'w').write('[')
+    with pytest.raises(RuntimeError, match=(r'^Unable to decode JSON: \'\[\': Expecting ...')):
+        job._read_output_cache()
+    assert job.output == ()
