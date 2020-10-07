@@ -143,7 +143,7 @@ class AddTorrentJob(JobBase):
             download_path or self._download_path,
         ))
 
-    MAX_TORRENT_SIZE = 10 * 2**20
+    MAX_TORRENT_SIZE = 10 * 2**20  # 10 MiB
 
     async def add_async(self, torrent_path, download_path=None):
         _log.debug('Adding %s to %s', torrent_path, self._client.name)
