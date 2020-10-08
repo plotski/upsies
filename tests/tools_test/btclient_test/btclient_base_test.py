@@ -1,7 +1,20 @@
+from unittest.mock import call, patch
+
 import pytest
 
 from upsies import errors
-from upsies.tools.btclient._base import ClientApiBase
+from upsies.tools.btclient import ClientApiBase, client
+
+
+@patch('upsies.tools.btclient.foo', create=True)
+def test_client_returns_module_by_name(foo_client):
+    c = client('foo', bar='baz')
+    assert c is foo_client.ClientApi.return_value
+    assert foo_client.ClientApi.call_args_list == [call(bar='baz')]
+
+def test_client_fails_to_find_module_by_name():
+    with pytest.raises(ValueError, match='^Unsupported client: foo$'):
+        client('foo', bar='baz')
 
 
 @pytest.mark.parametrize('method', ClientApiBase.__abstractmethods__)
