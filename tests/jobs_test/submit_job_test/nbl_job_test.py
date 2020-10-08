@@ -253,6 +253,7 @@ class MockServer(aiohttp.test_utils.TestServer):
 
 
 @pytest.mark.asyncio
+@patch('upsies.jobs.submit.nbl.SubmitJob._translate_category', Mock(return_value=b'mock category'))
 async def test_upload_succeeds(tmp_path):
     responses = (
         (('post',), '/upload.php', aiohttp.web.HTTPTemporaryRedirect('/torrents.php?id=123')),
@@ -276,12 +277,10 @@ async def test_upload_succeeds(tmp_path):
             'create-torrent': (str(torrent_file),),
             'mediainfo': ('mocked mediainfo',),
             'tvmaze-id': ('12345',),
-            'category': ('mocked category',),
+            'category': ('mock category',),
         }
-        translate_category_mock = Mock(return_value=b'mocked category')
         async with aiohttp.ClientSession(headers={'User-Agent': 'test client'}) as client:
-            with patch.object(job, '_translate_category', translate_category_mock):
-                torrent_page_url = await job.upload(client)
+            torrent_page_url = await job.upload(client)
         assert torrent_page_url == srv.url('/torrents.php?id=123')
         assert srv.requests_seen == [{
             'method': 'POST',
@@ -289,7 +288,7 @@ async def test_upload_succeeds(tmp_path):
             'multipart/form-data': {
                 'MAX_FILE_SIZE': bytearray(b'1048576'),
                 'auth': bytearray(b'mocked auth key'),
-                'category': bytearray(translate_category_mock.return_value),
+                'category': bytearray(b'mock category'),
                 'desc': bytearray(b'mocked mediainfo'),
                 'file_input': bytearray(b'mocked torrent metainfo'),
                 'fontfont': bytearray(b'-1'),
