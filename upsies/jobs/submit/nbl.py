@@ -150,7 +150,7 @@ class SubmitJob(SubmitJobBase):
             if error and error.string:
                 raise errors.RequestError(f'Upload failed: {error.string}')
             else:
-                self.dump_html('upload.html', html.prettify())
+                self.dump_html('upload.html', text)
                 raise RuntimeError('Failed to find error message')
 
     def _translate_category(self, category):
