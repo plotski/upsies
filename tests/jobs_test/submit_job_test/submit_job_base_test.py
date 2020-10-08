@@ -93,7 +93,6 @@ def test_dump_html_gets_non_string(tmp_path):
     assert open(filepath, 'r').read() == '123\n'
 
 
-
 @pytest.mark.parametrize('attribute', ('tracker_config', 'required_jobs'))
 def test_initialize_argument_as_properties(attribute, tmp_path):
     mock_obj = object()
