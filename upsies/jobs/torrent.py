@@ -237,6 +237,8 @@ class CopyTorrentJob(JobBase):
             return
 
         import shutil
+        for cb in self._copying_callbacks:
+            cb(filepath)
         try:
             new_path = shutil.copy2(filepath, dest)
         except OSError as e:
@@ -249,3 +251,5 @@ class CopyTorrentJob(JobBase):
             self.send(filepath, if_not_finished=True)
         else:
             self.send(new_path, if_not_finished=True)
+            for cb in self._copied_callbacks:
+                cb(new_path)
