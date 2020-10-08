@@ -69,7 +69,7 @@ class CreateTorrentJob(JobBase):
     def handle_torrent_created(self, torrent_path=None):
         _log.debug('Torrent created: %r', torrent_path)
         if torrent_path:
-            self.send(torrent_path, if_not_finished=True)
+            self.send(torrent_path)
 
 
 def _torrent_process(output_queue, input_queue, *args, **kwargs):
@@ -248,8 +248,8 @@ class CopyTorrentJob(JobBase):
                 msg = str(e)
             self.error(f'Failed to copy {filepath} to {dest}: {msg}')
             # Default to original torrent path
-            self.send(filepath, if_not_finished=True)
+            self.send(filepath)
         else:
-            self.send(new_path, if_not_finished=True)
+            self.send(new_path)
             for cb in self._copied_callbacks:
                 cb(new_path)

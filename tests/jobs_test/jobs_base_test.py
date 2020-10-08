@@ -151,8 +151,6 @@ def test_send_on_finished_job(job):
     with pytest.raises(RuntimeError, match=r'^send\(\) called on finished job$'):
         job.send('bar')
     assert job.output == ('foo',)
-    job.send('bar', if_not_finished=True)
-    assert job.output == ('foo',)
 
 def test_on_output_callback_is_called_when_output_is_sent(job):
     cb = Mock()
@@ -218,8 +216,6 @@ def test_error_on_finished_job(job):
     assert job.errors == ('foo',)
     with pytest.raises(RuntimeError, match=r'^error\(\) called on finished job$'):
         job.error('bar')
-    assert job.errors == ('foo',)
-    job.error('bar', if_not_finished=True)
     assert job.errors == ('foo',)
 
 def test_on_error_callback(job):

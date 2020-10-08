@@ -93,7 +93,7 @@ class ImageHostJob(JobBase):
 
     def handle_image_url(self, url):
         self._images_uploaded += 1
-        self.send(url, if_not_finished=True)
+        self.send(url)
 
     def handle_uploads_finished(self):
         self._exit_code = 0

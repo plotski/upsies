@@ -30,7 +30,7 @@ class ReleaseNameJob(JobBase):
         :param str name: Release name as accepted by the user
         """
         if name:
-            self.send(name, if_not_finished=True)
+            self.send(name)
         self.finish()
 
     def fetch_info(self, *args, **kwargs):

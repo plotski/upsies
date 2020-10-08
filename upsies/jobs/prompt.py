@@ -60,5 +60,5 @@ class ChoiceJob(JobBase):
         """
         choice_str = str(choice)
         assert choice_str in self._choices
-        self.send(choice_str, if_not_finished=True)
+        self.send(choice_str)
         self.finish()

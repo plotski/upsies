@@ -171,12 +171,11 @@ class JobBase(abc.ABC):
         """Result of this job as a sequence of strings"""
         return tuple(self._output)
 
-    def send(self, output, if_not_finished=False):
+    def send(self, output):
         """
         Append `output` to :attr:`output`
 
-        :param bool if_not_finished: Ignore this call if :attr:`is_finished` is
-            True (`RuntimeError` is raised otherwise)
+        :raise: RuntimeError if :meth:`finish` was called earlier
         """
         if not self.is_finished:
             if output:
@@ -185,8 +184,7 @@ class JobBase(abc.ABC):
                 for cb in self._output_callbacks:
                     cb(output_str)
         else:
-            if not if_not_finished:
-                raise RuntimeError('send() called on finished job')
+            raise RuntimeError('send() called on finished job')
 
     def on_output(self, callback):
         """
@@ -220,20 +218,18 @@ class JobBase(abc.ABC):
         """Sequence of reported errors (strings or exceptions)"""
         return tuple(self._errors)
 
-    def error(self, error, if_not_finished=False):
+    def error(self, error):
         """
-        Append `error` to :attr:`errors`
+        Append `error` to :attr:`errors` and call error callbacks
 
-        :param bool if_not_finished: Ignore this call if :attr:`is_finished` is
-            True
+        :raise: RuntimeError if :meth:`finish` was called earlier
         """
         if not self.is_finished:
             self._errors.append(error)
             for cb in self._error_callbacks:
                 cb(error)
         else:
-            if not if_not_finished:
-                raise RuntimeError('error() called on finished job')
+            raise RuntimeError('error() called on finished job')
 
     def on_error(self, callback):
         """
