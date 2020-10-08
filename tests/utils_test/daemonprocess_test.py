@@ -1,3 +1,4 @@
+import asyncio
 import re
 import time
 from unittest.mock import Mock, call
@@ -152,7 +153,7 @@ async def test_stop_terminates_running_process():
         info_callback=info_callback,
     )
     proc.start()
-    time.sleep(5)
+    await asyncio.sleep(5)
     assert proc.is_alive
     proc.stop()
     await proc.join()
