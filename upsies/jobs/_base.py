@@ -189,7 +189,7 @@ class JobBase(abc.ABC):
         """
         Append `output` to :attr:`output`
 
-        :raise: RuntimeError if :meth:`finish` was called earlier
+        :raise RuntimeError: if :meth:`finish` was called earlier
         """
         if not self.is_finished:
             if output:
@@ -236,7 +236,7 @@ class JobBase(abc.ABC):
         """
         Append `error` to :attr:`errors` and call error callbacks
 
-        :raise: RuntimeError if :meth:`finish` was called earlier
+        :raise RuntimeError: if :meth:`finish` was called earlier
         """
         if not self.is_finished:
             self._errors.append(error)
