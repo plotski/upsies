@@ -45,11 +45,10 @@ class CreateTorrentJob(JobBase):
 
     def finish(self):
         self._torrent_process.stop()
+        super().finish()
 
     async def wait(self):
         await self._torrent_process.join()
-        if not self.is_finished:
-            super().finish()
         await super().wait()
 
     def handle_file_tree(self, file_tree):
@@ -70,6 +69,7 @@ class CreateTorrentJob(JobBase):
         _log.debug('Torrent created: %r', torrent_path)
         if torrent_path:
             self.send(torrent_path)
+        self.finish()
 
 
 def _torrent_process(output_queue, input_queue, *args, **kwargs):
