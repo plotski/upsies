@@ -80,27 +80,23 @@ class UI:
             self._exit(1)
 
     async def _do_jobs(self):
-        # Create all job widgets first so they can set up callbacks early before
+        # Create job widgets first so they can register callbacks early before
         # they miss any events
         jobws = []
         for job in self._jobs:
-            if job is not None:
-                if job.quiet:
-                    # Quiet jobs are not started when looping over the
-                    # JobWidgets, so we start them now
-                    job.start()
-                else:
-                    jobws.append(widgets.JobWidget(job))
+            if job is not None and not job.quiet:
+                jobws.append(widgets.JobWidget(job))
 
-            # Start quiet jobs immediately
+        # Start quiet jobs immediately
+        for job in self._jobs:
             if job is not None and job.quiet:
                 job.start()
 
         # Start jobs one by one; wait for interactive jobs to finish
         background_jobs = []
         for jobw in jobws:
-            _log.debug('Starting job: %r', jobw.job)
-            jobw.job.start()
+            if not jobw.job.is_started:
+                jobw.job.start()
             _log.debug('Activating job widget: %r', jobw)
             jobw.activate()
             self._jobs_added.append(jobw.job)
