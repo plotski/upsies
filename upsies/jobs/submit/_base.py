@@ -26,19 +26,18 @@ class SubmitJobBase(JobBase, abc.ABC):
         :param string: HTML document
         """
         try:
-            return bs4.BeautifulSoup(string, features='html.parser')
+            return bs4.BeautifulSoup(str(string), features='html.parser')
         except Exception as e:
             raise RuntimeError(f'Failed to parse HTML: {e}')
 
-    @staticmethod
-    def dump_html(filepath, html):
+    def dump_html(self, filepath, html):
         """
         Write `html` to `filepath`
 
         Used for debugging unexpected exceptions.
         """
         with open(filepath, 'w') as f:
-            f.write(html)
+            f.write(self.parse_html(html).prettify())
 
     def initialize(self, *, tracker_config, required_jobs):
         self._tracker_config = tracker_config

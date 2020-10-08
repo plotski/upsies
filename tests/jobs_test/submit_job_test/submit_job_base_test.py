@@ -80,10 +80,18 @@ def test_parse_html_fails(bs_mock):
 
 def test_dump_html(tmp_path):
     filepath = tmp_path / 'foo'
-    html = '<html>foo</html>'
-    assert SubmitJobBase.dump_html(filepath, html) is None
+    job = make_TestSubmitJob_instance(tmp_path)
+    assert job.dump_html(filepath, '<html>foo</html>') is None
     assert os.path.exists(filepath)
-    assert open(filepath, 'r').read() == html
+    assert open(filepath, 'r').read() == '<html>\n foo\n</html>'
+
+def test_dump_html_gets_non_string(tmp_path):
+    filepath = tmp_path / 'foo'
+    job = make_TestSubmitJob_instance(tmp_path)
+    assert job.dump_html(filepath, 123) is None
+    assert os.path.exists(filepath)
+    assert open(filepath, 'r').read() == '123\n'
+
 
 
 @pytest.mark.parametrize('attribute', ('tracker_config', 'required_jobs'))
