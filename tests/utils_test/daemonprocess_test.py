@@ -156,7 +156,7 @@ async def test_stop_terminates_running_process():
     assert proc.is_alive
     proc.stop()
     await proc.join()
-    info_callback.call_args_list == [call('something')]
+    assert info_callback.call_args_list == [call('something')]
 
 
 @pytest.mark.asyncio
