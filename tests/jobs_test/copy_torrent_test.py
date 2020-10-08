@@ -61,11 +61,11 @@ def test_initialize_with_files(copy_mock, destination, make_CopyTorrentJob):
 @patch('upsies.jobs.torrent.CopyTorrentJob.copy')
 def test_pipe_input(copy_mock, make_CopyTorrentJob):
     job = make_CopyTorrentJob()
-    job.copy('a.jpg')
+    job.pipe_input('a.jpg')
     assert copy_mock.call_args_list == [
         call('a.jpg'),
     ]
-    job.copy('b.jpg')
+    job.pipe_input('b.jpg')
     assert copy_mock.call_args_list == [
         call('a.jpg'),
         call('b.jpg'),
