@@ -11,10 +11,10 @@ class SubmitJob(SubmitJobBase):
     tracker_name = 'DUMMY'
 
     async def login(self, http_session):
-        asyncio.sleep(1)
+        await asyncio.sleep(1)
 
     async def logout(self, http_session):
-        asyncio.sleep(0.5)
+        await asyncio.sleep(0.5)
 
     async def upload(self, http_session):
         _log.debug('Submission metadata: %r', self.metadata)
