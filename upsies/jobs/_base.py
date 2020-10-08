@@ -57,6 +57,7 @@ class JobBase(abc.ABC):
         self._homedir = str(homedir)
         self._ignore_cache = bool(ignore_cache)
         self._quiet = bool(quiet)
+        self._is_started = False
         self._exception = None
         self._errors = []
         self._output = []
@@ -87,8 +88,16 @@ class JobBase(abc.ABC):
 
         If there is cached output available, load it and mark this job as
         finished. Otherwise, call :meth:`execute`.
+
+        :raise RuntimeError: if this method is called multiple times or if
+            reading from cache file fails unexpectedly
         """
-        _log.debug('Running %r', self)
+        _log.debug('Starting %r', self)
+        if self._is_started:
+            raise RuntimeError('start() was already called')
+        else:
+            self._is_started = True
+
         try:
             self._read_output_cache()
         except Exception:
@@ -153,8 +162,13 @@ class JobBase(abc.ABC):
         self._finished_callbacks.append(callback)
 
     @property
+    def is_started(self):
+        """Whether :meth:`start` was called"""
+        return self._finished_event.is_set()
+
+    @property
     def is_finished(self):
-        """Whether this job is done"""
+        """Whether :meth:`finish` was called"""
         return self._finished_event.is_set()
 
     @property
