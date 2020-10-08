@@ -246,5 +246,4 @@ class submit(CommandBase):
         except AttributeError:
             raise ValueError(f'Unknown tracker: {args.TRACKER}')
         else:
-            _log.debug('submit module: %r', module)
             return module.submit(args=args, config=config)
