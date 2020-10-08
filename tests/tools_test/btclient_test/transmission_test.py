@@ -108,9 +108,13 @@ async def test_response_is_not_json():
 
 
 @pytest.mark.asyncio
-async def test_add_torrent_with_download_path_argument():
+@pytest.mark.parametrize(
+    argnames='torrent_added_field',
+    argvalues=('torrent-added', 'torrent-duplicate'),
+)
+async def test_add_torrent_with_download_path_argument(torrent_added_field):
     response = {
-        'arguments': {'torrent-added': {'id': 1234}},
+        'arguments': {torrent_added_field: {'id': 1234}},
         'result': 'success',
     }
     api = transmission.ClientApi()
@@ -131,9 +135,13 @@ async def test_add_torrent_with_download_path_argument():
         )]
 
 @pytest.mark.asyncio
-async def test_add_torrent_without_download_path_argument():
+@pytest.mark.parametrize(
+    argnames='torrent_added_field',
+    argvalues=('torrent-added', 'torrent-duplicate'),
+)
+async def test_add_torrent_without_download_path_argument(torrent_added_field):
     response = {
-        'arguments': {'torrent-added': {'id': 1234}},
+        'arguments': {torrent_added_field: {'id': 1234}},
         'result': 'success',
     }
     api = transmission.ClientApi()
@@ -153,9 +161,13 @@ async def test_add_torrent_without_download_path_argument():
         )]
 
 @pytest.mark.asyncio
-async def test_add_torrent_ignores_existing_torrent():
+@pytest.mark.parametrize(
+    argnames='torrent_added_field',
+    argvalues=('torrent-added', 'torrent-duplicate'),
+)
+async def test_add_torrent_ignores_existing_torrent(torrent_added_field):
     response = {
-        'arguments': {'torrent-added': {'id': 'abcd'}},
+        'arguments': {torrent_added_field: {'id': 'abcd'}},
         'result': 'success',
     }
     api = transmission.ClientApi()
