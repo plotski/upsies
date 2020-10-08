@@ -91,6 +91,45 @@ async def test_login_succeeds(tmp_path):
     assert job._logout_url == 'http://foo/logout.php?asdfasdf'
     assert job._auth_key == '12345'
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    argnames='method_name',
+    argvalues=(
+        'parse_html',
+        '_report_login_error',
+        '_store_auth_key',
+        '_store_logout_url',
+    ),
+)
+@patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
+async def test_login_dumps_html_if_handling_response_fails(dump_html_mock, method_name, tmp_path):
+    http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
+    http_session_mock.post.return_value.text = AsyncMock(return_value='''
+    <html>
+      <input name="auth" value="12345" />
+      <a href="logout.php?asdfasdf">logout</a>
+    </html>
+    ''')
+    job = make_job(tmp_path)
+    with patch.object(job, method_name) as method_mock:
+        method_mock.side_effect = Exception('Oooph!')
+        with pytest.raises(Exception, match=r'^Oooph\!$'):
+            await job.login(http_session_mock)
+    assert not job.logged_in
+    assert http_session_mock.get.call_args_list == []
+    assert http_session_mock.post.call_args_list == [call(
+        url='http://foo' + job._url_path['login'],
+        data={
+            'username': 'bunny',
+            'password': 'hunter2',
+            'twofa': '',
+            'login': 'Login',
+        }
+    )]
+    assert not job.logged_in
+    assert dump_html_mock.call_args_list == [
+        call('login.html', http_session_mock.post.return_value.text.return_value),
+    ]
 
 @pytest.mark.parametrize(
     argnames='error, exp_message',
