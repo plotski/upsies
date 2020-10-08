@@ -58,6 +58,7 @@ class ImageHostJob(JobBase):
 
     def finish(self):
         self._upload_thread.stop()
+        super().finish()
 
     def pipe_input(self, filepath):
         self._upload_thread.upload(filepath)
@@ -70,8 +71,6 @@ class ImageHostJob(JobBase):
     async def wait(self):
         # We are finished as soon as the upload thread has uploaded all images.
         await self._upload_thread.join()
-        if not self.is_finished:
-            super().finish()
         await super().wait()
 
     @property
@@ -97,6 +96,7 @@ class ImageHostJob(JobBase):
 
     def handle_uploads_finished(self):
         self._exit_code = 0
+        self.finish()
 
 
 class _UploadThread(daemon.DaemonThread):
@@ -137,6 +137,5 @@ class _UploadThread(daemon.DaemonThread):
 
             return True  # Call work() again
         else:
-            _log.debug('Upload queue is empty')
             self.stop()
             self._finished_callback()

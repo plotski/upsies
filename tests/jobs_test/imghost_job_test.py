@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -120,18 +121,19 @@ def test_waiting_for_images_on_pipe(_UploadThread_mock, tmp_path):
 
 
 def test_finish(job):
-    assert job.finish() is None
+    job.finish()
+    assert job.is_finished
     assert job._upload_thread.stop.call_args_list == [call()]
-    assert not job.is_finished
 
 
 def test_execute(job):
-    assert job.execute() is None
+    job.execute()
     assert job._upload_thread.start.call_args_list == [call()]
 
 
 @pytest.mark.asyncio
-async def test_wait_finishes(job):
+async def test_wait_joins_upload_thread(job):
+    asyncio.get_event_loop().call_soon(job.finish)
     assert not job.is_finished
     await job.wait()
     assert job._upload_thread.join.call_args_list == [call()]
@@ -139,20 +141,16 @@ async def test_wait_finishes(job):
 
 @pytest.mark.asyncio
 async def test_wait_can_be_called_multiple_times(job):
+    asyncio.get_event_loop().call_soon(job.finish)
     assert not job.is_finished
     await job.wait()
-    assert job.is_finished
     await job.wait()
-    await job.wait()
-    assert job.is_finished
 
 
 @pytest.mark.asyncio
 async def test_exit_code(job):
     assert job.exit_code is None
     job.finish()
-    assert job.exit_code is None
-    await job.wait()
     assert job.exit_code is not None
 
 
