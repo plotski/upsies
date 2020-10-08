@@ -310,7 +310,7 @@ def test_ScreenshotsJob_finish(job):
 
 
 @pytest.mark.asyncio
-async def test_ScreenshotsJob_wait_finishes(job):
+async def test_ScreenshotsJob_wait_joins_screenshot_process(job):
     asyncio.get_event_loop().call_soon(job.finish)
     assert not job.is_finished
     await job.wait()
