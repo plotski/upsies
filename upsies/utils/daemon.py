@@ -222,6 +222,8 @@ def _target_process_wrapper(target, output_queue, input_queue, *args, **kwargs):
         # Because tracebacks are not picklable, format the exception in the
         # child process before we send it to the parent.
         output_queue.put((DaemonProcess.ERROR, _PickledException(e)))
+    finally:
+        output_queue.put((DaemonProcess._TERMINATED, None))
 
 class _PickledException(Exception):
     def __init__(self, exc):
