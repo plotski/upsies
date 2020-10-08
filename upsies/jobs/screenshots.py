@@ -51,11 +51,10 @@ class ScreenshotsJob(JobBase):
 
     def finish(self):
         self._screenshot_process.stop()
+        super().finish()
 
     async def wait(self):
         await self._screenshot_process.join()
-        if not self.is_finished:
-            super().finish()
         await super().wait()
 
     @property

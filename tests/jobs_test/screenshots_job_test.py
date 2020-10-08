@@ -1,3 +1,4 @@
+import asyncio
 import multiprocessing
 import os
 from unittest.mock import Mock, call, patch
@@ -304,12 +305,13 @@ def test_ScreenshotsJob_execute(job):
 def test_ScreenshotsJob_finish(job):
     assert not job.is_finished
     job.finish()
+    assert job.is_finished
     assert job._screenshot_process.stop.call_args_list == [call()]
-    assert not job.is_finished
 
 
 @pytest.mark.asyncio
 async def test_ScreenshotsJob_wait_finishes(job):
+    asyncio.get_event_loop().call_soon(job.finish)
     assert not job.is_finished
     await job.wait()
     assert job._screenshot_process.join.call_args_list == [call()]
@@ -317,8 +319,7 @@ async def test_ScreenshotsJob_wait_finishes(job):
 
 @pytest.mark.asyncio
 async def test_ScreenshotsJob_wait_can_be_called_multiple_times(job):
-    await job.wait()
-    assert job.is_finished
+    asyncio.get_event_loop().call_soon(job.finish)
     await job.wait()
     await job.wait()
 
