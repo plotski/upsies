@@ -129,7 +129,10 @@ class UI:
             await asyncio.sleep(0)
 
         # Return last job's exit code
-        self._exit(jobw.job.exit_code)
+        try:
+            self._exit(jobw.job.exit_code)
+        except UnboundLocalError:
+            self._exit(0)
 
     def _cancel_all_jobs(self, wait=True):
         for job in self._jobs_added:
