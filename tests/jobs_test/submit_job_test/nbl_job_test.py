@@ -305,7 +305,9 @@ async def test_upload_succeeds(tmp_path):
         }]
 
 @pytest.mark.asyncio
-async def test_upload_fails(tmp_path):
+@patch('upsies.jobs.submit.nbl.SubmitJob._translate_category', Mock(return_value=b'mock category'))
+@patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
+async def test_upload_finds_error_message(dump_html_mock, tmp_path):
     responses = (
         (('post',), '/upload.php', aiohttp.web.Response(text='''
         <html>
@@ -332,14 +334,47 @@ async def test_upload_fails(tmp_path):
             'create-torrent': (str(torrent_file),),
             'mediainfo': ('mocked mediainfo',),
             'tvmaze-id': ('12345',),
-            'category': ('mocked category',),
+            'category': ('mock category',),
         }
-        translate_category_mock = Mock(return_value=b'mocked category')
         with pytest.raises(errors.RequestError, match=r'^Upload failed: Something went wrong$'):
             async with aiohttp.ClientSession() as client:
-                with patch.object(job, '_translate_category', translate_category_mock):
-                    await job.upload(client)
+                await job.upload(client)
+    assert dump_html_mock.call_args_list == []
 
+@pytest.mark.asyncio
+@patch('upsies.jobs.submit.nbl.SubmitJob._translate_category', Mock(return_value=b'mock category'))
+@patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
+async def test_upload_fails_to_find_error_message(dump_html_mock, tmp_path):
+    responses = (
+        (('post',), '/upload.php', aiohttp.web.Response(text='mocked html')),
+    )
+    torrent_file = tmp_path / 'foo.torrent'
+    torrent_file.write_bytes(b'mocked torrent metainfo')
+    async with MockServer(responses) as srv:
+        job = make_job(
+            tmp_path,
+            tracker_config={
+                'username': 'bunny',
+                'password': 'hunter2',
+                'base_url': srv.url(''),
+                'announce': 'http://foo/announce',
+                'exclude': 'some files',
+            },
+        )
+        job._logout_url = 'logout.php'
+        job._auth_key = 'mocked auth key'
+        job._metadata = {
+            'create-torrent': (str(torrent_file),),
+            'mediainfo': ('mocked mediainfo',),
+            'tvmaze-id': ('12345',),
+            'category': ('mock category',),
+        }
+        with pytest.raises(RuntimeError, match=r'^Failed to find error message$'):
+            async with aiohttp.ClientSession() as client:
+                await job.upload(client)
+    assert dump_html_mock.call_args_list == [
+        call('upload.html', 'mocked html'),
+    ]
 
 @pytest.mark.parametrize(
     argnames=('category', 'exp_category'),
