@@ -203,8 +203,8 @@ class CopyTorrentJob(JobBase):
     def execute(self):
         pass
 
-    def pipe_input(self, file_path):
-        self.copy(file_path)
+    def pipe_input(self, filepath):
+        self.copy(filepath)
 
     def pipe_closed(self):
         self.finish()
@@ -219,33 +219,33 @@ class CopyTorrentJob(JobBase):
 
     MAX_FILE_SIZE = 10 * 2**20  # 10 MiB
 
-    def copy(self, file_path, destination=None):
+    def copy(self, filepath, destination=None):
         if self.is_finished:
             raise RuntimeError(f'{type(self).__name__} is already finished')
 
         dest = destination or self._destination
         if not dest:
             raise RuntimeError('Cannot copy without destination')
-        _log.debug('Copying %s to %s', file_path, dest)
+        _log.debug('Copying %s to %s', filepath, dest)
 
-        if not os.path.exists(file_path):
-            self.error(f'{file_path}: No such file')
+        if not os.path.exists(filepath):
+            self.error(f'{filepath}: No such file')
             return
 
-        elif os.path.getsize(file_path) > self.MAX_FILE_SIZE:
-            self.error(f'{file_path}: File is too large')
+        elif os.path.getsize(filepath) > self.MAX_FILE_SIZE:
+            self.error(f'{filepath}: File is too large')
             return
 
         import shutil
         try:
-            new_path = shutil.copy2(file_path, dest)
+            new_path = shutil.copy2(filepath, dest)
         except OSError as e:
             if e.strerror:
                 msg = e.strerror
             else:
                 msg = str(e)
-            self.error(f'Failed to copy {file_path} to {dest}: {msg}')
+            self.error(f'Failed to copy {filepath} to {dest}: {msg}')
             # Default to original torrent path
-            self.send(file_path, if_not_finished=True)
+            self.send(filepath, if_not_finished=True)
         else:
             self.send(new_path, if_not_finished=True)
