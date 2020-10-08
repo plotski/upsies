@@ -1,4 +1,5 @@
 import collections
+import string
 
 from . import _imdbpie
 
@@ -78,11 +79,16 @@ async def title_english(id):
     # Find English US title (US titles can also be Spanish)
     for key in priorities:
         if key in titles:
-            if titles[key] != original_title:
-                _log.debug('Found english title: %s: %r', key, titles[key])
+            if _normalize_title(titles[key]) != _normalize_title(original_title):
+                _log.debug('English title: %s: %r', key, titles[key])
                 return titles[key]
 
     return ''
+
+def _normalize_title(title):
+    """Return casefolded `title` with any punctuation removed"""
+    trans = title.maketrans('', '', string.punctuation)
+    return title.translate(trans).casefold()
 
 
 async def type(id):
