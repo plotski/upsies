@@ -15,12 +15,15 @@ _log = logging.getLogger(__name__)
 
 class UI:
     def __init__(self, jobs):
-        self._jobs_added = []
         self._jobs = [j for j in jobs if j is not None]
         for j in self._jobs:
             assert isinstance(j, JobBase), j
         self._app = self._make_app()
         self._exception = None
+
+    @property
+    def _job_widgets(self):
+        return self._container.children
 
     _max_width = 120
 
@@ -33,7 +36,7 @@ class UI:
             width=Dimension(max=self._max_width),
             children=[self._initial_placeholder],
         )
-        layout = Layout(
+        self._layout = Layout(
             self._container,
         )
 
@@ -42,16 +45,13 @@ class UI:
         @kb.add('escape')
         @kb.add('c-g')
         @kb.add('c-q')
-        def _(event, self=self):
-            self._cancel_all_jobs(wait=True)
-
         @kb.add('c-c')
         def _(event, self=self):
-            self._cancel_all_jobs(wait=False)
+            self._cancel_jobs(wait=True)
             if self._app.is_running:
                 self._exit(1)
 
-        app = Application(layout=layout,
+        app = Application(layout=self._layout,
                           key_bindings=kb,
                           style=style.style,
                           full_screen=False,
@@ -61,6 +61,10 @@ class UI:
         app.timeoutlen = 0.1
         app.ttimeoutlen = 0.1
         return app
+
+    def _remove_initial_placeholder(self):
+        if self._initial_placeholder in self._job_widgets:
+            self._job_widgets.remove(self._initial_placeholder)
 
     def _exit(self, exit_code):
         if not self._app.is_done:
@@ -83,47 +87,44 @@ class UI:
             self._exit(1)
 
     async def _do_jobs(self):
-        # Create job widgets first so they can register callbacks early before
-        # they miss any events
-        jobws = []
-        for job in self._jobs:
-            if job is not None and not job.quiet:
-                jobws.append(widgets.JobWidget(job))
+        # First create widgets so they can register their callbacks with their
+        # jobs before they miss any events
+        jobws = [widgets.JobWidget(j) for j in self._jobs]
 
-        # Start quiet jobs immediately
+        # Start all jobs
         for job in self._jobs:
-            if job is not None and job.quiet:
-                job.start()
+            job.start()
 
-        # Start jobs one by one; wait for interactive jobs to finish
-        background_jobs = []
-        for jobw in jobws:
-            if not jobw.job.is_started:
-                jobw.job.start()
-            _log.debug('Activating job widget: %r', jobw)
+        # Separate interactive jobs from non-interactive jobs
+        background_jobws = [jw for jw in jobws if not jw.is_interactive]
+        interactive_jobws = [jw for jw in jobws if jw.is_interactive]
+
+        # Display all background jobs
+        for jobw in background_jobws:
             jobw.activate()
-            self._jobs_added.append(jobw.job)
+            self._job_widgets.append(to_container(jobw))
+            self._remove_initial_placeholder()
 
-            self._container.children.append(to_container(jobw))
-            if self._initial_placeholder in self._container.children:
-                self._container.children.remove(self._initial_placeholder)
+        # Prepend interactive jobs one by one. We want them at the top to avoid
+        # interactive jobs being moved by expanding and shrinking background
+        # jobs.
+        for index, jobw in enumerate(interactive_jobws):
+            self._job_widgets.insert(index, to_container(jobw))
+            self._remove_initial_placeholder()
+            self._layout.focus(jobw)
+            jobw.activate()
+            _log.debug('Waiting for interactive job to finish: %r', jobw.job.name)
+            await jobw.job.wait()
 
-            try:
-                self._app.layout.focus(jobw)
-            except ValueError:
-                # Container cannot be focused - must be non-interactive job
-                background_jobs.append(jobw.job)
-            else:
-                _log.debug('Waiting for interactive job to finish: %r', jobw.job.name)
-                await jobw.job.wait()
-                _log.debug('Interactive job finished: %r', jobw.job.name)
-
-        # Wait for all non-interactive jobs to finish
-        for job in background_jobs:
+        # Wait for all jobs to finish. Interactive jobs are already finished,
+        # but we want an exit code from the final job and there may be no
+        # background jobs.
+        exit_code = 0
+        for job in self._jobs:
             if not job.is_finished:
                 _log.debug('Waiting for background job to finish: %r', job.name)
                 await job.wait()
-                _log.debug('Background job finished: %r', job.name)
+            exit_code = job.exit_code
 
         # If this coroutine is finished before self._app.run() has set
         # self._app.is_running to True, self._app.exit() is not called and the
@@ -132,17 +133,17 @@ class UI:
             await asyncio.sleep(0)
 
         # Return last job's exit code
-        try:
-            self._exit(jobw.job.exit_code)
-        except UnboundLocalError:
-            self._exit(0)
+        self._exit(exit_code)
 
-    def _cancel_all_jobs(self, wait=True):
-        for job in self._jobs_added:
+    def _cancel_jobs(self, wait=True):
+        self._cancelled = False
+        _log.debug('Cancelling %s jobs', len(self._jobs))
+        for job in self._jobs:
             if not job.is_finished:
-                _log.debug('Finishing job: %r', job)
                 job.finish()
-                if wait:
+
+        if wait:
+            for job in self._jobs:
+                if not job.is_finished:
                     _log.debug('Waiting for job: %r', job)
                     self._app.create_background_task(job.wait())
-                    _log.debug('Job is now finished: %r', job)
