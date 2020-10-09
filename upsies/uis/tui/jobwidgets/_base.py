@@ -2,8 +2,9 @@ import abc
 
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.layout.containers import (ConditionalContainer, HSplit,
-                                              Window)
+                                              Window, to_container)
 from prompt_toolkit.layout.controls import FormattedTextControl
+from prompt_toolkit.layout.layout import walk
 
 from .. import widgets
 
@@ -84,6 +85,14 @@ class JobWidgetBase(abc.ABC):
             dont_extend_height=True,
             wrap_lines=True,
         )
+
+    @property
+    def is_interactive(self):
+        """Whether this job needs user interaction"""
+        for c in walk(to_container(self.runtime_widget), skip_hidden=True):
+            if isinstance(c, Window) and c.content.is_focusable():
+                return True
+        return False
 
     def __pt_container__(self):
         return self._container
