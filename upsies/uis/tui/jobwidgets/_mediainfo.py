@@ -1,5 +1,6 @@
+from prompt_toolkit.layout.containers import Window
+
 from ....utils import cache
-from .. import widgets
 from . import JobWidgetBase
 
 import logging  # isort:skip
@@ -15,4 +16,4 @@ class MediainfoJobWidget(JobWidgetBase):
 
     @cache.property
     def runtime_widget(self):
-        return widgets.TextField('')
+        return Window(dont_extend_height=True)
