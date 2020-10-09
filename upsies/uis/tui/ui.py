@@ -6,6 +6,7 @@ from prompt_toolkit.layout import Layout
 from prompt_toolkit.layout.containers import HSplit, Window, to_container
 from prompt_toolkit.layout.dimension import Dimension
 
+from ...jobs import JobBase
 from . import style, widgets
 
 import logging  # isort:skip
@@ -14,8 +15,10 @@ _log = logging.getLogger(__name__)
 
 class UI:
     def __init__(self, jobs):
-        self._jobs = jobs
         self._jobs_added = []
+        self._jobs = [j for j in jobs if j is not None]
+        for j in self._jobs:
+            assert isinstance(j, JobBase), j
         self._app = self._make_app()
         self._exception = None
 
