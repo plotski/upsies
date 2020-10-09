@@ -18,20 +18,22 @@ class JobWidgetBase(abc.ABC):
         self.setup()
         self._main_widget = HSplit(
             children=[
-                # Status / Progress
+                # Status or progress information
                 ConditionalContainer(
                     filter=Condition(lambda: not self.job.is_finished),
                     content=self.runtime_widget,
+                ),
+                # Additional info that isn't part of the job's main result
+                # (e.g. CreateTorrentJobWidget can show the files in the
+                # torrent, but the output is the torrent file path.)
+                ConditionalContainer(
+                    filter=Condition(lambda: bool(self.job.info)),
+                    content=self.info_widget,
                 ),
                 # Final output
                 ConditionalContainer(
                     filter=Condition(lambda: self.job.output),
                     content=self.output_widget,
-                ),
-                # More info that isn't part of the final output
-                ConditionalContainer(
-                    filter=Condition(lambda: bool(self.job.info)),
-                    content=self.info_widget,
                 ),
                 # Errors
                 ConditionalContainer(
