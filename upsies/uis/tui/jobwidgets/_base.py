@@ -16,7 +16,7 @@ class JobWidgetBase(abc.ABC):
     def __init__(self, job):
         self.job = job
         self.setup()
-        self._main_widget = HSplit(
+        main_widget = HSplit(
             children=[
                 # Status or progress information
                 ConditionalContainer(
@@ -42,10 +42,14 @@ class JobWidgetBase(abc.ABC):
                 ),
             ],
         )
-        self._container = widgets.HLabel(
+        label = widgets.HLabel(
             group='jobs',
             label=self.job.label,
-            content=self._main_widget,
+            content=main_widget,
+        )
+        self._container = ConditionalContainer(
+            filter=Condition(lambda: self.job.errors or not self.job.quiet),
+            content=label,
         )
 
     @abc.abstractmethod
