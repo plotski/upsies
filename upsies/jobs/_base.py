@@ -92,7 +92,6 @@ class JobBase(abc.ABC):
         :raise RuntimeError: if this method is called multiple times or if
             reading from cache file fails unexpectedly
         """
-        _log.debug('Starting %r', self)
         if self._is_started:
             raise RuntimeError('start() was already called')
         else:
