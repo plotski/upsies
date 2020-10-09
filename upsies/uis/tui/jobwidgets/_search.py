@@ -121,6 +121,7 @@ class SearchDbJobWidget(JobWidgetBase):
                     ),
                 ]),
             ]),
+            widgets.vspacer,
         ]
 
         # Wrapping the HSplit in a VSplit limits the width of the first line
