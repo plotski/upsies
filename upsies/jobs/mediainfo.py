@@ -10,6 +10,9 @@ class MediainfoJob(JobBase):
     name = 'mediainfo'
     label = 'Mediainfo'
 
+    # Don't show mediainfo in TUI
+    quiet = True
+
     def initialize(self, content_path):
         self._content_path = content_path
 
