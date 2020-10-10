@@ -40,3 +40,16 @@ async def test_title_original_english(id, english, original, store_response):
 @pytest.mark.asyncio
 async def test_type(id, exp_type, store_response):
     assert await imdb.type(id) == exp_type
+
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_country'),
+    argvalues=(
+        ('tt0076759', 'United States'),  # Star Wars
+        ('tt2209300', 'Poland'),         # Poklosie
+        ('tt3286052', 'Canada'),         # February
+    ),
+)
+@pytest.mark.asyncio
+async def test_country(id, exp_country, store_response):
+    assert await imdb.country(id) == exp_country
