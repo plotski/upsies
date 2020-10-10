@@ -106,3 +106,18 @@ async def type(id):
         return 'episode'
     else:
         return ''
+
+
+async def country(id):
+    """
+    Get country name
+
+    :param str id: IMDb ID (starts with "tt")
+    """
+    from ....utils import country
+    info = await _imdbpie.get_info(id, 'title_versions')
+    codes = info.get('origins', '')  # Two-letter code (ISO 3166-1 alpha-2)
+    if codes:
+        return country.iso3166_alpha2_name.get(codes[0], '')
+    else:
+        return ''
