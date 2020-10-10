@@ -14,7 +14,7 @@ _log = logging.getLogger(__name__)
 
 class JobWidgetBase(abc.ABC):
     def __init__(self, job):
-        self.job = job
+        self._job = job
         self.setup()
         main_widget = HSplit(
             children=[
@@ -51,6 +51,11 @@ class JobWidgetBase(abc.ABC):
             filter=Condition(lambda: self.job.errors or not self.job.quiet),
             content=label,
         )
+
+    @property
+    def job(self):
+        """Underlying :class:`JobBase` instance"""
+        return self._job
 
     @abc.abstractmethod
     def setup(self):
