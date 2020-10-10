@@ -263,6 +263,7 @@ class JobBase(abc.ABC):
             _log.debug(''.join(traceback.format_exception(
                 type(exception), exception, exception.__traceback__)))
             self._exception = exception
+            self.finish()
         else:
             raise RuntimeError('exception() called on finished job')
 

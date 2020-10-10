@@ -288,6 +288,12 @@ async def test_exception_with_finished_job(job):
     with pytest.raises(RuntimeError, match=r'^exception\(\) called on finished job$'):
         job.exception(TypeError('Sorry, not my type.'))
 
+@pytest.mark.asyncio
+async def test_exception_finishes(job):
+    assert not job.is_finished
+    job.exception(TypeError('Sorry, not my type.'))
+    assert job.is_finished
+
 
 def test_cache_file_name_includes_keyword_arguments(tmp_path):
     class BarJob(FooJob):
