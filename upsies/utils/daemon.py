@@ -62,6 +62,11 @@ class DaemonThread(abc.ABC):
         else:
             return False
 
+    @property
+    def running(self):
+        """Whether :meth:`work` is going to be called again"""
+        return getattr(self, '_running', False)
+
     async def join(self, timeout=None):
         """Block asynchronously until the thread exits"""
         if hasattr(self, '_unblock_event'):
@@ -74,11 +79,6 @@ class DaemonThread(abc.ABC):
                 raise self._unhandled_exception
         else:
             raise RuntimeError(f'Not started yet: {self!r}')
-
-    @property
-    def running(self):
-        """Whether :meth:`work` is going to be called again"""
-        return getattr(self, '_running', False)
 
     @abc.abstractmethod
     def work(self):
