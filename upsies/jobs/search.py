@@ -278,7 +278,8 @@ class _UpdateInfoThread(daemon.DaemonThread):
             self._update_task.cancel()
             _log.debug('Canceled previous update task: %r', self._update_task)
         self._result = result
-        self.unblock()
+        if self.is_alive:
+            self.unblock()
 
         # Update plain, non-callable values immediately
         if result is not None:
