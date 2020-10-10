@@ -72,12 +72,12 @@ class SearchDbJob(JobBase):
             country=self._make_update_info_func('country'),
         )
 
+    def _make_update_info_func(self, key):
+        return lambda value: self.update_info(key, value)
+
     def execute(self):
         self._search_thread.start()
         self._update_info_thread.start()
-
-    def _make_update_info_func(self, key):
-        return lambda value: self.update_info(key, value)
 
     def finish(self):
         self._search_thread.stop()
