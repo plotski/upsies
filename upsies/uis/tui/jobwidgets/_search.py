@@ -1,8 +1,6 @@
 from prompt_toolkit.application import get_app
-from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.layout.containers import (ConditionalContainer,
-                                              DynamicContainer, HSplit, VSplit,
+from prompt_toolkit.layout.containers import (DynamicContainer, HSplit, VSplit,
                                               Window)
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.utils import get_cwidth
