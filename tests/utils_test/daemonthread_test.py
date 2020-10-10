@@ -26,6 +26,8 @@ def test_abstract_method(method):
 async def test_is_alive():
     thread = FooThread()
     assert thread.is_alive is False
+    thread.stop()
+    assert thread.is_alive is False
     thread.start()
     assert thread.is_alive is True
     thread.stop()

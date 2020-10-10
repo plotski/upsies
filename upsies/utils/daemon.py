@@ -36,8 +36,9 @@ class DaemonThread(abc.ABC):
     def stop(self):
         """Stop the thread"""
         _log.debug('Stopping %r', self)
-        self._running = False
-        self.unblock()
+        if getattr(self, '_running', False):
+            self._running = False
+            self.unblock()
 
     def unblock(self):
         """Tell the background worker thread that there is work to do"""
