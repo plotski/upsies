@@ -378,14 +378,14 @@
           <div id="search_menu_scroller" class="">
             <ul class="settings panel with_counts scroller">
               
+                <li class="">
+                  <a id="movie" href="/search/movie?query=Star Wars" class="search_tab " title="Movies" alt="Movies">Movies</a>
+                    <span>142</span>
+                </li>
+              
                 <li class="selected">
                   <a id="tv" href="/search/tv?query=Star Wars" class="search_tab active" title="TV Shows" alt="TV Shows">TV Shows</a>
                     <span>23</span>
-                </li>
-              
-                <li class="">
-                  <a id="movie" href="/search/movie?query=Star Wars" class="search_tab " title="Movies" alt="Movies">Movies</a>
-                    <span>139</span>
                 </li>
               
                 <li class="">
@@ -461,41 +461,6 @@
   
 </div>
     
-      <div id="card_tv_52575d9719c29531db1a9b9f" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 2x" alt="Star Wars: The Clone Wars">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194"><h2>Star Wars: The Clone Wars</h2></a>
-
-          
-            <span class="release_date">October  3, 2008</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Yoda, Obi-Wan Kenobi, Anakin Skywalker, Mace Windu and other Jedi Knights lead the Grand Army of the Republic against the droid army of the Separatists.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
       <div id="card_tv_5ae209c692514124c4012592" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -531,6 +496,41 @@
   
 </div>
     
+      <div id="card_tv_52575d9719c29531db1a9b9f" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 2x" alt="Star Wars: The Clone Wars">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194"><h2>Star Wars: The Clone Wars</h2></a>
+
+          
+            <span class="release_date">October  3, 2008</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Yoda, Obi-Wan Kenobi, Anakin Skywalker, Mace Windu and other Jedi Knights lead the Grand Army of the Republic against the droid army of the Separatists.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
       <div id="card_tv_52574c88760ee36aaa156298" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -559,6 +559,41 @@
 
       <div class="overview">
         <p>Star Wars: Clone Wars is an Emmy Award- and Annie Award-winning American animated micro-series set in the Star Wars universe.</p><p></p><p>Chronologically, the series takes place during the three-year time period between the prequel films Attack of the Clones and Revenge of the Sith. The show depicted the actions of various characters in the Star Wars prequel trilogy, including Anakin Skywalker, Obi-Wan Kenobi, Mace Windu, and other Knights of the Jedi Order during the conflict, leading the clone trooper forces of the Galactic Republic against the battle droid armies of the Confederacy of Independent Systems and the Sith.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_58fd9413925141640b02bf07" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 2x" alt="Star Wars: Forces of Destiny">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412"><h2>Star Wars: Forces of Destiny</h2></a>
+
+          
+            <span class="release_date">July  3, 2017</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>An animated micro-series starring Rey, Jyn Erso, Princess Leia, Ahsoka Tano, and more. Small moments and everyday decisions shape a larger heroic saga.</p>
       </div>
     </div>
   </div>
@@ -636,41 +671,6 @@
   
 </div>
     
-      <div id="card_tv_58fd9413925141640b02bf07" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 2x" alt="Star Wars: Forces of Destiny">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412"><h2>Star Wars: Forces of Destiny</h2></a>
-
-          
-            <span class="release_date">July  3, 2017</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>An animated micro-series starring Rey, Jyn Erso, Princess Leia, Ahsoka Tano, and more. Small moments and everyday decisions shape a larger heroic saga.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
       <div id="card_tv_5769cef1c3a368291f0002eb" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -713,7 +713,7 @@
         <a data-id="55d91d1d92514143de00379e" data-media-type="tv" data-media-adult="false" class="result" href="/tv/63722">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/boQ3kgn7jzjKkIK5gAf6HA9vU1U.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/boQ3kgn7jzjKkIK5gAf6HA9vU1U.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/boQ3kgn7jzjKkIK5gAf6HA9vU1U.jpg 2x" alt="LEGO Star Wars: Droid Tales">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/kwEtB6toMVkmoqEoG5Hl63KP9NL.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/kwEtB6toMVkmoqEoG5Hl63KP9NL.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/kwEtB6toMVkmoqEoG5Hl63KP9NL.jpg 2x" alt="LEGO Star Wars: Droid Tales">
     
   
 
@@ -811,41 +811,6 @@
   
 </div>
     
-      <div id="card_tv_5de6ef4c3faba00019127b92" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5de6ef4c3faba00019127b92" data-media-type="tv" data-media-adult="false" class="result" href="/tv/96101">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg 2x" alt="Star Wars: Jedi Temple Challenge">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5de6ef4c3faba00019127b92" data-media-type="tv" data-media-adult="false" class="result" href="/tv/96101"><h2>Star Wars: Jedi Temple Challenge</h2></a>
-
-          
-            <span class="release_date">June 10, 2020</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>A game show set in a galaxy far, far away, which tests young contestants’ abilities in the core Jedi principles of strength, knowledge, and bravery as they face thrilling and fun obstacles in an attempt to achieve the rank of Jedi Knight</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
       <div id="card_tv_5bd737c90e0a2622c3045a73" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -916,14 +881,14 @@
   
 </div>
     
-      <div id="card_tv_5eeefca610dad60032be11b1" class="card v4 tight">
+      <div id="card_tv_5de6ef4c3faba00019127b92" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5eeefca610dad60032be11b1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105106">
+        <a data-id="5de6ef4c3faba00019127b92" data-media-type="tv" data-media-adult="false" class="result" href="/tv/96101">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg 2x" alt="Star Wars Blips">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/31sUqbfMinBr9qyx6XlwhJFG4G5.jpg 2x" alt="Star Wars: Jedi Temple Challenge">
     
   
 
@@ -934,16 +899,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5eeefca610dad60032be11b1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105106"><h2>Star Wars Blips</h2></a>
+          <a data-id="5de6ef4c3faba00019127b92" data-media-type="tv" data-media-adult="false" class="result" href="/tv/96101"><h2>Star Wars: Jedi Temple Challenge</h2></a>
 
           
-            <span class="release_date">May  3, 2017</span>
+            <span class="release_date">June 10, 2020</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>What does a curious little droid do when he's not hurtling through space on a daring mission to save the galaxy? Star Wars Blips stars BB-8 in his very own series of animated shorts, featuring heroes of the Star Wars universe like Chewbacca, C-3PO and of course, R2-D2.</p>
+        <p>A game show set in a galaxy far, far away, which tests young contestants’ abilities in the core Jedi principles of strength, knowledge, and bravery as they face thrilling and fun obstacles in an attempt to achieve the rank of Jedi Knight</p>
       </div>
     </div>
   </div>
@@ -986,14 +951,14 @@
   
 </div>
     
-      <div id="card_tv_5f0c92f55e12000035e6d244" class="card v4 tight">
+      <div id="card_tv_5eeefca610dad60032be11b1" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971">
+        <a data-id="5eeefca610dad60032be11b1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105106">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg 2x" alt="Star Wars: The Bad Batch">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg 2x" alt="Star Wars Blips">
     
   
 
@@ -1004,16 +969,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971"><h2>Star Wars: The Bad Batch</h2></a>
+          <a data-id="5eeefca610dad60032be11b1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105106"><h2>Star Wars Blips</h2></a>
 
           
-            <span class="release_date">June  1, 2021</span>
+            <span class="release_date">May  3, 2017</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Follow the elite and experimental Clones of the Bad Batch as they find their way in a rapidly changing galaxy in the aftermath of the Clone Wars.</p>
+        <p>What does a curious little droid do when he's not hurtling through space on a daring mission to save the galaxy? Star Wars Blips stars BB-8 in his very own series of animated shorts, featuring heroes of the Star Wars universe like Chewbacca, C-3PO and of course, R2-D2.</p>
       </div>
     </div>
   </div>
@@ -1054,6 +1019,76 @@
   
 </div>
     
+      <div id="card_tv_57364ed99251410b24000eb1" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/xvYc0QGTC1rMuONe6PWBnWnpfuv.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/xvYc0QGTC1rMuONe6PWBnWnpfuv.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/xvYc0QGTC1rMuONe6PWBnWnpfuv.jpg 2x" alt="LEGO Star Wars: The Resistance Rises">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487"><h2>LEGO Star Wars: The Resistance Rises</h2></a>
+
+          
+            <span class="release_date">February 15, 2016</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>A series of animated shorts that take place prior to the First Order's attack on Jakku and tell never-before-told stories including Kylo Ren, Han Solo, Finn, Rey, BB-8, Maz Kanata and more.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5f0c92f55e12000035e6d244" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg 2x" alt="Star Wars: The Bad Batch">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971"><h2>Star Wars: The Bad Batch</h2></a>
+
+          
+            <span class="release_date">June  1, 2021</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Follow the elite and experimental Clones of the Bad Batch as they find their way in a rapidly changing galaxy in the aftermath of the Clone Wars.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
       <div id="card_tv_52570c2919c295711400d867" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -1078,41 +1113,6 @@
 
       <div class="overview">
         <p>The Star Wars live-action television series is a project which has been in fluctuating stages of development at Lucasfilm since 2005, when George Lucas announced plans for a television series set between the prequel trilogy and the original trilogy of Star Wars. Unlike the films, the story does not center on the Skywalker saga, but instead explores criminal and political power struggles in the aftermath of the fall of the Republic.</p><p></p><p>In 2011, Lucas stated that development has been delayed awaiting advances in technology and reduction in costs and Rick McCallum, the Star Wars and Red Tails producer then involved with the project, indicated that it would be at least another "three or four years".</p><p></p><p>Following The Walt Disney Company's acquisition of Lucasfilm, ABC Studios' president Paul Lee stated in early 2013 that the project was being reviewed for development.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_57364ed99251410b24000eb1" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/iWTvTLpA83iNj2fG9TxomEo7b5M.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/iWTvTLpA83iNj2fG9TxomEo7b5M.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/iWTvTLpA83iNj2fG9TxomEo7b5M.jpg 2x" alt="LEGO Star Wars: The Resistance Rises">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487"><h2>LEGO Star Wars: The Resistance Rises</h2></a>
-
-          
-            <span class="release_date">February 15, 2016</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>A series of animated shorts that take place prior to the First Order's attack on Jakku and tell never-before-told stories including Kylo Ren, Han Solo, Finn, Rey, BB-8, Maz Kanata and more.</p>
       </div>
     </div>
   </div>
