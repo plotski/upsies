@@ -69,6 +69,7 @@ class SearchDbJob(JobBase):
             title_original=self._make_update_info_func('title_original'),
             title_english=self._make_update_info_func('title_english'),
             keywords=self._make_update_info_func('keywords'),
+            director=self._make_update_info_func('director'),
             cast=self._make_update_info_func('cast'),
             country=self._make_update_info_func('country'),
         )

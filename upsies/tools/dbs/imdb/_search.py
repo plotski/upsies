@@ -85,6 +85,7 @@ def _make_result(item):
         title=_find_title(item),
         year=_find_year(item),
         keywords=_find_keywords(item),
+        director=_find_director(item),
         cast=_find_cast(item),
     )
 
@@ -135,10 +136,21 @@ def _find_keywords(soup):
         keywords = ''
     return [g.strip().casefold() for g in keywords.split(',')]
 
-def _find_cast(soup):
-    names = soup.find(string=re.compile(r'Stars?.*'))
-    if names:
+def _find_director(soup):
+    people = soup.find(string=re.compile(r'Director?.*'))
+    if people:
         # First link is director
-        return [name.string.strip() for name in names.parent.find_all('a')[1:]]
+        director = people.parent.find('a')
+        if director:
+            return director.string.strip()
+    else:
+        return ''
+
+def _find_cast(soup):
+    people = soup.find(string=re.compile(r'Stars?.*'))
+    if people:
+        names = [name.string.strip() for name in people.parent.find_all('a')]
+        # First link is director
+        return names[1:]
     else:
         return []

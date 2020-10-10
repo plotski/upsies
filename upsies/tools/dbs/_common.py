@@ -34,6 +34,7 @@ class SearchResult:
         first airing of the first episode of the first season
     :param keywords: Short list of keywords, e.g. `["horror", "commedy"]`
     :type keywords: sequence of str
+    :param str director: Name of director
     :param cast: Short list of actor names
     :type cast: sequence of str
     :param summary: Short text that describes the movie or series
@@ -43,7 +44,7 @@ class SearchResult:
     be coroutine functions that return the expected value.
     """
     def __init__(self, *, id, url, type, year, title, title_original='',
-                 title_english='', keywords=(), cast=(), summary='',
+                 title_english='', keywords=(), director='', cast=(), summary='',
                  country=''):
         if type not in ('movie', 'series', 'episode', ''):
             raise ValueError(f'Invalid type: {type!r}')
@@ -58,6 +59,7 @@ class SearchResult:
             'title_original' : title_original,
             'title_english' : title_english,
             'keywords' : keywords,
+            'director' : director,
             'cast' : cast,
             'summary' : summary,
             'country' : country,
