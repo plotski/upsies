@@ -11,9 +11,6 @@ class MediainfoJobWidget(JobWidgetBase):
     def setup(self):
         pass
 
-    def activate(self):
-        pass
-
     @cache.property
     def runtime_widget(self):
         return Window(dont_extend_height=True)

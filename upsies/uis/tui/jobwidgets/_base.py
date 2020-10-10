@@ -63,10 +63,6 @@ class JobWidgetBase(abc.ABC):
     def setup(self):
         pass
 
-    @abc.abstractmethod
-    def activate(self):
-        pass
-
     @property
     @abc.abstractmethod
     def runtime_widget(self):

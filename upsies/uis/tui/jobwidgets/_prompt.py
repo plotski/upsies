@@ -1,5 +1,3 @@
-from prompt_toolkit.application import get_app
-
 from ....utils import cache
 from .. import widgets
 from . import JobWidgetBase
@@ -15,9 +13,6 @@ class ChoiceJobWidget(JobWidgetBase):
             focused=self.job.focused,
             on_accepted=self.handle_choice,
         )
-
-    def activate(self):
-        get_app().invalidate()
 
     def handle_choice(self, choice):
         self.job.choice_selected(choice)

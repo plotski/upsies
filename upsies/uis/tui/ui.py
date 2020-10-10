@@ -101,7 +101,6 @@ class UI:
 
         # Display all background jobs
         for jobw in background_jobws:
-            jobw.activate()
             self._job_widgets.append(to_container(jobw))
             self._remove_initial_placeholder()
 
@@ -111,7 +110,6 @@ class UI:
         for index, jobw in enumerate(interactive_jobws):
             self._job_widgets.insert(index, to_container(jobw))
             self._remove_initial_placeholder()
-            jobw.activate()
             self._layout.focus(jobw.runtime_widget)
             _log.debug('Waiting for interactive job to finish: %r', jobw.job.name)
             await jobw.job.wait()

@@ -26,9 +26,6 @@ class SubmitJobWidget(JobWidgetBase):
         for signal, msg in callbacks:
             self.job.on(signal, functools.partial(self._set_status, msg))
 
-    def activate(self):
-        pass
-
     @cache.property
     def runtime_widget(self):
         return self._status_info

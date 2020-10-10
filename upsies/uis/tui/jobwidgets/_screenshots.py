@@ -14,9 +14,6 @@ class ScreenshotsJobWidget(JobWidgetBase):
         self.job.on_output(self.handle_screenshot_path)
         self.job.on_finished(lambda _: get_app().invalidate())
 
-    def activate(self):
-        pass
-
     def handle_screenshot_path(self, path):
         self._screenshot_progress.percent = self.job.screenshots_created / self.job.screenshots_total * 100
         get_app().invalidate()

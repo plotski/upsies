@@ -58,9 +58,6 @@ class SearchDbJobWidget(JobWidgetBase):
         self.job.on_searching_status(self.handle_searching_status)
         self.job.on_info_updated(self.handle_info_updated)
 
-    def activate(self):
-        self._widgets['title'].text = self.job.query
-
     def handle_title_changed(self, buffer):
         self.job.search(buffer.text)
 
