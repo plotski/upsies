@@ -13,6 +13,8 @@ _log = logging.getLogger(__name__)
 
 
 class JobWidgetBase(abc.ABC):
+    """User-interaction and information display for :class:`JobBase` instance"""
+
     def __init__(self, job):
         self._job = job
         self.setup()

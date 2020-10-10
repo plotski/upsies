@@ -87,40 +87,33 @@ def test_unknown_db(tmp_path):
             content_path='path/to/foo',
         )
 
+
 @patch('upsies.jobs.search._UpdateInfoThread')
 @patch('upsies.jobs.search._SearchThread')
-def test_execute_starts_search_thread(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
+def test_initialize_creates_search_thread(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
     sj = search.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db='imdb',
         content_path='path/to/foo',
     )
-    assert SearchThread_mock.call_args_list == []
-    sj.execute()
+    assert sj._search_thread is SearchThread_mock.return_value
     assert SearchThread_mock.call_args_list == [call(
+        query='foo type:movie',
         search_coro=search.dbs.imdb.search,
         results_callback=sj.handle_search_results,
         error_callback=sj.error,
         searching_callback=sj.handle_searching_status,
     )]
-    assert SearchThread_mock.return_value.start.call_args_list == [call()]
+    assert SearchThread_mock.return_value.start.call_args_list == []
 
 @patch('upsies.jobs.search.SearchDbJob._make_update_info_func')
 @patch('upsies.jobs.search._UpdateInfoThread')
 @patch('upsies.jobs.search._SearchThread')
-def test_execute_starts_update_info_thread(SearchThread_mock,
-                                           UpdateInfoThread_mock,
-                                           make_update_info_func_mock,
-                                           tmp_path):
-    sj = search.SearchDbJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        db='imdb',
-        content_path='path/to/foo',
-    )
-    assert UpdateInfoThread_mock.call_args_list == []
-    assert make_update_info_func_mock.call_args_list == []
+def test_initialize_creates_update_info_thread(SearchThread_mock,
+                                               UpdateInfoThread_mock,
+                                               make_update_info_func_mock,
+                                               tmp_path):
     make_update_info_func_mock.side_effect = (
         'id func',
         'summary func',
@@ -130,7 +123,13 @@ def test_execute_starts_update_info_thread(SearchThread_mock,
         'cast func',
         'country func',
     )
-    sj.execute()
+    sj = search.SearchDbJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        db='imdb',
+        content_path='path/to/foo',
+    )
+    assert sj._update_info_thread is UpdateInfoThread_mock.return_value
     assert UpdateInfoThread_mock.call_args_list == [call(
         id='id func',
         summary='summary func',
@@ -140,7 +139,7 @@ def test_execute_starts_update_info_thread(SearchThread_mock,
         cast='cast func',
         country='country func',
     )]
-    assert UpdateInfoThread_mock.return_value.start.call_args_list == [call()]
+    assert sj._update_info_thread.start.call_args_list == []
     assert make_update_info_func_mock.call_args_list == [
         call('id'),
         call('summary'),
@@ -150,6 +149,33 @@ def test_execute_starts_update_info_thread(SearchThread_mock,
         call('cast'),
         call('country'),
     ]
+
+
+@patch('upsies.jobs.search._UpdateInfoThread')
+@patch('upsies.jobs.search._SearchThread')
+def test_execute_starts_search_thread(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
+    sj = search.SearchDbJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        db='imdb',
+        content_path='path/to/foo',
+    )
+    assert sj._search_thread.start.call_args_list == []
+    sj.execute()
+    assert SearchThread_mock.return_value.start.call_args_list == [call()]
+
+@patch('upsies.jobs.search._UpdateInfoThread')
+@patch('upsies.jobs.search._SearchThread')
+def test_execute_starts_update_info_thread(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
+    sj = search.SearchDbJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        db='imdb',
+        content_path='path/to/foo',
+    )
+    assert sj._update_info_thread.call_args_list == []
+    sj.execute()
+    assert sj._update_info_thread.start.call_args_list == [call()]
 
 
 @patch('upsies.jobs.search.SearchDbJob.update_info')

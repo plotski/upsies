@@ -56,14 +56,12 @@ class SearchDbJob(JobBase):
         self._searching_status_callbacks = []
         self._info_updated_callbacks = []
 
-    def execute(self):
         self._search_thread = _SearchThread(
             search_coro=self._db.search,
             results_callback=self.handle_search_results,
             error_callback=self.error,
             searching_callback=self.handle_searching_status,
         )
-        self._search_thread.start()
         self._update_info_thread = _UpdateInfoThread(
             id=self._make_update_info_func('id'),
             summary=self._make_update_info_func('summary'),
@@ -73,27 +71,26 @@ class SearchDbJob(JobBase):
             cast=self._make_update_info_func('cast'),
             country=self._make_update_info_func('country'),
         )
+
+    def execute(self):
+        self._search_thread.start()
         self._update_info_thread.start()
 
     def _make_update_info_func(self, key):
         return lambda value: self.update_info(key, value)
 
     def finish(self):
-        if hasattr(self, '_search_thread'):
-            self._search_thread.stop()
-        if hasattr(self, '_update_info_thread'):
-            self._update_info_thread.stop()
+        self._search_thread.stop()
+        self._update_info_thread.stop()
         super().finish()
 
     async def wait(self):
         await super().wait()
-        if hasattr(self, '_update_info_thread'):
-            await self._update_info_thread.join()
-        if hasattr(self, '_search_thread'):
-            await self._search_thread.join()
+        await self._update_info_thread.join()
+        await self._search_thread.join()
 
     def search(self, query):
-        if not self.is_finished and hasattr(self, '_search_thread'):
+        if not self.is_finished:
             self._search_thread.search(query)
 
     def on_searching_status(self, callback):
