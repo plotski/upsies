@@ -57,6 +57,7 @@ class SearchDbJob(JobBase):
         self._info_updated_callbacks = []
 
         self._search_thread = _SearchThread(
+            query=self._query,
             search_coro=self._db.search,
             results_callback=self.handle_search_results,
             error_callback=self.error,
@@ -134,41 +135,52 @@ class SearchDbJob(JobBase):
 
 
 class _SearchThread(daemon.DaemonThread):
-    def __init__(self, search_coro, results_callback, error_callback, searching_callback):
+    def __init__(self, search_coro, results_callback, error_callback, searching_callback,
+                 query=''):
         self._search_coro = search_coro
         self._results_callback = results_callback
         self._searching_callback = searching_callback
         self._error_callback = error_callback
         self._loop = asyncio.new_event_loop()
         self._first_search = True
-        self._query = ''
         self._search_task = None
+        self.query = query
+
+    @property
+    def query(self):
+        return getattr(self, '_query', '')
+
+    @query.setter
+    def query(self, query):
+        # Normalize query:
+        #   - Case-insensitive
+        #   - Remove leading/trailing white space
+        #   - Deduplicate white space
+        self._query = ' '.join(query.casefold().strip().split())
 
     def stop(self):
         self._loop.stop()
         super().stop()
 
-    @staticmethod
-    def _normalize_query(query):
-        # Case-insensitive, no leading/trailing white space and multiple white
-        # space deduped
-        return ' '.join(query.casefold().strip().split())
-
     def search(self, query):
-        # Don't bother searching if nothing really changed
-        if self._normalize_query(query) == self._normalize_query(self._query):
-            return
-        else:
-            if self._search_task:
-                self._search_task.cancel()
-            self._query = query
-            self.unblock()
+        """
+        Schedule new query
+
+        :param str query: Query to make; "year:YYYY", "type:series" and
+            "type:movie" are interpreted to reduce the number of search results
+        """
+        if self._search_task:
+            self._search_task.cancel()
+        self.query = query
+        self.unblock()
 
     def work(self):
         asyncio.set_event_loop(self._loop)
 
         # Retry searching until the search operation is not canceled
         while True:
+            if not self.query:
+                break
             self._search_task = self._loop.create_task(self._delay_search())
             try:
                 self._loop.run_until_complete(self._search_task)
@@ -183,7 +195,7 @@ class _SearchThread(daemon.DaemonThread):
         await self._delay()
         self._results_callback(())
         self._searching_callback(True)
-        title, kwargs = self._parse_query(self._query)
+        title, kwargs = self._parse_query(self.query)
         results = ()
         try:
             results = await self._search_coro(title, **kwargs)
