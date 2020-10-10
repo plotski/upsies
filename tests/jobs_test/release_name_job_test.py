@@ -1,6 +1,8 @@
 import asyncio
 from unittest.mock import Mock, call, patch
 
+import pytest
+
 from upsies.jobs.release_name import ReleaseNameJob
 
 
@@ -48,6 +50,8 @@ def test_fetch_info(ReleaseName_mock, tmp_path):
         ignore_cache=True,
         content_path='mock/path',
     )
+    cb = Mock()
+    rnj.on_release_name_update(cb)
     rn_mock = ReleaseName_mock.return_value
     rn_mock.fetch_info = AsyncMock()
     rnj.fetch_info('arg1', 'arg2', kw='arg3')
@@ -55,6 +59,25 @@ def test_fetch_info(ReleaseName_mock, tmp_path):
     assert rn_mock.fetch_info.call_args_list == [call(
         'arg1', 'arg2', kw='arg3',
     )]
+    assert cb.call_args_list == [call(rnj._release_name)]
+
+
+@patch('upsies.tools.release_name.ReleaseName')
+def test_fetch_info_raises_exception(ReleaseName_mock, tmp_path):
+    rnj = ReleaseNameJob(
+        homedir=tmp_path,
+        ignore_cache=True,
+        content_path='mock/path',
+    )
+    cb = Mock()
+    rnj.on_release_name_update(cb)
+    rn_mock = ReleaseName_mock.return_value
+    rn_mock.fetch_info = AsyncMock(side_effect=Exception('No'))
+    rnj.fetch_info('arg1', 'arg2', kw='arg3')
+    with pytest.raises(Exception, match='^No$'):
+        asyncio.get_event_loop().run_until_complete(rnj.wait())
+    assert cb.call_args_list == []
+
 
 @patch('upsies.tools.release_name.ReleaseName')
 def test_release_name_update_callback(ReleaseName_mock, tmp_path):

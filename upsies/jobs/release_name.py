@@ -42,7 +42,8 @@ class ReleaseNameJob(JobBase):
             exc = task.exception()
             if exc:
                 self.exception(exc)
-            self.handle_release_name_update()
+            else:
+                self.handle_release_name_update()
 
         task.add_done_callback(fetch_info_done)
 
