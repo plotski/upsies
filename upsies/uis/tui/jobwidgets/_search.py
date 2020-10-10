@@ -5,7 +5,6 @@ from prompt_toolkit.layout.containers import (ConditionalContainer,
                                               DynamicContainer, HSplit, VSplit,
                                               Window)
 from prompt_toolkit.layout.controls import FormattedTextControl
-from prompt_toolkit.layout.dimension import Dimension
 from prompt_toolkit.utils import get_cwidth
 
 from ....utils import LazyModule, cache
@@ -30,7 +29,7 @@ class SearchDbJobWidget(JobWidgetBase):
             'search_results' : _SearchResults(width=50),
             'summary' : widgets.TextField(
                 width=right_column_width,
-                height=Dimension(min=8),
+                height=8,
             ),
             'title_original' : widgets.TextField(
                 width=right_column_width,
@@ -42,15 +41,19 @@ class SearchDbJobWidget(JobWidgetBase):
             ),
             'keywords' : widgets.TextField(
                 width=right_column_width,
-                height=Dimension(min=1, max=2),
+                height=2,
+            ),
+            'director' : widgets.TextField(
+                width=right_column_width,
+                height=1,
             ),
             'cast' : widgets.TextField(
                 width=right_column_width,
-                height=Dimension(min=1, max=2),
+                height=2,
             ),
             'country' : widgets.TextField(
                 width=right_column_width,
-                height=Dimension(min=1, max=2),
+                height=1,
             ),
         }
 
@@ -96,26 +99,12 @@ class SearchDbJobWidget(JobWidgetBase):
                 widgets.hspacer,
                 HSplit([
                     widgets.VLabel('Summary', self._widgets['summary']),
-                    ConditionalContainer(
-                        content=widgets.VLabel('Original Title', self._widgets['title_original']),
-                        filter=Condition(lambda: self._widgets['title_original'].text),
-                    ),
-                    ConditionalContainer(
-                        content=widgets.VLabel('Also Known As', self._widgets['title_english']),
-                        filter=Condition(lambda: self._widgets['title_english'].text),
-                    ),
-                    ConditionalContainer(
-                        content=widgets.VLabel('Keywords', self._widgets['keywords']),
-                        filter=Condition(lambda: self._widgets['keywords'].text),
-                    ),
-                    ConditionalContainer(
-                        content=widgets.VLabel('Cast', self._widgets['cast']),
-                        filter=Condition(lambda: self._widgets['cast'].text),
-                    ),
-                    ConditionalContainer(
-                        content=widgets.VLabel('Country', self._widgets['country']),
-                        filter=Condition(lambda: self._widgets['country'].text),
-                    ),
+                    widgets.VLabel('Original Title', self._widgets['title_original']),
+                    widgets.VLabel('Also Known As', self._widgets['title_english']),
+                    widgets.VLabel('Keywords', self._widgets['keywords']),
+                    widgets.VLabel('Director', self._widgets['director']),
+                    widgets.VLabel('Cast', self._widgets['cast']),
+                    widgets.VLabel('Country', self._widgets['country']),
                 ]),
             ]),
             widgets.vspacer,
