@@ -30,6 +30,7 @@ def _main(args=None):
         print(e, file=sys.stderr)
         sys.exit(1)
 
+    exit_code = 99
     try:
         cmd = args.subcmd(args=args, config=cfg)
         assert isinstance(cmd, CommandBase)
