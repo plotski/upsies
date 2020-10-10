@@ -158,6 +158,10 @@ class _SearchThread(daemon.DaemonThread):
         #   - Deduplicate white space
         self._query = ' '.join(query.casefold().strip().split())
 
+    def initialize(self):
+        # Call work() for initial query
+        self.unblock()
+
     def stop(self):
         self._loop.stop()
         super().stop()
