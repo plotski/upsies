@@ -61,15 +61,30 @@ class JobWidgetBase(abc.ABC):
 
     @abc.abstractmethod
     def setup(self):
+        """
+        Called on object creation
+
+        Create widgets and register :attr:`job` callbacks.
+        """
         pass
 
     @property
     @abc.abstractmethod
     def runtime_widget(self):
+        """
+        Possibly interactive widget that is displayed while this job is running
+
+        :return: :class:`~prompt_toolkit.layout.containers.Window` object
+        """
         pass
 
     @property
     def info_widget(self):
+        """
+        Optional info widget that is displayed while this job is running
+
+        :return: :class:`~prompt_toolkit.layout.containers.Window` object
+        """
         return Window(
             style='class:job.info',
             content=FormattedTextControl(lambda: str(self.job.info)),
@@ -79,6 +94,11 @@ class JobWidgetBase(abc.ABC):
 
     @property
     def output_widget(self):
+        """
+        Final result of :attr:`job` that is displayed when it finished
+
+        :return: :class:`~prompt_toolkit.layout.containers.Window` object
+        """
         return Window(
             style='class:job.output',
             content=FormattedTextControl(lambda: '\n'.join(self.job.output)),
@@ -88,6 +108,11 @@ class JobWidgetBase(abc.ABC):
 
     @property
     def errors_widget(self):
+        """
+        Any errors from :attr:`job`
+
+        :return: :class:`~prompt_toolkit.layout.containers.Window` object
+        """
         return Window(
             style='class:job.error',
             content=FormattedTextControl(lambda: '\n'.join(str(e) for e in self.job.errors)),
