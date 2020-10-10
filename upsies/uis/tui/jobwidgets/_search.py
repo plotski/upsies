@@ -23,6 +23,7 @@ class SearchDbJobWidget(JobWidgetBase):
         self._widgets = {
             'id' : widgets.TextField(width=15),
             'title' : widgets.InputField(
+                text=self.job.query,
                 on_changed=self.handle_title_changed,
                 on_accepted=self.handle_title_selected,
             ),
