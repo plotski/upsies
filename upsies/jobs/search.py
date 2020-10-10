@@ -175,10 +175,6 @@ class _SearchThread(daemon.DaemonThread):
             except asyncio.CancelledError:
                 # Previous search was cancelled
                 pass
-            except RuntimeError:
-                # The loop was stopped by stop()
-                _log.debug('Search thread was stopped')
-                break
             else:
                 break
 
@@ -295,10 +291,6 @@ class _UpdateInfoThread(daemon.DaemonThread):
                 self._loop.run_until_complete(self._update_task)
             except asyncio.CancelledError:
                 _log.debug('Update info tasks were cancelled')
-            except RuntimeError:
-                # The loop was stopped by stop()
-                _log.debug('Update info thread was stopped')
-                break
             else:
                 break
 
