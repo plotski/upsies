@@ -25,6 +25,10 @@ class ImdbSearchResult(_common.SearchResult):
     def title_english(self):
         return functools.partial(_info.title_english, self.id)
 
+    @property
+    def country(self):
+        return functools.partial(_info.country, self.id)
+
 
 # Scraping IMDb's advanced search website is slower but let's us specify type
 # and year.
