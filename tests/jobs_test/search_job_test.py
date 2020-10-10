@@ -105,7 +105,7 @@ def test_initialize_creates_search_thread(SearchThread_mock, UpdateInfoThread_mo
         error_callback=sj.error,
         searching_callback=sj.handle_searching_status,
     )]
-    assert SearchThread_mock.return_value.start.call_args_list == []
+    assert sj._search_thread.start.call_args_list == []
 
 @patch('upsies.jobs.search.SearchDbJob._make_update_info_func')
 @patch('upsies.jobs.search._UpdateInfoThread')
@@ -162,7 +162,7 @@ def test_execute_starts_search_thread(SearchThread_mock, UpdateInfoThread_mock, 
     )
     assert sj._search_thread.start.call_args_list == []
     sj.execute()
-    assert SearchThread_mock.return_value.start.call_args_list == [call()]
+    assert sj._search_thread.start.call_args_list == [call()]
 
 @patch('upsies.jobs.search._UpdateInfoThread')
 @patch('upsies.jobs.search._SearchThread')
@@ -195,7 +195,7 @@ def test_make_update_info_func(update_info_mock, tmp_path):
 
 @patch('upsies.jobs.search._UpdateInfoThread')
 @patch('upsies.jobs.search._SearchThread')
-def test_finish_before_execution(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
+def test_finish(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
     sj = search.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
@@ -205,61 +205,26 @@ def test_finish_before_execution(SearchThread_mock, UpdateInfoThread_mock, tmp_p
     assert not sj.is_finished
     sj.finish()
     assert sj.is_finished
-    assert SearchThread_mock.return_value.stop.call_args_list == []
-    assert UpdateInfoThread_mock.return_value.stop.call_args_list == []
+    assert sj._search_thread.stop.call_args_list == [call()]
+    assert sj._update_info_thread.stop.call_args_list == [call()]
+
 
 @patch('upsies.jobs.search._UpdateInfoThread')
 @patch('upsies.jobs.search._SearchThread')
-def test_finish_after_execution(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
+def test_wait(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
     sj = search.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db='imdb',
         content_path='path/to/foo',
     )
-    assert not sj.is_finished
-    sj.execute()
-    assert not sj.is_finished
-    sj.finish()
-    assert sj.is_finished
-    assert SearchThread_mock.return_value.stop.call_args_list == [call()]
-    assert UpdateInfoThread_mock.return_value.stop.call_args_list == [call()]
-
-
-@patch('upsies.jobs.search._UpdateInfoThread')
-@patch('upsies.jobs.search._SearchThread')
-def test_wait_before_execution(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
-    sj = search.SearchDbJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        db='imdb',
-        content_path='path/to/foo',
-    )
-    SearchThread_mock.return_value.join = AsyncMock()
-    UpdateInfoThread_mock.return_value.join = AsyncMock()
+    sj._search_thread.join = AsyncMock()
+    sj._update_info_thread.join = AsyncMock()
     asyncio.get_event_loop().call_soon(sj.finish)
     asyncio.get_event_loop().run_until_complete(sj.wait())
     assert sj.is_finished
-    assert SearchThread_mock.return_value.join.call_args_list == []
-    assert UpdateInfoThread_mock.return_value.join.call_args_list == []
-
-@patch('upsies.jobs.search._UpdateInfoThread')
-@patch('upsies.jobs.search._SearchThread')
-def test_wait_after_execution(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
-    sj = search.SearchDbJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        db='imdb',
-        content_path='path/to/foo',
-    )
-    SearchThread_mock.return_value.join = AsyncMock()
-    UpdateInfoThread_mock.return_value.join = AsyncMock()
-    sj.execute()
-    asyncio.get_event_loop().call_soon(sj.finish)
-    asyncio.get_event_loop().run_until_complete(sj.wait())
-    assert sj.is_finished
-    assert SearchThread_mock.return_value.join.call_args_list == [call()]
-    assert UpdateInfoThread_mock.return_value.join.call_args_list == [call()]
+    assert sj._search_thread.join.call_args_list == [call()]
+    assert sj._update_info_thread.join.call_args_list == [call()]
 
 
 @patch('upsies.jobs.search._SearchThread')
@@ -272,7 +237,7 @@ def test_search_before_finished(SearchThread_mock, tmp_path):
     )
     sj.execute()
     sj.search('foo')
-    assert SearchThread_mock.return_value.search.call_args_list == [call('foo')]
+    assert sj._search_thread.search.call_args_list == [call('foo')]
 
 @patch('upsies.jobs.search._SearchThread')
 def test_search_after_finished(SearchThread_mock, tmp_path):
@@ -285,7 +250,7 @@ def test_search_after_finished(SearchThread_mock, tmp_path):
     sj.execute()
     sj.finish()
     sj.search('foo')
-    assert SearchThread_mock.return_value.search.call_args_list == []
+    assert sj._search_thread.search.call_args_list == []
 
 
 def test_searching_status(tmp_path):
@@ -321,7 +286,7 @@ def test_search_results(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
     sj.execute()
     sj.handle_search_results(results)
     assert cb.call_args_list == [call(results)]
-    assert UpdateInfoThread_mock.return_value.call_args_list == [call(results[0])]
+    assert sj._update_info_thread.call_args_list == [call(results[0])]
 
 @patch('upsies.jobs.search._UpdateInfoThread')
 @patch('upsies.jobs.search._SearchThread')
@@ -338,7 +303,7 @@ def test_no_search_results(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
     sj.execute()
     sj.handle_search_results(results)
     assert cb.call_args_list == [call(results)]
-    assert UpdateInfoThread_mock.return_value.call_args_list == [call(None)]
+    assert sj._update_info_thread.call_args_list == [call(None)]
 
 
 def test_update_info(tmp_path):
@@ -362,9 +327,8 @@ def test_result_focused(UpdateInfoThread_mock, tmp_path):
         db='imdb',
         content_path='path/to/foo',
     )
-    sj.execute()
     sj.result_focused('The Result')
-    assert UpdateInfoThread_mock.return_value.call_args_list == [call('The Result')]
+    assert sj._update_info_thread.call_args_list == [call('The Result')]
 
 
 def test_id_selected(tmp_path):
@@ -393,8 +357,28 @@ def test_id_selected_while_searching(tmp_path):
     assert sj.output == ()
 
 
-def test_SearchThread_normalize_query():
-    assert search._SearchThread._normalize_query(' The\tFoo \n') == 'the foo'
+def test_SearchThread_query():
+    st = search._SearchThread(
+        query=' The\tFoo \n',
+        search_coro=AsyncMock(),
+        results_callback=Mock(),
+        error_callback=Mock(),
+        searching_callback=Mock(),
+    )
+    assert st.query == 'the foo'
+
+
+def test_SearchThread_initialize():
+    st = search._SearchThread(
+        search_coro=AsyncMock(),
+        results_callback=Mock(),
+        error_callback=Mock(),
+        searching_callback=Mock(),
+    )
+    with patch.object(st, 'unblock') as unblock_mock:
+        assert unblock_mock.call_args_list == []
+        st.initialize()
+        assert unblock_mock.call_args_list == [call()]
 
 
 def test_SearchThread_stop():
@@ -411,25 +395,6 @@ def test_SearchThread_stop():
     assert not st._loop.is_running()
 
 
-def test_SearchThread_search_ignores_same_search_term():
-    search_coro = AsyncMock()
-    results_cb = Mock()
-    error_cb = Mock()
-    searching_cb = Mock()
-    st = search._SearchThread(search_coro, results_cb, error_cb, searching_cb)
-    st.start()
-    assert st._query == ''
-    with patch.object(st, 'unblock') as unblock_mock:
-        st.search('The foo')
-        assert unblock_mock.call_args_list == [call()]
-        assert st._query == 'The foo'
-        st.search('The  Foo')
-        assert unblock_mock.call_args_list == [call()]
-        assert st._query == 'The foo'
-        st.search('The  FOO\n')
-        assert unblock_mock.call_args_list == [call()]
-        assert st._query == 'The foo'
-
 def test_SearchThread_search_sets_off_new_search():
     search_coro = AsyncMock()
     results_cb = Mock()
@@ -441,7 +406,7 @@ def test_SearchThread_search_sets_off_new_search():
         st.search('The Foo')
         assert unblock_mock.call_args_list == [call()]
         st.search('The Bar')
-        assert st._query == 'The Bar'
+        assert st.query == 'the bar'
         assert unblock_mock.call_args_list == [call(), call()]
 
 
@@ -452,7 +417,9 @@ def test_SearchThread_work():
     searching_cb = Mock()
     st = search._SearchThread(search_coro, results_cb, error_cb, searching_cb)
     with patch.object(st, '_delay_search', new_callable=AsyncMock) as delay_search_mock:
+        assert delay_search_mock.call_args_list == []
         st.start()
+        assert delay_search_mock.call_args_list == []
         st.search('asdf')
         time.sleep(0.1)
         assert delay_search_mock.call_args_list == [call()]
@@ -602,7 +569,6 @@ def test_UpdateInfoThread_updating_calls_unblock():
 def test_UpdateInfoThread_updating_sets_noncallable_values_immediately():
     targets = {'year': Mock(), 'summary': Mock(), 'cast': Mock()}
     uit = search._UpdateInfoThread(**targets)
-    uit.start()
     search_result = Mock(
         year=2000,
         summary='Something happens and then something else happens.',
@@ -670,6 +636,7 @@ def test_UpdateInfoThread_work_tries_again_on_CancelledError():
         AsyncMock(
             side_effect=(
                 asyncio.CancelledError(),
+                'three',
                 'three',
             ),
         ),
