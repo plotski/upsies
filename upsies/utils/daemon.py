@@ -47,11 +47,11 @@ class DaemonThread(abc.ABC):
             raise RuntimeError(f'Not started yet: {self!r}')
 
     def initialize(self):
-        """Do some background work once after :meth:`start` is called"""
+        """Do some work once inside the thread before it :meth:`work` is called"""
         pass
 
     def terminate(self):
-        """Do some background work once before the thread terminates"""
+        """Do some work once inside the thread before it terminates"""
         pass
 
     @property
