@@ -22,39 +22,6 @@ class DaemonThread(abc.ABC):
     :meth:`unblock` is called or if :meth:`work` returns `True`.
     """
 
-    def start(self):
-        """Start the thread"""
-        self._running = True
-        self._unhandled_exception = None
-        self._unblock_event = threading.Event()
-        self._thread = threading.Thread(target=self._run,
-                                        daemon=True,
-                                        name=type(self).__name__)
-        self._thread.start()
-        _log.debug('Started thread: %r', self._thread)
-
-    def stop(self):
-        """Stop the thread"""
-        _log.debug('Stopping %r', self)
-        if getattr(self, '_running', False):
-            self._running = False
-            self.unblock()
-
-    def unblock(self):
-        """Tell the background worker thread that there is work to do"""
-        if hasattr(self, '_unblock_event'):
-            self._unblock_event.set()
-        else:
-            raise RuntimeError(f'Not started yet: {self!r}')
-
-    def initialize(self):
-        """Do some work once inside the thread before it :meth:`work` is called"""
-        pass
-
-    def terminate(self):
-        """Do some work once inside the thread before it terminates"""
-        pass
-
     @property
     def is_alive(self):
         """Whether :meth:`start` was called and the thread has not terminated yet"""
@@ -63,40 +30,68 @@ class DaemonThread(abc.ABC):
         else:
             return False
 
-    @property
-    def running(self):
-        """Whether :meth:`work` is going to be called again"""
-        return getattr(self, '_running', False)
+    def start(self):
+        """Start the thread"""
+        if not self.is_alive:
+            self._finish_work = False
+            self._unhandled_exception = None
+            self._unblock_event = threading.Event()
+            self._thread = threading.Thread(target=self._run,
+                                            daemon=True,
+                                            name=type(self).__name__)
+            self._thread.start()
+            _log.debug('Started thread: %r', self._thread)
 
-    async def join(self, timeout=None):
-        """Block asynchronously until the thread exits"""
-        if hasattr(self, '_unblock_event'):
-            # We want to wait asyncronously for _run() to finish, but asyncio.Event
-            # is not thread-safe and threading.Event.wait() is synchronous. This
-            # uses a new thread to allow us to await threading.Event().wait().
-            loop = asyncio.get_event_loop()
-            await loop.run_in_executor(None, functools.partial(self._thread.join, timeout))
-            if self._unhandled_exception:
-                raise self._unhandled_exception
-        else:
-            raise RuntimeError(f'Not started yet: {self!r}')
+    def stop(self):
+        """Stop the thread"""
+        if self.is_alive:
+            _log.debug('Stopping thread: %r', self._thread)
+            self._finish_work = True
+            self.unblock()
+
+    def initialize(self):
+        """Do some work once inside the thread before it :meth:`work` is called"""
+        pass
 
     @abc.abstractmethod
     def work(self):
-        """Do some work in the background"""
+        """
+        A call for this method is scheduled every time :meth:`unblock` is called or
+        when this method returns `True` or any other truthy value.
+        """
         pass
+
+    def terminate(self):
+        """Do some work once inside the thread before it terminates"""
+        pass
+
+    def unblock(self):
+        """Tell the background worker thread that there is work to do"""
+        if not self.is_alive:
+            self.start()
+        self._unblock_event.set()
+
+    async def join(self):
+        """Block asynchronously until the thread exits"""
+        if self.is_alive:
+            # Use another thread to join self._thread asynchronously
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, self._thread.join)
+        if getattr(self, '_unhandled_exception', None):
+            raise self._unhandled_exception
 
     def _run(self):
         try:
             self.initialize()
             while True:
                 self._unblock_event.wait()
-                if not self._running:
+                if self._finish_work:
                     break
-                if not self.work():
+                call_again = self.work()
+                if not call_again:
                     self._unblock_event.clear()
                 # In case work() called stop()
-                if not self._running:
+                if self._finish_work:
                     break
             self.terminate()
         except Exception as e:
