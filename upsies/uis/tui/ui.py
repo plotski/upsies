@@ -28,17 +28,16 @@ class UI:
     _max_width = 120
 
     def _make_app(self):
-        # Layout does not accept any empty containers. We add an empty Window
-        # and remove it once we've added the first real child.
+        # Layout does not accept an empty list of children. We add an empty
+        # Window that doesn't display anything and remove it once we've added
+        # the first real child.
         # https://github.com/prompt-toolkit/python-prompt-toolkit/issues/1257
         self._initial_placeholder = Window()
         self._container = HSplit(
             width=Dimension(max=self._max_width),
             children=[self._initial_placeholder],
         )
-        self._layout = Layout(
-            self._container,
-        )
+        self._layout = Layout(self._container)
 
         kb = KeyBindings()
 
