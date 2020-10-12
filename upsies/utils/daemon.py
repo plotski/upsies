@@ -181,6 +181,8 @@ class DaemonProcess:
     def stop(self):
         """Stop the process"""
         if self._process:
+            # TODO: Don't use terminate(), see "Avoid terminating processes":
+            #       https://docs.python.org/3/library/multiprocessing.html
             self._process.terminate()
             self._output_queue.put((DaemonProcess._TERMINATED, None))
 
