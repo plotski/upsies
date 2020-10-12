@@ -87,9 +87,12 @@ class SearchDbJob(JobBase):
         super().finish()
 
     async def wait(self):
+        # Raise any exceptions from the threads
+        await asyncio.gather(
+            self._search_thread.join(),
+            self._update_info_thread.join(),
+        )
         await super().wait()
-        await self._update_info_thread.join()
-        await self._search_thread.join()
 
     def search(self, query):
         if not self.is_finished:
