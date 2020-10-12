@@ -30,7 +30,7 @@ def _main(args=None):
         print(e, file=sys.stderr)
         sys.exit(1)
 
-    exit_code = 99
+    exit_code = 1
     try:
         cmd = args.subcmd(args=args, config=cfg)
         assert isinstance(cmd, CommandBase)
@@ -38,13 +38,11 @@ def _main(args=None):
         exit_code = ui.run()
     except (errors.ConfigError, errors.DependencyError, errors.NoContentError) as e:
         print(e, file=sys.stderr)
-        exit_code = 1
     except Exception as e:
         import traceback
         traceback.print_exception(type(e), e, e.__traceback__)
         print()
         print(f'Please report the traceback above as a bug: {__homepage__}', file=sys.stderr)
-        exit_code = 1
     else:
         # Print last job's output to stdout
         if exit_code == 0:
