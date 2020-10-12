@@ -97,7 +97,6 @@ class DaemonThread(abc.ABC):
         except BaseException as e:
             _log.debug('Reporting exception: %r', e)
             self._unhandled_exception = e
-            self.stop()
         finally:
             _log.debug('Finished: %r', self)
 
