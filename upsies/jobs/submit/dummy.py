@@ -17,6 +17,5 @@ class SubmitJob(SubmitJobBase):
         await asyncio.sleep(0.5)
 
     async def upload(self, http_session):
-        _log.debug('Submission metadata: %r', self.metadata)
-        torrent_file = self.metadata['create-torrent'][0]
+        torrent_file = self.metadata.get('create-torrent', ('dummy.torrent',))[0]
         return f'http://localhost/{os.path.basename(torrent_file)}'
