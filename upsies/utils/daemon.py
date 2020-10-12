@@ -151,7 +151,6 @@ class DaemonProcess:
         )
         self._process.start()
         self._read_output_task = self._loop.create_task(self._read_output())
-        _log.debug('Read output task: %r', self._read_output_task)
 
     async def _read_output(self):
         while True:
