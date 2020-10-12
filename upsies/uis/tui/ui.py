@@ -46,7 +46,6 @@ class UI:
         @kb.add('c-q')
         @kb.add('c-c')
         def _(event, self=self):
-            self._cancel_jobs(wait=True)
             if self._app.is_running:
                 self._exit(1)
 
@@ -65,25 +64,31 @@ class UI:
         if self._initial_placeholder in self._job_widgets:
             self._job_widgets.remove(self._initial_placeholder)
 
-    def _exit(self, exit_code):
+    def run(self):
+        exit_code = 1
+        try:
+            task = self._app.create_background_task(self._do_jobs())
+            exit_code = self._app.run(set_exception_handler=False)
+        finally:
+            _log.debug('app.run() finished')
+            asyncio.get_event_loop().run_until_complete(
+                self._await_jobs()
+            )
+            return exit_code
+
+    def _exit(self, exit_code=1):
+        self._finish_jobs()
         if not self._app.is_done:
             self._app.exit(exit_code)
 
-    def run(self):
-        task = self._app.create_background_task(self._do_jobs())
-        task.add_done_callback(self._jobs_done)
-        exit_code = self._app.run(set_exception_handler=False)
-        if self._exception:
-            raise self._exception
-        else:
-            return exit_code
+    def _finish_jobs(self):
+        for job in self._jobs:
+            if not job.is_finished:
+                job.finish()
 
-    def _jobs_done(self, fut):
-        try:
-            fut.result()
-        except Exception as e:
-            self._exception = e
-            self._exit(1)
+    async def _await_jobs(self):
+        for job in self._jobs:
+            await job.wait()
 
     async def _do_jobs(self):
         # First create widgets so they can register their callbacks with their
@@ -131,16 +136,3 @@ class UI:
 
         # Return last job's exit code
         self._exit(exit_code)
-
-    def _cancel_jobs(self, wait=True):
-        self._cancelled = False
-        _log.debug('Cancelling %s jobs', len(self._jobs))
-        for job in self._jobs:
-            if not job.is_finished:
-                job.finish()
-
-        if wait:
-            for job in self._jobs:
-                if not job.is_finished:
-                    _log.debug('Waiting for job: %r', job)
-                    self._app.create_background_task(job.wait())
