@@ -49,6 +49,6 @@ def _main(args=None):
             final_job = cmd.jobs[-1]
             if final_job.output:
                 print('\n'.join(final_job.output))
-    finally:
-        _log.debug('UI terminated')
-        return exit_code
+
+    _log.debug('UI terminated')
+    return exit_code
