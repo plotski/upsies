@@ -102,13 +102,14 @@ class SubmitJobBase(JobBase, abc.ABC):
         return self._metadata
 
     async def wait(self):
-        _log.debug('Waiting for required jobs: %r', self._required_jobs)
-        await asyncio.gather(*(job.wait() for job in self._required_jobs))
-        names = [job.name for job in self._required_jobs]
-        outputs = [job.output for job in self._required_jobs]
-        self._metadata.update(zip(names, outputs))
-        await self._submit()
-        self.finish()
+        if not self.is_finished:
+            _log.debug('Waiting for required jobs: %r', self._required_jobs)
+            await asyncio.gather(*(job.wait() for job in self._required_jobs))
+            names = [job.name for job in self._required_jobs]
+            outputs = [job.output for job in self._required_jobs]
+            self._metadata.update(zip(names, outputs))
+            await self._submit()
+            self.finish()
         await super().wait()
 
     @cache.property

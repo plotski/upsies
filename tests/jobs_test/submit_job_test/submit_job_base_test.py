@@ -108,7 +108,7 @@ def test_properties(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_wait(tmp_path):
+async def test_wait_submits_after_required_jobs_finished(tmp_path):
     mocks = Mock()
     mocks.job1 = AsyncMock()
     mocks.job2 = AsyncMock()
@@ -131,6 +131,19 @@ async def test_wait(tmp_path):
         mocks.job2.name: mocks.job2.output,
     }
     assert job.is_finished
+
+@pytest.mark.asyncio
+async def test_wait_can_be_called_multiple_times(tmp_path):
+    job = make_TestSubmitJob_instance(
+        tmp_path,
+        required_jobs=(AsyncMock(), AsyncMock()),
+    )
+    assert not job.is_finished
+    with patch.object(job, '_submit'):
+        for _ in range(3):
+            await job.wait()
+            assert job.is_finished
+        assert job._submit.call_args_list == [call()]
 
 
 @pytest.mark.asyncio

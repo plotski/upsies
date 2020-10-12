@@ -122,7 +122,9 @@ class JobBase(abc.ABC):
         :attr:`is_finished` must be `False` before this method returns and
         `True` afterwards.
 
-        It must be safe to call this method multiple times simultaneously.
+        Calling this method must have zero effects after the first call.
+        Although any exceptions raised by the first call must also be raised by
+        subsequent calls.
 
         :raise: Any exceptions given to :meth:`exception`
         """
