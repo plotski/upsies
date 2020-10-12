@@ -98,7 +98,7 @@ class DaemonThread(abc.ABC):
             _log.debug('Reporting exception: %r', e)
             self._unhandled_exception = e
         finally:
-            _log.debug('Finished: %r', self)
+            _log.debug('_run() finished: %r', self._thread)
 
 
 class DaemonProcess:
