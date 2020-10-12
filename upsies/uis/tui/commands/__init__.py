@@ -1,13 +1,15 @@
 """
-A command is a class with a :attr:`JobBase.jobs` property that returns a sequence of
-jobs.
+A command provides a :attr:`~CommandBase.jobs` property that returns a
+sequence of :class:`JobBase` objects.  That is the only strict requirement.
 
-It is important that the jobs returned by :attr:`JobBase.jobs` are singletons,
-for example by using the :func:`utils.cache.property` decorator.
+Jobs should be created by cached properties that always return the same object.
 
-The jobs are configured using CLI arguments or the config file. Both are
-provided by :class:`CommandBase`.
+Jobs can be configured with CLI arguments and a config file. Both are
+conveniently provided as :attr:`~CommandBase.args` and
+:attr:`~CommandBase.config`.
 """
+
+import abc
 
 from .... import jobs as _jobs
 from ....tools import btclient
@@ -17,11 +19,27 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class CommandBase:
+class CommandBase(abc.ABC):
     """Base class for all commands"""
     def __init__(self, args, config):
         self._args = args
         self._config = config
+
+    @property
+    @abc.abstractmethod
+    def jobs(self):
+        """
+        Sequence of :class:`JobBase` objects
+
+        For convenience, the sequence may also contain `None` instead of an
+        optional job.
+        """
+        pass
+
+    @property
+    def jobs_active(self):
+        """Same as :attr:`jobs` but with `None` filtered out"""
+        return [j for j in self.jobs if j is not None]
 
     @property
     def args(self):

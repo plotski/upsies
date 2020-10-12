@@ -34,7 +34,7 @@ def _main(args=None):
     try:
         cmd = args.subcmd(args=args, config=cfg)
         assert isinstance(cmd, CommandBase)
-        ui = UI(jobs=cmd.jobs)
+        ui = UI(jobs=cmd.jobs_active)
         exit_code = ui.run()
     except (errors.ConfigError, errors.DependencyError, errors.NoContentError) as e:
         print(e, file=sys.stderr)
@@ -46,7 +46,7 @@ def _main(args=None):
     else:
         # Print last job's output to stdout
         if exit_code == 0:
-            final_job = cmd.jobs[-1]
+            final_job = cmd.jobs_active[-1]
             if final_job.output:
                 print('\n'.join(final_job.output))
 
