@@ -39,9 +39,10 @@ class SubmitJobBase(JobBase, abc.ABC):
         with open(filepath, 'w') as f:
             f.write(self.parse_html(html).prettify())
 
-    def initialize(self, *, tracker_config, required_jobs):
+    def initialize(self, *, tracker_config, jobs_before_upload, jobs_after_upload):
         self._tracker_config = tracker_config
-        self._required_jobs = required_jobs
+        self._jobs_before_upload = [j for j in jobs_before_upload if j]
+        self._jobs_after_upload = [j for j in jobs_after_upload if j]
         self._metadata = {}
         self._callbacks = {
             self.signal.logging_in: [],
@@ -65,14 +66,6 @@ class SubmitJobBase(JobBase, abc.ABC):
     def tracker_config(self):
         """Tracker configuration that was passed as a keyword argument"""
         return self._tracker_config
-
-    @property
-    def required_jobs(self):
-        """
-        Sequence of :class:`JobBase` instances that must finish before
-        :meth:`upload` is called
-        """
-        return self._required_jobs
 
     @abc.abstractmethod
     async def login(self):
@@ -103,12 +96,17 @@ class SubmitJobBase(JobBase, abc.ABC):
 
     async def wait(self):
         if not self.is_finished:
-            _log.debug('Waiting for required jobs: %r', self._required_jobs)
-            await asyncio.gather(*(job.wait() for job in self._required_jobs))
-            names = [job.name for job in self._required_jobs]
-            outputs = [job.output for job in self._required_jobs]
+            _log.debug('Waiting for jobs before submission: %r', self._jobs_before_upload)
+            await asyncio.gather(*(job.wait() for job in self._jobs_before_upload))
+
+            names = [job.name for job in self._jobs_before_upload]
+            outputs = [job.output for job in self._jobs_before_upload]
             self._metadata.update(zip(names, outputs))
             await self._submit()
+
+            _log.debug('Waiting for jobs after submission: %r', self._jobs_after_upload)
+            await asyncio.gather(*(job.wait() for job in self._jobs_after_upload))
+
             self.finish()
         await super().wait()
 

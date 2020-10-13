@@ -16,23 +16,27 @@ class SubmitCommandBase(CommandBase, abc.ABC):
     tracker.
 
     Picking a DB ID, creating screenshots, etc must be added by the child class
-    by overriding the :attr:`jobs` property.
+    by overriding the :attr:`jobs_before_upload` and :attr:`jobs_after_upload`.
     """
 
     @cache.property
-    @abc.abstractmethod
     def jobs(self):
+        return (
+            tuple(self.jobs_before_upload)
+            + (self.submission_job,)
+            + tuple(self.jobs_after_upload)
+        )
+
+    @property
+    @abc.abstractmethod
+    def jobs_before_upload(self):
+        """Sequence of jobs that must finish before :attr:`submission_job` can start"""
         pass
 
-    @cache.property
+    @property
     @abc.abstractmethod
-    def required_jobs(self):
-        """
-        Dictionary of jobs that must finish before :attr:`submission_job` can start
-
-        Keys can be anything hashable and are only used by the
-        :class:`SubmitJob` instance.
-        """
+    def jobs_after_upload(self):
+        """Sequence of jobs that are started after :attr:`submission_job` finished"""
         pass
 
     @cache.property
@@ -67,5 +71,6 @@ class SubmitCommandBase(CommandBase, abc.ABC):
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             tracker_config=self.config['trackers'][self.args.TRACKER],
-            required_jobs=self.required_jobs,
+            jobs_before_upload=self.jobs_before_upload,
+            jobs_after_upload=self.jobs_after_upload,
         )

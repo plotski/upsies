@@ -10,7 +10,7 @@ _log = logging.getLogger(__name__)
 
 class submit(SubmitCommandBase):
     @cache.property
-    def jobs(self):
+    def jobs_before_upload(self):
         return (
             self.create_torrent_job,
             self.screenshots_job,
@@ -19,21 +19,13 @@ class submit(SubmitCommandBase):
             self.imdb_job,
             self.release_name_job,
             self.choice_prompt_job,
-            self.submission_job,
-            self.add_torrent_job,
-            self.copy_torrent_job,
         )
 
     @cache.property
-    def required_jobs(self):
+    def jobs_after_upload(self):
         return (
-            self.create_torrent_job,
-            self.screenshots_job,
-            self.upload_screenshots_job,
-            self.mediainfo_job,
-            self.imdb_job,
-            self.release_name_job,
-            self.choice_prompt_job,
+            self.add_torrent_job,
+            self.copy_torrent_job,
         )
 
     @cache.property
