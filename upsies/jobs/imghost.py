@@ -36,8 +36,8 @@ class ImageHostJob(JobBase):
 
         self._upload_thread = _UploadThread(
             homedir=self.homedir,
-            imghost=self._imghost,
             force=self.ignore_cache,
+            imghost=self._imghost,
             url_callback=self.handle_image_url,
             error_callback=self.error,
             finished_callback=self.handle_uploads_finished,
