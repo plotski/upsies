@@ -102,6 +102,7 @@ class ImageHostJob(JobBase):
 class _UploadThread(daemon.DaemonThread):
     def __init__(self, homedir, imghost, force,
                  url_callback, error_callback, finished_callback):
+        super().__init__()
         self._homedir = homedir
         self._imghost = imghost
         self._force = force
@@ -110,17 +111,16 @@ class _UploadThread(daemon.DaemonThread):
         self._error_callback = error_callback
         self._finished_callback = finished_callback
 
+    async def initialize(self):
+        self._uploader = self._imghost.Uploader(cache_dir=self._homedir)
+
     def upload(self, filepath):
         self._filepaths_queue.put(filepath)
 
     def finish(self):
         self._filepaths_queue.put(None)
 
-    def initialize(self):
-        self._uploader = self._imghost.Uploader(cache_dir=self._homedir)
-        self.unblock()
-
-    def work(self):
+    async def work(self):
         try:
             filepath = self._filepaths_queue.get(timeout=0.1)
         except queue.Empty:

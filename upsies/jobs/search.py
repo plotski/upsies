@@ -118,9 +118,9 @@ class SearchDbJob(JobBase):
 
     def handle_search_results(self, results):
         if results:
-            self._update_info_thread(results[0])
+            self._update_info_thread.set_result(results[0])
         else:
-            self._update_info_thread(None)
+            self._update_info_thread.set_result(None)
         for cb in self._search_results_callbacks:
             cb(results)
 
@@ -132,7 +132,7 @@ class SearchDbJob(JobBase):
             cb(attr, value)
 
     def result_focused(self, result):
-        self._update_info_thread(result)
+        self._update_info_thread.set_result(result)
 
     def id_selected(self, id=None):
         if not self.is_searching:
@@ -144,13 +144,12 @@ class SearchDbJob(JobBase):
 class _SearchThread(daemon.DaemonThread):
     def __init__(self, search_coro, results_callback, error_callback, searching_callback,
                  query=''):
+        super().__init__()
         self._search_coro = search_coro
         self._results_callback = results_callback
         self._searching_callback = searching_callback
         self._error_callback = error_callback
-        self._loop = asyncio.new_event_loop()
         self._first_search = True
-        self._search_task = None
         self.query = query
 
     @property
@@ -165,14 +164,6 @@ class _SearchThread(daemon.DaemonThread):
         #   - Deduplicate white space
         self._query = ' '.join(query.casefold().strip().split())
 
-    def initialize(self):
-        # Call work() for initial query
-        self.unblock()
-
-    def stop(self):
-        self._loop.stop()
-        super().stop()
-
     def search(self, query):
         """
         Schedule new query
@@ -180,28 +171,10 @@ class _SearchThread(daemon.DaemonThread):
         :param str query: Query to make; "year:YYYY", "type:series" and
             "type:movie" are interpreted to reduce the number of search results
         """
-        if self._search_task:
-            self._search_task.cancel()
         self.query = query
         self.unblock()
 
-    def work(self):
-        asyncio.set_event_loop(self._loop)
-
-        # Retry searching until the search operation is not canceled
-        while True:
-            if not self.query:
-                break
-            self._search_task = self._loop.create_task(self._delay_search())
-            try:
-                self._loop.run_until_complete(self._search_task)
-            except asyncio.CancelledError:
-                # Previous search was cancelled
-                pass
-            else:
-                break
-
-    async def _delay_search(self):
+    async def work(self):
         # Wait for the user to stop typing
         await self._delay()
         self._results_callback(())
@@ -265,28 +238,19 @@ class _SearchThread(daemon.DaemonThread):
 
 class _UpdateInfoThread(daemon.DaemonThread):
     def __init__(self, **targets):
+        super().__init__()
         # `targets` maps names of SearchResult attributes to callbacks that get
         # the value of the corresponding SearchResult attribute.
         # Example: {"title" : lambda t: print(f'Title: {t}')}
         # NOTE: Values of SearchResult attributes may also be coroutine
-        # functions that return the actual value.
+        #       functions that return the actual value.
         self._targets = targets
+        # SearchResult instance or None
         self._result = None
-        self._update_task = None
-        self._loop = asyncio.new_event_loop()
 
-    def stop(self):
-        self._loop.stop()
-        super().stop()
-
-    def __call__(self, result):
-        # Cancel previous update tasks
-        if self._update_task and not self._update_task.done():
-            self._update_task.cancel()
-            _log.debug('Canceled previous update task: %r', self._update_task)
+    def set_result(self, result):
         self._result = result
-        if self.is_alive:
-            self.unblock()
+        self.unblock()
 
         # Update plain, non-callable values immediately
         if result is not None:
@@ -295,28 +259,13 @@ class _UpdateInfoThread(daemon.DaemonThread):
                 if not callable(value):
                     callback(self._value_as_string(value))
 
-    def work(self):
-        asyncio.set_event_loop(self._loop)
-
+    async def work(self):
         if self._result is None:
             for callback in self._targets.values():
                 callback('')
-            return
-
-        # Retry updating callable SearchResult attribute values until we are not
-        # interupted by user selecting a different search result
-        while True:
+        else:
             tasks = self._make_update_tasks()
-            if not tasks:
-                break
-            # Combine all callable values into a single task
-            self._update_task = asyncio.gather(*tasks)
-            try:
-                self._loop.run_until_complete(self._update_task)
-            except asyncio.CancelledError:
-                _log.debug('Update info tasks were cancelled')
-            else:
-                break
+            await asyncio.gather(*tasks)
 
     def _make_update_tasks(self):
         tasks = []

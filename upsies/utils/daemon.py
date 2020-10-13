@@ -22,6 +22,31 @@ class DaemonThread(abc.ABC):
     :meth:`unblock` is called or if :meth:`work` returns `True`.
     """
 
+    def __init__(self):
+        self._loop = asyncio.new_event_loop()
+        self._loop.set_debug(True)
+        self._finish_work = False
+        self._unhandled_exception = None
+        self._unblock_event = threading.Event()
+
+    async def initialize(self):
+        """Do some work once inside the thread before :meth:`work` is called"""
+        pass
+
+    @abc.abstractmethod
+    async def work(self):
+        """
+        Coroutine function that does one task an returns
+
+        A call for this method is scheduled every time :meth:`unblock` is called or
+        when this method returns `True` or any other truthy value.
+        """
+        pass
+
+    async def terminate(self):
+        """Do some work once inside the thread before it terminates"""
+        pass
+
     @property
     def is_alive(self):
         """Whether :meth:`start` was called and the thread has not terminated yet"""
@@ -33,14 +58,12 @@ class DaemonThread(abc.ABC):
     def start(self):
         """Start the thread"""
         if not self.is_alive:
-            self._finish_work = False
-            self._unhandled_exception = None
-            self._unblock_event = threading.Event()
             self._thread = threading.Thread(target=self._run,
                                             daemon=True,
                                             name=type(self).__name__)
             self._thread.start()
             _log.debug('Started thread: %r', self._thread)
+            self.unblock()
 
     def stop(self):
         """Stop the thread"""
@@ -48,22 +71,6 @@ class DaemonThread(abc.ABC):
             _log.debug('Stopping thread: %r', self._thread)
             self._finish_work = True
             self.unblock()
-
-    def initialize(self):
-        """Do some work once inside the thread before it :meth:`work` is called"""
-        pass
-
-    @abc.abstractmethod
-    def work(self):
-        """
-        A call for this method is scheduled every time :meth:`unblock` is called or
-        when this method returns `True` or any other truthy value.
-        """
-        pass
-
-    def terminate(self):
-        """Do some work once inside the thread before it terminates"""
-        pass
 
     def unblock(self):
         """Tell the background worker thread that there is work to do"""
@@ -82,23 +89,72 @@ class DaemonThread(abc.ABC):
 
     def _run(self):
         try:
-            self.initialize()
+            self._run_coro(self.initialize())
             while True:
+                # Wait for unblock() call
                 self._unblock_event.wait()
+
+                # Don't call work() if stop() was called
                 if self._finish_work:
                     break
-                call_again = self.work()
+
+                call_again = self._run_coro(self._work())
                 if not call_again:
                     self._unblock_event.clear()
-                # In case work() called stop()
+
+                # Don't wait for unblock() again if stop() was called
                 if self._finish_work:
                     break
-            self.terminate()
-        except BaseException as e:
+            self._run_coro(self.terminate())
+        except Exception as e:
             _log.debug('Reporting exception: %r', e)
             self._unhandled_exception = e
         finally:
             _log.debug('_run() finished: %r', self._thread)
+
+    def _run_coro(self, coro):
+        if self._loop.is_running():
+            self._stop_loop()
+        return self._loop.run_until_complete(coro)
+
+    async def _work(self):
+        try:
+            return await self.work()
+        except asyncio.CancelledError:
+            _log.debug('%s was cancelled', type(self).__name__)
+            # Call work() again
+            return True
+        except RuntimeError as e:
+            # Ugly hack; see FIXME in _stop_loop()
+            if str(e) == 'Event loop stopped before Future completed.':
+                _log.debug('Caught ugly hack.')
+            else:
+                raise
+
+    def _stop_loop(self):
+        # FIXME: We want self._task to stop immediately, because
+        #        1) aborting quickly is good UX
+        #        2) when run_until_complete() is called with the new task
+        #           and the previous task hasn't finished yet, we get a
+        #           RuntimeError.
+        #
+        #        Canceling self._task doesn't necessarily cancel it because
+        #        its coroutine function might use a ThreadPoolExecutor to
+        #        fake async behaviour. Those tasks can't be cancelled (at
+        #        least not easily): https://stackoverflow.com/a/52938384
+        #
+        #        Stopping the loop "kills" self._task immediately and raises
+        #        RuntimeError('Event loop stopped before Future completed.')
+        #        in work().
+        #
+        #        This is horrible and will probably explode in someone's
+        #        face. Sorry.
+        #
+        #        If, at some point, work() doesn't use
+        #        Thread/ProcessPoolExecutors, self._task.cancel() should be
+        #        better.
+        self._loop.stop()
+        _log.debug('Cancelled %r', type(self).__name__)
 
 
 class DaemonProcess:
