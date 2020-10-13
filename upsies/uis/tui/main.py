@@ -14,6 +14,8 @@ def main(args=None):
 
 
 def _main(args=None):
+    # Read CLI arguments
+    # NOTE: argparse calls sys.exit(2) for CLI errors.
     args = parse_args(args)
     if args.debug:
         logging.basicConfig(
@@ -22,23 +24,31 @@ def _main(args=None):
         )
         logging.getLogger(__project_name__).setLevel(level=logging.DEBUG)
 
+    # Read config files
     try:
         cfg = config.Config(defaults=defaults.config)
         cfg.read('trackers', filepath=args.trackers_file, ignore_missing=True)
         cfg.read('clients', filepath=args.clients_file, ignore_missing=True)
     except errors.ConfigError as e:
         print(e, file=sys.stderr)
-        sys.exit(1)
+        return 3
 
-    exit_code = 1
+    # Create command, i.e. a sequence of jobs
     try:
         cmd = args.subcmd(args=args, config=cfg)
         assert isinstance(cmd, CommandBase)
-        ui = UI(jobs=cmd.jobs_active)
-        exit_code = ui.run()
     except (errors.ConfigError, errors.DependencyError, errors.NoContentError) as e:
         print(e, file=sys.stderr)
+        return 4
+
+    # Run UI
+    ui = UI(jobs=cmd.jobs_active)
+    try:
+        exit_code = ui.run()
     except Exception as e:
+        # Unexpected exception; expected exceptions are handled by JobBase child
+        # classes by calling their error() or exception() methods.
+        exit_code = 100
         import traceback
         traceback.print_exception(type(e), e, e.__traceback__)
         print()
@@ -50,5 +60,4 @@ def _main(args=None):
             if final_job.output:
                 print('\n'.join(final_job.output))
 
-    _log.debug('UI terminated')
     return exit_code

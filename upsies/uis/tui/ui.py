@@ -65,30 +65,33 @@ class UI:
             self._job_widgets.remove(self._initial_placeholder)
 
     def run(self):
-        exit_code = 1
-        try:
-            task = self._app.create_background_task(self._do_jobs())
-            exit_code = self._app.run(set_exception_handler=False)
-        finally:
-            _log.debug('app.run() finished')
-            asyncio.get_event_loop().run_until_complete(
-                self._await_jobs()
-            )
+        # Add JobWidgets in a background task
+        task = self._app.create_background_task(self._do_jobs())
+        task.add_done_callback(self._exception_handler)
+
+        # Block until all jobs are finished.
+        # Return value is the exit_code property of the final job.
+        exit_code = self._app.run()
+        _log.debug('TUI terminated with exit_code=%r, exception=%r',
+                   exit_code, task.exception())
+        if task.exception():
+            raise task.exception()
+        else:
             return exit_code
 
-    def _exit(self, exit_code=1):
+    def _exception_handler(self, task):
+        if task.exception():
+            self._exit(1)
+
+    def _exit(self, exit_code=0):
         self._finish_jobs()
-        if not self._app.is_done:
+        if not self._app.is_done or self._app.is_running:
             self._app.exit(exit_code)
 
     def _finish_jobs(self):
         for job in self._jobs:
             if not job.is_finished:
                 job.finish()
-
-    async def _await_jobs(self):
-        for job in self._jobs:
-            await job.wait()
 
     async def _do_jobs(self):
         # First create widgets so they can register their callbacks with their
@@ -118,19 +121,19 @@ class UI:
             _log.debug('Waiting for interactive job to finish: %r', jobw.job.name)
             await jobw.job.wait()
 
-        # Wait for all jobs to finish. Interactive jobs are already finished,
-        # but we want an exit code from the final job and there may be no
-        # background jobs.
+        # Wait for all jobs to finish and get exceptions from job.wait().
+        # Interactive jobs are already finished, but we want an exit code from
+        # the final job and there may be no background jobs.
         exit_code = 0
         for job in self._jobs:
-            if not job.is_finished:
-                _log.debug('Waiting for background job to finish: %r', job.name)
-                await job.wait()
+            await job.wait()
             exit_code = job.exit_code
 
-        # If this coroutine is finished before self._app.run() has set
-        # self._app.is_running to True, self._app.exit() is not called and the
-        # application never terminates.
+        # If self._jobs is empty, this coroutine can finish before
+        # self._app.run() has fully set its internal state. As a result,
+        # self._exit() can call self._app.exit() multiple times (which raises
+        # RuntimeError) or not at all, leaving the application running until
+        # ctrl-c is pressed.
         while not self._app.is_running:
             await asyncio.sleep(0)
 
