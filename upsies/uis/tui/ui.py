@@ -7,6 +7,7 @@ from prompt_toolkit.layout.containers import HSplit, Window, to_container
 from prompt_toolkit.layout.dimension import Dimension
 
 from ...jobs import JobBase
+from ... import errors
 from . import style, widgets
 
 import logging  # isort:skip
@@ -66,27 +67,43 @@ class UI:
 
     def run(self):
         # Add JobWidgets in a background task
-        task = self._app.create_background_task(self._do_jobs())
-        task.add_done_callback(self._exception_handler)
+        do_jobs_task = asyncio.get_event_loop().create_task(self._do_jobs())
+        do_jobs_task.add_done_callback(self._exit_on_exception)
 
         # Block until all jobs are finished.
         # Return value is the exit_code property of the final job.
         exit_code = self._app.run()
-        _log.debug('TUI terminated with exit_code=%r, exception=%r',
-                   exit_code, task.exception())
-        if task.exception():
-            raise task.exception()
+        _log.debug('TUI terminated with exit_code=%r, task=%r', exit_code, do_jobs_task)
+
+        # Make sure _do_jobs() is done
+        if not do_jobs_task.done():
+            do_jobs_task.cancel()
+            try:
+                asyncio.get_event_loop().run_until_complete(do_jobs_task)
+            except:
+                pass
+
+        # Raise any exception except for CancelledError
+        try:
+            do_jobs_task.result()
+        except asyncio.CancelledError:
+            raise errors.CancelledError()
         else:
             return exit_code
 
-    def _exception_handler(self, task):
-        if task.exception():
-            self._exit(1)
+    def _exit_on_exception(self, task):
+        try:
+            task.result()
+        except:
+            self._exit()
 
-    def _exit(self, exit_code=0):
+    def _exit(self, exit_code=None):
         self._finish_jobs()
-        if not self._app.is_done or self._app.is_running:
-            self._app.exit(exit_code)
+        if not self._app.is_done:
+            if exit_code is None:
+                self._app.exit()
+            else:
+                self._app.exit(exit_code)
 
     def _finish_jobs(self):
         for job in self._jobs:

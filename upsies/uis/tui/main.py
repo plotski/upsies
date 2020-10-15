@@ -15,14 +15,20 @@ def main(args=None):
 
 def _main(args=None):
     # Read CLI arguments
-    # NOTE: argparse calls sys.exit(2) for CLI errors.
-    args = parse_args(args)
+    # argparse has sys.exit(2) hardcoded for CLI errors.
+    try:
+        args = parse_args(args)
+    except SystemExit:
+        return 1
+
     if args.debug:
         logging.basicConfig(
             format='%(asctime)s: %(name)s: %(message)s',
             filename=args.debug,
         )
         logging.getLogger(__project_name__).setLevel(level=logging.DEBUG)
+        from ...utils import daemon
+        daemon.DaemonThread.asyncio_debug = True
 
     # Read config files
     try:
@@ -31,7 +37,7 @@ def _main(args=None):
         cfg.read('clients', filepath=args.clients_file, ignore_missing=True)
     except errors.ConfigError as e:
         print(e, file=sys.stderr)
-        return 3
+        return 1
 
     # Create command, i.e. a sequence of jobs
     try:
@@ -39,20 +45,25 @@ def _main(args=None):
         assert isinstance(cmd, CommandBase)
     except (errors.ConfigError, errors.DependencyError, errors.NoContentError) as e:
         print(e, file=sys.stderr)
-        return 4
+        return 1
 
     # Run UI
-    ui = UI(jobs=cmd.jobs_active)
     try:
+        ui = UI(jobs=cmd.jobs_active)
         exit_code = ui.run()
-    except Exception as e:
+    except errors.CancelledError as e:
+        print(e, file=sys.stderr)
+        return 1
+
+    except BaseException as e:
         # Unexpected exception; expected exceptions are handled by JobBase child
         # classes by calling their error() or exception() methods.
-        exit_code = 100
         import traceback
         traceback.print_exception(type(e), e, e.__traceback__)
         print()
         print(f'Please report the traceback above as a bug: {__homepage__}', file=sys.stderr)
+        return 1
+
     else:
         # Print last job's output to stdout
         if exit_code == 0:
@@ -60,4 +71,4 @@ def _main(args=None):
             if final_job.output:
                 print('\n'.join(final_job.output))
 
-    return exit_code
+        return exit_code
