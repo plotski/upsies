@@ -92,7 +92,7 @@ class DaemonThread(abc.ABC):
 
     def _run(self):
         try:
-            self._run_coro(self.initialize())
+            self._loop.run_until_complete(self.initialize())
             while True:
                 # Wait for unblock() call
                 self._unblock_event.wait()
@@ -108,7 +108,8 @@ class DaemonThread(abc.ABC):
                 # Don't wait for unblock() again if stop() was called
                 if self._finish_work:
                     break
-            self._run_coro(self.terminate())
+
+            self._loop.run_until_complete(self.terminate())
         except Exception as e:
             _log.debug('Reporting exception: %r', e)
             self._unhandled_exception = e
