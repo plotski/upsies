@@ -28,6 +28,7 @@ class DaemonThread(abc.ABC):
     def __init__(self):
         self._loop = asyncio.new_event_loop()
         self._loop.set_debug(self.asyncio_debug)
+        self._work_task = None
         self._finish_work = False
         self._unhandled_exception = None
         self._unblock_event = threading.Event()
@@ -81,6 +82,13 @@ class DaemonThread(abc.ABC):
             self.start()
         self._unblock_event.set()
 
+    def cancel_work(self):
+        """Cancel any currently running :meth:`work` task"""
+        task = self._work_task
+        if task and not task.done():
+            _log.debug('Cancelling work task: %r', task)
+            self._loop.call_soon_threadsafe(task.cancel)
+
     async def join(self):
         """Block asynchronously until the thread exits"""
         if self.is_alive:
@@ -101,7 +109,7 @@ class DaemonThread(abc.ABC):
                 if self._finish_work:
                     break
 
-                call_again = self._run_coro(self._work())
+                call_again = self._run_work()
                 if not call_again:
                     self._unblock_event.clear()
 
@@ -116,49 +124,20 @@ class DaemonThread(abc.ABC):
         finally:
             _log.debug('_run() finished: %r', self._thread)
 
-    def _run_coro(self, coro):
-        if self._loop.is_running():
-            self._stop_loop()
-        return self._loop.run_until_complete(coro)
+    def _run_work(self):
+        # Sanity check to ensure this method is not called concurrently
+        assert self._work_task is None
 
-    async def _work(self):
+        self._work_task = self._loop.create_task(self.work())
+        _log.debug('Running work task: %r', self._work_task)
         try:
-            return await self.work()
+            return self._loop.run_until_complete(self._work_task)
         except asyncio.CancelledError:
-            _log.debug('%s was cancelled', type(self).__name__)
+            _log.debug('Cancelled work task: %r', self._work_task)
             # Call work() again
             return True
-        except RuntimeError as e:
-            # Ugly hack; see FIXME in _stop_loop()
-            if str(e) == 'Event loop stopped before Future completed.':
-                _log.debug('Caught ugly hack.')
-            else:
-                raise
-
-    def _stop_loop(self):
-        # FIXME: We want self._task to stop immediately, because
-        #        1) aborting quickly is good UX
-        #        2) when run_until_complete() is called with the new task
-        #           and the previous task hasn't finished yet, we get a
-        #           RuntimeError.
-        #
-        #        Canceling self._task doesn't necessarily cancel it because
-        #        its coroutine function might use a ThreadPoolExecutor to
-        #        fake async behaviour. Those tasks can't be cancelled (at
-        #        least not easily): https://stackoverflow.com/a/52938384
-        #
-        #        Stopping the loop "kills" self._task immediately and raises
-        #        RuntimeError('Event loop stopped before Future completed.')
-        #        in work().
-        #
-        #        This is horrible and will probably explode in someone's
-        #        face. Sorry.
-        #
-        #        If, at some point, work() doesn't use
-        #        Thread/ProcessPoolExecutors, self._task.cancel() should be
-        #        better.
-        self._loop.stop()
-        _log.debug('Cancelled %r', type(self).__name__)
+        finally:
+            self._work_task = None
 
 
 class DaemonProcess:

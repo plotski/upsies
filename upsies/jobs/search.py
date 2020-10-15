@@ -172,6 +172,7 @@ class _SearchThread(daemon.DaemonThread):
             "type:movie" are interpreted to reduce the number of search results
         """
         self.query = query
+        self.cancel_work()
         self.unblock()
 
     async def work(self):
@@ -250,6 +251,7 @@ class _UpdateInfoThread(daemon.DaemonThread):
 
     def set_result(self, result):
         self._result = result
+        self.cancel_work()
         self.unblock()
 
         # Update plain, non-callable values immediately
