@@ -22,9 +22,12 @@ class DaemonThread(abc.ABC):
     :meth:`unblock` is called or if :meth:`work` returns `True`.
     """
 
+    asyncio_debug = False
+    """Enable debugging messages for the internal asyncio loop"""
+
     def __init__(self):
         self._loop = asyncio.new_event_loop()
-        self._loop.set_debug(True)
+        self._loop.set_debug(self.asyncio_debug)
         self._finish_work = False
         self._unhandled_exception = None
         self._unblock_event = threading.Event()
