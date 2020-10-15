@@ -77,7 +77,7 @@ class DaemonThread(abc.ABC):
 
     def unblock(self):
         """Tell the background worker thread that there is work to do"""
-        if not self.is_alive:
+        if not self.is_alive and not self._finish_work:
             self.start()
         self._unblock_event.set()
 
