@@ -31,6 +31,9 @@ class DaemonThread(abc.ABC):
         self._finish_work = False
         self._unhandled_exception = None
         self._unblock_event = threading.Event()
+        self._thread = threading.Thread(target=self._run,
+                                        daemon=True,
+                                        name=type(self).__name__)
 
     async def initialize(self):
         """Do some work once inside the thread before :meth:`work` is called"""
@@ -61,9 +64,6 @@ class DaemonThread(abc.ABC):
     def start(self):
         """Start the thread"""
         if not self.is_alive:
-            self._thread = threading.Thread(target=self._run,
-                                            daemon=True,
-                                            name=type(self).__name__)
             self._thread.start()
             _log.debug('Started thread: %r', self._thread)
             self._unblock_event.set()
