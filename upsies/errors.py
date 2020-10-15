@@ -4,6 +4,9 @@ class ConfigError(Exception):
 class DependencyError(Exception):
     pass
 
+class CancelledError(Exception):
+    pass
+
 class RequestError(Exception):
     pass
 
