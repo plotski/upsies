@@ -66,7 +66,7 @@ class DaemonThread(abc.ABC):
                                             name=type(self).__name__)
             self._thread.start()
             _log.debug('Started thread: %r', self._thread)
-            self.unblock()
+            self._unblock_event.set()
 
     def stop(self):
         """Stop the thread"""
