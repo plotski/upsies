@@ -62,6 +62,12 @@ def _main(args=None):
         import traceback
         traceback.print_exception(type(e), e, e.__traceback__)
         print()
+
+        # Exceptions from subprocesses should save their traceback
+        if hasattr(e, 'original_traceback'):
+            print(e.original_traceback)
+            print()
+
         print(f'Please report the traceback above as a bug: {__homepage__}', file=sys.stderr)
         return 1
 
