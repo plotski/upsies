@@ -4,6 +4,8 @@ import functools
 import multiprocessing
 import threading
 
+from .. import errors
+
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
@@ -132,7 +134,6 @@ class DaemonThread(abc.ABC):
         assert self._work_task is None
 
         self._work_task = self._loop.create_task(self.work())
-        _log.debug('Running work task: %r', self._work_task)
         try:
             return self._loop.run_until_complete(self._work_task)
         except asyncio.CancelledError:
@@ -204,7 +205,10 @@ class DaemonProcess:
                 if self._info_callback:
                     self._info_callback(msg)
             elif typ == self.ERROR:
-                if isinstance(msg, Exception):
+                if isinstance(msg, tuple):
+                    exception, traceback = msg
+                    raise errors.SubprocessError(exception, traceback)
+                elif isinstance(msg, BaseException):
                     raise msg
                 else:
                     if self._error_callback:
@@ -256,17 +260,11 @@ class DaemonProcess:
 def _target_process_wrapper(target, output_queue, input_queue, *args, **kwargs):
     try:
         target(output_queue, input_queue, *args, **kwargs)
-    except Exception as e:
-        # Because tracebacks are not picklable, format the exception in the
-        # child process before we send it to the parent.
-        output_queue.put((DaemonProcess.ERROR, _PickledException(e)))
+    except BaseException as e:
+        # Because the traceback is not picklable, preserve it as a string before
+        # sending it over the Queue
+        import traceback
+        traceback = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+        output_queue.put((DaemonProcess.ERROR, (e, traceback)))
     finally:
         output_queue.put((DaemonProcess._TERMINATED, None))
-
-class _PickledException(Exception):
-    def __init__(self, exc):
-        import traceback
-        self._formatted = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))
-
-    def __str__(self):
-        return self._formatted

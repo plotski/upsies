@@ -77,11 +77,11 @@ async def test_exceptions_from_target_are_reraised_when_process_is_joined():
         error_callback=error_callback,
     )
     proc.start()
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(ValueError, match=r'^Kaboom!$') as exc_info:
         await proc.join()
-    assert str(exc_info.value).startswith('Traceback')
-    assert str(exc_info.value).endswith('ValueError: Kaboom!\n')
-    assert "raise ValueError('Kaboom!')\n" in str(exc_info.value)
+    assert exc_info.value.original_traceback.startswith('Subprocess traceback:\n')
+    assert 'target_raising_exception' in exc_info.value.original_traceback
+    assert exc_info.value.original_traceback.endswith('ValueError: Kaboom!')
     assert error_callback.call_args_list == []
 
 
