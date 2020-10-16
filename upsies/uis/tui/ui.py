@@ -94,7 +94,7 @@ class UI:
     def _exit_on_exception(self, task):
         try:
             task.result()
-        except:
+        except BaseException as e:
             self._exit()
 
     def _exit(self, exit_code=None):
