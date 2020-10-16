@@ -32,6 +32,7 @@ class DaemonThread(abc.ABC):
         self._finish_work = False
         self._unhandled_exception = None
         self._unblock_event = threading.Event()
+        self._thread_state_lock = threading.Lock()
         self._thread = threading.Thread(target=self._run,
                                         daemon=True,
                                         name=type(self).__name__)
@@ -64,10 +65,12 @@ class DaemonThread(abc.ABC):
 
     def start(self):
         """Start the thread"""
-        if not self.is_alive:
-            self._thread.start()
-            _log.debug('Started thread: %r', self._thread)
-            self._unblock_event.set()
+        # Do not start thread multiple times when called from different threads
+        with self._thread_state_lock:
+            if not self.is_alive:
+                _log.debug('Starting thread: %r: %r', threading.current_thread(), self._thread)
+                self._thread.start()
+                self._unblock_event.set()
 
     def stop(self):
         """Stop the thread"""
