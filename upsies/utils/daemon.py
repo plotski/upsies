@@ -59,11 +59,8 @@ class DaemonThread(abc.ABC):
 
     @property
     def is_alive(self):
-        """Whether :meth:`start` was called and the thread has not terminated yet"""
-        if hasattr(self, '_thread'):
-            return self._thread.is_alive()
-        else:
-            return False
+        """Whether the thread was started and has not terminated yet"""
+        return self._thread.is_alive()
 
     def start(self):
         """Start the thread"""
