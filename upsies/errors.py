@@ -35,6 +35,18 @@ class ScreenshotError(Exception):
     def __init__(self, msg, video_file, timestamp):
         super().__init__(f'{video_file}: Failed to create screenshot at {timestamp}: {msg}')
 
+class SubprocessError(Exception):
+    """
+    Exception from a subprocess
+
+    The original traceback from within the subprocess is available as
+    :attr:`original_traceback`.
+    """
+    def __new__(cls, exception, original_traceback):
+        self = exception
+        self.original_traceback = f'Subprocess traceback:\n{original_traceback.strip()}'
+        return self
+
 class TorrentError(Exception):
     """Torrent file creation failed"""
     pass
