@@ -39,18 +39,19 @@ def _main(args=None):
         print(e, file=sys.stderr)
         return 1
 
-    # Create command, i.e. a sequence of jobs
+    # Run UI
     try:
         cmd = args.subcmd(args=args, config=cfg)
         assert isinstance(cmd, CommandBase)
+        ui = UI(jobs=cmd.jobs_active)
+        exit_code = ui.run()
+
+    # Some errors are expected
     except (errors.ConfigError, errors.DependencyError, errors.NoContentError) as e:
         print(e, file=sys.stderr)
         return 1
 
-    # Run UI
-    try:
-        ui = UI(jobs=cmd.jobs_active)
-        exit_code = ui.run()
+    # TUI was terminated by user prematurely
     except errors.CancelledError as e:
         print(e, file=sys.stderr)
         return 1
