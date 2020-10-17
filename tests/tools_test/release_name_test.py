@@ -1,5 +1,4 @@
 import sys
-from types import SimpleNamespace
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -608,8 +607,8 @@ async def test_update_attributes(guessit_mock, imdb_mock, guessit_type, imdb_typ
     ]
 
 
-_unique_titles = (SimpleNamespace(title='The Foo'), SimpleNamespace(title='The Bar'))
-_same_titles = (SimpleNamespace(title='The Foo'), SimpleNamespace(title='The Foo'))
+_unique_titles = (Mock(title='The Foo'), Mock(title='The Bar'))
+_same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
 
 @pytest.mark.skipif(
     sys.version_info < (3, 8),

@@ -1,5 +1,4 @@
-from types import SimpleNamespace
-from unittest.mock import PropertyMock, call, patch
+from unittest.mock import Mock, PropertyMock, call, patch
 
 import pytest
 
@@ -31,7 +30,7 @@ def test_upload_creates_gallery_on_first_upload(Gallery_mock, tmp_path):
     uploader = imgbox.Uploader(thumb_width=200, cache_dir=tmp_path)
     type(Gallery_mock.return_value).created = PropertyMock(return_value=False)
     Gallery_mock.return_value.add.return_value = (
-        SimpleNamespace(
+        Mock(
             success=True,
             image_url='http://foo.url',
             thumbnail_url='http://foo.thumb.url',
@@ -51,7 +50,7 @@ def test_upload_creates_gallery_on_first_upload(Gallery_mock, tmp_path):
 def test_upload_returns_urls(Gallery_mock, tmp_path):
     uploader = imgbox.Uploader(thumb_width=200, cache_dir=tmp_path)
     Gallery_mock.return_value.add.return_value = (
-        SimpleNamespace(
+        Mock(
             success=True,
             image_url='http://foo.url',
             thumbnail_url='http://foo.thumb.url',
@@ -69,7 +68,7 @@ def test_upload_returns_urls(Gallery_mock, tmp_path):
 def test_upload_raises_RequestError(Gallery_mock, tmp_path):
     uploader = imgbox.Uploader(thumb_width=200, cache_dir=tmp_path)
     Gallery_mock.return_value.add.return_value = (
-        SimpleNamespace(
+        Mock(
             success=False,
             error='Something went wrong',
         ),
