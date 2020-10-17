@@ -114,7 +114,7 @@ class DaemonThread(abc.ABC):
             # Use another thread to join self._thread asynchronously
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, self._thread.join)
-        if getattr(self, '_unhandled_exception', None):
+        if self._unhandled_exception:
             raise self._unhandled_exception
 
     def _run(self):
