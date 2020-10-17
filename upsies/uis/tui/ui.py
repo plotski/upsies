@@ -6,8 +6,8 @@ from prompt_toolkit.layout import Layout
 from prompt_toolkit.layout.containers import HSplit, Window, to_container
 from prompt_toolkit.layout.dimension import Dimension
 
-from ...jobs import JobBase
 from ... import errors
+from ...jobs import JobBase
 from . import style, widgets
 
 import logging  # isort:skip
@@ -80,7 +80,7 @@ class UI:
             do_jobs_task.cancel()
             try:
                 asyncio.get_event_loop().run_until_complete(do_jobs_task)
-            except:
+            except BaseException:
                 pass
 
         # Raise any exception except for CancelledError
@@ -94,7 +94,7 @@ class UI:
     def _exit_on_exception(self, task):
         try:
             task.result()
-        except BaseException as e:
+        except BaseException:
             self._exit()
 
     def _exit(self, exit_code=None):
