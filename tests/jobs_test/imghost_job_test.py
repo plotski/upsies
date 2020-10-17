@@ -248,8 +248,7 @@ async def test_UploadThread_with_failed_upload(tmp_path):
     assert finished_callback.call_args_list == [call()]
     assert len(error_callback.call_args_list[0][0]) == 1  # positional args
     assert len(error_callback.call_args_list[0][1]) == 0  # keyword args
-    assert isinstance(error_callback.call_args_list[0][0][0], errors.RequestError)
-    assert str(error_callback.call_args_list[0][0][0]) == 'The Error'
+    assert error_callback.call_args_list == [call(errors.RequestError('The Error'))]
 
 @pytest.mark.asyncio
 async def test_UploadThread_passes_force_argument_to_upload_call(tmp_path):
