@@ -293,10 +293,12 @@ class _UpdateInfoThread(daemon.DaemonThread):
                 callback('Loading...')
                 await asyncio.sleep(self._delay_between_updates)
                 try:
-                    self._cache[cache_key] = self._value_as_string(await value_getter())
+                    value = self._value_as_string(await value_getter())
                 except errors.RequestError as e:
-                    self._cache[cache_key] = f'ERROR: {str(e)}'
-                callback(self._cache[cache_key])
+                    callback(f'ERROR: {str(e)}')
+                else:
+                    self._cache[cache_key] = value
+                    callback(value)
         return self._loop.create_task(coro(cache_key, value_getter, callback))
 
     @staticmethod
