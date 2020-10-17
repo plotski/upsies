@@ -40,7 +40,7 @@ class DaemonThread(abc.ABC):
                                         name=type(self).__name__)
 
     async def initialize(self):
-        """Do some work once inside the thread before :meth:`work` is called"""
+        """Do some work once inside the thread just after it started"""
         pass
 
     @abc.abstractmethod
@@ -54,7 +54,7 @@ class DaemonThread(abc.ABC):
         pass
 
     async def terminate(self):
-        """Do some work once inside the thread before it terminates"""
+        """Do some work once inside the thread just before it terminates"""
         pass
 
     @property
@@ -63,7 +63,13 @@ class DaemonThread(abc.ABC):
         return self._thread.is_alive()
 
     def start(self):
-        """Start the thread"""
+        """
+        Start the thread
+
+        Only the first call to this method starts the thread.
+
+        This method is thread-safe.
+        """
         # Do not start thread multiple times when called from different threads
         with self._thread_state_lock:
             if not self.is_alive:
@@ -72,14 +78,19 @@ class DaemonThread(abc.ABC):
                 self._unblock_event.set()
 
     def stop(self):
-        """Stop the thread"""
+        """
+        Stop the thread
+
+        Also call :meth:`unblock` so :meth:`work` can react to the thread being
+        terminated.
+        """
         if self.is_alive:
             _log.debug('Stopping thread: %r', self._thread)
             self._finish_work = True
             self.unblock()
 
     def unblock(self):
-        """Tell the background worker thread that there is work to do"""
+        """Call :meth:`work` in the thread"""
         if not self.is_alive and not self._finish_work:
             self.start()
         self._unblock_event.set()
@@ -92,7 +103,13 @@ class DaemonThread(abc.ABC):
             self._loop.call_soon_threadsafe(task.cancel)
 
     async def join(self):
-        """Block asynchronously until the thread exits"""
+        """
+        Block asynchronously until the thread exits
+
+        This method can be called multiple times. Only the first call blocks.
+
+        :raise: any exceptions raised in :meth:`work`
+        """
         if self.is_alive:
             # Use another thread to join self._thread asynchronously
             loop = asyncio.get_event_loop()
