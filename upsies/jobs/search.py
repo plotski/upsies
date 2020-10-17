@@ -81,19 +81,19 @@ class SearchDbJob(JobBase):
         return lambda value: self.update_info(key, value)
 
     def execute(self):
-        self._search_thread.start()
         self._update_info_thread.start()
+        self._search_thread.start()
 
     def finish(self):
-        self._search_thread.stop()
         self._update_info_thread.stop()
+        self._search_thread.stop()
         super().finish()
 
     async def wait(self):
         # Raise any exceptions from the threads
         await asyncio.gather(
-            self._search_thread.join(),
             self._update_info_thread.join(),
+            self._search_thread.join(),
         )
         await super().wait()
 
