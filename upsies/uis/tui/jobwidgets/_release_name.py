@@ -1,5 +1,3 @@
-from prompt_toolkit.application import get_app
-
 from ....utils import cache
 from .. import widgets
 from . import JobWidgetBase
@@ -22,7 +20,7 @@ class ReleaseNameJobWidget(JobWidgetBase):
         def release_name_changed_callback(release_name):
             self._release_name.read_only = False
             self._release_name.text = release_name.format()
-            get_app().invalidate()
+            self.invalidate()
         self.job.on_release_name_update(release_name_changed_callback)
 
     def handle_release_name(self, buffer):

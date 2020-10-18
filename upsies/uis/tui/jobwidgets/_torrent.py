@@ -1,5 +1,3 @@
-from prompt_toolkit.application import get_app
-
 from ....utils import cache, fs
 from .. import widgets
 from . import JobWidgetBase
@@ -12,11 +10,11 @@ class CreateTorrentJobWidget(JobWidgetBase):
     def setup(self):
         self._progress = widgets.ProgressBar()
         self.job.on_progress_update(self.handle_progress_update)
-        self.job.on_finished(lambda _: get_app().invalidate())
+        self.job.on_finished(lambda _: self.invalidate())
 
     def handle_progress_update(self, percent_done):
         self._progress.percent = percent_done
-        get_app().invalidate()
+        self.invalidate()
 
     @cache.property
     def runtime_widget(self):
@@ -31,11 +29,11 @@ class AddTorrentJobWidget(JobWidgetBase):
 
     def handle_adding_torrent(self, torrent_path):
         self._status.text = f'Adding {fs.basename(torrent_path)}...'
-        get_app().invalidate()
+        self.invalidate()
 
     def handle_finished(self, _):
         self._status.text = 'Done.'
-        get_app().invalidate()
+        self.invalidate()
 
     @cache.property
     def runtime_widget(self):
@@ -50,11 +48,11 @@ class CopyTorrentJobWidget(JobWidgetBase):
 
     def handle_copying_torrent(self, file_path):
         self._status.text = f'Copying {fs.basename(file_path)}...'
-        get_app().invalidate()
+        self.invalidate()
 
     def handle_finished(self, _):
         self._status.text = 'Done.'
-        get_app().invalidate()
+        self.invalidate()
 
     @cache.property
     def runtime_widget(self):

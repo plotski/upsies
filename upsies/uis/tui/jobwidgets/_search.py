@@ -1,4 +1,3 @@
-from prompt_toolkit.application import get_app
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import (DynamicContainer, HSplit, VSplit,
                                               Window)
@@ -75,11 +74,11 @@ class SearchDbJobWidget(JobWidgetBase):
 
     def handle_search_results(self, results):
         self._widgets['search_results'].results = results
-        get_app().invalidate()
+        self.invalidate()
 
     def handle_info_updated(self, attr, value):
         self._widgets[attr].text = str(value)
-        get_app().invalidate()
+        self.invalidate()
 
     @cache.property
     def runtime_widget(self):

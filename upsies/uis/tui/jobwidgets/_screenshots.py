@@ -1,5 +1,3 @@
-from prompt_toolkit.application import get_app
-
 from ....utils import cache
 from .. import widgets
 from . import JobWidgetBase
@@ -12,11 +10,11 @@ class ScreenshotsJobWidget(JobWidgetBase):
     def setup(self):
         self._screenshot_progress = widgets.ProgressBar()
         self.job.on_output(self.handle_screenshot_path)
-        self.job.on_finished(lambda _: get_app().invalidate())
+        self.job.on_finished(lambda _: self.invalidate())
 
     def handle_screenshot_path(self, path):
         self._screenshot_progress.percent = self.job.screenshots_created / self.job.screenshots_total * 100
-        get_app().invalidate()
+        self.invalidate()
 
     @cache.property
     def runtime_widget(self):
