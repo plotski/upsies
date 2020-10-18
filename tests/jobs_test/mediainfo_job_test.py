@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import call, patch
 
 from upsies import errors
@@ -18,6 +19,7 @@ def test_execute_gets_mediainfo_as_string(mediainfo_mock, tmp_path):
     assert mi.exit_code is None
     assert not mi.is_finished
     mi.execute()
+    asyncio.get_event_loop().run_until_complete(mi.wait())
     assert mediainfo_mock.as_string.call_args_list == [call('mock/path')]
     assert mi.output == ('mock mediainfo output',)
     assert mi.errors == ()
@@ -38,6 +40,7 @@ def test_execute_catches_MediainfoError(mediainfo_mock, tmp_path):
     assert mi.exit_code is None
     assert not mi.is_finished
     mi.execute()
+    asyncio.get_event_loop().run_until_complete(mi.wait())
     assert mediainfo_mock.as_string.call_args_list == [call('mock/path')]
     assert mi.output == ()
     assert [str(e) for e in mi.errors] == ['Ouch']

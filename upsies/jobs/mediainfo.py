@@ -1,3 +1,5 @@
+import asyncio
+
 from .. import errors
 from ..tools import mediainfo
 from . import JobBase
@@ -10,15 +12,20 @@ class MediainfoJob(JobBase):
     name = 'mediainfo'
     label = 'Mediainfo'
 
-    # Don't show mediainfo in TUI
+    # Don't show mediainfo output in UI
     quiet = True
 
     def initialize(self, content_path):
         self._content_path = content_path
 
     def execute(self):
+        loop = asyncio.get_event_loop()
+        fut = loop.run_in_executor(None, lambda: mediainfo.as_string(self._content_path))
+        fut.add_done_callback(self.handle_output)
+
+    def handle_output(self, fut):
         try:
-            mi = mediainfo.as_string(self._content_path)
+            mi = fut.result()
         except errors.MediainfoError as e:
             self.error(e)
         else:
