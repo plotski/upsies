@@ -60,6 +60,6 @@ def create(video_file, timestamp, screenshot_file, overwrite=False):
                          f'{ts.pretty(timestamp)}')
 
     cmd = _make_ffmpeg_cmd(video_file, timestamp, screenshot_file)
-    output = subproc.run(cmd, ignore_stderr=True, join_output=True)
+    output = subproc.run(cmd, ignore_errors=True, join_stderr=True)
     if not os.path.exists(screenshot_file):
         raise errors.ScreenshotError(output, video_file, timestamp)

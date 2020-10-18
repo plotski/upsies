@@ -37,8 +37,8 @@ def test_valid_timestamp(videolength_mock, run_mock, exists_mock):
         screenshot.create(mock_file, ts, 'screenshot.png')
         exp_cmd = screenshot._make_ffmpeg_cmd(mock_file, ts, 'screenshot.png')
         assert run_mock.call_args_list == [call(exp_cmd,
-                                                ignore_stderr=True,
-                                                join_output=True)]
+                                                ignore_errors=True,
+                                                join_stderr=True)]
         run_mock.reset_mock()
 
 
@@ -59,8 +59,8 @@ def test_timestamp_after_video_end(videolength_mock, run_mock, exists_mock):
     screenshot.create(mock_file, 599, 'screenshot.png')
     exp_cmd = screenshot._make_ffmpeg_cmd(mock_file, 599, 'screenshot.png')
     assert run_mock.call_args_list == [call(exp_cmd,
-                                            ignore_stderr=True,
-                                            join_output=True)]
+                                            ignore_errors=True,
+                                            join_stderr=True)]
 
 
 @patch('os.path.exists')
@@ -86,5 +86,5 @@ def test_overwrite_existing_screenshot_file(videolength_mock, run_mock, exists_m
     screenshot.create(mock_file, '1:02:03', 'screenshot.png', overwrite=True)
     exp_cmd = screenshot._make_ffmpeg_cmd(mock_file, '1:02:03', 'screenshot.png')
     assert run_mock.call_args_list == [call(exp_cmd,
-                                            ignore_stderr=True,
-                                            join_output=True)]
+                                            ignore_errors=True,
+                                            join_stderr=True)]

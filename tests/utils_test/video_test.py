@@ -93,7 +93,7 @@ def test_length_calls_ffprobe(run_mock, tmp_path):
     run_mock.return_value = '12345.098'
     length = video.length(filepath)
     assert length == 12345.098
-    assert run_mock.call_args_list == [call(exp_cmd, ignore_stderr=True)]
+    assert run_mock.call_args_list == [call(exp_cmd, ignore_errors=True)]
 
 @patch('upsies.utils.subproc.run')
 def test_length_gets_nonexisting_file(run_mock, tmp_path):
@@ -119,7 +119,7 @@ def test_length_crashes_if_ffprobe_returns_unexpected_value(run_mock, tmp_path):
                                             rf'{exp_cmd_string}:\n'
                                             r'forever$')):
         video.length(filepath)
-        assert run_mock.call_args_list == [call(exp_cmd, ignore_stderr=True)]
+        assert run_mock.call_args_list == [call(exp_cmd, ignore_errors=True)]
 
 
 def test_make_ffmpeg_input_gets_bluray_directory(tmp_path):

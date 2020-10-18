@@ -39,7 +39,7 @@ def test_run_raises_ProcessError_if_stderr_is_truthy(run_mock):
 def test_run_ignores_stderr_on_request(run_mock):
     run_mock.return_value.stderr = 'something went wrong'
     run_mock.return_value.stdout = 'process output'
-    stdout = subproc.run(('foo', 'bar', '--baz'), ignore_stderr=True)
+    stdout = subproc.run(('foo', 'bar', '--baz'), ignore_errors=True)
     assert stdout == 'process output'
 
 @patch('subprocess.run')
@@ -61,7 +61,7 @@ def test_run_caches_stdout_on_request(run_mock):
 def test_run_joins_stdout_and_stderr_on_request(run_mock):
     run_mock.return_value.stdout = 'foo'
     run_mock.return_value.stderr = ''
-    subproc.run(['foo'], join_output=True)
+    subproc.run(['foo'], join_stderr=True)
     assert run_mock.call_args_list == [call(('foo',),
                                             shell=False,
                                             encoding='utf-8',

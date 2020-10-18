@@ -66,7 +66,7 @@ def length(filepath):
         '-of', 'default=noprint_wrappers=1:nokey=1',
         make_ffmpeg_input(filepath),
     )
-    length = subproc.run(cmd, ignore_stderr=True)
+    length = subproc.run(cmd, ignore_errors=True)
     try:
         return float(length)
     except ValueError:

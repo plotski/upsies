@@ -12,18 +12,18 @@ shlex = LazyModule(module='shlex', namespace=globals())
 
 _run_output_cache = {}
 
-def run(argv, ignore_stderr=False, join_output=False, cache=False):
+def run(argv, ignore_errors=False, join_stderr=False, cache=False):
     """
     Execute subprocess
 
     :param argv: Command to execute
     :type argv: list of str
-    :param bool ignore_stderr: Do not raise `ProcessError` if stderr is non-empty
-    :param bool join_output: Redirect stderr to stdout
+    :param bool ignore_errors: Do not raise `ProcessError` if stderr is non-empty
+    :param bool join_stderr: Redirect stderr to stdout
     :param bool cache: Cache output based on `argv`
 
     :raise DependencyError: if the command fails to execute
-    :raise ProcessError: if stdout is not empty and `ignore_stderr` is `False`
+    :raise ProcessError: if stdout is not empty and `ignore_errors` is `False`
 
     :return: stdout from process
     :rtype: str
@@ -33,7 +33,7 @@ def run(argv, ignore_stderr=False, join_output=False, cache=False):
         stdout, stderr = _run_output_cache[argv]
     else:
         stdout = subprocess.PIPE
-        if join_output:
+        if join_stderr:
             stderr = subprocess.STDOUT
         else:
             stderr = subprocess.PIPE
@@ -50,6 +50,6 @@ def run(argv, ignore_stderr=False, join_output=False, cache=False):
             stdout, stderr = proc.stdout, proc.stderr
             if cache:
                 _run_output_cache[argv] = (proc.stdout, proc.stderr)
-    if stderr and not ignore_stderr:
+    if stderr and not ignore_errors:
         raise errors.ProcessError(stderr)
     return stdout
