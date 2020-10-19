@@ -94,9 +94,10 @@ class InputField:
     def __init__(self, text='', width=None, extend_width=True, read_only=False,
                  on_accepted=None, on_changed=None):
         self.read_only = read_only
+        self.on_accepted = on_accepted
         self.buffer = Buffer(
             multiline=False,
-            accept_handler=on_accepted,
+            accept_handler=self._accept_handler,
             on_text_changed=on_changed,
             read_only=Condition(lambda: self.read_only),
         )
@@ -110,6 +111,12 @@ class InputField:
         )
         if text:
             self.set_text(text, ignore_callback=True)
+
+    def _accept_handler(self, buffer):
+        if self.on_accepted:
+            self.on_accepted(buffer)
+        # Do not clear input field on enter
+        return True
 
     @property
     def text(self):
