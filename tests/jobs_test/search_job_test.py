@@ -313,7 +313,7 @@ def test_SearchThread_initialize():
     assert search_thread._results_callback == results_cb
     assert search_thread._searching_callback == searching_cb
     assert search_thread._error_callback == error_cb
-    assert search_thread._first_search is True
+    assert search_thread._previous_search_time == 0
     assert search_thread.query == ''
 
 
@@ -343,9 +343,9 @@ async def test_SearchThread_work(search_thread):
     with patch.multiple(search_thread, **mock_methods):
         await search_thread.work()
         assert mocks.mock_calls == [
-            call._delay(),
             call._results_callback(()),
             call._searching_callback(True),
+            call._delay(),
             call._parse_query('The Foo year:2002'),
             call._search_coro('The Foo', year='2002'),
             call._searching_callback(False),
@@ -367,9 +367,9 @@ async def test_SearchThread_work_handles_RequestError(search_thread):
     with patch.multiple(search_thread, **mock_methods):
         await search_thread.work()
         assert mocks.mock_calls == [
-            call._delay(),
             call._results_callback(()),
             call._searching_callback(True),
+            call._delay(),
             call._parse_query('The Foo year:2002'),
             call._search_coro('The Foo', year='2002'),
             call._error_callback(errors.RequestError('No')),
@@ -398,6 +398,27 @@ def test_SearchThread_parse_query(query, exp_query, exp_kwargs):
     args, kwargs = search._SearchThread._parse_query(query)
     assert args == exp_query
     assert kwargs == exp_kwargs
+
+
+@patch('upsies.jobs.search.time_monotonic')
+@patch('asyncio.sleep')
+def test_SearchThread_delay_sleeps(sleep_mock, monotonic_mock, search_thread):
+    search_thread._min_seconds_between_searches = 5
+    search_thread._previous_search_time = 1000
+    monotonic_mock.side_effect = (1003, 1003.001)
+    asyncio.get_event_loop().run_until_complete(search_thread._delay())
+    assert sleep_mock.call_args_list == [call(2)]
+    assert search_thread._previous_search_time == 1003.001
+
+@patch('upsies.jobs.search.time_monotonic')
+@patch('asyncio.sleep')
+def test_SearchThread_delay_does_not_sleep(sleep_mock, monotonic_mock, search_thread):
+    search_thread._min_seconds_between_searches = 5
+    search_thread._previous_search_time = 1000
+    monotonic_mock.side_effect = (1006, 1006.001)
+    asyncio.get_event_loop().run_until_complete(search_thread._delay())
+    assert sleep_mock.call_args_list == []
+    assert search_thread._previous_search_time == 1006.001
 
 
 @pytest.fixture

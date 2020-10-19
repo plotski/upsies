@@ -1,6 +1,7 @@
 import asyncio
 import collections
 import re
+from time import monotonic as time_monotonic
 
 from .. import errors
 from ..tools import dbs
@@ -150,7 +151,7 @@ class _SearchThread(daemon.DaemonThread):
         self._results_callback = results_callback
         self._searching_callback = searching_callback
         self._error_callback = error_callback
-        self._first_search = True
+        self._previous_search_time = 0
         self.query = query
 
     @property
@@ -178,9 +179,9 @@ class _SearchThread(daemon.DaemonThread):
 
     async def work(self):
         # Wait for the user to stop typing
-        await self._delay()
         self._results_callback(())
         self._searching_callback(True)
+        await self._delay()
         title, kwargs = self._parse_query(self.query)
         results = ()
         try:
@@ -225,17 +226,15 @@ class _SearchThread(daemon.DaemonThread):
 
         return ' '.join(query_parts), kwargs
 
-    _seconds_between_searches = 1
+    _min_seconds_between_searches = 1
 
     async def _delay(self):
-        # Do not delay if this is the first search
-        if self._first_search:
-            self._first_search = False
-        else:
-            try:
-                await asyncio.sleep(self._seconds_between_searches)
-            except asyncio.CancelledError:
-                raise
+        cur_time = time_monotonic()
+        time_since_prev_search = cur_time - self._previous_search_time
+        if time_since_prev_search <= self._min_seconds_between_searches:
+            remaining_delay = self._min_seconds_between_searches - time_since_prev_search
+            await asyncio.sleep(remaining_delay)
+        self._previous_search_time = time_monotonic()
 
 
 class _UpdateInfoThread(daemon.DaemonThread):
