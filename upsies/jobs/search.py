@@ -99,6 +99,7 @@ class SearchDbJob(JobBase):
 
     def search(self, query):
         if not self.is_finished:
+            self._query = str(query)
             self._search_thread.search(query)
 
     def on_searching_status(self, callback):

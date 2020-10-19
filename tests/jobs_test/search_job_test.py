@@ -209,6 +209,16 @@ def test_search_after_finished(job):
     job.search('foo')
     assert job._search_thread.search.call_args_list == []
 
+def test_search_updates_query_property(job):
+    job.execute()
+    job.search('Foo')
+    assert job.query == 'Foo'
+    job.search('BAR')
+    assert job.query == 'BAR'
+    job.finish()
+    job.search('baZ')
+    assert job.query == 'BAR'
+
 
 def test_searching_status(job):
     cb = Mock()
