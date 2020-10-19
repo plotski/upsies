@@ -17,10 +17,9 @@ class SearchDbJobWidget(JobWidgetBase):
         right_column_width = 40
         self._widgets = {
             'id' : widgets.TextField(width=15),
-            'title' : widgets.InputField(
+            'query' : widgets.InputField(
                 text=self.job.query,
-                on_changed=self.handle_title_changed,
-                on_accepted=self.handle_title_selected,
+                on_accepted=self.handle_query,
             ),
             'search_results' : _SearchResults(width=50),
             'summary' : widgets.TextField(
@@ -57,15 +56,16 @@ class SearchDbJobWidget(JobWidgetBase):
         self.job.on_searching_status(self.handle_searching_status)
         self.job.on_info_updated(self.handle_info_updated)
 
-    def handle_title_changed(self, buffer):
-        self.job.search(buffer.text)
-
-    def handle_title_selected(self, buffer):
-        selected = self._widgets['search_results'].focused_result
-        if selected is not None:
-            self.job.id_selected(selected.id)
+    def handle_query(self, buffer):
+        query = self._widgets['query'].text
+        if query != self.job.query:
+            self.job.search(query)
         else:
-            self.job.id_selected()
+            selected = self._widgets['search_results'].focused_result
+            if selected is not None:
+                self.job.id_selected(selected.id)
+            else:
+                self.job.id_selected()
 
     def handle_searching_status(self, is_searching):
         self._widgets['search_results'].is_searching = is_searching
@@ -82,7 +82,7 @@ class SearchDbJobWidget(JobWidgetBase):
     def runtime_widget(self):
         layout = [
             VSplit([
-                self._widgets['title'],
+                self._widgets['query'],
                 widgets.hspacer,
                 widgets.HLabel(
                     label='ID',
