@@ -140,6 +140,7 @@ class SearchDbJobWidget(JobWidgetBase):
             if prev_result != self._widgets['search_results'].focused_result:
                 self.job.result_focused(self._widgets['search_results'].focused_result)
 
+        # Alt-Enter
         @kb.add('escape', 'enter')
         def _(event):
             url = self._widgets['search_results'].focused_result.url
