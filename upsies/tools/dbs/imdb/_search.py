@@ -120,13 +120,13 @@ def _find_year(soup):
         year = soup.find(class_='lister-item-year').string or ''
     except AttributeError:
         return ''
-    # Year may be preceded with "(I[II...])".
-    year = re.sub(r'\(I+\)\s*', '', year)
+    # Year may be preceded by roman number
+    year = re.sub(r'\([IVXLCDM]+\)\s*', '', year)
     # Remove parentheses
     year = year.strip('()')
     # Possible formats:
     # - YYYY
-    # - YYYY–YYYY  ("–" is NOT "-", i.e. "\u2D")
+    # - YYYY–YYYY  ("–" is NOT U+002D / HYPHEN-MINUS but U+2013 / EN DASH)
     # - YYYY–
     try:
         return str(int(year[:4]))

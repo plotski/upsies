@@ -27,6 +27,7 @@ async def test_title_original_english(id, english, original, store_response):
     assert await imdb.title_english(id) == english
     assert await imdb.title_original(id) == original
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     argnames=('id', 'exp_type'),
     argvalues=(
@@ -37,11 +38,11 @@ async def test_title_original_english(id, english, original, store_response):
         ('tt5440238', 'episode'),  # "tvEpisode"
     ),
 )
-@pytest.mark.asyncio
 async def test_type(id, exp_type, store_response):
     assert await imdb.type(id) == exp_type
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     argnames=('id', 'exp_country'),
     argvalues=(
@@ -50,6 +51,19 @@ async def test_type(id, exp_type, store_response):
         ('tt3286052', 'Canada'),         # February
     ),
 )
-@pytest.mark.asyncio
 async def test_country(id, exp_country, store_response):
     assert await imdb.country(id) == exp_country
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    argnames=('query', 'kwargs', 'exp_year'),
+    argvalues=(
+        ('The Gift', {'type':'movie', 'year':'2015'}, '2015'),
+    ),
+    ids=lambda value: str(value),
+)
+async def test_search_year(query, kwargs, exp_year, store_response):
+    results = await imdb.search(query, **kwargs)
+    for result in results:
+        assert result.year == exp_year, result
