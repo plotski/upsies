@@ -84,22 +84,23 @@ def test_to_cache_can_write_cache_file(open_mock):
     assert filehandle.write.call_args_list == [call('data')]
 
 
-def _set_request_response(request_mock, text=None, json=None, side_effect=None):
+def _set_request_response(cm_mock, text=None, json=None, side_effect=None):
+    response = cm_mock.return_value.__aenter__.return_value
     if side_effect:
-        request_mock.return_value.__aenter__.return_value.text.side_effect = side_effect
-        request_mock.return_value.__aenter__.return_value.json.side_effect = side_effect
+        response.text.side_effect = side_effect
+        response.json.side_effect = side_effect
     else:
-        request_mock.return_value.__aenter__.return_value.text.return_value = text
-        request_mock.return_value.__aenter__.return_value.json.return_value = json
+        response.text.return_value = text
+        response.json.return_value = json
 
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 def test_request_without_params(from_cache_mock, to_cache_mock, method):
-    with patch(f'aiohttp.ClientSession.{method.lower()}') as request_mock:
-        _set_request_response(request_mock, text='response')
+    with patch(f'aiohttp.ClientSession.{method.lower()}') as cm_mock:
+        _set_request_response(cm_mock, text='response')
         assert run_async(http._request(method, 'http://localhost:123/foo')) == 'response'
-        assert request_mock.call_args_list == [call('http://localhost:123/foo', params={})]
+        assert cm_mock.call_args_list == [call('http://localhost:123/foo', params={})]
         assert from_cache_mock.call_args_list == []
         assert to_cache_mock.call_args_list == []
 
