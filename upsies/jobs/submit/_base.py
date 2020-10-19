@@ -55,8 +55,8 @@ class SubmitJobBase(JobBase, abc.ABC):
 
     def initialize(self, *, tracker_config, jobs_before_upload, jobs_after_upload):
         self._tracker_config = tracker_config
-        self._jobs_before_upload = [j for j in jobs_before_upload if j]
-        self._jobs_after_upload = [j for j in jobs_after_upload if j]
+        self._jobs_before_upload = tuple(j for j in jobs_before_upload if j)
+        self._jobs_after_upload = tuple(j for j in jobs_after_upload if j)
         self._metadata = {}
         self._callbacks = {
             self.signal.logging_in: [],
