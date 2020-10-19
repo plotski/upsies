@@ -56,8 +56,11 @@ class search_db(CommandBase):
     """
     Search online database like IMDb to get an ID
 
-    In the search form, the focused search result can be opened in the default
-    web browser by pressing Alt-Enter.
+    Pressing Enter searches for the current query. Pressing Enter again without
+    changing the query selects the focused search result.
+
+    The focused search result can be opened in the default web browser by
+    pressing Alt-Enter.
     """
     @cache.property
     def jobs(self):
