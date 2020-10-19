@@ -78,7 +78,7 @@ class SubmitJobBase(JobBase, abc.ABC):
 
     @property
     def tracker_config(self):
-        """Tracker configuration that was passed as a keyword argument"""
+        """Tracker configuration that was passed as keyword argument of same name"""
         return self._tracker_config
 
     @abc.abstractmethod
