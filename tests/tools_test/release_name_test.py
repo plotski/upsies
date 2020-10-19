@@ -1,4 +1,4 @@
-import sys
+import asyncio
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -16,6 +16,10 @@ class AsyncMock(Mock):
 
     def __await__(self):
         return self().__await__()
+
+
+def run_async(awaitable):
+    return asyncio.get_event_loop().run_until_complete(awaitable)
 
 
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
@@ -563,13 +567,8 @@ def test_group_setter(guessit_mock):
     assert rn.group == '123'
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 8),
-    reason='Python < 3.8 refuses to mock with pytest.mark.asyncio',
-)
 @patch('upsies.tools.dbs.imdb')
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     argnames='guessit_type, imdb_type, exp_type',
     argvalues=(
@@ -585,7 +584,7 @@ def test_group_setter(guessit_mock):
         ('episode', 'episode', 'episode'),
     ),
 )
-async def test_update_attributes(guessit_mock, imdb_mock, guessit_type, imdb_type, exp_type):
+def test_update_attributes(guessit_mock, imdb_mock, guessit_type, imdb_type, exp_type):
     id_mock = '12345'
     info_mock = {
         'type': imdb_type,
@@ -597,7 +596,7 @@ async def test_update_attributes(guessit_mock, imdb_mock, guessit_type, imdb_typ
     guessit_mock.return_value = {'type': guessit_type}
     rn = ReleaseName('path/to/something')
     assert rn.type == guessit_type
-    await rn._update_attributes(id_mock)
+    run_async(rn._update_attributes(id_mock))
     assert rn.title == 'Le Foo'
     assert rn.title_aka == 'The Foo'
     assert rn.year == '2010'
@@ -610,13 +609,8 @@ async def test_update_attributes(guessit_mock, imdb_mock, guessit_type, imdb_typ
 _unique_titles = (Mock(title='The Foo'), Mock(title='The Bar'))
 _same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 8),
-    reason='Python < 3.8 refuses to mock with pytest.mark.asyncio',
-)
 @patch('upsies.tools.dbs.imdb')
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     argnames='type, results, exp_year_required',
     argvalues=(
@@ -628,10 +622,10 @@ _same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
         ('episode', _same_titles, True),
     ),
 )
-async def test_update_year_required(guessit_mock, imdb_mock, type, results, exp_year_required):
+def test_update_year_required(guessit_mock, imdb_mock, type, results, exp_year_required):
     imdb_mock.search = AsyncMock(return_value=results)
     guessit_mock.return_value = {'type': type, 'title': 'The Foo'}
     rn = ReleaseName('path/to/something')
     assert rn.year_required is False
-    await rn._update_year_required()
+    run_async(rn._update_year_required())
     assert rn.year_required is exp_year_required

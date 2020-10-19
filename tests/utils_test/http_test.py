@@ -1,6 +1,5 @@
 import asyncio
 import itertools
-import sys
 from unittest.mock import Mock, call, patch
 
 import aiohttp
@@ -10,6 +9,10 @@ import pytest
 
 from upsies import errors
 from upsies.utils import http
+
+
+def run_async(awaitable):
+    return asyncio.get_event_loop().run_until_complete(awaitable)
 
 
 @pytest.mark.asyncio
@@ -81,11 +84,6 @@ def test_to_cache_can_write_cache_file(open_mock):
     assert filehandle.write.call_args_list == [call('data')]
 
 
-needs_python38 = pytest.mark.skipif(
-    sys.version_info < (3, 8),
-    reason='Requires AsyncMock from Python 3.8',
-)
-
 def _set_request_response(request_mock, text=None, json=None, side_effect=None):
     if side_effect:
         request_mock.return_value.__aenter__.return_value.text.side_effect = side_effect
@@ -94,39 +92,33 @@ def _set_request_response(request_mock, text=None, json=None, side_effect=None):
         request_mock.return_value.__aenter__.return_value.text.return_value = text
         request_mock.return_value.__aenter__.return_value.json.return_value = json
 
-@needs_python38
-@pytest.mark.asyncio
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
-async def test_request_without_params(from_cache_mock, to_cache_mock, method):
+def test_request_without_params(from_cache_mock, to_cache_mock, method):
     with patch(f'aiohttp.ClientSession.{method.lower()}') as request_mock:
         _set_request_response(request_mock, text='response')
-        assert await http._request(method, 'http://localhost:123/foo') == 'response'
+        assert run_async(http._request(method, 'http://localhost:123/foo')) == 'response'
         assert request_mock.call_args_list == [call('http://localhost:123/foo', params={})]
         assert from_cache_mock.call_args_list == []
         assert to_cache_mock.call_args_list == []
 
-@needs_python38
-@pytest.mark.asyncio
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
-async def test_request_with_params(from_cache_mock, to_cache_mock, method):
+def test_request_with_params(from_cache_mock, to_cache_mock, method):
     with patch(f'aiohttp.ClientSession.{method.lower()}') as request_mock:
         _set_request_response(request_mock, text='response')
-        assert await http._request(method, 'http://localhost:123/foo', {'foo': 'bar'}) == 'response'
+        assert run_async(http._request(method, 'http://localhost:123/foo', {'foo': 'bar'})) == 'response'
         assert request_mock.call_args_list == [call('http://localhost:123/foo',
                                                     params={'foo': 'bar'})]
         assert from_cache_mock.call_args_list == []
         assert to_cache_mock.call_args_list == []
 
-@needs_python38
-@pytest.mark.asyncio
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
-async def test_request_handles_ClientResponseError(from_cache_mock, to_cache_mock, method):
+def test_request_handles_ClientResponseError(from_cache_mock, to_cache_mock, method):
     with patch(f'aiohttp.ClientSession.{method.lower()}') as request_mock:
         _set_request_response(request_mock, side_effect=aiohttp.ClientResponseError(
             request_info=None,
@@ -134,62 +126,54 @@ async def test_request_handles_ClientResponseError(from_cache_mock, to_cache_moc
             message='No response',
         ))
         with pytest.raises(errors.RequestError, match=r'^http://localhost:123/foo: No response$'):
-            await http._request(method, 'http://localhost:123/foo')
+            run_async(http._request(method, 'http://localhost:123/foo'))
         assert request_mock.call_args_list == [call('http://localhost:123/foo', params={})]
 
-@needs_python38
-@pytest.mark.asyncio
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
-async def test_request_handles_ClientConnectionError(from_cache_mock, to_cache_mock, method):
+def test_request_handles_ClientConnectionError(from_cache_mock, to_cache_mock, method):
     with patch(f'aiohttp.ClientSession.{method.lower()}') as request_mock:
         _set_request_response(request_mock, side_effect=aiohttp.ClientConnectionError('foo'))
         with pytest.raises(errors.RequestError, match=r'^http://localhost:123/foo: foo$'):
-            await http._request(method, 'http://localhost:123/foo')
+            run_async(http._request(method, 'http://localhost:123/foo'))
         assert request_mock.call_args_list == [call('http://localhost:123/foo', params={})]
 
-@needs_python38
-@pytest.mark.asyncio
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
-async def test_request_handles_ClientError(from_cache_mock, to_cache_mock, method):
+def test_request_handles_ClientError(from_cache_mock, to_cache_mock, method):
     with patch(f'aiohttp.ClientSession.{method.lower()}') as request_mock:
         _set_request_response(request_mock, side_effect=aiohttp.ClientError('Something'))
         with pytest.raises(errors.RequestError, match=r'^http://localhost:123/foo: Something$'):
-            await http._request(method, 'http://localhost:123/foo')
+            run_async(http._request(method, 'http://localhost:123/foo'))
         assert request_mock.call_args_list == [call('http://localhost:123/foo', params={})]
 
-@needs_python38
-@pytest.mark.asyncio
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @patch('upsies.utils.http._cache_file')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
-async def test_request_caches_response(cache_file_mock, from_cache_mock, to_cache_mock, method):
+def test_request_caches_response(cache_file_mock, from_cache_mock, to_cache_mock, method):
     with patch(f'aiohttp.ClientSession.{method.lower()}') as request_mock:
         cache_file_mock.return_value = '/path/to/cachefile'
         from_cache_mock.return_value = None
         _set_request_response(request_mock, text='response')
-        assert await http._request(method, 'http://localhost:123/foo', {'foo': 'bar'}, cache=True) == 'response'
+        assert run_async(http._request(method, 'http://localhost:123/foo', {'foo': 'bar'}, cache=True)) == 'response'
         assert request_mock.call_args_list == [call('http://localhost:123/foo',
                                                     params={'foo': 'bar'})]
         assert from_cache_mock.call_args_list == [call('/path/to/cachefile')]
         assert to_cache_mock.call_args_list == [call('/path/to/cachefile', 'response')]
 
-@needs_python38
-@pytest.mark.asyncio
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @patch('upsies.utils.http._cache_file')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
-async def test_request_returns_cached_response(cache_file_mock, from_cache_mock, to_cache_mock, method):
+def test_request_returns_cached_response(cache_file_mock, from_cache_mock, to_cache_mock, method):
     with patch(f'aiohttp.ClientSession.{method.lower()}') as request_mock:
         cache_file_mock.return_value = '/path/to/cachefile'
         from_cache_mock.return_value = 'response'
         _set_request_response(request_mock, text='response')
-        assert await http._request(method, 'http://localhost:123/foo', {'foo': 'bar'}, cache=True) == 'response'
+        assert run_async(http._request(method, 'http://localhost:123/foo', {'foo': 'bar'}, cache=True)) == 'response'
         assert request_mock.call_args_list == []
         assert from_cache_mock.call_args_list == [call('/path/to/cachefile')]
         assert to_cache_mock.call_args_list == []

@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 from unittest.mock import Mock, call, patch
@@ -21,6 +22,10 @@ class AsyncMock(Mock):
 
     def __await__(self):
         return self().__await__()
+
+
+def run_async(awaitable):
+    return asyncio.get_event_loop().run_until_complete(awaitable)
 
 
 def make_job(tmp_path, **kwargs):
@@ -93,9 +98,6 @@ async def test_login_succeeds(tmp_path):
     assert job._logout_url == 'http://foo/logout.php?asdfasdf'
     assert job._auth_key == '12345'
 
-@pytest.mark.skipif(sys.version_info < (3, 8),
-                    reason='Python < 3.8 refuses to patch in async tests')
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     argnames='method_name',
     argvalues=(
@@ -106,7 +108,7 @@ async def test_login_succeeds(tmp_path):
     ),
 )
 @patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
-async def test_login_dumps_html_if_handling_response_fails(dump_html_mock, method_name, tmp_path):
+def test_login_dumps_html_if_handling_response_fails(dump_html_mock, method_name, tmp_path):
     http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
     http_session_mock.post.return_value.text = AsyncMock(return_value='''
     <html>
@@ -118,7 +120,7 @@ async def test_login_dumps_html_if_handling_response_fails(dump_html_mock, metho
     with patch.object(job, method_name) as method_mock:
         method_mock.side_effect = Exception('Oooph!')
         with pytest.raises(Exception, match=r'^Oooph\!$'):
-            await job.login(http_session_mock)
+            run_async(job.login(http_session_mock))
     assert not job.logged_in
     assert http_session_mock.get.call_args_list == []
     assert http_session_mock.post.call_args_list == [call(
