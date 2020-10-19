@@ -1,5 +1,6 @@
 import asyncio
 import itertools
+import sys
 from unittest.mock import Mock, call, patch
 
 import aiohttp
@@ -93,6 +94,9 @@ def _set_request_response(cm_mock, text=None, json=None, side_effect=None):
         response.text.return_value = text
         response.json.return_value = json
 
+
+@pytest.mark.skipif(sys.version_info < (3, 8),
+                    reason='Python < 3.8 makes mocking async context managers too hard')
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
@@ -104,6 +108,8 @@ def test_request_without_params(from_cache_mock, to_cache_mock, method):
         assert from_cache_mock.call_args_list == []
         assert to_cache_mock.call_args_list == []
 
+@pytest.mark.skipif(sys.version_info < (3, 8),
+                    reason='Python < 3.8 makes mocking async context managers too hard')
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
@@ -116,6 +122,8 @@ def test_request_with_params(from_cache_mock, to_cache_mock, method):
         assert from_cache_mock.call_args_list == []
         assert to_cache_mock.call_args_list == []
 
+@pytest.mark.skipif(sys.version_info < (3, 8),
+                    reason='Python < 3.8 makes mocking async context managers too hard')
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
@@ -130,6 +138,8 @@ def test_request_handles_ClientResponseError(from_cache_mock, to_cache_mock, met
             run_async(http._request(method, 'http://localhost:123/foo'))
         assert request_mock.call_args_list == [call('http://localhost:123/foo', params={})]
 
+@pytest.mark.skipif(sys.version_info < (3, 8),
+                    reason='Python < 3.8 makes mocking async context managers too hard')
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
@@ -140,6 +150,8 @@ def test_request_handles_ClientConnectionError(from_cache_mock, to_cache_mock, m
             run_async(http._request(method, 'http://localhost:123/foo'))
         assert request_mock.call_args_list == [call('http://localhost:123/foo', params={})]
 
+@pytest.mark.skipif(sys.version_info < (3, 8),
+                    reason='Python < 3.8 makes mocking async context managers too hard')
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @pytest.mark.parametrize('method', ('GET', 'POST'))
@@ -150,6 +162,8 @@ def test_request_handles_ClientError(from_cache_mock, to_cache_mock, method):
             run_async(http._request(method, 'http://localhost:123/foo'))
         assert request_mock.call_args_list == [call('http://localhost:123/foo', params={})]
 
+@pytest.mark.skipif(sys.version_info < (3, 8),
+                    reason='Python < 3.8 makes mocking async context managers too hard')
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @patch('upsies.utils.http._cache_file')
@@ -165,6 +179,8 @@ def test_request_caches_response(cache_file_mock, from_cache_mock, to_cache_mock
         assert from_cache_mock.call_args_list == [call('/path/to/cachefile')]
         assert to_cache_mock.call_args_list == [call('/path/to/cachefile', 'response')]
 
+@pytest.mark.skipif(sys.version_info < (3, 8),
+                    reason='Python < 3.8 makes mocking async context managers too hard')
 @patch('upsies.utils.http._to_cache')
 @patch('upsies.utils.http._from_cache')
 @patch('upsies.utils.http._cache_file')
