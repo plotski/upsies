@@ -27,7 +27,8 @@ def make_job(tmp_path, **kwargs):
     kw = {
         'homedir': tmp_path / 'foo.project',
         'ignore_cache': False,
-        'required_jobs': (),
+        'jobs_before_upload': (),
+        'jobs_after_upload': (),
         'tracker_config': {
             'username': 'bunny',
             'password': 'hunter2',
