@@ -4,14 +4,12 @@ from prompt_toolkit.layout.containers import (DynamicContainer, HSplit, VSplit,
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.utils import get_cwidth
 
-from ....utils import LazyModule, cache
+from ....utils import browser, cache
 from .. import widgets
 from . import JobWidgetBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
-
-webbrowser = LazyModule(module='webbrowser', namespace=globals())
 
 
 class SearchDbJobWidget(JobWidgetBase):
@@ -142,10 +140,10 @@ class SearchDbJobWidget(JobWidgetBase):
             if prev_result != self._widgets['search_results'].focused_result:
                 self.job.result_focused(self._widgets['search_results'].focused_result)
 
-        @kb.add('c-o')
+        @kb.add('escape', 'enter')
         def _(event):
-            result = self._widgets['search_results'].focused_result
-            webbrowser.open_new_tab(result.url)
+            url = self._widgets['search_results'].focused_result.url
+            browser.open(url)
 
         return kb
 
