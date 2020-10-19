@@ -120,16 +120,16 @@ class SubmitJobBase(JobBase, abc.ABC):
 
     async def wait(self):
         if not self.is_finished:
-            _log.debug('Waiting for jobs before submission: %r', self._jobs_before_upload)
-            await asyncio.gather(*(job.wait() for job in self._jobs_before_upload))
+            _log.debug('Waiting for jobs before submission: %r', self.jobs_before_upload)
+            await asyncio.gather(*(job.wait() for job in self.jobs_before_upload))
 
-            names = [job.name for job in self._jobs_before_upload]
-            outputs = [job.output for job in self._jobs_before_upload]
+            names = [job.name for job in self.jobs_before_upload]
+            outputs = [job.output for job in self.jobs_before_upload]
             self._metadata.update(zip(names, outputs))
             await self._submit()
 
-            _log.debug('Waiting for jobs after submission: %r', self._jobs_after_upload)
-            await asyncio.gather(*(job.wait() for job in self._jobs_after_upload))
+            _log.debug('Waiting for jobs after submission: %r', self.jobs_after_upload)
+            await asyncio.gather(*(job.wait() for job in self.jobs_after_upload))
 
             self.finish()
         await super().wait()
