@@ -162,14 +162,16 @@ async def test_wait_can_be_called_multiple_times(tmp_path):
         for _ in range(3):
             await job.wait()
             assert job.is_finished
-        assert mocks.mock_calls == [
-            call.job1.wait(),
-            call.job2.wait(),
-            call.job3.wait(),
-            call._submit(),
-            call.job4.wait(),
-            call.job5.wait(),
-        ]
+        # The order of wait() calls within each job list is not predictable and
+        # not important. We can't use sets because call() objects are not
+        # hashable.
+        assert call.job1.wait() in mocks.method_calls[:3]
+        assert call.job2.wait() in mocks.method_calls[:3]
+        assert call.job3.wait() in mocks.method_calls[:3]
+        assert mocks.method_calls[3] == call._submit()
+        assert call.job4.wait() in mocks.method_calls[4:6]
+        assert call.job5.wait() in mocks.method_calls[4:6]
+        assert len(mocks.method_calls) == 6
 
 
 @pytest.mark.asyncio
