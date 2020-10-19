@@ -55,7 +55,8 @@ def make_TestSubmitJob_instance(tmp_path, **kwargs):
         'homedir': tmp_path / 'foo.mkv.project',
         'ignore_cache': False,
         'tracker_config': {},
-        'required_jobs': (),
+        'jobs_before_upload': (),
+        'jobs_after_upload': (),
     }
     kw.update(kwargs)
     return cls(**kw)
@@ -93,39 +94,55 @@ def test_dump_html_gets_non_string(tmp_path):
     assert open(filepath, 'r').read() == '123\n'
 
 
-@pytest.mark.parametrize('attribute', ('tracker_config', 'required_jobs'))
-def test_initialize_argument_as_properties(attribute, tmp_path):
-    mock_obj = object()
-    kwargs = {attribute: mock_obj}
-    job = make_TestSubmitJob_instance(tmp_path, **kwargs)
-    assert getattr(job, attribute) is mock_obj
+def test_tracker_config(tmp_path):
+    config = {'username': 'foo', 'password': 'bar'}
+    job = make_TestSubmitJob_instance(tmp_path, tracker_config=config)
+    assert job.tracker_config == config
 
-def test_properties(tmp_path):
+
+@pytest.mark.parametrize('arg', ('jobs_before_upload', 'jobs_after_upload'))
+def test_jobs_before_after_upload(arg, tmp_path):
+    jobs = (None, 'mock job 1', None, 'mock job 2', None)
+    kwargs = {arg: jobs}
+    job = make_TestSubmitJob_instance(tmp_path, **kwargs)
+    assert getattr(job, arg) == ('mock job 1', 'mock job 2')
+
+
+def test_tracker_name_property(tmp_path):
     job = make_TestSubmitJob_instance(tmp_path, tracker_name='ASDF')
     assert job.tracker_name == 'ASDF'
+
+
+def test_metadata_property(tmp_path):
+    job = make_TestSubmitJob_instance(tmp_path)
     assert job.metadata is job._metadata
     assert job.metadata == {}
 
 
 @pytest.mark.asyncio
-async def test_wait_submits_after_required_jobs_finished(tmp_path):
+async def test_wait_waits_for_jobs_in_correct_order(tmp_path):
     mocks = Mock()
     mocks.job1 = AsyncMock()
     mocks.job2 = AsyncMock()
+    mocks.job3 = AsyncMock()
+    mocks.job4 = AsyncMock()
     mocks._submit = AsyncMock()
     job = make_TestSubmitJob_instance(
         tmp_path,
-        required_jobs=(mocks.job1, mocks.job2),
+        jobs_before_upload=(mocks.job1, mocks.job2),
+        jobs_after_upload=(mocks.job3, mocks.job4),
     )
     assert not job.is_finished
     with patch.object(job, '_submit', mocks._submit):
         await job.wait()
-    # The order of jobX.wait() calls is not predictable.
-    # We can't use sets because call() objects are not hashable.
+    # The order of wait() calls within each job list is not predictable and not
+    # important. We can't use sets because call() objects are not hashable.
     assert call.job1.wait() in mocks.method_calls[:2]
     assert call.job2.wait() in mocks.method_calls[:2]
-    assert mocks.method_calls[-1] == call._submit()
-    assert len(mocks.method_calls) == 3
+    assert mocks.method_calls[2] == call._submit()
+    assert call.job3.wait() in mocks.method_calls[3:5]
+    assert call.job4.wait() in mocks.method_calls[3:5]
+    assert len(mocks.method_calls) == 5
     assert job.metadata == {
         mocks.job1.name: mocks.job1.output,
         mocks.job2.name: mocks.job2.output,
@@ -134,16 +151,25 @@ async def test_wait_submits_after_required_jobs_finished(tmp_path):
 
 @pytest.mark.asyncio
 async def test_wait_can_be_called_multiple_times(tmp_path):
+    mocks = AsyncMock()
     job = make_TestSubmitJob_instance(
         tmp_path,
-        required_jobs=(AsyncMock(), AsyncMock()),
+        jobs_before_upload=(mocks.job1, mocks.job2, mocks.job3),
+        jobs_after_upload=(mocks.job4, mocks.job5),
     )
     assert not job.is_finished
-    with patch.object(job, '_submit'):
+    with patch.object(job, '_submit', mocks._submit):
         for _ in range(3):
             await job.wait()
             assert job.is_finished
-        assert job._submit.call_args_list == [call()]
+        assert mocks.mock_calls == [
+            call.job1.wait(),
+            call.job2.wait(),
+            call.job3.wait(),
+            call._submit(),
+            call.job4.wait(),
+            call.job5.wait(),
+        ]
 
 
 @pytest.mark.asyncio
@@ -206,9 +232,7 @@ async def test_submit_handles_RequestError_from_abstract_method(method, tmp_path
         assert job.output == (str(job.upload.return_value),)
     else:
         assert job.output == ()
-    assert len(job.errors) == 1
-    assert str(job.errors[0]) == 'No connection'
-    assert isinstance(job.errors[0], errors.RequestError)
+    assert job.errors == (errors.RequestError('No connection'),)
 
 @pytest.mark.asyncio
 async def test_submit_calls_methods_and_callbacks_in_correct_order(tmp_path):
@@ -222,7 +246,6 @@ async def test_submit_calls_methods_and_callbacks_in_correct_order(tmp_path):
         login=mocks.login,
         logout=mocks.logout,
         upload=mocks.upload,
-
     )
     job._metadata = {'create-torrent': 'file.torrent'}
 
