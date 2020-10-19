@@ -108,6 +108,16 @@ class SubmitJobBase(JobBase, abc.ABC):
         """
         return self._metadata
 
+    @property
+    def jobs_before_upload(self):
+        """Jobs that must finish before :meth:`upload` can be called"""
+        return self._jobs_before_upload
+
+    @property
+    def jobs_after_upload(self):
+        """Jobs to call after :meth:`upload` finished"""
+        return self._jobs_after_upload
+
     async def wait(self):
         if not self.is_finished:
             _log.debug('Waiting for jobs before submission: %r', self._jobs_before_upload)
