@@ -405,7 +405,7 @@
               
                 <li class="">
                   <a id="keyword" href="/search/keyword?query=Star Wars" class="search_tab " title="Keywords" alt="Keywords">Keywords</a>
-                    <span>1</span>
+                    <span>0</span>
                 </li>
               
                 <li class="">
@@ -461,41 +461,6 @@
   
 </div>
     
-      <div id="card_tv_5ae209c692514124c4012592" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5ae209c692514124c4012592" data-media-type="tv" data-media-adult="false" class="result" href="/tv/79093">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/xul6SG8rar3wkHPY8YusUtxcdlZ.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/xul6SG8rar3wkHPY8YusUtxcdlZ.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/xul6SG8rar3wkHPY8YusUtxcdlZ.jpg 2x" alt="Star Wars Resistance">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5ae209c692514124c4012592" data-media-type="tv" data-media-adult="false" class="result" href="/tv/79093"><h2>Star Wars Resistance</h2></a>
-
-          
-            <span class="release_date">October  7, 2018</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Kazuda Xiono, a young pilot for the Resistance, is tasked with a top secret mission to investigate the First Order, a growing threat in the galaxy.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
       <div id="card_tv_52575d9719c29531db1a9b9f" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -524,6 +489,41 @@
 
       <div class="overview">
         <p>Yoda, Obi-Wan Kenobi, Anakin Skywalker, Mace Windu and other Jedi Knights lead the Grand Army of the Republic against the droid army of the Separatists.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5ae209c692514124c4012592" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5ae209c692514124c4012592" data-media-type="tv" data-media-adult="false" class="result" href="/tv/79093">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/xul6SG8rar3wkHPY8YusUtxcdlZ.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/xul6SG8rar3wkHPY8YusUtxcdlZ.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/xul6SG8rar3wkHPY8YusUtxcdlZ.jpg 2x" alt="Star Wars Resistance">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="5ae209c692514124c4012592" data-media-type="tv" data-media-adult="false" class="result" href="/tv/79093"><h2>Star Wars Resistance</h2></a>
+
+          
+            <span class="release_date">October  7, 2018</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Kazuda Xiono, a young pilot for the Resistance, is tasked with a top secret mission to investigate the First Order, a growing threat in the galaxy.</p>
       </div>
     </div>
   </div>
@@ -566,41 +566,6 @@
   
 </div>
     
-      <div id="card_tv_58fd9413925141640b02bf07" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 2x" alt="Star Wars: Forces of Destiny">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412"><h2>Star Wars: Forces of Destiny</h2></a>
-
-          
-            <span class="release_date">July  3, 2017</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>An animated micro-series starring Rey, Jyn Erso, Princess Leia, Ahsoka Tano, and more. Small moments and everyday decisions shape a larger heroic saga.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
       <div id="card_tv_52532fb319c2957940007605" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -629,6 +594,41 @@
 
       <div class="overview">
         <p>Star Wars: Droids, also known as Droids: The Adventures of R2-D2 and C-3PO, and 2004 re-released on DVD as Star Wars Animated Adventures: Droids, is an animated television series that features the exploits of R2-D2 and C-3PO, the droids who have appeared in all six Star Wars films. The series takes place between the events depicted in Star Wars Episode III: Revenge of the Sith and Star Wars Episode IV: A New Hope.</p><p></p><p>Over the course of the series, the droids team up with four different sets of masters. The series is divided up into three cycles: at the beginning of each, the droids usually run into their new masters in an accidental way, and at the end of each cycle, they usually are forced to leave their masters for one reason or another. The Great Heep, a television special following the series, served as a prequel to the third Mungo Baobab cycle.</p><p></p><p>The series' opening theme, "Trouble Again," was performed by Stewart Copeland of the Police and written by Copeland and Derek Holt.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_58fd9413925141640b02bf07" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 2x" alt="Star Wars: Forces of Destiny">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412"><h2>Star Wars: Forces of Destiny</h2></a>
+
+          
+            <span class="release_date">July  3, 2017</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>An animated micro-series starring Rey, Jyn Erso, Princess Leia, Ahsoka Tano, and more. Small moments and everyday decisions shape a larger heroic saga.</p>
       </div>
     </div>
   </div>
@@ -741,41 +741,6 @@
   
 </div>
     
-      <div id="card_tv_544267f8c3a3683e08001e30" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="544267f8c3a3683e08001e30" data-media-type="tv" data-media-adult="false" class="result" href="/tv/61513">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg 2x" alt="Lego Star Wars: The Yoda Chronicles">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="544267f8c3a3683e08001e30" data-media-type="tv" data-media-adult="false" class="result" href="/tv/61513"><h2>Lego Star Wars: The Yoda Chronicles</h2></a>
-
-          
-            <span class="release_date">May 29, 2013</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Yoda begins by training Padawans at the Jedi Temple Academy, but then he feels a disturbance in the Force and rushes off to fight the Dark Side.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
       <div id="card_tv_5c3246bfc3a36879cfa6edcf" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -811,14 +776,14 @@
   
 </div>
     
-      <div id="card_tv_5bd737c90e0a2622c3045a73" class="card v4 tight">
+      <div id="card_tv_544267f8c3a3683e08001e30" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558">
+        <a data-id="544267f8c3a3683e08001e30" data-media-type="tv" data-media-adult="false" class="result" href="/tv/61513">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 2x" alt="LEGO Star Wars: All-Stars">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg 2x" alt="Lego Star Wars: The Yoda Chronicles">
     
   
 
@@ -829,51 +794,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558"><h2>LEGO Star Wars: All-Stars</h2></a>
+          <a data-id="544267f8c3a3683e08001e30" data-media-type="tv" data-media-adult="false" class="result" href="/tv/61513"><h2>Lego Star Wars: The Yoda Chronicles</h2></a>
 
           
-            <span class="release_date">November 10, 2018</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>An adventure series that spans all Star Wars eras featuring LEGO versions of the fresh faces of the Star Wars galaxy alongside iconic heroes including Kylo Ren, R2-D2, Young Han, Chewie, Young Lando, BB-8 and General Leia.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_59a17a70c3a368480e0289e1" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="59a17a70c3a368480e0289e1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/73518">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/rwYL1fGB004owaTmprYmx8STKqq.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/rwYL1fGB004owaTmprYmx8STKqq.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/rwYL1fGB004owaTmprYmx8STKqq.jpg 2x" alt="Star Wars Rebels Recon">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="59a17a70c3a368480e0289e1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/73518"><h2>Star Wars Rebels Recon</h2></a>
-
-          
-            <span class="release_date">October  3, 2014</span>
+            <span class="release_date">May 29, 2013</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Webseries giving an inside look into the Star Wars Rebels TV Show</p>
+        <p>Yoda begins by training Padawans at the Jedi Temple Academy, but then he feels a disturbance in the Force and rushes off to fight the Dark Side.</p>
       </div>
     </div>
   </div>
@@ -916,15 +846,13 @@
   
 </div>
     
-      <div id="card_tv_5b676b8b92514168b6032255" class="card v4 tight">
+      <div id="card_tv_5be55e02c3a36810c60456ab" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5b676b8b92514168b6032255" data-media-type="tv" data-media-adult="false" class="result" href="/tv/81401">
+        <a data-id="5be55e02c3a36810c60456ab" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83867">
             
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg 2x" alt="Science of Star Wars">
-    
+    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
   
 
         </a>
@@ -934,16 +862,14 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5b676b8b92514168b6032255" data-media-type="tv" data-media-adult="false" class="result" href="/tv/81401"><h2>Science of Star Wars</h2></a>
+          <a data-id="5be55e02c3a36810c60456ab" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83867"><h2>Untitled Star Wars: Rogue One Prequel Series</h2></a>
 
-          
-            <span class="release_date">May 16, 2005</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>This documentary series takes a look at the science of "Star Wars" and shows how many of the technologies depicted in the films are becoming reality.</p>
+        <p>The adventures of rebel spy Cassian Andor during the formative years of the Rebellion prior to the events of Rogue One: A Star Wars Story. The series explores tales filled with espionage and daring missions to restore hope to a galaxy in the grip of a ruthless Empire.</p>
       </div>
     </div>
   </div>
@@ -986,13 +912,15 @@
   
 </div>
     
-      <div id="card_tv_52585207760ee3466106035a" class="card v4 tight">
+      <div id="card_tv_5bd737c90e0a2622c3045a73" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="52585207760ee3466106035a" data-media-type="tv" data-media-adult="false" class="result" href="/tv/17532">
+        <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558">
             
-    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 2x" alt="LEGO Star Wars: All-Stars">
+    
   
 
         </a>
@@ -1002,16 +930,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="52585207760ee3466106035a" data-media-type="tv" data-media-adult="false" class="result" href="/tv/17532"><h2>I&#39;ve Never Seen Star Wars</h2></a>
+          <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558"><h2>LEGO Star Wars: All-Stars</h2></a>
 
           
-            <span class="release_date">March 12, 2009</span>
+            <span class="release_date">November 10, 2018</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>I've Never Seen Star Wars is a comedy chat show broadcast on BBC Four and BBC Two, first broadcast on 12 March 2009. Created and produced by Bill Dare and hosted by Marcus Brigstocke for the 2009 episodes & Jo Brand for the 2011 special episode, each episode features a celebrity guest trying out new experiences. Based on the original radio version broadcast on BBC Radio 4, the title comes from the fact that Dare has never seen the Star Wars films. An eight part series was recorded in March 2009, with guests including John Humphrys, Esther Rantzen, Rory McGrath and Hugh Dennis.</p><p></p><p>A new host, Jo Brand, presented a December 2011 episode.</p>
+        <p>An adventure series that spans all Star Wars eras featuring LEGO versions of the fresh faces of the Star Wars galaxy alongside iconic heroes including Kylo Ren, R2-D2, Young Han, Chewie, Young Lando, BB-8 and General Leia.</p>
       </div>
     </div>
   </div>
@@ -1054,6 +982,109 @@
   
 </div>
     
+      <div id="card_tv_59a17a70c3a368480e0289e1" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="59a17a70c3a368480e0289e1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/73518">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/rwYL1fGB004owaTmprYmx8STKqq.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/rwYL1fGB004owaTmprYmx8STKqq.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/rwYL1fGB004owaTmprYmx8STKqq.jpg 2x" alt="Star Wars Rebels Recon">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="59a17a70c3a368480e0289e1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/73518"><h2>Star Wars Rebels Recon</h2></a>
+
+          
+            <span class="release_date">October  3, 2014</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Webseries giving an inside look into the Star Wars Rebels TV Show</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_52585207760ee3466106035a" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="52585207760ee3466106035a" data-media-type="tv" data-media-adult="false" class="result" href="/tv/17532">
+            
+    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="52585207760ee3466106035a" data-media-type="tv" data-media-adult="false" class="result" href="/tv/17532"><h2>I&#39;ve Never Seen Star Wars</h2></a>
+
+          
+            <span class="release_date">March 12, 2009</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>I've Never Seen Star Wars is a comedy chat show broadcast on BBC Four and BBC Two, first broadcast on 12 March 2009. Created and produced by Bill Dare and hosted by Marcus Brigstocke for the 2009 episodes & Jo Brand for the 2011 special episode, each episode features a celebrity guest trying out new experiences. Based on the original radio version broadcast on BBC Radio 4, the title comes from the fact that Dare has never seen the Star Wars films. An eight part series was recorded in March 2009, with guests including John Humphrys, Esther Rantzen, Rory McGrath and Hugh Dennis.</p><p></p><p>A new host, Jo Brand, presented a December 2011 episode.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5b676b8b92514168b6032255" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5b676b8b92514168b6032255" data-media-type="tv" data-media-adult="false" class="result" href="/tv/81401">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/bTaX5IDnbueFD0eHeUJVwUpyjcT.jpg 2x" alt="Science of Star Wars">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="5b676b8b92514168b6032255" data-media-type="tv" data-media-adult="false" class="result" href="/tv/81401"><h2>Science of Star Wars</h2></a>
+
+          
+            <span class="release_date">May 16, 2005</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>This documentary series takes a look at the science of "Star Wars" and shows how many of the technologies depicted in the films are becoming reality.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
       <div id="card_tv_5f0c92f55e12000035e6d244" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -1082,37 +1113,6 @@
 
       <div class="overview">
         <p>Follow the elite and experimental Clones of the Bad Batch as they find their way in a rapidly changing galaxy in the aftermath of the Clone Wars.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_52570c2919c295711400d867" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="52570c2919c295711400d867" data-media-type="tv" data-media-adult="false" class="result" href="/tv/1541">
-            
-    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="52570c2919c295711400d867" data-media-type="tv" data-media-adult="false" class="result" href="/tv/1541"><h2>Star Wars live-action TV series</h2></a>
-
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>The Star Wars live-action television series is a project which has been in fluctuating stages of development at Lucasfilm since 2005, when George Lucas announced plans for a television series set between the prequel trilogy and the original trilogy of Star Wars. Unlike the films, the story does not center on the Skywalker saga, but instead explores criminal and political power struggles in the aftermath of the fall of the Republic.</p><p></p><p>In 2011, Lucas stated that development has been delayed awaiting advances in technology and reduction in costs and Rick McCallum, the Star Wars and Red Tails producer then involved with the project, indicated that it would be at least another "three or four years".</p><p></p><p>Following The Walt Disney Company's acquisition of Lucasfilm, ABC Studios' president Paul Lee stated in early 2013 that the project was being reviewed for development.</p>
       </div>
     </div>
   </div>

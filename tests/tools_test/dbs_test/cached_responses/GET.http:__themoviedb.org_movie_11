@@ -74,6 +74,8 @@
     
       <link rel="alternate" hreflang="x-default" href="https://www.themoviedb.org/movie/11-star-wars">
   
+    <link rel="alternate" hreflang="ar-SA" href="https://www.themoviedb.org/movie/11-star-wars?language=ar-SA">
+  
     <link rel="alternate" hreflang="bg-BG" href="https://www.themoviedb.org/movie/11-star-wars?language=bg-BG">
   
     <link rel="alternate" hreflang="ca-ES" href="https://www.themoviedb.org/movie/11-star-wars?language=ca-ES">
@@ -429,7 +431,7 @@
 
       <ul class="media number_group">
         <li><a href="/movie/11-star-wars/images/backdrops">Backdrops <span class="count">55</span></a></li>
-        <li><a href="/movie/11-star-wars/images/posters">Posters <span class="count">141</span></a></li>
+        <li><a href="/movie/11-star-wars/images/posters">Posters <span class="count">142</span></a></li>
         <li>
           Videos
 
@@ -1027,7 +1029,7 @@
                   <li class="active" dir="auto"><a id="popular" class="media_panel" href="#">Most Popular</a></li>
                   <li dir="auto"><a id="videos" class="media_panel" href="#">Videos <span>3</span></a></li>
                   <li dir="auto"><a id="backdrops" class="media_panel" href="#">Backdrops <span>55</span></a></li>
-                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>141</span></a></li>
+                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>142</span></a></li>
                   <li class="view_all"></li>
                 </ul>
               </div>
