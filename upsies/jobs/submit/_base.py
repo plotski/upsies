@@ -14,6 +14,20 @@ bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 class SubmitJobBase(JobBase, abc.ABC):
+    """
+    Submit metadata to tracker
+
+    :param tracker_config: Object of any type that can be used for submission
+        via the :attr:`tracker_config` attribute
+
+    :param jobs_before_upload: Jobs that must finish before :meth:`upload` can
+        be called
+    :type jobs_before_upload: iterable of :class:`JobBase` objects
+    :param iterable jobs_after_upload: Jobs to call after :meth:`upload`
+        finished
+    :type jobs_after_upload: iterable of :class:`JobBase` objects
+    """
+
     name = 'submit'
     label = 'Submit'
     timeout = 180
