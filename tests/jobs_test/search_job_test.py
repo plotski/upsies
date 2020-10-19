@@ -401,7 +401,7 @@ def test_SearchThread_parse_query(query, exp_query, exp_kwargs):
 
 
 @patch('upsies.jobs.search.time_monotonic')
-@patch('asyncio.sleep')
+@patch('asyncio.sleep', new_callable=AsyncMock)
 def test_SearchThread_delay_sleeps(sleep_mock, monotonic_mock, search_thread):
     search_thread._min_seconds_between_searches = 5
     search_thread._previous_search_time = 1000
@@ -411,7 +411,7 @@ def test_SearchThread_delay_sleeps(sleep_mock, monotonic_mock, search_thread):
     assert search_thread._previous_search_time == 1003.001
 
 @patch('upsies.jobs.search.time_monotonic')
-@patch('asyncio.sleep')
+@patch('asyncio.sleep', new_callable=AsyncMock)
 def test_SearchThread_delay_does_not_sleep(sleep_mock, monotonic_mock, search_thread):
     search_thread._min_seconds_between_searches = 5
     search_thread._previous_search_time = 1000
