@@ -196,8 +196,6 @@ class JobBase(abc.ABC):
                 self._output.append(output_str)
                 for cb in self._output_callbacks:
                     cb(output_str)
-        else:
-            raise RuntimeError('send() called on finished job')
 
     def on_output(self, callback):
         """
