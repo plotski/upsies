@@ -71,8 +71,9 @@ class ScreenshotsJob(JobBase):
         return self._screenshots_created
 
     def handle_screenshot(self, path):
-        self._screenshots_created += 1
-        self.send(path)
+        if not self.is_finished:
+            self._screenshots_created += 1
+            self.send(path)
 
 
 def _screenshot_timestamps(video_file, timestamps, number):
