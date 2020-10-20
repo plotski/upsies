@@ -20,6 +20,7 @@ class UI:
         for j in self._jobs:
             assert isinstance(j, JobBase), j
         self._app = self._make_app()
+        self._loop = asyncio.get_event_loop()
 
     @property
     def _job_widgets(self):
@@ -66,7 +67,7 @@ class UI:
 
     def run(self):
         # Add JobWidgets in a background task
-        do_jobs_task = asyncio.get_event_loop().create_task(self._do_jobs())
+        do_jobs_task = self._loop.create_task(self._do_jobs())
         do_jobs_task.add_done_callback(self._exit_on_exception)
 
         # Block until all jobs are finished.
@@ -78,7 +79,7 @@ class UI:
         if not do_jobs_task.done():
             do_jobs_task.cancel()
             try:
-                asyncio.get_event_loop().run_until_complete(do_jobs_task)
+                self._loop.run_until_complete(do_jobs_task)
             except BaseException:
                 pass
 
