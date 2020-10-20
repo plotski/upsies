@@ -20,7 +20,6 @@ class UI:
         for j in self._jobs:
             assert isinstance(j, JobBase), j
         self._app = self._make_app()
-        self._exception = None
 
     @property
     def _job_widgets(self):
