@@ -17,5 +17,8 @@ class SubmitJob(SubmitJobBase):
         await asyncio.sleep(0.5)
 
     async def upload(self, http_session):
-        torrent_file = self.metadata.get('create-torrent', ('dummy.torrent',))[0]
-        return f'http://localhost/{os.path.basename(torrent_file)}'
+        # create-torrent output could be empty sequence or None
+        output = self.metadata.get('create-torrent')
+        if output:
+            torrent_file = output[0]
+            return f'http://localhost/{os.path.basename(torrent_file)}'
