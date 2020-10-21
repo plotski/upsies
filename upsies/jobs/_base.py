@@ -260,8 +260,9 @@ class JobBase(abc.ABC):
         """
         if not self.is_finished:
             import traceback
-            _log.debug(''.join(traceback.format_exception(
-                type(exception), exception, exception.__traceback__)))
+            tb = ''.join(traceback.format_exception(
+                type(exception), exception, exception.__traceback__))
+            _log.debug('Exception in %s: %s', self.name, tb)
             self._exception = exception
             self.finish()
         else:
