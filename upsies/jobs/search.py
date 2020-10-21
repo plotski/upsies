@@ -34,24 +34,12 @@ class SearchDbJob(JobBase):
     def query(self):
         return self._query
 
-    @staticmethod
-    def _make_query_from_path(content_path):
-        guess = guessit.guessit(content_path)
-        query = [guess['title']]
-        if guess.get('year'):
-            query.append('year:' + guess['year'])
-        if guess.get('type') == 'movie':
-            query.append('type:movie')
-        elif guess.get('type') in ('season', 'episode', 'series'):
-            query.append('type:series')
-        return ' '.join(query)
-
     def initialize(self, db, content_path):
         try:
             self._db = getattr(dbs, db)
         except AttributeError:
             raise ValueError(f'Invalid database name: {db}')
-        self._query = self._make_query_from_path(content_path)
+        self._query = dbs.Query.from_path(content_path)
         self._is_searching = False
         self._search_results_callbacks = []
         self._searching_status_callbacks = []
@@ -91,7 +79,7 @@ class SearchDbJob(JobBase):
 
     def search(self, query):
         if not self.is_finished:
-            self._query = str(query)
+            self._query = dbs.Query.from_string(query)
             self._searcher.search(self._query)
 
     def on_searching_status(self, callback):
@@ -142,19 +130,6 @@ class _Searcher:
         self._error_callback = error_callback
         self._previous_search_time = 0
         self._search_future = None
-        self._query = ''
-
-    @property
-    def query(self):
-        return self._query
-
-    @query.setter
-    def query(self, query):
-        # Normalize query:
-        #   - Case-insensitive
-        #   - Remove leading/trailing white space
-        #   - Deduplicate white space
-        self._query = ' '.join(str(query).casefold().strip().split())
 
     async def wait(self):
         if self._search_future:
@@ -164,61 +139,29 @@ class _Searcher:
         """
         Schedule new query
 
-        :param str query: Query to make; "year:YYYY", "type:series" and
-            "type:movie" are interpreted to reduce the number of search results
+        :param query: Query to make
+        :type query: :class:`~tools.dbs.Query`
         """
         if self._search_future:
             self._search_future.cancel()
-        self.query = query
-        self._search_future = asyncio.ensure_future(self._search())
+        self._search_future = asyncio.ensure_future(self._search(query))
 
-    async def _search(self):
+    async def _search(self, query):
         self._results_callback(())
         self._searching_callback(True)
         await self._delay()
-        title, kwargs = self._parse_query(self.query)
         results = ()
         try:
-            results = await self._search_coro(title, **kwargs)
+            results = await self._search_coro(
+                title=query.title,
+                year=query.year,
+                type=query.type,
+            )
         except errors.RequestError as e:
             self._error_callback(e)
         finally:
             self._searching_callback(False)
             self._results_callback(results)
-
-    _movie_types = ('movie', 'film')
-    _series_types = ('series', 'tv', 'show', 'episode', 'season')
-    _kwargs_regex = {
-        'year': r'year:(\d{4})',
-        'type': rf'type:({"|".join(_movie_types + _series_types)})',
-    }
-
-    @classmethod
-    def _parse_query(cls, query):
-
-        def get_kwarg(string):
-            for kw, regex in cls._kwargs_regex.items():
-                match = re.search(f'^{regex}$', part)
-                if match:
-                    value = match.group(1)
-                    if kw == 'type' and value in cls._movie_types:
-                        return kw, 'movie'
-                    elif kw == 'type' and value in cls._series_types:
-                        return kw, 'series'
-                    elif kw == 'year':
-                        return kw, value
-            return None, None
-
-        kwargs = {}
-        query_parts = []
-        for part in query.split():
-            kw, value = get_kwarg(part)
-            if (kw, value) != (None, None):
-                kwargs[kw] = value
-            else:
-                query_parts.append(part)
-
-        return ' '.join(query_parts), kwargs
 
     _min_seconds_between_searches = 1
 

@@ -4,6 +4,7 @@ from prompt_toolkit.layout.containers import (DynamicContainer, HSplit, VSplit,
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.utils import get_cwidth
 
+from ....tools import dbs
 from ....utils import browser, cache
 from .. import widgets
 from . import JobWidgetBase
@@ -18,7 +19,7 @@ class SearchDbJobWidget(JobWidgetBase):
         self._widgets = {
             'id' : widgets.TextField(width=15),
             'query' : widgets.InputField(
-                text=self.job.query,
+                text=str(self.job.query),
                 on_accepted=self.handle_query,
             ),
             'search_results' : _SearchResults(width=50),
@@ -57,10 +58,12 @@ class SearchDbJobWidget(JobWidgetBase):
         self.job.on_info_updated(self.handle_info_updated)
 
     def handle_query(self, buffer):
-        query = self._widgets['query'].text
-        if query != self.job.query:
-            self.job.search(query)
+        new_query = dbs.Query.from_string(self._widgets['query'].text)
+        if new_query != self.job.query:
+            self.job.search(new_query)
         else:
+            # The same query was accepted twice without changing it.
+            # Select focused search result.
             selected = self._widgets['search_results'].focused_result
             if selected is not None:
                 self.job.id_selected(selected.id)
