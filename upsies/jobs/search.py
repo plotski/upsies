@@ -57,10 +57,13 @@ class SearchDbJob(JobBase):
         self._searching_status_callbacks = []
         self._info_updated_callbacks = []
 
-        # Set self._update_info_thread before self._search_thread because the
-        # search thread will call self._update_info_thread.set_result() as soon
-        # as it gets results, potentially before _UpdateInfoThread() returns.
-        self._update_info_thread = _UpdateInfoThread(
+        self._searcher = _Searcher(
+            search_coro=self._db.search,
+            results_callback=self.handle_search_results,
+            searching_callback=self.handle_searching_status,
+            error_callback=self.error,
+        )
+        self._info_updater = _InfoUpdater(
             id=self._make_update_info_func('id'),
             summary=self._make_update_info_func('summary'),
             title_original=self._make_update_info_func('title_original'),
@@ -70,38 +73,26 @@ class SearchDbJob(JobBase):
             cast=self._make_update_info_func('cast'),
             country=self._make_update_info_func('country'),
         )
-        self._search_thread = _SearchThread(
-            query=self._query,
-            search_coro=self._db.search,
-            results_callback=self.handle_search_results,
-            error_callback=self.error,
-            searching_callback=self.handle_searching_status,
-        )
 
     def _make_update_info_func(self, key):
         return lambda value: self.update_info(key, value)
 
     def execute(self):
-        self._update_info_thread.start()
-        self._search_thread.start()
-
-    def finish(self):
-        self._update_info_thread.stop()
-        self._search_thread.stop()
-        super().finish()
+        # Start initial search() *after* callbacks have been registered by UI
+        self._searcher.search(self._query)
 
     async def wait(self):
-        # Raise any exceptions from the threads
+        # Raise any exceptions
         await asyncio.gather(
-            self._update_info_thread.join(),
-            self._search_thread.join(),
+            self._searcher.wait(),
+            self._info_updater.wait(),
         )
         await super().wait()
 
     def search(self, query):
         if not self.is_finished:
             self._query = str(query)
-            self._search_thread.search(query)
+            self._searcher.search(self._query)
 
     def on_searching_status(self, callback):
         self._searching_status_callbacks.append(callback)
@@ -120,9 +111,9 @@ class SearchDbJob(JobBase):
 
     def handle_search_results(self, results):
         if results:
-            self._update_info_thread.set_result(results[0])
+            self._info_updater.set_result(results[0])
         else:
-            self._update_info_thread.set_result(None)
+            self._info_updater.set_result(None)
         for cb in self._search_results_callbacks:
             cb(results)
 
@@ -134,7 +125,7 @@ class SearchDbJob(JobBase):
             cb(attr, value)
 
     def result_focused(self, result):
-        self._update_info_thread.set_result(result)
+        self._info_updater.set_result(result)
 
     def id_selected(self, id=None):
         if not self.is_searching:
@@ -143,20 +134,19 @@ class SearchDbJob(JobBase):
             self.finish()
 
 
-class _SearchThread(daemon.DaemonThread):
-    def __init__(self, search_coro, results_callback, error_callback, searching_callback,
-                 query=''):
-        super().__init__()
+class _Searcher:
+    def __init__(self, search_coro, results_callback, searching_callback, error_callback):
         self._search_coro = search_coro
         self._results_callback = results_callback
         self._searching_callback = searching_callback
         self._error_callback = error_callback
         self._previous_search_time = 0
-        self.query = query
+        self._search_future = None
+        self._query = ''
 
     @property
     def query(self):
-        return getattr(self, '_query', '')
+        return self._query
 
     @query.setter
     def query(self, query):
@@ -164,7 +154,11 @@ class _SearchThread(daemon.DaemonThread):
         #   - Case-insensitive
         #   - Remove leading/trailing white space
         #   - Deduplicate white space
-        self._query = ' '.join(query.casefold().strip().split())
+        self._query = ' '.join(str(query).casefold().strip().split())
+
+    async def wait(self):
+        if self._search_future:
+            await self._search_future
 
     def search(self, query):
         """
@@ -173,12 +167,12 @@ class _SearchThread(daemon.DaemonThread):
         :param str query: Query to make; "year:YYYY", "type:series" and
             "type:movie" are interpreted to reduce the number of search results
         """
+        if self._search_future:
+            self._search_future.cancel()
         self.query = query
-        self.cancel_work()
-        self.unblock()
+        self._search_future = asyncio.ensure_future(self._search())
 
-    async def work(self):
-        # Wait for the user to stop typing
+    async def _search(self):
         self._results_callback(())
         self._searching_callback(True)
         await self._delay()
@@ -237,7 +231,7 @@ class _SearchThread(daemon.DaemonThread):
         self._previous_search_time = time_monotonic()
 
 
-class _UpdateInfoThread(daemon.DaemonThread):
+class _InfoUpdater:
     def __init__(self, **targets):
         super().__init__()
         # `targets` maps names of SearchResult attributes to callbacks that get
@@ -248,11 +242,22 @@ class _UpdateInfoThread(daemon.DaemonThread):
         self._targets = targets
         # SearchResult instance or None
         self._result = None
+        self._update_future = None
+
+    async def wait(self):
+        if self._update_future:
+            await self._update_future
 
     def set_result(self, result):
+        if self._update_future:
+            self._update_future.cancel()
         self._result = result
-        self.cancel_work()
-        self.unblock()
+
+        if not self._result:
+            for callback in self._targets.values():
+                callback('')
+        else:
+            self._update_future = asyncio.ensure_future(self._update())
 
         # Update plain, non-callable values immediately
         if result is not None:
@@ -261,13 +266,9 @@ class _UpdateInfoThread(daemon.DaemonThread):
                 if not callable(value):
                     callback(self._value_as_string(value))
 
-    async def work(self):
-        if self._result is None:
-            for callback in self._targets.values():
-                callback('')
-        else:
-            tasks = self._make_update_tasks()
-            await asyncio.gather(*tasks)
+    async def _update(self):
+        tasks = self._make_update_tasks()
+        await asyncio.gather(*tasks)
 
     def _make_update_tasks(self):
         tasks = []
@@ -299,7 +300,7 @@ class _UpdateInfoThread(daemon.DaemonThread):
                 else:
                     self._cache[cache_key] = value
                     callback(value)
-        return self._loop.create_task(coro(cache_key, value_getter, callback))
+        return asyncio.ensure_future(coro(cache_key, value_getter, callback))
 
     @staticmethod
     def _value_as_string(value):
