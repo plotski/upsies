@@ -1,7 +1,108 @@
 import asyncio
+import re
+
+from ...utils import guessit
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+
+class Query:
+    """
+    """
+
+    def __init__(self, title, year=None, type=None):
+        self.title = str(title)
+        self.year = year if year is None else str(year)
+        self.type = type if type is None else str(type)
+        if self.type is not None and self.type not in self._types:
+            raise ValueError(f'Invalid type: {type}')
+        elif self.year is not None and not 1800 < int(self.year) < 2100:
+            raise ValueError(f'Invalid year: {self.year}')
+
+    _types = ('movie', 'series')
+    _movie_types = ('movie', 'film')
+    _series_types = ('series', 'tv', 'show', 'episode', 'season')
+    _kw_regex = {
+        'year': r'year:(\d{4})',
+        'type': rf'type:({"|".join(_movie_types + _series_types)})',
+    }
+
+    @classmethod
+    def from_string(cls, query):
+        # Normalize query:
+        #   - Case-insensitive
+        #   - Remove leading/trailing white space
+        #   - Deduplicate white space
+        query = ' '.join(str(query).strip().split())
+
+        def get_kwarg(string):
+            for kw, regex in cls._kw_regex.items():
+                match = re.search(f'^{regex}$', part)
+                if match:
+                    value = match.group(1)
+                    if kw == 'type' and value in cls._movie_types:
+                        return 'type', 'movie'
+                    elif kw == 'type' and value in cls._series_types:
+                        return 'type', 'series'
+                    elif kw == 'year':
+                        return 'year', value
+            return None, None
+
+        # Extract "key:value" pairs (e.g. "year:2015")
+        title = []
+        kwargs = {}
+        for part in query.split():
+            kw, value = get_kwarg(part)
+            if (kw, value) != (None, None):
+                kwargs[kw] = value
+            else:
+                title.append(part)
+
+        return cls(title=' '.join(title), **kwargs)
+
+    @classmethod
+    def from_path(cls, path):
+        guess = guessit.guessit(path)
+        kwargs = {'title': guess['title']}
+        if guess.get('year'):
+            kwargs['year'] = guess['year']
+        if guess.get('type').casefold() == 'movie':
+            kwargs['type'] = 'movie'
+        elif guess.get('type').casefold() in ('season', 'episode', 'series'):
+            kwargs['type'] = 'series'
+        return cls(**kwargs)
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            def normalize_title(t):
+                return ' '.join(t.casefold().strip().split())
+
+            return (
+                normalize_title(self.title) == normalize_title(other.title)
+                and self.year == other.year
+                and self.type == other.type
+            )
+        else:
+            return NotImplemented
+
+    def __str__(self):
+        parts = [self.title]
+        if self.year:
+            parts.append(f'year:{self.year}')
+        if self.type:
+            parts.append(f'type:{self.type}')
+        return ' '.join(parts)
+
+    def __repr__(self):
+        kwargs = ', '.join(
+            f'{k}={v!r}'
+            for k, v in (('title', self.title),
+                         ('year', self.year),
+                         ('type', self.type))
+            if v is not None
+        )
+        return f'{type(self).__name__}({kwargs})'
 
 
 async def info(id, *corofuncs):

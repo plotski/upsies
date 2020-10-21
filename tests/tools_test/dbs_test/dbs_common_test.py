@@ -5,6 +5,129 @@ import pytest
 from upsies.tools import dbs
 
 
+def test_Query_title():
+    with pytest.raises(TypeError):
+        dbs.Query()
+    assert dbs.Query('The Title').title == 'The Title'
+
+def test_Query_year():
+    assert dbs.Query('The Title', year='2000').year == '2000'
+    assert dbs.Query('The Title', year=2000).year == '2000'
+    with pytest.raises(ValueError, match=r'^Invalid year: 1000$'):
+        dbs.Query('The Title', year=1000)
+    with pytest.raises(ValueError, match=r'^Invalid year: 3000$'):
+        dbs.Query('The Title', year=3000)
+
+def test_Query_type():
+    assert dbs.Query('The Title', type='movie').type == 'movie'
+    assert dbs.Query('The Title', type='series').type == 'series'
+    with pytest.raises(ValueError, match=r'^Invalid type: foo$'):
+        dbs.Query('The Title', type='foo')
+
+@pytest.mark.parametrize(
+    argnames=('string', 'exp_query'),
+    argvalues=(
+        ('The Title', dbs.Query('The Title', type=None, year=None)),
+        ('The Title type:movie', dbs.Query('The Title', type='movie', year=None)),
+        ('The Title type:series', dbs.Query('The Title', type='series', year=None)),
+        ('The Title year:2000', dbs.Query('The Title', type=None, year='2000')),
+        ('The Title year:2003', dbs.Query('The Title', type=None, year='2003')),
+        ('The Title type:movie year:2000', dbs.Query('The Title', type='movie', year='2000')),
+        ('The Title type:series year:2003', dbs.Query('The Title', type='series', year='2003')),
+    ),
+)
+def test_Query_from_string(string, exp_query):
+    assert dbs.Query.from_string(string) == exp_query
+
+@pytest.mark.parametrize(
+    argnames=('string', 'exp_query'),
+    argvalues=(
+        ('The Title type:foo', dbs.Query('The Title type:foo', type=None, year=None)),
+        ('The Title year:bar', dbs.Query('The Title year:bar', type=None, year=None)),
+    ),
+)
+def test_Query_from_string_with_unknown_value(string, exp_query):
+    assert dbs.Query.from_string(string) == exp_query
+
+@pytest.mark.parametrize(
+    argnames=('path', 'exp_query'),
+    argvalues=(
+        ('path/to/The Title', dbs.Query('The Title', type='movie', year=None)),
+        ('path/to/The Title 2015', dbs.Query('The Title', type='movie', year='2015')),
+        ('path/to/The Title S04', dbs.Query('The Title', type='series', year=None)),
+        ('path/to/The Title 2015 S04', dbs.Query('The Title', type='series', year='2015')),
+    ),
+)
+def test_Query_from_path(path, exp_query):
+    assert dbs.Query.from_path(path) == exp_query
+
+@pytest.mark.parametrize(
+    argnames=('a', 'b'),
+    argvalues=(
+        (dbs.Query('The Title'), dbs.Query('The Title')),
+        (dbs.Query('The Title'), dbs.Query('the title')),
+        (dbs.Query('The Title'), dbs.Query('the title ')),
+        (dbs.Query('The Title'), dbs.Query(' the title')),
+        (dbs.Query('The Title'), dbs.Query(' the title ')),
+        (dbs.Query('The Title'), dbs.Query('the  title')),
+        (dbs.Query('The Title'), dbs.Query('the  title ')),
+        (dbs.Query('The Title'), dbs.Query(' the title')),
+        (dbs.Query('The Title', year='2000'), dbs.Query('The Title', year='2000')),
+        (dbs.Query('The Title', type='movie'), dbs.Query('The Title', type='movie')),
+        (dbs.Query('The Title', type='series'), dbs.Query('The Title', type='series')),
+        (dbs.Query('The Title', type='series', year=2000), dbs.Query('The Title', type='series', year=2000)),
+    ),
+    ids=lambda value: str(value),
+)
+def test_Query_equality(a, b):
+    assert a == b
+    assert b == a
+
+@pytest.mark.parametrize(
+    argnames=('a', 'b'),
+    argvalues=(
+        (dbs.Query('The Title'), dbs.Query('The Title 2')),
+        (dbs.Query('The Title', year='2000'), dbs.Query('The Title', year='2001')),
+        (dbs.Query('The Title', type='movie'), dbs.Query('The Title', type='series')),
+        (dbs.Query('The Title', type='series'), dbs.Query('The Title', type='movie')),
+        (dbs.Query('The Title', type='series', year=2000), dbs.Query('The Title', type='movie', year=2000)),
+        (dbs.Query('The Title', type='series', year=2000), dbs.Query('The Title', type='series', year=2001)),
+        (dbs.Query('The Title', type='series', year=2000), dbs.Query('The Title', type='movie', year=2001)),
+    ),
+    ids=lambda value: str(value),
+)
+def test_Query_inequality(a, b):
+    assert a != b
+    assert b != a
+
+@pytest.mark.parametrize(
+    argnames=('query', 'exp_string'),
+    argvalues=(
+        (dbs.Query('The Title', type=None, year=None), 'The Title'),
+        (dbs.Query('The Title', type='movie', year=None), 'The Title type:movie'),
+        (dbs.Query('The Title', type='series', year=None), 'The Title type:series'),
+        (dbs.Query('The Title', type='movie', year='2010'), 'The Title year:2010 type:movie'),
+    ),
+    ids=lambda value: str(value),
+)
+def test_Query_as_string(query, exp_string):
+    assert str(query) == exp_string
+
+
+@pytest.mark.parametrize(
+    argnames=('query', 'exp_repr'),
+    argvalues=(
+        (dbs.Query('The Title', type=None, year=None), "Query(title='The Title')"),
+        (dbs.Query('The Title', type='movie', year=None), "Query(title='The Title', type='movie')"),
+        (dbs.Query('The Title', type=None, year='1999'), "Query(title='The Title', year='1999')"),
+        (dbs.Query('The Title', type='series', year='1999'), "Query(title='The Title', year='1999', type='series')"),
+    ),
+    ids=lambda value: str(value),
+)
+def test_Query_as_repr(query, exp_repr):
+    assert repr(query) == exp_repr
+
+
 @pytest.mark.asyncio
 async def test_info_preserves_affiliation():
     async def foo(id):
