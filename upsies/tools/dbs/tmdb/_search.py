@@ -25,34 +25,29 @@ class TmdbSearchResult(_common.SearchResult):
         return functools.partial(_info.cast, self.id)
 
 
-async def search(title, type=None, year=None):
+async def search(query):
     """
     Search for TMDb ID
 
-    :param str title: Name of movie or series
-    :param str type: "movie" "series" or "episode"
-    :param year: Year of release
-    :type year: str or int
+    :param query: :class:`~tools.dbs.Query` instance
 
     :raise RequestError: if the search request fails
 
-    :return: Sequence of SearchResult objects
+    :return: Sequence of :class:`~tools.dbs.SearchResult~ objects
     """
-    title = title.strip()
-    _log.debug('Searching TMDb for %r, type=%r, year=%r', title, type, year)
-    if not title:
+    _log.debug('Searching TMDb for %s', query)
+    if not query.title:
         return ()
 
-    query = title
-    if year is not None:
-        query += f' y:{year}'
-    if type == 'movie':
+    params = {'query': query.title}
+    if query.year is not None:
+        params['query'] += f' y:{query.year}'
+    if query.type == 'movie':
         url = f'{_url_base}/search/movie'
-    elif type == 'series':
+    elif query.type == 'series':
         url = f'{_url_base}/search/tv'
     else:
         url = f'{_url_base}/search'
-    params = {'query': query}
 
     html = await http.get(url, params=params, cache=True)
     soup = bs4.BeautifulSoup(html, features='html.parser')

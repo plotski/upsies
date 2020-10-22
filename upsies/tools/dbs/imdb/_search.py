@@ -41,36 +41,28 @@ _title_types = {
 _title_types[None] = ','.join(_title_types.values())
 
 
-async def search(title, type=None, year=None):
+async def search(query):
     """
     Search for IMDb ID
 
-    :param str title: Name of movie or series
-    :param str type: "movie" "series" or "episode"
-    :param year: Year of release
-    :type year: str or int
+    :param query: :class:`~tools.dbs.Query` instance
 
     :raise RequestError: if the search request fails
 
-    :return: Sequence of SearchResult objects
+    :return: Sequence of :class:`~tools.dbs.SearchResult~ objects
     """
-    if type not in _title_types:
-        raise ValueError(f'Unknown type: {type}')
-
-    title = title.strip()
-    _log.debug('Searching IMDb for %r, type=%r, year=%r', title, type, year)
-    if not title:
+    _log.debug('Searching IMDb for %s', query)
+    if not query.title:
         return ()
 
     url = f'{_url_base}/search/title/'
     params = {
-        'title': title,
-        'title_type': _title_types[type],
+        'title': query.title,
+        'title_type': _title_types[query.type],
     }
-    _log.debug('params: %r', params)
 
-    if year is not None:
-        params['release_date'] = f'{year}-01-01,{year}-12-31'
+    if query.year is not None:
+        params['release_date'] = f'{query.year}-01-01,{query.year}-12-31'
 
     html = await http.get(url, params=params, cache=True)
     soup = bs4.BeautifulSoup(html, features='html.parser')
@@ -78,7 +70,6 @@ async def search(title, type=None, year=None):
     start = time.monotonic()
     items = soup.find_all('div', class_='lister-item-content')
     results = tuple(_make_result(item) for item in items)
-    _log.debug('Parsed %r search results in %.3fms', len(results), (time.monotonic() - start) * 1000)
     return results
 
 def _make_result(item):

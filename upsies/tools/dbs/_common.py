@@ -9,15 +9,25 @@ _log = logging.getLogger(__name__)
 
 class Query:
     """
+    Search query for databases like IMDb
+
+    :param str title: Name of the movie or TV series
+    :param str type: "movie", "series" or "episode"
+    :param year: Year of release
+    :type year: str or int
+
+    :raise ValueError: if an invalid argument is passed
     """
 
     def __init__(self, title, year=None, type=None):
         self.title = str(title)
-        self.year = year if year is None else str(year)
-        self.type = type if type is None else str(type)
+
+        self.type = type if type is None else str(type).lower()
         if self.type is not None and self.type not in self._types:
             raise ValueError(f'Invalid type: {type}')
-        elif self.year is not None and not 1800 < int(self.year) < 2100:
+
+        self.year = year if year is None else str(year)
+        if self.year is not None and not 1800 < int(self.year) < 2100:
             raise ValueError(f'Invalid year: {self.year}')
 
     _types = ('movie', 'series')

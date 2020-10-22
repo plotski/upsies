@@ -17,10 +17,13 @@ def test_Query_year():
         dbs.Query('The Title', year=1000)
     with pytest.raises(ValueError, match=r'^Invalid year: 3000$'):
         dbs.Query('The Title', year=3000)
+    with pytest.raises(ValueError, match=r'invalid literal for int\(\)'):
+        dbs.Query('The Title', year=2000.5)
 
 def test_Query_type():
     assert dbs.Query('The Title', type='movie').type == 'movie'
     assert dbs.Query('The Title', type='series').type == 'series'
+    assert dbs.Query('The Title', type='Series').type == 'series'
     with pytest.raises(ValueError, match=r'^Invalid type: foo$'):
         dbs.Query('The Title', type='foo')
 
@@ -217,28 +220,28 @@ all_dbs = movie_dbs | series_dbs
 @pytest.mark.asyncio
 @pytest.mark.parametrize('db', all_dbs, ids=(db.label for db in all_dbs))
 async def test_search_returns_SearchResults(db, store_response):
-    results = await db.search('Star Wars')
+    results = await db.search(dbs.Query('Star Wars'))
     for r in results:
         assert isinstance(r, dbs._common.SearchResult)
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('db', all_dbs, ids=(db.label for db in all_dbs))
 async def test_search_for_specific_year(db, store_response):
-    results = await db.search('Star Wars Clone Wars', year=2008)
+    results = await db.search(dbs.Query('Star Wars Clone Wars', year=2008))
     assert results[0].year == '2008'
-    results = await db.search('Star Wars Clone Wars', year=2003)
+    results = await db.search(dbs.Query('Star Wars Clone Wars', year=2003))
     assert results[0].year == '2003'
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('db', movie_dbs, ids=(db.label for db in movie_dbs))
 async def test_search_for_movie(db, store_response):
-    results = await db.search('Star Wars', type='movie')
+    results = await db.search(dbs.Query('Star Wars', type='movie'))
     assert results[0].type == 'movie'
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('db', series_dbs, ids=(db.label for db in series_dbs))
 async def test_search_for_series(db, store_response):
-    results = await db.search('Star Wars', type='series')
+    results = await db.search(dbs.Query('Star Wars', type='series'))
     assert results[0].type == 'series'
 
 

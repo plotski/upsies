@@ -10,27 +10,22 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-async def search(title, type=None, year=None):
+async def search(query):
     """
     Search for TVmaze ID
 
-    :param str title: Name of movie or series
-    :param type: Ignored for compatibility with signature of other `search`
-        functions
-    :param year: Year of release
-    :type year: str or int
+    :param query: :class:`~tools.dbs.Query` instance
 
     :raise RequestError: if the search request fails
 
-    :return: Sequence of SearchResult objects
+    :return: Sequence of :class:`~tools.dbs.SearchResult~ objects
     """
-    title = title.strip()
-    _log.debug('Searching TVmaze for %r, type=%r, year=%r', title, type, year)
-    if not title:
+    _log.debug('Searching TVmaze for %s', query)
+    if not query.title:
         return ()
 
     url = f'{_url_base}/search/shows'
-    params = {'q': title}
+    params = {'q': query.title}
 
     results_str = await http.get(url, params=params, cache=True)
     try:
@@ -41,10 +36,10 @@ async def search(title, type=None, year=None):
     else:
         # The API doesn't allow us to search for a specific year
         results = [_make_result(item['show']) for item in items]
-        if year:
+        if query.year:
             results_in_year = []
             for result in results:
-                if str(result.year) == str(year):
+                if str(result.year) == query.year:
                     results_in_year.append(result)
             if results_in_year:
                 return results_in_year

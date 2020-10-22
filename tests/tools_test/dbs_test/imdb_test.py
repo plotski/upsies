@@ -1,6 +1,6 @@
 import pytest
 
-from upsies.tools.dbs import imdb
+from upsies.tools.dbs import Query, imdb
 
 
 @pytest.mark.asyncio
@@ -57,13 +57,13 @@ async def test_country(id, exp_country, store_response):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    argnames=('query', 'kwargs', 'exp_year'),
+    argnames=('query', 'exp_year'),
     argvalues=(
-        ('The Gift', {'type':'movie', 'year':'2015'}, '2015'),
+        (Query('The Gift', type='movie', year='2015'), '2015'),
     ),
     ids=lambda value: str(value),
 )
-async def test_search_year(query, kwargs, exp_year, store_response):
-    results = await imdb.search(query, **kwargs)
+async def test_search_year(query, exp_year, store_response):
+    results = await imdb.search(query)
     for result in results:
         assert result.year == exp_year, result

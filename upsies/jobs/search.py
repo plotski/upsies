@@ -152,11 +152,7 @@ class _Searcher:
         await self._delay()
         results = ()
         try:
-            results = await self._search_coro(
-                title=query.title,
-                year=query.year,
-                type=query.type,
-            )
+            results = await self._search_coro(query)
         except errors.RequestError as e:
             self._error_callback(e)
         finally:
