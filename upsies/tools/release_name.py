@@ -321,7 +321,8 @@ class ReleaseName(collections.abc.Mapping):
     async def _update_year_required(self):
         if self.type in ('season', 'episode'):
             # Find out if there are multiple series with this title
-            results = await dbs.imdb.search(self.title, type='series')
+            results = await dbs.imdb.search(dbs.Query(title=self.title,
+                                                      type='series'))
             same_titles = tuple(
                 r for r in results
                 if r.title.casefold() == self.title.casefold()
