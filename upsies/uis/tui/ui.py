@@ -128,6 +128,11 @@ class UI:
             self._job_widgets.append(to_container(jobw))
             self._remove_initial_placeholder()
 
+        # If any job raises an exception, cancel all jobs
+        for job in self._jobs:
+            task = self._loop.create_task(job.wait())
+            task.add_done_callback(self._exit_on_exception)
+
         # Prepend interactive jobs one by one. We want them at the top to avoid
         # interactive jobs being moved by expanding and shrinking background
         # jobs.
