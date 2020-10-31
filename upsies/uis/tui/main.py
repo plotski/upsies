@@ -27,8 +27,6 @@ def _main(args=None):
             filename=args.debug,
         )
         logging.getLogger(__project_name__).setLevel(level=logging.DEBUG)
-        from ...utils import daemon
-        daemon.DaemonThread.asyncio_debug = True
 
     # Read config files
     try:
