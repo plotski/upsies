@@ -26,7 +26,7 @@ class UploaderBase(abc.ABC):
         """Name of the image hosting service"""
         pass
 
-    def upload(self, image_path, force=False):
+    async def upload(self, image_path, force=False):
         """
         Upload image to gallery
 
@@ -39,7 +39,7 @@ class UploaderBase(abc.ABC):
         """
         info = self._get_info_from_cache(image_path) if not force else {}
         if not info:
-            info = self._upload(image_path)
+            info = await self._upload(image_path)
             _log.debug('Upload %r: %r', image_path, info)
             self._store_info_to_cache(image_path, info)
         else:
@@ -49,7 +49,7 @@ class UploaderBase(abc.ABC):
         return _common.UploadedImage(**info)
 
     @abc.abstractmethod
-    def _upload(self, image_path):
+    async def _upload(self, image_path):
         """
         Upload a single image
 

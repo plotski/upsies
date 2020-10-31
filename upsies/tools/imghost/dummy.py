@@ -1,5 +1,5 @@
+import asyncio
 import os
-import time
 
 from . import UploaderBase
 
@@ -9,7 +9,7 @@ class Uploader(UploaderBase):
 
     name = 'dummy'
 
-    def _upload(self, image_path):
-        time.sleep(0.5)
+    async def _upload(self, image_path):
+        await asyncio.sleep(0.5)
         url = f'http://localhost/{os.path.basename(image_path)}'
         return {'url': url}

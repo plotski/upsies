@@ -42,7 +42,7 @@ class submit(SubmitCommandBase):
         imghost_job = _jobs.imghost.ImageHostJob(
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
-            image_host='dummy',
+            imghost_name='dummy',
             images_total=self.screenshots_job.screenshots_total,
         )
         pipe.Pipe(

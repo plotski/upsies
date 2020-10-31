@@ -26,20 +26,14 @@ class Uploader(UploaderBase):
             comments_enabled=False,
         )
 
-    def _upload(self, image_path):
-        if not self._gallery.created:
-            self._gallery.create()
-            _log.debug('Created gallery: %r', self._gallery)
-
-        # Gallery.add() is an iterator, but we only upload a single image so we
-        # can just return instead of yielding.
-        for submission in self._gallery.add(image_path):
-            _log.debug('Submission: %r', submission)
-            if not submission.success:
-                raise errors.RequestError(submission.error)
-            else:
-                return {
-                    'url': submission.image_url,
-                    'thumb_url': submission.thumbnail_url,
-                    'edit_url': submission.edit_url,
-                }
+    async def _upload(self, image_path):
+        submission = await self._gallery.upload(image_path)
+        _log.debug('Submission: %r', submission)
+        if not submission.success:
+            raise errors.RequestError(submission.error)
+        else:
+            return {
+                'url': submission.image_url,
+                'thumb_url': submission.thumbnail_url,
+                'edit_url': submission.edit_url,
+            }

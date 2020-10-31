@@ -199,12 +199,11 @@ class screenshots(CommandBase):
 
     @cache.property
     def imghost_job(self):
-        image_host = self.args.upload_to
-        if image_host:
+        if self.args.upload_to:
             imghost_job = _jobs.imghost.ImageHostJob(
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
-                image_host=image_host,
+                imghost_name=self.args.upload_to,
                 images_total=self.screenshots_job.screenshots_total,
             )
             # Connect ScreenshotsJob's output to ImageHostJob input
@@ -235,7 +234,7 @@ class upload_images(CommandBase):
             _jobs.imghost.ImageHostJob(
                 homedir=fs.tmpdir(),
                 ignore_cache=self.args.ignore_cache,
-                image_host=self.args.IMAGEHOST,
+                imghost_name=self.args.IMAGEHOST,
                 image_paths=self.args.IMAGE,
             ),
         )

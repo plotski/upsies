@@ -1,4 +1,4 @@
-import queue
+import asyncio
 
 from .. import errors
 from ..tools import imghost
@@ -20,57 +20,79 @@ class ImageHostJob(JobBase):
         # class for image uploaders implements caching.
         return None
 
-    def initialize(self, image_host, image_paths=(), images_total=0):
+    def initialize(self, imghost_name, image_paths=(), images_total=0):
+        # Accept images from `image_paths` and pipe_input() calls
         if image_paths and images_total:
             raise TypeError('You must not specify both "image_paths" and "images_total".')
         elif not image_paths and not images_total:
             raise TypeError('You must specify "image_paths" or "images_total".')
+        else:
+            if images_total > 0:
+                self._images_total = images_total
+            else:
+                self._images_total = len(image_paths)
+
+        try:
+            imghost_module = getattr(imghost, imghost_name)
+        except AttributeError:
+            raise ValueError(f'Unknown image hosting service: {imghost_name}')
+        else:
+            self._imghost = imghost_module.Uploader(cache_dir=self.homedir)
 
         self._images_uploaded = 0
-        self._exit_code = 1
+        self._exit_code = 0
+        self._image_path_queue = asyncio.Queue()
+
+        if image_paths:
+            for image_path in image_paths:
+                self._enqueue(image_path)
+            self._close_queue()
+
+        self._upload_task = asyncio.ensure_future(self._upload_images())
+
+    async def _upload_images(self):
         try:
-            self._imghost = getattr(imghost, image_host)
-        except AttributeError:
-            raise ValueError(f'Unknown image hosting service: {image_host}')
-        self._url_callbacks = []
+            while True:
+                image_path = await self._image_path_queue.get()
+                if image_path is None:
+                    _log.debug('All images uploaded')
+                    break
+                else:
+                    try:
+                        info = await self._imghost.upload(image_path, force=self.ignore_cache)
+                    except errors.RequestError as e:
+                        self._exit_code = 1
+                        self.error(e)
+                    else:
+                        _log.debug('Uploaded image: %r', info)
+                        self._images_uploaded += 1
+                        self.send(info)
+        finally:
+            self.finish()
 
-        self._upload_thread = _UploadThread(
-            homedir=self.homedir,
-            force=self.ignore_cache,
-            imghost=self._imghost,
-            url_callback=self.handle_image_url,
-            error_callback=self.error,
-            finished_callback=self.handle_uploads_finished,
-        )
+    def _enqueue(self, image_path):
+        self._image_path_queue.put_nowait(image_path)
 
-        if images_total:
-            # Expect calls to pipe_input() and pipe_closed()
-            self._images_total = images_total
-        else:
-            # Upload images and finish()
-            self._images_total = len(image_paths)
-            for path in image_paths:
-                self._upload_thread.upload(path)
-            self._upload_thread.finish()
+    def _close_queue(self):
+        self._image_path_queue.put_nowait(None)
 
-    def execute(self):
-        self._upload_thread.start()
-
-    def finish(self):
-        self._upload_thread.stop()
-        super().finish()
-
-    def pipe_input(self, filepath):
-        self._upload_thread.upload(filepath)
+    def pipe_input(self, image_path):
+        self._enqueue(image_path)
 
     def pipe_closed(self):
-        # Tell the upload thread to terminate after uploading all currently
-        # queued images.
-        self._upload_thread.finish()
+        self._close_queue()
+
+    def execute(self):
+        pass
+
+    def finish(self):
+        super().finish()
 
     async def wait(self):
-        # We are finished as soon as the upload thread has uploaded all images.
-        await self._upload_thread.join()
+        try:
+            await self._upload_task
+        except asyncio.CancelledError:
+            self._exit_code = 1
         await super().wait()
 
     @property
@@ -85,58 +107,3 @@ class ImageHostJob(JobBase):
     @property
     def images_total(self):
         return self._images_total
-
-    @images_total.setter
-    def images_total(self, images_total):
-        self._images_total = int(images_total)
-
-    def handle_image_url(self, url):
-        if not self.is_finished:
-            self._images_uploaded += 1
-            self.send(url)
-
-    def handle_uploads_finished(self):
-        self._exit_code = 0
-        self.finish()
-
-
-class _UploadThread(daemon.DaemonThread):
-    def __init__(self, homedir, imghost, force,
-                 url_callback, error_callback, finished_callback):
-        super().__init__()
-        self._homedir = homedir
-        self._imghost = imghost
-        self._force = force
-        self._filepaths_queue = queue.Queue()
-        self._url_callback = url_callback
-        self._error_callback = error_callback
-        self._finished_callback = finished_callback
-
-    async def initialize(self):
-        self._uploader = self._imghost.Uploader(cache_dir=self._homedir)
-
-    def upload(self, filepath):
-        self._filepaths_queue.put(filepath)
-
-    def finish(self):
-        self._filepaths_queue.put(None)
-
-    async def work(self):
-        try:
-            filepath = self._filepaths_queue.get(timeout=0.1)
-        except queue.Empty:
-            return True  # Call work() again
-
-        if filepath:
-            _log.debug('Uploading %r', filepath)
-            try:
-                info = self._uploader.upload(filepath, force=self._force)
-            except errors.RequestError as e:
-                self._error_callback(e)
-            else:
-                self._url_callback(info)
-
-            return True  # Call work() again
-        else:
-            self.stop()
-            self._finished_callback()

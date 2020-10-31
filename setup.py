@@ -51,7 +51,7 @@ setuptools.setup(
         'guessit==3.*',
         'natsort==7.*',
         'prompt_toolkit==3.*,>=3.0.6',
-        'pyimgbox==0.3.*',
+        'pyimgbox==1.*',
         'pyxdg',
         'torf==3.*',
     ],
