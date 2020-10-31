@@ -79,7 +79,7 @@ class JobBase(abc.ABC):
 
     @abc.abstractmethod
     def execute(self):
-        """Do work, e.g. request user input or start background threads"""
+        """Do the job, e.g. prompt for user input or start background worker"""
         pass
 
     def start(self):
