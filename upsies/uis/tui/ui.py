@@ -50,12 +50,14 @@ class UI:
             if self._app.is_running:
                 self._exit(1)
 
-        app = Application(layout=self._layout,
-                          key_bindings=kb,
-                          style=style.style,
-                          full_screen=False,
-                          erase_when_done=False,
-                          mouse_support=False)
+        app = Application(
+            layout=self._layout,
+            key_bindings=kb,
+            style=style.style,
+            full_screen=False,
+            erase_when_done=False,
+            mouse_support=False,
+        )
         # Make escape key work
         app.timeoutlen = 0.1
         app.ttimeoutlen = 0.1
