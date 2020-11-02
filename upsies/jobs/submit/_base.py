@@ -146,7 +146,7 @@ class SubmitJobBase(JobBase, abc.ABC):
         )
 
     async def _submit(self):
-        _log.debug('%s: Submitting %s', self.tracker_name, self.metadata['create-torrent'])
+        _log.debug('%s: Submitting %s', self.tracker_name, self.metadata.get('create-torrent'))
         try:
             async with self._http_session as client:
                 self._call_callbacks(self.signal.logging_in)
