@@ -120,9 +120,6 @@ class SubmitJobBase(JobBase, abc.ABC):
 
     async def wait(self):
         if not self.is_finished:
-            # Technically, we don't have to wait() for jobs_before_upload
-            # because the UI should've already done that at this point. We do it
-            # anyway for clarity and because it doesn't cost anything.
             _log.debug('Waiting for jobs before submission: %r', self.jobs_before_upload)
             await asyncio.gather(*(job.wait() for job in self.jobs_before_upload))
 
