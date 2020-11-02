@@ -3,10 +3,10 @@ import functools
 
 from . import LazyModule
 
-webbrowser = LazyModule(module='webbrowser', namespace=globals())
-
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+webbrowser = LazyModule(module='webbrowser', namespace=globals())
 
 
 def open(url):

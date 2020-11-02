@@ -2,7 +2,6 @@ import asyncio
 
 from .. import errors
 from ..tools import imghost
-from ..utils import daemon
 from . import JobBase
 
 import logging  # isort:skip

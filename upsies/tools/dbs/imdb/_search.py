@@ -1,6 +1,5 @@
 import functools
 import re
-import time
 
 from ....utils import LazyModule, http
 from .. import _common
@@ -67,7 +66,6 @@ async def search(query):
     html = await http.get(url, params=params, cache=True)
     soup = bs4.BeautifulSoup(html, features='html.parser')
 
-    start = time.monotonic()
     items = soup.find_all('div', class_='lister-item-content')
     results = tuple(_make_result(item) for item in items)
     return results

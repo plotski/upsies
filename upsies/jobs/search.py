@@ -1,11 +1,9 @@
 import asyncio
 import collections
-import re
 from time import monotonic as time_monotonic
 
 from .. import errors
 from ..tools import dbs
-from ..utils import daemon, guessit
 from . import JobBase
 
 import logging  # isort:skip
