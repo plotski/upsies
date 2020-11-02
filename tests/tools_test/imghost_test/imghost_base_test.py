@@ -8,6 +8,15 @@ from upsies.tools.imghost._base import UploaderBase
 from upsies.tools.imghost._common import UploadedImage
 
 
+# FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
+# not a subclass of typing.Awaitable.
+class AsyncMock(Mock):
+    def __call__(self, *args, **kwargs):
+        async def coro(_sup=super()):
+            return _sup.__call__(*args, **kwargs)
+        return coro()
+
+
 @pytest.mark.parametrize('method', UploaderBase.__abstractmethods__)
 def test_abstract_method(method):
     attrs = {name:lambda self: None for name in UploaderBase.__abstractmethods__}
@@ -25,13 +34,13 @@ def make_TestUploader(**kwargs):
 
         def __init__(self, *args, mock_cache=False, **kwargs):
             super().__init__(*args, **kwargs)
-            self._upload_mock = Mock()
+            self._upload_mock = AsyncMock()
             self._mock_cache = mock_cache
             self._get_info_from_cache_mock = Mock()
             self._store_info_to_cache_mock = Mock()
 
-        def _upload(self, image_path):
-            return self._upload_mock(image_path)
+        async def _upload(self, image_path):
+            return await self._upload_mock(image_path)
 
         def _get_info_from_cache(self, image_path):
             if self._mock_cache:
@@ -133,14 +142,15 @@ def test_get_info_from_cache_fails_to_decode_json(tmp_path):
     assert info is None
 
 
-def test_upload_gets_info_from_upload():
+@pytest.mark.asyncio
+async def test_upload_gets_info_from_upload():
     uploader = make_TestUploader(mock_cache=True)
     uploader._get_info_from_cache_mock.return_value = None
     uploader._upload_mock.return_value = {
         'url': 'http://foo.bar',
         'more': 'info',
     }
-    image = uploader.upload('path/to/foo.png')
+    image = await uploader.upload('path/to/foo.png')
     assert uploader._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
     assert uploader._upload_mock.call_args_list == [call('path/to/foo.png')]
     assert uploader._store_info_to_cache_mock.call_args_list == [call(
@@ -151,13 +161,14 @@ def test_upload_gets_info_from_upload():
     assert image == 'http://foo.bar'
     assert image.more == 'info'
 
-def test_upload_gets_info_from_cache():
+@pytest.mark.asyncio
+async def test_upload_gets_info_from_cache():
     uploader = make_TestUploader(mock_cache=True)
     uploader._get_info_from_cache_mock.return_value = {
         'url': 'http://foo.bar',
         'more': 'info',
     }
-    image = uploader.upload('path/to/foo.png')
+    image = await uploader.upload('path/to/foo.png')
     assert uploader._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
     assert uploader._upload_mock.call_args_list == []
     assert uploader._store_info_to_cache_mock.call_args_list == []
@@ -165,7 +176,8 @@ def test_upload_gets_info_from_cache():
     assert image == 'http://foo.bar'
     assert image.more == 'info'
 
-def test_upload_ignores_cache():
+@pytest.mark.asyncio
+async def test_upload_ignores_cache():
     uploader = make_TestUploader(mock_cache=True)
     uploader._get_info_from_cache_mock.return_value = {
         'url': 'http://foo.bar',
@@ -175,7 +187,7 @@ def test_upload_ignores_cache():
         'url': 'http://baz.png',
         'more': 'other info',
     }
-    image = uploader.upload('path/to/foo.png', force=True)
+    image = await uploader.upload('path/to/foo.png', force=True)
     assert uploader._get_info_from_cache_mock.call_args_list == []
     assert uploader._upload_mock.call_args_list == [call('path/to/foo.png')]
     assert uploader._store_info_to_cache_mock.call_args_list == [call(
@@ -186,7 +198,8 @@ def test_upload_ignores_cache():
     assert image == 'http://baz.png'
     assert image.more == 'other info'
 
-def test_upload_is_missing_url():
+@pytest.mark.asyncio
+async def test_upload_is_missing_url():
     uploader = make_TestUploader(mock_cache=True)
     uploader._get_info_from_cache_mock.return_value = None
     uploader._upload_mock.return_value = {
@@ -195,4 +208,4 @@ def test_upload_is_missing_url():
     }
     info_str = repr(uploader._upload_mock.return_value)
     with pytest.raises(Exception, match=rf'^Missing "url" key in {re.escape(info_str)}$'):
-        uploader.upload('path/to/foo.png')
+        await uploader.upload('path/to/foo.png')
