@@ -24,7 +24,7 @@ def test_run_returns_stdout(run_mock):
 
 @patch('subprocess.run')
 @patch('subprocess.PIPE', 'Mocked PIPE')
-def test_run_raises_ProcessError_if_command_execution_fails(run_mock):
+def test_run_raises_DependencyError_if_command_cannot_be_executed(run_mock):
     run_mock.side_effect = OSError()
     with pytest.raises(errors.DependencyError, match=r'^Missing dependency: foo$'):
         subproc.run(['foo', 'bar', '--baz'])
