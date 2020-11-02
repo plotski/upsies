@@ -57,6 +57,7 @@ class SubmitJobBase(JobBase, abc.ABC):
         self._tracker_config = tracker_config
         self._jobs_before_upload = tuple(j for j in jobs_before_upload if j)
         self._jobs_after_upload = tuple(j for j in jobs_after_upload if j)
+        self._submit_lock = asyncio.Lock()
         self._metadata = {}
         self._callbacks = {
             self.signal.logging_in: [],
@@ -119,19 +120,21 @@ class SubmitJobBase(JobBase, abc.ABC):
         return self._jobs_after_upload
 
     async def wait(self):
-        if not self.is_finished:
-            _log.debug('Waiting for jobs before submission: %r', self.jobs_before_upload)
-            await asyncio.gather(*(job.wait() for job in self.jobs_before_upload))
+        async with self._submit_lock:
+            if not self.is_finished:
+                _log.debug('Waiting for jobs before submission: %r', self.jobs_before_upload)
+                await asyncio.gather(*(job.wait() for job in self.jobs_before_upload))
 
-            names = [job.name for job in self.jobs_before_upload]
-            outputs = [job.output for job in self.jobs_before_upload]
-            self._metadata.update(zip(names, outputs))
-            await self._submit()
+                names = [job.name for job in self.jobs_before_upload]
+                outputs = [job.output for job in self.jobs_before_upload]
+                self._metadata.update(zip(names, outputs))
+                await self._submit()
 
-            _log.debug('Waiting for jobs after submission: %r', self.jobs_after_upload)
-            await asyncio.gather(*(job.wait() for job in self.jobs_after_upload))
+                _log.debug('Waiting for jobs after submission: %r', self.jobs_after_upload)
+                await asyncio.gather(*(job.wait() for job in self.jobs_after_upload))
 
-            self.finish()
+                self.finish()
+
         await super().wait()
 
     @cache.property
