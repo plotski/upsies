@@ -13,11 +13,14 @@ def test_run_returns_stdout(run_mock):
     run_mock.return_value.stdout = 'process output'
     stdout = subproc.run(['foo', 'bar', '--baz'])
     assert stdout == 'process output'
-    assert run_mock.call_args_list == [call(('foo', 'bar', '--baz'),
-                                            shell=False,
-                                            encoding='utf-8',
-                                            stdout='Mocked PIPE',
-                                            stderr='Mocked PIPE')]
+    assert run_mock.call_args_list == [call(
+        ('foo', 'bar', '--baz'),
+        shell=False,
+        encoding='utf-8',
+        stdout='Mocked PIPE',
+        stderr='Mocked PIPE',
+        stdin='Mocked PIPE',
+    )]
 
 @patch('subprocess.run')
 @patch('subprocess.PIPE', 'Mocked PIPE')
@@ -49,11 +52,14 @@ def test_run_caches_stdout_on_request(run_mock):
     run_mock.return_value.stdout = 'process output'
     for _ in range(5):
         assert subproc.run(['foo', 'bar', '--baz'], cache=True) == 'process output'
-        assert run_mock.call_args_list == [call(('foo', 'bar', '--baz'),
-                                                shell=False,
-                                                encoding='utf-8',
-                                                stdout='Mocked PIPE',
-                                                stderr='Mocked PIPE')]
+        assert run_mock.call_args_list == [call(
+            ('foo', 'bar', '--baz'),
+            shell=False,
+            encoding='utf-8',
+            stdout='Mocked PIPE',
+            stderr='Mocked PIPE',
+            stdin='Mocked PIPE',
+        )]
 
 @patch('subprocess.run')
 @patch('subprocess.PIPE', 'Mocked PIPE')
@@ -62,8 +68,11 @@ def test_run_joins_stdout_and_stderr_on_request(run_mock):
     run_mock.return_value.stdout = 'foo'
     run_mock.return_value.stderr = ''
     subproc.run(['foo'], join_stderr=True)
-    assert run_mock.call_args_list == [call(('foo',),
-                                            shell=False,
-                                            encoding='utf-8',
-                                            stdout='Mocked PIPE',
-                                            stderr='Mocked STDOUT')]
+    assert run_mock.call_args_list == [call(
+        ('foo',),
+        shell=False,
+        encoding='utf-8',
+        stdout='Mocked PIPE',
+        stderr='Mocked STDOUT',
+        stdin='Mocked PIPE',
+    )]

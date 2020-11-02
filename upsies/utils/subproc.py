@@ -39,11 +39,14 @@ def run(argv, ignore_errors=False, join_stderr=False, cache=False):
             stderr = subprocess.PIPE
         try:
             _log.debug('Running: %s', ' '.join(shlex.quote(arg) for arg in argv))
-            proc = subprocess.run(argv,
-                                  shell=False,
-                                  encoding='utf-8',
-                                  stdout=stdout,
-                                  stderr=stderr)
+            proc = subprocess.run(
+                argv,
+                shell=False,
+                encoding='utf-8',
+                stdout=stdout,
+                stderr=stderr,
+                stdin=subprocess.PIPE,
+            )
         except OSError:
             raise errors.DependencyError(f'Missing dependency: {os.path.basename(argv[0])}')
         else:
