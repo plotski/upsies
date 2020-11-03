@@ -18,6 +18,10 @@ class ImageHostJob(JobBase):
     :param images_total: Number of images that are going to be uploaded. Image
         paths are expected to be given via :meth:`pipe_input`.
 
+        The only purpose of this value is to provide it via the
+        :attr:`images_total` property to calculate progress. The job must be
+        finished by calling :meth:`pipe_closed` or :meth:`finish`.
+
     `image_paths` and `images_total` must not be given at the same time.
 
     :raise ValueError: if `imghost_name` is not known
@@ -61,27 +65,25 @@ class ImageHostJob(JobBase):
                 self._enqueue(image_path)
             self._close_queue()
 
-        self._upload_task = asyncio.ensure_future(self._upload_images())
+        self._upload_images_task = asyncio.ensure_future(self._upload_images())
+        self._upload_images_task.add_done_callback(lambda _: self.finish())
 
     async def _upload_images(self):
-        try:
-            while True:
-                image_path = await self._image_path_queue.get()
-                if image_path is None:
-                    _log.debug('All images uploaded')
-                    break
+        while True:
+            image_path = await self._image_path_queue.get()
+            if image_path is None:
+                _log.debug('All images uploaded')
+                break
+            else:
+                try:
+                    info = await self._imghost.upload(image_path, force=self.ignore_cache)
+                except errors.RequestError as e:
+                    self._exit_code = 1
+                    self.error(e)
                 else:
-                    try:
-                        info = await self._imghost.upload(image_path, force=self.ignore_cache)
-                    except errors.RequestError as e:
-                        self._exit_code = 1
-                        self.error(e)
-                    else:
-                        _log.debug('Uploaded image: %r', info)
-                        self._images_uploaded += 1
-                        self.send(info)
-        finally:
-            self.finish()
+                    _log.debug('Uploaded image: %r', info)
+                    self._images_uploaded += 1
+                    self.send(info)
 
     def _enqueue(self, image_path):
         self._image_path_queue.put_nowait(image_path)
@@ -98,9 +100,13 @@ class ImageHostJob(JobBase):
     def execute(self):
         pass
 
+    def finish(self):
+        self._upload_images_task.cancel()
+        super().finish()
+
     async def wait(self):
         try:
-            await self._upload_task
+            await self._upload_images_task
         except asyncio.CancelledError:
             self._exit_code = 1
         await super().wait()
