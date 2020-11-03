@@ -20,7 +20,8 @@ async def test_year(store_response):
         ('tt3286052', "The Blackcoat's Daughter", 'February'),
         ('tt1405737', 'Traffic Light', 'Ramzor'),
         ('tt0080455', '', 'The Blues Brothers'),
-        ('tt1127715', '', 'Sin nombre'),
+        ('tt1127715', 'Without Name', 'Sin nombre'),
+        ('tt0104684', 'Hard Boiled', 'Lat sau san taam'),
     ),
 )
 async def test_title_original_english(id, english, original, store_response):

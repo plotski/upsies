@@ -52,30 +52,41 @@ async def title_english(id):
     :param str id: IMDb ID (starts with "tt")
     """
     info = await _imdbpie.get_info(id, 'title_versions')
-    # Only consider titles with "imdbDisplay" type
+
+    # Some titles should not be considered
+    def title_looks_interesting(i):
+        if 'original script title' in i.get('attributes', ()):
+            return False
+        return True
+
     display_titles = [i for i in info.get('alternateTitles', ())
-                      if 'imdbDisplay' in i.get('types', '')]
-    titles = collections.defaultdict(lambda: [])
+                      if title_looks_interesting(i)]
 
     # Map titles to region and language.
-    # Both region and language may not exist or be undefined.
+    # Both region and language may not exist or be empty.
     # Ensure regions are upper case and languages are lower case.
+    titles = collections.defaultdict(lambda: [])
     for i in display_titles:
-        key = (i.get('region', '').upper(),
-               i.get('language', '').lower())
-        titles[key] = i['title']
+        language = i.get('language', '').lower()
+        region = i.get('region', '').upper()
+        if language:
+            titles[language] = i['title']
+        if region:
+            titles[region] = i['title']
+        if region and language:
+            titles[(region, language)] = i['title']
 
     original_title = await title_original(id)
     _log.debug('Original title: %r', original_title)
 
+    # Find English title. US titles seem to be the most commonly used, but they
+    # can also be in Spanish.
     priorities = (
-        ('US', 'en'),   # US titles seem to be the most commonly used
+        ('US', 'en'),
+        'US',
+        'en',
         ('XWW', 'en'),  # World-wide
-        ('US', ''),
-        ('', 'en'),
     )
-
-    # Find English US title (US titles can also be Spanish)
     for key in priorities:
         if key in titles:
             if _normalize_title(titles[key]) != _normalize_title(original_title):
