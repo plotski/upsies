@@ -30,7 +30,7 @@
     <link rel="preload" href="https://www.themoviedb.org/assets/2/source-sans-pro-v13-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="https://www.themoviedb.org/assets/2/source-sans-pro-v13-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/fonts-f578d72aab1b29e57199fe0eefab11f965977296ecc398469564152d147e08c9.css" media="screen">
-    <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/application-1b05ed16f639bb8aefa1d378ebafcb725417a8a82256c43e6071b897bd8c2e8d.css" media="screen">
+    <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/application-45681800635c0fd7aa4152e036816d59c7fb2f9f2e7e052b06c1cfa33e97ffb6.css" media="screen">
     
     
       <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/media-665e0a66787e5763b893509acf08a386c62c30a11a921db17a67246f08a4391e.css" media="screen">
@@ -389,13 +389,13 @@
                 </li>
               
                 <li class="">
-                  <a id="person" href="/search/person?query=Star Wars" class="search_tab " title="People" alt="People">People</a>
-                    <span>1</span>
+                  <a id="collection" href="/search/collection?query=Star Wars" class="search_tab " title="Collections" alt="Collections">Collections</a>
+                    <span>6</span>
                 </li>
               
                 <li class="">
-                  <a id="collection" href="/search/collection?query=Star Wars" class="search_tab " title="Collections" alt="Collections">Collections</a>
-                    <span>6</span>
+                  <a id="keyword" href="/search/keyword?query=Star Wars" class="search_tab " title="Keywords" alt="Keywords">Keywords</a>
+                    <span>3</span>
                 </li>
               
                 <li class="">
@@ -404,7 +404,7 @@
                 </li>
               
                 <li class="">
-                  <a id="keyword" href="/search/keyword?query=Star Wars" class="search_tab " title="Keywords" alt="Keywords">Keywords</a>
+                  <a id="person" href="/search/person?query=Star Wars" class="search_tab " title="People" alt="People">People</a>
                     <span>0</span>
                 </li>
               
@@ -601,41 +601,6 @@
   
 </div>
     
-      <div id="card_tv_58fd9413925141640b02bf07" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 2x" alt="Star Wars: Forces of Destiny">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412"><h2>Star Wars: Forces of Destiny</h2></a>
-
-          
-            <span class="release_date">July  3, 2017</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>An animated micro-series starring Rey, Jyn Erso, Princess Leia, Ahsoka Tano, and more. Small moments and everyday decisions shape a larger heroic saga.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
       <div id="card_tv_525751c2760ee36aaa1cc498" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -671,14 +636,14 @@
   
 </div>
     
-      <div id="card_tv_5769cef1c3a368291f0002eb" class="card v4 tight">
+      <div id="card_tv_58fd9413925141640b02bf07" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837">
+        <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg 2x" alt="LEGO Star Wars: The Freemaker Adventures">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 2x" alt="Star Wars: Forces of Destiny">
     
   
 
@@ -689,16 +654,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837"><h2>LEGO Star Wars: The Freemaker Adventures</h2></a>
+          <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412"><h2>Star Wars: Forces of Destiny</h2></a>
 
           
-            <span class="release_date">June 20, 2016</span>
+            <span class="release_date">July  3, 2017</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Set between The Empire Strikes Back and Return of the Jedi, The Freemaker Adventures centers on a family of three young siblings—young boy Rowan, his sister Kordi, and their brother Zander—known as the Freemakers, who salvage parts from destroyed or damaged ships which they use to build new ones, which they sell in order to make their living. They are accompanied by their salvaged battle droid Roger.</p>
+        <p>An animated micro-series starring Rey, Jyn Erso, Princess Leia, Ahsoka Tano, and more. Small moments and everyday decisions shape a larger heroic saga.</p>
       </div>
     </div>
   </div>
@@ -741,14 +706,14 @@
   
 </div>
     
-      <div id="card_tv_5c3246bfc3a36879cfa6edcf" class="card v4 tight">
+      <div id="card_tv_5769cef1c3a368291f0002eb" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5c3246bfc3a36879cfa6edcf" data-media-type="tv" data-media-adult="false" class="result" href="/tv/85536">
+        <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/z2q1RjIX1S2GDc75f4ohT3GQBoK.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/z2q1RjIX1S2GDc75f4ohT3GQBoK.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/z2q1RjIX1S2GDc75f4ohT3GQBoK.jpg 2x" alt="Star Wars Galaxy of Adventures">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/gPaFhqylKwXMQ6JK655mbYNCxIb.jpg 2x" alt="LEGO Star Wars: The Freemaker Adventures">
     
   
 
@@ -759,16 +724,51 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5c3246bfc3a36879cfa6edcf" data-media-type="tv" data-media-adult="false" class="result" href="/tv/85536"><h2>Star Wars Galaxy of Adventures</h2></a>
+          <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837"><h2>LEGO Star Wars: The Freemaker Adventures</h2></a>
 
           
-            <span class="release_date">November 30, 2018</span>
+            <span class="release_date">June 20, 2016</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>A series of animated shorts celebrating the characters and stories of a galaxy far, far away, featuring a bright and colorful art style, exciting action, and insight into the saga's greatest themes!</p>
+        <p>Set between The Empire Strikes Back and Return of the Jedi, The Freemaker Adventures centers on a family of three young siblings—young boy Rowan, his sister Kordi, and their brother Zander—known as the Freemakers, who salvage parts from destroyed or damaged ships which they use to build new ones, which they sell in order to make their living. They are accompanied by their salvaged battle droid Roger.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5bd737c90e0a2622c3045a73" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 2x" alt="LEGO Star Wars: All-Stars">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558"><h2>LEGO Star Wars: All-Stars</h2></a>
+
+          
+            <span class="release_date">November 10, 2018</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>An adventure series that spans all Star Wars eras featuring LEGO versions of the fresh faces of the Star Wars galaxy alongside iconic heroes including Kylo Ren, R2-D2, Young Han, Chewie, Young Lando, BB-8 and General Leia.</p>
       </div>
     </div>
   </div>
@@ -804,6 +804,76 @@
 
       <div class="overview">
         <p>Yoda begins by training Padawans at the Jedi Temple Academy, but then he feels a disturbance in the Force and rushes off to fight the Dark Side.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5f0c92f55e12000035e6d244" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg 2x" alt="Star Wars: The Bad Batch">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971"><h2>Star Wars: The Bad Batch</h2></a>
+
+          
+            <span class="release_date">June  1, 2021</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Follow the elite and experimental Clones of the Bad Batch as they find their way in a rapidly changing galaxy in the aftermath of the Clone Wars.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5c3246bfc3a36879cfa6edcf" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5c3246bfc3a36879cfa6edcf" data-media-type="tv" data-media-adult="false" class="result" href="/tv/85536">
+            
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/z2q1RjIX1S2GDc75f4ohT3GQBoK.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/z2q1RjIX1S2GDc75f4ohT3GQBoK.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/z2q1RjIX1S2GDc75f4ohT3GQBoK.jpg 2x" alt="Star Wars Galaxy of Adventures">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="5c3246bfc3a36879cfa6edcf" data-media-type="tv" data-media-adult="false" class="result" href="/tv/85536"><h2>Star Wars Galaxy of Adventures</h2></a>
+
+          
+            <span class="release_date">November 30, 2018</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>A series of animated shorts celebrating the characters and stories of a galaxy far, far away, featuring a bright and colorful art style, exciting action, and insight into the saga's greatest themes!</p>
       </div>
     </div>
   </div>
@@ -877,111 +947,6 @@
   
 </div>
     
-      <div id="card_tv_5eeefca610dad60032be11b1" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5eeefca610dad60032be11b1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105106">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg 2x" alt="Star Wars Blips">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5eeefca610dad60032be11b1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105106"><h2>Star Wars Blips</h2></a>
-
-          
-            <span class="release_date">May  3, 2017</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>What does a curious little droid do when he's not hurtling through space on a daring mission to save the galaxy? Star Wars Blips stars BB-8 in his very own series of animated shorts, featuring heroes of the Star Wars universe like Chewbacca, C-3PO and of course, R2-D2.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_5bd737c90e0a2622c3045a73" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 2x" alt="LEGO Star Wars: All-Stars">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558"><h2>LEGO Star Wars: All-Stars</h2></a>
-
-          
-            <span class="release_date">November 10, 2018</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>An adventure series that spans all Star Wars eras featuring LEGO versions of the fresh faces of the Star Wars galaxy alongside iconic heroes including Kylo Ren, R2-D2, Young Han, Chewie, Young Lando, BB-8 and General Leia.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_57364ed99251410b24000eb1" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487">
-            
-    
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/xvYc0QGTC1rMuONe6PWBnWnpfuv.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/xvYc0QGTC1rMuONe6PWBnWnpfuv.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/xvYc0QGTC1rMuONe6PWBnWnpfuv.jpg 2x" alt="LEGO Star Wars: The Resistance Rises">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487"><h2>LEGO Star Wars: The Resistance Rises</h2></a>
-
-          
-            <span class="release_date">February 15, 2016</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>A series of animated shorts that take place prior to the First Order's attack on Jakku and tell never-before-told stories including Kylo Ren, Han Solo, Finn, Rey, BB-8, Maz Kanata and more.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
       <div id="card_tv_59a17a70c3a368480e0289e1" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
@@ -1017,13 +982,15 @@
   
 </div>
     
-      <div id="card_tv_52585207760ee3466106035a" class="card v4 tight">
+      <div id="card_tv_5eeefca610dad60032be11b1" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="52585207760ee3466106035a" data-media-type="tv" data-media-adult="false" class="result" href="/tv/17532">
+        <a data-id="5eeefca610dad60032be11b1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105106">
             
-    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+    
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/dx1Cq9F2kCQ9AEFks7JuWlZVoV7.jpg 2x" alt="Star Wars Blips">
+    
   
 
         </a>
@@ -1033,16 +1000,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="52585207760ee3466106035a" data-media-type="tv" data-media-adult="false" class="result" href="/tv/17532"><h2>I&#39;ve Never Seen Star Wars</h2></a>
+          <a data-id="5eeefca610dad60032be11b1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105106"><h2>Star Wars Blips</h2></a>
 
           
-            <span class="release_date">March 12, 2009</span>
+            <span class="release_date">May  3, 2017</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>I've Never Seen Star Wars is a comedy chat show broadcast on BBC Four and BBC Two, first broadcast on 12 March 2009. Created and produced by Bill Dare and hosted by Marcus Brigstocke for the 2009 episodes & Jo Brand for the 2011 special episode, each episode features a celebrity guest trying out new experiences. Based on the original radio version broadcast on BBC Radio 4, the title comes from the fact that Dare has never seen the Star Wars films. An eight part series was recorded in March 2009, with guests including John Humphrys, Esther Rantzen, Rory McGrath and Hugh Dennis.</p><p></p><p>A new host, Jo Brand, presented a December 2011 episode.</p>
+        <p>What does a curious little droid do when he's not hurtling through space on a daring mission to save the galaxy? Star Wars Blips stars BB-8 in his very own series of animated shorts, featuring heroes of the Star Wars universe like Chewbacca, C-3PO and of course, R2-D2.</p>
       </div>
     </div>
   </div>
@@ -1085,14 +1052,14 @@
   
 </div>
     
-      <div id="card_tv_5f0c92f55e12000035e6d244" class="card v4 tight">
+      <div id="card_tv_57364ed99251410b24000eb1" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971">
+        <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487">
             
     
-      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/mQOsQaHHq0Akra7NKJtu02F4Kiq.jpg 2x" alt="Star Wars: The Bad Batch">
+      <img class="poster lazyload" data-src="//image.tmdb.org/t/p/w94_and_h141_bestv2/xvYc0QGTC1rMuONe6PWBnWnpfuv.jpg" data-srcset="//image.tmdb.org/t/p/w94_and_h141_bestv2/xvYc0QGTC1rMuONe6PWBnWnpfuv.jpg 1x, //image.tmdb.org/t/p/w188_and_h282_bestv2/xvYc0QGTC1rMuONe6PWBnWnpfuv.jpg 2x" alt="LEGO Star Wars: The Resistance Rises">
     
   
 
@@ -1103,16 +1070,49 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971"><h2>Star Wars: The Bad Batch</h2></a>
+          <a data-id="57364ed99251410b24000eb1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66487"><h2>LEGO Star Wars: The Resistance Rises</h2></a>
 
           
-            <span class="release_date">June  1, 2021</span>
+            <span class="release_date">February 15, 2016</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Follow the elite and experimental Clones of the Bad Batch as they find their way in a rapidly changing galaxy in the aftermath of the Clone Wars.</p>
+        <p>A series of animated shorts that take place prior to the First Order's attack on Jakku and tell never-before-told stories including Kylo Ren, Han Solo, Finn, Rey, BB-8, Maz Kanata and more.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_52585207760ee3466106035a" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="52585207760ee3466106035a" data-media-type="tv" data-media-adult="false" class="result" href="/tv/17532">
+            
+    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <a data-id="52585207760ee3466106035a" data-media-type="tv" data-media-adult="false" class="result" href="/tv/17532"><h2>I&#39;ve Never Seen Star Wars</h2></a>
+
+          
+            <span class="release_date">March 12, 2009</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>I've Never Seen Star Wars is a comedy chat show broadcast on BBC Four and BBC Two, first broadcast on 12 March 2009. Created and produced by Bill Dare and hosted by Marcus Brigstocke for the 2009 episodes & Jo Brand for the 2011 special episode, each episode features a celebrity guest trying out new experiences. Based on the original radio version broadcast on BBC Radio 4, the title comes from the fact that Dare has never seen the Star Wars films. An eight part series was recorded in March 2009, with guests including John Humphrys, Esther Rantzen, Rory McGrath and Hugh Dennis.</p><p></p><p>A new host, Jo Brand, presented a December 2011 episode.</p>
       </div>
     </div>
   </div>
@@ -1185,8 +1185,10 @@
         </div>
       </nav>
 
-      <section>Build b887a8e (420)</section>
+      <section>Build e54d377 (554)</section>
     </footer>
+
+    
 
     
       
@@ -1301,6 +1303,19 @@
         e.preventDefault();
         document.cookie = "tmdb._cookie_policy=true; samesite=lax; path=/; max-age=15551999;";
         $('#cookie_notice').fadeOut('fast');
+      });
+
+      $('#complete_survey').on('click', function(e) {
+        e.preventDefault();
+        document.cookie = "tmdb.survey_one=true; samesite=lax; path=/; max-age=2591999;";
+        $('#survey').fadeOut('fast');
+        window.open('https://survey.us.confirmit.com/wix/p165164730214.aspx');
+      });
+
+      $('#ignore_survey').on('click', function(e) {
+        e.preventDefault();
+        document.cookie = "tmdb.survey_one=true; samesite=lax; path=/; max-age=2591999;";
+        $('#survey').fadeOut('fast');
       });
 
       function showSearch(state) {

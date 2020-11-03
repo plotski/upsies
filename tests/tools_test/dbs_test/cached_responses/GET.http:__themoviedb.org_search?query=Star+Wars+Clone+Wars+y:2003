@@ -30,7 +30,7 @@
     <link rel="preload" href="https://www.themoviedb.org/assets/2/source-sans-pro-v13-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="https://www.themoviedb.org/assets/2/source-sans-pro-v13-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/fonts-f578d72aab1b29e57199fe0eefab11f965977296ecc398469564152d147e08c9.css" media="screen">
-    <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/application-1b05ed16f639bb8aefa1d378ebafcb725417a8a82256c43e6071b897bd8c2e8d.css" media="screen">
+    <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/application-45681800635c0fd7aa4152e036816d59c7fb2f9f2e7e052b06c1cfa33e97ffb6.css" media="screen">
     
     
       <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/media-665e0a66787e5763b893509acf08a386c62c30a11a921db17a67246f08a4391e.css" media="screen">
@@ -596,8 +596,10 @@
         </div>
       </nav>
 
-      <section>Build b887a8e (420)</section>
+      <section>Build e54d377 (554)</section>
     </footer>
+
+    
 
     
       
@@ -712,6 +714,19 @@
         e.preventDefault();
         document.cookie = "tmdb._cookie_policy=true; samesite=lax; path=/; max-age=15551999;";
         $('#cookie_notice').fadeOut('fast');
+      });
+
+      $('#complete_survey').on('click', function(e) {
+        e.preventDefault();
+        document.cookie = "tmdb.survey_one=true; samesite=lax; path=/; max-age=2591999;";
+        $('#survey').fadeOut('fast');
+        window.open('https://survey.us.confirmit.com/wix/p165164730214.aspx');
+      });
+
+      $('#ignore_survey').on('click', function(e) {
+        e.preventDefault();
+        document.cookie = "tmdb.survey_one=true; samesite=lax; path=/; max-age=2591999;";
+        $('#survey').fadeOut('fast');
       });
 
       function showSearch(state) {
