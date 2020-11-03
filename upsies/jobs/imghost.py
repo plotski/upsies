@@ -98,9 +98,6 @@ class ImageHostJob(JobBase):
     def execute(self):
         pass
 
-    def finish(self):
-        super().finish()
-
     async def wait(self):
         try:
             await self._upload_task
