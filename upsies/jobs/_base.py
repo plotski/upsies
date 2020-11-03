@@ -79,15 +79,20 @@ class JobBase(abc.ABC):
 
     @abc.abstractmethod
     def execute(self):
-        """Do the job, e.g. prompt for user input or start background worker"""
+        """
+        Do the job, e.g. prompt for user input or start background worker
+
+        This method must not block.
+        """
         pass
 
     def start(self):
         """
         Called by the main entry point when this job is executed
 
-        If there is cached output available, load it and mark this job as
-        finished. Otherwise, call :meth:`execute`.
+        If there is cached output available, load it, call any callbacks
+        registered via :meth:`on_finished` and finally call :meth:`finish`.
+        Otherwise, call :meth:`execute`.
 
         :raise RuntimeError: if this method is called multiple times or if
             reading from cache file fails unexpectedly
@@ -117,14 +122,15 @@ class JobBase(abc.ABC):
         """
         Wait for this job to finish
 
-        This method must be called.
+        This method returns when :meth:`finish` is called.
 
-        :attr:`is_finished` must be `False` before this method returns and
-        `True` afterwards.
+        :attr:`is_finished` is `False` before this method returns and `True`
+        afterwards.
 
-        Calling this method must have zero effects after the first call.
-        Although any exceptions raised by the first call must also be raised by
-        subsequent calls.
+        Calling this method multiple times simultaneously must be safe.
+
+        Subclass implementations of this method must call their parent's
+        implementation.
 
         :raise: Any exceptions given to :meth:`exception`
         """
@@ -134,12 +140,17 @@ class JobBase(abc.ABC):
 
     def finish(self):
         """
-        Mark this job as finished and unblock :meth:`wait`
+        Cancel this job if it is not finished yet
 
-        :attr:`is_finished` must be `False` before this method returns and
-        `True` afterwards.
+        Calling this method unblocks any calls to :meth:`wait`.
 
-        This function must not block.
+        :attr:`is_finished` is `False` before this method returns and `True`
+        afterwards.
+
+        Subclass implementations of this method must call their parent's
+        implementation.
+
+        This method must not block.
         """
         if not self.is_finished:
             self._finished_event.set()
@@ -154,8 +165,8 @@ class JobBase(abc.ABC):
         :param callable callback: Callable that takes an instance of this class
             as a positional argument
 
-        `callback` is called when :meth:`finish` is called and when cached
-        output is read (i.e. :meth:`executed` is never called).
+        `callback` is called when :meth:`finish` is called and when output is
+        read from cache.
         """
         assert callable(callback)
         self._finished_callbacks.append(callback)
