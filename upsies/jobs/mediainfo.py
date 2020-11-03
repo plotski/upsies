@@ -13,7 +13,7 @@ class MediainfoJob(JobBase):
     label = 'Mediainfo'
 
     # Don't show mediainfo output in UI
-    quiet = True
+    hidden = True
 
     def initialize(self, content_path):
         self._content_path = content_path

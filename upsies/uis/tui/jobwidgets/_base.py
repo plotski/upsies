@@ -51,7 +51,7 @@ class JobWidgetBase(abc.ABC):
             content=main_widget,
         )
         self._container = ConditionalContainer(
-            filter=Condition(lambda: self.job.errors or not self.job.quiet),
+            filter=Condition(lambda: self.job.errors or not self.job.hidden),
             content=label,
         )
 
