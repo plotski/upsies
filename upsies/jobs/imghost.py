@@ -9,6 +9,20 @@ _log = logging.getLogger(__name__)
 
 
 class ImageHostJob(JobBase):
+    """
+    Upload images to an image hosting service
+
+    :param str imghost_name: Name of a submodule of :mod:`tools.imghost`
+    :param image_paths: Sequence of paths to image files. The job is finished
+        after all images are uploaded.
+    :param images_total: Number of images that are going to be uploaded. Image
+        paths are expected to be given via :meth:`pipe_input`.
+
+    `image_paths` and `images_total` must not be given at the same time.
+
+    :raise ValueError: if `imghost_name` is not known
+    """
+
     name = 'imghost'
     label = 'Image URLs'
 
