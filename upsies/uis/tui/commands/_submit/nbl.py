@@ -34,7 +34,6 @@ class submit(SubmitCommandBase):
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
-            quiet=True,
         )
 
     @cache.property
