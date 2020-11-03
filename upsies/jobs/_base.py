@@ -172,11 +172,6 @@ class JobBase(abc.ABC):
         self._finished_callbacks.append(callback)
 
     @property
-    def is_started(self):
-        """Whether :meth:`start` was called"""
-        return self._finished_event.is_set()
-
-    @property
     def is_finished(self):
         """Whether :meth:`finish` was called"""
         return self._finished_event.is_set()
