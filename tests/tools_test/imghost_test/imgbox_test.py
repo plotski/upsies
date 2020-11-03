@@ -1,4 +1,4 @@
-from unittest.mock import Mock, PropertyMock, call, patch
+from unittest.mock import Mock, call, patch
 
 import pytest
 
@@ -25,53 +25,32 @@ def test_thumb_width_argument_given(Gallery_mock, tmp_path):
     )]
 
 
-@patch('pyimgbox.Gallery')
-def test_upload_creates_gallery_on_first_upload(Gallery_mock, tmp_path):
+@patch('pyimgbox.Gallery.upload')
+@pytest.mark.asyncio
+async def test_upload_handles_success(upload_mock, tmp_path):
     uploader = imgbox.Uploader(thumb_width=200, cache_dir=tmp_path)
-    type(Gallery_mock.return_value).created = PropertyMock(return_value=False)
-    Gallery_mock.return_value.add.return_value = (
-        Mock(
-            success=True,
-            image_url='http://foo.url',
-            thumbnail_url='http://foo.thumb.url',
-            edit_url='http://foo.edit.url',
-        ),
+    upload_mock.return_value = Mock(
+        success=True,
+        image_url='http://foo.url',
+        thumbnail_url='http://foo.thumb.url',
+        edit_url='http://foo.edit.url',
     )
-    assert Gallery_mock.return_value.create.call_args_list == []
-    uploader._upload('foo.png')
-    assert Gallery_mock.return_value.create.call_args_list == [call()]
-    type(Gallery_mock.return_value).created = PropertyMock(return_value=True)
-    uploader._upload('bar.png')
-    assert Gallery_mock.return_value.create.call_args_list == [call()]
-    uploader._upload('baz.png')
-    assert Gallery_mock.return_value.create.call_args_list == [call()]
-
-@patch('pyimgbox.Gallery')
-def test_upload_returns_urls(Gallery_mock, tmp_path):
-    uploader = imgbox.Uploader(thumb_width=200, cache_dir=tmp_path)
-    Gallery_mock.return_value.add.return_value = (
-        Mock(
-            success=True,
-            image_url='http://foo.url',
-            thumbnail_url='http://foo.thumb.url',
-            edit_url='http://foo.edit.url',
-        ),
-    )
-    info = uploader._upload('foo.png')
+    assert upload_mock.call_args_list == []
+    info = await uploader._upload('foo.png')
+    assert upload_mock.call_args_list == [call('foo.png')]
     assert info == {
         'url': 'http://foo.url',
         'thumb_url': 'http://foo.thumb.url',
         'edit_url': 'http://foo.edit.url',
     }
 
-@patch('pyimgbox.Gallery')
-def test_upload_raises_RequestError(Gallery_mock, tmp_path):
+@patch('pyimgbox.Gallery.upload')
+@pytest.mark.asyncio
+async def test_upload_handles_error(upload_mock, tmp_path):
     uploader = imgbox.Uploader(thumb_width=200, cache_dir=tmp_path)
-    Gallery_mock.return_value.add.return_value = (
-        Mock(
-            success=False,
-            error='Something went wrong',
-        ),
+    upload_mock.return_value = Mock(
+        success=False,
+        error='Something went wrong',
     )
     with pytest.raises(errors.RequestError, match=r'^Something went wrong$'):
-        uploader._upload('foo.png')
+        await uploader._upload('foo.png')
