@@ -64,11 +64,17 @@ class SearchDbJob(JobBase):
         return lambda value: self.update_info(key, value)
 
     def execute(self):
-        # Start initial search() *after* callbacks have been registered by UI
+        # Search for initial query. It is important NOT to do this in
+        # initialize() because the window between initialize() and execute() is
+        # used to register callbacks.
         self._searcher.search(self._query)
 
+    def finish(self):
+        self._info_updater.cancel()
+        super().finish()
+
     async def wait(self):
-        # Raise any exceptions
+        # Raise any exceptions and avoid warnings about unawaited tasks
         await asyncio.gather(
             self._searcher.wait(),
             self._info_updater.wait(),
@@ -127,11 +133,11 @@ class _Searcher:
         self._searching_callback = searching_callback
         self._error_callback = error_callback
         self._previous_search_time = 0
-        self._search_future = None
+        self._search_task = None
 
     async def wait(self):
-        if self._search_future:
-            await self._search_future
+        if self._search_task:
+            await self._search_task
 
     def search(self, query):
         """
@@ -140,9 +146,10 @@ class _Searcher:
         :param query: Query to make
         :type query: :class:`~tools.dbs.Query`
         """
-        if self._search_future:
-            self._search_future.cancel()
-        self._search_future = asyncio.ensure_future(self._search(query))
+        if self._search_task:
+            self._search_task.cancel()
+            self._search_task = None
+        self._search_task = asyncio.ensure_future(self._search(query))
 
     async def _search(self, query):
         self._results_callback(())
@@ -172,72 +179,74 @@ class _InfoUpdater:
     def __init__(self, **targets):
         super().__init__()
         # `targets` maps names of SearchResult attributes to callbacks that get
-        # the value of the corresponding SearchResult attribute.
-        # Example: {"title" : lambda t: print(f'Title: {t}')}
-        # NOTE: Values of SearchResult attributes may also be coroutine
-        #       functions that return the actual value.
+        # the value of each attribute. For example, {"title": handle_title}
+        # means: For each search_result, call handle_title(search_result.title).
+        # Values of SearchResult attributes may also be coroutine functions that
+        # return the actual value. In that case, call
+        # handle_title(await search_result.title()).
         self._targets = targets
         # SearchResult instance or None
         self._result = None
-        self._update_future = None
+        self._update_task = None
 
     async def wait(self):
-        if self._update_future:
-            await self._update_future
+        if self._update_task:
+            await self._update_task
+
+    def cancel(self):
+        if self._update_task:
+            self._update_task.cancel()
+            self._update_task = None
 
     def set_result(self, result):
-        if self._update_future:
-            self._update_future.cancel()
+        self.cancel()
         self._result = result
 
         if not self._result:
             for callback in self._targets.values():
                 callback('')
         else:
-            self._update_future = asyncio.ensure_future(self._update())
+            # Schedule calls of SearchResult attributes that are coroutine
+            # functions
+            self._update_task = asyncio.ensure_future(self._update())
 
-        # Update plain, non-callable values immediately
-        if result is not None:
-            for attr, callback in self._targets.items():
-                value = getattr(result, attr)
-                if not callable(value):
-                    callback(self._value_as_string(value))
+            # Update plain, non-callable values immediately
+            if result is not None:
+                for attr, callback in self._targets.items():
+                    value = getattr(result, attr)
+                    if not callable(value):
+                        callback(self._value_as_string(value))
 
     async def _update(self):
-        tasks = self._make_update_tasks()
-        await asyncio.gather(*tasks)
-
-    def _make_update_tasks(self):
         tasks = []
         for attr, callback in self._targets.items():
             value = getattr(self._result, attr)
             if callable(value):
-                tasks.append(self._make_update_task(
-                    cache_key=(self._result.id, attr),
-                    value_getter=value,
+                tasks.append(self._call_callback(
                     callback=callback,
+                    value_getter=value,
+                    cache_key=(self._result.id, attr),
                 ))
-        return tasks
+        await asyncio.gather(*tasks)
 
     _cache = {}
     _delay_between_updates = 0.5
 
-    def _make_update_task(self, cache_key, value_getter, callback):
-        async def coro(cache_key, value_getter, callback):
-            cached_value = self._cache.get(cache_key, None)
-            if cached_value is not None:
-                callback(cached_value)
+    async def _call_callback(self, callback, value_getter, cache_key):
+        cached_value = self._cache.get(cache_key, None)
+        if cached_value is not None:
+            callback(cached_value)
+        else:
+            callback('Loading...')
+            await asyncio.sleep(self._delay_between_updates)
+            try:
+                value = await value_getter()
+            except errors.RequestError as e:
+                callback(f'ERROR: {str(e)}')
             else:
-                callback('Loading...')
-                await asyncio.sleep(self._delay_between_updates)
-                try:
-                    value = self._value_as_string(await value_getter())
-                except errors.RequestError as e:
-                    callback(f'ERROR: {str(e)}')
-                else:
-                    self._cache[cache_key] = value
-                    callback(value)
-        return asyncio.ensure_future(coro(cache_key, value_getter, callback))
+                value_str = self._value_as_string(value)
+                self._cache[cache_key] = value_str
+                callback(value_str)
 
     @staticmethod
     def _value_as_string(value):

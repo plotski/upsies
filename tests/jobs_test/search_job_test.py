@@ -1,10 +1,11 @@
 import asyncio
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call
 
 import pytest
 
 from upsies import errors
 from upsies.jobs import search
+from upsies.tools.dbs import Query
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -20,15 +21,15 @@ class AsyncMock(Mock):
 
 
 @pytest.fixture
-def job(tmp_path):
-    with patch('upsies.jobs.search._SearchThread', Mock()):
-        with patch('upsies.jobs.search._UpdateInfoThread', Mock()):
-            return search.SearchDbJob(
-                homedir=tmp_path,
-                ignore_cache=False,
-                db='imdb',
-                content_path='path/to/foo',
-            )
+def job(tmp_path, mocker):
+    mocker.patch('upsies.jobs.search._Searcher', Mock(return_value=Mock(wait=AsyncMock())))
+    mocker.patch('upsies.jobs.search._InfoUpdater', Mock(return_value=Mock(wait=AsyncMock())))
+    return search.SearchDbJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        db='imdb',
+        content_path='path/to/foo',
+    )
 
 
 def test_name(job):
@@ -39,42 +40,8 @@ def test_label(job):
     assert job.label == 'IMDb ID'
 
 
-@patch('upsies.jobs.search.SearchDbJob._make_query_from_path')
-def test_query(make_query_mock, tmp_path):
-    make_query_mock.return_value = 'query string'
-    sj = search.SearchDbJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        db='imdb',
-        content_path='path/to/foo',
-    )
-    assert sj.query == 'query string'
-
-
-@patch('upsies.utils.guessit.guessit')
-@pytest.mark.parametrize(
-    argnames=('guess', 'exp_query'),
-    argvalues=(
-        ({'title': 'The Foo'}, 'The Foo'),
-        ({'title': 'The Foo', 'year': '1234'}, 'The Foo year:1234'),
-        ({'title': 'The Foo', 'year': '1234', 'type': 'movie'}, 'The Foo year:1234 type:movie'),
-        ({'title': 'The Foo', 'year': '1234', 'type': 'series'}, 'The Foo year:1234 type:series'),
-        ({'title': 'The Foo', 'year': '1234', 'type': 'episode'}, 'The Foo year:1234 type:series'),
-        ({'title': 'The Foo', 'type': 'movie'}, 'The Foo type:movie'),
-        ({'title': 'The Foo', 'type': 'series'}, 'The Foo type:series'),
-        ({'title': 'The Foo', 'type': 'episode'}, 'The Foo type:series'),
-    ),
-    ids=lambda val: ','.join(f'{k}={v}' for k, v in val.items()) if isinstance(val, dict) else val,
-)
-def test_make_query_from_path(guessit_mock, tmp_path, guess, exp_query):
-    guessit_mock.return_value = guess
-    sj = search.SearchDbJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        db='imdb',
-        content_path='path/to/foo',
-    )
-    assert sj.query == exp_query
+def test_query(job):
+    assert isinstance(job.query, Query)
 
 
 def test_unknown_db(tmp_path):
@@ -87,50 +54,47 @@ def test_unknown_db(tmp_path):
         )
 
 
-@patch('upsies.jobs.search._UpdateInfoThread')
-@patch('upsies.jobs.search._SearchThread')
-def test_initialize_creates_search_thread(SearchThread_mock, UpdateInfoThread_mock, tmp_path):
-    sj = search.SearchDbJob(
+def test_initialize_creates_searcher(tmp_path, mocker):
+    Searcher_mock = mocker.patch('upsies.jobs.search._Searcher', Mock())
+    job = search.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db='imdb',
         content_path='path/to/foo',
     )
-    assert sj._search_thread is SearchThread_mock.return_value
-    assert SearchThread_mock.call_args_list == [call(
-        query='foo type:movie',
+    assert job._searcher is Searcher_mock.return_value
+    assert Searcher_mock.call_args_list == [call(
         search_coro=search.dbs.imdb.search,
-        results_callback=sj.handle_search_results,
-        error_callback=sj.error,
-        searching_callback=sj.handle_searching_status,
+        results_callback=job.handle_search_results,
+        error_callback=job.error,
+        searching_callback=job.handle_searching_status,
     )]
-    assert sj._search_thread.start.call_args_list == []
 
-@patch('upsies.jobs.search.SearchDbJob._make_update_info_func')
-@patch('upsies.jobs.search._UpdateInfoThread')
-@patch('upsies.jobs.search._SearchThread')
-def test_initialize_creates_update_info_thread(SearchThread_mock,
-                                               UpdateInfoThread_mock,
-                                               make_update_info_func_mock,
-                                               tmp_path):
-    make_update_info_func_mock.side_effect = (
-        'id func',
-        'summary func',
-        'title_original func',
-        'title_english func',
-        'keywords func',
-        'director func',
-        'cast func',
-        'country func',
+def test_initialize_creates_info_updater(tmp_path, mocker):
+    InfoUpdater_mock = mocker.patch('upsies.jobs.search._InfoUpdater', Mock())
+    make_update_info_func_mock = mocker.patch(
+        'upsies.jobs.search.SearchDbJob._make_update_info_func',
+        Mock(
+            side_effect=(
+                'id func',
+                'summary func',
+                'title_original func',
+                'title_english func',
+                'keywords func',
+                'director func',
+                'cast func',
+                'country func',
+            ),
+        )
     )
-    sj = search.SearchDbJob(
+    job = search.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db='imdb',
         content_path='path/to/foo',
     )
-    assert sj._update_info_thread is UpdateInfoThread_mock.return_value
-    assert UpdateInfoThread_mock.call_args_list == [call(
+    assert job._info_updater is InfoUpdater_mock.return_value
+    assert InfoUpdater_mock.call_args_list == [call(
         id='id func',
         summary='summary func',
         title_original='title_original func',
@@ -140,7 +104,6 @@ def test_initialize_creates_update_info_thread(SearchThread_mock,
         cast='cast func',
         country='country func',
     )]
-    assert sj._update_info_thread.start.call_args_list == []
     assert make_update_info_func_mock.call_args_list == [
         call('id'),
         call('summary'),
@@ -153,71 +116,61 @@ def test_initialize_creates_update_info_thread(SearchThread_mock,
     ]
 
 
-@patch('upsies.jobs.search.SearchDbJob.update_info')
-def test_make_update_info_func(update_info_mock, tmp_path):
-    sj = search.SearchDbJob(
+def test_make_update_info_func(tmp_path, mocker):
+    mocker.patch('upsies.jobs.search.SearchDbJob.update_info')
+    job = search.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db='imdb',
         content_path='path/to/foo',
     )
-    func = sj._make_update_info_func('key')
+    func = job._make_update_info_func('key')
     func('value 1')
-    assert sj.update_info.call_args_list == [call('key', 'value 1')]
+    assert job.update_info.call_args_list == [call('key', 'value 1')]
     func('value 2')
-    assert sj.update_info.call_args_list == [call('key', 'value 1'), call('key', 'value 2')]
+    assert job.update_info.call_args_list == [call('key', 'value 1'), call('key', 'value 2')]
 
 
-def test_execute_starts_threads_in_correct_order(job):
-    cbs = Mock()
-    job._search_thread.start = cbs.start_search_thread
-    job._update_info_thread.start = cbs.start_update_info_thread
-    assert cbs.mock_calls == []
+def test_execute_does_initial_search(job):
+    assert job._searcher.search.call_args_list == []
     job.execute()
-    assert cbs.mock_calls == [
-        call.start_update_info_thread(),
-        call.start_search_thread(),
-    ]
+    assert job._searcher.search.call_args_list == [call(job.query)]
 
 
-def test_finish(job):
-    assert not job.is_finished
+def test_finish_cancels_info_updater(job):
+    job._info_updater = Mock()
     job.finish()
-    assert job.is_finished
-    assert job._search_thread.stop.call_args_list == [call()]
-    assert job._update_info_thread.stop.call_args_list == [call()]
+    assert job._info_updater.cancel.call_args_list == [call()]
 
 
-def test_wait(job):
-    job._search_thread.join = AsyncMock()
-    job._update_info_thread.join = AsyncMock()
+@pytest.mark.asyncio
+async def test_wait(job):
+    assert job._searcher.wait.call_args_list == []
+    assert job._info_updater.wait.call_args_list == []
     asyncio.get_event_loop().call_soon(job.finish)
-    asyncio.get_event_loop().run_until_complete(job.wait())
+    await job.wait()
     assert job.is_finished
-    assert job._search_thread.join.call_args_list == [call()]
-    assert job._update_info_thread.join.call_args_list == [call()]
+    assert job._searcher.wait.call_args_list == [call()]
+    assert job._info_updater.wait.call_args_list == [call()]
 
 
 def test_search_before_finished(job):
-    job.execute()
     job.search('foo')
-    assert job._search_thread.search.call_args_list == [call('foo')]
+    assert job._searcher.search.call_args_list == [call(Query(title='foo'))]
 
 def test_search_after_finished(job):
-    job.execute()
     job.finish()
     job.search('foo')
-    assert job._search_thread.search.call_args_list == []
+    assert job._searcher.search.call_args_list == []
 
 def test_search_updates_query_property(job):
-    job.execute()
     job.search('Foo')
-    assert job.query == 'Foo'
+    assert job.query == Query(title='Foo')
     job.search('BAR')
-    assert job.query == 'BAR'
+    assert job.query == Query(title='BAR')
     job.finish()
     job.search('baZ')
-    assert job.query == 'BAR'
+    assert job.query == Query(title='BAR')
 
 
 def test_searching_status(job):
@@ -236,19 +189,17 @@ def test_search_results(job):
     results = ('foo', 'bar', 'baz')
     cb = Mock()
     job.on_search_results(cb)
-    job.execute()
     job.handle_search_results(results)
+    assert job._info_updater.set_result.call_args_list == [call(results[0])]
     assert cb.call_args_list == [call(results)]
-    assert job._update_info_thread.set_result.call_args_list == [call(results[0])]
 
 def test_no_search_results(job):
     results = ()
     cb = Mock()
     job.on_search_results(cb)
-    job.execute()
     job.handle_search_results(results)
+    assert job._info_updater.set_result.call_args_list == [call(None)]
     assert cb.call_args_list == [call(results)]
-    assert job._update_info_thread.set_result.call_args_list == [call(None)]
 
 
 def test_update_info(job):
@@ -260,7 +211,7 @@ def test_update_info(job):
 
 def test_result_focused(job):
     job.result_focused('The Result')
-    assert job._update_info_thread.set_result.call_args_list == [call('The Result')]
+    assert job._info_updater.set_result.call_args_list == [call('The Result')]
 
 
 def test_id_selected(job):
@@ -278,315 +229,331 @@ def test_id_selected_while_searching(job):
 
 
 @pytest.fixture
-def search_thread():
-    return search._SearchThread(
+async def searcher():
+    searcher = search._Searcher(
         search_coro=AsyncMock(),
         results_callback=Mock(),
         error_callback=Mock(),
         searching_callback=Mock(),
     )
-
-
-def test_SearchThread_query():
-    st = search._SearchThread(
-        query=' The\tFoo \n',
-        search_coro=AsyncMock(),
-        results_callback=Mock(),
-        error_callback=Mock(),
-        searching_callback=Mock(),
-    )
-    assert st.query == 'the foo'
-
-
-def test_SearchThread_initialize():
-    search_coro = AsyncMock()
-    results_cb = Mock()
-    error_cb = Mock()
-    searching_cb = Mock()
-    search_thread = search._SearchThread(
-        search_coro=search_coro,
-        results_callback=results_cb,
-        error_callback=error_cb,
-        searching_callback=searching_cb,
-    )
-    assert search_thread._search_coro == search_coro
-    assert search_thread._results_callback == results_cb
-    assert search_thread._searching_callback == searching_cb
-    assert search_thread._error_callback == error_cb
-    assert search_thread._previous_search_time == 0
-    assert search_thread.query == ''
-
-
-def test_SearchThread_search(search_thread):
-    search_thread.start()
-    with patch.multiple(search_thread, unblock=Mock(), cancel_work=Mock()):
-        search_thread.search('The Foo')
-        assert search_thread.cancel_work.call_args_list == [call()]
-        assert search_thread.unblock.call_args_list == [call()]
-        search_thread.search('The Bar')
-        assert search_thread.cancel_work.call_args_list == [call(), call()]
-        assert search_thread.unblock.call_args_list == [call(), call()]
+    yield searcher
+    await searcher.wait()
 
 
 @pytest.mark.asyncio
-async def test_SearchThread_work(search_thread):
-    mock_methods = {
-        '_delay': AsyncMock(),
-        '_results_callback': Mock(),
-        '_searching_callback': Mock(),
-        '_parse_query': Mock(return_value=('The Foo', {'year': '2002'})),
-        '_search_coro': AsyncMock(return_value=('The Foo', 'The Foo 2')),
-        '_error_callback': Mock(),
-        '_query': 'The Foo year:2002',
-    }
-    mocks = Mock(**mock_methods)
-    with patch.multiple(search_thread, **mock_methods):
-        await search_thread.work()
-        assert mocks.mock_calls == [
-            call._results_callback(()),
-            call._searching_callback(True),
-            call._delay(),
-            call._parse_query('The Foo year:2002'),
-            call._search_coro('The Foo', year='2002'),
-            call._searching_callback(False),
-            call._results_callback(('The Foo', 'The Foo 2')),
-        ]
+async def test_Searcher_wait_while_not_searching(searcher):
+    searcher._search_task = None
+    await searcher.wait()
+    assert searcher._search_task is None
 
 @pytest.mark.asyncio
-async def test_SearchThread_work_handles_RequestError(search_thread):
+async def test_Searcher_wait_while_searching(searcher):
+    searcher._search_task = asyncio.ensure_future(AsyncMock())
+    await searcher.wait()
+    assert searcher._search_task.done()
+
+
+def test_Searcher_search_while_not_searching(searcher, mocker):
+    mocker.patch.object(searcher, '_search', Mock(return_value=AsyncMock()))
+    searcher._search_task = None
+    searcher.search('mock query')
+    assert searcher._search.call_args_list == [call('mock query')]
+    assert isinstance(searcher._search_task, asyncio.Task)
+    assert not searcher._search_task.done()
+    assert not searcher._search_task.cancelled()
+
+def test_Searcher_search_while_searching(searcher, mocker):
+    mocker.patch.object(searcher, '_search', Mock(return_value=AsyncMock()))
+    old_task = searcher._search_task = Mock()
+    searcher.search('mock query')
+    assert searcher._search.call_args_list == [call('mock query')]
+    assert isinstance(searcher._search_task, asyncio.Task)
+    new_task = searcher._search_task
+    assert new_task is not old_task
+    assert old_task.cancel.call_args_list == [call()]
+    assert not new_task.done()
+    assert not new_task.cancelled()
+
+
+@pytest.mark.asyncio
+async def test_Searcher__search_reports_results(searcher, mocker):
     mock_methods = {
-        '_delay': AsyncMock(),
         '_results_callback': Mock(),
         '_searching_callback': Mock(),
-        '_parse_query': Mock(return_value=('The Foo', {'year': '2002'})),
-        '_search_coro': AsyncMock(side_effect=errors.RequestError('No')),
+        '_delay': AsyncMock(),
+        '_search_coro': AsyncMock(return_value=('mock result 1', 'mock result 2')),
         '_error_callback': Mock(),
-        '_query': 'The Foo year:2002',
     }
     mocks = Mock(**mock_methods)
-    with patch.multiple(search_thread, **mock_methods):
-        await search_thread.work()
-        assert mocks.mock_calls == [
-            call._results_callback(()),
-            call._searching_callback(True),
-            call._delay(),
-            call._parse_query('The Foo year:2002'),
-            call._search_coro('The Foo', year='2002'),
-            call._error_callback(errors.RequestError('No')),
-            call._searching_callback(False),
-            call._results_callback(()),
-        ]
+    mocker.patch.multiple(searcher, **mock_methods)
+    await searcher._search('mock query')
+    assert mocks.mock_calls == [
+        call._results_callback(()),
+        call._searching_callback(True),
+        call._delay(),
+        call._search_coro('mock query'),
+        call._searching_callback(False),
+        call._results_callback(('mock result 1', 'mock result 2')),
+    ]
+
+@pytest.mark.asyncio
+async def test_Searcher__search_reports_error(searcher, mocker):
+    mock_methods = {
+        '_results_callback': Mock(),
+        '_searching_callback': Mock(),
+        '_delay': AsyncMock(),
+        '_search_coro': AsyncMock(side_effect=errors.RequestError('internet is down')),
+        '_error_callback': Mock(),
+    }
+    mocks = Mock(**mock_methods)
+    mocker.patch.multiple(searcher, **mock_methods)
+    await searcher._search('mock query')
+    assert mocks.mock_calls == [
+        call._results_callback(()),
+        call._searching_callback(True),
+        call._delay(),
+        call._search_coro('mock query'),
+        call._error_callback(errors.RequestError('internet is down')),
+        call._searching_callback(False),
+        call._results_callback(()),
+    ]
 
 
-@pytest.mark.parametrize(
-    argnames=('query', 'exp_query', 'exp_kwargs'),
-    argvalues=(
-        ('\tThe    Foo\n', 'The Foo', {}),
-        ('The Foo year:2000', 'The Foo', {'year': '2000'}),
-        ('The Foo type:movie', 'The Foo', {'type': 'movie'}),
-        ('The Foo type:series', 'The Foo', {'type': 'series'}),
-        ('The Foo type:tv', 'The Foo', {'type': 'series'}),
-        ('The Foo type:show', 'The Foo', {'type': 'series'}),
-        ('The Foo type:episode', 'The Foo', {'type': 'series'}),
-        ('The Foo type:season', 'The Foo', {'type': 'series'}),
-        ('1984 type:movie year:2000', '1984', {'type': 'movie', 'year': '2000'}),
-        ('Bar type:something year:else', 'Bar type:something year:else', {}),
-    ),
-    ids=lambda val: str(val),
-)
-def test_SearchThread_parse_query(query, exp_query, exp_kwargs):
-    args, kwargs = search._SearchThread._parse_query(query)
-    assert args == exp_query
-    assert kwargs == exp_kwargs
-
-
-@patch('upsies.jobs.search.time_monotonic')
-@patch('asyncio.sleep', new_callable=AsyncMock)
-def test_SearchThread_delay_sleeps(sleep_mock, monotonic_mock, search_thread):
-    search_thread._min_seconds_between_searches = 5
-    search_thread._previous_search_time = 1000
-    monotonic_mock.side_effect = (1003, 1003.001)
-    asyncio.get_event_loop().run_until_complete(search_thread._delay())
+@pytest.mark.asyncio
+async def test_Searcher_delay_sleeps(searcher, mocker):
+    mocker.patch('upsies.jobs.search.time_monotonic', Mock(side_effect=(1003, 1003.001)))
+    sleep_mock = mocker.patch('asyncio.sleep', new_callable=AsyncMock)
+    searcher._min_seconds_between_searches = 5
+    searcher._previous_search_time = 1000
+    await searcher._delay()
     assert sleep_mock.call_args_list == [call(2)]
-    assert search_thread._previous_search_time == 1003.001
+    assert searcher._previous_search_time == 1003.001
 
-@patch('upsies.jobs.search.time_monotonic')
-@patch('asyncio.sleep', new_callable=AsyncMock)
-def test_SearchThread_delay_does_not_sleep(sleep_mock, monotonic_mock, search_thread):
-    search_thread._min_seconds_between_searches = 5
-    search_thread._previous_search_time = 1000
-    monotonic_mock.side_effect = (1006, 1006.001)
-    asyncio.get_event_loop().run_until_complete(search_thread._delay())
+@pytest.mark.asyncio
+async def test_Searcher_delay_does_not_sleep(searcher, mocker):
+    mocker.patch('upsies.jobs.search.time_monotonic', Mock(side_effect=(1006, 1006.001)))
+    sleep_mock = mocker.patch('asyncio.sleep', new_callable=AsyncMock)
+    searcher._min_seconds_between_searches = 5
+    searcher._previous_search_time = 1000
+    await searcher._delay()
     assert sleep_mock.call_args_list == []
-    assert search_thread._previous_search_time == 1006.001
+    assert searcher._previous_search_time == 1006.001
 
 
 @pytest.fixture
-def info_thread():
-    return search._UpdateInfoThread()
+async def info_updater():
+    info_updater = search._InfoUpdater()
+    yield info_updater
+    await info_updater.wait()
 
 
-def test_UpdateInfoThread_set_result_schedules_update(info_thread):
-    with patch.multiple(info_thread, unblock=Mock(), cancel_work=Mock()):
-        assert info_thread._result is None
-        assert info_thread.cancel_work.call_args_list == []
-        assert info_thread.unblock.call_args_list == []
-        info_thread.set_result('mock result')
-        assert info_thread._result == 'mock result'
-        assert info_thread.cancel_work.call_args_list == [call()]
-        assert info_thread.unblock.call_args_list == [call()]
+@pytest.mark.asyncio
+async def test_InfoUpdater_cancel_while_not_updating(info_updater):
+    info_updater._update_task = None
+    info_updater.cancel()
+    await asyncio.sleep(0)
+    assert info_updater._update_task is None
 
-def test_UpdateInfoThread_set_result_updates_available_info_immediately(info_thread):
-    targets = {
-        'title': Mock(),
-        'year': Mock(),
-        'summary': Mock(),
+@pytest.mark.asyncio
+async def test_InfoUpdater_cancel_while_updating(info_updater):
+    old_update_task = info_updater._update_task = asyncio.ensure_future(asyncio.sleep(10))
+    info_updater.cancel()
+    await asyncio.sleep(0)
+    assert old_update_task.cancelled()
+    assert old_update_task.done()
+    assert info_updater._update_task is None
+
+
+@pytest.mark.asyncio
+async def test_InfoUpdater_wait_while_not_updating(info_updater):
+    info_updater._update_task = None
+    await info_updater.wait()
+    assert info_updater._update_task is None
+
+@pytest.mark.asyncio
+async def test_InfoUpdater_wait_while_updating(info_updater):
+    info_updater._update_task = asyncio.ensure_future(AsyncMock())
+    await info_updater.wait()
+    assert info_updater._update_task.done()
+
+
+@pytest.mark.asyncio
+async def test_InfoUpdater_set_result_cancels_previous_update_task(info_updater, mocker):
+    old_update_task = info_updater._update_task = asyncio.ensure_future(asyncio.sleep(10))
+    info_updater.set_result('mock result')
+    await asyncio.sleep(0)  # _update_task.cancel() to propagate
+    assert old_update_task.cancelled()
+    assert info_updater._update_task is not old_update_task
+
+@pytest.mark.asyncio
+async def test_InfoUpdater_set_result_does_not_cancel_previous_update_task(info_updater, mocker):
+    info_updater._update_task = None
+    info_updater.set_result('mock result')
+    assert isinstance(info_updater._update_task, asyncio.Task)
+
+@pytest.mark.asyncio
+async def test_InfoUpdater_set_result_sets_result(info_updater, mocker):
+    info_updater.set_result('mock result 1')
+    assert info_updater._result == 'mock result 1'
+    task1 = info_updater._update_task
+    assert isinstance(task1, asyncio.Task)
+    info_updater.set_result('mock result 2')
+    assert info_updater._result == 'mock result 2'
+    task2 = info_updater._update_task
+    assert isinstance(task2, asyncio.Task)
+    assert task1 is not task2
+
+@pytest.mark.asyncio
+async def test_InfoUpdater_set_result_calls_targets_with_no_result_set(info_updater, mocker):
+    cbs = Mock()
+    info_updater._targets = {
+        'title': cbs.title,
+        'year': cbs.year,
+        'genre': cbs.genre,
+    }
+    info_updater.set_result(None)
+    assert cbs.mock_calls == [
+        call.title(''),
+        call.year(''),
+        call.genre(''),
+    ]
+    assert info_updater._update_task is None
+
+@pytest.mark.asyncio
+async def test_InfoUpdater_set_result_calls_targets_with_result_set(info_updater, mocker):
+    mock_update = Mock(return_value=AsyncMock())
+    mocker.patch.object(info_updater, '_update', mock_update)
+    cbs = Mock()
+    info_updater._targets = {
+        'title': cbs.title,
+        'year': cbs.year,
+        'genre': cbs.genre,
     }
     result = Mock(
         title='The Foo',
-        year='2002',
-        summary=AsyncMock(),
+        year='2015',
+        genre=AsyncMock(return_value='bar'),
     )
-    with patch.multiple(info_thread, unblock=Mock(), cancel_work=Mock(), _targets=targets):
-        info_thread.set_result(result)
-    assert targets['title'].call_args_list == [call('The Foo')]
-    assert targets['year'].call_args_list == [call('2002')]
-    assert targets['summary'].call_args_list == []
+    old_update_task = info_updater._update_task
+    info_updater.set_result(result)
+    assert cbs.mock_calls == [
+        call.title('The Foo'),
+        call.year('2015'),
+    ]
+    assert old_update_task is not info_updater._update_task
+    assert isinstance(info_updater._update_task, asyncio.Task)
+    assert mock_update.call_args_list == [call()]
 
 
 @pytest.mark.asyncio
-async def test_UpdateInfoThread_work_without_result_set(info_thread):
-    targets = {
+async def test_InfoUpdater_update(info_updater, mocker):
+    mocker.patch.object(info_updater, '_call_callback', Mock())
+    info_updater._targets = {
         'title': Mock(),
         'year': Mock(),
+        'genre': Mock(),
         'summary': Mock(),
     }
-    info_thread._result = None
-    with patch.multiple(info_thread, _targets=targets):
-        await info_thread.work()
-    assert targets['title'].call_args_list == [call('')]
-    assert targets['year'].call_args_list == [call('')]
-    assert targets['summary'].call_args_list == [call('')]
-
-@pytest.mark.asyncio
-async def test_UpdateInfoThread_work_with_result_set(info_thread):
-    targets = {
-        'title': Mock(),
-        'year': Mock(),
-        'summary': Mock(),
-    }
-    update_tasks = (AsyncMock(), AsyncMock())
-    info_thread._result = 'mock result'
-    with patch.multiple(info_thread, _targets=targets, _make_update_tasks=Mock(return_value=update_tasks)):
-        await info_thread.work()
-        assert info_thread._make_update_tasks.call_args_list == [call()]
-    for task in update_tasks:
-        assert task.call_args_list == [call()]
-    assert targets['title'].call_args_list == []
-    assert targets['year'].call_args_list == []
-    assert targets['summary'].call_args_list == []
-
-
-def test_UpdateInfoThread_make_update_tasks(info_thread):
-    targets = {'year': Mock(), 'summary': Mock(), 'cast': Mock(), 'country': Mock()}
-    info_thread._result = Mock(
+    info_updater._result = Mock(
         id='123',
-        year=2003,
-        summary='Something happens.',
-        cast=AsyncMock(return_value=('She', 'He', 'Doggo')),
-        country=AsyncMock(return_value='Antarctica'),
+        title='The Foo',
+        year='2015',
+        genre=AsyncMock(return_value=('She', 'He', 'Doggo')),
+        summary=AsyncMock(return_value='Something happens.'),
     )
-    with patch.multiple(info_thread, _make_update_task=Mock(), _targets=targets):
-        info_thread._make_update_task.side_effect = ('cast task', 'country task')
-        assert info_thread._make_update_tasks() == ['cast task', 'country task']
-        assert info_thread._make_update_task.call_args_list == [
-            call(
-                cache_key=(info_thread._result.id, 'cast'),
-                value_getter=info_thread._result.cast,
-                callback=targets['cast'],
-            ),
-            call(
-                cache_key=(info_thread._result.id, 'country'),
-                value_getter=info_thread._result.country,
-                callback=targets['country'],
-            ),
-        ]
+    info_updater._call_callback.side_effect = (
+        info_updater._result.genre,
+        info_updater._result.summary,
+    )
+    await info_updater._update()
+    assert info_updater._call_callback.call_args_list == [
+        call(
+            cache_key=('123', 'genre'),
+            value_getter=info_updater._result.genre,
+            callback=info_updater._targets['genre'],
+        ),
+        call(
+            cache_key=('123', 'summary'),
+            value_getter=info_updater._result.summary,
+            callback=info_updater._targets['summary'],
+        ),
+    ]
+    assert info_updater._targets['title'].call_args_list == []
+    assert info_updater._targets['year'].call_args_list == []
+    assert info_updater._targets['genre'].call_args_list == []
+    assert info_updater._targets['summary'].call_args_list == []
 
 
-def test_UpdateInfoThread_make_update_task_gets_value_from_value_getter(info_thread):
+@pytest.mark.asyncio
+async def test_UpdateInfoThread_call_callback_gets_value_from_value_getter(info_updater, mocker):
     mocks = Mock(
         value_getter=AsyncMock(return_value='The Value'),
         callback=Mock(),
         sleep_mock=AsyncMock(),
     )
-    info_thread._cache.clear()
-    with patch('asyncio.sleep', mocks.sleep_mock):
-        info_thread._loop.run_until_complete(
-            info_thread._make_update_task(
-                cache_key=('id', 'key'),
-                value_getter=mocks.value_getter,
-                callback=mocks.callback,
-            )
-        )
+    mocker.patch('asyncio.sleep', mocks.sleep_mock)
+    info_updater._cache.clear()
+    await info_updater._call_callback(
+        cache_key=('id', 'key'),
+        value_getter=mocks.value_getter,
+        callback=mocks.callback,
+    )
     assert mocks.mock_calls == [
         call.callback('Loading...'),
-        call.sleep_mock(info_thread._delay_between_updates),
+        call.sleep_mock(info_updater._delay_between_updates),
         call.value_getter(),
         call.callback('The Value'),
     ]
-    assert info_thread._cache[('id', 'key')] == 'The Value'
+    assert info_updater._cache[('id', 'key')] == 'The Value'
 
-def test_UpdateInfoThread_make_update_task_handles_RequestError(info_thread):
+@pytest.mark.asyncio
+async def test_UpdateInfoThread_call_callback_gets_value_from_cache(info_updater, mocker):
+    mocks = Mock(
+        value_getter=AsyncMock(return_value='The Value'),
+        callback=Mock(),
+        sleep_mock=AsyncMock(),
+    )
+    mocker.patch('asyncio.sleep', mocks.sleep_mock)
+    info_updater._cache[('id', 'key')] = 'The Cached Value'
+    await info_updater._call_callback(
+        callback=mocks.callback,
+        value_getter=mocks.value_getter,
+        cache_key=('id', 'key'),
+    )
+    assert mocks.mock_calls == [
+        call.callback('The Cached Value'),
+    ]
+    assert info_updater._cache[('id', 'key')] == 'The Cached Value'
+
+@pytest.mark.asyncio
+async def test_UpdateInfoThread_call_callback_handles_RequestError(info_updater, mocker):
     mocks = Mock(
         value_getter=AsyncMock(side_effect=errors.RequestError('Nah')),
         callback=Mock(),
         sleep_mock=AsyncMock(),
     )
-    info_thread._cache.clear()
-    with patch('asyncio.sleep', mocks.sleep_mock):
-        info_thread._loop.run_until_complete(
-            info_thread._make_update_task(
-                cache_key=('id', 'key'),
-                value_getter=mocks.value_getter,
-                callback=mocks.callback,
-            )
-        )
+    mocker.patch('asyncio.sleep', mocks.sleep_mock)
+    info_updater._cache.clear()
+    await info_updater._call_callback(
+        callback=mocks.callback,
+        value_getter=mocks.value_getter,
+        cache_key=('id', 'key'),
+    )
     assert mocks.mock_calls == [
         call.callback('Loading...'),
-        call.sleep_mock(info_thread._delay_between_updates),
+        call.sleep_mock(info_updater._delay_between_updates),
         call.value_getter(),
         call.callback('ERROR: Nah'),
     ]
-    assert info_thread._cache == {}
+    assert info_updater._cache == {}
 
 
-def test_UpdateInfoThread_make_update_task_gets_value_from_cache(info_thread):
-    mocks = Mock(
-        value_getter=AsyncMock(return_value='The Value'),
-        callback=Mock(),
-        sleep_mock=AsyncMock(),
-    )
-    info_thread._cache[('id', 'key')] = 'The Other Value'
-    with patch('asyncio.sleep', mocks.sleep_mock):
-        info_thread._loop.run_until_complete(
-            info_thread._make_update_task(
-                cache_key=('id', 'key'),
-                value_getter=mocks.value_getter,
-                callback=mocks.callback,
-            )
-        )
-    assert mocks.mock_calls == [
-        call.callback('The Other Value'),
-    ]
-    assert info_thread._cache[('id', 'key')] == 'The Other Value'
+def test_value_as_string_with_string(info_updater):
+    assert info_updater._value_as_string('foo bar baz') == 'foo bar baz'
 
+def test_value_as_string_with_iterable(info_updater):
+    assert info_updater._value_as_string(('foo', 'bar', 'baz')) == 'foo, bar, baz'
+    assert info_updater._value_as_string(['foo', 2, {3}]) == 'foo, 2, {3}'
 
-def test_value_as_string_with_string():
-    assert search._UpdateInfoThread._value_as_string('foo bar baz') == 'foo bar baz'
-
-def test_value_as_string_with_iterable():
-    assert search._UpdateInfoThread._value_as_string(('foo', 'bar', 'baz')) == 'foo, bar, baz'
-    assert search._UpdateInfoThread._value_as_string(['foo', 2, {3}]) == 'foo, 2, {3}'
-
-def test_value_as_string_with_other_type():
-    assert search._UpdateInfoThread._value_as_string(type) == str(type)
+def test_value_as_string_with_other_type(info_updater):
+    assert info_updater._value_as_string(type) == str(type)
