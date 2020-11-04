@@ -69,6 +69,7 @@ class SearchDbJobWidget(JobWidgetBase):
                 self.job.id_selected(selected.id)
             else:
                 self.job.id_selected()
+        self.invalidate()
 
     def handle_searching_status(self, is_searching):
         self._widgets['search_results'].is_searching = is_searching
