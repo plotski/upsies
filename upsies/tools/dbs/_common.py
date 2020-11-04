@@ -32,7 +32,7 @@ class Query:
 
     _types = ('movie', 'series')
     _movie_types = ('movie', 'film')
-    _series_types = ('series', 'tv', 'show', 'episode', 'season')
+    _series_types = ('series', 'tv', 'show', 'tvshow', 'episode', 'season')
     _kw_regex = {
         'year': r'year:(\d{4})',
         'type': rf'type:({"|".join(_movie_types + _series_types)})',

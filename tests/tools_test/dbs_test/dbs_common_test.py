@@ -37,6 +37,11 @@ def test_Query_type():
         ('The Title year:2003', dbs.Query('The Title', type=None, year='2003')),
         ('The Title type:movie year:2000', dbs.Query('The Title', type='movie', year='2000')),
         ('The Title type:series year:2003', dbs.Query('The Title', type='series', year='2003')),
+        ('The Title type:film', dbs.Query('The Title', type='movie')),
+        ('The Title type:tv', dbs.Query('The Title', type='series')),
+        ('The Title type:show', dbs.Query('The Title', type='series')),
+        ('The Title type:tvshow', dbs.Query('The Title', type='series')),
+        ('The Title type:episode', dbs.Query('The Title', type='series')),
     ),
 )
 def test_Query_from_string(string, exp_query):
