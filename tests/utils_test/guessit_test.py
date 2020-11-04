@@ -1,4 +1,4 @@
-from unittest.mock import call, patch
+from unittest.mock import Mock, call, patch
 
 import pytest
 
@@ -139,6 +139,23 @@ source_samples = (
 )
 @pytest.mark.parametrize('source, exp_source', source_samples)
 def test_source(source, exp_source):
+    release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
+    expected = {'type': 'movie', 'title': 'The Foo', 'year': '1984', 'season': None, 'episode': None,
+                'screen_size': '1080p', 'streaming_service': None, 'source': exp_source,
+                'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}
+    assert_guess(release_name, **expected)
+
+
+source_from_encoder_samples = (
+    ('WEB', 'x264', 'WEBRip'),
+    ('Web', 'x265', 'WEBRip'),
+    ('web', 'H.264', 'WEB-DL'),
+    ('WEB', 'H.265', 'WEB-DL'),
+    ('WEB', None, 'WEB'),
+)
+@pytest.mark.parametrize('source, video_format, exp_source', source_from_encoder_samples)
+def test_source_from_encoder(source, video_format, exp_source, mocker):
+    mocker.patch('upsies.tools.mediainfo.video_format', Mock(return_value=video_format))
     release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
     expected = {'type': 'movie', 'title': 'The Foo', 'year': '1984', 'season': None, 'episode': None,
                 'screen_size': '1080p', 'streaming_service': None, 'source': exp_source,

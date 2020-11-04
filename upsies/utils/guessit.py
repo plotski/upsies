@@ -2,6 +2,7 @@ import functools
 import os
 import re
 
+from ..tools import mediainfo
 from ..utils import LazyModule, fs
 
 import logging  # isort:skip
@@ -135,6 +136,14 @@ def _normalize_source(guess, path):
             if regex.search(source):
                 guess['source'] = source_fixed
                 break
+
+        if guess['source'].lower() == 'web':
+            # Guess WEBRip and WEB-DL based on encoder
+            video_format = mediainfo.video_format(path)
+            if video_format in ('x264', 'x265'):
+                guess['source'] = 'WEBRip'
+            elif video_format in ('H.264', 'H.265'):
+                guess['source'] = 'WEB-DL'
 
         # guessit doesn't detect "Hybrid"
         for name in _file_and_parent(path):
