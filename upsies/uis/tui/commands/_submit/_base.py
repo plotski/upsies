@@ -12,11 +12,9 @@ class SubmitCommandBase(CommandBase, abc.ABC):
     """
     Base class for all commands that submit to a tracker
 
-    It provides jobs for creating the torrent and submitting it to the
-    tracker.
-
-    Picking a DB ID, creating screenshots, etc must be added by the child class
-    by overriding the :attr:`jobs_before_upload` and :attr:`jobs_after_upload`.
+    It provides some generic jobs like torrent creation that should be used by
+    subclasses. Picking a DB ID, creating screenshots, etc is implemented by the
+    subclass.
     """
 
     @cache.property
