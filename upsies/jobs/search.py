@@ -85,6 +85,7 @@ class SearchDbJob(JobBase):
         if not self.is_finished:
             self._query = dbs.Query.from_string(query)
             self._searcher.search(self._query)
+            self.clear_errors()
 
     def on_searching_status(self, callback):
         self._searching_status_callbacks.append(callback)
