@@ -13,6 +13,19 @@ natsort = LazyModule(module='natsort', namespace=globals())
 
 
 class ScreenshotsJob(JobBase):
+    """
+    Create screenshots
+
+    :param str content_path: Path to file or directory (see
+        :func:`~.video.first_video`)
+    :param timestamps: Positions in the video to make screenshots
+    :type timestamps: sequence of "[[HH:]MM:]SS" strings or seconds
+    :param number: Amount of screenshots to make
+
+    If `timestamps` and `number` are not given, screenshot positions are
+    generated.
+    """
+
     name = 'screenshots'
     label = 'Screenshots'
 
