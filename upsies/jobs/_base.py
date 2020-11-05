@@ -349,18 +349,10 @@ class JobBase(abc.ABC):
         Path to directory that stores cache files
 
         The directory is created if it doesn't exist.
-
-        :raise PermissionError: if directory creation fails
         """
         path = os.path.join(self.homedir, '.output')
         if not os.path.exists(path):
-            try:
-                os.mkdir(path)
-            except OSError as e:
-                if getattr(e, 'strerror', None):
-                    raise errors.PermissionError(f'{path}: {e.strerror}')
-                else:
-                    raise errors.PermissionError(f'{path}: Unable to create directory')
+            os.mkdir(path)
         return path
 
     @cache.property

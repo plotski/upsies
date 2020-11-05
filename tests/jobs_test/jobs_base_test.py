@@ -364,15 +364,6 @@ def test_cache_file_is_writable(tmp_path):
         f.write('something')
     assert open(job.cache_file, 'r').read() == 'something'
 
-def test_cache_file_cannot_create_output_directory(tmp_path):
-    job = FooJob(homedir=tmp_path, ignore_cache=False)
-    tmp_path.chmod(0o440)
-    try:
-        with pytest.raises(errors.PermissionError, match=rf'^{tmp_path / ".output"}: Permission denied$'):
-            job.cache_file
-    finally:
-        tmp_path.chmod(0o770)
-
 def test_cache_file_name_is_never_too_long(tmp_path):
     class BarJob(FooJob):
         def initialize(self, **kwargs):
