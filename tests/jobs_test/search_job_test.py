@@ -95,6 +95,7 @@ def test_initialize_creates_info_updater(tmp_path, mocker):
     )
     assert job._info_updater is InfoUpdater_mock.return_value
     assert InfoUpdater_mock.call_args_list == [call(
+        error_callback=job.error,
         targets={
             'id': 'id func',
             'summary': 'summary func',
@@ -344,7 +345,10 @@ async def test_Searcher_delay_does_not_sleep(searcher, mocker):
 
 @pytest.fixture
 async def info_updater():
-    info_updater = search._InfoUpdater(targets={})
+    info_updater = search._InfoUpdater(
+        targets={},
+        error_callback=Mock(),
+    )
     yield info_updater
     await info_updater.wait()
 
@@ -532,8 +536,10 @@ async def test_UpdateInfoThread_call_callback_handles_RequestError(info_updater,
     mocks = Mock(
         value_getter=AsyncMock(side_effect=errors.RequestError('Nah')),
         callback=Mock(),
+        error_callback=Mock(),
         sleep_mock=AsyncMock(),
     )
+    info_updater._error_callback = mocks.error_callback
     mocker.patch('asyncio.sleep', mocks.sleep_mock)
     info_updater._cache.clear()
     await info_updater._call_callback(
@@ -545,7 +551,8 @@ async def test_UpdateInfoThread_call_callback_handles_RequestError(info_updater,
         call.callback('Loading...'),
         call.sleep_mock(info_updater._delay_between_updates),
         call.value_getter(),
-        call.callback('ERROR: Nah'),
+        call.callback(''),
+        call.error_callback(errors.RequestError('Nah')),
     ]
     assert info_updater._cache == {}
 

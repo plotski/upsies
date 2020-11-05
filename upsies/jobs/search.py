@@ -50,6 +50,7 @@ class SearchDbJob(JobBase):
             error_callback=self.error,
         )
         self._info_updater = _InfoUpdater(
+            error_callback=self.error,
             targets={
                 'id': self._make_update_info_func('id'),
                 'summary': self._make_update_info_func('summary'),
@@ -179,7 +180,7 @@ class _Searcher:
 
 
 class _InfoUpdater:
-    def __init__(self, targets):
+    def __init__(self, targets, error_callback):
         super().__init__()
         # `targets` maps names of SearchResult attributes to callbacks that get
         # the value of each attribute. For example, {"title": handle_title}
@@ -188,6 +189,7 @@ class _InfoUpdater:
         # return the actual value. In that case, call
         # handle_title(await search_result.title()).
         self._targets = targets
+        self._error_callback = error_callback
         # SearchResult instance or None
         self._result = None
         self._update_task = None
@@ -245,7 +247,8 @@ class _InfoUpdater:
             try:
                 value = await value_getter()
             except errors.RequestError as e:
-                callback(f'ERROR: {str(e)}')
+                callback('')
+                self._error_callback(e)
             else:
                 value_str = self._value_as_string(value)
                 self._cache[cache_key] = value_str
