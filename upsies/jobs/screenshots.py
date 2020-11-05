@@ -31,49 +31,70 @@ class ScreenshotsJob(JobBase):
 
     @property
     def cache_file(self):
-        filename = f'{self.name}.{",".join(self._timestamps)}.json'
-        return os.path.join(self.cache_directory, filename)
+        if self._timestamps:
+            filename = f'{self.name}.{",".join(self._timestamps)}.json'
+            return os.path.join(self.cache_directory, filename)
 
     def initialize(self, content_path, timestamps=(), number=0):
-        self._video_file = video.first_video(content_path)
-        self._timestamps = _screenshot_timestamps(
-            video_file=self._video_file,
-            timestamps=timestamps,
-            number=number,
-        )
+        self._screenshot_process = None
         self._screenshots_created = 0
-        self._screenshots_total = len(self._timestamps)
-        if not self._screenshots_total > 0:
-            raise RuntimeError('No screenshots wanted?')
-        self._screenshot_process = daemon.DaemonProcess(
-            name=self.name,
-            target=_screenshot_process,
-            kwargs={
-                'video_file' : self._video_file,
-                'timestamps' : self._timestamps,
-                'output_dir' : self.homedir,
-                'overwrite'  : self.ignore_cache,
-            },
-            info_callback=self.handle_screenshot,
-            error_callback=self.handle_error,
-            finished_callback=self.finish,
-        )
+        self._screenshots_total = 0
+        self._video_file = ''
+        self._timestamps = ()
+
+        try:
+            self._video_file = video.first_video(content_path)
+        except errors.ContentError as e:
+            self.handle_error(e)
+        else:
+            try:
+                self._timestamps = _normalize_timestamps(
+                    video_file=self._video_file,
+                    timestamps=timestamps,
+                    number=number,
+                )
+            except ValueError as e:
+                self.handle_error(e)
+
+            else:
+                self._screenshots_total = len(self._timestamps)
+                if self._screenshots_total <= 0:
+                    self.finish()
+                else:
+                    self._screenshot_process = daemon.DaemonProcess(
+                        name=self.name,
+                        target=_screenshot_process,
+                        kwargs={
+                            'video_file' : self._video_file,
+                            'timestamps' : self._timestamps,
+                            'output_dir' : self.homedir,
+                            'overwrite'  : self.ignore_cache,
+                        },
+                        info_callback=self.handle_screenshot,
+                        error_callback=self.handle_error,
+                        finished_callback=self.finish,
+                    )
 
     def execute(self):
-        self._screenshot_process.start()
+        if self._screenshot_process:
+            self._screenshot_process.start()
 
     def finish(self):
-        self._screenshot_process.stop()
+        if self._screenshot_process:
+            self._screenshot_process.stop()
         super().finish()
 
     async def wait(self):
-        await self._screenshot_process.join()
+        if self._screenshot_process:
+            await self._screenshot_process.join()
         await super().wait()
 
     @property
     def exit_code(self):
         if self.is_finished:
-            return 0 if len(self.output) == self.screenshots_total else 1
+            screenshots_wanted = self.screenshots_total > 0
+            wanted_screenshots_created = len(self.output) == self.screenshots_total
+            return 0 if screenshots_wanted and wanted_screenshots_created else 1
 
     @property
     def screenshots_total(self):
@@ -94,7 +115,7 @@ class ScreenshotsJob(JobBase):
             self.finish()
 
 
-def _screenshot_timestamps(video_file, timestamps, number):
+def _normalize_timestamps(video_file, timestamps, number):
     total_secs = video.length(video_file)
 
     timestamps_pretty = []
