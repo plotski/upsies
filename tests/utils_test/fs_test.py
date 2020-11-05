@@ -4,8 +4,28 @@ from unittest.mock import call, patch
 
 import pytest
 
-from upsies import __project_name__
+from upsies import __project_name__, errors
 from upsies.utils import fs
+
+
+def test_assert_file_readable_with_directory(tmp_path):
+    with pytest.raises(errors.ContentError, match=rf'^{tmp_path}: Is a directory$'):
+        fs.assert_file_readable(tmp_path)
+
+def test_assert_file_readable_with_nonexisting_file(tmp_path):
+    path = tmp_path / 'foo'
+    with pytest.raises(errors.ContentError, match=rf'^{path}: No such file or directory$'):
+        fs.assert_file_readable(path)
+
+def test_assert_file_readable_with_unreadable_file(tmp_path):
+    path = tmp_path / 'foo'
+    path.write_text('bar')
+    os.chmod(path, mode=0o000)
+    try:
+        with pytest.raises(errors.ContentError, match=rf'^{path}: Permission denied$'):
+            fs.assert_file_readable(path)
+    finally:
+        os.chmod(path, mode=0o700)
 
 
 def test_check_dir_access_checks_directory(tmp_path):

@@ -2,13 +2,24 @@ import functools
 import os
 import re
 
-from .. import __project_name__
+from .. import __project_name__, errors
 from . import LazyModule, pretty_bytes
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 tempfile = LazyModule(module='tempfile', namespace=globals())
+
+
+def assert_file_readable(filepath):
+    """Raise :exc:`~.ContentError` if `open(filepath)` fails"""
+    try:
+        open(filepath).close()
+    except OSError as e:
+        if e.strerror:
+            raise errors.ContentError(f'{filepath}: {e.strerror}')
+        else:
+            raise errors.ContentError(f'{filepath}: {e}')
 
 
 def _check_dir_access(path):
