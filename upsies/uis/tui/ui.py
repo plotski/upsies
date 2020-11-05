@@ -91,6 +91,11 @@ class UI:
             self._exception = e
             self._exit()
 
+    def _exit_on_error(self, job):
+        if job.exit_code != 0:
+            _log.debug('Exit code from %s: %r', job.name, job.exit_code)
+            self._exit(job.exit_code)
+
     def _exit(self, exit_code=None):
         self._finish_jobs()
         if self._app.is_running and not self._app.is_done:
@@ -131,6 +136,7 @@ class UI:
         for job in self._jobs:
             task = self._loop.create_task(job.wait())
             task.add_done_callback(self._exit_on_exception)
+            task.add_done_callback(lambda fut, job=job: self._exit_on_error(job))
 
         # Prepend interactive jobs. We want them at the top to avoid interactive
         # jobs being jerked around by expanding and shrinking background jobs.

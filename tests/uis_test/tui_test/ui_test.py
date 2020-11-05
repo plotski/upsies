@@ -103,3 +103,11 @@ def test_run_gets_returns_exit_code_from_final_job(mocker):
         Mock(exit_code=3, wait=AsyncMock()),
     ))
     assert ui.run() == 3
+
+def test_all_jobs_are_stopped_if_one_job_exits_with_exit_code_greater_zero(mocker):
+    ui = UI(jobs=(
+        Mock(exit_code=0, wait=block),
+        Mock(exit_code=1, wait=AsyncMock()),
+        Mock(exit_code=0, wait=block),
+    ))
+    assert ui.run() == 1
