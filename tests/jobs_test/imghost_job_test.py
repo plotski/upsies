@@ -154,13 +154,12 @@ async def test_upload_images_reports_to_send_and_error(job):
 
     job._enqueue('baz.jpg')
     await asyncio.sleep(0.1)
-    assert job.output == ('http://foo', 'http://baz',)
+    assert job.output == ('http://foo',)
     assert job.errors == (errors.RequestError('bar.jpg is bad'),)
-    assert job.images_uploaded == 2
+    assert job.images_uploaded == 1
     assert job._imghost.upload.call_args_list == [
         call('foo.jpg', force=job.ignore_cache),
         call('bar.jpg', force=job.ignore_cache),
-        call('baz.jpg', force=job.ignore_cache),
     ]
 
 
@@ -217,10 +216,13 @@ async def test_exit_code_when_one_upload_fails(job):
         errors.RequestError('Network error'),
         'http://baz',
     ]
-    for _ in range(3):
+    for i in range(3):
         job._enqueue('foo.jpg')
         await asyncio.sleep(0.1)
-        assert job.exit_code is None
+        if i == 0:
+            assert job.exit_code is None
+        else:
+            assert job.exit_code == 1
     job.pipe_closed()
     await asyncio.sleep(0.1)
     assert job.exit_code == 1

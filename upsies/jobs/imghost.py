@@ -80,6 +80,7 @@ class ImageHostJob(JobBase):
                 except errors.RequestError as e:
                     self._exit_code = 1
                     self.error(e)
+                    break
                 else:
                     _log.debug('Uploaded image: %r', info)
                     self._images_uploaded += 1
