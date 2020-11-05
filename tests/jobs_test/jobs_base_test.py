@@ -66,6 +66,12 @@ def test_hidden_property(tmp_path):
 def test_initialize_is_called_after_object_creation(job):
     assert job.initialize_was_called
 
+
+def test_start_is_called_multiple_times(job):
+    job.start()
+    with pytest.raises(RuntimeError, match=r'^start\(\) was already called$'):
+        job.start()
+
 def test_start_reads_output_cache_from_previous_job(tmp_path):
     class BarJob(FooJob):
         def _read_output_cache(self):
