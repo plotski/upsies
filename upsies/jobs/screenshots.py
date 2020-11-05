@@ -132,7 +132,7 @@ def _screenshot_process(output_queue, input_queue,
                 screenshot_file=screenshot_file,
                 overwrite=overwrite,
             )
-        except (ValueError, errors.ScreenshotError) as e:
+        except errors.ScreenshotError as e:
             output_queue.put((daemon.DaemonProcess.ERROR, str(e)))
         else:
             output_queue.put((daemon.DaemonProcess.INFO, screenshot_file))

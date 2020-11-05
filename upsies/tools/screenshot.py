@@ -3,7 +3,7 @@ import os
 import re
 
 from .. import binaries, errors
-from ..utils import subproc
+from ..utils import fs, subproc
 from ..utils import timestamp as ts
 from ..utils import video
 
@@ -38,17 +38,18 @@ def create(video_file, timestamp, screenshot_file, overwrite=False):
     :param str screenshot_file: Path to screenshot file
     :param bool overwrite: Whether to overwrite `screenshot_file` if it exists
 
-    :raise FileNotFoundError: if `video_file` doesn't exist
-    :raise ValueError: if `timestamp` is of unexpected type or format
+    :raise ScreenshotError: if something goes wrong
     """
-    if not os.path.exists(video_file):
-        raise FileNotFoundError(f'{video_file}: {os.strerror(errno.ENOENT)}')
+    try:
+        fs.assert_file_readable(video_file)
+    except errors.ContentError as e:
+        raise errors.ScreenshotError(e)
 
     if isinstance(timestamp, str):
         if not _timestamp_format.match(timestamp):
-            raise ValueError(f'Invalid timestamp: {timestamp!r}')
+            raise errors.ScreenshotError(f'Invalid timestamp: {timestamp!r}')
     elif not isinstance(timestamp, (int, float)):
-        raise ValueError(f'Invalid timestamp: {timestamp!r}')
+        raise errors.ScreenshotError(f'Invalid timestamp: {timestamp!r}')
 
     if not overwrite and os.path.exists(screenshot_file):
         _log.debug('Screenshot already exists: %s', screenshot_file)
@@ -56,8 +57,10 @@ def create(video_file, timestamp, screenshot_file, overwrite=False):
 
     videolength = video.length(video_file)
     if videolength <= ts.parse(timestamp):
-        raise ValueError(f'Timestamp is after video end ({ts.pretty(videolength)}): '
-                         f'{ts.pretty(timestamp)}')
+        raise errors.ScreenshotError(
+            f'Timestamp is after video end ({ts.pretty(videolength)}): '
+            + ts.pretty(timestamp)
+        )
 
     cmd = _make_ffmpeg_cmd(video_file, timestamp, screenshot_file)
     output = subproc.run(cmd, ignore_errors=True, join_stderr=True)
