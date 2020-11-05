@@ -224,6 +224,19 @@ def test_error_on_finished_job(job):
         job.error('bar')
     assert job.errors == ('foo',)
 
+def test_clear_errors(job):
+    job.clear_errors()
+    assert job.errors == ()
+    job.error('foo')
+    assert job.errors == ('foo',)
+    job.clear_errors()
+    assert job.errors == ()
+
+def test_clear_errors_on_finished_job(job):
+    job.finish()
+    with pytest.raises(RuntimeError, match=r'^clear_errors\(\) called on finished job$'):
+        job.clear_errors()
+
 def test_on_error_callback(job):
     assert job.errors == ()
     cb = Mock()

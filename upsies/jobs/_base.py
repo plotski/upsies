@@ -237,6 +237,17 @@ class JobBase(abc.ABC):
         """Sequence of reported errors (strings or exceptions)"""
         return tuple(self._errors)
 
+    def clear_errors(self):
+        """
+        Remove any previously encountered errors
+
+        :raise RuntimeError: if :meth:`finish` was called earlier
+        """
+        if not self.is_finished:
+            self._errors.clear()
+        else:
+            raise RuntimeError('clear_errors() called on finished job')
+
     def error(self, error):
         """
         Append `error` to :attr:`errors` and call error callbacks
