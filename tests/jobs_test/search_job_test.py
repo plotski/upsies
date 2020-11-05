@@ -95,14 +95,16 @@ def test_initialize_creates_info_updater(tmp_path, mocker):
     )
     assert job._info_updater is InfoUpdater_mock.return_value
     assert InfoUpdater_mock.call_args_list == [call(
-        id='id func',
-        summary='summary func',
-        title_original='title_original func',
-        title_english='title_english func',
-        keywords='keywords func',
-        director='director func',
-        cast='cast func',
-        country='country func',
+        targets={
+            'id': 'id func',
+            'summary': 'summary func',
+            'title_original': 'title_original func',
+            'title_english': 'title_english func',
+            'keywords': 'keywords func',
+            'director': 'director func',
+            'cast': 'cast func',
+            'country': 'country func',
+        },
     )]
     assert make_update_info_func_mock.call_args_list == [
         call('id'),
@@ -342,7 +344,7 @@ async def test_Searcher_delay_does_not_sleep(searcher, mocker):
 
 @pytest.fixture
 async def info_updater():
-    info_updater = search._InfoUpdater()
+    info_updater = search._InfoUpdater(targets={})
     yield info_updater
     await info_updater.wait()
 

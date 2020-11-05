@@ -50,14 +50,16 @@ class SearchDbJob(JobBase):
             error_callback=self.error,
         )
         self._info_updater = _InfoUpdater(
-            id=self._make_update_info_func('id'),
-            summary=self._make_update_info_func('summary'),
-            title_original=self._make_update_info_func('title_original'),
-            title_english=self._make_update_info_func('title_english'),
-            keywords=self._make_update_info_func('keywords'),
-            director=self._make_update_info_func('director'),
-            cast=self._make_update_info_func('cast'),
-            country=self._make_update_info_func('country'),
+            targets={
+                'id': self._make_update_info_func('id'),
+                'summary': self._make_update_info_func('summary'),
+                'title_original': self._make_update_info_func('title_original'),
+                'title_english': self._make_update_info_func('title_english'),
+                'keywords': self._make_update_info_func('keywords'),
+                'director': self._make_update_info_func('director'),
+                'cast': self._make_update_info_func('cast'),
+                'country': self._make_update_info_func('country'),
+            },
         )
 
     def _make_update_info_func(self, key):
@@ -177,7 +179,7 @@ class _Searcher:
 
 
 class _InfoUpdater:
-    def __init__(self, **targets):
+    def __init__(self, targets):
         super().__init__()
         # `targets` maps names of SearchResult attributes to callbacks that get
         # the value of each attribute. For example, {"title": handle_title}
