@@ -45,7 +45,7 @@ def _main(args=None):
         exit_code = ui.run()
 
     # Some errors are expected
-    except (errors.ConfigError, errors.DependencyError, errors.NoContentError) as e:
+    except (errors.ConfigError, errors.DependencyError, errors.ContentError) as e:
         print(e, file=sys.stderr)
         return 1
 

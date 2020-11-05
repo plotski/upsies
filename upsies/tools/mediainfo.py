@@ -12,7 +12,7 @@ _log = logging.getLogger(__name__)
 def _run_mediainfo(path, *args):
     try:
         video_file_path = utils.video.first_video(path)
-    except errors.NoContentError as e:
+    except errors.ContentError as e:
         raise errors.MediainfoError(e)
 
     cmd = (binaries.mediainfo, video_file_path) + args

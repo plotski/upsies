@@ -24,8 +24,11 @@ class MediainfoError(UpsiesError):
     """Getting mediainfo failed"""
     pass
 
-class NoContentError(UpsiesError):
-    """No usable content found (e.g. no video files in the given path)"""
+class ContentError(UpsiesError):
+    """
+    Something is wrong with the user-provided content, e.g. no video files in
+    the given directory or no permission to read
+    """
     pass
 
 class ProcessError(UpsiesError):

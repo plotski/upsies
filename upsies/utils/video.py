@@ -23,7 +23,7 @@ def first_video(path):
 
     :param str path: Path to file or directory
 
-    :raise NoContentError: if no video file can be found
+    :raise ContentError: if no video file can be found
 
     :return: Path to first video file if `path` is a directory, `path` itself otherwise
     :rtype: str
@@ -43,14 +43,14 @@ def first_video(path):
             for dirname in natsort.natsorted(dirnames, key=str.casefold):
                 return first_video(os.path.join(path, dirname))
 
-        raise errors.NoContentError(f'{path}: No video file found')
+        raise errors.ContentError(f'{path}: No video file found')
     else:
         if fs.file_extension(path) in _video_file_extensions:
             return str(path)
         elif not os.path.exists(path):
-            raise errors.NoContentError(f'{path}: No such file or directory')
+            raise errors.ContentError(f'{path}: No such file or directory')
         else:
-            raise errors.NoContentError(f'{path}: Not a video file')
+            raise errors.ContentError(f'{path}: Not a video file')
 
 
 @functools.lru_cache(maxsize=None)

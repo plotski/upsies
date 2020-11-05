@@ -9,7 +9,7 @@ from upsies.utils import video
 
 
 def test_first_video_gets_nonexisting_directory():
-    with pytest.raises(errors.NoContentError, match=r'^/no/such/dir: No such file or directory$'):
+    with pytest.raises(errors.ContentError, match=r'^/no/such/dir: No such file or directory$'):
         video.first_video('/no/such/dir')
 
 def test_first_video_gets_video_file(tmp_path):
@@ -20,7 +20,7 @@ def test_first_video_gets_video_file(tmp_path):
 def test_first_video_gets_nonvideo_file(tmp_path):
     path = tmp_path / 'foo.txt'
     path.write_text('foo')
-    with pytest.raises(errors.NoContentError, match=rf'^{path}: Not a video file$'):
+    with pytest.raises(errors.ContentError, match=rf'^{path}: Not a video file$'):
         video.first_video(path)
 
 def test_first_video_bluray_copy(tmp_path):
@@ -52,13 +52,13 @@ def test_first_video_gets_directory_without_videos(tmp_path):
     (path / 'foo.txt').write_text('bleep bloop')
     (path / 'bar.jpg').write_bytes(b'bloop bleep')
 
-    with pytest.raises(errors.NoContentError, match=rf'^{path}: No video file found$'):
+    with pytest.raises(errors.ContentError, match=rf'^{path}: No video file found$'):
         video.first_video(path)
 
 def test_first_video_gets_empty_directory(tmp_path):
     path = tmp_path / 'foo'
     path.mkdir()
-    with pytest.raises(errors.NoContentError, match=rf'^{path}: No video file found$'):
+    with pytest.raises(errors.ContentError, match=rf'^{path}: No video file found$'):
         video.first_video(path)
 
 @pytest.mark.parametrize(
@@ -98,7 +98,7 @@ def test_length_calls_ffprobe(run_mock, tmp_path):
 @patch('upsies.utils.subproc.run')
 def test_length_gets_nonexisting_file(run_mock, tmp_path):
     filepath = tmp_path / 'the foo.mkv'
-    with pytest.raises(FileNotFoundError, match=rf'^{filepath}: No such file or directory$'):
+    with pytest.raises(errors.ContentError, match=rf'^{filepath}: No such file or directory$'):
         video.length(filepath)
     assert run_mock.call_args_list == []
 
