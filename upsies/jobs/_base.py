@@ -20,6 +20,11 @@ class JobBase(abc.ABC):
     :param bool hidden: Whether to hide this job's output in the UI
 
     Any additional keyword arguments are passed on to :meth:`initialize`.
+
+    Any expected exceptions that could be raised by a job instance should be
+    caught and passed to :meth:`error` or :meth:`exception`, :meth:`finish`
+    should be called and :attr:`exit_code` should be non-zero (which is the
+    default if :attr:`errors` is non-empty or :attr:`output` is empty.)
     """
 
     @property
