@@ -16,7 +16,6 @@ async def summary(id):
     info = await _imdbpie.get_info(id)
     try:
         return info['plot']['outline']['text']
-
     except KeyError:
         try:
             return info['plot']['summaries'][0]['text']
