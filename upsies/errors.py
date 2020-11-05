@@ -35,10 +35,6 @@ class ProcessError(UpsiesError):
     """Executing subprocess failed"""
     pass
 
-class PermissionError(UpsiesError):
-    """Insufficient permission (e.g. when reading a file)"""
-    pass
-
 class RequestError(UpsiesError):
     """Network request failed"""
     pass
