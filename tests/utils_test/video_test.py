@@ -95,11 +95,14 @@ def test_length_calls_ffprobe(run_mock, tmp_path):
     assert length == 12345.098
     assert run_mock.call_args_list == [call(exp_cmd, ignore_errors=True)]
 
+@patch('upsies.utils.fs.assert_file_readable')
 @patch('upsies.utils.subproc.run')
-def test_length_gets_nonexisting_file(run_mock, tmp_path):
+def test_length_gets_unreadable_file(run_mock, assert_file_readable_mock, tmp_path):
     filepath = tmp_path / 'the foo.mkv'
-    with pytest.raises(errors.ContentError, match=rf'^{filepath}: No such file or directory$'):
+    assert_file_readable_mock.side_effect = errors.ContentError('Nope')
+    with pytest.raises(errors.ContentError, match=rf'^Nope$'):
         video.length(filepath)
+    assert assert_file_readable_mock.call_args_list == [call(filepath)]
     assert run_mock.call_args_list == []
 
 @patch('upsies.utils.subproc.run')

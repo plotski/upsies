@@ -4,6 +4,7 @@ import os
 import shlex
 
 from .. import binaries, errors
+from ..utils import fs
 from . import LazyModule, fs, subproc
 
 import logging  # isort:skip
@@ -55,16 +56,12 @@ def first_video(path):
 
 @functools.lru_cache(maxsize=None)
 def length(filepath):
-    """Return video length in seconds (float)"""
-    # Raise any errors ffprobe might experience
-    try:
-        open(filepath).close()
-    except OSError as e:
-        if e.strerror:
-            raise type(e)(f'{filepath}: {e.strerror}')
-        else:
-            raise type(e)(f'{filepath}: {e}')
+    """
+    Return video length in seconds (float)
 
+    :raise ContentError: if `filepath` is not readable
+    """
+    fs.assert_file_readable(filepath)
     cmd = (
         binaries.ffprobe,
         '-v', 'error',
