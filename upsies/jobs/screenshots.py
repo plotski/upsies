@@ -42,7 +42,7 @@ class ScreenshotsJob(JobBase):
                 'overwrite'  : self.ignore_cache,
             },
             info_callback=self.handle_screenshot,
-            error_callback=self.error,
+            error_callback=self.handle_error,
             finished_callback=self.finish,
         )
 
@@ -74,6 +74,11 @@ class ScreenshotsJob(JobBase):
         if not self.is_finished:
             self._screenshots_created += 1
             self.send(path)
+
+    def handle_error(self, error):
+        if not self.is_finished:
+            self.error(error)
+            self.finish()
 
 
 def _screenshot_timestamps(video_file, timestamps, number):

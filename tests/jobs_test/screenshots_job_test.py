@@ -278,7 +278,7 @@ def test_ScreenshotsJob_initialize_creates_screenshot_process(DaemonProcess_mock
             'overwrite'  : sj.ignore_cache,
         },
         info_callback=sj.handle_screenshot,
-        error_callback=sj.error,
+        error_callback=sj.handle_error,
         finished_callback=sj.finish,
     )]
     assert sj._screenshot_process is DaemonProcess_mock.return_value
@@ -295,6 +295,13 @@ def test_ScreenshotsJob_handle_screenshot(job):
     job.handle_screenshot('bar.jpg')
     assert job.output == ('foo.jpg', 'bar.jpg')
     assert job.screenshots_created == 2
+
+
+def test_ScreenshotsJob_handle_error(job):
+    assert job.errors == ()
+    job.handle_error('Foo!')
+    assert job.errors == ('Foo!',)
+    assert job.is_finished
 
 
 def test_ScreenshotsJob_execute(job):
