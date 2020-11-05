@@ -56,8 +56,14 @@ def first_video(path):
 @functools.lru_cache(maxsize=None)
 def length(filepath):
     """Return video length in seconds (float)"""
-    if not os.path.exists(filepath):
-        raise FileNotFoundError(f'{filepath}: {os.strerror(errno.ENOENT)}')
+    # Raise any errors ffprobe might experience
+    try:
+        open(filepath).close()
+    except OSError as e:
+        if e.strerror:
+            raise type(e)(f'{filepath}: {e.strerror}')
+        else:
+            raise type(e)(f'{filepath}: {e}')
 
     cmd = (
         binaries.ffprobe,
