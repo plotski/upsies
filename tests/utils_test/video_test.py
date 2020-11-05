@@ -15,6 +15,7 @@ def test_first_video_gets_nonexisting_directory():
 def test_first_video_gets_video_file(tmp_path):
     for ext in video._video_file_extensions:
         path = tmp_path / f'Foo.{ext}'
+        path.write_text('data')
         assert video.first_video(path) == str(path)
 
 def test_first_video_gets_nonvideo_file(tmp_path):

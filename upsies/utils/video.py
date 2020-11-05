@@ -24,7 +24,7 @@ def first_video(path):
 
     :param str path: Path to file or directory
 
-    :raise ContentError: if no video file can be found
+    :raise ContentError: if no video file can be found or if it is unreadable
 
     :return: Path to first video file if `path` is a directory, `path` itself otherwise
     :rtype: str
@@ -46,10 +46,9 @@ def first_video(path):
 
         raise errors.ContentError(f'{path}: No video file found')
     else:
+        fs.assert_file_readable(path)
         if fs.file_extension(path) in _video_file_extensions:
             return str(path)
-        elif not os.path.exists(path):
-            raise errors.ContentError(f'{path}: No such file or directory')
         else:
             raise errors.ContentError(f'{path}: Not a video file')
 
