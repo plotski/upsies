@@ -44,11 +44,6 @@ def _main(args=None):
         ui = UI(jobs=cmd.jobs_active)
         exit_code = ui.run()
 
-    # Some errors are expected
-    except (errors.ConfigError, errors.DependencyError, errors.ContentError) as e:
-        print(e, file=sys.stderr)
-        return 1
-
     # TUI was terminated by user prematurely
     except errors.CancelledError as e:
         print(e, file=sys.stderr)
