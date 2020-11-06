@@ -154,8 +154,7 @@ def test_send_on_finished_job(job):
     job.finish()
     assert job.is_finished is True
     assert job.output == ('foo',)
-    with pytest.raises(RuntimeError, match=r'^send\(\) called on finished job$'):
-        job.send('bar')
+    job.send('bar')
     assert job.output == ('foo',)
 
 def test_on_output_callback_is_called_when_output_is_sent(job):
@@ -224,8 +223,7 @@ def test_error_on_finished_job(job):
     job.finish()
     assert job.is_finished is True
     assert job.errors == ('foo',)
-    with pytest.raises(RuntimeError, match=r'^error\(\) called on finished job$'):
-        job.error('bar')
+    job.error('bar')
     assert job.errors == ('foo',)
 
 def test_clear_errors(job):
@@ -237,9 +235,11 @@ def test_clear_errors(job):
     assert job.errors == ()
 
 def test_clear_errors_on_finished_job(job):
+    job.error('foo')
+    assert job.errors == ('foo',)
     job.finish()
-    with pytest.raises(RuntimeError, match=r'^clear_errors\(\) called on finished job$'):
-        job.clear_errors()
+    job.clear_errors()
+    assert job.errors == ('foo',)
 
 def test_on_error_callback(job):
     assert job.errors == ()
@@ -307,9 +307,13 @@ async def test_exception_with_output(job):
 
 @pytest.mark.asyncio
 async def test_exception_with_finished_job(job):
+    job.exception(TypeError('Sorry, not my type.'))
     job.finish()
-    with pytest.raises(RuntimeError, match=r'^exception\(\) called on finished job$'):
-        job.exception(TypeError('Sorry, not my type.'))
+    with pytest.raises(TypeError, match=r'^Sorry, not my type\.$'):
+        await job.wait()
+    job.exception(TypeError('I changed my mind.'))
+    with pytest.raises(TypeError, match=r'^Sorry, not my type\.$'):
+        await job.wait()
 
 @pytest.mark.asyncio
 async def test_exception_finishes(job):

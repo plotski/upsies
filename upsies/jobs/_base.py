@@ -196,19 +196,13 @@ class JobBase(abc.ABC):
         return tuple(self._output)
 
     def send(self, output):
-        """
-        Append `output` to :attr:`output`
-
-        :raise RuntimeError: if :meth:`finish` was called earlier
-        """
+        """Append `output` to :attr:`output`"""
         if not self.is_finished:
             if output:
                 output_str = str(output)
                 self._output.append(output_str)
                 for cb in self._output_callbacks:
                     cb(output_str)
-        else:
-            raise RuntimeError('send() called on finished job')
 
     def on_output(self, callback):
         """
@@ -243,15 +237,9 @@ class JobBase(abc.ABC):
         return tuple(self._errors)
 
     def clear_errors(self):
-        """
-        Remove any previously encountered errors
-
-        :raise RuntimeError: if :meth:`finish` was called earlier
-        """
+        """Empty :attr:`errors`"""
         if not self.is_finished:
             self._errors.clear()
-        else:
-            raise RuntimeError('clear_errors() called on finished job')
 
     def error(self, error, finish=False):
         """
@@ -259,8 +247,6 @@ class JobBase(abc.ABC):
 
         :param bool finish: Whether to call :meth:`finish` after handling
             `error`
-
-        :raise RuntimeError: if :meth:`finish` was called earlier
         """
         if not self.is_finished:
             self._errors.append(error)
@@ -268,8 +254,6 @@ class JobBase(abc.ABC):
                 cb(error)
             if finish:
                 self.finish()
-        else:
-            raise RuntimeError('error() called on finished job')
 
     def on_error(self, callback):
         """
@@ -297,8 +281,6 @@ class JobBase(abc.ABC):
             _log.debug('Exception in %s: %s', self.name, tb)
             self._exception = exception
             self.finish()
-        else:
-            raise RuntimeError('exception() called on finished job')
 
     @property
     def info(self):
