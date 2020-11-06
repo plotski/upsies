@@ -28,46 +28,51 @@ def test_assert_file_readable_with_unreadable_file(tmp_path):
         os.chmod(path, mode=0o700)
 
 
-def test_check_dir_access_checks_directory(tmp_path):
+def test_assert_dir_usable_with_file(tmp_path):
     path = tmp_path / 'foo'
     path.write_text('asdf')
-    with pytest.raises(OSError, match=rf'^Not a directory: {path}$'):
-        fs._check_dir_access(path)
+    with pytest.raises(errors.ContentError, match=rf'^{path}: Not a directory$'):
+        fs.assert_dir_usable(path)
 
-def test_check_dir_access_checks_readability(tmp_path):
+def test_assert_dir_usable_with_nonexisting_directory(tmp_path):
+    path = tmp_path / 'foo'
+    with pytest.raises(errors.ContentError, match=rf'^{path}: Not a directory$'):
+        fs.assert_dir_usable(path)
+
+def test_assert_dir_usable_with_unreadable_directory(tmp_path):
     path = tmp_path / 'foo'
     path.mkdir()
     os.chmod(path, mode=0o333)
     try:
-        with pytest.raises(OSError, match=rf'^Not readable: {path}$'):
-            fs._check_dir_access(path)
+        with pytest.raises(errors.ContentError, match=rf'^{path}: Not readable$'):
+            fs.assert_dir_usable(path)
     finally:
         os.chmod(path, mode=0o700)
 
-def test_check_dir_access_checks_writability(tmp_path):
+def test_assert_dir_usable_with_unwritable_directory(tmp_path):
     path = tmp_path / 'foo'
     path.mkdir()
     os.chmod(path, mode=0o555)
     try:
-        with pytest.raises(OSError, match=rf'^Not writable: {path}$'):
-            fs._check_dir_access(path)
+        with pytest.raises(errors.ContentError, match=rf'^{path}: Not writable$'):
+            fs.assert_dir_usable(path)
     finally:
         os.chmod(path, mode=0o700)
 
-def test_check_dir_access_checks_executabilty(tmp_path):
+def test_assert_dir_usable_with_unexecutable_directory(tmp_path):
     path = tmp_path / 'foo'
     path.mkdir()
     os.chmod(path, mode=0o666)
     try:
-        with pytest.raises(OSError, match=rf'^Not executable: {path}$'):
-            fs._check_dir_access(path)
+        with pytest.raises(errors.ContentError, match=rf'^{path}: Not executable$'):
+            fs.assert_dir_usable(path)
     finally:
         os.chmod(path, mode=0o700)
 
 
-@patch('upsies.utils.fs._check_dir_access')
+@patch('upsies.utils.fs.assert_dir_usable')
 @patch('tempfile.mkdtemp')
-def test_tmpdir_creates_our_temporary_directory(mkdtemp_mock, check_dir_access_mock, tmp_path):
+def test_tmpdir_creates_our_temporary_directory(mkdtemp_mock, assert_dir_usable_mock, tmp_path):
     fs.tmpdir.cache_clear()
     mkdtemp_dir = tmp_path / 'undesired_directory_name'
     mkdtemp_dir.mkdir()
@@ -75,11 +80,11 @@ def test_tmpdir_creates_our_temporary_directory(mkdtemp_mock, check_dir_access_m
     dirpath = fs.tmpdir()
     assert dirpath == str(tmp_path / __project_name__)
     assert mkdtemp_mock.call_args_list == [call()]
-    assert check_dir_access_mock.call_args_list == [call(dirpath)]
+    assert assert_dir_usable_mock.call_args_list == [call(dirpath)]
 
-@patch('upsies.utils.fs._check_dir_access')
+@patch('upsies.utils.fs.assert_dir_usable')
 @patch('tempfile.mkdtemp')
-def test_tmpdir_handles_existing_path(mkdtemp_mock, check_dir_access_mock, tmp_path):
+def test_tmpdir_handles_existing_path(mkdtemp_mock, assert_dir_usable_mock, tmp_path):
     fs.tmpdir.cache_clear()
     mkdtemp_dir = tmp_path / 'undesired_directory_name'
     mkdtemp_dir.mkdir()
@@ -89,7 +94,7 @@ def test_tmpdir_handles_existing_path(mkdtemp_mock, check_dir_access_mock, tmp_p
     dirpath = fs.tmpdir()
     assert dirpath == str(tmp_path / __project_name__)
     assert mkdtemp_mock.call_args_list == [call()]
-    assert check_dir_access_mock.call_args_list == [call(dirpath)]
+    assert assert_dir_usable_mock.call_args_list == [call(dirpath)]
 
 @patch('tempfile.mkdtemp')
 def test_tmpdir_removes_redundant_temp_dir(mkdtemp_mock, tmp_path):
@@ -112,8 +117,8 @@ projectdir_test_cases = (
 )
 
 @pytest.mark.parametrize('content_path, exp_path', projectdir_test_cases)
-@patch('upsies.utils.fs._check_dir_access')
-def test_projectdir_does_not_exist(check_dir_access_mock, tmp_path, content_path, exp_path):
+@patch('upsies.utils.fs.assert_dir_usable')
+def test_projectdir_does_not_exist(assert_dir_usable_mock, tmp_path, content_path, exp_path):
     fs.projectdir.cache_clear()
     cwd = os.getcwd()
     os.chdir(tmp_path)
@@ -126,8 +131,8 @@ def test_projectdir_does_not_exist(check_dir_access_mock, tmp_path, content_path
         os.chdir(cwd)
 
 @pytest.mark.parametrize('content_path, exp_path', projectdir_test_cases)
-@patch('upsies.utils.fs._check_dir_access')
-def test_projectdir_exists(check_dir_access_mock, tmp_path, content_path, exp_path):
+@patch('upsies.utils.fs.assert_dir_usable')
+def test_projectdir_exists(assert_dir_usable_mock, tmp_path, content_path, exp_path):
     fs.projectdir.cache_clear()
     cwd = os.getcwd()
     os.chdir(tmp_path)

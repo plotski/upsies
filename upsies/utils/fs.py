@@ -22,15 +22,16 @@ def assert_file_readable(filepath):
             raise errors.ContentError(f'{filepath}: {e}')
 
 
-def _check_dir_access(path):
+def assert_dir_usable(path):
+    """Raise :exc:`~.ContentError` if `dirpath` can not be used as a directory"""
     if not os.path.isdir(path):
-        raise OSError(f'Not a directory: {path}')
+        raise errors.ContentError(f'{path}: Not a directory')
     elif not os.access(path, os.R_OK):
-        raise OSError(f'Not readable: {path}')
+        raise errors.ContentError(f'{path}: Not readable')
     elif not os.access(path, os.W_OK):
-        raise OSError(f'Not writable: {path}')
+        raise errors.ContentError(f'{path}: Not writable')
     elif not os.access(path, os.X_OK):
-        raise OSError(f'Not executable: {path}')
+        raise errors.ContentError(f'{path}: Not executable')
 
 
 @functools.lru_cache(maxsize=None)
@@ -43,7 +44,7 @@ def tmpdir():
         os.rmdir(tmpdir_)
     else:
         os.rename(tmpdir_, tmpdir)
-    _check_dir_access(tmpdir)
+    assert_dir_usable(tmpdir)
     _log.debug('Using temporary directory: %r', tmpdir)
     return tmpdir
 
@@ -65,7 +66,7 @@ def projectdir(content_path):
         path = '.'
     if not os.path.exists(path):
         os.mkdir(path)
-    _check_dir_access(path)
+    assert_dir_usable(path)
     _log.debug('Using project directory: %r', path)
     return path
 
