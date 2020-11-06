@@ -56,6 +56,8 @@ async def title_english(id):
     def title_looks_interesting(i):
         if 'original script title' in i.get('attributes', ()):
             return False
+        elif 'working' in i.get('types', ()):
+            return False
         return True
 
     display_titles = [i for i in info.get('alternateTitles', ())
