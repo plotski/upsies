@@ -68,7 +68,15 @@ def length(filepath):
         '-of', 'default=noprint_wrappers=1:nokey=1',
         make_ffmpeg_input(filepath),
     )
-    length = subproc.run(cmd, ignore_errors=True)
+
+    # Catch DependencyError because we want a nice error message if ffprobe is
+    # not installed. Do not catch ProcessError because things like wrong ffprobe
+    # arguments are bugs.
+    try:
+        length = subproc.run(cmd, ignore_errors=True)
+    except errors.DependencyError as e:
+        raise errors.ContentError(e)
+
     try:
         return float(length)
     except ValueError:

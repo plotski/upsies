@@ -96,6 +96,36 @@ def test_length_calls_ffprobe(run_mock, tmp_path):
     assert length == 12345.098
     assert run_mock.call_args_list == [call(exp_cmd, ignore_errors=True)]
 
+@patch('upsies.utils.subproc.run')
+def test_length_catches_DependencyError(run_mock, tmp_path):
+    filepath = tmp_path / 'foo.mkv'
+    filepath.write_bytes(b'foo data')
+    exp_cmd = (
+        binaries.ffprobe,
+        '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        str(filepath),
+    )
+    run_mock.side_effect = errors.DependencyError('you need ffprobe')
+    with pytest.raises(errors.ContentError, match=r'^you need ffprobe$'):
+        video.length(filepath)
+
+@patch('upsies.utils.subproc.run')
+def test_length_does_not_catch_ProcessError(run_mock, tmp_path):
+    filepath = tmp_path / 'foo.mkv'
+    filepath.write_bytes(b'foo data')
+    exp_cmd = (
+        binaries.ffprobe,
+        '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        str(filepath),
+    )
+    run_mock.side_effect = errors.ProcessError('do you even ffprobe?')
+    with pytest.raises(errors.ProcessError, match=r'^do you even ffprobe\?$'):
+        video.length(filepath)
+
 @patch('upsies.utils.fs.assert_file_readable')
 @patch('upsies.utils.subproc.run')
 def test_length_gets_unreadable_file(run_mock, assert_file_readable_mock, tmp_path):
