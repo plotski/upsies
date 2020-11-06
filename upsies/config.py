@@ -19,8 +19,8 @@ class Config:
     List values are stored with "\n" as a separator between list items.
 
     :param dict defaults: Nested directory structure as described above with
-        default values filled in
-    :param str files: Mapping of section names to file paths
+        default values
+    :param str files: Map section names to file paths
 
     :raises ConfigError: if reading or parsing a file fails
     """
