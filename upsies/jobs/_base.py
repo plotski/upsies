@@ -253,9 +253,12 @@ class JobBase(abc.ABC):
         else:
             raise RuntimeError('clear_errors() called on finished job')
 
-    def error(self, error):
+    def error(self, error, finish=False):
         """
         Append `error` to :attr:`errors` and call error callbacks
+
+        :param bool finish: Whether to call :meth:`finish` after handling
+            `error`
 
         :raise RuntimeError: if :meth:`finish` was called earlier
         """
@@ -263,6 +266,8 @@ class JobBase(abc.ABC):
             self._errors.append(error)
             for cb in self._error_callbacks:
                 cb(error)
+            if finish:
+                self.finish()
         else:
             raise RuntimeError('error() called on finished job')
 

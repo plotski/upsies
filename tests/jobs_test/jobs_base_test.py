@@ -214,6 +214,10 @@ def test_error_and_errors(job):
     assert job.errors == ('Owie!',)
     job.error('No likey!')
     assert job.errors == ('Owie!', 'No likey!')
+    assert not job.is_finished
+    job.error('Boo!', finish=True)
+    assert job.errors == ('Owie!', 'No likey!', 'Boo!')
+    assert job.is_finished
 
 def test_error_on_finished_job(job):
     job.error('foo')
