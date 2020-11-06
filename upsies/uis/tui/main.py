@@ -61,7 +61,8 @@ def _main(args=None):
         traceback.print_exception(type(e), e, e.__traceback__)
         print()
 
-        # Exceptions from subprocesses should save their traceback
+        # Exceptions from subprocesses should save their traceback.
+        # See errors.SubprocessError.
         if hasattr(e, 'original_traceback'):
             print(e.original_traceback)
             print()
