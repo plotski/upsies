@@ -16,10 +16,14 @@ def _run_mediainfo(path, *args):
         raise errors.MediainfoError(e)
 
     cmd = (binaries.mediainfo, video_file_path) + args
+
+    # Catch DependencyError because we want a nice error message if mediainfo is
+    # not installed. Do not catch ProcessError because things like wrong
+    # mediainfo arguments are bugs.
     try:
         return utils.subproc.run(cmd, cache=True)
-    except errors.ProcessError as e:
-        raise errors.MediainfoError(f'{video_file_path}: {e}')
+    except errors.DependencyError as e:
+        raise errors.MediainfoError(e)
 
 
 def as_string(path):
