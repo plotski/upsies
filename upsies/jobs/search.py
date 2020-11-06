@@ -201,7 +201,6 @@ class _InfoUpdater:
     def cancel(self):
         if self._update_task:
             self._update_task.cancel()
-            self._update_task = None
 
     def set_result(self, result):
         self.cancel()
