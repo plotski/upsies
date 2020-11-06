@@ -53,7 +53,9 @@ class ScreenshotsJob(JobBase):
                     timestamps=timestamps,
                     number=number,
                 )
-            except ValueError as e:
+            # _normalize_timestamp may raise ValueError from utils.timestamp or
+            # ContentError from utils.video.length()
+            except (ValueError, errors.ContentError) as e:
                 self.handle_error(e)
 
             else:
