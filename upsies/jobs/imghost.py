@@ -40,9 +40,9 @@ class ImageHostJob(JobBase):
     def initialize(self, imghost_name, image_paths=(), images_total=0):
         # Accept images from `image_paths` and pipe_input() calls
         if image_paths and images_total:
-            raise TypeError('You must not specify both "image_paths" and "images_total".')
+            raise RuntimeError('You must not specify both "image_paths" and "images_total".')
         elif not image_paths and not images_total:
-            raise TypeError('You must specify "image_paths" or "images_total".')
+            raise RuntimeError('You must specify "image_paths" or "images_total".')
         else:
             if images_total > 0:
                 self._images_total = images_total
@@ -52,7 +52,7 @@ class ImageHostJob(JobBase):
         try:
             imghost_module = getattr(imghost, imghost_name)
         except AttributeError:
-            raise ValueError(f'Unknown image hosting service: {imghost_name}')
+            raise RuntimeError(f'Unknown image hosting service: {imghost_name}')
         else:
             self._imghost = imghost_module.Uploader(cache_dir=self.homedir)
 
