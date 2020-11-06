@@ -6,8 +6,8 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 from upsies import errors
-from upsies.jobs.screenshots import (ScreenshotsJob, _screenshot_process,
-                                     _normalize_timestamps)
+from upsies.jobs.screenshots import (ScreenshotsJob, _normalize_timestamps,
+                                     _screenshot_process)
 from upsies.utils.daemon import DaemonProcess
 
 try:

@@ -11,7 +11,7 @@ from upsies.tools import screenshot
 def test_nonexisting_video_file(run_mock, assert_file_readable_mock):
     mock_file = 'path/to/foo.mkv'
     assert_file_readable_mock.side_effect = errors.ContentError('Foo you')
-    with pytest.raises(errors.ScreenshotError, match=rf'^Foo you$'):
+    with pytest.raises(errors.ScreenshotError, match=r'^Foo you$'):
         screenshot.create(mock_file, 123, 'screenshot.png')
     assert assert_file_readable_mock.call_args_list == [call(mock_file)]
     assert run_mock.call_args_list == []

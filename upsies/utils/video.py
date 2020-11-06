@@ -1,10 +1,8 @@
-import errno
 import functools
 import os
 import shlex
 
 from .. import binaries, errors
-from ..utils import fs
 from . import LazyModule, fs, subproc
 
 import logging  # isort:skip

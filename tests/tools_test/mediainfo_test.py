@@ -28,7 +28,7 @@ def test_run_mediainfo_catches_DependencyError(run_mock, tmp_path):
     video_path = tmp_path / 'foo.mkv'
     video_path.write_bytes(b'video data')
     run_mock.side_effect = errors.DependencyError('mediainfo is missing')
-    with pytest.raises(errors.MediainfoError, match=rf'^mediainfo is missing$'):
+    with pytest.raises(errors.MediainfoError, match=r'^mediainfo is missing$'):
         mediainfo._run_mediainfo(video_path)
     assert run_mock.call_args_list == [
         call((binaries.mediainfo, str(video_path)),
@@ -40,7 +40,7 @@ def test_run_mediainfo_does_not_catch_ProcessError(run_mock, tmp_path):
     video_path = tmp_path / 'foo.mkv'
     video_path.write_bytes(b'video data')
     run_mock.side_effect = errors.ProcessError('Invalid argument: --abc')
-    with pytest.raises(errors.ProcessError, match=rf'^Invalid argument: --abc$'):
+    with pytest.raises(errors.ProcessError, match=r'^Invalid argument: --abc$'):
         mediainfo._run_mediainfo(video_path)
     assert run_mock.call_args_list == [
         call((binaries.mediainfo, str(video_path)),

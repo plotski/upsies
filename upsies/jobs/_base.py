@@ -3,7 +3,6 @@ import asyncio
 import json
 import os
 
-from .. import errors
 from ..utils import cache
 
 import logging  # isort:skip

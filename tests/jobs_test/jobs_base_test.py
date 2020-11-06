@@ -6,7 +6,6 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-from upsies import errors
 from upsies.jobs import JobBase
 
 
