@@ -42,7 +42,9 @@ def test_cache_file_is_None(job):
 
 
 @pytest.mark.asyncio
-async def test_initialize_is_called_with_path_and_images_total(tmp_path):
+async def test_initialize_is_called_with_path_and_images_total(tmp_path, mocker):
+    mocker.patch('upsies.jobs.imghost.imghost', Mock())
+    mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
     with pytest.raises(RuntimeError, match=r'^You must not specify both "image_paths" and "images_total"\.$'):
         ImageHostJob(
             homedir=tmp_path,
@@ -53,16 +55,19 @@ async def test_initialize_is_called_with_path_and_images_total(tmp_path):
         )
 
 @pytest.mark.asyncio
-async def test_initialize_is_called_without_path_and_images_total(tmp_path):
-    with pytest.raises(RuntimeError, match=r'^You must specify "image_paths" or "images_total"\.$'):
-        ImageHostJob(
-            homedir=tmp_path,
-            ignore_cache=False,
-            imghost_name='imgfoo',
-        )
+async def test_initialize_is_called_without_path_and_images_total(tmp_path, mocker):
+    mocker.patch('upsies.jobs.imghost.imghost', Mock())
+    mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
+    job = ImageHostJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        imghost_name='imgfoo',
+    )
+    assert job._images_total == 0
 
 @pytest.mark.asyncio
-async def test_initialize_is_called_with_unknown_image_host(tmp_path):
+async def test_initialize_is_called_with_unknown_image_host(tmp_path, mocker):
+    mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
     with pytest.raises(RuntimeError, match=r'^Unknown image hosting service: imgfoo$'):
         ImageHostJob(
             homedir=tmp_path,

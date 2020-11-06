@@ -41,8 +41,6 @@ class ImageHostJob(JobBase):
         # Accept images from `image_paths` and pipe_input() calls
         if image_paths and images_total:
             raise RuntimeError('You must not specify both "image_paths" and "images_total".')
-        elif not image_paths and not images_total:
-            raise RuntimeError('You must specify "image_paths" or "images_total".')
         else:
             if images_total > 0:
                 self._images_total = images_total
