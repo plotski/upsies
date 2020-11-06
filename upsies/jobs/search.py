@@ -196,7 +196,10 @@ class _InfoUpdater:
 
     async def wait(self):
         if self._update_task:
-            await self._update_task
+            try:
+                await self._update_task
+            except asyncio.CancelledError:
+                pass
 
     def cancel(self):
         if self._update_task:

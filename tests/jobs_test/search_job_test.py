@@ -362,12 +362,10 @@ async def test_InfoUpdater_cancel_while_not_updating(info_updater):
 
 @pytest.mark.asyncio
 async def test_InfoUpdater_cancel_while_updating(info_updater):
-    old_update_task = info_updater._update_task = asyncio.ensure_future(asyncio.sleep(10))
+    info_updater._update_task = asyncio.ensure_future(asyncio.sleep(10))
     info_updater.cancel()
-    await asyncio.sleep(0)
-    assert old_update_task.cancelled()
-    assert old_update_task.done()
-    assert info_updater._update_task is None
+    await info_updater.wait()
+    assert info_updater._update_task.cancelled()
 
 
 @pytest.mark.asyncio
@@ -378,7 +376,7 @@ async def test_InfoUpdater_wait_while_not_updating(info_updater):
 
 @pytest.mark.asyncio
 async def test_InfoUpdater_wait_while_updating(info_updater):
-    info_updater._update_task = asyncio.ensure_future(AsyncMock())
+    info_updater._update_task = asyncio.ensure_future(asyncio.sleep(0.1))
     await info_updater.wait()
     assert info_updater._update_task.done()
 
