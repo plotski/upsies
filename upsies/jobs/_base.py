@@ -278,7 +278,10 @@ class JobBase(abc.ABC):
 
     def exception(self, exception):
         """
-        Set exception to raise in :meth:`wait`
+        Set exception to raise in :meth:`wait` and call :meth:`finish`
+
+        .. warning:: Setting an exception means you want to throw a traceback in
+                     the user's face, which is likely not a good idea.
 
         :param Exception exception: Exception instance
         """
