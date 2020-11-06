@@ -258,11 +258,10 @@ class MockServer(aiohttp.test_utils.TestServer):
         return f'http://localhost:{self.port}{path}'
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8),
-                    reason='Python < 3.8 refuses to patch in async tests')
 @pytest.mark.asyncio
-@patch('upsies.jobs.submit.nbl.SubmitJob._translate_category', Mock(return_value=b'mock category'))
-async def test_upload_succeeds(tmp_path):
+async def test_upload_succeeds(tmp_path, mocker):
+    mocker.patch('upsies.jobs.submit.nbl.SubmitJob._translate_category',
+                 Mock(return_value=b'mock category'))
     responses = (
         (('post',), '/upload.php', aiohttp.web.HTTPTemporaryRedirect('/torrents.php?id=123')),
     )
@@ -312,12 +311,11 @@ async def test_upload_succeeds(tmp_path):
             },
         }]
 
-@pytest.mark.skipif(sys.version_info < (3, 8),
-                    reason='Python < 3.8 refuses to patch in async tests')
 @pytest.mark.asyncio
-@patch('upsies.jobs.submit.nbl.SubmitJob._translate_category', Mock(return_value=b'mock category'))
-@patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
-async def test_upload_finds_error_message(dump_html_mock, tmp_path):
+async def test_upload_finds_error_message(tmp_path, mocker):
+    mocker.patch('upsies.jobs.submit.nbl.SubmitJob._translate_category',
+                 Mock(return_value=b'mock category'))
+    mocker.patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
     responses = (
         (('post',), '/upload.php', aiohttp.web.Response(text='''
         <html>
@@ -349,14 +347,13 @@ async def test_upload_finds_error_message(dump_html_mock, tmp_path):
         with pytest.raises(errors.RequestError, match=r'^Upload failed: Something went wrong$'):
             async with aiohttp.ClientSession() as client:
                 await job.upload(client)
-    assert dump_html_mock.call_args_list == []
+    assert job.dump_html.call_args_list == []
 
-@pytest.mark.skipif(sys.version_info < (3, 8),
-                    reason='Python < 3.8 refuses to patch in async tests')
 @pytest.mark.asyncio
-@patch('upsies.jobs.submit.nbl.SubmitJob._translate_category', Mock(return_value=b'mock category'))
-@patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
-async def test_upload_fails_to_find_error_message(dump_html_mock, tmp_path):
+async def test_upload_fails_to_find_error_message(tmp_path, mocker):
+    mocker.patch('upsies.jobs.submit.nbl.SubmitJob._translate_category',
+                 Mock(return_value=b'mock category'))
+    mocker.patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
     responses = (
         (('post',), '/upload.php', aiohttp.web.Response(text='mocked html')),
     )
@@ -384,7 +381,7 @@ async def test_upload_fails_to_find_error_message(dump_html_mock, tmp_path):
         with pytest.raises(RuntimeError, match=r'^Failed to find error message$'):
             async with aiohttp.ClientSession() as client:
                 await job.upload(client)
-    assert dump_html_mock.call_args_list == [
+    assert job.dump_html.call_args_list == [
         call('upload.html', 'mocked html'),
     ]
 
