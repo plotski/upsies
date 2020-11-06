@@ -79,16 +79,20 @@ class UI:
             return exit_code
 
     def _handle_exception(self, loop, context):
-        _log.debug('Caught unhandled exception: %r', context.get('exception'))
-        self._exception = context.get('exception')
-        self._exit()
+        exception = context.get('exception')
+        if exception:
+            _log.debug('Caught unhandled exception: %r', exception)
+            if not self._exception:
+                self._exception = exception
+            self._exit()
 
     def _exit_on_exception(self, fut):
         try:
             fut.result()
         except BaseException as e:
-            _log.debug('Caught exception from %r: %r', fut, e)
-            self._exception = e
+            if not self._exception:
+                _log.debug('Caught exception from %r: %r', fut, e)
+                self._exception = e
             self._exit()
 
     def _exit_on_error(self, job):

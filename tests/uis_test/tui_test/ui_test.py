@@ -63,34 +63,42 @@ def test_run_gets_exception_from_JobWidget(mocker):
     with pytest.raises(RuntimeError, match=r'^This is bad$'):
         ui.run()
 
-def test_run_gets_exception_from_job_start(mocker):
+def test_run_gets_first_exception_from_job_start(mocker):
     ui = UI(jobs=(
         Mock(wait=block),
         Mock(wait=block),
         Mock(start=Mock(side_effect=RuntimeError('This is bad'))),
+        Mock(start=Mock(side_effect=RuntimeError('This is also bad'))),
     ))
     with pytest.raises(RuntimeError, match=r'^This is bad$'):
         ui.run()
 
-def test_run_gets_exception_from_job_wait(mocker):
+def test_run_gets_first_exception_from_job_wait(mocker):
     ui = UI(jobs=(
         Mock(wait=block),
         Mock(wait=block),
         Mock(wait=AsyncMock(side_effect=RuntimeError('This is bad'))),
+        Mock(wait=AsyncMock(side_effect=RuntimeError('This is also bad'))),
     ))
     with pytest.raises(RuntimeError, match=r'^This is bad$'):
         ui.run()
 
-def test_run_gets_unhandled_exception(mocker):
-    async def ignore_exception():
+def test_run_gets_first_unhandled_exception(mocker):
+    async def raise_exception_in_task1():
         async def bad():
             raise RuntimeError('This is bad')
+        asyncio.ensure_future(bad())
+
+    async def raise_exception_in_task2():
+        async def bad():
+            raise RuntimeError('This is also bad')
         asyncio.ensure_future(bad())
 
     ui = UI(jobs=(
         Mock(wait=block),
         Mock(wait=block),
-        Mock(wait=ignore_exception),
+        Mock(wait=raise_exception_in_task1),
+        Mock(wait=raise_exception_in_task2),
     ))
     asyncio.get_event_loop().call_later(1, ui._app.exit)  # Fail test after 1 second
     with pytest.raises(RuntimeError, match=r'^This is bad$'):
