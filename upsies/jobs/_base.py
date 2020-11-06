@@ -14,17 +14,23 @@ class JobBase(abc.ABC):
     """
     Base class for all jobs
 
-    :param str homedir: Directory that is used to store files
+    :param str homedir: Directory that is used to store files and cache output
     :param str ignore_cache: Whether cached output and previously created files
         should not be re-used
-    :param bool hidden: Whether to hide this job's output in the UI
+    :param bool hidden: Whether to hide the job's output in the UI
 
     Any additional keyword arguments are passed on to :meth:`initialize`.
 
-    Any expected exceptions that could be raised by a job instance should be
-    caught and passed to :meth:`error` or :meth:`exception`, :meth:`finish`
-    should be called and :attr:`exit_code` should be non-zero (which is the
-    default if :attr:`errors` is non-empty or :attr:`output` is empty.)
+    Exceptions
+    ==========
+
+    Methods and properties of jobs should not raise any exceptions. Exceptions
+    should be passed to :meth:`error` or :meth:`exception` and the job should
+    :meth:`finish` immediately with an :attr:`exit_code` > 0.
+
+    Arguments should be validated before creating a job to fail early when
+    sibling jobs haven't started doing work that has to be cancelled in case of
+    error.
     """
 
     @property
