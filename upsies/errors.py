@@ -3,7 +3,6 @@ class UpsiesError(Exception):
 
     def __eq__(self, other):
         if isinstance(other, type(self)) and str(other) == str(self):
-            print(str(other), repr(other), '==', str(self), repr(self))
             return True
         else:
             return NotImplemented
