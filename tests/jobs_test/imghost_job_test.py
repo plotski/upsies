@@ -68,7 +68,7 @@ async def test_initialize_is_called_without_path_and_images_total(tmp_path, mock
 @pytest.mark.asyncio
 async def test_initialize_is_called_with_unknown_image_host(tmp_path, mocker):
     mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
-    with pytest.raises(RuntimeError, match=r'^Unknown image hosting service: imgfoo$'):
+    with pytest.raises(ValueError, match=r'^Unknown image hosting service: imgfoo$'):
         ImageHostJob(
             homedir=tmp_path,
             ignore_cache=False,

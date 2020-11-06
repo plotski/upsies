@@ -50,7 +50,7 @@ class ImageHostJob(JobBase):
         try:
             imghost_module = getattr(imghost, imghost_name)
         except AttributeError:
-            raise RuntimeError(f'Unknown image hosting service: {imghost_name}')
+            raise ValueError(f'Unknown image hosting service: {imghost_name}')
         else:
             self._imghost = imghost_module.Uploader(cache_dir=self.homedir)
 

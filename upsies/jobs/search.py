@@ -36,7 +36,7 @@ class SearchDbJob(JobBase):
         try:
             self._db = getattr(dbs, db)
         except AttributeError:
-            raise ValueError(f'Invalid database name: {db}')
+            raise ValueError(f'Unknown database: {db}')
         self._query = dbs.Query.from_path(content_path)
         self._is_searching = False
         self._search_results_callbacks = []

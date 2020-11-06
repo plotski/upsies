@@ -45,7 +45,7 @@ def test_query(job):
 
 
 def test_unknown_db(tmp_path):
-    with pytest.raises(ValueError, match=r'^Invalid database name: foo$'):
+    with pytest.raises(ValueError, match=r'^Unknown database: foo$'):
         search.SearchDbJob(
             homedir=tmp_path,
             ignore_cache=False,
