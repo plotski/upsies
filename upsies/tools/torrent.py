@@ -21,8 +21,9 @@ def create(*, content_path, announce, torrent_path,
     :param str init_callback: Callable that is called once before torrent
         generation commences, gets a nested sequence of `(directory_name,
         ((file_name, file_size), ...))` `(file_name, file_size)` tuples
-    :param str progress_callback: Callable that gets the generation progress as
-        a number between 0 and 100
+    :param str progress_callback: Callable that gets the progress as a number
+        between 0 and 100. Torrent creation is cancelled if `progress_callback`
+        returns `True` or any other truthy value.
     :param bool overwrite: Whether to overwrite `torrent_path` if it exists
     :param str source: Value of the "source" field in the torrent or `None` to
         leave it out
