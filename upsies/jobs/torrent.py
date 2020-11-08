@@ -1,5 +1,6 @@
 import asyncio
 import os
+import queue
 
 from .. import errors
 from ..tools import torrent
@@ -77,6 +78,15 @@ def _torrent_process(output_queue, input_queue, *args, **kwargs):
         output_queue.put((daemon.DaemonProcess.INIT, file_tree))
 
     def progress_callback(progress):
+        try:
+            typ, msg = input_queue.get_nowait()
+        except queue.Empty:
+            pass
+        else:
+            if typ == daemon.DaemonProcess.TERMINATE:
+                # Any truthy return value cancels torrent.create()
+                return 'cancel'
+
         output_queue.put((daemon.DaemonProcess.INFO, progress))
 
     kwargs['init_callback'] = init_callback
