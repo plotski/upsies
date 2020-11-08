@@ -41,6 +41,7 @@ def create(*, content_path, announce, torrent_path,
 
     if not overwrite and _path_exists(torrent_path):
         _log.debug('Torrent file already exists: %r', torrent_path)
+        return torrent_path
     else:
         try:
             torrent = torf.Torrent(
@@ -61,9 +62,9 @@ def create(*, content_path, announce, torrent_path,
                 torrent.write(torrent_path, overwrite=overwrite)
             except torf.TorfError as e:
                 raise errors.TorrentError(e)
+            else:
+                return torrent_path
 
-    assert _path_exists(torrent_path)
-    return torrent_path
 
 
 def _make_file_tree(tree):
