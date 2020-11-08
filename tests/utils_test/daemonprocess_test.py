@@ -171,35 +171,12 @@ async def test_stop_sends_termination_signal_to_running_process():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    argnames='target',
-    argvalues=(
-        target_sending_result_to_finished_callback,
-        target_sending_no_result_to_finished_callback,
-    ),
-)
-async def test_process_terminates_gracefully_without_joining_it(target):
-    finished_callback = Mock()
-    proc = DaemonProcess(
-        target=target,
-        finished_callback=finished_callback,
-    )
-    proc.start()
-    await asyncio.sleep(5)
-    assert not proc.is_alive
-    assert finished_callback.call_args_list
-    await proc.join()  # Await internal output reader task
-
-
-@pytest.mark.asyncio
 async def test_is_alive_property():
     proc = DaemonProcess(
         target=target_never_terminating,
     )
     assert proc.is_alive is False
     proc.start()
-    assert proc.is_alive is True
-    time.sleep(1)
     assert proc.is_alive is True
     proc.stop()
     await proc.join()
