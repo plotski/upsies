@@ -8,20 +8,7 @@ import pytest
 
 from upsies.utils.daemon import DaemonProcess
 
-
-# https://kalnytskyi.com/howto/assert-str-matches-regex-in-pytest/
-class regex:
-    def __init__(self, pattern, flags=0):
-        self._regex = re.compile(pattern, flags)
-
-    def __eq__(self, string):
-        return bool(self._regex.match(string))
-
-    def __repr__(self):
-        return self._regex.pattern
-
-
-# DaemonProcess' targets must be picklable and nested functions aren't.
+# DaemonProcess targets must be picklable and nested functions aren't.
 
 def target_raising_exception(output_queue, input_queue):
     raise ValueError('Kaboom!')
