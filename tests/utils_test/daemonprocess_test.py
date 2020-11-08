@@ -1,4 +1,5 @@
 import asyncio
+import queue
 import re
 import time
 from unittest.mock import Mock, call
@@ -45,8 +46,17 @@ def target_sending_no_result_to_finished_callback(output_queue, input_queue):
 
 def target_never_terminating(output_queue, input_queue):
     output_queue.put((DaemonProcess.INFO, 'something'))
-    import time
+
     while True:
+        try:
+            typ, msg = input_queue.get_nowait()
+        except queue.Empty:
+            pass
+        else:
+            if typ == DaemonProcess.TERMINATE:
+                break
+
+        import time
         time.sleep(1)
 
 def target_taking_arguments(output_queue, input_queue, foo, bar, *, baz):
@@ -146,14 +156,14 @@ async def test_target_sends_no_result_to_finished_callback():
 
 
 @pytest.mark.asyncio
-async def test_stop_terminates_running_process():
+async def test_stop_sends_termination_signal_to_running_process():
     info_callback = Mock()
     proc = DaemonProcess(
         target=target_never_terminating,
         info_callback=info_callback,
     )
     proc.start()
-    await asyncio.sleep(5)
+    await asyncio.sleep(1)
     assert proc.is_alive
     proc.stop()
     await proc.join()

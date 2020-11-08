@@ -20,7 +20,7 @@ class DaemonProcess:
     INFO = 'info'
     ERROR = 'error'
     RESULT = 'result'
-    _TERMINATED = 'terminated'
+    TERMINATE = 'terminate'
 
     def __init__(self, target, name=None, args=(), kwargs={},
                  init_callback=None, info_callback=None,
@@ -81,7 +81,7 @@ class DaemonProcess:
                 if self._finished_callback:
                     self._finished_callback(msg)
                 break
-            elif typ == self._TERMINATED:
+            elif typ == self.TERMINATE:
                 if self._finished_callback:
                     self._finished_callback()
                 break
@@ -91,10 +91,7 @@ class DaemonProcess:
     def stop(self):
         """Stop the process"""
         if self._process:
-            # TODO: Don't use terminate(), see "Avoid terminating processes":
-            #       https://docs.python.org/3/library/multiprocessing.html
-            self._process.terminate()
-            self._output_queue.put((DaemonProcess._TERMINATED, None))
+            self._input_queue.put((DaemonProcess.TERMINATE, None))
 
     @property
     def is_alive(self):
@@ -113,7 +110,7 @@ class DaemonProcess:
 
         if self._read_output_task:
             if not self._read_output_task.done():
-                self._output_queue.put((self._TERMINATED, None))
+                self._output_queue.put((self.TERMINATE, None))
                 await self._read_output_task
             exc = self._read_output_task.exception()
             if exc:
@@ -130,4 +127,4 @@ def _target_process_wrapper(target, output_queue, input_queue, *args, **kwargs):
         traceback = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
         output_queue.put((DaemonProcess.ERROR, (e, traceback)))
     finally:
-        output_queue.put((DaemonProcess._TERMINATED, None))
+        output_queue.put((DaemonProcess.TERMINATE, None))
