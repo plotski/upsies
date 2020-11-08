@@ -28,15 +28,15 @@ class Callable:
 
 
 @patch('upsies.tools.torrent.create')
-def test_torrent_process_creates_torrent(torrent_mock):
+def test_torrent_process_creates_torrent(create_mock):
     output_queue = multiprocessing.Queue()
     input_queue = multiprocessing.Queue()
-    torrent_mock.return_value = 'path/to/foo.mkv.torrent'
+    create_mock.return_value = 'path/to/foo.mkv.torrent'
     _torrent_process(output_queue, input_queue, some='argument', another='one')
     assert output_queue.get() == (DaemonProcess.RESULT, 'path/to/foo.mkv.torrent')
     assert output_queue.empty()
     assert input_queue.empty()
-    assert torrent_mock.call_args_list == [call(
+    assert create_mock.call_args_list == [call(
         init_callback=Callable(),
         progress_callback=Callable(),
         some='argument',
@@ -44,10 +44,10 @@ def test_torrent_process_creates_torrent(torrent_mock):
     )]
 
 @patch('upsies.tools.torrent.create')
-def test_torrent_process_catches_TorrentError(torrent_mock):
+def test_torrent_process_catches_TorrentError(create_mock):
     output_queue = multiprocessing.Queue()
     input_queue = multiprocessing.Queue()
-    torrent_mock.side_effect = errors.TorrentError('Argh')
+    create_mock.side_effect = errors.TorrentError('Argh')
     _torrent_process(output_queue, input_queue, some='argument')
     assert output_queue.get() == (DaemonProcess.ERROR, 'Argh')
     assert output_queue.empty()
