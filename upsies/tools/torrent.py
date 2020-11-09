@@ -67,7 +67,6 @@ def create(*, content_path, announce, torrent_path,
                 return torrent_path
 
 
-
 def _make_file_tree(tree):
     files = []
     for name,file in tree.items():

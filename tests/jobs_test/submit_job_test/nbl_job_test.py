@@ -1,6 +1,5 @@
 import asyncio
 import os
-import sys
 from unittest.mock import Mock, call, patch
 
 import aiohttp
