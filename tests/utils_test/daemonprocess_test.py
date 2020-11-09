@@ -1,12 +1,11 @@
 import asyncio
 import queue
-import re
 import time
 from unittest.mock import Mock, call
 
 import pytest
 
-from upsies.utils.daemon import DaemonProcess
+from upsies.utils.daemon import DaemonProcess, MsgType
 
 # DaemonProcess targets must be picklable and nested functions aren't.
 
@@ -15,24 +14,24 @@ def target_raising_exception(output_queue, input_queue):
 
 def target_sending_to_init_callback(output_queue, input_queue):
     for i in range(3):
-        output_queue.put((DaemonProcess.INIT, i))
+        output_queue.put((MsgType.init, i))
 
 def target_sending_to_info_callback(output_queue, input_queue):
     for i in range(4):
-        output_queue.put((DaemonProcess.INFO, i))
+        output_queue.put((MsgType.info, i))
 
 def target_sending_to_error_callback(output_queue, input_queue):
     for i in range(2):
-        output_queue.put((DaemonProcess.ERROR, i))
+        output_queue.put((MsgType.error, i))
 
 def target_sending_result_to_finished_callback(output_queue, input_queue):
-    output_queue.put((DaemonProcess.RESULT, 'foo'))
+    output_queue.put((MsgType.result, 'foo'))
 
 def target_sending_no_result_to_finished_callback(output_queue, input_queue):
     pass
 
 def target_never_terminating(output_queue, input_queue):
-    output_queue.put((DaemonProcess.INFO, 'something'))
+    output_queue.put((MsgType.info, 'something'))
 
     while True:
         try:
@@ -40,16 +39,15 @@ def target_never_terminating(output_queue, input_queue):
         except queue.Empty:
             pass
         else:
-            if typ == DaemonProcess.TERMINATE:
+            if typ is MsgType.terminate:
                 break
 
-        import time
         time.sleep(1)
 
 def target_taking_arguments(output_queue, input_queue, foo, bar, *, baz):
-    output_queue.put((DaemonProcess.INFO, foo))
-    output_queue.put((DaemonProcess.INFO, bar))
-    output_queue.put((DaemonProcess.INFO, baz))
+    output_queue.put((MsgType.info, foo))
+    output_queue.put((MsgType.info, bar))
+    output_queue.put((MsgType.info, baz))
 
 
 @pytest.mark.asyncio

@@ -1,4 +1,5 @@
 import asyncio
+import enum
 import functools
 import multiprocessing
 
@@ -8,6 +9,14 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
+class MsgType(enum.Enum):
+    init = 'init'
+    info = 'info'
+    error = 'error'
+    result = 'result'
+    terminate = 'terminate'
+
+
 class DaemonProcess:
     """
     Background worker process
@@ -15,12 +24,6 @@ class DaemonProcess:
     Intended to offload heavy work (e.g. torrent creation) onto a different
     process. (Threads can still make the UI unresponsive because of the GIL.)
     """
-
-    INIT = 'init'
-    INFO = 'info'
-    ERROR = 'error'
-    RESULT = 'result'
-    TERMINATE = 'terminate'
 
     def __init__(self, target, name=None, args=(), kwargs={},
                  init_callback=None, info_callback=None,
@@ -62,13 +65,13 @@ class DaemonProcess:
     async def _read_output(self):
         while True:
             typ, msg = await self._loop.run_in_executor(None, self._output_queue.get)
-            if typ == self.INIT:
+            if typ is MsgType.init:
                 if self._init_callback:
                     self._init_callback(msg)
-            elif typ == self.INFO:
+            elif typ is MsgType.info:
                 if self._info_callback:
                     self._info_callback(msg)
-            elif typ == self.ERROR:
+            elif typ is MsgType.error:
                 if isinstance(msg, tuple):
                     exception, traceback = msg
                     raise errors.SubprocessError(exception, traceback)
@@ -77,11 +80,11 @@ class DaemonProcess:
                 else:
                     if self._error_callback:
                         self._error_callback(msg)
-            elif typ == self.RESULT:
+            elif typ is MsgType.result:
                 if self._finished_callback:
                     self._finished_callback(msg)
                 break
-            elif typ == self.TERMINATE:
+            elif typ is MsgType.terminate:
                 if self._finished_callback:
                     self._finished_callback()
                 break
@@ -91,7 +94,7 @@ class DaemonProcess:
     def stop(self):
         """Stop the process"""
         if self._process:
-            self._input_queue.put((DaemonProcess.TERMINATE, None))
+            self._input_queue.put((MsgType.terminate, None))
 
     @property
     def is_alive(self):
@@ -125,6 +128,6 @@ def _target_process_wrapper(target, output_queue, input_queue, *args, **kwargs):
         # sending it over the Queue
         import traceback
         traceback = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
-        output_queue.put((DaemonProcess.ERROR, (e, traceback)))
+        output_queue.put((MsgType.error, (e, traceback)))
     finally:
-        output_queue.put((DaemonProcess.TERMINATE, None))
+        output_queue.put((MsgType.terminate, None))

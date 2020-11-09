@@ -7,7 +7,7 @@ import pytest
 
 from upsies import errors
 from upsies.jobs.torrent import CreateTorrentJob, _torrent_process
-from upsies.utils.daemon import DaemonProcess
+from upsies.utils.daemon import MsgType
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -33,7 +33,7 @@ def test_torrent_process_creates_torrent(create_mock):
     input_queue = multiprocessing.Queue()
     create_mock.return_value = 'path/to/foo.mkv.torrent'
     _torrent_process(output_queue, input_queue, some='argument', another='one')
-    assert output_queue.get() == (DaemonProcess.RESULT, 'path/to/foo.mkv.torrent')
+    assert output_queue.get() == (MsgType.result, 'path/to/foo.mkv.torrent')
     assert output_queue.empty()
     assert input_queue.empty()
     assert create_mock.call_args_list == [call(
@@ -49,7 +49,7 @@ def test_torrent_process_catches_TorrentError(create_mock):
     input_queue = multiprocessing.Queue()
     create_mock.side_effect = errors.TorrentError('Argh')
     _torrent_process(output_queue, input_queue, some='argument')
-    assert output_queue.get() == (DaemonProcess.ERROR, 'Argh')
+    assert output_queue.get() == (MsgType.error, 'Argh')
     assert output_queue.empty()
     assert input_queue.empty()
 

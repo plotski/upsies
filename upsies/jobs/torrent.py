@@ -75,7 +75,7 @@ class CreateTorrentJob(JobBase):
 
 def _torrent_process(output_queue, input_queue, *args, **kwargs):
     def init_callback(file_tree):
-        output_queue.put((daemon.DaemonProcess.INIT, file_tree))
+        output_queue.put((daemon.MsgType.init, file_tree))
 
     def progress_callback(progress):
         try:
@@ -83,11 +83,11 @@ def _torrent_process(output_queue, input_queue, *args, **kwargs):
         except queue.Empty:
             pass
         else:
-            if typ == daemon.DaemonProcess.TERMINATE:
+            if typ == daemon.MsgType.terminate:
                 # Any truthy return value cancels torrent.create()
                 return 'cancel'
 
-        output_queue.put((daemon.DaemonProcess.INFO, progress))
+        output_queue.put((daemon.MsgType.info, progress))
 
     kwargs['init_callback'] = init_callback
     kwargs['progress_callback'] = progress_callback
@@ -95,9 +95,9 @@ def _torrent_process(output_queue, input_queue, *args, **kwargs):
     try:
         torrent_path = torrent.create(*args, **kwargs)
     except errors.TorrentError as e:
-        output_queue.put((daemon.DaemonProcess.ERROR, str(e)))
+        output_queue.put((daemon.MsgType.error, str(e)))
     else:
-        output_queue.put((daemon.DaemonProcess.RESULT, torrent_path))
+        output_queue.put((daemon.MsgType.result, torrent_path))
 
 
 class AddTorrentJob(JobBase):

@@ -1,4 +1,5 @@
 import os
+import queue
 
 from .. import errors, tools
 from ..utils import LazyModule, daemon, fs, timestamp, video
@@ -157,6 +158,14 @@ def _normalize_timestamps(video_file, timestamps, number):
 def _screenshot_process(output_queue, input_queue,
                         video_file, timestamps, output_dir, overwrite):
     for ts in timestamps:
+        try:
+            typ, msg = input_queue.get_nowait()
+        except queue.Empty:
+            pass
+        else:
+            if typ == daemon.MsgType.terminate:
+                break
+
         screenshot_file = os.path.join(
             output_dir,
             fs.basename(video_file) + f'.{ts}.png',
@@ -169,6 +178,6 @@ def _screenshot_process(output_queue, input_queue,
                 overwrite=overwrite,
             )
         except errors.ScreenshotError as e:
-            output_queue.put((daemon.DaemonProcess.ERROR, str(e)))
+            output_queue.put((daemon.MsgType.error, str(e)))
         else:
-            output_queue.put((daemon.DaemonProcess.INFO, screenshot_file))
+            output_queue.put((daemon.MsgType.info, screenshot_file))

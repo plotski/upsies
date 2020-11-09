@@ -1,6 +1,7 @@
 import asyncio
 import multiprocessing
 import os
+import queue
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -8,7 +9,7 @@ import pytest
 from upsies import errors
 from upsies.jobs.screenshots import (ScreenshotsJob, _normalize_timestamps,
                                      _screenshot_process)
-from upsies.utils.daemon import DaemonProcess
+from upsies.utils.daemon import MsgType
 
 try:
     from unittest.mock import AsyncMock
@@ -94,8 +95,29 @@ def test_screenshot_process_fills_output_queue(screenshot_create_mock, tmp_path)
             overwrite=False,
         ),
     ]
-    assert output_queue.get() == (DaemonProcess.INFO, 'path/to/destination/foo.mkv.0:10:00.png')
-    assert output_queue.get() == (DaemonProcess.INFO, 'path/to/destination/foo.mkv.0:20:00.png')
+    assert output_queue.get() == (MsgType.info, 'path/to/destination/foo.mkv.0:10:00.png')
+    assert output_queue.get() == (MsgType.info, 'path/to/destination/foo.mkv.0:20:00.png')
+    assert output_queue.empty()
+    assert input_queue.empty()
+
+@patch('upsies.tools.screenshot.create')
+def test_screenshot_process_reads_input_queue(screenshot_create_mock, tmp_path):
+    output_queue = multiprocessing.Queue()
+    input_queue = multiprocessing.Queue()
+    input_queue.put_nowait((MsgType.terminate, None))
+    _screenshot_process(output_queue, input_queue,
+                        'foo.mkv', ('0:10:00', '0:20:00', '0:30:00'), 'path/to/destination',
+                        overwrite=False)
+    # The 0:10:00 screenshot is created, probably because the put_nowait() takes
+    # a while? Delaying the call to screenshot_create_mock doesn't help.
+    # Creating 1 screenshot before breaking the loop should be ok.
+    assert len(screenshot_create_mock.call_args_list) <= 1
+    try:
+        output = output_queue.get_nowait()
+    except queue.Empty:
+        pass
+    else:
+        assert output == (MsgType.info, 'path/to/destination/foo.mkv.0:10:00.png')
     assert output_queue.empty()
     assert input_queue.empty()
 
@@ -125,8 +147,8 @@ def test_screenshot_process_catches_ScreenshotErrors(screenshot_create_mock, tmp
             overwrite=False,
         ),
     ]
-    assert output_queue.get() == (DaemonProcess.ERROR, str(errors.ScreenshotError('Error', 'foo.mkv', '0:10:00')))
-    assert output_queue.get() == (DaemonProcess.ERROR, str(errors.ScreenshotError('Error', 'foo.mkv', '0:20:00')))
+    assert output_queue.get() == (MsgType.error, str(errors.ScreenshotError('Error', 'foo.mkv', '0:10:00')))
+    assert output_queue.get() == (MsgType.error, str(errors.ScreenshotError('Error', 'foo.mkv', '0:20:00')))
     assert output_queue.empty()
     assert input_queue.empty()
 
