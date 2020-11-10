@@ -46,6 +46,7 @@ setuptools.setup(
         #        enabled with --use-feature=2020-resolver, but that's not very
         #        user-friendly.  'yarl',
 
+        'httpx==0.16.*',
         'imdbpie==5.6.*',
         'beautifulsoup4==4.*',
         'guessit==3.*',
