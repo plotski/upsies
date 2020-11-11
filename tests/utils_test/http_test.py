@@ -119,8 +119,9 @@ async def test_post_forwards_arguments_to_request(cache, user_agent, mocker):
 @pytest.mark.asyncio
 async def test_request_with_invalid_url(mock_cache):
     url = r'http://:/foo:bar'
-    with pytest.raises(errors.RequestError, match=rf'^{re.escape(url)}: Missing hostname in URL\.$'):
+    with pytest.raises(errors.RequestError, match=rf'^{re.escape(url)}: Missing hostname in URL\.$') as excinfo:
         await http._request('GET', url)
+    assert excinfo.value.status_code is None
 
 @pytest.mark.asyncio
 async def test_request_with_invalid_method(mock_cache):
@@ -322,15 +323,17 @@ async def test_request_catches_HTTP_error_status(method, mock_cache, httpserver)
         'Dave is not here',
         status=404,
     )
-    with pytest.raises(errors.RequestError, match=rf'{url}: Dave is not here'):
+    with pytest.raises(errors.RequestError, match=rf'{url}: Dave is not here') as excinfo:
         await http._request(method=method, url=url)
+    assert excinfo.value.status_code == 404
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
 async def test_request_catches_NetworkError(method, mock_cache):
     url = 'http://localhost:12345/foo/bar/baz'
-    with pytest.raises(errors.RequestError, match=rf'{url}: Failed to connect'):
+    with pytest.raises(errors.RequestError, match=rf'{url}: Failed to connect') as excinfo:
         await http._request(method=method, url=url)
+    assert excinfo.value.status_code is None
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -341,8 +344,9 @@ async def test_request_catches_HTTPError(method, mock_cache, mocker):
     )
     mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
-    with pytest.raises(errors.RequestError, match=rf'{url}: Some error'):
+    with pytest.raises(errors.RequestError, match=rf'{url}: Some error') as excinfo:
         await http._request(method=method, url=url)
+    assert excinfo.value.status_code is None
 
 
 @pytest.mark.asyncio

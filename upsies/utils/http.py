@@ -112,7 +112,10 @@ async def _request(method, url, params={}, data={}, files={}, cache=False, user_
             try:
                 response.raise_for_status()
             except httpx.HTTPStatusError:
-                raise errors.RequestError(f'{url}: {response.text}')
+                raise errors.RequestError(
+                    f'{url}: {response.text}',
+                    status_code=response.status_code,
+                )
         except httpx.NetworkError:
             raise errors.RequestError(f'{url}: Failed to connect')
         except httpx.HTTPError as e:

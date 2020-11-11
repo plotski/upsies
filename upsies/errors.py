@@ -36,7 +36,15 @@ class ProcessError(UpsiesError):
 
 class RequestError(UpsiesError):
     """Network request failed"""
-    pass
+    def __init__(self, msg, status_code=None):
+        super().__init__(msg)
+        self._status_code = status_code
+
+    @property
+    def status_code(self):
+        """HTTP status code (e.g. 404) or `None`"""
+        return self._status_code
+
 
 class ScreenshotError(UpsiesError):
     """Screenshot creation failed"""
