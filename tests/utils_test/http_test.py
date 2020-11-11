@@ -322,10 +322,12 @@ async def test_request_catches_HTTP_error_status(method, mock_cache, httpserver)
     ).respond_with_data(
         'Dave is not here',
         status=404,
+        headers={'foo': 'bar'},
     )
     with pytest.raises(errors.RequestError, match=rf'{url}: Dave is not here') as excinfo:
         await http._request(method=method, url=url)
     assert excinfo.value.status_code == 404
+    assert excinfo.value.headers['foo'] == 'bar'
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -334,6 +336,7 @@ async def test_request_catches_NetworkError(method, mock_cache):
     with pytest.raises(errors.RequestError, match=rf'{url}: Failed to connect') as excinfo:
         await http._request(method=method, url=url)
     assert excinfo.value.status_code is None
+    assert excinfo.value.headers == {}
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -347,6 +350,7 @@ async def test_request_catches_HTTPError(method, mock_cache, mocker):
     with pytest.raises(errors.RequestError, match=rf'{url}: Some error') as excinfo:
         await http._request(method=method, url=url)
     assert excinfo.value.status_code is None
+    assert excinfo.value.headers == {}
 
 
 @pytest.mark.asyncio

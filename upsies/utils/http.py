@@ -114,6 +114,7 @@ async def _request(method, url, params={}, data={}, files={}, cache=False, user_
             except httpx.HTTPStatusError:
                 raise errors.RequestError(
                     f'{url}: {response.text}',
+                    headers=response.headers,
                     status_code=response.status_code,
                 )
         except httpx.NetworkError:
