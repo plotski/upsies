@@ -11,10 +11,6 @@ from upsies import errors
 from upsies.tools.btclient import transmission
 
 
-def test_name(tmp_path):
-    assert transmission.ClientApi.name == 'transmission'
-
-
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
 # not a subclass of typing.Awaitable.
 class AsyncMock(Mock):
@@ -39,6 +35,10 @@ class RequestHandler:
 
     def handle(self, request):
         raise NotImplementedError()
+
+
+def test_name(tmp_path):
+    assert transmission.ClientApi.name == 'transmission'
 
 
 @pytest.mark.asyncio
