@@ -69,7 +69,7 @@ class AsyncMock(Mock):
 @pytest.mark.asyncio
 async def test_get_forwards_arguments_to_request(cache, user_agent, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
-    await http.get(
+    response = await http.get(
         url='http://localhost:123/foo',
         headers={'foo': 'bar'},
         params={'bar': 'baz'},
@@ -86,6 +86,7 @@ async def test_get_forwards_arguments_to_request(cache, user_agent, mocker):
             user_agent=user_agent,
         )
     ]
+    assert response is request_mock.return_value
 
 @pytest.mark.parametrize(
     argnames=('cache', 'user_agent'),
@@ -99,7 +100,7 @@ async def test_get_forwards_arguments_to_request(cache, user_agent, mocker):
 @pytest.mark.asyncio
 async def test_post_forwards_arguments_to_request(cache, user_agent, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
-    await http.post(
+    response = await http.post(
         url='http://localhost:123/foo',
         headers={'foo': 'bar'},
         data=b'foo',
@@ -118,6 +119,7 @@ async def test_post_forwards_arguments_to_request(cache, user_agent, mocker):
             user_agent=user_agent,
         )
     ]
+    assert response is request_mock.return_value
 
 
 @pytest.mark.asyncio
