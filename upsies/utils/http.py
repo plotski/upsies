@@ -33,13 +33,15 @@ def _close_client():
 atexit.register(_close_client)
 
 
-async def get(url, headers={}, params={}, cache=False, user_agent=False):
+async def get(url, headers={}, params={}, auth=None, cache=False, user_agent=False):
     """
     Perform HTTP GET request
 
     :param str url: URL to request
     :param dict headers: Custom headers (added to default headers)
     :param dict params: Query arguments, e.g. {"k": "v"} -> http://foo/bar?k=v
+    :param auth: Basic access authentication; sequence of <username> and
+        <password> or `None`
     :param bool cache: Whether to use cached response if available
     :param bool user_agent: Whether to send the User-Agent header
 
@@ -51,11 +53,12 @@ async def get(url, headers={}, params={}, cache=False, user_agent=False):
         url=url,
         headers=headers,
         params=params,
+        auth=auth,
         cache=cache,
         user_agent=user_agent,
     )
 
-async def post(url, headers={}, data={}, files={}, cache=False, user_agent=False):
+async def post(url, headers={}, data={}, files={}, auth=None, cache=False, user_agent=False):
     """
     Perform HTTP POST request
 
@@ -63,6 +66,8 @@ async def post(url, headers={}, data={}, files={}, cache=False, user_agent=False
     :param dict headers: Custom headers (added to default headers)
     :param dict data: Data to send as application/x-www-form-urlencoded
     :param dict files: Files to send as multipart/form-data
+    :param auth: Basic access authentication; sequence of <username> and
+        <password> or `None`
     :param bool cache: Whether to use cached response if available
     :param bool user_agent: Whether to send the User-Agent header
 
@@ -75,6 +80,7 @@ async def post(url, headers={}, data={}, files={}, cache=False, user_agent=False
         headers=headers,
         data=data,
         files=files,
+        auth=auth,
         cache=cache,
         user_agent=user_agent,
     )
@@ -123,7 +129,7 @@ class Response(str):
 
 
 async def _request(method, url, headers={}, params={}, data={}, files={},
-                   user_agent=False, cache=False):
+                   cache=False, auth=None, user_agent=False):
     assert isinstance(user_agent, bool)
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
@@ -157,7 +163,7 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
 
         _log.debug('%s: %r: %r', method, url, params)
         try:
-            response = await _client.send(request)
+            response = await _client.send(request, auth=auth)
             try:
                 response.raise_for_status()
             except httpx.HTTPStatusError:

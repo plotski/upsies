@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import io
 import itertools
 import re
@@ -58,21 +59,22 @@ class AsyncMock(Mock):
 
 
 @pytest.mark.parametrize(
-    argnames=('cache', 'user_agent'),
+    argnames=('auth', 'cache', 'user_agent'),
     argvalues=(
-        (False, False),
-        (False, True),
-        (True, False),
-        (True, True),
+        (None, False, False),
+        (('foo', 'bar'), False, True),
+        (('bar', 'foo'), True, False),
+        (None, True, True),
     ),
 )
 @pytest.mark.asyncio
-async def test_get_forwards_arguments_to_request(cache, user_agent, mocker):
+async def test_get_forwards_arguments_to_request(auth, cache, user_agent, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     response = await http.get(
         url='http://localhost:123/foo',
         headers={'foo': 'bar'},
         params={'bar': 'baz'},
+        auth=auth,
         cache=cache,
         user_agent=user_agent,
     )
@@ -82,6 +84,7 @@ async def test_get_forwards_arguments_to_request(cache, user_agent, mocker):
             url='http://localhost:123/foo',
             headers={'foo': 'bar'},
             params={'bar': 'baz'},
+            auth=auth,
             cache=cache,
             user_agent=user_agent,
         )
@@ -89,22 +92,23 @@ async def test_get_forwards_arguments_to_request(cache, user_agent, mocker):
     assert response is request_mock.return_value
 
 @pytest.mark.parametrize(
-    argnames=('cache', 'user_agent'),
+    argnames=('auth', 'cache', 'user_agent'),
     argvalues=(
-        (False, False),
-        (False, True),
-        (True, False),
-        (True, True),
+        (('a', 'b'), False, False),
+        (None, False, True),
+        (('b', 'a'), True, False),
+        (None, True, True),
     ),
 )
 @pytest.mark.asyncio
-async def test_post_forwards_arguments_to_request(cache, user_agent, mocker):
+async def test_post_forwards_arguments_to_request(auth, cache, user_agent, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     response = await http.post(
         url='http://localhost:123/foo',
         headers={'foo': 'bar'},
         data=b'foo',
         files=b'bar',
+        auth=auth,
         cache=cache,
         user_agent=user_agent,
     )
@@ -115,6 +119,7 @@ async def test_post_forwards_arguments_to_request(cache, user_agent, mocker):
             headers={'foo': 'bar'},
             data=b'foo',
             files=b'bar',
+            auth=auth,
             cache=cache,
             user_agent=user_agent,
         )
@@ -356,6 +361,53 @@ async def test_request_sends_files(mock_cache, httpserver, mocker):
     assert response == 'have this'
     assert isinstance(response, http.Response)
 
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_sends_auth(method, mock_cache, httpserver):
+    auth = ('AzureDiamond', 'hunter2')
+    auth_str = ':'.join(auth)
+    auth_encoded = base64.b64encode(auth_str.encode('utf-8')).decode()
+
+    class Handler(RequestHandler):
+        def handle(self, request):
+            assert request.headers['Authorization'] == f'Basic {auth_encoded}'
+            return Response('have this')
+
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        Handler(),
+    )
+    response = await http._request(
+        method=method,
+        url=httpserver.url_for('/foo'),
+        auth=auth,
+    )
+    assert response == 'have this'
+    assert isinstance(response, http.Response)
+
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_does_not_send_auth(method, mock_cache, httpserver):
+    class Handler(RequestHandler):
+        def handle(self, request):
+            assert request.headers.get('Authorization') is None
+            return Response('have this')
+
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        Handler(),
+    )
+    response = await http._request(
+        method=method,
+        url=httpserver.url_for('/foo'),
+        auth=None,
+    )
+    assert response == 'have this'
+    assert isinstance(response, http.Response)
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
