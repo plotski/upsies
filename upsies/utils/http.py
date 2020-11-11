@@ -12,7 +12,7 @@ from . import fs
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-_headers = {
+_default_headers = {
     'Accept-Language': 'en-US,en;q=0.5',
     'User-Agent': f'{__project_name__}/{__version__}',
 }
@@ -32,11 +32,12 @@ def _close_client():
 atexit.register(_close_client)
 
 
-async def get(url, params={}, cache=False, user_agent=False):
+async def get(url, headers={}, params={}, cache=False, user_agent=False):
     """
     Perform HTTP GET request
 
     :param str url: URL to request
+    :param dict headers: Custom headers (added to default headers)
     :param dict params: Query arguments, e.g. {"k": "v"} -> http://foo/bar?k=v
     :param bool cache: Whether to use cached response if available
     :param bool user_agent: Whether to send the User-Agent header
@@ -47,16 +48,18 @@ async def get(url, params={}, cache=False, user_agent=False):
     return await _request(
         method='GET',
         url=url,
+        headers=headers,
         params=params,
         cache=cache,
         user_agent=user_agent,
     )
 
-async def post(url, data={}, files={}, cache=False, user_agent=False):
+async def post(url, headers={}, data={}, files={}, cache=False, user_agent=False):
     """
     Perform HTTP POST request
 
     :param str url: URL to request
+    :param dict headers: Custom headers (added to default headers)
     :param dict data: Data to send as application/x-www-form-urlencoded
     :param dict files: Files to send as multipart/form-data
     :param bool cache: Whether to use cached response if available
@@ -68,6 +71,7 @@ async def post(url, data={}, files={}, cache=False, user_agent=False):
     return await _request(
         method='POST',
         url=url,
+        headers=headers,
         data=data,
         files=files,
         cache=cache,
@@ -75,14 +79,16 @@ async def post(url, data={}, files={}, cache=False, user_agent=False):
     )
 
 
-async def _request(method, url, params={}, data={}, files={}, cache=False, user_agent=False):
+async def _request(method, url, headers={}, params={}, data={}, files={},
+                   user_agent=False, cache=False):
     assert isinstance(user_agent, bool)
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
 
+    headers = {**_default_headers, **headers}
     request = _client.build_request(
         method=str(method),
-        headers=_headers,
+        headers=headers,
         url=str(url),
         params=params,
         data=data,

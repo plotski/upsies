@@ -71,6 +71,7 @@ async def test_get_forwards_arguments_to_request(cache, user_agent, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     await http.get(
         url='http://localhost:123/foo',
+        headers={'foo': 'bar'},
         params={'bar': 'baz'},
         cache=cache,
         user_agent=user_agent,
@@ -79,6 +80,7 @@ async def test_get_forwards_arguments_to_request(cache, user_agent, mocker):
         call(
             method='GET',
             url='http://localhost:123/foo',
+            headers={'foo': 'bar'},
             params={'bar': 'baz'},
             cache=cache,
             user_agent=user_agent,
@@ -99,6 +101,7 @@ async def test_post_forwards_arguments_to_request(cache, user_agent, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     await http.post(
         url='http://localhost:123/foo',
+        headers={'foo': 'bar'},
         data=b'foo',
         files=b'bar',
         cache=cache,
@@ -108,6 +111,7 @@ async def test_post_forwards_arguments_to_request(cache, user_agent, mocker):
         call(
             method='POST',
             url='http://localhost:123/foo',
+            headers={'foo': 'bar'},
             data=b'foo',
             files=b'bar',
             cache=cache,
@@ -183,6 +187,54 @@ async def test_request_caches_response(method, mock_cache, httpserver):
         call.to_cache(mock_cache.cache_file.return_value, 'have this'),
     ]
 
+
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_sends_default_headers(method, mock_cache, httpserver):
+    class Handler(RequestHandler):
+        def handle(self, request):
+            for k, v in http._default_headers.items():
+                assert request.headers[k] == v
+            return Response('have this')
+
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        Handler(),
+    )
+    coro = http._request(
+        method=method,
+        url=httpserver.url_for('/foo'),
+        user_agent=True,
+    )
+    assert await coro == 'have this'
+
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_sends_custom_headers(method, mock_cache, httpserver, mocker):
+    mocker.patch.dict(http._default_headers, {'a': '1', 'b': '2'})
+    custom_headers = {'foo': 'bar', 'b': '20'}
+    combined_headers = {'a': '1', 'b': '20', 'foo': 'bar'}
+
+    class Handler(RequestHandler):
+        def handle(self, request):
+            for k, v in combined_headers.items():
+                assert request.headers[k] == v
+            return Response('have this')
+
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        Handler(),
+    )
+    coro = http._request(
+        method=method,
+        url=httpserver.url_for('/foo'),
+        headers=custom_headers,
+    )
+    assert await coro == 'have this'
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
