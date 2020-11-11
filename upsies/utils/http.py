@@ -2,6 +2,7 @@ import asyncio
 import atexit
 import collections
 import hashlib
+import json
 import os
 
 import httpx
@@ -79,6 +80,48 @@ async def post(url, headers={}, data={}, files={}, cache=False, user_agent=False
     )
 
 
+class Response(str):
+    """
+    Response to a HTTP request
+
+    This is a subclass of `str` with additional attributes and methods.
+    """
+
+    def __new__(cls, text, headers={}, status_code=None):
+        obj = super().__new__(cls, text)
+        obj._headers = headers
+        obj._status_code = status_code
+        return obj
+
+    @property
+    def headers(self):
+        """HTTP headers"""
+        return self._headers
+
+    @property
+    def status_code(self):
+        """HTTP status code"""
+        return self._status_code
+
+    def json(self):
+        """
+        Parse the response text as JSON
+
+        :return: JSON as a `dict`
+        :raise Requesterror: if parsing fails
+        """
+        try:
+            return json.loads(self)
+        except ValueError as e:
+            raise errors.RequestError(f'Malformed JSON: {str(self)}: {e}')
+
+    def __repr__(self):
+        return (f'{type(self).__name__}('
+                'text={str(self)!r}, '
+                'headers={self.headers!r}, '
+                'status_code={self.status_code!r})')
+
+
 async def _request(method, url, headers={}, params={}, data={}, files={},
                    user_agent=False, cache=False):
     assert isinstance(user_agent, bool)
@@ -108,7 +151,7 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
             response = _from_cache(cache_file)
             if response is not None:
                 _log.debug('Got cached response: %r', response)
-                return response
+                return Response(response)
             else:
                 _log.debug('No cached response for: %r', request_lock_key)
 
@@ -132,7 +175,11 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
                 cache_file = _cache_file(method, url, params)
                 _log.debug('Writing response to cache: %r', cache_file)
                 _to_cache(cache_file, response.text)
-            return response.text
+            return Response(
+                text=response.text,
+                headers=response.headers,
+                status_code=response.status_code,
+            )
 
 
 def _open_files(files):
