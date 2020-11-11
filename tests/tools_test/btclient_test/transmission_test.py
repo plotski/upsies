@@ -1,11 +1,11 @@
 import base64
 import json
 import re
-from unittest.mock import Mock, call, patch
+import traceback
+from unittest.mock import Mock, call
 
-import aiohttp
-import aiohttp.test_utils
 import pytest
+from pytest_httpserver.httpserver import Response
 
 from upsies import errors
 from upsies.tools.btclient import transmission
@@ -23,209 +23,208 @@ class AsyncMock(Mock):
             return _sup.__call__(*args, **kwargs)
         return coro()
 
-    def __await__(self):
-        return self().__await__()
 
-
-class MockDaemon(aiohttp.test_utils.TestServer):
-    def __init__(self, responses):
-        super().__init__(aiohttp.web.Application())
+class RequestHandler:
+    def __init__(self):
         self.requests_seen = []
-        self._csrf_token = 'random CSRF token'
-        self.app.router.add_route('post', '/transmission/rpc', self.rpc)
-        self.responses = list(responses)
 
-    async def rpc(self, request):
-        self.requests_seen.append({
-            'method': request.method,
-            'csrf_token': request.headers.get(transmission.CSRF_HEADER, None),
-            'text': await request.text(),
-        })
-        return self.responses.pop(0)
+    def __call__(self, request):
+        try:
+            return self.handle(request)
+        except Exception as e:
+            # pytest-httpserver doesn't show the traceback if we call
+            # raise_for_status() on the response.
+            traceback.print_exception(type(e), e, e.__traceback__)
+            raise
+
+    def handle(self, request):
+        raise NotImplementedError()
+
 
 @pytest.mark.asyncio
-async def test_CSRF_token():
+async def test_request_connection_error():
+    url = 'http://localhost:12345/'
+    api = transmission.ClientApi(url=url)
+    with pytest.raises(errors.TorrentError, match=f'^{re.escape(url)}: Failed to connect$'):
+        await api._request('foo')
+
+@pytest.mark.asyncio
+async def test_request_json_parsing_error(httpserver):
+    path = '/transmission/rpc'
+    httpserver.expect_request(uri=path).respond_with_data('this is not json')
+    url = httpserver.url_for(path)
+    api = transmission.ClientApi(url=url)
+    with pytest.raises(errors.TorrentError, match='^Malformed JSON: this is not json: '):
+        await api._request('foo')
+
+@pytest.mark.asyncio
+async def test_request_CSRF_token(httpserver):
+    path = '/transmission/rpc'
+    data = b'request data'
     response = {'argument': 'OK', 'result': 'success'}
-    srv_cm = MockDaemon(responses=(
-        aiohttp.web.Response(
-            status=transmission.CSRF_ERROR_CODE,
-            headers={transmission.CSRF_HEADER: 'random string'},
-        ),
-        aiohttp.web.json_response(response),
-    ))
-    async with srv_cm as srv:
-        api = transmission.ClientApi(
-            url=f'http://localhost:{srv.port}/transmission/rpc',
-        )
-        assert await api._request('request data') == response
-        assert srv.requests_seen == [
-            {'method': 'POST', 'csrf_token': None, 'text': 'request data'},
-            {'method': 'POST', 'csrf_token': 'random string', 'text': 'request data'},
+    csrf_token = 'random string'
+
+    class Handler(RequestHandler):
+        responses = [
+            Response(
+                status=transmission.CSRF_ERROR_CODE,
+                headers={transmission.CSRF_HEADER: csrf_token},
+            ),
+            json.dumps(response),
         ]
 
-@pytest.mark.asyncio
-async def test_authentication_fails():
-    srv_cm = MockDaemon(responses=(
-        aiohttp.web.Response(status=transmission.AUTH_ERROR_CODE),
-    ))
-    async with srv_cm as srv:
-        api = transmission.ClientApi(
-            url=f'http://localhost:{srv.port}/transmission/rpc',
-            username='foo',
-            password='bar',
-        )
-        with pytest.raises(errors.TorrentError, match='^Authentication failed$'):
-            await api._request('request data')
-        assert srv.requests_seen == [
-            {'method': 'POST', 'csrf_token': None, 'text': 'request data'},
-        ]
+        def handle(self, request):
+            self.requests_seen.append({
+                'method': request.method,
+                'csrf_token': request.headers.get(transmission.CSRF_HEADER),
+                'data': request.data,
+            })
+            return self.responses.pop(0)
+
+    handler = Handler()
+    httpserver.expect_request(uri=path).respond_with_handler(handler)
+
+    api = transmission.ClientApi(url=httpserver.url_for(path))
+    assert await api._request(data) == response
+    assert handler.requests_seen == [
+        {'method': 'POST', 'csrf_token': None, 'data': data},
+        {'method': 'POST', 'csrf_token': csrf_token, 'data': data},
+    ]
 
 @pytest.mark.asyncio
-async def test_connection_refused():
-    url = f'http://localhost:{aiohttp.test_utils.unused_port()}/transmission/rpc'
+async def test_request_authentication_credentials_are_sent(httpserver):
+    path = '/transmission/rpc'
+    auth = ('foo', 'bar')
+    auth_bytes = bytes(':'.join(auth), encoding='ascii')
+    auth_encoded = base64.b64encode(auth_bytes).decode('ascii')
+    httpserver.expect_request(
+        uri=path,
+        headers={'Authorization': f'Basic {auth_encoded}'},
+    ).respond_with_json(
+        {'response': 'info'}
+    )
     api = transmission.ClientApi(
-        url=url,
+        url=httpserver.url_for(path),
         username='foo',
         password='bar',
     )
-    with pytest.raises(errors.TorrentError, match=f'^{re.escape(url)}: Failed to connect$'):
+    assert await api._request('request data') == {'response': 'info'}
+
+@pytest.mark.asyncio
+async def test_request_authentication_fails(httpserver):
+    path = '/transmission/rpc'
+    httpserver.expect_request(uri=path).respond_with_data(
+        status=transmission.AUTH_ERROR_CODE,
+    )
+    api = transmission.ClientApi(url=httpserver.url_for(path))
+    with pytest.raises(errors.TorrentError, match='^Authentication failed$'):
         await api._request('request data')
 
-@pytest.mark.asyncio
-async def test_response_is_not_json():
-    srv_cm = MockDaemon(responses=(
-        aiohttp.web.Response(text='this is not json'),
-    ))
-    async with srv_cm as srv:
-        api = transmission.ClientApi(
-            url=f'http://localhost:{srv.port}/transmission/rpc',
-        )
-        with pytest.raises(errors.TorrentError, match='^Malformed JSON: this is not json: '):
-            await api._request('request data')
-        assert srv.requests_seen == [
-            {'method': 'POST', 'csrf_token': None, 'text': 'request data'},
-        ]
 
-
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     argnames='torrent_added_field',
     argvalues=('torrent-added', 'torrent-duplicate'),
 )
-async def test_add_torrent_with_download_path_argument(torrent_added_field):
+@pytest.mark.asyncio
+async def test_add_torrent_with_download_path_argument(torrent_added_field, mocker):
     response = {
         'arguments': {torrent_added_field: {'id': 1234}},
         'result': 'success',
     }
     api = transmission.ClientApi()
-    request_mock = AsyncMock(return_value=response)
-    read_torrent_file_mock = Mock(return_value=b'torrent metainfo')
-    with patch.multiple(api, _request=request_mock, read_torrent_file=read_torrent_file_mock):
-        torrent_id = await api.add_torrent('file.torrent', '/path/to/file')
-        assert torrent_id == 1234
-        assert read_torrent_file_mock.call_args_list == [call('file.torrent')]
-        assert request_mock.call_args_list == [call(
-            json.dumps({
-                'method' : 'torrent-add',
-                'arguments' : {
-                    'metainfo': str(base64.b64encode(b'torrent metainfo'), encoding='ascii'),
-                    'download-dir': '/path/to/file',
-                },
-            })
-        )]
+    mocker.patch.multiple(
+        api,
+        _request=AsyncMock(return_value=response),
+        read_torrent_file=Mock(return_value=b'torrent metainfo'),
+    )
+    torrent_id = await api.add_torrent(
+        torrent_path='file.torrent',
+        download_path='/path/to/file',
+    )
+    assert torrent_id == 1234
+    assert api.read_torrent_file.call_args_list == [call('file.torrent')]
+    assert api._request.call_args_list == [call(
+        json.dumps({
+            'method' : 'torrent-add',
+            'arguments' : {
+                'metainfo': base64.b64encode(b'torrent metainfo').decode('ascii'),
+                'download-dir': '/path/to/file',
+            },
+        })
+    )]
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     argnames='torrent_added_field',
     argvalues=('torrent-added', 'torrent-duplicate'),
 )
-async def test_add_torrent_without_download_path_argument(torrent_added_field):
+@pytest.mark.asyncio
+async def test_add_torrent_without_download_path_argument(torrent_added_field, mocker):
     response = {
         'arguments': {torrent_added_field: {'id': 1234}},
         'result': 'success',
     }
     api = transmission.ClientApi()
-    request_mock = AsyncMock(return_value=response)
-    read_torrent_file_mock = Mock(return_value=b'torrent metainfo')
-    with patch.multiple(api, _request=request_mock, read_torrent_file=read_torrent_file_mock):
-        torrent_id = await api.add_torrent('file.torrent')
-        assert torrent_id == 1234
-        assert read_torrent_file_mock.call_args_list == [call('file.torrent')]
-        assert request_mock.call_args_list == [call(
-            json.dumps({
-                'method' : 'torrent-add',
-                'arguments' : {
-                    'metainfo': str(base64.b64encode(b'torrent metainfo'), encoding='ascii'),
-                },
-            })
-        )]
+    mocker.patch.multiple(
+        api,
+        _request=AsyncMock(return_value=response),
+        read_torrent_file=Mock(return_value=b'torrent metainfo'),
+    )
+    torrent_id = await api.add_torrent(
+        torrent_path='file.torrent',
+    )
+    assert torrent_id == 1234
+    assert api.read_torrent_file.call_args_list == [call('file.torrent')]
+    assert api._request.call_args_list == [call(
+        json.dumps({
+            'method' : 'torrent-add',
+            'arguments' : {
+                'metainfo': base64.b64encode(b'torrent metainfo').decode('ascii'),
+            },
+        })
+    )]
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    argnames='torrent_added_field',
-    argvalues=('torrent-added', 'torrent-duplicate'),
-)
-async def test_add_torrent_ignores_existing_torrent(torrent_added_field):
-    response = {
-        'arguments': {torrent_added_field: {'id': 'abcd'}},
-        'result': 'success',
-    }
-    api = transmission.ClientApi()
-    request_mock = AsyncMock(return_value=response)
-    read_torrent_file_mock = Mock(return_value=b'torrent metainfo')
-    with patch.multiple(api, _request=request_mock, read_torrent_file=read_torrent_file_mock):
-        torrent_id = await api.add_torrent('file.torrent', '/path/to/file')
-        assert torrent_id == 'abcd'
-        assert read_torrent_file_mock.call_args_list == [call('file.torrent')]
-        assert request_mock.call_args_list == [call(
-            json.dumps({
-                'method' : 'torrent-add',
-                'arguments' : {
-                    'metainfo': str(base64.b64encode(b'torrent metainfo'), encoding='ascii'),
-                    'download-dir': '/path/to/file',
-                },
-            })
-        )]
-
-@pytest.mark.asyncio
-async def test_add_torrent_uses_result_field_as_error_message():
+async def test_add_torrent_uses_result_field_as_error_message(mocker):
     response = {
         'arguments': {},
-        'result': 'Klonk',
+        'result': 'Kaboom!',
     }
     api = transmission.ClientApi()
-    request_mock = AsyncMock(return_value=response)
-    read_torrent_file_mock = Mock(return_value=b'torrent metainfo')
-    with patch.multiple(api, _request=request_mock, read_torrent_file=read_torrent_file_mock):
-        with pytest.raises(errors.TorrentError, match=r'^Klonk$'):
-            await api.add_torrent('file.torrent', '/path/to/file')
-        assert read_torrent_file_mock.call_args_list == [call('file.torrent')]
-        assert request_mock.call_args_list == [call(
-            json.dumps({
-                'method' : 'torrent-add',
-                'arguments' : {
-                    'metainfo': str(base64.b64encode(b'torrent metainfo'), encoding='ascii'),
-                    'download-dir': '/path/to/file',
-                },
-            })
-        )]
+    mocker.patch.multiple(
+        api,
+        _request=AsyncMock(return_value=response),
+        read_torrent_file=Mock(return_value=b'torrent metainfo'),
+    )
+    with pytest.raises(errors.TorrentError, match=r'^Kaboom!$'):
+        await api.add_torrent('file.torrent')
+    assert api.read_torrent_file.call_args_list == [call('file.torrent')]
+    assert api._request.call_args_list == [call(
+        json.dumps({
+            'method' : 'torrent-add',
+            'arguments' : {
+                'metainfo': base64.b64encode(b'torrent metainfo').decode('ascii'),
+            },
+        })
+    )]
 
 @pytest.mark.asyncio
-async def test_add_torrent_reports_generic_error():
-    response = {}
+async def test_add_torrent_reports_generic_error(mocker):
+    response = {'something': 'unexpected'}
     api = transmission.ClientApi()
-    request_mock = AsyncMock(return_value=response)
-    read_torrent_file_mock = Mock(return_value=b'torrent metainfo')
-    with patch.multiple(api, _request=request_mock, read_torrent_file=read_torrent_file_mock):
-        with pytest.raises(errors.TorrentError, match=r'^Adding failed for unknown reason$'):
-            await api.add_torrent('file.torrent', '/path/to/file')
-        assert read_torrent_file_mock.call_args_list == [call('file.torrent')]
-        assert request_mock.call_args_list == [call(
-            json.dumps({
-                'method' : 'torrent-add',
-                'arguments' : {
-                    'metainfo': str(base64.b64encode(b'torrent metainfo'), encoding='ascii'),
-                    'download-dir': '/path/to/file',
-                },
-            })
-        )]
+    mocker.patch.multiple(
+        api,
+        _request=AsyncMock(return_value=response),
+        read_torrent_file=Mock(return_value=b'torrent metainfo'),
+    )
+    with pytest.raises(RuntimeError, match=(r'^Unexpected response: '
+                                            + re.escape("{'something': 'unexpected'}"))):
+        await api.add_torrent('file.torrent')
+    assert api.read_torrent_file.call_args_list == [call('file.torrent')]
+    assert api._request.call_args_list == [call(
+        json.dumps({
+            'method' : 'torrent-add',
+            'arguments' : {
+                'metainfo': base64.b64encode(b'torrent metainfo').decode('ascii'),
+            },
+        })
+    )]

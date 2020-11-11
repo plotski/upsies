@@ -81,4 +81,4 @@ class ClientApi(ClientApiBase):
         elif 'result' in info:
             raise errors.TorrentError(str(info['result']).capitalize())
         else:
-            raise errors.TorrentError('Adding failed for unknown reason')
+            raise RuntimeError(f'Unexpected response: {info}')
