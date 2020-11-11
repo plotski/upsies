@@ -2,13 +2,11 @@ import base64
 import json
 
 from ... import errors
-from ...utils import LazyModule
+from ...utils import http
 from . import ClientApiBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
-
-aiohttp = LazyModule(module='aiohttp', namespace=globals())
 
 
 DEFAULT_URL = 'http://localhost:9091/transmission/rpc'
@@ -30,40 +28,35 @@ class ClientApi(ClientApiBase):
         self._username = username
         self._password = password
         self._url = url or DEFAULT_URL
-        self._headers = {'content-type': 'application/json'}
+        self._headers = {'Content-Type': 'application/json'}
 
     async def _request(self, data):
         if self._username or self._password:
-            auth = aiohttp.BasicAuth(self._username,
-                                     self._password,
-                                     encoding='utf-8')
+            auth = (self._username, self._password)
         else:
             auth = None
 
-        session_cm = aiohttp.ClientSession(
-            auth=auth,
-            headers=self._headers,
-        )
-        async with session_cm as session:
-            try:
-                request = await session.post(url=self._url, data=data)
-            except aiohttp.ClientConnectionError:
-                raise errors.TorrentError(f'{self._url}: Failed to connect')
-            except aiohttp.ClientError as e:
-                raise errors.TorrentError(f'{self._url}: {e}')
-
-        if request.status == CSRF_ERROR_CODE:
-            # Send request again with CSRF header
-            self._headers[CSRF_HEADER] = request.headers[CSRF_HEADER]
-            return await self._request(data)
-        elif request.status == AUTH_ERROR_CODE:
-            raise errors.TorrentError('Authentication failed')
+        try:
+            response = await http.post(
+                url=self._url,
+                headers=self._headers,
+                auth=auth,
+                data=data,
+            )
+        except errors.RequestError as e:
+            if e.status_code == CSRF_ERROR_CODE:
+                # Send same request again with CSRF header
+                self._headers[CSRF_HEADER] = e.headers[CSRF_HEADER]
+                return await self._request(data)
+            elif e.status_code == AUTH_ERROR_CODE:
+                raise errors.TorrentError('Authentication failed')
+            else:
+                raise errors.TorrentError(e)
 
         try:
-            return await request.json()
-        except aiohttp.ClientResponseError:
-            text = await request.text()
-            raise errors.TorrentError(f'Malformed JSON response: {text}')
+            return response.json()
+        except errors.RequestError as e:
+            raise errors.TorrentError(e)
 
     async def add_torrent(self, torrent_path, download_path=None):
         torrent_data = str(
@@ -79,13 +72,13 @@ class ClientApi(ClientApiBase):
         if download_path:
             request['arguments']['download-dir'] = str(download_path)
 
-        response = await self._request(json.dumps(request))
-        arguments = response.get('arguments', {})
+        info = await self._request(json.dumps(request))
+        arguments = info.get('arguments', {})
         if 'torrent-added' in arguments:
             return arguments['torrent-added']['id']
         elif 'torrent-duplicate' in arguments:
             return arguments['torrent-duplicate']['id']
-        elif 'result' in response:
-            raise errors.TorrentError(str(response['result']).capitalize())
+        elif 'result' in info:
+            raise errors.TorrentError(str(info['result']).capitalize())
         else:
             raise errors.TorrentError('Adding failed for unknown reason')

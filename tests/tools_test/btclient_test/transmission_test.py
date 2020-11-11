@@ -100,7 +100,7 @@ async def test_response_is_not_json():
         api = transmission.ClientApi(
             url=f'http://localhost:{srv.port}/transmission/rpc',
         )
-        with pytest.raises(errors.TorrentError, match='^Malformed JSON response: this is not json$'):
+        with pytest.raises(errors.TorrentError, match='^Malformed JSON: this is not json: '):
             await api._request('request data')
         assert srv.requests_seen == [
             {'method': 'POST', 'csrf_token': None, 'text': 'request data'},
