@@ -33,7 +33,8 @@ def _close_client():
 atexit.register(_close_client)
 
 
-async def get(url, headers={}, params={}, auth=None, cache=False, user_agent=False):
+async def get(url, headers={}, params={}, auth=None,
+              cache=False, user_agent=False, allow_redirects=True):
     """
     Perform HTTP GET request
 
@@ -44,6 +45,7 @@ async def get(url, headers={}, params={}, auth=None, cache=False, user_agent=Fal
         <password> or `None`
     :param bool cache: Whether to use cached response if available
     :param bool user_agent: Whether to send the User-Agent header
+    :param bool allow_redirects: Whether to follow redirects
 
     :return: Response text
     :rtype: str
@@ -56,9 +58,11 @@ async def get(url, headers={}, params={}, auth=None, cache=False, user_agent=Fal
         auth=auth,
         cache=cache,
         user_agent=user_agent,
+        allow_redirects=allow_redirects,
     )
 
-async def post(url, headers={}, data={}, files={}, auth=None, cache=False, user_agent=False):
+async def post(url, headers={}, data={}, files={}, auth=None,
+               cache=False, user_agent=False, allow_redirects=True):
     """
     Perform HTTP POST request
 
@@ -70,6 +74,7 @@ async def post(url, headers={}, data={}, files={}, auth=None, cache=False, user_
         <password> or `None`
     :param bool cache: Whether to use cached response if available
     :param bool user_agent: Whether to send the User-Agent header
+    :param bool allow_redirects: Whether to follow redirects
 
     :return: Response text
     :rtype: str
@@ -83,6 +88,7 @@ async def post(url, headers={}, data={}, files={}, auth=None, cache=False, user_
         auth=auth,
         cache=cache,
         user_agent=user_agent,
+        allow_redirects=allow_redirects,
     )
 
 
@@ -129,7 +135,7 @@ class Response(str):
 
 
 async def _request(method, url, headers={}, params={}, data={}, files={},
-                   cache=False, auth=None, user_agent=False):
+                   allow_redirects=True, cache=False, auth=None, user_agent=False):
     assert isinstance(user_agent, bool)
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
@@ -163,7 +169,11 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
 
         _log.debug('%s: %r: %r', method, url, params)
         try:
-            response = await _client.send(request, auth=auth)
+            response = await _client.send(
+                request=request,
+                auth=auth,
+                allow_redirects=allow_redirects,
+            )
             try:
                 response.raise_for_status()
             except httpx.HTTPStatusError:

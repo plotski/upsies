@@ -52,16 +52,16 @@ class AsyncMock(Mock):
 
 
 @pytest.mark.parametrize(
-    argnames=('auth', 'cache', 'user_agent'),
+    argnames=('auth', 'cache', 'user_agent', 'allow_redirects'),
     argvalues=(
-        (None, False, False),
-        (('foo', 'bar'), False, True),
-        (('bar', 'foo'), True, False),
-        (None, True, True),
+        (None, False, False, True),
+        (('foo', 'bar'), False, True, False),
+        (('bar', 'foo'), True, False, True),
+        (None, True, True, False),
     ),
 )
 @pytest.mark.asyncio
-async def test_get_forwards_arguments_to_request(auth, cache, user_agent, mocker):
+async def test_get_forwards_arguments_to_request(auth, cache, user_agent, allow_redirects, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     response = await http.get(
         url='http://localhost:123/foo',
@@ -70,6 +70,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, user_agent, mocker
         auth=auth,
         cache=cache,
         user_agent=user_agent,
+        allow_redirects=allow_redirects,
     )
     assert request_mock.call_args_list == [
         call(
@@ -80,21 +81,22 @@ async def test_get_forwards_arguments_to_request(auth, cache, user_agent, mocker
             auth=auth,
             cache=cache,
             user_agent=user_agent,
+            allow_redirects=allow_redirects,
         )
     ]
     assert response is request_mock.return_value
 
 @pytest.mark.parametrize(
-    argnames=('auth', 'cache', 'user_agent'),
+    argnames=('auth', 'cache', 'user_agent', 'allow_redirects'),
     argvalues=(
-        (('a', 'b'), False, False),
-        (None, False, True),
-        (('b', 'a'), True, False),
-        (None, True, True),
+        (('a', 'b'), False, False, False),
+        (None, False, True, False),
+        (('b', 'a'), True, False, True),
+        (None, True, True, True),
     ),
 )
 @pytest.mark.asyncio
-async def test_post_forwards_arguments_to_request(auth, cache, user_agent, mocker):
+async def test_post_forwards_arguments_to_request(auth, cache, user_agent, allow_redirects, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     response = await http.post(
         url='http://localhost:123/foo',
@@ -104,6 +106,7 @@ async def test_post_forwards_arguments_to_request(auth, cache, user_agent, mocke
         auth=auth,
         cache=cache,
         user_agent=user_agent,
+        allow_redirects=allow_redirects,
     )
     assert request_mock.call_args_list == [
         call(
@@ -115,6 +118,7 @@ async def test_post_forwards_arguments_to_request(auth, cache, user_agent, mocke
             auth=auth,
             cache=cache,
             user_agent=user_agent,
+            allow_redirects=allow_redirects,
         )
     ]
     assert response is request_mock.return_value
@@ -444,6 +448,48 @@ async def test_request_does_not_send_user_agent(method, mock_cache, httpserver):
         user_agent=False,
     )
     assert response == 'have this'
+    assert isinstance(response, http.Response)
+
+
+@pytest.mark.parametrize('allow_redirects', (True, False))
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.parametrize('status_code', ('301', '302', '303'))
+@pytest.mark.asyncio
+async def test_request_with_allow_redirects(status_code, method, allow_redirects, mock_cache, httpserver):
+    class Handler(RequestHandler):
+        def handle(self, request):
+            if request.path == '/foo':
+                return Response(
+                    response='not redirected',
+                    status=status_code,
+                    headers={'Location': httpserver.url_for('/bar')},
+                )
+            else:
+                return Response('redirected')
+
+    handler = Handler()
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        handler,
+    )
+    httpserver.expect_request(
+        uri='/bar',
+        method='GET',
+    ).respond_with_handler(
+        handler,
+    )
+
+    response = await http._request(
+        method=method,
+        url=httpserver.url_for('/foo'),
+        allow_redirects=allow_redirects,
+    )
+    if allow_redirects:
+        assert response == 'redirected'
+    else:
+        assert response == 'not redirected'
     assert isinstance(response, http.Response)
 
 
