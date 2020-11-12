@@ -123,9 +123,9 @@ class Response(str):
 
     def __repr__(self):
         return (f'{type(self).__name__}('
-                'text={str(self)!r}, '
-                'headers={self.headers!r}, '
-                'status_code={self.status_code!r})')
+                f'text={str(self)!r}, '
+                f'headers={self.headers!r}, '
+                f'status_code={self.status_code!r})')
 
 
 async def _request(method, url, headers={}, params={}, data={}, files={},
