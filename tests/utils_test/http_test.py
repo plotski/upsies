@@ -13,12 +13,19 @@ from pytest_httpserver.httpserver import Response
 from upsies import __project_name__, __version__, errors
 from upsies.utils import http
 
-# Use the same loop for every test because we close the loop with atexit
-_event_loop = asyncio.new_event_loop()
 
-@pytest.fixture
+# httpx.AsyncClient() must be closed before the process terminates. We need a
+# loop for that. By default, pytest-asyncio uses a new loop for every test. By
+# overloading the event_loop fixture, we use one AsyncClient instance for every
+# test in this module and close it after all tests ran.
+@pytest.fixture(scope='module')
 def event_loop():
-    yield _event_loop
+    from upsies.utils import http
+    http._client = type(http._client)()
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.run_until_complete(http._client.aclose())
+    loop.close()
 
 
 @pytest.fixture
