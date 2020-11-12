@@ -5,15 +5,20 @@ import pytest
 
 
 @pytest.fixture(scope='module', autouse=True)
-def disable_aiohttp_ClientSession(pytestconfig):
+def disable_http_requests(pytestconfig):
+    from upsies.utils import http
     if pytestconfig.getoption('--allow-http-requests', None):
         yield
     else:
-        exc = RuntimeError('aiohttp.ClientSession is disabled; use --allow-http-requests')
-        with patch('aiohttp.ClientSession', Mock(side_effect=exc)):
+        # We can't patch utils.http._request() because we want it to return
+        # cached requests. utils.http._request() only uses
+        # httpx.AsyncClient.send() so we can patch that.
+        exc = RuntimeError('HTTP requests are disabled; use --allow-http-requests')
+        with patch.object(http._client, 'send', Mock(side_effect=exc)):
             yield
 
 
+# When HTTP requests are allowed, store responses in ./cached_responses.
 @pytest.fixture
 def store_response():
     tmpdir = os.path.join(os.path.dirname(__file__), 'cached_responses')
