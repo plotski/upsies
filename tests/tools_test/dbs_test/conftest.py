@@ -4,11 +4,6 @@ from unittest.mock import Mock, patch
 import pytest
 
 
-def pytest_addoption(parser):
-    parser.addoption('--allow-http-requests', action='store_true',
-                     help='Use this option to fill the request cache')
-
-
 @pytest.fixture(scope='module', autouse=True)
 def disable_aiohttp_ClientSession(pytestconfig):
     if pytestconfig.getoption('--allow-http-requests', None):
