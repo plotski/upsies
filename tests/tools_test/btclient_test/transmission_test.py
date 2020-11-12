@@ -1,4 +1,3 @@
-import asyncio
 import base64
 import json
 import re
@@ -10,19 +9,6 @@ from pytest_httpserver.httpserver import Response
 
 from upsies import errors
 from upsies.tools.btclient import transmission
-
-# httpx.AsyncClient() must be closed before the process terminates. We need a
-# loop for that. By default, pytest-asyncio uses a new loop for every test. By
-# overloading the event_loop fixture, we use one AsyncClient instance for every
-# test in this module and close it after all tests ran.
-@pytest.fixture(scope='module')
-def event_loop():
-    from upsies.utils import http
-    http._client = type(http._client)()
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.run_until_complete(http._client.aclose())
-    loop.close()
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
