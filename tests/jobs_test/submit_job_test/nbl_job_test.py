@@ -52,7 +52,7 @@ def test_trackername():
 def _get_response(name):
     filepath = os.path.join(
         os.path.dirname(__file__),
-        'cached_responses',
+        'html',
         f'nbl.{name}.html',
     )
     return open(filepath, 'r').read()
