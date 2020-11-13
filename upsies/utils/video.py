@@ -13,6 +13,7 @@ natsort = LazyModule(module='natsort', namespace=globals())
 
 _video_file_extensions = ('mkv', 'mp4', 'ts', 'avi', 'vob')
 
+@functools.lru_cache(maxsize=None)
 def first_video(path):
     """
     Find first video file (e.g. first episode from season)
