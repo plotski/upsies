@@ -91,8 +91,7 @@ def test_length_calls_ffprobe(run_mock, tmp_path):
         str(filepath),
     )
     run_mock.return_value = '12345.098'
-    length = video.length(filepath)
-    assert length == 12345.098
+    assert video.length(filepath) == 12345.098
     assert run_mock.call_args_list == [call(exp_cmd, ignore_errors=True)]
 
 @patch('upsies.utils.subproc.run')
