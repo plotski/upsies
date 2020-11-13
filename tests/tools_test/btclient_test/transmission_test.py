@@ -1,7 +1,6 @@
 import base64
 import json
 import re
-import traceback
 from unittest.mock import Mock, call
 
 import pytest
@@ -25,11 +24,14 @@ class RequestHandler:
         self.requests_seen = []
 
     def __call__(self, request):
+        # `request` is a Request object from werkzeug
+        # https://werkzeug.palletsprojects.com/en/1.0.x/wrappers/#werkzeug.wrappers.BaseRequest
         try:
             return self.handle(request)
         except Exception as e:
             # pytest-httpserver doesn't show the traceback if we call
             # raise_for_status() on the response.
+            import traceback
             traceback.print_exception(type(e), e, e.__traceback__)
             raise
 
