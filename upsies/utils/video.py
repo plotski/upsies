@@ -11,7 +11,7 @@ _log = logging.getLogger(__name__)
 natsort = LazyModule(module='natsort', namespace=globals())
 
 
-_video_file_extensions = ('mkv', 'mp4', 'ts', 'avi', 'vob')
+_video_file_extensions = ('mkv', 'mp4', 'ts', 'avi')
 
 @functools.lru_cache(maxsize=None)
 def first_video(path):
@@ -20,26 +20,38 @@ def first_video(path):
 
     Video files are detected by file extension.
 
-    Directories are walked recursively and contents are sorted naturally, e.g. "File
-    2.mkv" is sorted before "File 10.mkv".
+    Directories are walked recursively and contents are sorted naturally,
+    e.g. "2.mkv" is sorted before "10.mkv".
+
+    Paths to Blu-ray images (directories that contain a "BDMV" directory) are
+    simply returned.
+
+    For paths to DVD images (directories that contain a "VIDEO_TS" directory),
+    the first .VOB file with a reasonable length is returned.
 
     :param str path: Path to file or directory
 
-    :return: Path to first video file if `path` is a directory, `path` itself otherwise
+    :return: path to video file
     :rtype: str
 
     :raise ContentError: if no video file can be found or if it is unreadable
     """
-    if os.path.isdir(path):
-        if os.path.isdir(os.path.join(path, 'BDMV')):
-            # Blu-ray image, ffmpeg can read that with the "bluray:" protocol
-            return str(path)
+    if os.path.isdir(path) and os.path.isdir(os.path.join(path, 'BDMV')):
+        # Blu-ray image; ffmpeg can read that with the "bluray:" protocol
+        return str(path)
+    elif os.path.isdir(path) and os.path.isdir(os.path.join(path, 'VIDEO_TS')):
+        # DVD image; ffmpeg can't read that so we get a list of .VOBs
+        files = fs.file_list(path, extensions=('VOB',))
+    else:
+        files = fs.file_list(path, extensions=_video_file_extensions)
 
-    files = fs.file_list(path, extensions=_video_file_extensions)
     if not files:
         raise errors.ContentError(f'{path}: No video file found')
     else:
-        first_file = str(files[0])
+        # To avoid using samples or very short .VOBs, remove any videos that are
+        # very short compared to the average length.
+        considered_files = filter_similar_length(files)
+        first_file = str(considered_files[0])
         fs.assert_file_readable(first_file)
         return first_file
 

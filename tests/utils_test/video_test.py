@@ -1,4 +1,3 @@
-import random
 import shlex
 from unittest.mock import call, patch
 
@@ -8,75 +7,99 @@ from upsies import binaries, errors
 from upsies.utils import video
 
 
-def test_first_video_gets_nonexisting_directory():
-    with pytest.raises(errors.ContentError, match=r'^/no/such/dir: No video file found$'):
-        video.first_video('/no/such/dir')
+def test_first_video_finds_no_videos(tmp_path, mocker):
+    file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=())
+    filter_similar_length_mock = mocker.patch('upsies.utils.video.filter_similar_length')
+    assert_file_readable_mock = mocker.patch('upsies.utils.fs.assert_file_readable')
+    with pytest.raises(errors.ContentError, match=rf'^{tmp_path}: No video file found$'):
+        video.first_video(tmp_path)
+    assert file_list_mock.call_args_list == [
+        call(tmp_path, extensions=video._video_file_extensions),
+    ]
+    assert filter_similar_length_mock.call_args_list == []
+    assert assert_file_readable_mock.call_args_list == []
 
-def test_first_video_gets_video_file(tmp_path):
-    for ext in video._video_file_extensions:
-        path = tmp_path / f'Foo.{ext}'
-        path.write_text('data')
-        assert video.first_video(path) == str(path)
+def test_first_video_gets_file(tmp_path, mocker):
+    file_list_mock = mocker.patch(
+        'upsies.utils.fs.file_list',
+        return_value=('some/path/foo.mkv',),
+    )
+    filter_similar_length_mock = mocker.patch(
+        'upsies.utils.video.filter_similar_length',
+        return_value=file_list_mock.return_value,
+    )
+    assert_file_readable_mock = mocker.patch('upsies.utils.fs.assert_file_readable')
+    assert video.first_video(tmp_path) == 'some/path/foo.mkv'
+    assert file_list_mock.call_args_list == [
+        call(tmp_path, extensions=video._video_file_extensions),
+    ]
+    assert filter_similar_length_mock.call_args_list == [
+        call(file_list_mock.return_value),
+    ]
+    assert assert_file_readable_mock.call_args_list == [
+        call('some/path/foo.mkv'),
+    ]
 
-def test_first_video_gets_nonvideo_file(tmp_path):
-    path = tmp_path / 'foo.txt'
-    path.write_text('foo')
-    with pytest.raises(errors.ContentError, match=rf'^{path}: No video file found$'):
-        video.first_video(path)
+def test_first_video_gets_directory(tmp_path, mocker):
+    file_list_mock = mocker.patch(
+        'upsies.utils.fs.file_list',
+        return_value=('some/path/foo.mkv', 'some/path/bar.mkv', 'some/path/baz.mkv'),
+    )
+    filter_similar_length_mock = mocker.patch(
+        'upsies.utils.video.filter_similar_length',
+        return_value=file_list_mock.return_value,
+    )
+    assert_file_readable_mock = mocker.patch('upsies.utils.fs.assert_file_readable')
+    assert video.first_video(tmp_path) == 'some/path/foo.mkv'
+    assert file_list_mock.call_args_list == [
+        call(tmp_path, extensions=video._video_file_extensions),
+    ]
+    assert filter_similar_length_mock.call_args_list == [
+        call(file_list_mock.return_value),
+    ]
+    assert assert_file_readable_mock.call_args_list == [
+        call('some/path/foo.mkv'),
+    ]
 
-def test_first_video_gets_bluray_image(tmp_path):
+def test_first_video_gets_bluray_image(tmp_path, mocker):
     path = tmp_path / 'foo'
     (path / 'BDMV').mkdir(parents=True)
     assert video.first_video(path) == str(path)
 
-def test_first_video_selects_correct_video_from_directory(tmp_path):
+def test_first_video_gets_dvd_image(tmp_path, mocker):
+    file_list_mock = mocker.patch(
+        'upsies.utils.fs.file_list',
+        return_value=(
+            'path/to/VIDEO_TS/VTS_01_0.VOB',
+            'path/to/VIDEO_TS/VTS_01_1.VOB',
+            'path/to/VIDEO_TS/VTS_02_0.VOB',
+            'path/to/VIDEO_TS/VTS_02_1.VOB',
+            'path/to/VIDEO_TS/VTS_02_2.VOB',
+            'path/to/VIDEO_TS/VTS_02_3.VOB',
+        )
+    )
+    filter_similar_length_mock = mocker.patch(
+        'upsies.utils.video.filter_similar_length',
+        return_value=(
+            'path/to/VIDEO_TS/VTS_02_0.VOB',
+            'path/to/VIDEO_TS/VTS_02_1.VOB',
+            'path/to/VIDEO_TS/VTS_02_2.VOB',
+            'path/to/VIDEO_TS/VTS_02_3.VOB',
+        )
+    )
+    assert_file_readable_mock = mocker.patch('upsies.utils.fs.assert_file_readable')
     path = tmp_path / 'foo'
-    path.mkdir()
-    (path / 'foo2.mp4').write_bytes(b'bleep bloop')
-    (path / 'foo10.mp4').write_bytes(b'bloop bleep')
-    assert video.first_video(tmp_path) == str(path / 'foo2.mp4')
-
-def test_first_video_selects_first_video_from_subdirectory(tmp_path):
-    foo = tmp_path / 'foo'
-    foo.mkdir()
-    bar = foo / 'bar'
-    bar.mkdir()
-    nothing_txt = bar / 'nothing.txt'
-    nothing_txt.write_text('nothing')
-    video_mp4 = bar / 'video.mp4'
-    video_mp4.write_text('video data')
-    assert video.first_video(foo) == str(video_mp4)
-
-def test_first_video_gets_directory_without_videos(tmp_path):
-    path = tmp_path / 'foo'
-    path.mkdir()
-    (path / 'foo.txt').write_text('bleep bloop')
-    (path / 'bar.jpg').write_bytes(b'bloop bleep')
-    with pytest.raises(errors.ContentError, match=rf'^{path}: No video file found$'):
-        video.first_video(path)
-
-def test_first_video_gets_empty_directory(tmp_path):
-    path = tmp_path / 'foo'
-    path.mkdir()
-    with pytest.raises(errors.ContentError, match=rf'^{path}: No video file found$'):
-        video.first_video(path)
-
-@pytest.mark.parametrize(
-    argnames=('extension',),
-    argvalues=((ext,)
-               for extension in video._video_file_extensions
-               for ext in (extension.lower(), extension.upper())),
-)
-def test_first_video_finds_all_video_file_extensions(extension, tmp_path):
-    def shuffle(*items):
-        return sorted(items, key=lambda _: random.random())
-
-    path = tmp_path / 'foo'
-    path.mkdir()
-    (path / f'foo.{extension}').write_text('bleep bloop')
-    (path / 'bar.jpg').write_bytes(b'bloop bleep')
-    (path / 'baz.jpg').write_bytes(b'nerrhg')
-    assert video.first_video(path) == str(path / f'foo.{extension}')
+    (path / 'VIDEO_TS').mkdir(parents=True)
+    assert video.first_video(path) == 'path/to/VIDEO_TS/VTS_02_0.VOB'
+    assert file_list_mock.call_args_list == [
+        call(path, extensions=('VOB',)),
+    ]
+    assert filter_similar_length_mock.call_args_list == [
+        call(file_list_mock.return_value),
+    ]
+    assert assert_file_readable_mock.call_args_list == [
+        call('path/to/VIDEO_TS/VTS_02_0.VOB'),
+    ]
 
 
 def test_filter_similar_length(mocker):
