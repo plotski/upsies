@@ -178,7 +178,7 @@ def audio_format(path):
 
     audio_format = None
     audio_track = default_track('audio', path)
-    # _log.debug('Audio track:\n%r', pprint.pformat(audio_track))
+    _log.debug('Audio track for %r: %r', path, audio_track)
 
     fmt = format(audio_track)
     if fmt:
@@ -191,8 +191,6 @@ def audio_format(path):
 def audio_channels(path):
     """Return audio channels (e.g. "5.1") or None"""
     audio_track = default_track('audio', path)
-    # _log.debug('Audio track:\n%r', pprint.pformat(audio_track))
-
     audio_channels = None
     channels = audio_track.get('Channels', '')
     if channels:
@@ -227,7 +225,7 @@ def video_format(path):
         return None
 
     video_track = default_track('video', path)
-    # _log.debug('Video track:\n%r', pprint.pformat(video_track))
+    _log.debug('Video track for %r: %r', path, video_track)
     video_format = format(video_track)
     _log.debug('Detected video format: %s', video_format)
     return video_format
