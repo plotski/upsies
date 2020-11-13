@@ -51,7 +51,7 @@ class SubmitJobBase(JobBase, abc.ABC):
         Used for debugging unexpected exceptions.
         """
         with open(filepath, 'w') as f:
-            f.write(self.parse_html(html).prettify())
+            f.write(self.parse_html(str(html)).prettify())
 
     def initialize(self, *, tracker_config, jobs_before_upload, jobs_after_upload):
         self._tracker_config = tracker_config
