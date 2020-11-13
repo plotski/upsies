@@ -162,10 +162,7 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
             cache_file = _cache_file(method, url, params)
             response = _from_cache(cache_file)
             if response is not None:
-                _log.debug('Got cached response: %r', response)
                 return Response(response)
-            else:
-                _log.debug('No cached response for: %r', request_lock_key)
 
         _log.debug('%s: %r: %r', method, url, params)
         try:
@@ -189,7 +186,6 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
         else:
             if cache:
                 cache_file = _cache_file(method, url, params)
-                _log.debug('Writing response to cache: %r', cache_file)
                 _to_cache(cache_file, response.text)
             return Response(
                 text=response.text,
@@ -256,7 +252,6 @@ def _from_cache(cache_file):
     except OSError:
         return None
     else:
-        _log.debug('Read %r', cache_file)
         return data
 
 def _to_cache(cache_file, string):
@@ -265,8 +260,6 @@ def _to_cache(cache_file, string):
             f.write(string)
     except OSError as e:
         raise RuntimeError(f'Unable to write cache file {cache_file}: {e}')
-    else:
-        _log.debug('Wrote %r', cache_file)
 
 def _cache_file(method, url, params={}):
     def make_filename(method, url, params_str):
