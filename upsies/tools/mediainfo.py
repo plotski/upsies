@@ -211,6 +211,7 @@ _video_translations = (
     ('H.264', {'Format': re.compile(r'^AVC$')}),
     ('H.265', {'Format': re.compile(r'^HEVC$')}),
     ('VP9', {'Format': re.compile(r'^VP9$')}),
+    ('MPEG-2', {'Format': re.compile(r'^MPEG Video$'), 'Format_Version': re.compile(r'^2$')}),
 )
 
 @functools.lru_cache(maxsize=None)

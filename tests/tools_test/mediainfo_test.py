@@ -239,6 +239,7 @@ video_format_samples = (
     ('H.264', {'Format': 'AVC'}),
     ('H.265', {'Format': 'HEVC'}),
     ('VP9', {'Format': 'VP9'}),
+    ('MPEG-2', {'Format': 'MPEG Video', 'Format Version': '2'}),
 )
 
 @pytest.mark.parametrize('exp_video_format, video_dict', video_format_samples)
