@@ -2,14 +2,13 @@ import abc
 import asyncio
 import enum
 
-from ... import __project_name__, __version__, errors
-from ...utils import LazyModule, cache
+from ... import errors
+from ...utils import LazyModule
 from .. import JobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-aiohttp = LazyModule(module='aiohttp', namespace=globals())
 bs4 = LazyModule(module='bs4', namespace=globals())
 
 
@@ -137,30 +136,21 @@ class SubmitJobBase(JobBase, abc.ABC):
 
         await super().wait()
 
-    @cache.property
-    def _http_session(self):
-        return aiohttp.ClientSession(
-            headers={'User-Agent': f'{__project_name__}/{__version__}'},
-            raise_for_status=True,
-            timeout=aiohttp.ClientTimeout(total=self.timeout),
-        )
-
     async def _submit(self):
         _log.debug('%s: Submitting %s', self.tracker_name, self.metadata.get('create-torrent'))
         try:
-            async with self._http_session as client:
-                self._call_callbacks(self.signal.logging_in)
-                await self.login(client)
-                self._call_callbacks(self.signal.logged_in)
-                try:
-                    self._call_callbacks(self.signal.uploading)
-                    torrent_page_url = await self.upload(client)
-                    self.send(torrent_page_url)
-                    self._call_callbacks(self.signal.uploaded)
-                finally:
-                    self._call_callbacks(self.signal.logging_out)
-                    await self.logout(client)
-                    self._call_callbacks(self.signal.logged_out)
+            self._call_callbacks(self.signal.logging_in)
+            await self.login()
+            self._call_callbacks(self.signal.logged_in)
+            try:
+                self._call_callbacks(self.signal.uploading)
+                torrent_page_url = await self.upload()
+                self.send(torrent_page_url)
+                self._call_callbacks(self.signal.uploaded)
+            finally:
+                self._call_callbacks(self.signal.logging_out)
+                await self.logout()
+                self._call_callbacks(self.signal.logged_out)
         except errors.RequestError as e:
             self.error(e)
 

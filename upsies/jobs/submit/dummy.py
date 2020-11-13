@@ -10,13 +10,13 @@ _log = logging.getLogger(__name__)
 class SubmitJob(SubmitJobBase):
     tracker_name = 'DUMMY'
 
-    async def login(self, http_session):
+    async def login(self):
         await asyncio.sleep(1)
 
-    async def logout(self, http_session):
+    async def logout(self):
         await asyncio.sleep(0.5)
 
-    async def upload(self, http_session):
+    async def upload(self):
         # create-torrent output could be empty sequence or None
         output = self.metadata.get('create-torrent')
         if output:

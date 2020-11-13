@@ -1,11 +1,9 @@
 import os
 from unittest.mock import Mock, call, patch
 
-import aiohttp
-import aiohttp.test_utils
 import pytest
 
-from upsies import __project_name__, __version__, errors
+from upsies import errors
 from upsies.jobs.submit import SubmitJobBase
 
 
@@ -175,43 +173,6 @@ async def test_wait_can_be_called_multiple_times(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_http_session_is_ClientSession(tmp_path):
-    job = make_TestSubmitJob_instance(tmp_path)
-    assert isinstance(job._http_session, aiohttp.ClientSession)
-
-@patch('aiohttp.ClientSession')
-def test_http_session_is_created_correctly(ClientSession_mock, tmp_path):
-    job = make_TestSubmitJob_instance(tmp_path)
-    job._http_session
-    assert ClientSession_mock.call_args_list == [call(
-        headers={'User-Agent': f'{__project_name__}/{__version__}'},
-        raise_for_status=True,
-        timeout=aiohttp.ClientTimeout(total=job.timeout),
-    )]
-
-@pytest.mark.asyncio
-async def test_http_session_is_singleton(tmp_path):
-    job = make_TestSubmitJob_instance(tmp_path)
-    assert job._http_session is job._http_session
-
-
-@pytest.mark.asyncio
-async def test_submit_passes_http_session_to_abstract_methods(tmp_path):
-    sessions = []
-    login_mock = AsyncMock(side_effect=lambda session: sessions.append(session))
-    logout_mock = AsyncMock(side_effect=lambda session: sessions.append(session))
-    upload_mock = AsyncMock(side_effect=lambda session: sessions.append(session))
-    job = make_TestSubmitJob_instance(
-        tmp_path,
-        login=login_mock,
-        logout=logout_mock,
-        upload=upload_mock,
-    )
-    job._metadata = {'create-torrent': 'file.torrent'}
-    assert await job._submit() is None
-    assert all(s is job._http_session for s in sessions)
-
-@pytest.mark.asyncio
 async def test_submit_sends_upload_return_value_as_output(tmp_path):
     upload_mock = AsyncMock(return_value='http://torrent.url/')
     job = make_TestSubmitJob_instance(
@@ -255,15 +216,15 @@ async def test_submit_calls_methods_and_callbacks_in_correct_order(tmp_path):
         await job._submit()
     assert mocks.method_calls == [
         call._call_callbacks(job.signal.logging_in),
-        call.login(job._http_session),
+        call.login(),
         call._call_callbacks(job.signal.logged_in),
 
         call._call_callbacks(job.signal.uploading),
-        call.upload(job._http_session),
+        call.upload(),
         call._call_callbacks(job.signal.uploaded),
 
         call._call_callbacks(job.signal.logging_out),
-        call.logout(job._http_session),
+        call.logout(),
         call._call_callbacks(job.signal.logged_out),
     ]
 

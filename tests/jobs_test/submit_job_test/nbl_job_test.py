@@ -1,13 +1,11 @@
-import asyncio
 import os
 from unittest.mock import Mock, call, patch
 
-import aiohttp
-import aiohttp.test_utils
 import bs4
 import pytest
+from pytest_httpserver.httpserver import Response
 
-from upsies import errors
+from upsies import __project_name__, __version__, errors
 from upsies.jobs.submit import nbl
 
 
@@ -23,8 +21,24 @@ class AsyncMock(Mock):
         return self().__await__()
 
 
-def run_async(awaitable):
-    return asyncio.get_event_loop().run_until_complete(awaitable)
+class RequestHandler:
+    def __init__(self):
+        self.requests_seen = []
+
+    def __call__(self, request):
+        # `request` is a Request object from werkzeug
+        # https://werkzeug.palletsprojects.com/en/1.0.x/wrappers/#werkzeug.wrappers.BaseRequest
+        try:
+            return self.handle(request)
+        except Exception as e:
+            # pytest-httpserver doesn't show the traceback if we call
+            # raise_for_status() on the response.
+            import traceback
+            traceback.print_exception(type(e), e, e.__traceback__)
+            raise
+
+    def handle(self, request):
+        raise NotImplementedError()
 
 
 def make_job(tmp_path, **kwargs):
@@ -36,8 +50,8 @@ def make_job(tmp_path, **kwargs):
         'tracker_config': {
             'username': 'bunny',
             'password': 'hunter2',
-            'base_url': 'http://foo',
-            'announce': 'http://foo/announce',
+            'base_url': 'http://nbl.local',
+            'announce': 'http://nbl.local/announce',
             'exclude': 'some files',
         },
     }
@@ -49,52 +63,47 @@ def test_trackername():
     assert nbl.SubmitJob.tracker_name == 'NBL'
 
 
-def _get_response(name):
-    filepath = os.path.join(
-        os.path.dirname(__file__),
-        'html',
-        f'nbl.{name}.html',
-    )
-    return open(filepath, 'r').read()
-
-
 @pytest.mark.asyncio
-async def test_login_does_nothing_if_already_logged_in(tmp_path):
+async def test_login_does_nothing_if_already_logged_in(tmp_path, mocker):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     job = make_job(tmp_path)
     job._logout_url = 'anything'
     job._auth_key = 'something'
     assert job.logged_in
-    http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
-    await job.login(http_session_mock)
+    await job.login()
     assert job.logged_in
-    assert http_session_mock.get.call_args_list == []
-    assert http_session_mock.post.call_args_list == []
+    assert get_mock.call_args_list == []
+    assert post_mock.call_args_list == []
     assert job._logout_url == 'anything'
     assert job._auth_key == 'something'
 
 @pytest.mark.asyncio
-async def test_login_succeeds(tmp_path):
+async def test_login_succeeds(tmp_path, mocker):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(
+        return_value='''
+            <html>
+                <input name="auth" value="12345" />
+                <a href="logout.php?asdfasdf">logout</a>
+            </html>
+        ''',
+    ))
     job = make_job(tmp_path)
-    http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
-    http_session_mock.post.return_value.text = AsyncMock(return_value='''
-    <html>
-      <input name="auth" value="12345" />
-      <a href="logout.php?asdfasdf">logout</a>
-    </html>
-    ''')
-    await job.login(http_session_mock)
-    assert http_session_mock.get.call_args_list == []
-    assert http_session_mock.post.call_args_list == [call(
-        url='http://foo' + job._url_path['login'],
+    await job.login()
+    assert get_mock.call_args_list == []
+    assert post_mock.call_args_list == [call(
+        url='http://nbl.local' + job._url_path['login'],
+        user_agent=True,
         data={
             'username': 'bunny',
             'password': 'hunter2',
             'twofa': '',
             'login': 'Login',
-        }
+        },
     )]
     assert job.logged_in
-    assert job._logout_url == 'http://foo/logout.php?asdfasdf'
+    assert job._logout_url == 'http://nbl.local/logout.php?asdfasdf'
     assert job._auth_key == '12345'
 
 @pytest.mark.parametrize(
@@ -106,24 +115,27 @@ async def test_login_succeeds(tmp_path):
         '_store_logout_url',
     ),
 )
-@patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
-def test_login_dumps_html_if_handling_response_fails(dump_html_mock, method_name, tmp_path):
-    http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
-    http_session_mock.post.return_value.text = AsyncMock(return_value='''
+@pytest.mark.asyncio
+async def test_login_dumps_html_if_handling_response_fails(method_name, tmp_path, mocker):
+    response = '''
     <html>
-      <input name="auth" value="12345" />
-      <a href="logout.php?asdfasdf">logout</a>
+        <input name="auth" value="12345" />
+        <a href="logout.php?asdfasdf">logout</a>
     </html>
-    ''')
+    '''
+    dump_html_mock = mocker.patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
     job = make_job(tmp_path)
     with patch.object(job, method_name) as method_mock:
         method_mock.side_effect = Exception('Oooph!')
-        with pytest.raises(Exception, match=r'^Oooph\!$'):
-            run_async(job.login(http_session_mock))
+        with pytest.raises(Exception, match=r'^Oooph!$'):
+            await job.login()
     assert not job.logged_in
-    assert http_session_mock.get.call_args_list == []
-    assert http_session_mock.post.call_args_list == [call(
-        url='http://foo' + job._url_path['login'],
+    assert get_mock.call_args_list == []
+    assert post_mock.call_args_list == [call(
+        url='http://nbl.local' + job._url_path['login'],
+        user_agent=True,
         data={
             'username': 'bunny',
             'password': 'hunter2',
@@ -133,8 +145,9 @@ def test_login_dumps_html_if_handling_response_fails(dump_html_mock, method_name
     )]
     assert not job.logged_in
     assert dump_html_mock.call_args_list == [
-        call('login.html', http_session_mock.post.return_value.text.return_value),
+        call('login.html', response),
     ]
+
 
 @pytest.mark.parametrize(
     argnames='error, exp_message',
@@ -153,9 +166,17 @@ def test_login_dumps_html_if_handling_response_fails(dump_html_mock, method_name
     ),
 )
 def test_report_login_error(error, exp_message, tmp_path):
+    def get_stored_response(name):
+        filepath = os.path.join(
+            os.path.dirname(__file__),
+            'html',
+            f'nbl.{name}.html',
+        )
+        return open(filepath, 'r').read()
+
     job = make_job(tmp_path)
     html = bs4.BeautifulSoup(
-        markup=_get_response(error),
+        markup=get_stored_response(error),
         features='html.parser',
     )
     with pytest.raises(errors.RequestError, match=rf'^Login failed: {exp_message}$'):
@@ -177,7 +198,6 @@ def test_logged_in(tmp_path):
     delattr(job, '_auth_key')
     assert job.logged_in is False
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     argnames=('logout_url', 'auth_key'),
     argvalues=(
@@ -187,202 +207,198 @@ def test_logged_in(tmp_path):
         (None, None),
     ),
 )
-async def test_logout(logout_url, auth_key, tmp_path):
+@pytest.mark.asyncio
+async def test_logout(logout_url, auth_key, tmp_path, mocker):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     job = make_job(tmp_path)
     if logout_url is not None:
         job._logout_url = logout_url
     if auth_key is not None:
         job._auth_key = auth_key
-    http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
-    await job.logout(http_session_mock)
+    await job.logout()
     if logout_url is not None:
-        assert http_session_mock.get.call_args_list == [call(logout_url)]
-    assert http_session_mock.post.call_args_list == []
+        assert get_mock.call_args_list == [
+            call(logout_url, user_agent=True),
+        ]
+    else:
+        assert get_mock.call_args_list == []
+    assert post_mock.call_args_list == []
     assert not hasattr(job, '_logout_url')
     assert not hasattr(job, '_auth_key')
 
 
 @pytest.mark.asyncio
-async def test_upload_without_being_logged_in(tmp_path):
+async def test_upload_without_being_logged_in(tmp_path, mocker):
     job = make_job(tmp_path)
-    http_session_mock = Mock(post=AsyncMock(), get=AsyncMock())
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     with pytest.raises(RuntimeError, match=r'^upload\(\) called before login\(\)$'):
-        await job.upload(http_session_mock)
-    assert http_session_mock.get.call_args_list == []
-    assert http_session_mock.post.call_args_list == []
-
-
-class MockServer(aiohttp.test_utils.TestServer):
-    def __init__(self, responses):
-        super().__init__(aiohttp.web.Application())
-        self.requests_seen = []
-        self._csrf_token = 'random CSRF token'
-
-        def make_responder(response):
-            async def responder(request):
-                request_seen = {
-                    'method': request.method,
-                    'user-agent': request.headers.get('User-Agent', ''),
-                }
-
-                async def read_multipart(request):
-                    multipart = {}
-                    reader = await request.multipart()
-                    while True:
-                        part = await reader.next()
-                        if part is None:
-                            return multipart
-                        else:
-                            multipart[part.name] = await part.read()
-
-                if request.content_type == 'multipart/form-data':
-                    request_seen[request.content_type] = await read_multipart(request)
-                else:
-                    request_seen[request.content_type] = await request.text()
-
-                self.requests_seen.append(request_seen)
-
-                if isinstance(response, Exception):
-                    raise response
-                else:
-                    return response
-            return responder
-
-        for methods, path, response in responses:
-            for method in methods:
-                self.app.router.add_route(method, path, make_responder(response))
-        self.responses = list(responses)
-
-    def url(self, path):
-        return f'http://localhost:{self.port}{path}'
+        await job.upload()
+    assert get_mock.call_args_list == []
+    assert post_mock.call_args_list == []
 
 
 @pytest.mark.asyncio
-async def test_upload_succeeds(tmp_path, mocker):
-    mocker.patch('upsies.jobs.submit.nbl.SubmitJob._translate_category',
-                 Mock(return_value=b'mock category'))
-    responses = (
-        (('post',), '/upload.php', aiohttp.web.HTTPTemporaryRedirect('/torrents.php?id=123')),
+async def test_upload_succeeds(tmp_path, mocker, httpserver):
+    translate_category_mock = mocker.patch(
+        'upsies.jobs.submit.nbl.SubmitJob._translate_category',
+        Mock(return_value=b'123'),
     )
+
+    class Handler(RequestHandler):
+        def handle(self, request):
+            request_seen = {
+                'method': request.method,
+                'User-Agent': request.headers.get('User-Agent', ''),
+                'multipart/form-data': dict(request.form),
+            }
+            # werkzeug.Request stores files in the `files` property
+            for field, filestorage in request.files.items():
+                request_seen['multipart/form-data'][field] = filestorage.read()
+            self.requests_seen.append(request_seen)
+            return Response(
+                status=307,
+                headers={'Location': '/torrents.php?id=123'},
+            )
+
+    handler = Handler()
+    httpserver.expect_request(
+        uri='/upload.php',
+        method='POST',
+    ).respond_with_handler(
+        handler,
+    )
+
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
-    async with MockServer(responses) as srv:
-        job = make_job(
-            tmp_path,
-            tracker_config={
-                'username': 'bunny',
-                'password': 'hunter2',
-                'base_url': srv.url(''),
-                'announce': 'http://foo/announce',
-                'exclude': 'some files',
-            },
-        )
-        job._logout_url = 'logout.php'
-        job._auth_key = 'mocked auth key'
-        job._metadata = {
-            'create-torrent': (str(torrent_file),),
-            'mediainfo': ('mocked mediainfo',),
-            'tvmaze-id': ('12345',),
-            'category': ('mock category',),
-        }
-        async with aiohttp.ClientSession(headers={'User-Agent': 'test client'}) as client:
-            torrent_page_url = await job.upload(client)
-        assert torrent_page_url == srv.url('/torrents.php?id=123')
-        assert srv.requests_seen == [{
-            'method': 'POST',
-            'user-agent': 'test client',
-            'multipart/form-data': {
-                'MAX_FILE_SIZE': bytearray(b'1048576'),
-                'auth': bytearray(b'mocked auth key'),
-                'category': bytearray(b'mock category'),
-                'desc': bytearray(b'mocked mediainfo'),
-                'file_input': bytearray(b'mocked torrent metainfo'),
-                'fontfont': bytearray(b'-1'),
-                'fontsize': bytearray(b'-1'),
-                'genre_tags': bytearray(b''),
-                'image': bytearray(b''),
-                'media': bytearray(b'mocked mediainfo'),
-                'mediaclean': bytearray(b'[mediainfo]mocked mediainfo[/mediainfo]'),
-                'submit': bytearray(b'true'),
-                'tags': bytearray(b''),
-                'title': bytearray(b''),
-                'tvmazeid': bytearray(b'12345'),
-            },
-        }]
+    job = make_job(
+        tmp_path,
+        tracker_config={
+            'username': 'bunny',
+            'password': 'hunter2',
+            'base_url': httpserver.url_for(''),
+            'announce': 'http://nbl.local/announce',
+            'exclude': 'some files',
+        },
+    )
+    job._logout_url = 'logout.php'
+    job._auth_key = 'mocked auth key'
+    job._metadata = {
+        'create-torrent': (str(torrent_file),),
+        'mediainfo': ('mocked mediainfo',),
+        'tvmaze-id': ('12345',),
+        'category': ('season',),
+    }
+    torrent_page_url = await job.upload()
+    assert torrent_page_url == httpserver.url_for('/torrents.php?id=123')
+    assert handler.requests_seen == [{
+        'method': 'POST',
+        'User-Agent': f'{__project_name__}/{__version__}',
+        'multipart/form-data': {
+            'MAX_FILE_SIZE': '1048576',
+            'auth': 'mocked auth key',
+            'category': '123',
+            'desc': 'mocked mediainfo',
+            'file_input': b'mocked torrent metainfo',
+            'fontfont': '-1',
+            'fontsize': '-1',
+            'genre_tags': '',
+            'image': '',
+            'media': 'mocked mediainfo',
+            'mediaclean': '[mediainfo]mocked mediainfo[/mediainfo]',
+            'submit': 'true',
+            'tags': '',
+            'title': '',
+            'tvmazeid': '12345',
+        },
+    }]
+    assert translate_category_mock.call_args_list == [
+        call(job._metadata['category'][0]),
+    ]
 
 @pytest.mark.asyncio
-async def test_upload_finds_error_message(tmp_path, mocker):
-    mocker.patch('upsies.jobs.submit.nbl.SubmitJob._translate_category',
-                 Mock(return_value=b'mock category'))
+async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
+    mocker.patch(
+        'upsies.jobs.submit.nbl.SubmitJob._translate_category',
+        Mock(return_value=b'123'),
+    )
     mocker.patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
-    responses = (
-        (('post',), '/upload.php', aiohttp.web.Response(text='''
+
+    httpserver.expect_request(
+        uri='/upload.php',
+        method='POST',
+    ).respond_with_data('''
         <html>
-          <div id="messagebar">Something went wrong</div>
+            <div id="messagebar">Something went wrong</div>
         </html>
-        ''')),
-    )
+    ''')
+
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
-    async with MockServer(responses) as srv:
-        job = make_job(
-            tmp_path,
-            tracker_config={
-                'username': 'bunny',
-                'password': 'hunter2',
-                'base_url': srv.url(''),
-                'announce': 'http://foo/announce',
-                'exclude': 'some files',
-            },
-        )
-        job._logout_url = 'logout.php'
-        job._auth_key = 'mocked auth key'
-        job._metadata = {
-            'create-torrent': (str(torrent_file),),
-            'mediainfo': ('mocked mediainfo',),
-            'tvmaze-id': ('12345',),
-            'category': ('mock category',),
-        }
-        with pytest.raises(errors.RequestError, match=r'^Upload failed: Something went wrong$'):
-            async with aiohttp.ClientSession() as client:
-                await job.upload(client)
+    job = make_job(
+        tmp_path,
+        tracker_config={
+            'username': 'bunny',
+            'password': 'hunter2',
+            'base_url': httpserver.url_for(''),
+            'announce': 'http://nbl.local/announce',
+            'exclude': 'some files',
+        },
+    )
+    job._logout_url = 'logout.php'
+    job._auth_key = 'mocked auth key'
+    job._metadata = {
+        'create-torrent': (str(torrent_file),),
+        'mediainfo': ('mocked mediainfo',),
+        'tvmaze-id': ('12345',),
+        'category': ('season',),
+    }
+    with pytest.raises(errors.RequestError, match=r'^Upload failed: Something went wrong$'):
+        await job.upload()
     assert job.dump_html.call_args_list == []
 
+
 @pytest.mark.asyncio
-async def test_upload_fails_to_find_error_message(tmp_path, mocker):
-    mocker.patch('upsies.jobs.submit.nbl.SubmitJob._translate_category',
-                 Mock(return_value=b'mock category'))
-    mocker.patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
-    responses = (
-        (('post',), '/upload.php', aiohttp.web.Response(text='mocked html')),
+async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
+    mocker.patch(
+        'upsies.jobs.submit.nbl.SubmitJob._translate_category',
+        Mock(return_value=b'123'),
     )
+    mocker.patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
+    response = 'unexpected html'
+    httpserver.expect_request(
+        uri='/upload.php',
+        method='POST',
+    ).respond_with_data(response)
+
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
-    async with MockServer(responses) as srv:
-        job = make_job(
-            tmp_path,
-            tracker_config={
-                'username': 'bunny',
-                'password': 'hunter2',
-                'base_url': srv.url(''),
-                'announce': 'http://foo/announce',
-                'exclude': 'some files',
-            },
-        )
-        job._logout_url = 'logout.php'
-        job._auth_key = 'mocked auth key'
-        job._metadata = {
-            'create-torrent': (str(torrent_file),),
-            'mediainfo': ('mocked mediainfo',),
-            'tvmaze-id': ('12345',),
-            'category': ('mock category',),
-        }
-        with pytest.raises(RuntimeError, match=r'^Failed to find error message$'):
-            async with aiohttp.ClientSession() as client:
-                await job.upload(client)
+    job = make_job(
+        tmp_path,
+        tracker_config={
+            'username': 'bunny',
+            'password': 'hunter2',
+            'base_url': httpserver.url_for(''),
+            'announce': 'http://nbl.local/announce',
+            'exclude': 'some files',
+        },
+    )
+    job._logout_url = 'logout.php'
+    job._auth_key = 'mocked auth key'
+    job._metadata = {
+        'create-torrent': (str(torrent_file),),
+        'mediainfo': ('mocked mediainfo',),
+        'tvmaze-id': ('12345',),
+        'category': ('season',),
+    }
+    with pytest.raises(RuntimeError, match=(r'^Failed to find error message. '
+                                            r'See upload.html for more information.$')):
+        await job.upload()
     assert job.dump_html.call_args_list == [
-        call('upload.html', 'mocked html'),
+        call('upload.html', response),
     ]
+
 
 @pytest.mark.parametrize(
     argnames=('category', 'exp_category'),
