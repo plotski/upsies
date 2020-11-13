@@ -177,6 +177,111 @@ def test_file_extension_gets_Path_object():
     assert fs.file_extension(Path('some/path') / 'to' / 'file.mkv') == 'mkv'
 
 
+def test_file_list_recurses_into_subdirectories(tmp_path):
+    (tmp_path / 'a.txt').write_bytes(b'foo')
+    (tmp_path / 'a').mkdir()
+    (tmp_path / 'a' / 'b.txt').write_bytes(b'foo')
+    (tmp_path / 'a' / 'b').mkdir()
+    (tmp_path / 'a' / 'b' / 'b.txt').write_bytes(b'foo')
+    (tmp_path / 'a' / 'b' / 'c').mkdir()
+    (tmp_path / 'a' / 'b' / 'c' / 'c.txt').write_bytes(b'foo')
+    assert fs.file_list(tmp_path) == (
+        str((tmp_path / 'a.txt')),
+        str((tmp_path / 'a' / 'b.txt')),
+        str((tmp_path / 'a' / 'b' / 'b.txt')),
+        str((tmp_path / 'a' / 'b' / 'c' / 'c.txt')),
+    )
+
+def test_file_list_sorts_files_naturally(tmp_path):
+    (tmp_path / '3' / '500').mkdir(parents=True)
+    (tmp_path / '3' / '500' / '1000.txt').write_bytes(b'foo')
+    (tmp_path / '20').mkdir()
+    (tmp_path / '20' / '9.txt').write_bytes(b'foo')
+    (tmp_path / '20' / '10.txt').write_bytes(b'foo')
+    (tmp_path / '20' / '99').mkdir()
+    (tmp_path / '20' / '99' / '4.txt').write_bytes(b'foo')
+    (tmp_path / '20' / '99' / '0001000.txt').write_bytes(b'foo')
+    (tmp_path / '20' / '100').mkdir()
+    (tmp_path / '20' / '100' / '7.txt').write_bytes(b'foo')
+    (tmp_path / '20' / '100' / '300.txt').write_bytes(b'foo')
+    assert fs.file_list(tmp_path) == (
+        str((tmp_path / '3' / '500' / '1000.txt')),
+        str((tmp_path / '20' / '9.txt')),
+        str((tmp_path / '20' / '10.txt')),
+        str((tmp_path / '20' / '99' / '4.txt')),
+        str((tmp_path / '20' / '99' / '0001000.txt')),
+        str((tmp_path / '20' / '100' / '7.txt')),
+        str((tmp_path / '20' / '100' / '300.txt')),
+    )
+
+def test_file_list_filters_by_extensions(tmp_path):
+    (tmp_path / 'bar.jpg').write_bytes(b'foo')
+    (tmp_path / 'foo.txt').write_bytes(b'foo')
+    (tmp_path / 'a').mkdir()
+    (tmp_path / 'a' / 'a1.txt').write_bytes(b'foo')
+    (tmp_path / 'a' / 'a2.jpg').write_bytes(b'foo')
+    (tmp_path / 'a' / 'b').mkdir()
+    (tmp_path / 'a' / 'b' / 'b1.JPG').write_bytes(b'foo')
+    (tmp_path / 'a' / 'b' / 'b2.TXT').write_bytes(b'foo')
+    (tmp_path / 'a' / 'b' / 'c').mkdir()
+    (tmp_path / 'a' / 'b' / 'c' / 'c1.Txt').write_bytes(b'foo')
+    (tmp_path / 'a' / 'b' / 'c' / 'c2.jPG').write_bytes(b'foo')
+    (tmp_path / 'a' / 'b' / 'c' / 'd').mkdir()
+    (tmp_path / 'a' / 'b' / 'c' / 'd' / 'd1.txt').write_bytes(b'foo')
+    (tmp_path / 'a' / 'b' / 'c' / 'd' / 'd2.txt').write_bytes(b'foo')
+    assert fs.file_list(tmp_path, extensions=('jpg',)) == (
+        str((tmp_path / 'a' / 'a2.jpg')),
+        str((tmp_path / 'a' / 'b' / 'b1.JPG')),
+        str((tmp_path / 'a' / 'b' / 'c' / 'c2.jPG')),
+        str((tmp_path / 'bar.jpg')),
+    )
+    assert fs.file_list(tmp_path, extensions=('TXT',)) == (
+        str((tmp_path / 'a' / 'a1.txt')),
+        str((tmp_path / 'a' / 'b' / 'b2.TXT')),
+        str((tmp_path / 'a' / 'b' / 'c' / 'c1.Txt')),
+        str((tmp_path / 'a' / 'b' / 'c' / 'd' / 'd1.txt')),
+        str((tmp_path / 'a' / 'b' / 'c' / 'd' / 'd2.txt')),
+        str((tmp_path / 'foo.txt')),
+    )
+    assert fs.file_list(tmp_path, extensions=('jpg', 'txt')) == (
+        str((tmp_path / 'a' / 'a1.txt')),
+        str((tmp_path / 'a' / 'a2.jpg')),
+        str((tmp_path / 'a' / 'b' / 'b1.JPG')),
+        str((tmp_path / 'a' / 'b' / 'b2.TXT')),
+        str((tmp_path / 'a' / 'b' / 'c' / 'c1.Txt')),
+        str((tmp_path / 'a' / 'b' / 'c' / 'c2.jPG')),
+        str((tmp_path / 'a' / 'b' / 'c' / 'd' / 'd1.txt')),
+        str((tmp_path / 'a' / 'b' / 'c' / 'd' / 'd2.txt')),
+        str((tmp_path / 'bar.jpg')),
+        str((tmp_path / 'foo.txt')),
+    )
+
+def test_file_list_if_path_is_matching_nondirectory(tmp_path):
+    path = tmp_path / 'foo.txt'
+    path.write_bytes(b'foo')
+    assert fs.file_list(path, extensions=('txt',)) == (str(path),)
+
+def test_file_list_if_path_is_nonmatching_nondirectory(tmp_path):
+    path = tmp_path / 'foo.txt'
+    path.write_bytes(b'foo')
+    assert fs.file_list(path, extensions=('png',)) == ()
+
+def test_file_list_with_unreadable_subdirectory(tmp_path):
+    (tmp_path / 'foo').write_bytes(b'foo')
+    (tmp_path / 'a').mkdir()
+    (tmp_path / 'a' / 'a.txt').write_bytes(b'foo')
+    (tmp_path / 'a' / 'b').mkdir()
+    (tmp_path / 'a' / 'b' / 'b.txt').write_bytes(b'foo')
+    os.chmod(tmp_path / 'a' / 'b', 0o000)
+    try:
+        assert fs.file_list(tmp_path) == (
+            str((tmp_path / 'a' / 'a.txt')),
+            str((tmp_path / 'foo')),
+        )
+    finally:
+        os.chmod(tmp_path / 'a' / 'b', 0o700)
+
+
 def test_file_tree():
     tree = (
         ('root', (

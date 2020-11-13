@@ -2,6 +2,8 @@ import functools
 import os
 import re
 
+import natsort
+
 from .. import __project_name__, errors
 from . import LazyModule, pretty_bytes
 
@@ -118,6 +120,39 @@ def file_extension(path):
         return re.sub(r'^.*?\.([a-zA-Z0-9]{1,3})$', r'\1', path).lower()
     else:
         return ''
+
+
+def file_list(path, extensions=()):
+    """
+    List naturally sorted files in `path` and any subdirectories
+
+    If `path` is not a directory, it is returned as a single item in a list
+    unless `extensions` are given and they don't match.
+
+    Unreadable directories are ignored.
+
+    :param str path: Path to a directory
+    :param str extensions: List of file extensions to include
+
+    :return: Tuple of file paths
+    """
+    extensions = tuple(str(e).casefold() for e in extensions)
+
+    def ext_ok(filename):
+        return file_extension(filename).casefold() in extensions
+
+    if not os.path.isdir(path):
+        if ext_ok(path):
+            return (str(path),)
+        else:
+            return ()
+
+    files = []
+    for root, dirnames, filenames in os.walk(path):
+        for filename in filenames:
+            if not extensions or ext_ok(filename):
+                files.append(os.path.join(root, filename))
+    return tuple(natsort.natsorted(files, key=str.casefold))
 
 
 # Stolen from torf-cli
