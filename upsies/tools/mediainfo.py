@@ -113,7 +113,7 @@ def resolution(path):
                     _standard_widths.index(std_width))
         res = _standard_heights[index]
 
-        # "p" or "i"
+        # "p" or "i", default to "p"
         scan = video_track.get('ScanType', 'Progressive')[0].lower()
         _log.debug('Detected resolution: %r x %r -> %s%s', width, height, res, scan)
         return f'{res}{scan}'

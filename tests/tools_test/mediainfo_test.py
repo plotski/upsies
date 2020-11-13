@@ -145,20 +145,22 @@ def test_default_track_raises_nonMediainfoError(tracks_mock):
         mediainfo.default_track('video', 'foo.mkv')
 
 
-video_resolution_samples = (
-    (7680, 4320, '4320p'),
-    (3840, 2160, '2160p'),
-    (1920, 1080, '1080p'),
-    (1920, 1044, '1080p'),
-    (1920, 800, '1080p'),
-    (1390, 1080, '1080p'),
-    (1280, 533, '720p'),
-    (768, 720, '720p'),
-    (768, 576, '576p'),
-    (640, 480, '480p')
+@pytest.mark.parametrize(
+    argnames='width, height, exp_res',
+    argvalues=(
+        (7680, 4320, '4320p'),
+        (3840, 2160, '2160p'),
+        (1920, 1080, '1080p'),
+        (1920, 1044, '1080p'),
+        (1920, 800, '1080p'),
+        (1390, 1080, '1080p'),
+        (1280, 533, '720p'),
+        (768, 720, '720p'),
+        (768, 576, '576p'),
+        (640, 480, '480p')
+    ),
+    ids=lambda value: str(value),
 )
-
-@pytest.mark.parametrize('width, height, exp_res', video_resolution_samples)
 @patch('os.path.exists', Mock(return_value=True))
 @patch('upsies.tools.mediainfo.tracks')
 def test_resolution(tracks_mock, width, height, exp_res):
@@ -176,22 +178,23 @@ def test_resolution_is_unknown(tracks_mock):
     assert mediainfo.resolution('foo.mkv') is None
 
 
-audio_format_samples = (
-    (None, {}),
-    ('DTS:X', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL X'}),
-    ('DTS-HD MA', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL'}),
-    ('DTS-ES', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-ES Matrix'}),
-    ('TrueHD', {'Format': 'MLP FBA', 'Format_Commercial_IfAny': 'Dolby TrueHD'}),
-    ('TrueHD Atmos', {'Format': 'MLP FBA', 'Format_Commercial_IfAny': 'Dolby TrueHD with Dolby Atmos'}),
-    ('AAC', {'Format': 'AAC', 'Format_AdditionalFeatures': 'LC'}),
-    ('DD', {'Format': 'AC-3', 'Format_Commercial_IfAny': 'Dolby Digital'}),
-    ('DD+', {'Format': 'E-AC-3', 'Format_Commercial_IfAny': 'Dolby Digital Plus'}),
-    ('DD+ Atmos', {'Format': 'E-AC-3', 'Format_Commercial_IfAny': 'Dolby Digital Plus with Dolby Atmos'}),
-    ('FLAC', {'Format': 'FLAC'}),
-    ('MP3', {'Format': 'MPEG Audio'}),
+@pytest.mark.parametrize(
+    argnames='exp_audio_format, audio_dict',
+    argvalues=(
+        (None, {}),
+        ('DTS:X', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL X'}),
+        ('DTS-HD MA', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL'}),
+        ('DTS-ES', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-ES Matrix'}),
+        ('TrueHD', {'Format': 'MLP FBA', 'Format_Commercial_IfAny': 'Dolby TrueHD'}),
+        ('TrueHD Atmos', {'Format': 'MLP FBA', 'Format_Commercial_IfAny': 'Dolby TrueHD with Dolby Atmos'}),
+        ('AAC', {'Format': 'AAC', 'Format_AdditionalFeatures': 'LC'}),
+        ('DD', {'Format': 'AC-3', 'Format_Commercial_IfAny': 'Dolby Digital'}),
+        ('DD+', {'Format': 'E-AC-3', 'Format_Commercial_IfAny': 'Dolby Digital Plus'}),
+        ('DD+ Atmos', {'Format': 'E-AC-3', 'Format_Commercial_IfAny': 'Dolby Digital Plus with Dolby Atmos'}),
+        ('FLAC', {'Format': 'FLAC'}),
+        ('MP3', {'Format': 'MPEG Audio'}),
+    ),
 )
-
-@pytest.mark.parametrize('exp_audio_format, audio_dict', audio_format_samples)
 @patch('upsies.tools.mediainfo.tracks')
 def test_audio_format(tracks_mock, exp_audio_format, audio_dict):
     tracks_mock.return_value = [{**{'@type': 'Audio'}, **audio_dict}]
@@ -205,19 +208,21 @@ def test_audio_format_of_unsupported_or_nonexisting_file(tracks_mock):
     assert mediainfo.audio_format('foo.mkv') is None
 
 
-audio_channels_samples = (
-    (None, {}),
-    ('1.0', {'Channels': '1'}),
-    ('2.0', {'Channels': '2'}),
-    ('2.1', {'Channels': '3'}),
-    ('3.1', {'Channels': '4'}),
-    ('4.1', {'Channels': '5'}),
-    ('5.1', {'Channels': '6'}),
-    ('6.1', {'Channels': '7'}),
-    ('7.1', {'Channels': '8'}),
+@pytest.mark.parametrize(
+    argnames='exp_audio_channels, audio_dict',
+    argvalues=(
+        (None, {}),
+        ('1.0', {'Channels': '1'}),
+        ('2.0', {'Channels': '2'}),
+        ('2.1', {'Channels': '3'}),
+        ('3.1', {'Channels': '4'}),
+        ('4.1', {'Channels': '5'}),
+        ('5.1', {'Channels': '6'}),
+        ('6.1', {'Channels': '7'}),
+        ('7.1', {'Channels': '8'}),
+    ),
+    ids=lambda value: str(value),
 )
-
-@pytest.mark.parametrize('exp_audio_channels, audio_dict', audio_channels_samples)
 @patch('upsies.tools.mediainfo.tracks')
 def test_audio_channels(tracks_mock, exp_audio_channels, audio_dict):
     tracks_mock.return_value = [{**{'@type': 'Audio'}, **audio_dict}]
@@ -231,18 +236,20 @@ def test_audio_channels_of_unsupported_or_nonexisting_file(tracks_mock):
     assert mediainfo.audio_channels('foo.mkv') is None
 
 
-video_format_samples = (
-    (None, {}),
-    ('XviD', {'Encoded_Library_Name': 'XviD'}),
-    ('x264', {'Encoded_Library_Name': 'x264'}),
-    ('x265', {'Encoded_Library_Name': 'x265'}),
-    ('H.264', {'Format': 'AVC'}),
-    ('H.265', {'Format': 'HEVC'}),
-    ('VP9', {'Format': 'VP9'}),
-    ('MPEG-2', {'Format': 'MPEG Video', 'Format Version': '2'}),
+@pytest.mark.parametrize(
+    argnames='exp_video_format, video_dict',
+    argvalues=(
+        (None, {}),
+        ('XviD', {'Encoded_Library_Name': 'XviD'}),
+        ('x264', {'Encoded_Library_Name': 'x264'}),
+        ('x265', {'Encoded_Library_Name': 'x265'}),
+        ('H.264', {'Format': 'AVC'}),
+        ('H.265', {'Format': 'HEVC'}),
+        ('VP9', {'Format': 'VP9'}),
+        ('MPEG-2', {'Format': 'MPEG Video', 'Format Version': '2'}),
+    ),
+    ids=lambda value: str(value),
 )
-
-@pytest.mark.parametrize('exp_video_format, video_dict', video_format_samples)
 @patch('upsies.tools.mediainfo.tracks')
 def test_video_format(tracks_mock, exp_video_format, video_dict):
     tracks_mock.return_value = [{**{'@type': 'Video'}, **video_dict}]
