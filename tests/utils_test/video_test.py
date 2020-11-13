@@ -120,6 +120,12 @@ def test_length_gets_unreadable_file(run_mock, assert_file_readable_mock, tmp_pa
     assert assert_file_readable_mock.call_args_list == [call(filepath)]
     assert run_mock.call_args_list == []
 
+@patch('upsies.utils.fs.assert_file_readable')
+@patch('upsies.utils.subproc.run')
+def test_length_expects_na_from_ffprobe(run_mock, assert_file_readable_mock, tmp_path):
+    run_mock.return_value = 'N/A'
+    assert video.length('some/path.mp4') == 0
+
 @patch('upsies.utils.subproc.run')
 def test_length_crashes_if_ffprobe_returns_unexpected_value(run_mock, tmp_path):
     filepath = tmp_path / 'the foo.mkv'

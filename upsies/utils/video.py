@@ -49,6 +49,8 @@ def length(filepath):
     """
     Return video length in seconds (float)
 
+    Return `0.0` if video length can't be determined.
+
     :raise ContentError: if `filepath` is not readable
     """
     fs.assert_file_readable(filepath)
@@ -67,6 +69,9 @@ def length(filepath):
         length = subproc.run(cmd, ignore_errors=True)
     except errors.DependencyError as e:
         raise errors.ContentError(e)
+
+    if length.strip().casefold() == 'n/a':
+        return 0.0
 
     try:
         return float(length)
