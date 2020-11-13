@@ -113,7 +113,7 @@ class DaemonProcess:
 
         if self._read_output_task:
             if not self._read_output_task.done():
-                self._output_queue.put((self.TERMINATE, None))
+                self._output_queue.put((MsgType.terminate, None))
                 await self._read_output_task
             exc = self._read_output_task.exception()
             if exc:
