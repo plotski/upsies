@@ -205,7 +205,7 @@ def test_make_ffmpeg_input_gets_dvd_directory(length_mock, tmp_path):
     (path / 'VIDEO_TS' / '1.VOB').write_text('video data')
     (path / 'VIDEO_TS' / '2.VOB').write_text('video data')
     (path / 'VIDEO_TS' / '3.VOB').write_text('video data')
-    length_mock.side_effect = (100, 300, 200)
+    length_mock.side_effect = (100, 1000, 900)
     assert video.make_ffmpeg_input(path) == str(path / 'VIDEO_TS' / '2.VOB')
     assert length_mock.call_args_list == [
         call(str(path / 'VIDEO_TS' / '1.VOB')),

@@ -141,16 +141,13 @@ def make_ffmpeg_input(path):
         # Detect DVD
         if os.path.exists(os.path.join(path, 'VIDEO_TS')):
             # FFmpeg doesn't seem to support reading DVD.  We work around this
-            # by finding the longest .VOB file (in seconds) in the VIDEO_TS
-            # directory and use that as input.
-            video_ts = os.path.join(path, 'VIDEO_TS')
-            vobs = sorted(os.path.join(video_ts, f)
-                          for f in os.listdir(video_ts)
-                          if f.upper().endswith('VOB'))
+            # by finding the first .VOB with a reasonable length.
+            vobs = fs.file_list(os.path.join(path, 'VIDEO_TS'))
             _log.debug('All VOBs: %r', vobs)
-            longest_vob = sorted(vobs, key=length, reverse=True)[0]
-            _log.debug('Longest VOB: %r', longest_vob)
-            return longest_vob
+            reasonable_vobs = filter_similar_length(vobs)
+            _log.debug('Reasonable VOBs: %r', reasonable_vobs)
+            if reasonable_vobs:
+                return reasonable_vobs[0]
 
     except OSError:
         pass
