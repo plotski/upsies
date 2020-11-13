@@ -45,6 +45,31 @@ def first_video(path):
 
 
 @functools.lru_cache(maxsize=None)
+def filter_similar_length(filepaths):
+    """
+    Filter `filepaths` for comparable video duration
+
+    Exclude any videos that are shorter than 50% of the average video length.
+
+    This is useful to exclude samples or short .VOBs from DVD images.
+
+    .. note:: Because this function is wrapped in `functools.lru_cache`,
+        `filepaths` should be a tuple (or any other hashable sequence).
+
+    :params filepaths: Hashable sequence of video file paths
+
+    :return: Tuple of video file paths
+
+    :raise ContentError: if any path in `filepaths` is not readable
+    """
+    lengths = {fp: length(fp) for fp in filepaths}
+    avg = sum(lengths.values()) / len(lengths)
+    min_length = avg * 0.5
+    return tuple(fp for fp,l in lengths.items()
+                 if l >= min_length)
+
+
+@functools.lru_cache(maxsize=None)
 def length(filepath):
     """
     Return video length in seconds (float)

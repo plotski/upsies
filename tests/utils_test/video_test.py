@@ -79,6 +79,29 @@ def test_first_video_finds_all_video_file_extensions(extension, tmp_path):
     assert video.first_video(path) == str(path / f'foo.{extension}')
 
 
+def test_filter_similar_length(mocker):
+    lengths = {
+        'a.mkv': 50,
+        'b.mkv': 500,
+        'c.mkv': 20,
+        'd.mkv': 10000,
+        'e.mkv': 11000,
+        'f.mkv': 0,
+        'g.mkv': 10500,
+        'h.mkv': 9000,
+    }
+    mocker.patch(
+        'upsies.utils.video.length',
+        side_effect=tuple(lengths.values()),
+    )
+    assert video.filter_similar_length(tuple(lengths.keys())) == (
+        'd.mkv',
+        'e.mkv',
+        'g.mkv',
+        'h.mkv',
+    )
+
+
 @patch('upsies.utils.subproc.run')
 def test_length_calls_ffprobe(run_mock, tmp_path):
     filepath = tmp_path / 'foo.mkv'
