@@ -178,7 +178,7 @@ def test_resolution_is_unknown(tracks_mock):
 
 audio_format_samples = (
     (None, {}),
-    ('DTS:X', {"Format": "DTS", "Format_Commercial_IfAny": "DTS-HD Master Audio", "Format_AdditionalFeatures": "XLL X"}),
+    ('DTS:X', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL X'}),
     ('DTS-HD MA', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL'}),
     ('DTS-ES', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-ES Matrix'}),
     ('TrueHD', {'Format': 'MLP FBA', 'Format_Commercial_IfAny': 'Dolby TrueHD'}),
@@ -233,12 +233,12 @@ def test_audio_channels_of_unsupported_or_nonexisting_file(tracks_mock):
 
 video_format_samples = (
     (None, {}),
-    ('XviD', {"Encoded_Library_Name": "XviD"}),
-    ('x264', {"Encoded_Library_Name": "x264"}),
-    ('x265', {"Encoded_Library_Name": "x265"}),
-    ('H.264', {"Format": "AVC"}),
-    ('H.265', {"Format": "HEVC"}),
-    ('VP9', {"Format": "VP9"}),
+    ('XviD', {'Encoded_Library_Name': 'XviD'}),
+    ('x264', {'Encoded_Library_Name': 'x264'}),
+    ('x265', {'Encoded_Library_Name': 'x265'}),
+    ('H.264', {'Format': 'AVC'}),
+    ('H.265', {'Format': 'HEVC'}),
+    ('VP9', {'Format': 'VP9'}),
 )
 
 @pytest.mark.parametrize('exp_video_format, video_dict', video_format_samples)
