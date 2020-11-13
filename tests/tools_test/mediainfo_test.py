@@ -6,64 +6,87 @@ from upsies import binaries, errors
 from upsies.tools import mediainfo
 
 
-@patch('upsies.utils.subproc.run')
-def test_run_mediainfo_gets_nonexisting_path(run_mock, tmp_path):
-    path = tmp_path / 'does' / 'not' / 'exist'
-    with pytest.raises(errors.MediainfoError, match=rf'^{path}: No such file or directory$'):
-        mediainfo._run_mediainfo(path)
+def test_run_mediainfo_catches_ContentError_from_first_video(mocker):
+    run_mock = mocker.patch('upsies.utils.subproc.run')
+    first_video_mock = mocker.patch(
+        'upsies.utils.video.first_video',
+        side_effect=errors.ContentError('No video file found, yo'),
+    )
+    with pytest.raises(errors.MediainfoError, match=r'^No video file found, yo$'):
+        mediainfo._run_mediainfo('some/path')
+    assert first_video_mock.call_args_list == [
+        call('some/path'),
+    ]
     assert run_mock.call_args_list == []
 
-@patch('upsies.utils.subproc.run')
-def test_run_mediainfo_fails_to_find_video_file(run_mock, tmp_path):
-    file1 = tmp_path / 'foo.txt'
-    file1.write_text('some text')
-    file2 = tmp_path / 'foo.jpg'
-    file2.write_bytes(b'image data')
-    with pytest.raises(errors.MediainfoError, match=rf'^{tmp_path}: No video file found$'):
-        mediainfo._run_mediainfo(tmp_path)
-    assert run_mock.call_args_list == []
-
-@patch('upsies.utils.subproc.run')
-def test_run_mediainfo_catches_DependencyError(run_mock, tmp_path):
-    video_path = tmp_path / 'foo.mkv'
-    video_path.write_bytes(b'video data')
-    run_mock.side_effect = errors.DependencyError('mediainfo is missing')
-    with pytest.raises(errors.MediainfoError, match=r'^mediainfo is missing$'):
-        mediainfo._run_mediainfo(video_path)
+def test_run_mediainfo_runs_mediainfo_on_first_video(mocker):
+    run_mock = mocker.patch('upsies.utils.subproc.run')
+    first_video_mock = mocker.patch(
+        'upsies.utils.video.first_video',
+        return_value='some/path/to/file.mkv',
+    )
+    assert mediainfo._run_mediainfo('some/path') == run_mock.return_value
+    assert first_video_mock.call_args_list == [
+        call('some/path'),
+    ]
     assert run_mock.call_args_list == [
-        call((binaries.mediainfo, str(video_path)),
+        call((binaries.mediainfo, 'some/path/to/file.mkv'),
              cache=True),
     ]
 
-@patch('upsies.utils.subproc.run')
-def test_run_mediainfo_does_not_catch_ProcessError(run_mock, tmp_path):
-    video_path = tmp_path / 'foo.mkv'
-    video_path.write_bytes(b'video data')
-    run_mock.side_effect = errors.ProcessError('Invalid argument: --abc')
-    with pytest.raises(errors.ProcessError, match=r'^Invalid argument: --abc$'):
-        mediainfo._run_mediainfo(video_path)
+def test_run_mediainfo_passes_positional_args_to_mediainfo_command(mocker):
+    run_mock = mocker.patch('upsies.utils.subproc.run')
+    first_video_mock = mocker.patch(
+        'upsies.utils.video.first_video',
+        return_value='some/path/to/file.mkv',
+    )
+    args = ('--foo', '--bar=baz')
+    assert mediainfo._run_mediainfo('some/path', *args) == run_mock.return_value
+    assert first_video_mock.call_args_list == [
+        call('some/path'),
+    ]
     assert run_mock.call_args_list == [
-        call((binaries.mediainfo, str(video_path)),
+        call((binaries.mediainfo, 'some/path/to/file.mkv') + args,
              cache=True),
     ]
 
-@patch('upsies.utils.subproc.run')
-def test_run_mediainfo_forwards_arguments(run_mock, tmp_path):
-    video_path = tmp_path / 'foo.mkv'
-    video_path.write_bytes(b'video data')
-    mediainfo._run_mediainfo(video_path, '--foo', '--bar')
+def test_run_mediainfo_catches_DependencyError(mocker):
+    run_mock = mocker.patch(
+        'upsies.utils.subproc.run',
+        side_effect=errors.DependencyError('Missing dependency: your mom'),
+    )
+    first_video_mock = mocker.patch(
+        'upsies.utils.video.first_video',
+        return_value='some/path/to/file.mkv',
+    )
+    with pytest.raises(errors.MediainfoError, match=r'^Missing dependency: your mom$'):
+        mediainfo._run_mediainfo('some/path')
+    assert first_video_mock.call_args_list == [
+        call('some/path'),
+    ]
     assert run_mock.call_args_list == [
-        call((binaries.mediainfo, str(video_path), '--foo', '--bar'),
+        call((binaries.mediainfo, 'some/path/to/file.mkv'),
              cache=True),
     ]
 
-@patch('upsies.utils.subproc.run')
-def test_run_mediainfo_returns_mediainfo_output(run_mock, tmp_path):
-    video_path = tmp_path / 'foo.mkv'
-    video_path.write_bytes(b'video data')
-    run_mock.return_value = '<all the media info>'
-    stdout = mediainfo._run_mediainfo(video_path)
-    assert stdout == '<all the media info>'
+def test_run_mediainfo_does_not_catch_ProcessError(mocker):
+    run_mock = mocker.patch(
+        'upsies.utils.subproc.run',
+        side_effect=errors.ProcessError('Bogus command'),
+    )
+    first_video_mock = mocker.patch(
+        'upsies.utils.video.first_video',
+        return_value='some/path/to/file.mkv',
+    )
+    with pytest.raises(errors.ProcessError, match=r'^Bogus command$'):
+        mediainfo._run_mediainfo('some/path')
+    assert first_video_mock.call_args_list == [
+        call('some/path'),
+    ]
+    assert run_mock.call_args_list == [
+        call((binaries.mediainfo, 'some/path/to/file.mkv'),
+             cache=True),
+    ]
 
 
 @patch('upsies.tools.mediainfo._run_mediainfo')
