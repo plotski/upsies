@@ -18,38 +18,30 @@ def first_video(path):
     """
     Find first video file (e.g. first episode from season)
 
+    Video files are detected by file extension.
+
     Directories are walked recursively and contents are sorted naturally, e.g. "File
-    2.mkv" is sorted before "File 10.mkv". Video files are detected by file extension.
+    2.mkv" is sorted before "File 10.mkv".
 
     :param str path: Path to file or directory
 
-    :raise ContentError: if no video file can be found or if it is unreadable
-
     :return: Path to first video file if `path` is a directory, `path` itself otherwise
     :rtype: str
+
+    :raise ContentError: if no video file can be found or if it is unreadable
     """
     if os.path.isdir(path):
         if os.path.isdir(os.path.join(path, 'BDMV')):
-            # Blu-ray copy
+            # Blu-ray image, ffmpeg can read that with the "bluray:" protocol
             return str(path)
 
-        for root, dirnames, filenames in os.walk(path):
-            # Check all files in this directory
-            for filename in natsort.natsorted(filenames, key=str.casefold):
-                if fs.file_extension(filename).lower() in _video_file_extensions:
-                    return os.path.join(root, filename)
-
-            # No video files were found, dive into subdirectories
-            for dirname in natsort.natsorted(dirnames, key=str.casefold):
-                return first_video(os.path.join(path, dirname))
-
+    files = fs.file_list(path, extensions=_video_file_extensions)
+    if not files:
         raise errors.ContentError(f'{path}: No video file found')
     else:
-        fs.assert_file_readable(path)
-        if fs.file_extension(path) in _video_file_extensions:
-            return str(path)
-        else:
-            raise errors.ContentError(f'{path}: Not a video file')
+        first_file = str(files[0])
+        fs.assert_file_readable(first_file)
+        return first_file
 
 
 @functools.lru_cache(maxsize=None)

@@ -9,7 +9,7 @@ from upsies.utils import video
 
 
 def test_first_video_gets_nonexisting_directory():
-    with pytest.raises(errors.ContentError, match=r'^/no/such/dir: No such file or directory$'):
+    with pytest.raises(errors.ContentError, match=r'^/no/such/dir: No video file found$'):
         video.first_video('/no/such/dir')
 
 def test_first_video_gets_video_file(tmp_path):
@@ -21,10 +21,10 @@ def test_first_video_gets_video_file(tmp_path):
 def test_first_video_gets_nonvideo_file(tmp_path):
     path = tmp_path / 'foo.txt'
     path.write_text('foo')
-    with pytest.raises(errors.ContentError, match=rf'^{path}: Not a video file$'):
+    with pytest.raises(errors.ContentError, match=rf'^{path}: No video file found$'):
         video.first_video(path)
 
-def test_first_video_bluray_copy(tmp_path):
+def test_first_video_gets_bluray_image(tmp_path):
     path = tmp_path / 'foo'
     (path / 'BDMV').mkdir(parents=True)
     assert video.first_video(path) == str(path)
@@ -52,7 +52,6 @@ def test_first_video_gets_directory_without_videos(tmp_path):
     path.mkdir()
     (path / 'foo.txt').write_text('bleep bloop')
     (path / 'bar.jpg').write_bytes(b'bloop bleep')
-
     with pytest.raises(errors.ContentError, match=rf'^{path}: No video file found$'):
         video.first_video(path)
 
