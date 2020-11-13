@@ -107,6 +107,8 @@ def test_length_does_not_catch_ProcessError(run_mock, tmp_path):
     filepath = tmp_path / 'foo.mkv'
     filepath.write_bytes(b'foo data')
     run_mock.side_effect = errors.ProcessError('do you even ffprobe?')
+    with pytest.raises(errors.ProcessError, match=r'^do you even ffprobe\?$'):
+        video.length(filepath)
 
 @patch('upsies.utils.fs.assert_file_readable')
 @patch('upsies.utils.subproc.run')
