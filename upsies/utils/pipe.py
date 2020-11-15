@@ -13,10 +13,11 @@ class Pipe:
     When `sender` is finished, :meth:`pipe_closed` is called on `receiver`'s
     object.
 
-    .. note:: :class:`Pipe` instances do not have to be assigned to variables
-              because `sender` keeps references of them as callbacks.
+    .. note:: It's not necessary to keep a reference to a :class:`Pipe` instance
+              because `sender` references it as a callback and thus keeps it
+              from getting garbage-collected..
 
-    :param sender: Job to collect output from
+    :param sender: Job to get output from
     :type sender: :class:`JobBase` child class instance
     :param receiver: Job to send output to
     :type receiver: :class:`JobBase` instance with a :meth:`~JobBase.pipe_input`
