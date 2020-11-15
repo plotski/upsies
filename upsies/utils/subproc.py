@@ -9,8 +9,8 @@ _log = logging.getLogger(__name__)
 subprocess = LazyModule(module='subprocess', namespace=globals())
 shlex = LazyModule(module='shlex', namespace=globals())
 
-
 _run_output_cache = {}
+
 
 def run(argv, ignore_errors=False, join_stderr=False, cache=False):
     """
@@ -32,19 +32,19 @@ def run(argv, ignore_errors=False, join_stderr=False, cache=False):
     if cache and argv in _run_output_cache:
         stdout, stderr = _run_output_cache[argv]
     else:
-        stdout = subprocess.PIPE
+        fh_stdout = subprocess.PIPE
         if join_stderr:
-            stderr = subprocess.STDOUT
+            fh_stderr = subprocess.STDOUT
         else:
-            stderr = subprocess.PIPE
+            fh_stderr = subprocess.PIPE
         try:
             _log.debug('Running: %s', ' '.join(shlex.quote(arg) for arg in argv))
             proc = subprocess.run(
                 argv,
                 shell=False,
                 encoding='utf-8',
-                stdout=stdout,
-                stderr=stderr,
+                stdout=fh_stdout,
+                stderr=fh_stderr,
                 stdin=subprocess.PIPE,
             )
         except OSError:
@@ -52,7 +52,7 @@ def run(argv, ignore_errors=False, join_stderr=False, cache=False):
         else:
             stdout, stderr = proc.stdout, proc.stderr
             if cache:
-                _run_output_cache[argv] = (proc.stdout, proc.stderr)
+                _run_output_cache[argv] = (stdout, stderr)
     if stderr and not ignore_errors:
         raise errors.ProcessError(stderr)
     return stdout
