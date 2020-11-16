@@ -32,9 +32,14 @@ class ScreenshotsJob(JobBase):
 
     @property
     def cache_file(self):
-        if self._timestamps:
-            filename = f'{self.name}.{",".join(self._timestamps)}.json'
-            return os.path.join(self.cache_directory, filename)
+        if self.kwargs['timestamps'] or self.kwargs['number']:
+            filename = [f'{self.name}']
+            if self.kwargs['timestamps']:
+                filename.append(f'timestamps={",".join(str(t) for t in self.kwargs["timestamps"])}')
+            if self.kwargs['number']:
+                filename.append(f'number={self.kwargs["number"]}')
+            filename.append('json')
+            return os.path.join(self.cache_directory, '.'.join(filename))
 
     def initialize(self, content_path, timestamps=(), number=0):
         self._screenshots_created = 0

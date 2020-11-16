@@ -306,16 +306,36 @@ def job(tmp_path, mocker):
     )
 
 
-def test_ScreenshotsJob_cache_file_with_timestamps(job):
-    job._timestamps = ('0:02:00', '0:03:00')
+def test_ScreenshotsJob_cache_file_with_timestamps_and_without_number(job):
+    job.kwargs['timestamps'] = ('1:02:03', '20')
+    job.kwargs['number'] = 0
     assert job.cache_file == os.path.join(
         job.homedir,
         '.output',
-        'screenshots.0:02:00,0:03:00.json',
+        'screenshots.timestamps=1:02:03,20.json',
     )
 
-def test_ScreenshotsJob_cache_file_without_timestamps(job):
-    job._timestamps = ()
+def test_ScreenshotsJob_cache_file_without_timestamps_and_with_number(job):
+    job.kwargs['timestamps'] = ()
+    job.kwargs['number'] = 7
+    assert job.cache_file == os.path.join(
+        job.homedir,
+        '.output',
+        'screenshots.number=7.json',
+    )
+
+def test_ScreenshotsJob_cache_file_with_timestamps_and_with_number(job):
+    job.kwargs['timestamps'] = ('1:02:03', '20')
+    job.kwargs['number'] = 7
+    assert job.cache_file == os.path.join(
+        job.homedir,
+        '.output',
+        'screenshots.timestamps=1:02:03,20.number=7.json',
+    )
+
+def test_ScreenshotsJob_cache_file_without_timestamps_and_without_number(job):
+    job.kwargs['timestamps'] = ()
+    job.kwargs['number'] = 0
     assert job.cache_file is None
 
 
