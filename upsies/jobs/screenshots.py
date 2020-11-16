@@ -119,6 +119,16 @@ class ScreenshotsJob(JobBase):
 
 
 def _normalize_timestamps(video_file, timestamps, number):
+    """
+    Return list of human-readable time stamps
+
+    :params video_file: Path to video file
+    :parms timestamps: Sequence of arguments for :func:`~utils.timestamp.parse`
+    :parms int number: Desired number of timestamps
+
+    :raise ValueError: if an item in `timestamps` is invalid
+    :raise ContentError: if `video_file` is not a video file
+    """
     total_secs = video.length(video_file)
 
     timestamps_pretty = []
