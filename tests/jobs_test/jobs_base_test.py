@@ -13,7 +13,7 @@ class FooJob(JobBase):
     name = 'foo'
     label = 'Foo'
 
-    def initialize(self):
+    def initialize(self, foo=None, bar=None):
         assert self.name == 'foo'
         assert self.label == 'Foo'
         assert os.path.isdir(self.homedir)
@@ -60,6 +60,14 @@ def test_hidden_property(tmp_path):
     assert FooJob(homedir=tmp_path, ignore_cache=False, hidden=True).hidden is True
     assert FooJob(homedir=tmp_path, ignore_cache=False, hidden='').hidden is False
     assert FooJob(homedir=tmp_path, ignore_cache=False, hidden=1).hidden is True
+
+def test_kwargs_property(tmp_path):
+    assert FooJob(homedir=tmp_path, ignore_cache=False, foo='a').kwargs.get('foo') == 'a'
+    assert FooJob(homedir=tmp_path, ignore_cache=False, foo='a').kwargs.get('bar') is None
+    assert FooJob(homedir=tmp_path, ignore_cache=False, bar='b').kwargs.get('bar') == 'b'
+    assert FooJob(homedir=tmp_path, ignore_cache=False, bar='b').kwargs.get('foo') is None
+    assert FooJob(homedir=tmp_path, ignore_cache=False, foo='a', bar='b').kwargs.get('foo') == 'a'
+    assert FooJob(homedir=tmp_path, ignore_cache=False, foo='a', bar='b').kwargs.get('bar') == 'b'
 
 
 def test_initialize_is_called_after_object_creation(job):

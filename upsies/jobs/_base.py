@@ -63,6 +63,11 @@ class JobBase(abc.ABC):
         """Whether to hide this job's output in the UI"""
         return self._hidden
 
+    @property
+    def kwargs(self):
+        """Job-specific keyword arguments as a dictionary"""
+        return self._kwargs
+
     def __init__(self, *, homedir, ignore_cache, hidden=False, **kwargs):
         self._homedir = str(homedir)
         self._ignore_cache = bool(ignore_cache)
