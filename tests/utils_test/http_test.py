@@ -20,9 +20,9 @@ def mock_cache(mocker):
         from_cache=Mock(return_value=None),
         to_cache=Mock(return_value=None),
     )
-    mocker.patch('upsies.utils.http._cache_file', side_effect=parent.cache_file)
-    mocker.patch('upsies.utils.http._from_cache', side_effect=parent.from_cache)
-    mocker.patch('upsies.utils.http._to_cache', side_effect=parent.to_cache)
+    mocker.patch('upsies.utils.http._cache_file', parent.cache_file)
+    mocker.patch('upsies.utils.http._from_cache', parent.from_cache)
+    mocker.patch('upsies.utils.http._to_cache', parent.to_cache)
     yield parent
 
 
