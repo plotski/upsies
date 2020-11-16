@@ -37,60 +37,51 @@ class ScreenshotsJob(JobBase):
             return os.path.join(self.cache_directory, filename)
 
     def initialize(self, content_path, timestamps=(), number=0):
-        self._screenshot_process = None
         self._screenshots_created = 0
         self._screenshots_total = 0
         self._video_file = ''
         self._timestamps = ()
-
-        try:
-            self._video_file = video.first_video(content_path)
-        except errors.ContentError as e:
-            self.handle_error(e)
-        else:
-            try:
-                self._timestamps = _normalize_timestamps(
-                    video_file=self._video_file,
-                    timestamps=timestamps,
-                    number=number,
-                )
-            # _normalize_timestamp may raise ValueError from utils.timestamp or
-            # ContentError from utils.video.length()
-            except (ValueError, errors.ContentError) as e:
-                self.handle_error(e)
-
-            else:
-                self._screenshots_total = len(self._timestamps)
-                if self._screenshots_total <= 0:
-                    self.finish()
-                else:
-                    self._screenshot_process = daemon.DaemonProcess(
-                        name=self.name,
-                        target=_screenshot_process,
-                        kwargs={
-                            'video_file' : self._video_file,
-                            'timestamps' : self._timestamps,
-                            'output_dir' : self.homedir,
-                            'overwrite'  : self.ignore_cache,
-                        },
-                        info_callback=self.handle_screenshot,
-                        error_callback=self.handle_error,
-                        finished_callback=self.finish,
-                    )
+        self._screenshots_process = daemon.DaemonProcess(
+            name=self.name,
+            target=_screenshots_process,
+            kwargs={
+                'content_path' : content_path,
+                'timestamps'   : timestamps,
+                'number'       : number,
+                'output_dir'   : self.homedir,
+                'overwrite'    : self.ignore_cache,
+            },
+            info_callback=self.handle_info,
+            error_callback=self.handle_error,
+            finished_callback=self.finish,
+        )
 
     def execute(self):
-        if self._screenshot_process:
-            self._screenshot_process.start()
+        self._screenshots_process.start()
 
     def finish(self):
-        if self._screenshot_process:
-            self._screenshot_process.stop()
+        self._screenshots_process.stop()
         super().finish()
 
     async def wait(self):
-        if self._screenshot_process:
-            await self._screenshot_process.join()
+        await self._screenshots_process.join()
         await super().wait()
+
+    def handle_info(self, info):
+        if not self.is_finished:
+            if info[0] == 'video_file':
+                self._video_file = info[1]
+            elif info[0] == 'timestamps':
+                self._timestamps = tuple(info[1])
+                self._screenshots_total = len(self._timestamps)
+            elif info[0] == 'screenshot':
+                self._screenshots_created += 1
+                self.send(info[1])
+
+    def handle_error(self, error):
+        if not self.is_finished:
+            self.error(error)
+            self.finish()
 
     @property
     def exit_code(self):
@@ -100,22 +91,39 @@ class ScreenshotsJob(JobBase):
             return 0 if screenshots_wanted and wanted_screenshots_created else 1
 
     @property
+    def video_file(self):
+        """
+        Path to video file screenshots are taken from
+
+        .. note:: This is an empty string until the screenshot process picked a
+                  file.
+        """
+        return self._video_file
+
+    @property
+    def timestamps(self):
+        """
+        List of normalized and validated human-readable timestamps
+
+        .. note:: This is an empty sequence until the screenshot process picked
+                  a file.
+        """
+        return self._timestamps
+
+    @property
     def screenshots_total(self):
+        """
+        Total number of screenshots to make
+
+        .. note:: This is zero until the screenshot process validated and
+                  normalized `timestamps` and `number` arguments.
+        """
         return self._screenshots_total
 
     @property
     def screenshots_created(self):
+        """Total number of screenshots made so far"""
         return self._screenshots_created
-
-    def handle_screenshot(self, path):
-        if not self.is_finished:
-            self._screenshots_created += 1
-            self.send(path)
-
-    def handle_error(self, error):
-        if not self.is_finished:
-            self.error(error)
-            self.finish()
 
 
 def _normalize_timestamps(video_file, timestamps, number):
@@ -165,29 +173,61 @@ def _normalize_timestamps(video_file, timestamps, number):
     return natsort.natsorted(timestamps_pretty)
 
 
-def _screenshot_process(output_queue, input_queue,
-                        video_file, timestamps, output_dir, overwrite):
-    for ts in timestamps:
-        try:
-            typ, msg = input_queue.get_nowait()
-        except queue.Empty:
-            pass
-        else:
-            if typ == daemon.MsgType.terminate:
-                break
+def _screenshots_process(output_queue, input_queue,
+                         content_path, timestamps, number, output_dir, overwrite):
+    # Find appropriate video file if `content_path` is a directory
+    try:
+        video_file = video.first_video(content_path)
+    except errors.ContentError as e:
+        output_queue.put((daemon.MsgType.error, str(e)))
+    else:
+        if _shall_terminate(input_queue):
+            return
 
-        screenshot_file = os.path.join(
-            output_dir,
-            fs.basename(video_file) + f'.{ts}.png',
-        )
+        # Report video_file
+        output_queue.put((daemon.MsgType.info, ('video_file', video_file)))
+
+        # Get list of valid timestamps based on fixed timestamps and desired
+        # amount of screenshots
         try:
-            tools.screenshot.create(
+            timestamps = _normalize_timestamps(
                 video_file=video_file,
-                timestamp=ts,
-                screenshot_file=screenshot_file,
-                overwrite=overwrite,
+                timestamps=timestamps,
+                number=number,
             )
-        except errors.ScreenshotError as e:
+        except (ValueError, errors.ContentError) as e:
             output_queue.put((daemon.MsgType.error, str(e)))
         else:
-            output_queue.put((daemon.MsgType.info, screenshot_file))
+            # Report valid timestamps
+            output_queue.put((daemon.MsgType.info, ('timestamps', timestamps)))
+
+            for ts in timestamps:
+                if _shall_terminate(input_queue):
+                    return
+
+                screenshot_file = os.path.join(
+                    output_dir,
+                    fs.basename(video_file) + f'.{ts}.png',
+                )
+                try:
+                    tools.screenshot.create(
+                        video_file=video_file,
+                        screenshot_file=screenshot_file,
+                        timestamp=ts,
+                        overwrite=overwrite,
+                    )
+                except errors.ScreenshotError as e:
+                    output_queue.put((daemon.MsgType.error, str(e)))
+                else:
+                    output_queue.put((daemon.MsgType.info, ('screenshot', screenshot_file)))
+
+
+def _shall_terminate(input_queue):
+    try:
+        typ, msg = input_queue.get_nowait()
+    except queue.Empty:
+        pass
+    else:
+        if typ == daemon.MsgType.terminate:
+            return True
+    return False

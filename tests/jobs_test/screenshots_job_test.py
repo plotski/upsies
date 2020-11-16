@@ -1,14 +1,11 @@
-import asyncio
-import multiprocessing
 import os
-import queue
 from unittest.mock import Mock, call, patch
 
 import pytest
 
 from upsies import errors
 from upsies.jobs.screenshots import (ScreenshotsJob, _normalize_timestamps,
-                                     _screenshot_process)
+                                     _screenshots_process)
 from upsies.utils.daemon import MsgType
 
 try:
@@ -74,95 +71,222 @@ def test_normalize_timestamps_with_given_timestamp_out_of_bounds(video_length_mo
     assert timestamps == ['0:02:30', '0:03:45', '0:05:00']
 
 
-@patch('upsies.tools.screenshot.create')
-def test_screenshot_process_fills_output_queue(screenshot_create_mock, tmp_path):
-    output_queue = multiprocessing.Queue()
-    input_queue = multiprocessing.Queue()
-    _screenshot_process(output_queue, input_queue,
-                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination',
-                        overwrite=False)
-    assert screenshot_create_mock.call_args_list == [
-        call(
-            video_file='foo.mkv',
-            timestamp='0:10:00',
-            screenshot_file='path/to/destination/foo.mkv.0:10:00.png',
-            overwrite=False,
-        ),
-        call(
-            video_file='foo.mkv',
-            timestamp='0:20:00',
-            screenshot_file='path/to/destination/foo.mkv.0:20:00.png',
-            overwrite=False,
-        ),
+@pytest.fixture
+def screenshots_process_patches(mocker):
+    parent = Mock(
+        first_video=Mock(return_value='path/to/video.mp4'),
+        shall_terminate=Mock(return_value=False),
+        normalize_timestamps=Mock(return_value=('01:00', '01:00:00')),
+        screenshot_create=Mock(return_value=None),
+        output_queue=Mock(),
+        input_queue=Mock(),
+    )
+    mocker.patch('upsies.utils.video.first_video', parent.first_video)
+    mocker.patch('upsies.jobs.screenshots._shall_terminate', parent.shall_terminate)
+    mocker.patch('upsies.jobs.screenshots._normalize_timestamps', parent.normalize_timestamps)
+    mocker.patch('upsies.tools.screenshot.create', parent.screenshot_create)
+    yield parent
+
+def test_screenshots_process_fails_to_find_first_video(tmp_path, screenshots_process_patches):
+    screenshots_process_patches.first_video.side_effect = errors.ContentError('No video found')
+    _screenshots_process(
+        output_queue=screenshots_process_patches.output_queue,
+        input_queue=screenshots_process_patches.input_queue,
+        content_path='path/to/foo',
+        timestamps=(10 * 60, '20:00'),
+        number=2,
+        output_dir='path/to/destination',
+        overwrite=False,
+    )
+    assert screenshots_process_patches.mock_calls == [
+        call.first_video('path/to/foo'),
+        call.output_queue.put((MsgType.error, 'No video found')),
     ]
-    assert output_queue.get() == (MsgType.info, 'path/to/destination/foo.mkv.0:10:00.png')
-    assert output_queue.get() == (MsgType.info, 'path/to/destination/foo.mkv.0:20:00.png')
-    assert output_queue.empty()
-    assert input_queue.empty()
 
-@patch('upsies.tools.screenshot.create')
-def test_screenshot_process_reads_input_queue(screenshot_create_mock, tmp_path):
-    output_queue = multiprocessing.Queue()
-    input_queue = multiprocessing.Queue()
-    input_queue.put_nowait((MsgType.terminate, None))
-    _screenshot_process(output_queue, input_queue,
-                        'foo.mkv', ('0:10:00', '0:20:00', '0:30:00'), 'path/to/destination',
-                        overwrite=False)
-    # The 0:10:00 screenshot is created, probably because the put_nowait() takes
-    # a while? Delaying the call to screenshot_create_mock doesn't help.
-    # Creating 1 screenshot before breaking the loop should be ok.
-    assert len(screenshot_create_mock.call_args_list) <= 1
-    try:
-        output = output_queue.get_nowait()
-    except queue.Empty:
-        pass
-    else:
-        assert output == (MsgType.info, 'path/to/destination/foo.mkv.0:10:00.png')
-    assert output_queue.empty()
-    assert input_queue.empty()
-
-@patch('upsies.tools.screenshot.create')
-def test_screenshot_process_catches_ScreenshotErrors(screenshot_create_mock, tmp_path):
-    def screenshot_create_side_effect(video_file, timestamp, screenshot_file, overwrite=False):
-        raise errors.ScreenshotError('Error', video_file, timestamp)
-
-    screenshot_create_mock.side_effect = screenshot_create_side_effect
-
-    output_queue = multiprocessing.Queue()
-    input_queue = multiprocessing.Queue()
-    _screenshot_process(output_queue, input_queue,
-                        'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination',
-                        overwrite=False)
-    assert screenshot_create_mock.call_args_list == [
-        call(
-            video_file='foo.mkv',
-            timestamp='0:10:00',
-            screenshot_file='path/to/destination/foo.mkv.0:10:00.png',
-            overwrite=False,
-        ),
-        call(
-            video_file='foo.mkv',
-            timestamp='0:20:00',
-            screenshot_file='path/to/destination/foo.mkv.0:20:00.png',
-            overwrite=False,
-        ),
+def test_screenshots_process_is_cancelled_after_finding_first_video(tmp_path, screenshots_process_patches):
+    screenshots_process_patches.first_video.return_value = 'path/to/foo/bar.mkv'
+    screenshots_process_patches.shall_terminate.return_value = True
+    _screenshots_process(
+        output_queue=screenshots_process_patches.output_queue,
+        input_queue=screenshots_process_patches.input_queue,
+        content_path='path/to/foo',
+        timestamps=(10 * 60, '20:00'),
+        number=2,
+        output_dir='path/to/destination',
+        overwrite=False,
+    )
+    assert screenshots_process_patches.mock_calls == [
+        call.first_video('path/to/foo'),
+        call.shall_terminate(screenshots_process_patches.input_queue),
     ]
-    assert output_queue.get() == (MsgType.error, str(errors.ScreenshotError('Error', 'foo.mkv', '0:10:00')))
-    assert output_queue.get() == (MsgType.error, str(errors.ScreenshotError('Error', 'foo.mkv', '0:20:00')))
-    assert output_queue.empty()
-    assert input_queue.empty()
 
-@patch('upsies.tools.screenshot.create')
-def test_screenshot_process_does_not_catch_other_errors(screenshot_create_mock, tmp_path):
-    screenshot_create_mock.side_effect = TypeError('asdf')
-    output_queue = multiprocessing.Queue()
-    input_queue = multiprocessing.Queue()
-    with pytest.raises(TypeError, match='^asdf$'):
-        _screenshot_process(output_queue, input_queue,
-                            'foo.mkv', ('0:10:00', '0:20:00'), 'path/to/destination',
-                            overwrite=False)
-    assert output_queue.empty()
-    assert input_queue.empty()
+def test_screenshots_process_fails_to_normalize_timestamps(tmp_path, screenshots_process_patches):
+    screenshots_process_patches.first_video.return_value = 'path/to/foo/bar.mkv'
+    screenshots_process_patches.normalize_timestamps.side_effect = ValueError('Invalid timestamp')
+    _screenshots_process(
+        output_queue=screenshots_process_patches.output_queue,
+        input_queue=screenshots_process_patches.input_queue,
+        content_path='path/to/foo',
+        timestamps=(10 * 60, '20:00'),
+        number=2,
+        output_dir='path/to/destination',
+        overwrite=False,
+    )
+    assert screenshots_process_patches.mock_calls == [
+        call.first_video('path/to/foo'),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+        call.output_queue.put((MsgType.info, ('video_file', 'path/to/foo/bar.mkv'))),
+        call.normalize_timestamps(
+            video_file='path/to/foo/bar.mkv',
+            timestamps=(10 * 60, '20:00'),
+            number=2,
+        ),
+        call.output_queue.put((MsgType.error, 'Invalid timestamp')),
+    ]
+
+def test_screenshots_process_is_cancelled_after_normalizing_timestamps(tmp_path, screenshots_process_patches):
+    screenshots_process_patches.first_video.return_value = 'path/to/foo/bar.mkv'
+    screenshots_process_patches.normalize_timestamps.return_value = ('0:10:00', '0:20:00')
+    screenshots_process_patches.shall_terminate.side_effect = (False, True)
+    _screenshots_process(
+        output_queue=screenshots_process_patches.output_queue,
+        input_queue=screenshots_process_patches.input_queue,
+        content_path='path/to/foo',
+        timestamps=(10 * 60, '20:00'),
+        number=2,
+        output_dir='path/to/destination',
+        overwrite=False,
+    )
+    assert screenshots_process_patches.mock_calls == [
+        call.first_video('path/to/foo'),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+        call.output_queue.put((MsgType.info, ('video_file', 'path/to/foo/bar.mkv'))),
+        call.normalize_timestamps(
+            video_file='path/to/foo/bar.mkv',
+            timestamps=(10 * 60, '20:00'),
+            number=2,
+        ),
+        call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+    ]
+
+def test_screenshots_process_is_cancelled_after_first_screenshot(tmp_path, screenshots_process_patches):
+    screenshots_process_patches.first_video.return_value = 'path/to/foo/bar.mkv'
+    screenshots_process_patches.normalize_timestamps.return_value = ('0:10:00', '0:20:00')
+    screenshots_process_patches.shall_terminate.side_effect = (False, False, True)
+    _screenshots_process(
+        output_queue=screenshots_process_patches.output_queue,
+        input_queue=screenshots_process_patches.input_queue,
+        content_path='path/to/foo',
+        timestamps=(10 * 60, '20:00'),
+        number=2,
+        output_dir='path/to/destination',
+        overwrite=False,
+    )
+    assert screenshots_process_patches.mock_calls == [
+        call.first_video('path/to/foo'),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+        call.output_queue.put((MsgType.info, ('video_file', 'path/to/foo/bar.mkv'))),
+        call.normalize_timestamps(
+            video_file='path/to/foo/bar.mkv',
+            timestamps=(10 * 60, '20:00'),
+            number=2,
+        ),
+        call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+        call.screenshot_create(
+            video_file='path/to/foo/bar.mkv',
+            screenshot_file='path/to/destination/bar.mkv.0:10:00.png',
+            timestamp='0:10:00',
+            overwrite=False,
+        ),
+        call.output_queue.put((MsgType.info, ('screenshot', 'path/to/destination/bar.mkv.0:10:00.png'))),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+    ]
+
+def test_screenshots_process_fails_to_create_second_screenshot(tmp_path, screenshots_process_patches):
+    screenshots_process_patches.first_video.return_value = 'path/to/foo/bar.mkv'
+    screenshots_process_patches.normalize_timestamps.return_value = ('0:10:00', '0:20:00')
+    screenshots_process_patches.screenshot_create.side_effect = (
+        'path/to/destination/bar.mkv.0:10:00.png',
+        errors.ScreenshotError('No space left'),
+    )
+    _screenshots_process(
+        output_queue=screenshots_process_patches.output_queue,
+        input_queue=screenshots_process_patches.input_queue,
+        content_path='path/to/foo',
+        timestamps=(10 * 60, '20:00'),
+        number=2,
+        output_dir='path/to/destination',
+        overwrite=False,
+    )
+    assert screenshots_process_patches.mock_calls == [
+        call.first_video('path/to/foo'),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+        call.output_queue.put((MsgType.info, ('video_file', 'path/to/foo/bar.mkv'))),
+        call.normalize_timestamps(
+            video_file='path/to/foo/bar.mkv',
+            timestamps=(10 * 60, '20:00'),
+            number=2,
+        ),
+        call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+        call.screenshot_create(
+            video_file='path/to/foo/bar.mkv',
+            screenshot_file='path/to/destination/bar.mkv.0:10:00.png',
+            timestamp='0:10:00',
+            overwrite=False,
+        ),
+        call.output_queue.put((MsgType.info, ('screenshot', 'path/to/destination/bar.mkv.0:10:00.png'))),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+        call.screenshot_create(
+            video_file='path/to/foo/bar.mkv',
+            screenshot_file='path/to/destination/bar.mkv.0:20:00.png',
+            timestamp='0:20:00',
+            overwrite=False,
+        ),
+        call.output_queue.put((MsgType.error, 'No space left')),
+    ]
+
+def test_screenshots_process_succeeds(tmp_path, screenshots_process_patches):
+    screenshots_process_patches.first_video.return_value = 'path/to/foo/bar.mkv'
+    screenshots_process_patches.normalize_timestamps.return_value = ('0:10:00', '0:20:00')
+    _screenshots_process(
+        output_queue=screenshots_process_patches.output_queue,
+        input_queue=screenshots_process_patches.input_queue,
+        content_path='path/to/foo',
+        timestamps=(10 * 60, '20:00'),
+        number=2,
+        output_dir='path/to/destination',
+        overwrite=False,
+    )
+    assert screenshots_process_patches.mock_calls == [
+        call.first_video('path/to/foo'),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+        call.output_queue.put((MsgType.info, ('video_file', 'path/to/foo/bar.mkv'))),
+        call.normalize_timestamps(
+            video_file='path/to/foo/bar.mkv',
+            timestamps=(10 * 60, '20:00'),
+            number=2,
+        ),
+        call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+        call.screenshot_create(
+            video_file='path/to/foo/bar.mkv',
+            screenshot_file='path/to/destination/bar.mkv.0:10:00.png',
+            timestamp='0:10:00',
+            overwrite=False,
+        ),
+        call.output_queue.put((MsgType.info, ('screenshot', 'path/to/destination/bar.mkv.0:10:00.png'))),
+        call.shall_terminate(screenshots_process_patches.input_queue),
+        call.screenshot_create(
+            video_file='path/to/foo/bar.mkv',
+            screenshot_file='path/to/destination/bar.mkv.0:20:00.png',
+            timestamp='0:20:00',
+            overwrite=False,
+        ),
+        call.output_queue.put((MsgType.info, ('screenshot', 'path/to/destination/bar.mkv.0:20:00.png'))),
+    ]
 
 
 @pytest.fixture
@@ -173,8 +297,6 @@ def job(tmp_path, mocker):
         ),
     )
     mocker.patch('upsies.utils.daemon.DaemonProcess', DaemonProcess_mock)
-    mocker.patch('upsies.utils.video.first_video', Mock())
-    mocker.patch('upsies.jobs.screenshots._normalize_timestamps', Mock(return_value=('01:00', '02:00')))
     return ScreenshotsJob(
         homedir=tmp_path,
         ignore_cache=False,
@@ -198,11 +320,7 @@ def test_ScreenshotsJob_cache_file_without_timestamps(job):
 
 
 @patch('upsies.utils.daemon.DaemonProcess')
-@patch('upsies.utils.video.first_video')
-@patch('upsies.jobs.screenshots._normalize_timestamps')
-def test_ScreenshotsJob_initialize(normalize_timestamps_mock, first_video_mock, DaemonProcess_mock, tmp_path):
-    normalize_timestamps_mock.return_value = ('01:00', '02:00')
-    first_video_mock.return_value = 'some/path/foo.mp4'
+def test_ScreenshotsJob_initialize(DaemonProcess_mock, tmp_path):
     job = ScreenshotsJob(
         homedir=tmp_path,
         ignore_cache=False,
@@ -210,104 +328,75 @@ def test_ScreenshotsJob_initialize(normalize_timestamps_mock, first_video_mock, 
         timestamps=(120,),
         number=2,
     )
-    assert first_video_mock.call_args_list == [call('some/path')]
-    assert normalize_timestamps_mock.call_args_list == [call(
-        video_file=first_video_mock.return_value,
-        timestamps=(120,),
-        number=2,
-    )]
     assert DaemonProcess_mock.call_args_list == [call(
         name=job.name,
-        target=_screenshot_process,
+        target=_screenshots_process,
         kwargs={
-            'video_file' : job._video_file,
-            'timestamps' : job._timestamps,
-            'output_dir' : job.homedir,
-            'overwrite'  : job.ignore_cache,
+            'content_path' : 'some/path',
+            'timestamps'   : (120,),
+            'number'       : 2,
+            'output_dir'   : job.homedir,
+            'overwrite'    : job.ignore_cache,
         },
-        info_callback=job.handle_screenshot,
+        info_callback=job.handle_info,
         error_callback=job.handle_error,
         finished_callback=job.finish,
     )]
-    assert job._video_file is first_video_mock.return_value
-    assert job._timestamps is normalize_timestamps_mock.return_value
-    assert job._screenshot_process is DaemonProcess_mock.return_value
+    assert job._video_file == ''
+    assert job._timestamps == ()
+    assert job._screenshots_process is DaemonProcess_mock.return_value
     assert job.output == ()
     assert job.errors == ()
     assert not job.is_finished
     assert job.exit_code is None
     assert job.screenshots_created == 0
-    assert job.screenshots_total == len(normalize_timestamps_mock.return_value)
-
-@patch('upsies.utils.daemon.DaemonProcess')
-@patch('upsies.utils.video.first_video')
-@patch('upsies.jobs.screenshots._normalize_timestamps')
-def test_ScreenshotsJob_initialize_catches_ContentError_from_first_video(
-        normalize_timestamps_mock, first_video_mock, DaemonProcess_mock, tmp_path):
-    first_video_mock.side_effect = errors.ContentError('Bad content')
-    job = ScreenshotsJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        content_path='some/path',
-        timestamps=('02:00',),
-        number=2,
-    )
-    assert first_video_mock.call_args_list == [call('some/path')]
-    assert normalize_timestamps_mock.call_args_list == []
-    assert DaemonProcess_mock.call_args_list == []
-    assert job._video_file == ''
-    assert job._timestamps == ()
-    assert job._screenshot_process is None
-    assert job.output == ()
-    assert job.errors == (errors.ContentError('Bad content'),)
-    assert job.is_finished
-    assert job.exit_code == 1
-    assert job.screenshots_created == 0
-    assert job.screenshots_total == 0
-
-@patch('upsies.utils.daemon.DaemonProcess')
-@patch('upsies.utils.video.first_video')
-@patch('upsies.jobs.screenshots._normalize_timestamps')
-def test_ScreenshotsJob_initialize_catches_ValueError_from_normalize_timestamps(
-        normalize_timestamps_mock, first_video_mock, DaemonProcess_mock, tmp_path):
-    normalize_timestamps_mock.side_effect = ValueError('Bad timestamp')
-    first_video_mock.return_value = 'some/path/foo.mp4'
-    job = ScreenshotsJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        content_path='some/path',
-        timestamps=(120,),
-        number=2,
-    )
-    assert first_video_mock.call_args_list == [call('some/path')]
-    assert normalize_timestamps_mock.call_args_list == [call(
-        video_file=first_video_mock.return_value,
-        timestamps=(120,),
-        number=2,
-    )]
-    assert DaemonProcess_mock.call_args_list == []
-    assert job._video_file == first_video_mock.return_value
-    assert job._timestamps == ()
-    assert job._screenshot_process is None
-    assert job.output == ()
-    assert [str(e) for e in job.errors] == ['Bad timestamp']
-    assert job.is_finished
-    assert job.exit_code == 1
-    assert job.screenshots_created == 0
     assert job.screenshots_total == 0
 
 
-def test_ScreenshotsJob_handle_screenshot(job):
+def test_ScreenshotsJob_execute(job, tmp_path):
+    assert job._screenshots_process.start.call_args_list == []
+    job.execute()
+    assert job._screenshots_process.start.call_args_list == [call()]
+    assert not job.is_finished
+    assert job.exit_code is None
+
+
+def test_ScreenshotsJob_finish(job, tmp_path):
+    job.execute()
+    assert job._screenshots_process.stop.call_args_list == []
+    job.finish()
+    assert job._screenshots_process.stop.call_args_list == [call()]
+
+
+@pytest.mark.asyncio
+async def test_ScreenshotsJob_wait(job, tmp_path):
+    job.execute()
+    job.finish()
+    assert job._screenshots_process.join.call_args_list == []
+    await job.wait()
+    assert job._screenshots_process.join.call_args_list == [call()]
+    assert job.is_finished
+    assert job.exit_code is not None
+
+
+def test_ScreenshotsJob_handle_info_sets_video_file(job):
+    assert job.video_file == ''
+    job.handle_info(('video_file', 'foo.mkv'))
+    assert job.video_file == 'foo.mkv'
+
+def test_ScreenshotsJob_handle_info_sets_timestamps(job):
+    assert job.timestamps == ()
+    job.handle_info(('timestamps', ('1', '2', '3')))
+    assert job.timestamps == ('1', '2', '3')
+
+def test_ScreenshotsJob_handle_info_sends_screenshot_paths(job):
     assert job.output == ()
-    assert job.screenshots_created == 0
-
-    job.handle_screenshot('foo.jpg')
-    assert job.output == ('foo.jpg',)
-    assert job.screenshots_created == 1
-
-    job.handle_screenshot('bar.jpg')
-    assert job.output == ('foo.jpg', 'bar.jpg')
-    assert job.screenshots_created == 2
+    job.handle_info(('screenshot', 'path/to/foo.png'))
+    assert job.output == ('path/to/foo.png',)
+    job.handle_info(('screenshot', 'path/to/bar.png'))
+    assert job.output == ('path/to/foo.png', 'path/to/bar.png')
+    job.handle_info(('screenshot', 'path/to/baz.png'))
+    assert job.output == ('path/to/foo.png', 'path/to/bar.png', 'path/to/baz.png')
 
 
 def test_ScreenshotsJob_handle_error(job):
@@ -315,54 +404,6 @@ def test_ScreenshotsJob_handle_error(job):
     job.handle_error('Foo!')
     assert job.errors == ('Foo!',)
     assert job.is_finished
-
-
-def test_ScreenshotsJob_execute_with_screenshot_process(job):
-    job.execute()
-    assert job._screenshot_process.start.call_args_list == [call()]
-
-def test_ScreenshotsJob_execute_without_screenshot_process(job):
-    job._screenshot_process = None
-    job.execute()
-    assert job._screenshot_process is None
-
-
-def test_ScreenshotsJob_finish_with_screenshot_process(job):
-    assert not job.is_finished
-    job.finish()
-    assert job.is_finished
-    assert job._screenshot_process.stop.call_args_list == [call()]
-
-def test_ScreenshotsJob_finish_without_screenshot_process(job):
-    job._screenshot_process = None
-    assert not job.is_finished
-    job.finish()
-    assert job.is_finished
-    assert job._screenshot_process is None
-
-
-@pytest.mark.asyncio
-async def test_ScreenshotsJob_wait_with_screenshot_process(job):
-    asyncio.get_event_loop().call_soon(job.finish)
-    assert not job.is_finished
-    await job.wait()
-    assert job._screenshot_process.join.call_args_list == [call()]
-    assert job.is_finished
-    # Calling wait() multiple times must be safe
-    await job.wait()
-    await job.wait()
-
-@pytest.mark.asyncio
-async def test_ScreenshotsJob_wait_without_screenshot_process(job):
-    job._screenshot_process = None
-    asyncio.get_event_loop().call_soon(job.finish)
-    assert not job.is_finished
-    await job.wait()
-    assert job._screenshot_process is None
-    assert job.is_finished
-    # Calling wait() multiple times must be safe
-    await job.wait()
-    await job.wait()
 
 
 @pytest.mark.parametrize(
@@ -384,6 +425,14 @@ async def test_exit_code(screenshots_total, output, exp_exit_code, job):
     await job.wait()
     assert job.is_finished
     assert job.exit_code == exp_exit_code
+
+
+def test_video_file(job):
+    assert job.video_file is job._video_file
+
+
+def test_timestamps(job):
+    assert job.timestamps is job._timestamps
 
 
 def test_screenshots_total(job):
