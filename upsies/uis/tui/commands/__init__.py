@@ -158,13 +158,11 @@ class create_torrent(CommandBase):
 
     @cache.property
     def jobs(self):
-        all_jobs = (
+        return (
             self.create_torrent_job,
             self.add_torrent_job,
             self.copy_torrent_job,
         )
-        return tuple(job for job in all_jobs
-                     if job is not None)
 
 
 class add_torrent(CommandBase):
