@@ -109,7 +109,6 @@ async def test_login_succeeds(tmp_path, mocker):
 @pytest.mark.parametrize(
     argnames='method_name',
     argvalues=(
-        'parse_html',
         '_report_login_error',
         '_store_auth_key',
         '_store_logout_url',
@@ -123,7 +122,7 @@ async def test_login_dumps_html_if_handling_response_fails(method_name, tmp_path
         <a href="logout.php?asdfasdf">logout</a>
     </html>
     '''
-    dump_html_mock = mocker.patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
+    html_dump_mock = mocker.patch('upsies.utils.html.dump')
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
     job = make_job(tmp_path)
@@ -144,8 +143,8 @@ async def test_login_dumps_html_if_handling_response_fails(method_name, tmp_path
         }
     )]
     assert not job.logged_in
-    assert dump_html_mock.call_args_list == [
-        call('login.html', response),
+    assert html_dump_mock.call_args_list == [
+        call(response, 'login.html'),
     ]
 
 
@@ -323,7 +322,7 @@ async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
         'upsies.jobs.submit.nbl.SubmitJob._translate_category',
         Mock(return_value=b'123'),
     )
-    mocker.patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
+    html_dump_mock = mocker.patch('upsies.utils.html.dump')
 
     httpserver.expect_request(
         uri='/upload.php',
@@ -356,7 +355,7 @@ async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
     }
     with pytest.raises(errors.RequestError, match=r'^Upload failed: Something went wrong$'):
         await job.upload()
-    assert job.dump_html.call_args_list == []
+    assert html_dump_mock.call_args_list == []
 
 
 @pytest.mark.asyncio
@@ -365,7 +364,7 @@ async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
         'upsies.jobs.submit.nbl.SubmitJob._translate_category',
         Mock(return_value=b'123'),
     )
-    mocker.patch('upsies.jobs.submit.nbl.SubmitJob.dump_html')
+    html_dump_mock = mocker.patch('upsies.utils.html.dump')
     response = 'unexpected html'
     httpserver.expect_request(
         uri='/upload.php',
@@ -395,8 +394,8 @@ async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
     with pytest.raises(RuntimeError, match=(r'^Failed to find error message. '
                                             r'See upload.html for more information.$')):
         await job.upload()
-    assert job.dump_html.call_args_list == [
-        call('upload.html', response),
+    assert html_dump_mock.call_args_list == [
+        call(response, 'upload.html'),
     ]
 
 

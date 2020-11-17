@@ -2,7 +2,7 @@ import re
 import urllib
 
 from ... import errors
-from ...utils import http
+from ...utils import html, http
 from . import SubmitJobBase
 
 import logging  # isort:skip
@@ -36,15 +36,15 @@ class SubmitJob(SubmitJobBase):
                 },
             )
             try:
-                html = self.parse_html(response)
-                self._report_login_error(html)
-                self._store_auth_key(html)
-                self._store_logout_url(html)
+                doc = html.parse(response)
+                self._report_login_error(doc)
+                self._store_auth_key(doc)
+                self._store_logout_url(doc)
             except Exception:
-                self.dump_html('login.html', str(response))
+                html.dump(str(response), 'login.html')
                 raise
 
-    def _report_login_error(self, html):
+    def _report_login_error(self, doc):
         def error_tag(tag):
             class_ = tag.get('class', ())
             return (
@@ -53,22 +53,22 @@ class SubmitJob(SubmitJobBase):
                 and 'noscript' not in (p.name for p in tag.parents)
             )
 
-        error = html.find(error_tag)
+        error = doc.find(error_tag)
         if error:
             msg = ' '.join(error.stripped_strings).strip()
             if msg:
                 raise errors.RequestError(f'Login failed: {msg}')
 
-    def _store_auth_key(self, html):
-        auth_input = html.find('input', {'name': 'auth'})
+    def _store_auth_key(self, doc):
+        auth_input = doc.find('input', {'name': 'auth'})
         if not auth_input:
             raise RuntimeError('Failed to find input tag named "auth"')
         else:
             self._auth_key = auth_input['value']
             _log.debug('%s: Auth key: %s', self.tracker_name, self._auth_key)
 
-    def _store_logout_url(self, html):
-        logout_url = html.find('a', text=re.compile(r'(?i:Logout)'))
+    def _store_logout_url(self, doc):
+        logout_url = doc.find('a', text=re.compile(r'(?i:Logout)'))
         if not logout_url or not logout_url.get('href'):
             raise RuntimeError('Failed to find logout URL')
         else:
@@ -143,13 +143,13 @@ class SubmitJob(SubmitJobBase):
             return str(torrent_page_url)
         else:
             _log.debug('Unexpected torrent page URL: %r', torrent_page_url)
-            html = self.parse_html(response)
+            doc = html.parse(response)
             # Try to find error message
-            error = html.find(id='messagebar')
+            error = doc.find(id='messagebar')
             if error and error.string:
                 raise errors.RequestError(f'Upload failed: {error.string}')
             else:
-                self.dump_html('upload.html', str(response))
+                html.dump(str(response), 'upload.html')
                 raise RuntimeError('Failed to find error message. See upload.html for more information.')
 
     def _translate_category(self, category):

@@ -31,27 +31,6 @@ class SubmitJobBase(JobBase, abc.ABC):
     label = 'Submit'
     timeout = 180
 
-    @staticmethod
-    def parse_html(string):
-        """
-        Return `BeautifulSoup` instance
-
-        :param string: HTML document
-        """
-        try:
-            return bs4.BeautifulSoup(str(string), features='html.parser')
-        except Exception as e:
-            raise RuntimeError(f'Failed to parse HTML: {e}')
-
-    def dump_html(self, filepath, html):
-        """
-        Write `html` to `filepath`
-
-        Used for debugging unexpected exceptions.
-        """
-        with open(filepath, 'w') as f:
-            f.write(self.parse_html(str(html)).prettify())
-
     def initialize(self, *, tracker_config, jobs_before_upload, jobs_after_upload):
         self._tracker_config = tracker_config
         self._jobs_before_upload = tuple(j for j in jobs_before_upload if j)

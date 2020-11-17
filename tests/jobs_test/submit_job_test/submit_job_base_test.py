@@ -1,4 +1,3 @@
-import os
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -58,38 +57,6 @@ def make_TestSubmitJob_instance(tmp_path, **kwargs):
     }
     kw.update(kwargs)
     return cls(**kw)
-
-
-@patch('bs4.BeautifulSoup')
-def test_parse_html_succeeds(bs_mock):
-    bs_mock.return_value = {'html': 'foo'}
-    html = SubmitJobBase.parse_html('<html>foo</html>')
-    assert html == {'html': 'foo'}
-    assert bs_mock.call_args_list == [call(
-        '<html>foo</html>',
-        features='html.parser',
-    )]
-
-@patch('bs4.BeautifulSoup')
-def test_parse_html_fails(bs_mock):
-    bs_mock.side_effect = ValueError('Invalid HTML')
-    with pytest.raises(RuntimeError, match=r'^Failed to parse HTML: Invalid HTML$'):
-        SubmitJobBase.parse_html('<html>foo</html')
-
-
-def test_dump_html(tmp_path):
-    filepath = tmp_path / 'foo'
-    job = make_TestSubmitJob_instance(tmp_path)
-    assert job.dump_html(filepath, '<html>foo</html>') is None
-    assert os.path.exists(filepath)
-    assert open(filepath, 'r').read() == '<html>\n foo\n</html>'
-
-def test_dump_html_gets_non_string(tmp_path):
-    filepath = tmp_path / 'foo'
-    job = make_TestSubmitJob_instance(tmp_path)
-    assert job.dump_html(filepath, 123) is None
-    assert os.path.exists(filepath)
-    assert open(filepath, 'r').read() == '123\n'
 
 
 def test_tracker_config(tmp_path):
