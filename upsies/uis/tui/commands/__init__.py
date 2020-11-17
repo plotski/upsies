@@ -29,7 +29,7 @@ class CommandBase(abc.ABC):
     @abc.abstractmethod
     def jobs(self):
         """
-        Sequence of :class:`JobBase` objects
+        Sequence of :class:`~jobs.JobBase` objects
 
         For convenience, the sequence may also contain `None` instead of an
         optional job.
@@ -48,7 +48,7 @@ class CommandBase(abc.ABC):
 
     @property
     def config(self):
-        """Config file options as :class:`config.Config` object"""
+        """Config file options as :class:`~config.Config` object"""
         return self._config
 
 
