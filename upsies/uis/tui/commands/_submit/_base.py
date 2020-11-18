@@ -10,7 +10,7 @@ _log = logging.getLogger(__name__)
 
 class SubmitCommandBase(CommandBase, abc.ABC):
     """
-    Base class for all commands that submit to a tracker
+    Base class for all commands that submit metadata to a tracker
 
     It provides some generic jobs like torrent creation that should be used by
     subclasses. Picking a DB ID, creating screenshots, etc is implemented by the
