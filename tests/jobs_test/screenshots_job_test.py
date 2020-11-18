@@ -336,7 +336,11 @@ def test_ScreenshotsJob_cache_file_with_timestamps_and_with_number(job):
 def test_ScreenshotsJob_cache_file_without_timestamps_and_without_number(job):
     job.kwargs['timestamps'] = ()
     job.kwargs['number'] = 0
-    assert job.cache_file is None
+    assert job.cache_file == os.path.join(
+        job.homedir,
+        '.output',
+        'screenshots.json',
+    )
 
 
 @patch('upsies.utils.daemon.DaemonProcess')
