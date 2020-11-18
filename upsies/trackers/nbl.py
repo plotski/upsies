@@ -1,16 +1,42 @@
 import re
 import urllib
 
-from ... import errors
-from ...utils import html, http
-from . import SubmitJobBase
+from .. import errors
+from .. import jobs as _jobs
+from ..utils import cache, guessit, html, http
+from . import TrackerBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class SubmitJob(SubmitJobBase):
-    tracker_name = 'NBL'
+class Tracker(TrackerBase):
+    name = 'NBL'
+
+    @cache.property
+    def jobs_before_upload(self):
+        return (
+            self.create_torrent_job,
+            self.mediainfo_job,
+            self.tvmaze_job,
+            self.category_job,
+        )
+
+    @cache.property
+    def category_job(self):
+        # Season or Episode
+        if guessit.guessit(self.info.content_path).get('type') == 'episode':
+            guessed = 'Episode'
+        else:
+            guessed = 'Season'
+        return _jobs.prompt.ChoiceJob(
+            name='category',
+            label='Category',
+            homedir=self.info.homedir,
+            ignore_cache=self.info.ignore_cache,
+            choices=('Season', 'Episode'),
+            focused=guessed,
+        )
 
     _url_path = {
         'login': '/login.php',
@@ -20,7 +46,7 @@ class SubmitJob(SubmitJobBase):
 
     async def login(self):
         if not self.logged_in:
-            _log.debug('%s: Logging in as %r', self.tracker_name, self.tracker_config['username'])
+            _log.debug('%s: Logging in as %r', self.name, self.tracker_config['username'])
             login_url = urllib.parse.urljoin(
                 self.tracker_config['base_url'],
                 self._url_path['login'],
@@ -65,19 +91,19 @@ class SubmitJob(SubmitJobBase):
             raise RuntimeError('Failed to find input tag named "auth"')
         else:
             self._auth_key = auth_input['value']
-            _log.debug('%s: Auth key: %s', self.tracker_name, self._auth_key)
+            _log.debug('%s: Auth key: %s', self.name, self._auth_key)
 
     def _store_logout_url(self, doc):
         logout_url = doc.find('a', text=re.compile(r'(?i:Logout)'))
         if not logout_url or not logout_url.get('href'):
             raise RuntimeError('Failed to find logout URL')
         else:
-            _log.debug('%s: Logged in as %r', self.tracker_name, self.tracker_config['username'])
+            _log.debug('%s: Logged in as %r', self.name, self.tracker_config['username'])
             self._logout_url = urllib.parse.urljoin(
                 self.tracker_config['base_url'],
                 logout_url['href'],
             )
-            _log.debug('%s: Logout URL: %s', self.tracker_name, self._logout_url)
+            _log.debug('%s: Logout URL: %s', self.name, self._logout_url)
 
     @property
     def logged_in(self):
@@ -90,22 +116,22 @@ class SubmitJob(SubmitJobBase):
         if hasattr(self, '_logout_url'):
             logout_url = self._logout_url
             delattr(self, '_logout_url')
-            _log.debug('%s: Logging out: %r', self.tracker_name, logout_url)
+            _log.debug('%s: Logging out: %r', self.name, logout_url)
             await http.get(logout_url, user_agent=True)
 
-    async def upload(self):
-        _log.debug('Uploading: %r', self.metadata)
+    async def upload(self, metadata):
+        _log.debug('Uploading: %r', metadata)
         if not self.logged_in:
             raise RuntimeError('upload() called before login()')
 
-        torrent_filepath = self.metadata['create-torrent'][0]
-        _log.debug('%s: Torrent: %r', self.tracker_name, torrent_filepath)
-        tvmaze_id = self.metadata['tvmaze-id'][0]
-        _log.debug('%s: TVmaze ID: %r', self.tracker_name, tvmaze_id)
-        mediainfo = self.metadata['mediainfo'][0]
-        _log.debug('%s: TVmaze ID: %r', self.tracker_name, mediainfo[:100] + '...')
-        category = self.metadata['category'][0]
-        _log.debug('%s: Category: %r', self.tracker_name, category)
+        torrent_filepath = metadata['create-torrent'][0]
+        _log.debug('%s: Torrent: %r', self.name, torrent_filepath)
+        tvmaze_id = metadata['tvmaze-id'][0]
+        _log.debug('%s: TVmaze ID: %r', self.name, tvmaze_id)
+        mediainfo = metadata['mediainfo'][0]
+        _log.debug('%s: TVmaze ID: %r', self.name, mediainfo[:100] + '...')
+        category = metadata['category'][0]
+        _log.debug('%s: Category: %r', self.name, category)
 
         upload_url = urllib.parse.urljoin(
             self.tracker_config['base_url'],

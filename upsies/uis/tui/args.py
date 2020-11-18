@@ -3,8 +3,7 @@ import functools
 import sys
 import textwrap
 
-from ... import __project_name__, __version__, defaults, utils
-from ...jobs import submit as trackers
+from ... import __project_name__, __version__, defaults, trackers, utils
 from ...tools import btclient as btclients
 from ...tools import dbs
 from ...tools import imghost as imghosts
@@ -39,7 +38,7 @@ def _get_names(package, clsname, name_attribute):
                 for mod in modules]
 
 DB_NAMES = _get_names(dbs, '', 'label')
-TRACKER_NAMES = _get_names(trackers, 'SubmitJob', 'tracker_name')
+TRACKER_NAMES = _get_names(trackers, 'Tracker', 'name')
 IMGHOST_NAMES = _get_names(imghosts, 'Uploader', 'name')
 BTCLIENT_NAMES = _get_names(btclients, 'ClientApi', 'name')
 

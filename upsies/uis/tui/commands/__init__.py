@@ -12,6 +12,7 @@ conveniently provided as :attr:`~CommandBase.args` and
 import abc
 
 from .... import jobs as _jobs
+from .... import trackers
 from ....tools import btclient
 from ....utils import cache, fs, pipe
 
@@ -259,14 +260,48 @@ class mediainfo(CommandBase):
 
 
 class submit(CommandBase):
-    """
-    Collect all required metadata and upload to tracker
-    """
-    def __new__(cls, args, config):
-        from . import _submit
+    """Generate all required metadata and upload to tracker"""
+    @cache.property
+    def jobs(self):
+        submit_job = _jobs.submit.SubmitJob(
+            homedir=fs.projectdir(self.args.CONTENT),
+            ignore_cache=self.args.ignore_cache,
+            tracker=self.tracker,
+        )
+        return (
+            tuple(self.tracker.jobs_before_upload)
+            + (submit_job,)
+            + tuple(self.tracker.jobs_after_upload)
+        )
+
+    @cache.property
+    def tracker(self):
+        """:class:`Tracker` instance from one of the submodules of :mod:`~trackers`"""
+        tracker_name = self.args.TRACKER.lower()
         try:
-            module = getattr(_submit, args.TRACKER.lower())
+            trackers_module = getattr(trackers, tracker_name)
         except AttributeError:
-            raise ValueError(f'Unknown tracker: {args.TRACKER}')
+            raise ValueError(f'Unknown tracker: {self.args.TRACKER}')
+
+        try:
+            tracker_config = self.config['trackers'][tracker_name]
+        except AttributeError:
+            raise ValueError(f'Unknown tracker: {self.args.TRACKER}')
         else:
-            return module.submit(args=args, config=config)
+            tracker_cls = getattr(trackers_module, 'Tracker')
+            return tracker_cls(
+                tracker_config=tracker_config,
+                homedir=fs.projectdir(self.args.CONTENT),
+                ignore_cache=self.args.ignore_cache,
+                content_path=self.args.CONTENT,
+                tracker_name=tracker_name,
+                btclient=self._get_btclient(),
+                torrent_destination=self.args.copy_to,
+            )
+
+    def _get_btclient(self):
+        if self.args.add_to:
+            return btclient.client(
+                name=self.args.add_to,
+                **self.config['clients'].get(self.args.add_to),
+            )
