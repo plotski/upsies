@@ -1,5 +1,6 @@
 import abc
 import asyncio
+import collections
 import json
 import os
 
@@ -374,12 +375,18 @@ class JobBase(abc.ABC):
         written.
         """
         if self._kwargs:
-            def string_value(v):
-                v = str(v)
+            def string_value(value):
+                if isinstance(value, collections.abc.Sequence) and not isinstance(value, str):
+                    return ','.join((string_value(v) for v in value))
+
+                elif isinstance(value, collections.abc.Mapping):
+                    return ','.join((f'{k}={string_value(v)}' for k, v in value.items()))
+
                 # Use same cache file for absolute and relative paths
-                if os.path.exists(v):
-                    v = os.path.realpath(v)
-                return v
+                if isinstance(value, (str, os.PathLike)) and os.path.exists(value):
+                    return str(os.path.realpath(value))
+
+                return str(value)
 
             kwargs_str_max_len = 250 - len(self.name) - len('..json')
             kwargs_str = ','.join(f'{k}={string_value(v)}'
