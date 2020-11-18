@@ -44,7 +44,7 @@ class ScreenshotsJob(JobBase):
 
     def initialize(self, content_path, timestamps=(), number=0):
         self._screenshots_created = 0
-        self._screenshots_total = 0
+        self._screenshots_total = -1
         self._video_file = ''
         self._timestamps = ()
         self._screenshots_process = daemon.DaemonProcess(
@@ -92,9 +92,22 @@ class ScreenshotsJob(JobBase):
     @property
     def exit_code(self):
         if self.is_finished:
-            screenshots_wanted = self.screenshots_total > 0
-            wanted_screenshots_created = len(self.output) == self.screenshots_total
-            return 0 if screenshots_wanted and wanted_screenshots_created else 1
+            if self.screenshots_total < 0:
+                # Job is finished but _screenshots_process() never sent us
+                # timestamps. That means we're using previously cached output.
+                if self.output:
+                    # Assume the cached number of screenshots is what the user
+                    # wanted because the output of unsuccessful jobs is not
+                    # cached (see JobBase._write_output_cache()).
+                    return 0
+                else:
+                    # Caching of empty output should never happen.
+                    raise RuntimeError('ScreenshotJob finished with output from empty cache.')
+            elif len(self.output) == self.screenshots_total:
+                # We created the desired number of screenshots.
+                return 0
+            else:
+                return 1
 
     @property
     def video_file(self):

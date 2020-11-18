@@ -374,7 +374,7 @@ def test_ScreenshotsJob_initialize(DaemonProcess_mock, tmp_path):
     assert not job.is_finished
     assert job.exit_code is None
     assert job.screenshots_created == 0
-    assert job.screenshots_total == 0
+    assert job.screenshots_total == -1
 
 
 def test_ScreenshotsJob_execute(job, tmp_path):
@@ -395,6 +395,7 @@ def test_ScreenshotsJob_finish(job, tmp_path):
 @pytest.mark.asyncio
 async def test_ScreenshotsJob_wait(job, tmp_path):
     job.execute()
+    job._screenshots_total = 1
     job.finish()
     assert job._screenshots_process.join.call_args_list == []
     await job.wait()
@@ -431,16 +432,20 @@ def test_ScreenshotsJob_handle_error(job):
 
 
 @pytest.mark.parametrize(
-    argnames=('screenshots_total', 'output', 'exp_exit_code'),
+    argnames=('screenshots_total', 'output', 'exp_exit_code', 'exp_exception', 'exp_error'),
     argvalues=(
-        (0, ('a.jpg', 'b.jpg', 'c.jpg'), 1),
-        (3, ('a.jpg', 'b.jpg', 'c.jpg'), 0),
-        (0, (), 1),
-        (3, (), 1),
+        (-1, ('a.jpg', 'b.jpg', 'c.jpg'), 0, None, ''),
+        (-1, (), None, RuntimeError, r'^ScreenshotJob finished with output from empty cache\.$'),
+        (0, (), 0, None, ''),
+        (1, (), 1, None, ''),
+        (3, (), 1, None, ''),
+        (3, ('a.jpg',), 1, None, ''),
+        (3, ('a.jpg', 'b.jpg'), 1, None, ''),
+        (3, ('a.jpg', 'b.jpg', 'c.jpg'), 0, None, ''),
     ),
 )
 @pytest.mark.asyncio
-async def test_exit_code(screenshots_total, output, exp_exit_code, job):
+async def test_exit_code(screenshots_total, output, exp_exit_code, exp_exception, exp_error, job):
     assert job.exit_code is None
     for o in output:
         job.send(o)
@@ -448,7 +453,11 @@ async def test_exit_code(screenshots_total, output, exp_exit_code, job):
     job.finish()
     await job.wait()
     assert job.is_finished
-    assert job.exit_code == exp_exit_code
+    if exp_exception:
+        with pytest.raises(exp_exception, match=exp_error):
+            job.exit_code
+    else:
+        assert job.exit_code == exp_exit_code
 
 
 def test_video_file(job):
