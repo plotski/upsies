@@ -306,8 +306,10 @@ class submit(CommandBase):
             )
 
     def _get_btclient(self):
-        if self.args.add_to:
+        btclient_name = getattr(self.args, 'add_to', None)
+        if btclient_name:
             return btclient.client(
-                name=self.args.add_to,
-                **self.config['clients'].get(self.args.add_to),
+                name=btclient_name,
+                **self.config['clients'][btclient_name],
+            )
             )
