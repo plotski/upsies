@@ -1,11 +1,12 @@
 import os
+import queue
 from unittest.mock import Mock, call, patch
 
 import pytest
 
 from upsies import errors
 from upsies.jobs.screenshots import (ScreenshotsJob, _normalize_timestamps,
-                                     _screenshots_process)
+                                     _screenshots_process, _shall_terminate)
 from upsies.utils.daemon import MsgType
 
 try:
@@ -287,6 +288,22 @@ def test_screenshots_process_succeeds(tmp_path, screenshots_process_patches):
         ),
         call.output_queue.put((MsgType.info, ('screenshot', 'path/to/destination/bar.mkv.0:20:00.png'))),
     ]
+
+
+def test_shall_terminate_with_empty_queue():
+    q = Mock()
+    q.get_nowait.side_effect = queue.Empty()
+    assert _shall_terminate(q) is False
+
+def test_shall_terminate_with_irrelevant_message_type():
+    q = Mock()
+    q.get_nowait.return_value = ('foo', 'bar')
+    assert _shall_terminate(q) is False
+
+def test_shall_terminate_with_terminate_message():
+    q = Mock()
+    q.get_nowait.return_value = (MsgType.terminate, None)
+    assert _shall_terminate(q) is True
 
 
 @pytest.fixture
