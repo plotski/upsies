@@ -1,7 +1,6 @@
 import asyncio
 
 from .. import errors
-from ..tools import imghost
 from . import JobBase
 
 import logging  # isort:skip
@@ -12,7 +11,7 @@ class ImageHostJob(JobBase):
     """
     Upload images to an image hosting service
 
-    :param str imghost_name: Name of a submodule of :mod:`tools.imghost`
+    :param str imghost: Return value of :func:`tools.imghost.imghost`
     :param image_paths: Sequence of paths to image files. The job is finished
         after all images are uploaded.
     :param images_total: Number of images that are going to be uploaded. Image
@@ -23,8 +22,6 @@ class ImageHostJob(JobBase):
         finished by calling :meth:`pipe_closed` or :meth:`finish`.
 
     `image_paths` and `images_total` must not be given at the same time.
-
-    :raise ValueError: if `imghost_name` is not known
     """
 
     name = 'imghost'
@@ -33,11 +30,11 @@ class ImageHostJob(JobBase):
     @property
     def cache_file(self):
         # No cache file since we may not know which files we're going to upload
-        # before execution. This is not a problem because the abstract base
-        # class for image uploaders implements caching.
+        # before execution. This is not a problem because ImageHostBase
+        # implements caching.
         return None
 
-    def initialize(self, imghost_name, image_paths=(), images_total=0):
+    def initialize(self, imghost, image_paths=(), images_total=0):
         # Accept images from `image_paths` and pipe_input() calls
         if image_paths and images_total:
             raise RuntimeError('You must not specify both "image_paths" and "images_total".')
@@ -47,13 +44,7 @@ class ImageHostJob(JobBase):
             else:
                 self._images_total = len(image_paths)
 
-        try:
-            imghost_module = getattr(imghost, imghost_name)
-        except AttributeError:
-            raise ValueError(f'Unknown image hosting service: {imghost_name}')
-        else:
-            self._imghost = imghost_module.Uploader(cache_dir=self.homedir)
-
+        self._imghost = imghost
         self._images_uploaded = 0
         self._exit_code = 0
         self._image_path_queue = asyncio.Queue()

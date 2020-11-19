@@ -22,7 +22,7 @@ def test_imghost_returns_ImageHost_instance(foo_module):
     assert u is foo_module.ImageHost.return_value
     assert foo_module.ImageHost.call_args_list == [call(bar='baz')]
 
-def test_uploader_fails_to_find_module_by_name():
+def test_imghost_fails_to_find_module_by_name():
     with pytest.raises(ValueError, match='^Unsupported image host: foo$'):
         imghost('foo', bar='baz')
 
@@ -70,33 +70,33 @@ def make_TestImageHost(**kwargs):
 @patch('upsies.utils.fs.tmpdir')
 def test_cache_file_without_given_cache_dir(tmpdir_mock):
     tmpdir_mock.return_value = '/tmp/path'
-    uploader = make_TestImageHost()
-    assert uploader._cache_file('foo.png') == f'/tmp/path/foo.png.{uploader.name}.json'
+    imghost = make_TestImageHost()
+    assert imghost._cache_file('foo.png') == f'/tmp/path/foo.png.{imghost.name}.json'
 
 def test_cache_file_with_given_cache_dir():
-    uploader = make_TestImageHost(cache_dir='some/path')
-    assert uploader._cache_file('foo.png') == f'some/path/foo.png.{uploader.name}.json'
+    imghost = make_TestImageHost(cache_dir='some/path')
+    assert imghost._cache_file('foo.png') == f'some/path/foo.png.{imghost.name}.json'
 
 
 def test_store_info_to_cache_succeeds(tmp_path):
-    uploader = make_TestImageHost(cache_dir=tmp_path)
-    uploader._store_info_to_cache(
+    imghost = make_TestImageHost(cache_dir=tmp_path)
+    imghost._store_info_to_cache(
         image_path=os.path.join(tmp_path, 'foo.png'),
         info={'this': 'and that'},
     )
-    cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     cache_content = open(cache_file, 'r').read()
     assert cache_content == ('{\n'
                              '    "this": "and that"\n'
                              '}\n')
 
 def test_store_info_to_cache_fails_to_write(tmp_path):
-    uploader = make_TestImageHost(cache_dir=tmp_path)
-    cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
+    imghost = make_TestImageHost(cache_dir=tmp_path)
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     os.chmod(tmp_path, 0o000)
     try:
         with pytest.raises(RuntimeError, match=rf'^Unable to write cache {cache_file}: Permission denied$'):
-            uploader._store_info_to_cache(
+            imghost._store_info_to_cache(
                 image_path=os.path.join(tmp_path, 'foo.png'),
                 info={'this': 'and that'},
             )
@@ -105,11 +105,11 @@ def test_store_info_to_cache_fails_to_write(tmp_path):
         assert not os.path.exists(cache_file)
 
 def test_store_info_to_cache_fails_to_encode_json(tmp_path):
-    uploader = make_TestImageHost(cache_dir=tmp_path)
-    cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
+    imghost = make_TestImageHost(cache_dir=tmp_path)
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     with pytest.raises(RuntimeError, match=(rf'^Unable to write cache {cache_file}: '
                                             r"Object of type '?function'? is not JSON serializable$")):
-        uploader._store_info_to_cache(
+        imghost._store_info_to_cache(
             image_path=os.path.join(tmp_path, 'foo.png'),
             info={'this': lambda: None},
         )
@@ -117,53 +117,53 @@ def test_store_info_to_cache_fails_to_encode_json(tmp_path):
 
 
 def test_get_info_from_cache_succeeds(tmp_path):
-    uploader = make_TestImageHost(cache_dir=tmp_path)
-    cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
+    imghost = make_TestImageHost(cache_dir=tmp_path)
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     with open(cache_file, 'w') as f:
         f.write('{\n'
                 '    "this": "and that"\n'
                 '}\n')
-    info = uploader._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
+    info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
     assert info == {'this': 'and that'}
     assert os.path.exists(cache_file)
 
 def test_get_info_from_cache_fails_to_read(tmp_path):
-    uploader = make_TestImageHost(cache_dir=tmp_path)
-    cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
+    imghost = make_TestImageHost(cache_dir=tmp_path)
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     with open(cache_file, 'w') as f:
         f.write('{\n'
                 '    "this": "and that"\n'
                 '}\n')
     os.chmod(cache_file, 0o000)
     try:
-        info = uploader._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
+        info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
     finally:
         os.chmod(cache_file, 0o600)
     assert info is None
 
 def test_get_info_from_cache_fails_to_decode_json(tmp_path):
-    uploader = make_TestImageHost(cache_dir=tmp_path)
-    cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
+    imghost = make_TestImageHost(cache_dir=tmp_path)
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     with open(cache_file, 'w') as f:
         f.write('{\n'
                 '    "this": and that\n'
                 '}\n')
-    info = uploader._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
+    info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
     assert info is None
 
 
 @pytest.mark.asyncio
 async def test_upload_gets_info_from_upload():
-    uploader = make_TestImageHost(mock_cache=True)
-    uploader._get_info_from_cache_mock.return_value = None
-    uploader._upload_mock.return_value = {
+    imghost = make_TestImageHost(mock_cache=True)
+    imghost._get_info_from_cache_mock.return_value = None
+    imghost._upload_mock.return_value = {
         'url': 'http://foo.bar',
         'more': 'info',
     }
-    image = await uploader.upload('path/to/foo.png')
-    assert uploader._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
-    assert uploader._upload_mock.call_args_list == [call('path/to/foo.png')]
-    assert uploader._store_info_to_cache_mock.call_args_list == [call(
+    image = await imghost.upload('path/to/foo.png')
+    assert imghost._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
+    assert imghost._upload_mock.call_args_list == [call('path/to/foo.png')]
+    assert imghost._store_info_to_cache_mock.call_args_list == [call(
         'path/to/foo.png',
         {'url': 'http://foo.bar', 'more': 'info'},
     )]
@@ -173,34 +173,34 @@ async def test_upload_gets_info_from_upload():
 
 @pytest.mark.asyncio
 async def test_upload_gets_info_from_cache():
-    uploader = make_TestImageHost(mock_cache=True)
-    uploader._get_info_from_cache_mock.return_value = {
+    imghost = make_TestImageHost(mock_cache=True)
+    imghost._get_info_from_cache_mock.return_value = {
         'url': 'http://foo.bar',
         'more': 'info',
     }
-    image = await uploader.upload('path/to/foo.png')
-    assert uploader._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
-    assert uploader._upload_mock.call_args_list == []
-    assert uploader._store_info_to_cache_mock.call_args_list == []
+    image = await imghost.upload('path/to/foo.png')
+    assert imghost._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
+    assert imghost._upload_mock.call_args_list == []
+    assert imghost._store_info_to_cache_mock.call_args_list == []
     assert isinstance(image, UploadedImage)
     assert image == 'http://foo.bar'
     assert image.more == 'info'
 
 @pytest.mark.asyncio
 async def test_upload_ignores_cache():
-    uploader = make_TestImageHost(mock_cache=True)
-    uploader._get_info_from_cache_mock.return_value = {
+    imghost = make_TestImageHost(mock_cache=True)
+    imghost._get_info_from_cache_mock.return_value = {
         'url': 'http://foo.bar',
         'more': 'info',
     }
-    uploader._upload_mock.return_value = {
+    imghost._upload_mock.return_value = {
         'url': 'http://baz.png',
         'more': 'other info',
     }
-    image = await uploader.upload('path/to/foo.png', force=True)
-    assert uploader._get_info_from_cache_mock.call_args_list == []
-    assert uploader._upload_mock.call_args_list == [call('path/to/foo.png')]
-    assert uploader._store_info_to_cache_mock.call_args_list == [call(
+    image = await imghost.upload('path/to/foo.png', force=True)
+    assert imghost._get_info_from_cache_mock.call_args_list == []
+    assert imghost._upload_mock.call_args_list == [call('path/to/foo.png')]
+    assert imghost._store_info_to_cache_mock.call_args_list == [call(
         'path/to/foo.png',
         {'url': 'http://baz.png', 'more': 'other info'},
     )]
@@ -210,12 +210,12 @@ async def test_upload_ignores_cache():
 
 @pytest.mark.asyncio
 async def test_upload_is_missing_url():
-    uploader = make_TestImageHost(mock_cache=True)
-    uploader._get_info_from_cache_mock.return_value = None
-    uploader._upload_mock.return_value = {
+    imghost = make_TestImageHost(mock_cache=True)
+    imghost._get_info_from_cache_mock.return_value = None
+    imghost._upload_mock.return_value = {
         'foo': 'http://foo.bar',
         'more': 'info',
     }
-    info_str = repr(uploader._upload_mock.return_value)
+    info_str = repr(imghost._upload_mock.return_value)
     with pytest.raises(Exception, match=rf'^Missing "url" key in {re.escape(info_str)}$'):
-        await uploader.upload('path/to/foo.png')
+        await imghost.upload('path/to/foo.png')

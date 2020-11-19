@@ -20,15 +20,11 @@ class AsyncMock(Mock):
 
 
 @pytest.fixture
-async def job(tmp_path, mocker):
-    MockImageHost = Mock(upload=AsyncMock())
-    MockSubmodule = Mock(ImageHost=Mock(return_value=MockImageHost))
-    MockModule = Mock(imgfoo=MockSubmodule)
-    mocker.patch('upsies.jobs.imghost.imghost', MockModule)
+async def job(tmp_path, mocker, imghost):
     job = ImageHostJob(
         homedir=tmp_path,
         ignore_cache=False,
-        imghost_name='imgfoo',
+        imghost=imghost,
         images_total=3,
     )
     assert job.images_total == 3
@@ -37,54 +33,45 @@ async def job(tmp_path, mocker):
     await job.wait()
 
 
+@pytest.fixture
+def imghost():
+    return Mock(upload=AsyncMock())
+
+
 def test_cache_file_is_None(job):
     assert job.cache_file is None
 
 
 @pytest.mark.asyncio
-async def test_initialize_is_called_with_path_and_images_total(tmp_path, mocker):
-    mocker.patch('upsies.jobs.imghost.imghost', Mock())
+async def test_initialize_is_called_with_path_and_images_total(tmp_path, mocker, imghost):
     mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
     with pytest.raises(RuntimeError, match=r'^You must not specify both "image_paths" and "images_total"\.$'):
         ImageHostJob(
             homedir=tmp_path,
             ignore_cache=False,
-            imghost_name='imgfoo',
+            imghost=imghost,
             images_total=3,
             image_paths=('foo.jpg',),
         )
 
 @pytest.mark.asyncio
-async def test_initialize_is_called_without_path_and_images_total(tmp_path, mocker):
-    mocker.patch('upsies.jobs.imghost.imghost', Mock())
+async def test_initialize_is_called_without_path_and_images_total(tmp_path, mocker, imghost):
     mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
     job = ImageHostJob(
         homedir=tmp_path,
         ignore_cache=False,
-        imghost_name='imgfoo',
+        imghost=imghost,
     )
     assert job._images_total == 0
 
 @pytest.mark.asyncio
-async def test_initialize_is_called_with_unknown_image_host(tmp_path, mocker):
-    mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
-    with pytest.raises(ValueError, match=r'^Unknown image hosting service: imgfoo$'):
-        ImageHostJob(
-            homedir=tmp_path,
-            ignore_cache=False,
-            imghost_name='imgfoo',
-            images_total=3,
-        )
-
-@pytest.mark.asyncio
-async def test_initialize_fills_upload_queue_with_image_paths(tmp_path, mocker):
-    mocker.patch('upsies.jobs.imghost.imghost', Mock())
+async def test_initialize_fills_upload_queue_with_image_paths(tmp_path, mocker, imghost):
     mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
     image_paths = ['foo.jpg', 'bar.jpg', 'baz.jpg']
     job = ImageHostJob(
         homedir=tmp_path,
         ignore_cache=False,
-        imghost_name='imgfoo',
+        imghost=imghost,
         image_paths=image_paths,
     )
     queued_paths = [job._image_path_queue.get_nowait() for _ in range(3)]
@@ -92,26 +79,26 @@ async def test_initialize_fills_upload_queue_with_image_paths(tmp_path, mocker):
     await job.wait()
 
 @pytest.mark.asyncio
-async def test_initialize_calls_upload_images(tmp_path, mocker):
-    mocker.patch('upsies.jobs.imghost.imghost', Mock())
-    mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images',
-                 Mock(side_effect=RuntimeError('greetings from upload_images')))
+async def test_initialize_calls_upload_images(tmp_path, mocker, imghost):
+    mocker.patch(
+        'upsies.jobs.imghost.ImageHostJob._upload_images',
+        Mock(side_effect=RuntimeError('greetings from upload_images')),
+    )
     with pytest.raises(RuntimeError, match=r'^greetings from upload_images'):
         ImageHostJob(
             homedir=tmp_path,
             ignore_cache=False,
-            imghost_name='imgfoo',
+            imghost=Mock(),
             images_total=3,
         )
 
 @pytest.mark.asyncio
-async def test_job_is_finished_when_upload_images_task_terminates(tmp_path, mocker):
-    mocker.patch('upsies.jobs.imghost.imghost', Mock())
+async def test_job_is_finished_when_upload_images_task_terminates(tmp_path, mocker, imghost):
     mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
     job = ImageHostJob(
         homedir=tmp_path,
         ignore_cache=False,
-        imghost_name='imgfoo',
+        imghost=Mock(),
         images_total=3,
     )
     assert not job._upload_images_task.done()

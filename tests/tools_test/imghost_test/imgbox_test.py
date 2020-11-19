@@ -40,7 +40,7 @@ def test_thumb_width_argument_given(Gallery_mock, tmp_path):
 @pytest.mark.asyncio
 async def test_upload_handles_success(tmp_path, mocker):
     upload_mock = mocker.patch('pyimgbox.Gallery.upload', AsyncMock())
-    uploader = imgbox.ImageHost(thumb_width=200, cache_dir=tmp_path)
+    imghost = imgbox.ImageHost(thumb_width=200, cache_dir=tmp_path)
     upload_mock.return_value = Mock(
         success=True,
         image_url='http://foo.url',
@@ -48,7 +48,7 @@ async def test_upload_handles_success(tmp_path, mocker):
         edit_url='http://foo.edit.url',
     )
     assert upload_mock.call_args_list == []
-    info = await uploader._upload('foo.png')
+    info = await imghost._upload('foo.png')
     assert upload_mock.call_args_list == [call('foo.png')]
     assert info == {
         'url': 'http://foo.url',
@@ -59,10 +59,10 @@ async def test_upload_handles_success(tmp_path, mocker):
 @pytest.mark.asyncio
 async def test_upload_handles_error(tmp_path, mocker):
     upload_mock = mocker.patch('pyimgbox.Gallery.upload', AsyncMock())
-    uploader = imgbox.ImageHost(thumb_width=200, cache_dir=tmp_path)
+    imghost = imgbox.ImageHost(thumb_width=200, cache_dir=tmp_path)
     upload_mock.return_value = Mock(
         success=False,
         error='Something went wrong',
     )
     with pytest.raises(errors.RequestError, match=r'^Something went wrong$'):
-        await uploader._upload('foo.png')
+        await imghost._upload('foo.png')
