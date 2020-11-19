@@ -40,7 +40,6 @@ class SubmitJob(JobBase):
             if not self.is_finished:
                 _log.debug('Waiting for jobs before upload: %r', self._tracker.jobs_before_upload)
                 await asyncio.gather(*(job.wait() for job in self._tracker.jobs_before_upload))
-
                 names = [job.name for job in self._tracker.jobs_before_upload]
                 outputs = [job.output for job in self._tracker.jobs_before_upload]
                 metadata = dict(zip(names, outputs))
