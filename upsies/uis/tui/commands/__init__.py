@@ -281,29 +281,30 @@ class submit(CommandBase):
         )
 
     @cache.property
+    def tracker_name(self):
+        """Lower-case abbreviation of tracker name"""
+        return self.args.TRACKER.lower()
+
+    @cache.property
+    def tracker_config(self):
+        """Dictionary of :attr:`tracker_name` section in trackers configuration file"""
+        return self.config['trackers'][self.tracker_name]
+
+    @cache.property
     def tracker(self):
         """:class:`Tracker` instance from one of the submodules of :mod:`~trackers`"""
-        tracker_name = self.args.TRACKER.lower()
-        try:
-            trackers_module = getattr(trackers, tracker_name)
-        except AttributeError:
-            raise ValueError(f'Unknown tracker: {self.args.TRACKER}')
-
-        try:
-            tracker_config = self.config['trackers'][tracker_name]
-        except AttributeError:
-            raise ValueError(f'Unknown tracker: {self.args.TRACKER}')
-        else:
-            tracker_cls = getattr(trackers_module, 'Tracker')
-            return tracker_cls(
-                config=tracker_config,
-                homedir=fs.projectdir(self.args.CONTENT),
-                ignore_cache=self.args.ignore_cache,
-                content_path=self.args.CONTENT,
-                tracker_name=tracker_name,
-                add_to_client=self._get_btclient(),
-                torrent_destination=self.args.copy_to,
-            )
+        trackers_module = getattr(trackers, self.tracker_name)
+        tracker_cls = getattr(trackers_module, 'Tracker')
+        return tracker_cls(
+            config=self.tracker_config,
+            homedir=fs.projectdir(self.args.CONTENT),
+            ignore_cache=self.args.ignore_cache,
+            content_path=self.args.CONTENT,
+            tracker_name=self.tracker_name,
+            add_to_client=self._get_btclient(),
+            torrent_destination=self.args.copy_to,
+            image_host=self._get_imghost(),
+        )
 
     def _get_btclient(self):
         btclient_name = getattr(self.args, 'add_to', None)
@@ -312,4 +313,11 @@ class submit(CommandBase):
                 name=btclient_name,
                 **self.config['clients'][btclient_name],
             )
+
+    def _get_imghost(self):
+        imghost_name = self.tracker_config.get('image_host', None)
+        if imghost_name:
+            return imghost.imghost(
+                name=imghost_name,
+                **self.config['imghosts'][imghost_name],
             )
