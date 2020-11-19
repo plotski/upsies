@@ -21,8 +21,8 @@ class AsyncMock(Mock):
 
 @pytest.fixture
 async def job(tmp_path, mocker):
-    MockUploader = Mock(upload=AsyncMock())
-    MockSubmodule = Mock(Uploader=Mock(return_value=MockUploader))
+    MockImageHost = Mock(upload=AsyncMock())
+    MockSubmodule = Mock(ImageHost=Mock(return_value=MockImageHost))
     MockModule = Mock(imgfoo=MockSubmodule)
     mocker.patch('upsies.jobs.imghost.imghost', MockModule)
     job = ImageHostJob(

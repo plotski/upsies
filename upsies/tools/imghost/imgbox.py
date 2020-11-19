@@ -1,6 +1,6 @@
 from ... import errors
 from ...utils import LazyModule
-from . import UploaderBase
+from . import ImageHostBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -8,7 +8,7 @@ _log = logging.getLogger(__name__)
 pyimgbox = LazyModule(module='pyimgbox', namespace=globals())
 
 
-class Uploader(UploaderBase):
+class ImageHost(ImageHostBase):
     """
     Upload images to a gallery on imgbox.com
 

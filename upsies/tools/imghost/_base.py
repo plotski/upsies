@@ -9,7 +9,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class UploaderBase(abc.ABC):
+class ImageHostBase(abc.ABC):
     """
     Base class for uploading images to image hosting services
 

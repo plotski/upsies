@@ -1,10 +1,10 @@
 import asyncio
 import os
 
-from . import UploaderBase
+from . import ImageHostBase
 
 
-class Uploader(UploaderBase):
+class ImageHost(ImageHostBase):
     """Dummy service for testing and debugging"""
 
     name = 'dummy'

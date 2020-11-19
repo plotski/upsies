@@ -4,7 +4,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-from upsies.tools.imghost import UploaderBase, UploadedImage, uploader
+from upsies.tools.imghost import ImageHostBase, UploadedImage, imghost
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -17,29 +17,29 @@ class AsyncMock(Mock):
 
 
 @patch('upsies.tools.imghost.foo', create=True)
-def test_uploader_returns_Uploader_instance(foo_client):
-    u = uploader('foo', bar='baz')
-    assert u is foo_client.Uploader.return_value
-    assert foo_client.Uploader.call_args_list == [call(bar='baz')]
+def test_imghost_returns_ImageHost_instance(foo_module):
+    u = imghost('foo', bar='baz')
+    assert u is foo_module.ImageHost.return_value
+    assert foo_module.ImageHost.call_args_list == [call(bar='baz')]
 
 def test_uploader_fails_to_find_module_by_name():
     with pytest.raises(ValueError, match='^Unsupported image host: foo$'):
-        uploader('foo', bar='baz')
+        imghost('foo', bar='baz')
 
 
-@pytest.mark.parametrize('method', UploaderBase.__abstractmethods__)
+@pytest.mark.parametrize('method', ImageHostBase.__abstractmethods__)
 def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in UploaderBase.__abstractmethods__}
+    attrs = {name:lambda self: None for name in ImageHostBase.__abstractmethods__}
     del attrs[method]
-    cls = type('TestUploader', (UploaderBase,), attrs)
+    cls = type('TestImageHost', (ImageHostBase,), attrs)
     # Python 3.9 changed "methods" to "method"
-    exp_msg = rf"^Can't instantiate abstract class TestUploader with abstract methods? {method}$"
+    exp_msg = rf"^Can't instantiate abstract class TestImageHost with abstract methods? {method}$"
     with pytest.raises(TypeError, match=exp_msg):
         cls()
 
 
-def make_TestUploader(**kwargs):
-    class TestUploader(UploaderBase):
+def make_TestImageHost(**kwargs):
+    class TestImageHost(ImageHostBase):
         name = 'imgw00t'
 
         def __init__(self, *args, mock_cache=False, **kwargs):
@@ -64,22 +64,22 @@ def make_TestUploader(**kwargs):
             else:
                 return super()._store_info_to_cache(image_path, info)
 
-    return TestUploader(**kwargs)
+    return TestImageHost(**kwargs)
 
 
 @patch('upsies.utils.fs.tmpdir')
 def test_cache_file_without_given_cache_dir(tmpdir_mock):
     tmpdir_mock.return_value = '/tmp/path'
-    uploader = make_TestUploader()
+    uploader = make_TestImageHost()
     assert uploader._cache_file('foo.png') == f'/tmp/path/foo.png.{uploader.name}.json'
 
 def test_cache_file_with_given_cache_dir():
-    uploader = make_TestUploader(cache_dir='some/path')
+    uploader = make_TestImageHost(cache_dir='some/path')
     assert uploader._cache_file('foo.png') == f'some/path/foo.png.{uploader.name}.json'
 
 
 def test_store_info_to_cache_succeeds(tmp_path):
-    uploader = make_TestUploader(cache_dir=tmp_path)
+    uploader = make_TestImageHost(cache_dir=tmp_path)
     uploader._store_info_to_cache(
         image_path=os.path.join(tmp_path, 'foo.png'),
         info={'this': 'and that'},
@@ -91,7 +91,7 @@ def test_store_info_to_cache_succeeds(tmp_path):
                              '}\n')
 
 def test_store_info_to_cache_fails_to_write(tmp_path):
-    uploader = make_TestUploader(cache_dir=tmp_path)
+    uploader = make_TestImageHost(cache_dir=tmp_path)
     cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
     os.chmod(tmp_path, 0o000)
     try:
@@ -105,7 +105,7 @@ def test_store_info_to_cache_fails_to_write(tmp_path):
         assert not os.path.exists(cache_file)
 
 def test_store_info_to_cache_fails_to_encode_json(tmp_path):
-    uploader = make_TestUploader(cache_dir=tmp_path)
+    uploader = make_TestImageHost(cache_dir=tmp_path)
     cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
     with pytest.raises(RuntimeError, match=(rf'^Unable to write cache {cache_file}: '
                                             r"Object of type '?function'? is not JSON serializable$")):
@@ -117,7 +117,7 @@ def test_store_info_to_cache_fails_to_encode_json(tmp_path):
 
 
 def test_get_info_from_cache_succeeds(tmp_path):
-    uploader = make_TestUploader(cache_dir=tmp_path)
+    uploader = make_TestImageHost(cache_dir=tmp_path)
     cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
     with open(cache_file, 'w') as f:
         f.write('{\n'
@@ -128,7 +128,7 @@ def test_get_info_from_cache_succeeds(tmp_path):
     assert os.path.exists(cache_file)
 
 def test_get_info_from_cache_fails_to_read(tmp_path):
-    uploader = make_TestUploader(cache_dir=tmp_path)
+    uploader = make_TestImageHost(cache_dir=tmp_path)
     cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
     with open(cache_file, 'w') as f:
         f.write('{\n'
@@ -142,7 +142,7 @@ def test_get_info_from_cache_fails_to_read(tmp_path):
     assert info is None
 
 def test_get_info_from_cache_fails_to_decode_json(tmp_path):
-    uploader = make_TestUploader(cache_dir=tmp_path)
+    uploader = make_TestImageHost(cache_dir=tmp_path)
     cache_file = uploader._cache_file(os.path.join(tmp_path, 'foo.png'))
     with open(cache_file, 'w') as f:
         f.write('{\n'
@@ -154,7 +154,7 @@ def test_get_info_from_cache_fails_to_decode_json(tmp_path):
 
 @pytest.mark.asyncio
 async def test_upload_gets_info_from_upload():
-    uploader = make_TestUploader(mock_cache=True)
+    uploader = make_TestImageHost(mock_cache=True)
     uploader._get_info_from_cache_mock.return_value = None
     uploader._upload_mock.return_value = {
         'url': 'http://foo.bar',
@@ -173,7 +173,7 @@ async def test_upload_gets_info_from_upload():
 
 @pytest.mark.asyncio
 async def test_upload_gets_info_from_cache():
-    uploader = make_TestUploader(mock_cache=True)
+    uploader = make_TestImageHost(mock_cache=True)
     uploader._get_info_from_cache_mock.return_value = {
         'url': 'http://foo.bar',
         'more': 'info',
@@ -188,7 +188,7 @@ async def test_upload_gets_info_from_cache():
 
 @pytest.mark.asyncio
 async def test_upload_ignores_cache():
-    uploader = make_TestUploader(mock_cache=True)
+    uploader = make_TestImageHost(mock_cache=True)
     uploader._get_info_from_cache_mock.return_value = {
         'url': 'http://foo.bar',
         'more': 'info',
@@ -210,7 +210,7 @@ async def test_upload_ignores_cache():
 
 @pytest.mark.asyncio
 async def test_upload_is_missing_url():
-    uploader = make_TestUploader(mock_cache=True)
+    uploader = make_TestImageHost(mock_cache=True)
     uploader._get_info_from_cache_mock.return_value = None
     uploader._upload_mock.return_value = {
         'foo': 'http://foo.bar',

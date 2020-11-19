@@ -3,27 +3,27 @@ Common API for image hosting services
 """
 
 # isort:skip_file
-from ._base import UploaderBase
+from ._base import ImageHostBase
 from ._common import UploadedImage
 from . import dummy, imgbox
 
 
-def uploader(name, **kwargs):
+def imghost(name, **kwargs):
     """
-    Create Uploader instance
+    Create ImageHost instance
 
     :param str name: Name of a public module in this package
     :param kwargs: All keyword arguments are passed to the module's
-        :class:`Uploader` class
+        :class:`ImageHost` class
 
     :raise ValueError: if `name` does not correspond to an existing module in
         this package
 
-    :return: :class:`Uploader` instance
+    :return: :class:`ImageHost` instance
     """
     try:
         module = globals()[name]
     except KeyError:
         raise ValueError(f'Unsupported image host: {name}')
     else:
-        return module.Uploader(**kwargs)
+        return module.ImageHost(**kwargs)

@@ -20,16 +20,16 @@ class AsyncMock(Mock):
 
 @patch('pyimgbox.Gallery')
 def test_thumb_width_argument_not_given(Gallery_mock, tmp_path):
-    imgbox.Uploader(cache_dir=tmp_path)
+    imgbox.ImageHost(cache_dir=tmp_path)
     assert Gallery_mock.call_args_list == [call(
-        thumb_width=imgbox.Uploader.DEFAULT_THUMBNAIL_WIDTH,
+        thumb_width=imgbox.ImageHost.DEFAULT_THUMBNAIL_WIDTH,
         square_thumbs=False,
         comments_enabled=False,
     )]
 
 @patch('pyimgbox.Gallery')
 def test_thumb_width_argument_given(Gallery_mock, tmp_path):
-    imgbox.Uploader(thumb_width=200, cache_dir=tmp_path)
+    imgbox.ImageHost(thumb_width=200, cache_dir=tmp_path)
     assert Gallery_mock.call_args_list == [call(
         thumb_width=200,
         square_thumbs=False,
@@ -40,7 +40,7 @@ def test_thumb_width_argument_given(Gallery_mock, tmp_path):
 @pytest.mark.asyncio
 async def test_upload_handles_success(tmp_path, mocker):
     upload_mock = mocker.patch('pyimgbox.Gallery.upload', AsyncMock())
-    uploader = imgbox.Uploader(thumb_width=200, cache_dir=tmp_path)
+    uploader = imgbox.ImageHost(thumb_width=200, cache_dir=tmp_path)
     upload_mock.return_value = Mock(
         success=True,
         image_url='http://foo.url',
@@ -59,7 +59,7 @@ async def test_upload_handles_success(tmp_path, mocker):
 @pytest.mark.asyncio
 async def test_upload_handles_error(tmp_path, mocker):
     upload_mock = mocker.patch('pyimgbox.Gallery.upload', AsyncMock())
-    uploader = imgbox.Uploader(thumb_width=200, cache_dir=tmp_path)
+    uploader = imgbox.ImageHost(thumb_width=200, cache_dir=tmp_path)
     upload_mock.return_value = Mock(
         success=False,
         error='Something went wrong',
