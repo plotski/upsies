@@ -4,8 +4,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-from upsies.tools.imghost._base import UploaderBase
-from upsies.tools.imghost._common import UploadedImage
+from upsies.tools.imghost import UploaderBase, UploadedImage, uploader
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -15,6 +14,17 @@ class AsyncMock(Mock):
         async def coro(_sup=super()):
             return _sup.__call__(*args, **kwargs)
         return coro()
+
+
+@patch('upsies.tools.imghost.foo', create=True)
+def test_uploader_returns_Uploader_instance(foo_client):
+    u = uploader('foo', bar='baz')
+    assert u is foo_client.Uploader.return_value
+    assert foo_client.Uploader.call_args_list == [call(bar='baz')]
+
+def test_uploader_fails_to_find_module_by_name():
+    with pytest.raises(ValueError, match='^Unsupported image host: foo$'):
+        uploader('foo', bar='baz')
 
 
 @pytest.mark.parametrize('method', UploaderBase.__abstractmethods__)
