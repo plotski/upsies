@@ -295,7 +295,7 @@ class submit(CommandBase):
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.CONTENT,
                 tracker_name=tracker_name,
-                btclient=self._get_btclient(),
+                add_to_client=self._get_btclient(),
                 torrent_destination=self.args.copy_to,
             )
 

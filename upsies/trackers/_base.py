@@ -64,11 +64,11 @@ class TrackerBase(abc.ABC):
 
     @cache.property
     def add_torrent_job(self):
-        if self.info.btclient:
+        if self.info.add_to_client:
             add_torrent_job = _jobs.torrent.AddTorrentJob(
                 homedir=self.info.homedir,
                 ignore_cache=self.info.ignore_cache,
-                client=self.info.btclient,
+                client=self.info.add_to_client,
                 download_path=fs.dirname(self.info.content_path),
             )
             pipe.Pipe(
