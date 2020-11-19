@@ -7,10 +7,10 @@ from upsies.tools.btclient import ClientApiBase, client
 
 
 @patch('upsies.tools.btclient.foo', create=True)
-def test_client_returns_ClientApi_instance(foo_client):
+def test_client_returns_ClientApi_instance(foo_module):
     c = client('foo', bar='baz')
-    assert c is foo_client.ClientApi.return_value
-    assert foo_client.ClientApi.call_args_list == [call(bar='baz')]
+    assert c is foo_module.ClientApi.return_value
+    assert foo_module.ClientApi.call_args_list == [call(bar='baz')]
 
 def test_client_fails_to_find_module():
     with pytest.raises(ValueError, match='^Unsupported client: foo$'):
