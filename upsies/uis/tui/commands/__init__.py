@@ -290,7 +290,7 @@ class submit(CommandBase):
         else:
             tracker_cls = getattr(trackers_module, 'Tracker')
             return tracker_cls(
-                tracker_config=tracker_config,
+                config=tracker_config,
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.CONTENT,

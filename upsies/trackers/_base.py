@@ -12,15 +12,15 @@ class TrackerBase(abc.ABC):
     """
     Base class for tracker-specific operations, e.g. uploading
 
-    :param tracker_config: Contents of the relevant section in the trackers
-        configuration file as a dictionary
+    :param config: Dictionary of the relevant tracker's section in the trackers
+        configuration file
     :param info: Any additional keyword arguments are provided as attributes of
         the :attr:`info` property. These can be used to instantiate the jobs
         that generate the metadata for submission.
     """
 
-    def __init__(self, tracker_config, **info):
-        self._tracker_config = tracker_config
+    def __init__(self, config, **info):
+        self._config = config
         self._info = types.SimpleNamespace(**info)
 
     @property
@@ -30,9 +30,9 @@ class TrackerBase(abc.ABC):
         pass
 
     @property
-    def tracker_config(self):
+    def config(self):
         """Configuration file section for this tracker as a dictionary"""
-        return self._tracker_config
+        return self._config
 
     @property
     def info(self):
@@ -59,7 +59,7 @@ class TrackerBase(abc.ABC):
             ignore_cache=self.info.ignore_cache,
             content_path=self.info.content_path,
             tracker_name=self.info.tracker_name,
-            tracker_config=self._tracker_config,
+            tracker_config=self.config,
         )
 
     @cache.property
@@ -165,7 +165,7 @@ class TrackerBase(abc.ABC):
         """
         Start user session
 
-        Authentication credentials should be taken from :attr:`tracker_config`.
+        Authentication credentials should be taken from :attr:`config`.
         """
         pass
 

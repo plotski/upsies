@@ -46,17 +46,17 @@ class Tracker(TrackerBase):
 
     async def login(self):
         if not self.logged_in:
-            _log.debug('%s: Logging in as %r', self.name, self.tracker_config['username'])
+            _log.debug('%s: Logging in as %r', self.name, self.config['username'])
             login_url = urllib.parse.urljoin(
-                self.tracker_config['base_url'],
+                self.config['base_url'],
                 self._url_path['login'],
             )
             response = await http.post(
                 url=login_url,
                 user_agent=True,
                 data={
-                    'username': self.tracker_config['username'],
-                    'password': self.tracker_config['password'],
+                    'username': self.config['username'],
+                    'password': self.config['password'],
                     'twofa': '',
                     'login': 'Login',
                 },
@@ -98,9 +98,9 @@ class Tracker(TrackerBase):
         if not logout_url or not logout_url.get('href'):
             raise RuntimeError('Failed to find logout URL')
         else:
-            _log.debug('%s: Logged in as %r', self.name, self.tracker_config['username'])
+            _log.debug('%s: Logged in as %r', self.name, self.config['username'])
             self._logout_url = urllib.parse.urljoin(
-                self.tracker_config['base_url'],
+                self.config['base_url'],
                 logout_url['href'],
             )
             _log.debug('%s: Logout URL: %s', self.name, self._logout_url)
@@ -134,7 +134,7 @@ class Tracker(TrackerBase):
         _log.debug('%s: Category: %r', self.name, category)
 
         upload_url = urllib.parse.urljoin(
-            self.tracker_config['base_url'],
+            self.config['base_url'],
             self._url_path['upload'],
         )
         response = await http.post(
@@ -162,7 +162,7 @@ class Tracker(TrackerBase):
 
         # Upload response should redirect to torrent page via "Location" header
         torrent_page_url = urllib.parse.urljoin(
-            self.tracker_config['base_url'],
+            self.config['base_url'],
             response.headers.get('Location', ''),
         )
         if urllib.parse.urlparse(torrent_page_url).path == self._url_path['torrent']:

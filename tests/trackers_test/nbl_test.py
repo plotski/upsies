@@ -43,7 +43,7 @@ class RequestHandler:
 
 def make_tracker(tmp_path, **kwargs):
     kw = {
-        'tracker_config': {
+        'config': {
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://nbl.local',
@@ -318,7 +318,7 @@ async def test_upload_succeeds(tmp_path, mocker, httpserver):
     torrent_file.write_bytes(b'mocked torrent metainfo')
     tracker = make_tracker(
         tmp_path,
-        tracker_config={
+        config={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': httpserver.url_for(''),
@@ -382,7 +382,7 @@ async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
     torrent_file.write_bytes(b'mocked torrent metainfo')
     tracker = make_tracker(
         tmp_path,
-        tracker_config={
+        config={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': httpserver.url_for(''),
@@ -420,7 +420,7 @@ async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
     torrent_file.write_bytes(b'mocked torrent metainfo')
     tracker = make_tracker(
         tmp_path,
-        tracker_config={
+        config={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': httpserver.url_for(''),

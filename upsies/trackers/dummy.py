@@ -38,7 +38,7 @@ class Tracker(TrackerBase):
         )
 
     async def login(self):
-        _log.debug('Logging in with %r', self.tracker_config)
+        _log.debug('Logging in with %r', self.config)
         await asyncio.sleep(1)
 
     async def logout(self):
