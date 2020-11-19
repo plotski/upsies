@@ -1,6 +1,7 @@
 import asyncio
 import multiprocessing
 import os
+import time
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -27,15 +28,27 @@ class Callable:
         return callable(other)
 
 
+@pytest.fixture
+def queues():
+    queues = Mock(
+        output=multiprocessing.Queue(),
+        input=multiprocessing.Queue(),
+    )
+    yield queues
+    # Prevent BrokenPipeError tracebacks on stderr
+    # https://bugs.python.org/issue35844
+    time.sleep(0.1)
+    queues.output.cancel_join_thread()
+    queues.input.cancel_join_thread()
+
+
 @patch('upsies.tools.torrent.create')
-def test_torrent_process_creates_torrent(create_mock):
-    output_queue = multiprocessing.Queue()
-    input_queue = multiprocessing.Queue()
+def test_torrent_process_creates_torrent(create_mock, queues):
     create_mock.return_value = 'path/to/foo.mkv.torrent'
-    _torrent_process(output_queue, input_queue, some='argument', another='one')
-    assert output_queue.get() == (MsgType.result, 'path/to/foo.mkv.torrent')
-    assert output_queue.empty()
-    assert input_queue.empty()
+    _torrent_process(queues.output, queues.input, some='argument', another='one')
+    assert queues.output.get() == (MsgType.result, 'path/to/foo.mkv.torrent')
+    assert queues.output.empty()
+    assert queues.input.empty()
     assert create_mock.call_args_list == [call(
         init_callback=Callable(),
         progress_callback=Callable(),
@@ -44,14 +57,50 @@ def test_torrent_process_creates_torrent(create_mock):
     )]
 
 @patch('upsies.tools.torrent.create')
-def test_torrent_process_catches_TorrentError(create_mock):
-    output_queue = multiprocessing.Queue()
-    input_queue = multiprocessing.Queue()
+def test_torrent_process_catches_TorrentError(create_mock, queues):
     create_mock.side_effect = errors.TorrentError('Argh')
-    _torrent_process(output_queue, input_queue, some='argument')
-    assert output_queue.get() == (MsgType.error, 'Argh')
-    assert output_queue.empty()
-    assert input_queue.empty()
+    _torrent_process(queues.output, queues.input, some='argument')
+    assert queues.output.get() == (MsgType.error, 'Argh')
+    assert queues.output.empty()
+    assert queues.input.empty()
+
+def test_torrent_process_initializes_with_file_tree(mocker, queues):
+    def create_mock(init_callback, **kwargs):
+        init_callback('this is not a file tree')
+
+    mocker.patch('upsies.tools.torrent.create', create_mock)
+    _torrent_process(queues.output, queues.input, some='argument')
+    assert queues.output.get() == (MsgType.init, 'this is not a file tree')
+
+def test_torrent_process_sends_progress(mocker, queues):
+    def create_mock(progress_callback, **kwargs):
+        for progress in (10, 50, 100):
+            progress_callback(progress)
+
+    mocker.patch('upsies.tools.torrent.create', create_mock)
+    _torrent_process(queues.output, queues.input, some='argument')
+    assert queues.output.get() == (MsgType.info, 10)
+    assert queues.output.get() == (MsgType.info, 50)
+    assert queues.output.get() == (MsgType.info, 100)
+
+def test_torrent_process_cancels_when_terminator_is_in_input_queue(mocker, queues):
+    # sleep() and avoid joining any queue threads to avoid BrokenPipeError
+    def create_mock(progress_callback, **kwargs):
+        for i in range(1, 10):
+            if i >= 5:
+                queues.input.put((MsgType.terminate, None))
+            if progress_callback(i):
+                break
+            time.sleep(0.1)
+        return 'mocked result'
+
+    mocker.patch('upsies.tools.torrent.create', create_mock)
+    _torrent_process(queues.output, queues.input, some='argument')
+    info = []
+    while not queues.output.empty():
+        info.append(queues.output.get(timeout=0.5))
+    assert (MsgType.info, 5) in info
+    assert (MsgType.info, 9) not in info
 
 
 @patch('upsies.jobs.torrent._torrent_process')
