@@ -140,17 +140,18 @@ class TrackerBase(abc.ABC):
 
     @cache.property
     def upload_screenshots_job(self):
-        imghost_job = _jobs.imghost.ImageHostJob(
-            homedir=self.info.homedir,
-            ignore_cache=self.info.ignore_cache,
-            imghost_name='dummy',
-            images_total=self.screenshots_job.screenshots_total,
-        )
-        pipe.Pipe(
-            sender=self.screenshots_job,
-            receiver=imghost_job,
-        )
-        return imghost_job
+        if self.info.image_host:
+            imghost_job = _jobs.imghost.ImageHostJob(
+                homedir=self.info.homedir,
+                ignore_cache=self.info.ignore_cache,
+                imghost=self.info.image_host,
+                images_total=self.screenshots_job.screenshots_total,
+            )
+            pipe.Pipe(
+                sender=self.screenshots_job,
+                receiver=imghost_job,
+            )
+            return imghost_job
 
     @cache.property
     def mediainfo_job(self):
