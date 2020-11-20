@@ -10,6 +10,6 @@ class ImageHost(ImageHostBase):
     name = 'dummy'
 
     async def _upload(self, image_path):
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1)
         url = f'http://localhost/{os.path.basename(image_path)}'
         return {'url': url}
