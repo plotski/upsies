@@ -13,6 +13,23 @@ _log = logging.getLogger(__name__)
 
 
 class CreateTorrentJob(JobBase):
+    """
+    Create torrent file
+
+    :param content_path: Path to torrent content
+    :param str tracker_name: Tracker name abbreviation
+    :param tracker_config: Tracker configuration as a dictionary (should be the
+        relevant section of the trackers configuration file)
+
+    This job adds the following signals to the :attr:`~JobBase.signal`
+    attribute:
+
+        `progress_update`
+            Emitted in roughly equal intervals to provide creation progress.
+            Registered callbacks get a `float` between 0.0 and 100.0 as a
+            positional argument.
+    """
+
     name = 'create-torrent'
     label = 'Create Torrent'
 
