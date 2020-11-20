@@ -18,6 +18,26 @@ class SearchDbJob(JobBase):
     :param str content_path: Path or name of the release
 
     :raise ValueError: if `db` is unknown
+
+    This job adds the following signals to the :attr:`~JobBase.signal`
+    attribute:
+
+        `search_results`
+            Emitted after new search results are available. Registered callbacks
+            get a sequence of :class:`tools.dbs.SearchResult` instances as a
+            positional argument.
+
+        `searching_status`
+            Emitted when a new search is started and when new results are
+            available. Registered callbacks get `True` for "search started" or
+            `False` for "search ended" as a positional argument.
+
+        `info_updated`
+            Emitted when additional information that is not available in the
+            search results is available. Registered callbacks are called for
+            each piece of information and get `key` and `value` as positional
+            arguments. `key` is an attribute of a :class:`SearchResult` object
+            that returns a coroutine function.
     """
 
     @property
