@@ -178,7 +178,7 @@ def test_search_updates_query_property(job):
 
 def test_searching_status(job):
     cb = Mock()
-    job.on_searching_status(cb)
+    job.signal.register('searching_status', cb)
     assert job.is_searching is False
     job.handle_searching_status(True)
     assert job.is_searching is True
@@ -191,7 +191,7 @@ def test_searching_status(job):
 def test_search_results(job):
     results = ('foo', 'bar', 'baz')
     cb = Mock()
-    job.on_search_results(cb)
+    job.signal.register('search_results', cb)
     job.handle_search_results(results)
     assert job._info_updater.set_result.call_args_list == [call(results[0])]
     assert cb.call_args_list == [call(results)]
@@ -199,7 +199,7 @@ def test_search_results(job):
 def test_no_search_results(job):
     results = ()
     cb = Mock()
-    job.on_search_results(cb)
+    job.signal.register('search_results', cb)
     job.handle_search_results(results)
     assert job._info_updater.set_result.call_args_list == [call(None)]
     assert cb.call_args_list == [call(results)]
@@ -207,7 +207,7 @@ def test_no_search_results(job):
 
 def test_update_info(job):
     cb = Mock()
-    job.on_info_updated(cb)
+    job.signal.register('info_updated', cb)
     job.update_info('The Key', 'The Info')
     assert cb.call_args_list == [call('The Key', 'The Info')]
 

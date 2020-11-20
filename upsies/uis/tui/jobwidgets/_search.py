@@ -53,9 +53,9 @@ class SearchDbJobWidget(JobWidgetBase):
             ),
         }
 
-        self.job.on_search_results(self.handle_search_results)
-        self.job.on_searching_status(self.handle_searching_status)
-        self.job.on_info_updated(self.handle_info_updated)
+        self.job.signal.register('search_results', self.handle_search_results)
+        self.job.signal.register('searching_status', self.handle_searching_status)
+        self.job.signal.register('info_updated', self.handle_info_updated)
 
     def handle_query(self, buffer):
         new_query = dbs.Query.from_string(self._widgets['query'].text)

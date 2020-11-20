@@ -9,8 +9,8 @@ _log = logging.getLogger(__name__)
 class ImageHostJobWidget(JobWidgetBase):
     def setup(self):
         self._upload_progress = widgets.ProgressBar()
-        self.job.on_output(self.handle_image_url)
-        self.job.on_finished(lambda _: self.invalidate())
+        self.job.signal.register('output', self.handle_image_url)
+        self.job.signal.register('finished', lambda _: self.invalidate())
 
     def handle_image_url(self, url):
         if self.job.images_total > 0:

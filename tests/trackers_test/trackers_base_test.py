@@ -203,8 +203,8 @@ def test_imdb_job(mocker):
             db='imdb',
         ),
     ]
-    assert tracker.imdb_job.on_output.call_args_list == [
-        call(tracker.release_name_job.fetch_info),
+    assert tracker.imdb_job.signal.register.call_args_list == [
+        call('output', tracker.release_name_job.fetch_info),
     ]
 
 

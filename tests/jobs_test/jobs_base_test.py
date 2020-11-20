@@ -7,6 +7,7 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 from upsies.jobs import JobBase
+from upsies.utils import signal
 
 
 class FooJob(JobBase):
@@ -68,6 +69,10 @@ def test_kwargs_property(tmp_path):
     assert FooJob(homedir=tmp_path, ignore_cache=False, bar='b').kwargs.get('foo') is None
     assert FooJob(homedir=tmp_path, ignore_cache=False, foo='a', bar='b').kwargs.get('foo') == 'a'
     assert FooJob(homedir=tmp_path, ignore_cache=False, foo='a', bar='b').kwargs.get('bar') == 'b'
+
+def test_signal_property(job):
+    assert isinstance(job.signal, signal.Signal)
+    assert set(job.signal.signals) == {'output', 'error', 'finished'}
 
 
 def test_initialize_is_called_after_object_creation(job):
@@ -166,7 +171,7 @@ def test_send_on_finished_job(job):
 
 def test_on_output_callback_is_called_when_output_is_sent(job):
     cb = Mock()
-    job.on_output(cb)
+    job.signal.register('output', cb)
     job.start()
     assert cb.call_args_list == []
     job.send('foo')
@@ -184,7 +189,7 @@ def test_on_output_callback_is_called_with_cached_output(tmp_path):
 
     job2 = FooJob(homedir=tmp_path, ignore_cache=False)
     cb = Mock()
-    job2.on_output(cb)
+    job2.signal.register('output', cb)
     job2.start()
     assert job2.is_finished
     assert cb.call_args_list == [call('foo'), call('bar')]
@@ -192,7 +197,7 @@ def test_on_output_callback_is_called_with_cached_output(tmp_path):
 
 def test_on_finished_callback_is_called_when_job_finishes(job):
     cb = Mock()
-    job.on_finished(cb)
+    job.signal.register('finished', cb)
     job.start()
     assert cb.call_args_list == []
     job.send('foo')
@@ -208,7 +213,7 @@ def test_on_finished_callback_is_called_with_cached_output(tmp_path):
 
     job2 = FooJob(homedir=tmp_path, ignore_cache=False)
     cb = Mock()
-    job2.on_finished(cb)
+    job2.signal.register('finished', cb)
     job2.start()
     assert job2.is_finished
     assert cb.call_args_list == [call(job2)]
@@ -251,7 +256,7 @@ def test_clear_errors_on_finished_job(job):
 def test_on_error_callback(job):
     assert job.errors == ()
     cb = Mock()
-    job.on_error(cb)
+    job.signal.register('error', cb)
     job.error('Owie!')
     assert cb.call_args_list == [call('Owie!')]
     job.error((1, 2, 3))

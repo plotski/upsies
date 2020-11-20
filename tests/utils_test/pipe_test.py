@@ -38,19 +38,15 @@ def test_receiver_must_be_JobBase_instance(tmp_path):
         Pipe(send, recv)
 
 
-def test_on_output_callback_is_registered(tmp_path):
+def test_callbacks_are_registered(tmp_path, mocker):
+    mocker.patch('upsies.utils.signal.Signal.register')
     send = MockJob(homedir=tmp_path, ignore_cache=False)
     recv = MockJob(homedir=tmp_path, ignore_cache=False)
-    with patch.object(send, 'on_output') as on_output_mock:
-        pipe = Pipe(send, recv)
-        assert on_output_mock.call_args_list == [call(pipe._handle_sender_output)]
-
-def test_on_finished_callback_is_registered(tmp_path):
-    send = MockJob(homedir=tmp_path, ignore_cache=False)
-    recv = MockJob(homedir=tmp_path, ignore_cache=False)
-    with patch.object(send, 'on_finished') as on_finished_mock:
-        pipe = Pipe(send, recv)
-        assert on_finished_mock.call_args_list == [call(pipe._handle_sender_finished)]
+    pipe = Pipe(send, recv)
+    assert send.signal.register.call_args_list == [
+        call('output', pipe._handle_sender_output),
+        call('finished', pipe._handle_sender_finished),
+    ]
 
 
 def test_handle_sender_output(tmp_path):

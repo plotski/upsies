@@ -210,7 +210,7 @@ def test_info(job):
 
 def test_progress_update_handling(job):
     cb = Mock()
-    job.on_progress_update(cb)
+    job.signal.register('progress_update', cb)
     job.handle_progress_update(10)
     assert cb.call_args_list == [call(10)]
     job.handle_progress_update(50)

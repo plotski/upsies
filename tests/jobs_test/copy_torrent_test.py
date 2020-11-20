@@ -86,9 +86,9 @@ def test_copy_on_finished_job(copy2_mock, make_CopyTorrentJob):
     job = make_CopyTorrentJob()
 
     cb = Mock()
-    job.on_copying(cb.copying)
+    job.signal.register('copying', cb.copying)
     copy2_mock.side_effect = cb.copy2
-    job.on_copied(cb.copied)
+    job.signal.register('copied', cb.copied)
 
     job.finish()
     with pytest.raises(RuntimeError, match=r'CopyTorrentJob is already finished'):
@@ -103,9 +103,9 @@ def test_copy_without_destination(copy2_mock, make_CopyTorrentJob):
     job = make_CopyTorrentJob()
 
     cb = Mock()
-    job.on_copying(cb.copying)
+    job.signal.register('copying', cb.copying)
     copy2_mock.side_effect = cb.copy2
-    job.on_copied(cb.copied)
+    job.signal.register('copied', cb.copied)
 
     with pytest.raises(RuntimeError, match=r'Cannot copy without destination'):
         job.copy('foo')
@@ -119,9 +119,9 @@ def test_copy_nonexisting_file(copy2_mock, make_CopyTorrentJob):
     job = make_CopyTorrentJob(destination='foo')
 
     cb = Mock()
-    job.on_copying(cb.copying)
+    job.signal.register('copying', cb.copying)
     copy2_mock.side_effect = cb.copy2
-    job.on_copied(cb.copied)
+    job.signal.register('copied', cb.copied)
 
     job.copy('bar')
     assert job.output == ()
@@ -138,9 +138,9 @@ def test_copy_too_large_file(copy2_mock, tmp_path, make_CopyTorrentJob):
     job = make_CopyTorrentJob(destination='foo')
 
     cb = Mock()
-    job.on_copying(cb.copying)
+    job.signal.register('copying', cb.copying)
     copy2_mock.side_effect = cb.copy2
-    job.on_copied(cb.copied)
+    job.signal.register('copied', cb.copied)
 
     job.copy(filepath)
     assert job.output == ()
@@ -155,10 +155,10 @@ def test_copy_with_destination_from_initialize(copy2_mock, tmp_path, make_CopyTo
     job = make_CopyTorrentJob(destination='foo')
 
     cb = Mock()
-    job.on_copying(cb.copying)
+    job.signal.register('copying', cb.copying)
     copy2_mock.side_effect = cb.copy2
     cb.copy2.return_value = 'destination/path'
-    job.on_copied(cb.copied)
+    job.signal.register('copied', cb.copied)
 
     job.copy(filepath)
     assert job.output == ('destination/path',)
@@ -177,10 +177,10 @@ def test_copy_with_destination_from_argument(copy2_mock, tmp_path, make_CopyTorr
     job = make_CopyTorrentJob()
 
     cb = Mock()
-    job.on_copying(cb.copying)
+    job.signal.register('copying', cb.copying)
     copy2_mock.side_effect = cb.copy2
     cb.copy2.return_value = 'destination/path'
-    job.on_copied(cb.copied)
+    job.signal.register('copied', cb.copied)
 
     job.copy(filepath, 'bar')
     assert job.output == ('destination/path',)
@@ -199,10 +199,10 @@ def test_copy_catches_OSError(copy2_mock, tmp_path, make_CopyTorrentJob):
     job = make_CopyTorrentJob()
 
     cb = Mock()
-    job.on_copying(cb.copying)
+    job.signal.register('copying', cb.copying)
     copy2_mock.side_effect = cb.copy2
     cb.copy2.side_effect = OSError('Do it yourself')
-    job.on_copied(cb.copied)
+    job.signal.register('copied', cb.copied)
 
     job.copy(filepath, '/root')
     assert job.output == (str(filepath),)

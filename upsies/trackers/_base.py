@@ -108,7 +108,7 @@ class TrackerBase(abc.ABC):
             db='imdb',
         )
         # Update release name with IMDb data
-        imdb_job.on_output(self.release_name_job.fetch_info)
+        imdb_job.signal.register('output', self.release_name_job.fetch_info)
         return imdb_job
 
     @cache.property

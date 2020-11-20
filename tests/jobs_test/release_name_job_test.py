@@ -51,7 +51,7 @@ def test_fetch_info(ReleaseName_mock, tmp_path):
         content_path='mock/path',
     )
     cb = Mock()
-    rnj.on_release_name_update(cb)
+    rnj.signal.register('release_name_updated', cb)
     rn_mock = ReleaseName_mock.return_value
     rn_mock.fetch_info = AsyncMock()
     rnj.fetch_info('arg1', 'arg2', kw='arg3')
@@ -70,7 +70,7 @@ def test_fetch_info_raises_exception(ReleaseName_mock, tmp_path):
         content_path='mock/path',
     )
     cb = Mock()
-    rnj.on_release_name_update(cb)
+    rnj.signal.register('release_name_updated', cb)
     rn_mock = ReleaseName_mock.return_value
     rn_mock.fetch_info = AsyncMock(side_effect=Exception('No'))
     rnj.fetch_info('arg1', 'arg2', kw='arg3')
@@ -87,6 +87,6 @@ def test_release_name_update_callback(ReleaseName_mock, tmp_path):
         content_path='mock/path',
     )
     cb = Mock()
-    rnj.on_release_name_update(cb)
+    rnj.signal.register('release_name_updated', cb)
     rnj.handle_release_name_update()
     assert cb.call_args_list == [call(rnj.release_name)]

@@ -4,7 +4,7 @@ import collections
 import json
 import os
 
-from ..utils import cache
+from ..utils import cache, signal
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -69,6 +69,27 @@ class JobBase(abc.ABC):
         """Job-specific keyword arguments as a dictionary"""
         return self._kwargs
 
+    @property
+    def signal(self):
+        """
+        :class:`~signal.Signal` instance
+
+        The following signals are added by the base class. Subclasses can add
+        their own signals.
+
+        `finished` is emitted when :meth:`finish` is called or when output is
+        read from cache. Registered callbacks get the class instance as a
+        positional argument.
+
+        `output` is emitted when :meth:`send` is called or when output is read
+        from cache. Registered callbacks get the value passed to :meth:`send` as
+        a positional argument.
+
+        `error` is emitted when :meth:`error` is called. Registered callbacks
+        get the value passed to :meth:`error` as a positional argument.
+        """
+        return self._signal
+
     def __init__(self, *, homedir, ignore_cache, hidden=False, **kwargs):
         self._homedir = str(homedir)
         self._ignore_cache = bool(ignore_cache)
@@ -77,9 +98,7 @@ class JobBase(abc.ABC):
         self._exception = None
         self._errors = []
         self._output = []
-        self._output_callbacks = []
-        self._error_callbacks = []
-        self._finished_callbacks = []
+        self._signal = signal.Signal('output', 'error', 'finished')
         self._finished_event = asyncio.Event()
         self._kwargs = kwargs
         self.initialize(**kwargs)
@@ -106,9 +125,8 @@ class JobBase(abc.ABC):
         """
         Called by the main entry point when this job is executed
 
-        If there is cached output available, load it, call any callbacks
-        registered via :meth:`on_finished` and finally call :meth:`finish`.
-        Otherwise, call :meth:`execute`.
+        If there is cached output available, load it, emit `finished` signal and
+        finally call :meth:`finish`. Otherwise, call :meth:`execute`.
 
         :raise RuntimeError: if this method is called multiple times or if
             reading from cache file fails unexpectedly
@@ -127,8 +145,7 @@ class JobBase(abc.ABC):
         if self.output:
             _log.debug('Job was already done previously: %r', self)
             for output in self.output:
-                for cb in self._output_callbacks:
-                    cb(output)
+                self.signal.emit('output', output)
             self.finish()
         else:
             _log.debug('Executing %r', self)
@@ -170,22 +187,8 @@ class JobBase(abc.ABC):
         """
         if not self.is_finished:
             self._finished_event.set()
-            for cb in self._finished_callbacks:
-                cb(self)
+            self.signal.emit('finished', self)
             self._write_output_cache()
-
-    def on_finished(self, callback):
-        """
-        Call `callback` when job is finished
-
-        :param callable callback: Callable that takes an instance of this class
-            as a positional argument
-
-        `callback` is called when :meth:`finish` is called and when output is
-        read from cache.
-        """
-        assert callable(callback)
-        self._finished_callbacks.append(callback)
 
     @property
     def is_finished(self):
@@ -206,27 +209,21 @@ class JobBase(abc.ABC):
         """Result of this job as a sequence of strings"""
         return tuple(self._output)
 
+    @property
+    def info(self):
+        """
+        Additional information that is only displayed in the UI and not part of the
+        job's result
+        """
+        return ''
+
     def send(self, output):
-        """Append `output` to :attr:`output`"""
+        """Append `output` to :attr:`output` and emit `output` signal"""
         if not self.is_finished:
             if output:
                 output_str = str(output)
                 self._output.append(output_str)
-                for cb in self._output_callbacks:
-                    cb(output_str)
-
-    def on_output(self, callback):
-        """
-        Call `callback` with output
-
-        :param callable callback: Callable that takes an instance of this class
-            as a positional argument
-
-        `callback` is called when :meth:`send` is called and when cached output
-        is read (i.e. :meth:`executed` is never called).
-        """
-        assert callable(callback)
-        self._output_callbacks.append(callback)
+                self.signal.emit('output', output_str)
 
     def pipe_input(self, value):
         """
@@ -254,27 +251,16 @@ class JobBase(abc.ABC):
 
     def error(self, error, finish=False):
         """
-        Append `error` to :attr:`errors` and call error callbacks
+        Append `error` to :attr:`errors` and emit `error` signal
 
         :param bool finish: Whether to call :meth:`finish` after handling
             `error`
         """
         if not self.is_finished:
             self._errors.append(error)
-            for cb in self._error_callbacks:
-                cb(error)
+            self.signal.emit('error', error)
             if finish:
                 self.finish()
-
-    def on_error(self, callback):
-        """
-        Call `callback` with error
-
-        :param callable callback: Callable that takes the argument given to
-            :meth:`error`
-        """
-        assert callable(callback)
-        self._error_callbacks.append(callback)
 
     def exception(self, exception):
         """
@@ -292,14 +278,6 @@ class JobBase(abc.ABC):
             _log.debug('Exception in %s: %s', self.name, tb)
             self._exception = exception
             self.finish()
-
-    @property
-    def info(self):
-        """
-        Additional information that is only displayed in the UI and not part of the
-        job's result
-        """
-        return ''
 
     def _write_output_cache(self):
         """

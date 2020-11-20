@@ -33,8 +33,8 @@ class Pipe:
         self._sender = sender
         self._receiver = receiver
         self._sender_output_cache = collections.deque()
-        self._sender.on_output(self._handle_sender_output)
-        self._sender.on_finished(self._handle_sender_finished)
+        self._sender.signal.register('output', self._handle_sender_output)
+        self._sender.signal.register('finished', self._handle_sender_finished)
         self._is_closed = False
 
     def _handle_sender_output(self, output):

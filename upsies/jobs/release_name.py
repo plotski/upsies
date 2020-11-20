@@ -18,7 +18,7 @@ class ReleaseNameJob(JobBase):
 
     def initialize(self, content_path):
         self._release_name = release_name.ReleaseName(content_path)
-        self._release_name_update_callbacks = []
+        self.signal.add('release_name_updated')
 
     def execute(self):
         pass
@@ -48,8 +48,4 @@ class ReleaseNameJob(JobBase):
         task.add_done_callback(fetch_info_done)
 
     def handle_release_name_update(self):
-        for cb in self._release_name_update_callbacks:
-            cb(self.release_name)
-
-    def on_release_name_update(self, callback):
-        self._release_name_update_callbacks.append(callback)
+        self.signal.emit('release_name_updated', self.release_name)

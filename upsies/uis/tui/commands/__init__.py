@@ -109,7 +109,7 @@ class release_name(CommandBase):
             content_path=self.args.CONTENT,
             db='imdb',
         )
-        imdb_job.on_output(self.release_name_job.fetch_info)
+        imdb_job.signal.register('output', self.release_name_job.fetch_info)
         return imdb_job
 
 

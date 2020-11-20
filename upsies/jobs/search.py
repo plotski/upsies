@@ -39,9 +39,10 @@ class SearchDbJob(JobBase):
             raise ValueError(f'Unknown database: {db}')
         self._query = dbs.Query.from_path(content_path)
         self._is_searching = False
-        self._search_results_callbacks = []
-        self._searching_status_callbacks = []
-        self._info_updated_callbacks = []
+
+        self.signal.add('search_results')
+        self.signal.add('searching_status')
+        self.signal.add('info_updated')
 
         self._searcher = _Searcher(
             search_coro=self._db.search,
@@ -90,35 +91,26 @@ class SearchDbJob(JobBase):
             self._searcher.search(self._query)
             self.clear_errors()
 
-    def on_searching_status(self, callback):
-        self._searching_status_callbacks.append(callback)
-
     def handle_searching_status(self, is_searching):
         self._is_searching = bool(is_searching)
-        for cb in self._searching_status_callbacks:
-            cb(is_searching)
+        self.signal.emit('searching_status', is_searching)
 
     @property
     def is_searching(self):
         return self._is_searching
-
-    def on_search_results(self, callback):
-        self._search_results_callbacks.append(callback)
 
     def handle_search_results(self, results):
         if results:
             self._info_updater.set_result(results[0])
         else:
             self._info_updater.set_result(None)
-        for cb in self._search_results_callbacks:
-            cb(results)
+        self.signal.emit('search_results', results)
 
     def on_info_updated(self, callback):
         self._info_updated_callbacks.append(callback)
 
     def update_info(self, attr, value):
-        for cb in self._info_updated_callbacks:
-            cb(attr, value)
+        self.signal.emit('info_updated', attr, value)
 
     def result_focused(self, result):
         self._info_updater.set_result(result)

@@ -22,7 +22,7 @@ class CreateTorrentJob(JobBase):
             self.homedir,
             f'{fs.basename(content_path)}.{tracker_name.lower()}.torrent',
         )
-        self._progress_update_callbacks = []
+        self.signal.add('progress_update')
         self._file_tree = ''
         self._torrent_process = daemon.DaemonProcess(
             name=self.name,
@@ -59,12 +59,8 @@ class CreateTorrentJob(JobBase):
     def info(self):
         return self._file_tree
 
-    def on_progress_update(self, callback):
-        self._progress_update_callbacks.append(callback)
-
     def handle_progress_update(self, percent_done):
-        for cb in self._progress_update_callbacks:
-            cb(percent_done)
+        self.signal.emit('progress_update', percent_done)
 
     def handle_torrent_created(self, torrent_path=None):
         _log.debug('Torrent created: %r', torrent_path)
@@ -113,8 +109,8 @@ class AddTorrentJob(JobBase):
         self._client = client
         self._download_path = download_path
         self._add_task = None
-        self._adding_callbacks = []
-        self._added_callbacks = []
+        self.signal.add('adding')
+        self.signal.add('added')
         self._torrent_path_queue = asyncio.Queue()
         if torrents:
             for t in torrents:
@@ -139,14 +135,6 @@ class AddTorrentJob(JobBase):
     def pipe_closed(self):
         self._torrent_path_queue.put_nowait((None, None))
 
-    def on_adding(self, callback):
-        assert callable(callback)
-        self._adding_callbacks.append(callback)
-
-    def on_added(self, callback):
-        assert callable(callback)
-        self._added_callbacks.append(callback)
-
     def add(self, torrent_path, download_path=None):
         self._torrent_path_queue.put_nowait((
             torrent_path,
@@ -157,8 +145,7 @@ class AddTorrentJob(JobBase):
 
     async def add_async(self, torrent_path, download_path=None):
         _log.debug('Adding %s to %s', torrent_path, self._client.name)
-        for cb in self._adding_callbacks:
-            cb(torrent_path)
+        self.signal.emit('adding', torrent_path)
 
         if os.path.exists(torrent_path) and os.path.getsize(torrent_path) > self.MAX_TORRENT_SIZE:
             self.error(f'{torrent_path}: File is too large')
@@ -174,8 +161,7 @@ class AddTorrentJob(JobBase):
                        f'to {self._client.name}: {e}')
         else:
             self.send(torrent_id)
-            for cb in self._added_callbacks:
-                cb(torrent_id)
+            self.signal.emit('added', torrent_id)
 
     async def _add_torrents(self):
         while True:
@@ -203,8 +189,8 @@ class CopyTorrentJob(JobBase):
 
     def initialize(self, *, destination, files=()):
         self._destination = None if not destination else str(destination)
-        self._copying_callbacks = []
-        self._copied_callbacks = []
+        self.signal.add('copying')
+        self.signal.add('copied')
         if files:
             for f in files:
                 self.copy(f)
@@ -218,14 +204,6 @@ class CopyTorrentJob(JobBase):
 
     def pipe_closed(self):
         self.finish()
-
-    def on_copying(self, callback):
-        assert callable(callback)
-        self._copying_callbacks.append(callback)
-
-    def on_copied(self, callback):
-        assert callable(callback)
-        self._copied_callbacks.append(callback)
 
     MAX_FILE_SIZE = 10 * 2**20  # 10 MiB
 
@@ -246,9 +224,9 @@ class CopyTorrentJob(JobBase):
             self.error(f'{filepath}: File is too large')
             return
 
+        self.signal.emit('copying', filepath)
+
         import shutil
-        for cb in self._copying_callbacks:
-            cb(filepath)
         try:
             new_path = shutil.copy2(filepath, dest)
         except OSError as e:
@@ -261,5 +239,4 @@ class CopyTorrentJob(JobBase):
             self.send(filepath)
         else:
             self.send(new_path)
-            for cb in self._copied_callbacks:
-                cb(new_path)
+            self.signal.emit('copied', new_path)

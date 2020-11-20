@@ -16,8 +16,8 @@ class ScreenshotsJobWidget(JobWidgetBase):
         content_name = os.path.basename(self.job.kwargs['content_path'])
         self._status_text = widgets.TextField(f'Analyzing {content_name} ...')
         self._screenshot_progress = widgets.ProgressBar()
-        self.job.on_output(self.handle_screenshot_path)
-        self.job.on_finished(lambda _: self.invalidate())
+        self.job.signal.register('output', self.handle_screenshot_path)
+        self.job.signal.register('finished', lambda _: self.invalidate())
 
     def handle_screenshot_path(self, path):
         if self.job.screenshots_total > 0:

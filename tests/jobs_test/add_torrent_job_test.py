@@ -147,8 +147,8 @@ def test_add(download_path, custom_download_path, exp_download_path, make_AddTor
 async def test_add_async_call_order(make_AddTorrentJob):
     job = make_AddTorrentJob()
     cb = Mock()
-    job.on_adding(cb.adding)
-    job.on_added(cb.added)
+    job.signal.register('adding', cb.adding)
+    job.signal.register('added', cb.added)
     cb.add_torrent = AsyncMock(return_value=123)
     job._client.add_torrent = cb.add_torrent
     await job.add_async('foo.torrent')

@@ -132,20 +132,25 @@ async def test_submit_calls_methods_and_callbacks_in_correct_order(job, mocker):
     mocks.attach_mock(job._tracker.login, 'login')
     mocks.attach_mock(job._tracker.logout, 'logout')
     mocks.attach_mock(job._tracker.upload, 'upload')
-    mocker.patch.object(job, '_call_callbacks', mocks._call_callbacks)
+    job.signal.register('logging_in', mocks.logging_in_cb)
+    job.signal.register('logged_in', mocks.logged_in_cb)
+    job.signal.register('uploading', mocks.uploading_cb)
+    job.signal.register('uploaded', mocks.uploaded_cb)
+    job.signal.register('logging_out', mocks.logging_out_cb)
+    job.signal.register('logged_out', mocks.logged_out_cb)
     await job._submit({})
     assert mocks.method_calls == [
-        call._call_callbacks(job.signal.logging_in),
+        call.logging_in_cb(),
         call.login(),
-        call._call_callbacks(job.signal.logged_in),
+        call.logged_in_cb(),
 
-        call._call_callbacks(job.signal.uploading),
+        call.uploading_cb(),
         call.upload({}),
-        call._call_callbacks(job.signal.uploaded),
+        call.uploaded_cb(),
 
-        call._call_callbacks(job.signal.logging_out),
+        call.logging_out_cb(),
         call.logout(),
-        call._call_callbacks(job.signal.logged_out),
+        call.logged_out_cb(),
     ]
 
 @pytest.mark.asyncio
@@ -153,21 +158,3 @@ async def test_submit_sends_upload_return_value_as_output(job):
     job._tracker.upload.return_value = 'http://torrent.url/'
     await job._submit({})
     assert job.output == ('http://torrent.url/',)
-
-
-@pytest.mark.parametrize('signal', SubmitJob.signal, ids=lambda v: v.name)
-def test_callback_with_valid_signal(signal, job):
-    cb = Mock()
-    job.on(signal, cb)
-    job._call_callbacks(signal)
-    assert cb.call_args_list == [call()]
-    job._call_callbacks(signal)
-    assert cb.call_args_list == [call(), call()]
-
-@pytest.mark.parametrize('signal', SubmitJob.signal, ids=lambda v: v.name)
-def test_callback_with_invalid_signal(signal, job):
-    cb = Mock()
-    with pytest.raises(RuntimeError, match=r"^Unknown signal: 'foo'$"):
-        job.on('foo', cb)
-    job._call_callbacks(signal)
-    assert cb.call_args_list == []

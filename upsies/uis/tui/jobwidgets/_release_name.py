@@ -21,7 +21,7 @@ class ReleaseNameJobWidget(JobWidgetBase):
             self._release_name.read_only = False
             self._release_name.text = release_name.format()
             self.invalidate()
-        self.job.on_release_name_update(release_name_changed_callback)
+        self.job.signal.register('release_name_updated', release_name_changed_callback)
 
     def handle_release_name(self, buffer):
         _log.debug('Approved release name: %r', self._release_name.text)
