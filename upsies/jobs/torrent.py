@@ -114,6 +114,31 @@ def _torrent_process(output_queue, input_queue, *args, **kwargs):
 
 
 class AddTorrentJob(JobBase):
+    """
+    Add torrent(s) to a BitTorrent client
+
+    :param client: Return value of :func:`tools.btclient.client`
+    :param download_path: Path to the torrent's content files or None to use the
+        default path
+    :param torrents: Sequence of torrent file paths to add
+
+    If `torrents` is given and not empty, this job is finished as soon as its
+    last item is added.
+
+    This job adds the following signals to the :attr:`~JobBase.signal`
+    attribute:
+
+        `adding`
+            Emitted when attempting to add a torrent. Registered callbacks get
+            the path to the torrent file as a positional argument.
+
+        `added`
+            Emitted when the torrent was added successfully. Registered
+            callbacks get the some kind of ID that uniquely identifies the added
+            torrent for the client. It depends on the `client` object what that
+            is exactly.
+    """
+
     name = 'add-torrent'
     label = 'Add Torrent'
 
