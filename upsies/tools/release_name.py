@@ -14,6 +14,9 @@ class ReleaseName(collections.abc.Mapping):
 
     :param str path: Path to release content
 
+    If `path` exists, it is used to analyzed its data for certain parts of the
+    release name, e.g. to detect the resolution.
+
     Example:
 
     >>> rn = ReleaseName("The Foo 1984 1080p BluRay DTS-ASDF")
