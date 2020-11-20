@@ -15,7 +15,7 @@ class SearchDbJob(JobBase):
     Prompt user to select a specific search result from an internet database
 
     :param str db: Name of the database (see :mod:`tools.dbs` for a list)
-    :param str content: Path or name of the release
+    :param str content_path: Path or name of the release
 
     :raise ValueError: if `db` is unknown
     """
