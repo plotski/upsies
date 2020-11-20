@@ -206,7 +206,12 @@ class screenshots(CommandBase):
                     name=self.args.upload_to,
                     **self.config['imghosts'][self.args.upload_to],
                 ),
-                images_total=self.screenshots_job.screenshots_total,
+            )
+            # Timestamps are calculated in a subprocess, we have to wait for
+            # that until we can set the number of expected screenhots.
+            self.screenshots_job.signal.register(
+                'timestamps',
+                lambda timestamps: imghost_job.set_images_total(len(timestamps)),
             )
             # Connect ScreenshotsJob's output to ImageHostJob input
             pipe.Pipe(
