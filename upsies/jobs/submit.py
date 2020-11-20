@@ -13,6 +13,33 @@ class SubmitJob(JobBase):
 
     :param tracker: :class:`Tracker` instance from one of the submodules of
         :mod:`~trackers`
+
+    This job adds the following signals to the :attr:`~JobBase.signal`
+    attribute:
+
+        `logging_in`
+            Emitted when attempting to start a user session. Registered
+            callbacks get no arguments.
+
+        `logged_in`
+            Emitted when login attempt ended. Registered callbacks get no
+            arguments.
+
+        `uploading`
+            Emitted when attempting to upload metadata. Registered callbacks get
+            no arguments.
+
+        `uploaded`
+            Emitted when upload attempt ended. Registered callbacks get no
+            arguments.
+
+        `logging_out`
+            Emitted when attempting to end a user session. Registered callbacks
+            get no arguments.
+
+        `logged_out`
+            Emitted when logout attempt ended. Registered callbacks get no
+            arguments.
     """
 
     name = 'submit'
