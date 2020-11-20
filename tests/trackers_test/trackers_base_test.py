@@ -294,7 +294,6 @@ def test_upload_screenshots_job_with_image_host_argument(mocker):
             homedir=tracker.info.homedir,
             ignore_cache=tracker.info.ignore_cache,
             imghost=tracker.info.image_host,
-            images_total=tracker.screenshots_job.screenshots_total,
         ),
     ]
     assert Pipe_mock.call_args_list == [
