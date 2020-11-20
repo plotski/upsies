@@ -222,6 +222,28 @@ class AddTorrentJob(JobBase):
 
 
 class CopyTorrentJob(JobBase):
+    """
+    Copy file(s)
+
+    :param destination: Where to put the file(s)
+    :param files: Sequence of file paths to copy
+
+    If `files` is given and not empty, this job is finished as soon as its last
+    item is added.
+
+    This job adds the following signals to the :attr:`~JobBase.signal`
+    attribute:
+
+        `copying`
+            Emitted when attempting to copy a file. Registered callbacks get the
+            source path to file as a positional argument.
+
+        `copied`
+            Emitted when the copy attempt ended. Registered callbacks get the
+            destination file path (success) or the source file path (failure) as
+            a positional argument.
+    """
+
     name = 'copy-torrent'
     label = 'Copy Torrent'
 
