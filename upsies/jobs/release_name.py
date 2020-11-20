@@ -34,6 +34,12 @@ class ReleaseNameJob(JobBase):
         self.finish()
 
     def fetch_info(self, *args, **kwargs):
+        """
+        Synchronous wrapper around :meth:`ReleaseName.fetch_info` that emits the
+        `release_name_updated` signal after the release name is updated
+
+        All arguments are passed on to :meth:`ReleaseName.fetch_info`.
+        """
         task = asyncio.ensure_future(
             self.release_name.fetch_info(*args, **kwargs),
         )
