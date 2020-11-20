@@ -109,6 +109,14 @@ async def test_job_is_finished_when_upload_images_task_terminates(tmp_path, mock
 
 
 @pytest.mark.asyncio
+async def test_images_total_property(job):
+    job.images_total = 5
+    assert job.images_total == 5
+    job.set_images_total(10)
+    assert job.images_total == 10
+
+
+@pytest.mark.asyncio
 async def test_upload_images_returns_when_queue_is_closed(job):
     for f in ('foo.jpg', 'bar.jpg', 'baz.jpg'):
         job._enqueue(f)

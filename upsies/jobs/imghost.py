@@ -113,3 +113,10 @@ class ImageHostJob(JobBase):
     @property
     def images_total(self):
         return self._images_total
+
+    @images_total.setter
+    def images_total(self, value):
+        self._images_total = int(value)
+
+    def set_images_total(self, value):
+        self.images_total = value
