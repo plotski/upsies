@@ -273,9 +273,9 @@ class ReleaseName(collections.abc.Mapping):
 
     async def fetch_info(self, id, callback=None):
         """
-        Fill in information from online database
+        Fill in information from IMDb
 
-        :param str id: ID to query `db` for
+        :param str id: IMDb ID
         :param callable callback: Function to call after fetching; gets the
             instance (`self`) as a keyword argument
 
