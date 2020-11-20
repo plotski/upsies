@@ -8,6 +8,21 @@ _log = logging.getLogger(__name__)
 
 
 class ReleaseNameJob(JobBase):
+    """
+    Create user-confirmed release name from file or directory path
+
+    :param content_path: Path to the release
+
+    :class:`~release_name.ReleaseName` is used to create the release name.
+
+    This job adds the following signals to the :attr:`~JobBase.signal`
+    attribute:
+
+        `release_name_updated`
+            Emitted after :meth:`fetch_info` updated the release name from
+            online sources
+    """
+
     name = 'release-name'
     label = 'Release Name'
 
