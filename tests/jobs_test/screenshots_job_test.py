@@ -422,14 +422,20 @@ async def test_ScreenshotsJob_wait(job, tmp_path):
 
 
 def test_ScreenshotsJob_handle_info_sets_video_file(job):
+    cb = Mock()
+    job.signal.register('video_file', cb)
     assert job.video_file == ''
     job.handle_info(('video_file', 'foo.mkv'))
     assert job.video_file == 'foo.mkv'
+    assert cb.call_args_list == [call('foo.mkv')]
 
 def test_ScreenshotsJob_handle_info_sets_timestamps(job):
+    cb = Mock()
+    job.signal.register('timestamps', cb)
     assert job.timestamps == ()
     job.handle_info(('timestamps', ('1', '2', '3')))
     assert job.timestamps == ('1', '2', '3')
+    assert cb.call_args_list == [call(('1', '2', '3'))]
 
 def test_ScreenshotsJob_handle_info_sends_screenshot_paths(job):
     assert job.output == ()

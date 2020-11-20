@@ -47,6 +47,8 @@ class ScreenshotsJob(JobBase):
         self._screenshots_total = -1
         self._video_file = ''
         self._timestamps = ()
+        self.signal.add('video_file')
+        self.signal.add('timestamps')
         self._screenshots_process = daemon.DaemonProcess(
             name=self.name,
             target=_screenshots_process,
@@ -77,9 +79,11 @@ class ScreenshotsJob(JobBase):
         if not self.is_finished:
             if info[0] == 'video_file':
                 self._video_file = info[1]
+                self.signal.emit('video_file', self._video_file)
             elif info[0] == 'timestamps':
                 self._timestamps = tuple(info[1])
                 self._screenshots_total = len(self._timestamps)
+                self.signal.emit('timestamps', self._timestamps)
             elif info[0] == 'screenshot':
                 self._screenshots_created += 1
                 self.send(info[1])
