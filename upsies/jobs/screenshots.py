@@ -25,6 +25,19 @@ class ScreenshotsJob(JobBase):
 
     If `timestamps` and `number` are not given, screenshot positions are
     generated.
+
+    This job adds the following signals to the :attr:`~JobBase.signal`
+    attribute:
+
+        `video_file`
+            Emitted after the video file to take screenshots from is determined.
+            Registered callbacks get the path to the video file as a positional
+            argument.
+
+        `timestamps`
+            Emitted after the screenshot timestamps are determined. Registered
+            callbacks get the list of timestamps in the form for "H+:MM:SS" as a
+            positional argument.
     """
 
     name = 'screenshots'
