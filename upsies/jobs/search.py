@@ -93,7 +93,7 @@ class SearchDbJob(JobBase):
 
     def handle_searching_status(self, is_searching):
         self._is_searching = bool(is_searching)
-        self.signal.emit('searching_status', is_searching)
+        self.signal.emit('searching_status', self._is_searching)
 
     @property
     def is_searching(self):
