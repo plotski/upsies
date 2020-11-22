@@ -82,6 +82,15 @@ class ImageHostBase(abc.ABC):
             raise RuntimeError(f'Unable to write cache {cache_file}: {msg}')
 
     def _cache_file(self, image_path):
-        # Max file name length is ususally 255 bytes
-        filename = image_path[-200:].replace('/', '_') + f'.{self.name}.json'
+        # If image is in our cache_dir, the image's file name makes it
+        # unique. This is usually the case when we're uploading screenshots. If
+        # image is not in our cache_dir, use the absolute path as a unique
+        # identifier.
+        if os.path.dirname(image_path) == self._cache_dir:
+            image_path = os.path.basename(image_path)
+        else:
+            image_path = os.path.abspath(image_path)
+        # Max file name length is ususally 255 bytes and can't contain directory
+        # separators
+        filename = image_path[-200:].replace(os.sep, '_') + f'.{self.name}.json'
         return os.path.join(self._cache_dir, filename)

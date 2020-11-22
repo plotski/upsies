@@ -67,15 +67,33 @@ def make_TestImageHost(**kwargs):
     return TestImageHost(**kwargs)
 
 
+@pytest.mark.parametrize(
+    argnames=('cache_dir', 'exp_cache_dir'),
+    argvalues=(
+        (None, '/tmp/path'),
+        ('some/path', 'some/path'),
+    ),
+)
+@pytest.mark.parametrize('image_dir', (None, 'some/relative/path', '/absolute/path'))
 @patch('upsies.utils.fs.tmpdir')
-def test_cache_file_without_given_cache_dir(tmpdir_mock):
-    tmpdir_mock.return_value = '/tmp/path'
-    imghost = make_TestImageHost()
-    assert imghost._cache_file('foo.png') == f'/tmp/path/foo.png.{imghost.name}.json'
-
-def test_cache_file_with_given_cache_dir():
-    imghost = make_TestImageHost(cache_dir='some/path')
-    assert imghost._cache_file('foo.png') == f'some/path/foo.png.{imghost.name}.json'
+def test_cache_file_with_default_cache_dir(tmpdir_mock, image_dir, cache_dir, exp_cache_dir):
+    tmpdir_mock.return_value = exp_cache_dir
+    imghost = make_TestImageHost(cache_dir=cache_dir)
+    image_name = 'foo.png'
+    exp_cache_name = f'{image_name}.{imghost.name}.json'
+    if image_dir is None:
+        # Image is in cache dir
+        image_path = os.path.join(exp_cache_dir, image_name)
+    elif os.path.isabs(image_dir):
+        # Image has absolute path
+        image_path = os.path.join(image_dir, image_name)
+        exp_cache_name = os.path.join(os.path.dirname(image_path), exp_cache_name).replace(os.sep, '_')
+    else:
+        # Image has relative path
+        image_path = os.path.join(os.getcwd(), image_dir, image_name)
+        exp_cache_name = os.path.join(os.path.dirname(image_path), exp_cache_name).replace(os.sep, '_')
+    exp_cache_file = os.path.join(exp_cache_dir, exp_cache_name)
+    assert imghost._cache_file(image_path) == exp_cache_file
 
 
 def test_store_info_to_cache_succeeds(tmp_path):
