@@ -40,10 +40,8 @@ class ImageHostBase(abc.ABC):
         info = self._get_info_from_cache(image_path) if not force else {}
         if not info:
             info = await self._upload(image_path)
-            _log.debug('Upload %r: %r', image_path, info)
+            _log.debug('Uploaded %r: %r', image_path, info)
             self._store_info_to_cache(image_path, info)
-        else:
-            _log.debug('Got info for %r from cache: %r', image_path, info)
         if 'url' not in info:
             raise RuntimeError(f'Missing "url" key in {info}')
         return _common.UploadedImage(**info)
@@ -61,7 +59,7 @@ class ImageHostBase(abc.ABC):
     def _get_info_from_cache(self, image_path):
         cache_path = self._cache_file(image_path)
         if os.path.exists(cache_path):
-            _log.debug('Already uploaded: %s', image_path)
+            _log.debug('Already uploaded: %s', cache_path)
             try:
                 with open(cache_path, 'r') as f:
                     return json.loads(f.read())
