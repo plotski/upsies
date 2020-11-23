@@ -1,3 +1,4 @@
+import collections
 import configparser
 import copy
 from os.path import exists as _path_exists
@@ -123,4 +124,23 @@ class Config:
         return cfg
 
     def __getitem__(self, key):
-        return self._cfg[key]
+        return ImmutableDict(**self._cfg[key])
+
+
+class ImmutableDict(collections.abc.Mapping):
+    def __init__(self, *args, **kwargs):
+        self._dict = dict(*args, **kwargs)
+        print('id: %r', repr(self._dict))
+
+    def __getitem__(self, key):
+        print('getting key:', key)
+        return self._dict[key]
+
+    def __iter__(self):
+        return iter(self._dict)
+
+    def __len__(self):
+        return len(self._dict)
+
+    def __repr__(self):
+        return repr(self._dict)
