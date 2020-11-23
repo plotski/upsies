@@ -33,6 +33,11 @@ config = {
         ),
     },
 
+    'imghosts': {
+        'dummy': {},
+        'imgbox': {},
+    },
+
     'clients': {
         'dummy': {},
         'transmission': {
