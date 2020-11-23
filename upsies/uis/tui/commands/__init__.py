@@ -197,7 +197,7 @@ class screenshots(CommandBase):
         )
 
     @cache.property
-    def imghost_job(self):
+    def upload_screenshots_job(self):
         if self.args.upload_to:
             imghost_job = _jobs.imghost.ImageHostJob(
                 homedir=fs.projectdir(self.args.CONTENT),
@@ -222,15 +222,10 @@ class screenshots(CommandBase):
 
     @cache.property
     def jobs(self):
-        if self.imghost_job:
-            return (
-                self.screenshots_job,
-                self.imghost_job,
-            )
+        if self.upload_screenshots_job:
+            return (self.screenshots_job, self.upload_screenshots_job)
         else:
-            return (
-                self.screenshots_job,
-            )
+            return (self.screenshots_job,)
 
 
 class upload_images(CommandBase):
