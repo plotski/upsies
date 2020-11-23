@@ -203,7 +203,7 @@ def test_on_finished_callback_is_called_when_job_finishes(job):
     job.send('foo')
     assert cb.call_args_list == []
     job.finish()
-    assert cb.call_args_list == [call(job)]
+    assert cb.call_args_list == [call()]
 
 def test_on_finished_callback_is_called_with_cached_output(tmp_path):
     job1 = FooJob(homedir=tmp_path, ignore_cache=False)
@@ -216,7 +216,7 @@ def test_on_finished_callback_is_called_with_cached_output(tmp_path):
     job2.signal.register('finished', cb)
     job2.start()
     assert job2.is_finished
-    assert cb.call_args_list == [call(job2)]
+    assert cb.call_args_list == [call()]
 
 
 def test_error_and_errors(job):

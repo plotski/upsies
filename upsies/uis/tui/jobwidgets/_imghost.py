@@ -10,7 +10,7 @@ class ImageHostJobWidget(JobWidgetBase):
     def setup(self):
         self._upload_progress = widgets.ProgressBar()
         self.job.signal.register('output', self.handle_image_url)
-        self.job.signal.register('finished', lambda _: self.invalidate())
+        self.job.signal.register('finished', self.invalidate)
 
     def handle_image_url(self, url):
         if self.job.images_total > 0:

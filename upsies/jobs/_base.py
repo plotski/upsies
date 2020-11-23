@@ -78,8 +78,7 @@ class JobBase(abc.ABC):
         their own signals.
 
         `finished` is emitted when :meth:`finish` is called or when output is
-        read from cache. Registered callbacks get the class instance as a
-        positional argument.
+        read from cache. Registered callbacks get no arguments.
 
         `output` is emitted when :meth:`send` is called or when output is read
         from cache. Registered callbacks get the value passed to :meth:`send` as
@@ -187,7 +186,7 @@ class JobBase(abc.ABC):
         """
         if not self.is_finished:
             self._finished_event.set()
-            self.signal.emit('finished', self)
+            self.signal.emit('finished')
             self._write_output_cache()
 
     @property

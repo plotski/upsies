@@ -10,7 +10,7 @@ class CreateTorrentJobWidget(JobWidgetBase):
     def setup(self):
         self._progress = widgets.ProgressBar()
         self.job.signal.register('progress_update', self.handle_progress_update)
-        self.job.signal.register('finished', lambda _: self.invalidate())
+        self.job.signal.register('finished', self.invalidate)
 
     def handle_progress_update(self, percent_done):
         self._progress.percent = percent_done
@@ -31,7 +31,7 @@ class AddTorrentJobWidget(JobWidgetBase):
         self._status.text = f'Adding {fs.basename(torrent_path)}...'
         self.invalidate()
 
-    def handle_finished(self, _):
+    def handle_finished(self):
         self._status.text = 'Done.'
         self.invalidate()
 
@@ -50,7 +50,7 @@ class CopyTorrentJobWidget(JobWidgetBase):
         self._status.text = f'Copying {fs.basename(file_path)}...'
         self.invalidate()
 
-    def handle_finished(self, _):
+    def handle_finished(self):
         self._status.text = 'Done.'
         self.invalidate()
 
