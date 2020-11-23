@@ -30,13 +30,10 @@ def test_init_copies_defaults(read_mock):
 
 @patch('upsies.config.Config.read')
 def test_init_uses_defaults_as_initial_config(read_mock):
-    defaults = {'a': 'b', 'foo': 123}
-    c = Config(
-        defaults=defaults,
-        foo='path/to/foo_file.ini',
-    )
-    assert c['a'] == 'b'
-    assert c['foo'] == 123
+    defaults = {'section': {'subsection1': {'foo': 123, 'bar': 456},
+                            'subsection2': {'foo': 123, 'bar': 456}}}
+    c = Config(defaults=defaults)
+    assert c._cfg == defaults
 
 
 @patch('upsies.config._path_exists')

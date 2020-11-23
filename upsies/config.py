@@ -29,7 +29,9 @@ class Config:
     def __init__(self, defaults, **files):
         self._defaults = copy.deepcopy(defaults)
         self._files = {}
-        self._cfg = self._defaults
+        self._cfg = {}
+        for section, subsection in self._defaults.items():
+            self._cfg[section] = copy.deepcopy(subsection)
         for section, filepath in files.items():
             self.read(section, filepath)
 
