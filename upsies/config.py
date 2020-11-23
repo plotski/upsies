@@ -1,4 +1,5 @@
 import configparser
+import copy
 from os.path import exists as _path_exists
 
 from . import errors
@@ -25,7 +26,7 @@ class Config:
     :raises ConfigError: if reading or parsing a file fails
     """
     def __init__(self, defaults, **files):
-        self._defaults = defaults
+        self._defaults = copy.deepcopy(defaults)
         self._files = {}
         self._cfg = {}
         for section, filepath in files.items():
