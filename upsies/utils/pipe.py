@@ -41,7 +41,7 @@ class Pipe:
         self._sender_output_cache.append(output)
         self._flush()
 
-    def _handle_sender_finished(self, sender):
+    def _handle_sender_finished(self, sender=None):
         self._sender_output_cache.append(None)
         self._flush()
 
