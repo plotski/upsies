@@ -128,7 +128,7 @@ class create_torrent(CommandBase):
     @cache.property
     def add_torrent_job(self):
         if self.args.add_to:
-            add_job = _jobs.torrent.AddTorrentJob(
+            add_torrent_job = _jobs.torrent.AddTorrentJob(
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 client=btclient.client(
@@ -137,11 +137,11 @@ class create_torrent(CommandBase):
                 ),
                 download_path=fs.dirname(self.args.CONTENT),
             )
-            pipe.Pipe(
-                sender=self.create_torrent_job,
-                receiver=add_job,
-            )
-            return add_job
+            # Pass CreateTorrentJob output to AddTorrentJob input.
+            self.create_torrent_job.signal.register('output', add_torrent_job.add)
+            # Tell AddTorrentJob to finish the current upload and then finish.
+            self.create_torrent_job.signal.register('finished', add_torrent_job.finalize)
+            return add_torrent_job
 
     @cache.property
     def copy_torrent_job(self):

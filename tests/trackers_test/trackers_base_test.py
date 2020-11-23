@@ -100,7 +100,6 @@ def test_add_torrent_job_without_add_to_client_argument(mocker):
 def test_add_torrent_job_with_add_to_client_argument(mocker):
     AddTorrentJob_mock = mocker.patch('upsies.jobs.torrent.AddTorrentJob', Mock())
     mocker.patch('upsies.jobs.torrent.CreateTorrentJob', Mock())
-    Pipe_mock = mocker.patch('upsies.utils.pipe.Pipe', Mock())
     tracker = make_TestTracker(
         config=Mock(),
         homedir=Mock(),
@@ -118,12 +117,10 @@ def test_add_torrent_job_with_add_to_client_argument(mocker):
             download_path='path/to/content',
         ),
     ]
-    assert Pipe_mock.call_args_list == [
-        call(
-            sender=tracker.create_torrent_job,
-            receiver=tracker.add_torrent_job,
-        ),
-    ]
+    assert (call('output', tracker.add_torrent_job.add)
+            in tracker.create_torrent_job.signal.register.call_args_list)
+    assert (call('finished', tracker.add_torrent_job.finalize)
+            in tracker.create_torrent_job.signal.register.call_args_list)
 
 
 def test_copy_torrent_job_without_torrent_destination_argument(mocker):

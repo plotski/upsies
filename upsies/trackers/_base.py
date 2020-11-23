@@ -71,10 +71,11 @@ class TrackerBase(abc.ABC):
                 client=self.info.add_to_client,
                 download_path=fs.dirname(self.info.content_path),
             )
-            pipe.Pipe(
-                sender=self.create_torrent_job,
-                receiver=add_torrent_job,
-            )
+            # Pass CreateTorrentJob output to AddTorrentJob input.
+            print(f"self.create_torrent_job.signal.register('output', {add_torrent_job.add})")
+            self.create_torrent_job.signal.register('output', add_torrent_job.add)
+            # Tell AddTorrentJob to finish the current upload and then finish.
+            self.create_torrent_job.signal.register('finished', add_torrent_job.finalize)
             return add_torrent_job
 
     @cache.property
