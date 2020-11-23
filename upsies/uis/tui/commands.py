@@ -11,10 +11,10 @@ conveniently provided as :attr:`~CommandBase.args` and
 
 import abc
 
-from .... import jobs as _jobs
-from .... import trackers
-from ....tools import btclient, imghost
-from ....utils import cache, fs
+from ... import jobs as _jobs
+from ... import trackers
+from ...tools import btclient, imghost
+from ...utils import cache, fs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
