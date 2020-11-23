@@ -280,7 +280,6 @@ def test_upload_screenshots_job_without_image_host_argument(mocker):
 def test_upload_screenshots_job_with_image_host_argument(mocker):
     ImageHostJob_mock = mocker.patch('upsies.jobs.imghost.ImageHostJob', Mock())
     mocker.patch('upsies.jobs.screenshots.ScreenshotsJob', Mock())
-    Pipe_mock = mocker.patch('upsies.utils.pipe.Pipe', Mock())
     tracker = make_TestTracker(
         config=Mock(),
         homedir=Mock(),
@@ -296,12 +295,10 @@ def test_upload_screenshots_job_with_image_host_argument(mocker):
             imghost=tracker.info.image_host,
         ),
     ]
-    assert Pipe_mock.call_args_list == [
-        call(
-            sender=tracker.screenshots_job,
-            receiver=tracker.upload_screenshots_job,
-        ),
-    ]
+    assert (call('output', tracker.upload_screenshots_job.upload)
+            in tracker.screenshots_job.signal.register.call_args_list)
+    assert (call('finished', tracker.upload_screenshots_job.finalize)
+            in tracker.screenshots_job.signal.register.call_args_list)
 
 
 def test_mediainfo_job(mocker):
