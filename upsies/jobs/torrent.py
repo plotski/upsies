@@ -157,31 +157,55 @@ class AddTorrentJob(JobBase):
         if torrents:
             for t in torrents:
                 self.add(t)
-            self.pipe_closed()
+            self.finalize()
         self._add_torrents_task = asyncio.ensure_future(self._add_torrents())
+        self._add_torrents_task.add_done_callback(lambda _: self.finish())
+
+    async def _add_torrents(self):
+        while True:
+            try:
+                torrent_path, download_path = await asyncio.wait_for(
+                    self._torrent_path_queue.get(),
+                    timeout=0.1,
+                )
+            except asyncio.TimeoutError:
+                pass
+            else:
+                if torrent_path is None:
+                    break
+                else:
+                    await self.add_async(torrent_path, download_path)
+
+    def add(self, torrent_path, download_path=None):
+        """
+        Upload `torrent_path`
+
+        :param download_path: `download_path` location of the torrent's content;
+            defaults to the `download_path` argument passed to
+            :meth:`initialize`
+        """
+        self._torrent_path_queue.put_nowait((
+            torrent_path,
+            download_path or self._download_path,
+        ))
+
+    def finalize(self):
+        """Finish after adding the current torrent"""
+        self._torrent_path_queue.put_nowait((None, None))
 
     def execute(self):
         pass
 
     def finish(self):
-        self._torrent_path_queue.put_nowait((None, None))
+        self._add_torrents_task.cancel()
 
     async def wait(self):
-        await self._add_torrents_task
+        try:
+            await self._add_torrents_task
+        except asyncio.CancelledError:
+            self.error('Cancelled')
         super().finish()
         await super().wait()
-
-    def pipe_input(self, torrent_path):
-        self.add(torrent_path)
-
-    def pipe_closed(self):
-        self._torrent_path_queue.put_nowait((None, None))
-
-    def add(self, torrent_path, download_path=None):
-        self._torrent_path_queue.put_nowait((
-            torrent_path,
-            download_path or self._download_path,
-        ))
 
     MAX_TORRENT_SIZE = 10 * 2**20  # 10 MiB
 
@@ -204,21 +228,6 @@ class AddTorrentJob(JobBase):
         else:
             self.send(torrent_id)
             self.signal.emit('added', torrent_id)
-
-    async def _add_torrents(self):
-        while True:
-            try:
-                torrent_path, download_path = await asyncio.wait_for(
-                    self._torrent_path_queue.get(),
-                    timeout=0.1,
-                )
-            except asyncio.TimeoutError:
-                pass
-            else:
-                if torrent_path is None:
-                    break
-                else:
-                    await self.add_async(torrent_path, download_path)
 
 
 class CopyTorrentJob(JobBase):
