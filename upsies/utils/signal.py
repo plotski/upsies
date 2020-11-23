@@ -56,5 +56,5 @@ class Signal:
 
     @property
     def signals(self):
-        """Sequence of :meth:`add`ed signals"""
-        return tuple(self._signals)
+        """Mutable dictionary of signals mapped to a lists of callbacks"""
+        return self._signals

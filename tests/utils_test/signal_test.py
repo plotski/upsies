@@ -7,7 +7,7 @@ from upsies.utils.signal import Signal
 
 def test_keyword_arguments_are_added():
     s = Signal('foo', 'bar', 'baz')
-    assert s.signals == ('foo', 'bar', 'baz')
+    assert s.signals == {'foo': [], 'bar': [], 'baz': []}
 
 
 def test_adding_unhashable_signal():
@@ -22,13 +22,13 @@ def test_adding_duplicate_signal():
 
 def test_adding_adds_signal():
     s = Signal()
-    assert s.signals == ()
+    assert s.signals == {}
     s.add('foo')
-    assert s.signals == ('foo',)
+    assert s.signals == {'foo': []}
     s.add('bar')
-    assert s.signals == ('foo', 'bar')
+    assert s.signals == {'foo': [], 'bar': []}
     s.add('baz')
-    assert s.signals == ('foo', 'bar', 'baz')
+    assert s.signals == {'foo': [], 'bar': [], 'baz': []}
 
 
 def test_registering_for_unknown_signal():
