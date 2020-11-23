@@ -117,10 +117,11 @@ async def test_images_total_property(job):
 
 
 @pytest.mark.asyncio
-async def test_upload_images_returns_when_queue_is_closed(job):
+async def test_upload_images_returns_when_finalize_is_called(job):
     for f in ('foo.jpg', 'bar.jpg', 'baz.jpg'):
-        job._enqueue(f)
-    job._close_queue()
+        job.upload(f)
+    assert not job.is_finished
+    job.finalize()
     await asyncio.sleep(0.1)
     assert job.is_finished
 
@@ -133,7 +134,7 @@ async def test_upload_images_reports_to_send_and_error(job):
     ]
     assert job.images_uploaded == 0
 
-    job._enqueue('foo.jpg')
+    job.upload('foo.jpg')
     await asyncio.sleep(0.1)
     assert job.output == ('http://foo',)
     assert job.errors == ()
@@ -142,7 +143,7 @@ async def test_upload_images_reports_to_send_and_error(job):
         call('foo.jpg', force=job.ignore_cache),
     ]
 
-    job._enqueue('bar.jpg')
+    job.upload('bar.jpg')
     await asyncio.sleep(0.1)
     assert job.output == ('http://foo',)
     assert job.errors == (errors.RequestError('bar.jpg is bad'),)
@@ -152,7 +153,7 @@ async def test_upload_images_reports_to_send_and_error(job):
         call('bar.jpg', force=job.ignore_cache),
     ]
 
-    job._enqueue('baz.jpg')
+    job.upload('baz.jpg')
     await asyncio.sleep(0.1)
     assert job.output == ('http://foo',)
     assert job.errors == (errors.RequestError('bar.jpg is bad'),)
@@ -161,21 +162,6 @@ async def test_upload_images_reports_to_send_and_error(job):
         call('foo.jpg', force=job.ignore_cache),
         call('bar.jpg', force=job.ignore_cache),
     ]
-
-
-@pytest.mark.asyncio
-async def test_pipe_input(job, mocker):
-    mocker.patch('upsies.jobs.imghost.ImageHostJob._enqueue', Mock())
-    job.pipe_input('foo.jpg')
-    assert job._enqueue.call_args_list == [call('foo.jpg')]
-    job.pipe_input('bar.jpg')
-    assert job._enqueue.call_args_list == [call('foo.jpg'), call('bar.jpg')]
-
-@pytest.mark.asyncio
-async def test_pipe_closed(job, mocker):
-    mocker.patch('upsies.jobs.imghost.ImageHostJob._close_queue', Mock())
-    job.pipe_closed()
-    assert job._close_queue.call_args_list == [call()]
 
 
 @pytest.mark.asyncio
@@ -202,10 +188,10 @@ async def test_exit_code_when_all_uploads_succeed(job):
         'http://baz',
     ]
     for _ in range(3):
-        job._enqueue('foo.jpg')
+        job.upload('foo.jpg')
         await asyncio.sleep(0.1)
         assert job.exit_code is None
-    job.pipe_closed()
+    job.finalize()
     await asyncio.sleep(0.1)
     assert job.exit_code == 0
 
@@ -217,12 +203,12 @@ async def test_exit_code_when_one_upload_fails(job):
         'http://baz',
     ]
     for i in range(3):
-        job._enqueue('foo.jpg')
+        job.upload('foo.jpg')
         await asyncio.sleep(0.1)
         if i == 0:
             assert job.exit_code is None
         else:
             assert job.exit_code == 1
-    job.pipe_closed()
+    job.finalize()
     await asyncio.sleep(0.1)
     assert job.exit_code == 1

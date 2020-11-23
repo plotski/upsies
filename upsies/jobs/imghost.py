@@ -12,14 +12,15 @@ class ImageHostJob(JobBase):
     Upload images to an image hosting service
 
     :param str imghost: Return value of :func:`tools.imghost.imghost`
-    :param image_paths: Sequence of paths to image files. The job is finished
-        after all images are uploaded.
-    :param images_total: Number of images that are going to be uploaded. Image
-        paths are expected to be given via :meth:`pipe_input`.
+    :param image_paths: Sequence of paths to image files
+    :param images_total: Number of images that are going to be uploaded. The
+        only purpose of this value is to provide it via the :attr:`images_total`
+        property to calculate progress.
 
-        The only purpose of this value is to provide it via the
-        :attr:`images_total` property to calculate progress. The job must be
-        finished by calling :meth:`pipe_closed` or :meth:`finish`.
+    If image_paths is given, the job finishes after all images are uploaded.
+
+    If image_patahs is not given, calls to :meth:`upload` are expected and
+    :meth:`finalize` must be called after the last call.
 
     `image_paths` and `images_total` must not be given at the same time.
     """
@@ -51,8 +52,8 @@ class ImageHostJob(JobBase):
 
         if image_paths:
             for image_path in image_paths:
-                self._enqueue(image_path)
-            self._close_queue()
+                self.upload(image_path)
+            self.finalize()
 
         self._upload_images_task = asyncio.ensure_future(self._upload_images())
         self._upload_images_task.add_done_callback(lambda _: self.finish())
@@ -75,17 +76,13 @@ class ImageHostJob(JobBase):
                     self._images_uploaded += 1
                     self.send(info)
 
-    def _enqueue(self, image_path):
+    def upload(self, image_path):
+        """Upload `image_path`"""
         self._image_path_queue.put_nowait(image_path)
 
-    def _close_queue(self):
+    def finalize(self):
+        """Finish after the current upload is done"""
         self._image_path_queue.put_nowait(None)
-
-    def pipe_input(self, image_path):
-        self._enqueue(image_path)
-
-    def pipe_closed(self):
-        self._close_queue()
 
     def execute(self):
         pass
