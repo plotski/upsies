@@ -58,29 +58,6 @@ def test_initialize_with_files(copy_mock, destination, make_CopyTorrentJob):
     assert job.is_finished
 
 
-@patch('upsies.jobs.torrent.CopyTorrentJob.copy')
-def test_pipe_input(copy_mock, make_CopyTorrentJob):
-    job = make_CopyTorrentJob()
-    job.pipe_input('a.jpg')
-    assert copy_mock.call_args_list == [
-        call('a.jpg'),
-    ]
-    job.pipe_input('b.jpg')
-    assert copy_mock.call_args_list == [
-        call('a.jpg'),
-        call('b.jpg'),
-    ]
-    assert not job.is_finished
-
-
-@patch('upsies.jobs.torrent.CopyTorrentJob.copy')
-def test_pipe_output(copy_mock, make_CopyTorrentJob):
-    job = make_CopyTorrentJob()
-    assert not job.is_finished
-    job.pipe_closed()
-    assert job.is_finished
-
-
 @patch('shutil.copy2')
 def test_copy_on_finished_job(copy2_mock, make_CopyTorrentJob):
     job = make_CopyTorrentJob()

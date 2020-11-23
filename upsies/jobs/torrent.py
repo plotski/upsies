@@ -267,16 +267,10 @@ class CopyTorrentJob(JobBase):
         if files:
             for f in files:
                 self.copy(f)
-            self.pipe_closed()
+            self.finish()
 
     def execute(self):
         pass
-
-    def pipe_input(self, filepath):
-        self.copy(filepath)
-
-    def pipe_closed(self):
-        self.finish()
 
     MAX_FILE_SIZE = 10 * 2**20  # 10 MiB
 
