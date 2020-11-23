@@ -28,6 +28,16 @@ def test_init_copies_defaults(read_mock):
     assert id(c._defaults) != id(defaults)
     assert id(c._cfg) != id(defaults)
 
+@patch('upsies.config.Config.read')
+def test_init_uses_defaults_as_initial_config(read_mock):
+    defaults = {'a': 'b', 'foo': 123}
+    c = Config(
+        defaults=defaults,
+        foo='path/to/foo_file.ini',
+    )
+    assert c['a'] == 'b'
+    assert c['foo'] == 123
+
 
 @patch('upsies.config._path_exists')
 def test_read_does_not_ignore_nonexisting_path(path_exists_mock):
