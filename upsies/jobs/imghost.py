@@ -105,10 +105,12 @@ class ImageHostJob(JobBase):
 
     @property
     def images_uploaded(self):
+        """Number of uploaded images"""
         return self._images_uploaded
 
     @property
     def images_total(self):
+        """Expected number of images to upload"""
         return self._images_total
 
     @images_total.setter
