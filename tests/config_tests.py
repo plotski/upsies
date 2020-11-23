@@ -1,3 +1,4 @@
+import os
 from unittest.mock import call, patch
 
 import pytest
@@ -245,3 +246,163 @@ def test_apply_defaults_fills_in_missing_options():
            'subsection2': {'b': '40', 'c': '50'},}
     assert config._apply_defaults('section1', cfg) == {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
                                                        'subsection2': {'b': '40', 'c': '50', 'd': '6'}}
+
+
+def test_validate_path_without_subsection():
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    with pytest.raises(errors.ConfigError, match=r'^section2: Missing subsection and option$'):
+        config._validate_path('section2')
+
+def test_validate_path_without_option():
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    with pytest.raises(errors.ConfigError, match=r'^section2.subsection3: Missing option$'):
+        config._validate_path('section2.subsection3')
+
+def test_validate_path_with_unknown_section():
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    with pytest.raises(errors.ConfigError, match=r'^foo: Unknown section$'):
+        config._validate_path('foo.bar.baz')
+
+def test_validate_path_with_unknown_subsection():
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    with pytest.raises(errors.ConfigError, match=r'^bar: Unknown subsection in section section1$'):
+        config._validate_path('section1.bar.baz')
+
+def test_validate_path_with_unknown_option():
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    with pytest.raises(errors.ConfigError, match=r'^baz: Unknown option in subsection section1.subsection2$'):
+        config._validate_path('section1.subsection2.baz')
+
+def test_validate_path_with_valid_path():
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    assert config._validate_path('section1.subsection1.a') == ('section1', 'subsection1', 'a')
+    assert config._validate_path('section1.subsection1.b') == ('section1', 'subsection1', 'b')
+    assert config._validate_path('section1.subsection1.c') == ('section1', 'subsection1', 'c')
+
+    assert config._validate_path('section1.subsection2.b') == ('section1', 'subsection2', 'b')
+    assert config._validate_path('section1.subsection2.c') == ('section1', 'subsection2', 'c')
+    assert config._validate_path('section1.subsection2.d') == ('section1', 'subsection2', 'd')
+
+    assert config._validate_path('section2.subsection2.x') == ('section2', 'subsection2', 'x')
+    assert config._validate_path('section2.subsection2.y') == ('section2', 'subsection2', 'y')
+    assert config._validate_path('section2.subsection2.z') == ('section2', 'subsection2', 'z')
+
+    assert config._validate_path('section2.subsection3.y') == ('section2', 'subsection3', 'y')
+    assert config._validate_path('section2.subsection3.z') == ('section2', 'subsection3', 'z')
+    assert config._validate_path('section2.subsection3._') == ('section2', 'subsection3', '_')
+
+
+@pytest.mark.parametrize('key', ('section1', 'section1.subsection1', 'section1.subsection1.a'))
+def test_sections_are_immutable(key):
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    with pytest.raises(TypeError, match=r'does not support item assignment'):
+        config[key] = 'foo'
+
+
+def test_set_validates_path(mocker):
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    mocker.patch.object(config, '_validate_path', side_effect=errors.ConfigError('invalid path'))
+    with pytest.raises(errors.ConfigError, match=r'^invalid path$'):
+        config.set('foo', 'bar')
+
+def test_set_changes_value(mocker):
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    config.set('section2.subsection3.y', 'hello')
+    assert config['section2']['subsection3']['y'] == 'hello'
+
+
+@pytest.mark.parametrize(
+    argnames='sections',
+    argvalues=(
+        (),
+        ('File_1',),
+        ('File_2',),
+        ('File_1', 'File_2'),
+    ),
+    ids=lambda v: str(v),
+)
+def test_write_succeeds(sections, tmp_path):
+    file1 = tmp_path / 'file1.ini'
+    file2 = tmp_path / 'file2.ini'
+    file1.write_text('[foo]\nbar = baz\n')
+    file2.write_text('[foo]\nbar = baz\n')
+    config = Config(
+        defaults={
+            'File_1': {'foo': {'bar': None}},
+            'File_2': {'foo': {'bar': None}},
+        },
+        File_1=file1,
+        File_2=file2,
+    )
+    config.set('File_1.foo.bar', 'config written')
+    config.set('File_2.foo.bar', 'config written')
+    config.write(*sections)
+    if not sections:
+        files_changed = (file1, file2)
+    else:
+        files_changed = []
+        if 'File_1' in sections:
+            files_changed.append(file1)
+        if 'File_2' in sections:
+            files_changed.append(file2)
+    for f in files_changed:
+        assert open(f).read() == '[foo]\nbar = config written\n\n'
+
+def test_write_fails(tmp_path):
+    file = tmp_path / 'file1.ini'
+    file.write_text('[foo]\nbar = baz\n')
+    config = Config(
+        defaults={'main': {'foo': {'bar': None}}},
+        main=file,
+    )
+    os.chmod(file, 0o000)
+    try:
+        with pytest.raises(errors.ConfigError, match=rf'^{file}: Permission denied$'):
+            config.write('main')
+    finally:
+        os.chmod(file, 0o600)

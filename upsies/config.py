@@ -125,8 +125,67 @@ class Config:
                         cfg[subsect][option] = defaults[subsect][option]
         return cfg
 
+    def _validate_path(self, path):
+        segments = path.split('.', maxsplit=3)
+        if len(segments) == 1:
+            raise errors.ConfigError(f'{path}: Missing subsection and option')
+        elif len(segments) == 2:
+            raise errors.ConfigError(f'{path}: Missing option')
+        else:
+            section_name, subsection_name, option_name = segments
+
+        try:
+            section = self[section_name]
+        except KeyError:
+            raise errors.ConfigError(f'{section_name}: Unknown section')
+        try:
+            subsection = section[subsection_name]
+        except KeyError:
+            raise errors.ConfigError(f'{subsection_name}: Unknown subsection in section {section_name}')
+        try:
+            subsection[option_name]
+        except KeyError:
+            raise errors.ConfigError(f'{option_name}: Unknown option in subsection {section_name}.{subsection_name}')
+
+        return section_name, subsection_name, option_name
+
     def __getitem__(self, key):
         return ImmutableDict(**self._cfg[key])
+
+    def set(self, path, value):
+        """
+        Change option value
+
+        :param str path: Path to option in the format
+            "<section>.<subsection>.<option>"
+        :param value: New value for option specified by `path`
+
+        :raise ConfigError: if the operation fails
+        """
+        section, subsection, option = self._validate_path(path)
+        self._cfg[section][subsection][option] = value
+
+    def write(self, *sections):
+        """
+        Save current configuration to file(s)
+
+        :param sections: Sections to save; save all sections with no arguments
+
+        :raise ConfigError: if writing fails
+        """
+        if not sections:
+            sections = tuple(self._files)
+        for section in sections:
+            ini = configparser.ConfigParser(
+                default_section=None,
+                interpolation=None,
+            )
+            ini.read_dict(self[section])
+            try:
+                with open(self._files[section], 'w') as f:
+                    ini.write(f)
+            except OSError as e:
+                raise errors.ConfigError(f'{self._files[section]}: {e.strerror or e}')
 
 
 class ImmutableDict(collections.abc.Mapping):
