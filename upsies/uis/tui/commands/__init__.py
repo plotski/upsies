@@ -222,10 +222,10 @@ class screenshots(CommandBase):
 
     @cache.property
     def jobs(self):
-        if self.upload_screenshots_job:
-            return (self.screenshots_job, self.upload_screenshots_job)
-        else:
-            return (self.screenshots_job,)
+        return (
+            self.screenshots_job,
+            self.upload_screenshots_job,
+        )
 
 
 class upload_images(CommandBase):
