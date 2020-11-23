@@ -224,20 +224,6 @@ class JobBase(abc.ABC):
                 self._output.append(output_str)
                 self.signal.emit('output', output_str)
 
-    def pipe_input(self, value):
-        """
-        Called by :class:`~utils.pipe.Pipe` on the receiving job for each output from sending
-        job
-        """
-        raise NotImplementedError(f'pipe_input() is not implemented in {type(self).__name__}')
-
-    def pipe_closed(self):
-        """
-        Called by :class:`~utils.pipe.Pipe` on the receiving job when the sending job is
-        finished
-        """
-        raise NotImplementedError(f'pipe_closed() is not implemented in {type(self).__name__}')
-
     @property
     def errors(self):
         """Sequence of reported errors (strings or exceptions)"""

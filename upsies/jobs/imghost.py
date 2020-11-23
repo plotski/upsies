@@ -36,7 +36,6 @@ class ImageHostJob(JobBase):
         return None
 
     def initialize(self, imghost, image_paths=(), images_total=0):
-        # Accept images from `image_paths` and pipe_input() calls
         if image_paths and images_total:
             raise RuntimeError('You must not specify both "image_paths" and "images_total".')
         else:
