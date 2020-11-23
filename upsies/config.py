@@ -49,7 +49,7 @@ class Config:
                 raise errors.ConfigError(f'{filepath}: {e.strerror}')
             else:
                 cfg = self._parse(section, string, filepath)
-                cfg = self._validate(section, cfg, filepath)
+                cfg = self._validate_section(section, cfg, filepath)
                 self._cfg[section] = self._apply_defaults(section, cfg)
                 self._files[section] = filepath
 
@@ -72,14 +72,14 @@ class Config:
         try:
             cfg.read_string(string, source=filepath)
         except configparser.MissingSectionHeaderError as e:
-            raise errors.ConfigError(f'{filepath}: Line {e.lineno}: Option outside of section: {e.line.strip()}')
+            raise errors.ConfigError(f'{filepath}: Line {e.lineno}: {e.line.strip()}: Option outside of section')
         except configparser.ParsingError as e:
             lineno, msg = e.errors[0]
-            raise errors.ConfigError(f'{filepath}: Line {lineno}: Invalid syntax: {msg}')
+            raise errors.ConfigError(f'{filepath}: Line {lineno}: {msg}: Invalid syntax')
         except configparser.DuplicateSectionError as e:
-            raise errors.ConfigError(f'{filepath}: Line {e.lineno}: Duplicate section: {e.section}')
+            raise errors.ConfigError(f'{filepath}: Line {e.lineno}: {e.section}: Duplicate section')
         except configparser.DuplicateOptionError as e:
-            raise errors.ConfigError(f'{filepath}: Line {e.lineno}: Duplicate option: {e.option}')
+            raise errors.ConfigError(f'{filepath}: Line {e.lineno}: {e.option}: Duplicate option')
         except configparser.Error as e:
             raise errors.ConfigError(f'{filepath}: {e}')
         else:
@@ -96,18 +96,18 @@ class Config:
 
             return cfg
 
-    def _validate(self, section, cfg, filepath):
+    def _validate_section(self, section, cfg, filepath):
         if section not in self._defaults:
-            raise errors.ConfigError(f'Unknown section: {section}')
+            raise errors.ConfigError(f'{section}: Unknown section')
 
         defaults = self.defaults(section)
         for subsect in cfg:
             if subsect not in defaults:
-                raise errors.ConfigError(f'{filepath}: Unknown section: {subsect}')
+                raise errors.ConfigError(f'{filepath}: {subsect}: Unknown section')
             for option in cfg[subsect]:
                 if option not in defaults[subsect]:
                     raise errors.ConfigError(
-                        f'{filepath}: {subsect}: Unknown option: {option}')
+                        f'{filepath}: {subsect}: {option}: Unknown option')
 
         return cfg
 

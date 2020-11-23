@@ -130,22 +130,22 @@ def test_defaults_raises_ValueError():
 
 def test_parse_finds_duplicate_section():
     config = Config(defaults={})
-    with pytest.raises(errors.ConfigError, match=r'^mock/path.ini: Line 3: Duplicate section: asdf$'):
+    with pytest.raises(errors.ConfigError, match=r'^mock/path.ini: Line 3: asdf: Duplicate section$'):
         config._parse('section1', '[asdf]\nfoo = bar\n[asdf]\na = b\n', 'mock/path.ini')
 
 def test_parse_finds_duplicate_option():
     config = Config(defaults={})
-    with pytest.raises(errors.ConfigError, match=r'^mock/path.ini: Line 3: Duplicate option: foo$'):
+    with pytest.raises(errors.ConfigError, match=r'^mock/path.ini: Line 3: foo: Duplicate option$'):
         config._parse('section1', '[section]\nfoo = bar\nfoo = baz\n', 'mock/path.ini')
 
 def test_parse_finds_invalid_syntax():
     config = Config(defaults={})
-    with pytest.raises(errors.ConfigError, match=r"^mock/path.ini: Line 2: Invalid syntax: 'foo\\n'$"):
+    with pytest.raises(errors.ConfigError, match=r"^mock/path.ini: Line 2: 'foo\\n': Invalid syntax$"):
         config._parse('section1', '[section]\nfoo\n', 'mock/path.ini')
 
 def test_parse_option_outside_of_section():
     config = Config(defaults={})
-    with pytest.raises(errors.ConfigError, match=r"^mock/path.ini: Line 1: Option outside of section: foo = bar$"):
+    with pytest.raises(errors.ConfigError, match=r"^mock/path.ini: Line 1: foo = bar: Option outside of section$"):
         config._parse('section1', 'foo = bar\n', 'mock/path.ini')
 
 @patch('configparser.ConfigParser')
@@ -169,41 +169,41 @@ def test_parse_uses_newlines_as_list_separator():
     assert cfg == {'foo': {'a': ['1', '2', '3']}}
 
 
-def test_validate_finds_unknown_section():
+def test_validate_section_finds_unknown_section():
     config = Config(defaults={})
     config._defaults = {'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
                                      'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
                         'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
                                      'subsection3': {'y': '40', 'z': '50', '_': '60'}}}
-    with pytest.raises(errors.ConfigError, match=r'^Unknown section: section5$'):
-        config._validate('section5', {'foo': 'bar'}, 'path/to/section1.ini')
+    with pytest.raises(errors.ConfigError, match=r'^section5: Unknown section$'):
+        config._validate_section('section5', {'foo': 'bar'}, 'path/to/section1.ini')
 
-def test_validate_finds_unknown_subsection():
+def test_validate_section_finds_unknown_subsection():
     config = Config(defaults={})
     config._defaults = {'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
                                      'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
                         'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
                                      'subsection3': {'y': '40', 'z': '50', '_': '60'}}}
-    with pytest.raises(errors.ConfigError, match=r'^path/to/section1.ini: Unknown section: foo$'):
-        config._validate('section1', {'foo': {'bar': 'baz'}}, 'path/to/section1.ini')
+    with pytest.raises(errors.ConfigError, match=r'^path/to/section1.ini: foo: Unknown section$'):
+        config._validate_section('section1', {'foo': {'bar': 'baz'}}, 'path/to/section1.ini')
 
-def test_validate_finds_unknown_option():
+def test_validate_section_finds_unknown_option():
     config = Config(defaults={})
     config._defaults = {'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
                                      'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
                         'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
                                      'subsection3': {'y': '40', 'z': '50', '_': '60'}}}
-    with pytest.raises(errors.ConfigError, match=r'^path/to/section1.ini: subsection2: Unknown option: bar$'):
-        config._validate('section1', {'subsection2': {'bar': 'baz'}}, 'path/to/section1.ini')
+    with pytest.raises(errors.ConfigError, match=r'^path/to/section1.ini: subsection2: bar: Unknown option$'):
+        config._validate_section('section1', {'subsection2': {'bar': 'baz'}}, 'path/to/section1.ini')
 
-def test_validate_returns_valid_config():
+def test_validate_section_returns_valid_config():
     config = Config(defaults={})
     config._defaults = {'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
                                      'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
                         'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
                                      'subsection3': {'y': '40', 'z': '50', '_': '60'}}}
     cfg = {'subsection2': {'b': '0'}}
-    assert config._validate('section1', cfg, 'path/to/section1.ini') == cfg
+    assert config._validate_section('section1', cfg, 'path/to/section1.ini') == cfg
 
 
 def test_apply_defaults_gets_empty_config():
