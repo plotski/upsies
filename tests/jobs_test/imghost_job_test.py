@@ -169,6 +169,7 @@ async def test_finish_cancels_upload_images_task(job):
     asyncio.get_event_loop().call_later(0.1, job.finish)
     await job.wait()
     assert job._upload_images_task.done()
+    assert job._upload_images_task.cancelled()
 
 
 @pytest.mark.asyncio
