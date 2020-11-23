@@ -146,16 +146,16 @@ class create_torrent(CommandBase):
     @cache.property
     def copy_torrent_job(self):
         if self.args.copy_to:
-            copy_job = _jobs.torrent.CopyTorrentJob(
+            copy_torrent_job = _jobs.torrent.CopyTorrentJob(
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 destination=self.args.copy_to,
             )
-            pipe.Pipe(
-                sender=self.create_torrent_job,
-                receiver=copy_job,
-            )
-            return copy_job
+            # Pass CreateTorrentJob output to CopyTorrentJob input.
+            self.create_torrent_job.signal.register('output', copy_torrent_job.copy)
+            # Tell CopyTorrentJob to finish when CreateTorrentJob is done.
+            self.create_torrent_job.signal.register('finished', copy_torrent_job.finish)
+            return copy_torrent_job
 
     @cache.property
     def jobs(self):

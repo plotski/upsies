@@ -139,7 +139,6 @@ def test_copy_torrent_job_without_torrent_destination_argument(mocker):
 def test_copy_torrent_job_with_torrent_destination_argument(mocker):
     CopyTorrentJob_mock = mocker.patch('upsies.jobs.torrent.CopyTorrentJob', Mock())
     mocker.patch('upsies.jobs.torrent.CreateTorrentJob', Mock())
-    Pipe_mock = mocker.patch('upsies.utils.pipe.Pipe', Mock())
     tracker = make_TestTracker(
         config=Mock(),
         homedir=Mock(),
@@ -156,12 +155,10 @@ def test_copy_torrent_job_with_torrent_destination_argument(mocker):
             destination=tracker.info.torrent_destination,
         ),
     ]
-    assert Pipe_mock.call_args_list == [
-        call(
-            sender=tracker.create_torrent_job,
-            receiver=tracker.copy_torrent_job,
-        ),
-    ]
+    assert (call('output', tracker.copy_torrent_job.copy)
+            in tracker.create_torrent_job.signal.register.call_args_list)
+    assert (call('finished', tracker.copy_torrent_job.finish)
+            in tracker.create_torrent_job.signal.register.call_args_list)
 
 
 def test_release_name_job(mocker):

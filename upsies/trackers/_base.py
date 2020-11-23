@@ -86,10 +86,10 @@ class TrackerBase(abc.ABC):
                 ignore_cache=self.info.ignore_cache,
                 destination=self.info.torrent_destination,
             )
-            pipe.Pipe(
-                sender=self.create_torrent_job,
-                receiver=copy_torrent_job,
-            )
+            # Pass CreateTorrentJob output to CopyTorrentJob input.
+            self.create_torrent_job.signal.register('output', copy_torrent_job.copy)
+            # Tell CopyTorrentJob to finish when CreateTorrentJob is done.
+            self.create_torrent_job.signal.register('finished', copy_torrent_job.finish)
             return copy_torrent_job
 
     @cache.property
