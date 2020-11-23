@@ -40,5 +40,5 @@ config = {
             'username': '',
             'password': '',
         },
-    }
+    },
 }
