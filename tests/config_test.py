@@ -347,6 +347,22 @@ def test_options_are_immutable(key):
     with pytest.raises(TypeError, match=r'does not support item assignment'):
         config['section']['subsection']['a'] = 'foo'
 
+def test_getting_item_by_path():
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2'},
+                     'subsection2': {'b': '4', 'c': '5'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20'},
+                     'subsection3': {'y': '40', 'z': '50'}},
+    })
+    assert config['section1.subsection1.a'] == '1'
+    assert config['section1.subsection1.b'] == '2'
+    assert config['section1.subsection2.b'] == '4'
+    assert config['section1.subsection2.c'] == '5'
+    assert config['section2.subsection2.x'] == '10'
+    assert config['section2.subsection2.y'] == '20'
+    assert config['section2.subsection3.y'] == '40'
+    assert config['section2.subsection3.z'] == '50'
+
 
 def test_set_validates_path(mocker):
     config = Config(defaults={

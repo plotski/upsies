@@ -150,7 +150,11 @@ class Config:
         return section_name, subsection_name, option_name
 
     def __getitem__(self, key):
-        return ImmutableDict(self._cfg[key])
+        if '.' in key:
+            section, subsection, option = self._validate_path(key)
+            return self._cfg[section][subsection][option]
+        else:
+            return ImmutableDict(self._cfg[key])
 
     def set(self, path, value):
         """
