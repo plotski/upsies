@@ -136,11 +136,10 @@ class Config:
         defaults = self.defaults(section)
         for subsect in defaults:
             if subsect not in cfg:
-                cfg[subsect] = defaults[subsect]
-            else:
-                for option in defaults[subsect]:
-                    if option not in cfg[subsect]:
-                        cfg[subsect][option] = defaults[subsect][option]
+                cfg[subsect] = {}
+            for option in defaults[subsect]:
+                if option not in cfg[subsect]:
+                    cfg[subsect][option] = defaults[subsect][option]
         return cfg
 
     def _validate_path(self, path):
