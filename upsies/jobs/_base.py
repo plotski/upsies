@@ -89,7 +89,7 @@ class JobBase(abc.ABC):
         """
         return self._signal
 
-    def __init__(self, *, homedir, ignore_cache, hidden=False, **kwargs):
+    def __init__(self, *, homedir='.', ignore_cache=False, hidden=False, **kwargs):
         self._homedir = str(homedir)
         self._ignore_cache = bool(ignore_cache)
         self._hidden = bool(hidden)
