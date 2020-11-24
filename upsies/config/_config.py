@@ -145,7 +145,7 @@ class Config:
             section_name, subsection_name, option_name = segments
 
         try:
-            section = self[section_name]
+            section = self._defaults[section_name]
         except KeyError:
             raise errors.ConfigError(f'{section_name}: Unknown section')
         try:
