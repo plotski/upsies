@@ -118,10 +118,16 @@ class Config:
 
     def _validate_value(self, section, subsection, option, value):
         default = self._defaults[section][subsection][option]
-        if utils.is_sequence(default) and not utils.is_sequence(value):
-            return value.split()
-        elif not utils.is_sequence(default) and utils.is_sequence(value):
-            return ' '.join(str(v) for v in value)
+        if utils.is_sequence(default):
+            if not utils.is_sequence(value):
+                return value.split()
+            else:
+                return tuple(value)
+        elif not utils.is_sequence(default):
+            if utils.is_sequence(value):
+                return ' '.join(str(v) for v in value)
+            else:
+                return str(value)
         else:
             return str(value)
 
