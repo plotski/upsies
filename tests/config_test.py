@@ -322,16 +322,30 @@ def test_validate_path_with_valid_path():
     assert config._validate_path('section2.subsection3._') == ('section2', 'subsection3', '_')
 
 
-@pytest.mark.parametrize('key', ('section1', 'section1.subsection1', 'section1.subsection1.a'))
-def test_sections_are_immutable(key):
+def test_sections_are_immutable():
     config = Config(defaults={
-        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
-                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
-        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
-                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+        'section': {'subsection': {'a': '1', 'b': '2', 'c': '3'}},
     })
     with pytest.raises(TypeError, match=r'does not support item assignment'):
-        config[key] = 'foo'
+        config['section'] = 'foo'
+
+@pytest.mark.parametrize('key', ('section1', 'section1.subsection1', 'section1.subsection1.a'))
+def test_subsections_are_immutable(key):
+    config = Config(defaults={
+        'section': {'subsection': {'a': '1', 'b': '2', 'c': '3'}},
+    })
+    print(config['section']['subsection'])
+    with pytest.raises(TypeError, match=r'does not support item assignment'):
+        config['section']['subsection'] = 'foo'
+
+@pytest.mark.parametrize('key', ('section1', 'section1.subsection1', 'section1.subsection1.a'))
+def test_options_are_immutable(key):
+    config = Config(defaults={
+        'section': {'subsection': {'a': '1', 'b': '2', 'c': '3'}},
+    })
+    print(config['section']['subsection'])
+    with pytest.raises(TypeError, match=r'does not support item assignment'):
+        config['section']['subsection']['a'] = 'foo'
 
 
 def test_set_validates_path(mocker):
