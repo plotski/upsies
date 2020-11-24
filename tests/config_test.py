@@ -21,12 +21,15 @@ def test_init_keyword_arguments(read_mock):
 
 @patch('upsies.config.Config.read')
 def test_init_copies_defaults(read_mock):
-    defaults = {'a': 'b'}
+    defaults = {'section': {'subsection1': {'foo': 123, 'bar': 456},
+                            'subsection2': {'foo': 123, 'bar': 456}}}
     c = Config(
         defaults=defaults,
         foo='path/to/foo_file.ini',
     )
+    assert c._defaults == defaults
     assert id(c._defaults) != id(defaults)
+    assert c._cfg == defaults
     assert id(c._cfg) != id(defaults)
 
 @patch('upsies.config.Config.read')
@@ -81,7 +84,7 @@ def test_read_succeeds(ignore_missing, tmp_path):
     file2.write_text('[something]\na = foo\n[foo]\nbar=Bar.\n')
     config = Config(defaults={
         'main': {'foo': {'a': None},
-                 'bar': {'x': None}},
+                 'bar': {'x': []}},
         'other': {'something': {'a': None},
                   'foo': {'bar': None,
                           'baz': 'hello'}},
@@ -90,14 +93,14 @@ def test_read_succeeds(ignore_missing, tmp_path):
     assert config.read('other', file2, ignore_missing=ignore_missing) is None
     assert config._cfg == {
         'main': {'foo': {'a': 'b'},
-                 'bar': {'x': ['1000', '2000']}},
+                 'bar': {'x': ('1000', '2000')}},
         'other': {'something': {'a': 'foo'},
                   'foo': {'bar': 'Bar.',
                           'baz': 'hello'}},
     }
     assert config._files == {'main': file1, 'other': file2}
     assert config['main'] == {'foo': {'a': 'b'},
-                              'bar': {'x': ['1000', '2000']}}
+                              'bar': {'x': ('1000', '2000')}}
     assert config['other'] == {'something': {'a': 'foo'},
                                'foo': {'bar': 'Bar.',
                                        'baz': 'hello'}}
@@ -215,6 +218,7 @@ def test_validate_section_validates_value(mocker):
     assert config._validate_value.call_args_list == [
         call('section1', 'subsection2', 'b', '0'),
     ]
+    assert cfg['subsection2']['b'] == '<validated value>'
 
 
 def test_validate_value_coerces_list_value_to_list():
