@@ -408,6 +408,15 @@ def test_set_validates_path(mocker):
     with pytest.raises(errors.ConfigError, match=r'^invalid path$'):
         config.set('section1.subsection1.a', 'foo')
 
+def test_set_validates_value(mocker):
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+    })
+    mocker.patch.object(config, '_validate_value', return_value='<validated value>')
+    config.set('section1.subsection1.a', 'foo')
+    assert config['section1.subsection1.a'] == '<validated value>'
+
 def test_set_changes_value(mocker):
     config = Config(defaults={
         'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},

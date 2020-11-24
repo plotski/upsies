@@ -177,6 +177,7 @@ class Config:
         :raise ConfigError: if the operation fails
         """
         section, subsection, option = self._validate_path(path)
+        value = self._validate_value(section, subsection, option, value)
         self._cfg[section][subsection][option] = value
 
     def reset(self, path):
