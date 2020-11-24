@@ -286,7 +286,7 @@ def parse(args):
                 'help': 'Option to change or show',
             },
             'VALUE': {
-                'nargs': '?',
+                'nargs': argparse.REMAINDER,
                 'default': None,
                 'help': 'New value for OPTION',
             },
