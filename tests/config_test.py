@@ -368,12 +368,10 @@ def test_set_validates_path(mocker):
     config = Config(defaults={
         'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
                      'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
-        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
-                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
     })
     mocker.patch.object(config, '_validate_path', side_effect=errors.ConfigError('invalid path'))
     with pytest.raises(errors.ConfigError, match=r'^invalid path$'):
-        config.set('foo', 'bar')
+        config.set('section1.subsection1.a', 'foo')
 
 def test_set_changes_value(mocker):
     config = Config(defaults={
@@ -384,6 +382,28 @@ def test_set_changes_value(mocker):
     })
     config.set('section2.subsection3.y', 'hello')
     assert config['section2']['subsection3']['y'] == 'hello'
+
+
+def test_reset_validates_path(mocker):
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+    })
+    mocker.patch.object(config, '_validate_path', side_effect=errors.ConfigError('invalid path'))
+    with pytest.raises(errors.ConfigError, match=r'^invalid path$'):
+        config.reset('section1.subsection1.a')
+
+def test_reset_changes_value(mocker):
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    config.set('section2.subsection3.y', 'hello')
+    assert config['section2']['subsection3']['y'] == 'hello'
+    config.reset('section2.subsection3.y')
+    assert config['section2']['subsection3']['y'] == '40'
 
 
 @pytest.mark.parametrize(

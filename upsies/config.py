@@ -169,6 +169,18 @@ class Config:
         section, subsection, option = self._validate_path(path)
         self._cfg[section][subsection][option] = value
 
+    def reset(self, path):
+        """
+        Reset option value to default
+
+        :param str path: Path to option in the format
+            "<section>.<subsection>.<option>"
+
+        :raise ConfigError: if `path` is not a valid option
+        """
+        section, subsection, option = self._validate_path(path)
+        self._cfg[section][subsection][option] = self._defaults[section][subsection][option]
+
     def write(self, *sections):
         """
         Save current configuration to file(s)
