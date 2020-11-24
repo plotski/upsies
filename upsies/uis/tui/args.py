@@ -76,6 +76,13 @@ def IMAGEHOST(string):
         raise ValueError(f'Unsupported image hosting service: {string}')
 
 
+def OPTION(string):
+    if string in defaults.OPTION_PATHS:
+        return string.casefold()
+    else:
+        raise ValueError(f'Unknown option: {string}')
+
+
 def parse(args):
     """
     Parse CLI arguments
