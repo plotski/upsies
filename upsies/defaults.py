@@ -48,3 +48,16 @@ config = {
         },
     },
 }
+
+
+def _get_paths(cfg, parents=()):
+    paths = []
+    for k, v in cfg.items():
+        k_parents = parents + (k,)
+        if isinstance(v, dict):
+            paths.extend(_get_paths(v, parents=k_parents))
+        else:
+            paths.append('.'.join(k_parents))
+    return tuple(sorted(paths))
+
+OPTION_PATHS = _get_paths(config)
