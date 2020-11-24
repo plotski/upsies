@@ -1,6 +1,6 @@
 import sys
 
-from ... import __homepage__, __project_name__, config, defaults, errors
+from ... import __homepage__, __project_name__, config, errors
 from .args import parse as parse_args
 from .commands import CommandBase
 from .ui import UI
@@ -30,7 +30,7 @@ def _main(args=None):
 
     # Read config files
     try:
-        cfg = config.Config(defaults=defaults.config)
+        cfg = config.Config(defaults=config.defaults)
         cfg.read('trackers', filepath=args.trackers_file, ignore_missing=True)
         cfg.read('clients', filepath=args.clients_file, ignore_missing=True)
     except errors.ConfigError as e:

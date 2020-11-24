@@ -3,7 +3,7 @@ import configparser
 import copy
 from os.path import exists as _path_exists
 
-from . import errors
+from .. import errors
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)

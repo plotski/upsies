@@ -37,7 +37,7 @@ def test_init_uses_defaults_as_initial_config(read_mock):
     assert c._cfg == defaults
 
 
-@patch('upsies.config._path_exists')
+@patch('upsies.config._config._path_exists')
 def test_read_does_not_ignore_nonexisting_path(path_exists_mock):
     config = Config(defaults={})
     path_exists_mock.return_value = False
@@ -48,7 +48,7 @@ def test_read_does_not_ignore_nonexisting_path(path_exists_mock):
     with pytest.raises(KeyError):
         config['foo']
 
-@patch('upsies.config._path_exists')
+@patch('upsies.config._config._path_exists')
 def test_read_ignores_nonexisting_path(path_exists_mock):
     config = Config(defaults={})
     path_exists_mock.return_value = False

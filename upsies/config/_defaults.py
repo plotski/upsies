@@ -3,8 +3,8 @@ import os
 
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 
-trackers_filepath = os.path.join(XDG_CONFIG_HOME, 'upsies', 'trackers.ini')
-clients_filepath = os.path.join(XDG_CONFIG_HOME, 'upsies', 'clients.ini')
+TRACKERS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'trackers.ini')
+CLIENTS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'clients.ini')
 
 
 class _TrackerConfig(dict):
@@ -20,7 +20,7 @@ class _TrackerConfig(dict):
         return {**cls._defaults, **kwargs}
 
 
-config = {
+defaults = {
     'trackers': {
         'dummy': _TrackerConfig(
             base_url='http://localhost',
@@ -60,4 +60,4 @@ def _get_paths(cfg, parents=()):
             paths.append('.'.join(k_parents))
     return tuple(sorted(paths))
 
-OPTION_PATHS = _get_paths(config)
+OPTION_PATHS = _get_paths(defaults)
