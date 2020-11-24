@@ -275,6 +275,24 @@ def parse(args):
         },
     )
 
+    # Command: set
+    add_subcmd(
+        command=commands.set,
+        names=('set',),
+        info='options:\n  ' + '\n  '.join(o for o in defaults.OPTION_PATHS),
+        args={
+            'OPTION': {
+                'type': OPTION,
+                'help': 'Option to change or show',
+            },
+            'VALUE': {
+                'nargs': '?',
+                'default': None,
+                'help': 'New value for OPTION',
+            },
+        },
+    )
+
     if args is None:
         parsed = parser.parse_args()
     else:

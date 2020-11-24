@@ -1,5 +1,6 @@
 from ._base import JobWidgetBase  # isort:skip
 
+from ._config import SetJobWidget
 from ._imghost import ImageHostJobWidget
 from ._mediainfo import MediainfoJobWidget
 from ._prompt import ChoiceJobWidget

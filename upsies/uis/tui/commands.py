@@ -322,3 +322,16 @@ class submit(CommandBase):
                 cache_dir=fs.projectdir(self.args.CONTENT),
                 **self.config['imghosts'][imghost_name],
             )
+
+
+class set(CommandBase):
+    """Change configuration file options"""
+    @cache.property
+    def jobs(self):
+        return (
+            _jobs.config.SetJob(
+                config=self.config,
+                option=self.args.OPTION,
+                value=self.args.VALUE,
+            ),
+        )
