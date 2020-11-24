@@ -8,7 +8,10 @@ _log = logging.getLogger(__name__)
 
 class SetJobWidget(JobWidgetBase):
     def setup(self):
-        self._setting = widgets.TextField(self.job.output[0])
+        if self.job.output:
+            self._setting = widgets.TextField(self.job.output[0])
+        else:
+            self._setting = widgets.TextField()
 
     @cache.property
     def runtime_widget(self):
