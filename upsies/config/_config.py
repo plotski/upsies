@@ -198,16 +198,28 @@ class Config:
             sections = tuple(s.split('.')[0] for s in sections)
 
         for section in sections:
-            ini = configparser.ConfigParser(
-                default_section=None,
-                interpolation=None,
-            )
-            ini.read_dict(self[section])
             try:
                 with open(self._files[section], 'w') as f:
-                    ini.write(f)
+                    f.write(self._as_ini(section))
             except OSError as e:
                 raise errors.ConfigError(f'{self._files[section]}: {e.strerror or e}')
+
+    def _as_ini(self, section):
+        lines = []
+        for subsection, options in self[section].items():
+            lines.append(f'[{subsection}]')
+            for option, value in options.items():
+                if (isinstance(value, collections.abc.Iterable)
+                    and not isinstance(value, str)):
+                    if value:
+                        lines.append(f'{option} =\n  ' + '\n  '.join(value))
+                    else:
+                        lines.append(f'{option} =')
+                else:
+                    lines.append(f'{option} = {value}')
+            # Empty line between subsections
+            lines.append('')
+        return '\n'.join(lines)
 
 
 class _ImmutableDict(collections.abc.Mapping):

@@ -453,7 +453,7 @@ def test_write_succeeds(args, tmp_path):
         if any(arg.startswith('File_2') for arg in args):
             files_changed.append(file2)
     for f in files_changed:
-        assert open(f).read() == '[foo]\nbar = config written\n\n'
+        assert open(f).read() == '[foo]\nbar = config written\n'
 
 def test_write_fails(tmp_path):
     file = tmp_path / 'file1.ini'
