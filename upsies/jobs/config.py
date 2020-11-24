@@ -1,4 +1,4 @@
-from .. import errors
+from .. import errors, utils
 from . import JobBase
 
 
@@ -23,7 +23,10 @@ class SetJob(JobBase):
         except errors.ConfigError as e:
             self.error(e)
         else:
-            self.send(f'{option} = {config[option]}')
+            if utils.is_sequence(config[option]):
+                self.send(f'{option} = {" ".join(config[option])}')
+            else:
+                self.send(f'{option} = {config[option]}')
         finally:
             self.finish()
 
