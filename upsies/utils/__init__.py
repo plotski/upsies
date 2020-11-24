@@ -2,6 +2,7 @@
 Low-level wrappers and helper functions
 """
 
+import collections
 import importlib
 import types
 
@@ -91,3 +92,9 @@ class CaseInsensitiveString(str):
 
     def __ge__(self, other):
         return self.casefold() >= other.casefold()
+
+
+def is_sequence(obj):
+    """Return whether `obj` is a sequence and not a string"""
+    return (isinstance(obj, collections.abc.Sequence)
+            and not isinstance(obj, str))

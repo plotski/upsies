@@ -44,3 +44,9 @@ def test_CaseInsensitiveString_gt():
 
 def test_CaseInsensitiveString_ge():
     assert utils.CaseInsensitiveString('Foo') >= 'foo'
+
+
+def test_is_sequence():
+    assert utils.is_sequence((1, 2, 3))
+    assert utils.is_sequence([1, 2, 3])
+    assert not utils.is_sequence('123')

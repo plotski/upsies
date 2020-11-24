@@ -3,7 +3,7 @@ import configparser
 import copy
 from os.path import exists as _path_exists
 
-from .. import errors
+from .. import errors, utils
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -112,7 +112,8 @@ class Config:
                     raise errors.ConfigError(
                         f'{filepath}: {subsect}: {option}: Unknown option')
                 else:
-                    if _is_seq(defaults[subsect][option]) and not _is_seq(cfg[subsect][option]):
+                    if (utils.is_sequence(defaults[subsect][option])
+                        and not utils.is_sequence(cfg[subsect][option])):
                         cfg[subsect][option] = cfg[subsect][option].split()
         return cfg
 
@@ -242,8 +243,3 @@ class _ImmutableDict(collections.abc.Mapping):
 
     def __repr__(self):
         return repr(self._dict)
-
-
-def _is_seq(obj):
-    return (isinstance(obj, collections.abc.Sequence)
-            and not isinstance(obj, str))
