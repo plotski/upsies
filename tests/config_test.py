@@ -203,16 +203,40 @@ def test_validate_section_returns_valid_config():
     cfg = {'subsection2': {'b': '0'}}
     assert config._validate_section('section1', cfg, 'path/to/section1.ini') == cfg
 
-def test_validate_section_coerces_list_value():
+def test_validate_section_validates_value(mocker):
     config = Config(defaults={})
     config._defaults = {'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
-                                     'subsection2': {'list': ['1', '2', '3'], 'c': '5', 'd': '6'}},
+                                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
                         'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
                                      'subsection3': {'y': '40', 'z': '50', '_': '60'}}}
-    cfg = {'subsection2': {'list': '4 5\n6  7 \t\n 9', 'c': '500'}}
-    assert config._validate_section('section1', cfg, 'path/to/section1.ini') == {
-        'subsection2': {'list': ['4', '5', '6', '7', '9'], 'c': '500'}
-    }
+    cfg = {'subsection2': {'b': '0'}}
+    mocker.patch.object(config, '_validate_value', return_value='<validated value>')
+    assert config._validate_section('section1', cfg, 'path/to/section1.ini') == cfg
+    assert config._validate_value.call_args_list == [
+        call('section1', 'subsection2', 'b', '0'),
+    ]
+
+
+def test_validate_value_coerces_list_value_to_list():
+    config = Config(defaults={})
+    config._defaults = {'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                                     'subsection2': {'list': ['1', '2', '3'], 'c': '5', 'd': '6'}}}
+    coerced = config._validate_value('section1', 'subsection2', 'list', '4 5\n6  7 \t\n 9')
+    assert coerced == ['4', '5', '6', '7', '9']
+
+def test_validate_value_coerces_nonlist_value_to_str():
+    config = Config(defaults={})
+    config._defaults = {'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                                     'subsection2': {'c': '5', 'd': '6'}}}
+    coerced = config._validate_value('section1', 'subsection2', 'c', [1, 2, 3])
+    assert coerced == '1 2 3'
+
+def test_validate_value_coerces_other_value_to_str():
+    config = Config(defaults={})
+    config._defaults = {'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                                     'subsection2': {'c': '5', 'd': '6'}}}
+    coerced = config._validate_value('section1', 'subsection2', 'c', 123)
+    assert coerced == '123'
 
 
 def test_apply_defaults_gets_empty_config():

@@ -112,10 +112,17 @@ class Config:
                     raise errors.ConfigError(
                         f'{filepath}: {subsect}: {option}: Unknown option')
                 else:
-                    if (utils.is_sequence(defaults[subsect][option])
-                        and not utils.is_sequence(cfg[subsect][option])):
-                        cfg[subsect][option] = cfg[subsect][option].split()
+                    self._validate_value(section, subsect, option, cfg[subsect][option])
         return cfg
+
+    def _validate_value(self, section, subsection, option, value):
+        default = self._defaults[section][subsection][option]
+        if utils.is_sequence(default) and not utils.is_sequence(value):
+            return value.split()
+        elif not utils.is_sequence(default) and utils.is_sequence(value):
+            return ' '.join(str(v) for v in value)
+        else:
+            return str(value)
 
     def _apply_defaults(self, section, cfg):
         defaults = self.defaults(section)
