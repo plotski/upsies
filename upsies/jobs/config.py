@@ -15,9 +15,14 @@ class SetJob(JobBase):
     label = 'Set'
     hidden = True
 
-    def initialize(self, *, config, option, value=None):
+    def initialize(self, *, config, option, value=None, reset=False):
+        if value and reset:
+            raise RuntimeError('Arguments "value" and "reset" cannot both be given.')
         try:
-            if value is not None:
+            if reset:
+                config.reset(option)
+                config.write(option)
+            elif value is not None:
                 config.set(option, value)
                 config.write(option)
         except errors.ConfigError as e:

@@ -290,6 +290,10 @@ def parse(args):
                 'default': None,
                 'help': 'New value for OPTION',
             },
+            ('--reset', '-r'): {
+                'action': 'store_true',
+                'help': 'Reset OPTION to default value',
+            },
         },
     )
 

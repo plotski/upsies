@@ -333,5 +333,6 @@ class set(CommandBase):
                 config=self.config,
                 option=self.args.OPTION,
                 value=self.args.VALUE,
+                reset=self.args.reset,
             ),
         )
