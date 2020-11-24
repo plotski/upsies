@@ -113,8 +113,10 @@ def parse(args):
 
     subparsers = parser.add_subparsers(title='commands')
 
-    def add_subcmd(command, names, help='', description='', args={}):
+    def add_subcmd(command, names, info='', args={}):
         description = textwrap.dedent(command.__doc__.strip('\n'))
+        if info:
+            description += f'\n\n{info}'
         help = description.split('\n', 1)[0]
         parser = subparsers.add_parser(
             names[0],
