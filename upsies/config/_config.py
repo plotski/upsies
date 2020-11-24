@@ -52,8 +52,9 @@ class Config:
                 raise errors.ConfigError(f'{filepath}: {e.strerror}')
             else:
                 cfg = self._parse(section, string, filepath)
-                cfg = self._validate_section(section, cfg, filepath)
-                self._cfg[section] = self._apply_defaults(section, cfg)
+                self._validate_section(section, cfg, filepath)
+                self._apply_defaults(section, cfg)
+                self._cfg[section] = cfg
                 self._files[section] = filepath
 
     def defaults(self, section):
