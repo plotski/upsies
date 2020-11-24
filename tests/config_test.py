@@ -203,6 +203,17 @@ def test_validate_section_returns_valid_config():
     cfg = {'subsection2': {'b': '0'}}
     assert config._validate_section('section1', cfg, 'path/to/section1.ini') == cfg
 
+def test_validate_section_coerces_list_value():
+    config = Config(defaults={})
+    config._defaults = {'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                                     'subsection2': {'list': ['1', '2', '3'], 'c': '5', 'd': '6'}},
+                        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                                     'subsection3': {'y': '40', 'z': '50', '_': '60'}}}
+    cfg = {'subsection2': {'list': '4 5\n6  7 \t\n 9', 'c': '500'}}
+    assert config._validate_section('section1', cfg, 'path/to/section1.ini') == {
+        'subsection2': {'list': ['4', '5', '6', '7', '9'], 'c': '500'}
+    }
+
 
 def test_apply_defaults_gets_empty_config():
     config = Config(defaults={})

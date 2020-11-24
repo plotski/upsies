@@ -111,7 +111,9 @@ class Config:
                 if option not in defaults[subsect]:
                     raise errors.ConfigError(
                         f'{filepath}: {subsect}: {option}: Unknown option')
-
+                else:
+                    if _is_seq(defaults[subsect][option]) and not _is_seq(cfg[subsect][option]):
+                        cfg[subsect][option] = cfg[subsect][option].split()
         return cfg
 
     def _apply_defaults(self, section, cfg):
@@ -228,3 +230,8 @@ class ImmutableDict(collections.abc.Mapping):
 
     def __repr__(self):
         return repr(self._dict)
+
+
+def _is_seq(obj):
+    return (isinstance(obj, collections.abc.Sequence)
+            and not isinstance(obj, str))
