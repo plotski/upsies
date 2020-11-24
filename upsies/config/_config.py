@@ -178,6 +178,10 @@ class Config:
         """
         section, subsection, option = self._validate_path(path)
         value = self._validate_value(section, subsection, option, value)
+        if section not in self._cfg:
+            self._cfg[section] = {}
+        if subsection not in self._cfg[section]:
+            self._cfg[section][subsection] = {}
         self._cfg[section][subsection][option] = value
 
     def reset(self, path):

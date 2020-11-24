@@ -421,6 +421,28 @@ def test_set_validates_value(mocker):
     config.set('section1.subsection1.a', 'foo')
     assert config['section1.subsection1.a'] == '<validated value>'
 
+def test_set_adds_missing_section(mocker):
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    config._cfg.clear()
+    config.set('section2.subsection3.y', 'hello')
+    assert config['section2']['subsection3']['y'] == 'hello'
+
+def test_set_adds_missing_subsection(mocker):
+    config = Config(defaults={
+        'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
+                     'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
+        'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
+                     'subsection3': {'y': '40', 'z': '50', '_': '60'}},
+    })
+    config._cfg['section1'].clear()
+    config.set('section1.subsection2.d', 'hello')
+    assert config['section1']['subsection2']['d'] == 'hello'
+
 def test_set_changes_value(mocker):
     config = Config(defaults={
         'section1': {'subsection1': {'a': '1', 'b': '2', 'c': '3'},
