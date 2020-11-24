@@ -407,16 +407,17 @@ def test_reset_changes_value(mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='sections',
+    argnames='args',
     argvalues=(
         (),
         ('File_1',),
         ('File_2',),
         ('File_1', 'File_2'),
+        ('File_1.foo', 'File_2.foo.bar'),
     ),
     ids=lambda v: str(v),
 )
-def test_write_succeeds(sections, tmp_path):
+def test_write_succeeds(args, tmp_path):
     file1 = tmp_path / 'file1.ini'
     file2 = tmp_path / 'file2.ini'
     file1.write_text('[foo]\nbar = baz\n')
@@ -431,14 +432,14 @@ def test_write_succeeds(sections, tmp_path):
     )
     config.set('File_1.foo.bar', 'config written')
     config.set('File_2.foo.bar', 'config written')
-    config.write(*sections)
-    if not sections:
+    config.write(*args)
+    if not args:
         files_changed = (file1, file2)
     else:
         files_changed = []
-        if 'File_1' in sections:
+        if any(arg.startswith('File_1') for arg in args):
             files_changed.append(file1)
-        if 'File_2' in sections:
+        if any(arg.startswith('File_2') for arg in args):
             files_changed.append(file2)
     for f in files_changed:
         assert open(f).read() == '[foo]\nbar = config written\n\n'

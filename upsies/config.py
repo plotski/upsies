@@ -185,12 +185,16 @@ class Config:
         """
         Save current configuration to file(s)
 
-        :param sections: Sections to save; save all sections with no arguments
+        :param sections: Paths to sections, subsections or options to save. Save
+            all sections with no arguments.
 
         :raise ConfigError: if writing fails
         """
         if not sections:
             sections = tuple(self._files)
+        else:
+            sections = tuple(s.split('.')[0] for s in sections)
+
         for section in sections:
             ini = configparser.ConfigParser(
                 default_section=None,
