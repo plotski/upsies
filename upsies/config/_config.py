@@ -210,8 +210,7 @@ class Config:
         for subsection, options in self[section].items():
             lines.append(f'[{subsection}]')
             for option, value in options.items():
-                if (isinstance(value, collections.abc.Iterable)
-                    and not isinstance(value, str)):
+                if utils.is_sequence(value):
                     if value:
                         lines.append(f'{option} =\n  ' + '\n  '.join(value))
                     else:
