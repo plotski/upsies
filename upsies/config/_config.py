@@ -156,7 +156,7 @@ class Config:
             section, subsection, option = self._validate_path(key)
             return self._cfg[section][subsection][option]
         else:
-            return ImmutableDict(self._cfg[key])
+            return _ImmutableDict(self._cfg[key])
 
     def set(self, path, value):
         """
@@ -210,12 +210,12 @@ class Config:
                 raise errors.ConfigError(f'{self._files[section]}: {e.strerror or e}')
 
 
-class ImmutableDict(collections.abc.Mapping):
+class _ImmutableDict(collections.abc.Mapping):
     def __init__(self, dct):
         self._dict = {}
         for k, v in dct.items():
             if isinstance(v, dict):
-                self._dict[k] = ImmutableDict(v)
+                self._dict[k] = _ImmutableDict(v)
             else:
                 self._dict[k] = v
 
