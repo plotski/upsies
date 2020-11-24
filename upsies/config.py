@@ -191,10 +191,8 @@ class Config:
 class ImmutableDict(collections.abc.Mapping):
     def __init__(self, *args, **kwargs):
         self._dict = dict(*args, **kwargs)
-        print('id: %r', repr(self._dict))
 
     def __getitem__(self, key):
-        print('getting key:', key)
         return self._dict[key]
 
     def __iter__(self):
