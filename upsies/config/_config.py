@@ -106,7 +106,7 @@ class Config:
         defaults = self.defaults(section)
         for subsect in cfg:
             if subsect not in defaults:
-                raise errors.ConfigError(f'{filepath}: {subsect}: Unknown section')
+                raise errors.ConfigError(f'{filepath}: {subsect}: Unknown subsection')
             for option in cfg[subsect]:
                 if option not in defaults[subsect]:
                     raise errors.ConfigError(

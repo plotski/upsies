@@ -182,7 +182,7 @@ def test_validate_section_finds_unknown_subsection():
                                      'subsection2': {'b': '4', 'c': '5', 'd': '6'}},
                         'section2': {'subsection2': {'x': '10', 'y': '20', 'z': '30'},
                                      'subsection3': {'y': '40', 'z': '50', '_': '60'}}}
-    with pytest.raises(errors.ConfigError, match=r'^path/to/section1.ini: foo: Unknown section$'):
+    with pytest.raises(errors.ConfigError, match=r'^path/to/section1.ini: foo: Unknown subsection$'):
         config._validate_section('section1', {'foo': {'bar': 'baz'}}, 'path/to/section1.ini')
 
 def test_validate_section_finds_unknown_option():
