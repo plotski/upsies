@@ -112,7 +112,8 @@ class Config:
                     raise errors.ConfigError(
                         f'{filepath}: {subsect}: {option}: Unknown option')
                 else:
-                    self._validate_value(section, subsect, option, cfg[subsect][option])
+                    cfg[subsect][option] = \
+                        self._validate_value(section, subsect, option, cfg[subsect][option])
         return cfg
 
     def _validate_value(self, section, subsection, option, value):
