@@ -26,7 +26,7 @@ class SetJob(JobBase):
             if reset:
                 config.reset(option)
                 config.write(option)
-            elif value is not None:
+            elif value:
                 config.set(option, value)
                 config.write(option)
         except errors.ConfigError as e:
