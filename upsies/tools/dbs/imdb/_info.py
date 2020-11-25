@@ -63,14 +63,14 @@ async def title_english(id):
             return False
         return True
 
-    display_titles = [i for i in info.get('alternateTitles', ())
-                      if title_looks_interesting(i)]
+    alternate_titles = [i for i in info.get('alternateTitles', ())
+                        if title_looks_interesting(i)]
 
     # Map titles to region and language.
     # Both region and language may not exist or be empty.
     # Ensure regions are upper case and languages are lower case.
     titles = collections.defaultdict(lambda: [])
-    for i in display_titles:
+    for i in alternate_titles:
         language = i.get('language', '').lower()
         region = i.get('region', '').upper()
         if language:
