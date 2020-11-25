@@ -287,7 +287,6 @@ def parse(args):
             },
             'VALUE': {
                 'nargs': '*',
-                'default': None,
                 'help': 'New value for OPTION',
             },
             ('--reset', '-r'): {
