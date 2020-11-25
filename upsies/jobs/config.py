@@ -1,6 +1,9 @@
 from .. import errors, utils
 from . import JobBase
 
+import logging  # isort:skip
+_log = logging.getLogger(__name__)
+
 
 class SetJob(JobBase):
     """
