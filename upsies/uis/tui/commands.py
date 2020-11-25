@@ -332,6 +332,8 @@ class set(CommandBase):
             _jobs.config.SetJob(
                 config=self.config,
                 option=self.args.OPTION,
+                # VALUE is a list. The Config class should convert lists to
+                # strings (and vice versa) depending on the default type.
                 value=self.args.VALUE,
                 reset=self.args.reset,
             ),
