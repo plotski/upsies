@@ -14,6 +14,7 @@ class SetJob(JobBase):
     name = 'set'
     label = 'Set'
     hidden = True
+    cache_file = None
 
     def initialize(self, *, config, option, value=None, reset=False):
         if value and reset:
