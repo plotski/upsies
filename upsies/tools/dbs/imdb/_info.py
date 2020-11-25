@@ -54,7 +54,10 @@ async def title_english(id):
 
     # Some titles should not be considered
     def title_looks_interesting(i):
+        # Maybe we can just move any title that has an "attributes" field?
         if 'original script title' in i.get('attributes', ()):
+            return False
+        elif 'literal title' in i.get('attributes', ()):
             return False
         elif 'working' in i.get('types', ()):
             return False
