@@ -442,6 +442,113 @@ def test_set_unknown_option():
 
 
 @pytest.mark.parametrize(
+    argnames=('args', 'exp_args'),
+    argvalues=(
+        ((), ('', '', '')),
+        (('foo',), ('foo', '', '')),
+        (('foo.bar',), ('foo', 'bar', '')),
+        (('foo.bar.baz',), ('foo', 'bar', 'baz')),
+    ),
+    ids=lambda value: str(value),
+)
+def test_reset_calls_private_reset_method(args, exp_args, mocker):
+    mocker.patch('upsies.config.Config._reset')
+    config = Config(defaults={})
+    config.reset(*args)
+    assert config._reset.call_args_list == [call(*exp_args)]
+
+
+def test__reset_everything():
+    config = Config(defaults={
+        'foo': {
+            'bar': {'baz': 'asdf', 'qux': 123},
+            'this': {'that': 'arf', 'qux': 456},
+        },
+        'hey': {
+            'you': {'there': 'whats', 'up': '?'},
+        },
+    })
+    config['foo.bar.baz'] = 'changed'
+    config['foo.this.qux'] = 789
+    config['hey.you.there'] = 'changed'
+    config._reset()
+    assert config._cfg == config._defaults
+
+def test__reset_section():
+    config = Config(defaults={
+        'foo': {
+            'bar': {'baz': 'asdf', 'qux': 123},
+            'this': {'that': 'arf', 'qux': 456},
+        },
+        'hey': {
+            'you': {'there': 'whats', 'up': '?'},
+        },
+    })
+    config['foo.bar.baz'] = 'changed'
+    config['foo.this.qux'] = 789
+    config['hey.you.there'] = 'changed'
+    config._reset('foo')
+    assert config._cfg ==  {
+        'foo': {
+            'bar': {'baz': 'asdf', 'qux': 123},
+            'this': {'that': 'arf', 'qux': 456},
+        },
+        'hey': {
+            'you': {'there': 'changed', 'up': '?'},
+        },
+    }
+
+def test__reset_subsection():
+    config = Config(defaults={
+        'foo': {
+            'bar': {'baz': 'asdf', 'qux': 123},
+            'this': {'that': 'arf', 'qux': 456},
+        },
+        'hey': {
+            'you': {'there': 'whats', 'up': '?'},
+        },
+    })
+    config['foo.bar.baz'] = 'changed'
+    config['foo.this.qux'] = 789
+    config['hey.you.there'] = 'changed'
+    config._reset('foo', 'this')
+    assert config._cfg ==  {
+        'foo': {
+            'bar': {'baz': 'changed', 'qux': 123},
+            'this': {'that': 'arf', 'qux': 456},
+        },
+        'hey': {
+            'you': {'there': 'changed', 'up': '?'},
+        },
+    }
+
+def test__reset_option():
+    config = Config(defaults={
+        'foo': {
+            'bar': {'baz': 'asdf', 'qux': 123},
+            'this': {'that': 'arf', 'qux': 456},
+        },
+        'hey': {
+            'you': {'there': 'whats', 'up': '?'},
+        },
+    })
+    config['foo.bar.baz'] = 'changed'
+    config['foo.this.that'] = 'arf and arf'
+    config['foo.this.qux'] = 789
+    config['hey.you.there'] = 'changed'
+    config._reset('foo', 'this', 'qux')
+    assert config._cfg ==  {
+        'foo': {
+            'bar': {'baz': 'changed', 'qux': 123},
+            'this': {'that': 'arf and arf', 'qux': 456},
+        },
+        'hey': {
+            'you': {'there': 'changed', 'up': '?'},
+        },
+    }
+
+
+@pytest.mark.parametrize(
     argnames='args',
     argvalues=(
         (),

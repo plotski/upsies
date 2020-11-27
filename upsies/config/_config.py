@@ -155,6 +155,32 @@ class Config:
             target = self._cfg
         target[key] = value
 
+    def reset(self, path=()):
+        """
+        Set `path` to default value
+
+        :param path: Section, section and subsection or section, subsection and
+            option as sequence or string with `"."` as delimiter
+        """
+        path = path.split('.') if isinstance(path, str) else list(path)
+        while len(path) < 3:
+            path.append('')
+        self._reset(*path)
+
+    def _reset(self, section=None, subsection=None, option=None):
+        # Rename argument variables to untangle them from loop variables
+        section_arg, subsection_arg, option_arg = section, subsection, option
+        del section, subsection, option
+
+        sections = (section_arg,) if section_arg else tuple(self._cfg)
+        for section in sections:
+            subsections = (subsection_arg,) if subsection_arg else tuple(self._cfg[section])
+            for subsection in subsections:
+                options = (option_arg,) if option_arg else tuple(self._cfg[section][subsection])
+                for option in options:
+                    self._cfg[section][subsection][option] = \
+                        self._defaults[section][subsection][option]
+
     def write(self, *sections):
         """
         Save current configuration to file(s)
