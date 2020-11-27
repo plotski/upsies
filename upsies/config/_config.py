@@ -72,7 +72,7 @@ class Config:
         else:
             try:
                 self._cfg[section][subsection][option] = value
-            except (ValueError, TypeError) as e:
+            except TypeError as e:
                 raise errors.ConfigError(f'{section}.{subsection}.{option}: {e}')
 
     def read(self, section, filepath, ignore_missing=False):
