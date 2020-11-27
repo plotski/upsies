@@ -488,7 +488,7 @@ def test__reset_section():
     config['foo.this.qux'] = 789
     config['hey.you.there'] = 'changed'
     config._reset('foo')
-    assert config._cfg ==  {
+    assert config._cfg == {
         'foo': {
             'bar': {'baz': 'asdf', 'qux': 123},
             'this': {'that': 'arf', 'qux': 456},
@@ -512,7 +512,7 @@ def test__reset_subsection():
     config['foo.this.qux'] = 789
     config['hey.you.there'] = 'changed'
     config._reset('foo', 'this')
-    assert config._cfg ==  {
+    assert config._cfg == {
         'foo': {
             'bar': {'baz': 'changed', 'qux': 123},
             'this': {'that': 'arf', 'qux': 456},
@@ -537,7 +537,7 @@ def test__reset_option():
     config['foo.this.qux'] = 789
     config['hey.you.there'] = 'changed'
     config._reset('foo', 'this', 'qux')
-    assert config._cfg ==  {
+    assert config._cfg == {
         'foo': {
             'bar': {'baz': 'changed', 'qux': 123},
             'this': {'that': 'arf and arf', 'qux': 456},

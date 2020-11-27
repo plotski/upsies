@@ -298,7 +298,7 @@ class _SpecDict(collections.abc.MutableMapping, dict):
 
         for typ, converter in self._converters.items():
             # `typ` may be single type or tuple of types
-            if typ is not None and  isinstance(value, typ):
+            if typ is not None and isinstance(value, typ):
                 return converter(value)
 
         # Use default converter or raise TypeError
