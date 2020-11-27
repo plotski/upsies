@@ -27,7 +27,7 @@ class SetJob(JobBase):
                 config.reset(option)
                 config.write(option)
             elif value:
-                config.set(option, value)
+                config[option] = value
                 config.write(option)
         except errors.ConfigError as e:
             self.error(e)
