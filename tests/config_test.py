@@ -382,28 +382,28 @@ def test_get_unknown_option_with_dot_notation():
         config['foo.bar.nope']
 
 
-def test_set_valid_section(mocker):
+def test_set_valid_section():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     config['foo'] = {'bar': {'baz': 'hello', 'qux': 456}}
     assert config['foo'] == {'bar': {'baz': 'hello', 'qux': 456, 'asdf': [1, 2, 3]}}
 
-def test_set_valid_subsection(mocker):
+def test_set_valid_subsection():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     config['foo']['bar'] = {'baz': 'hello', 'qux': 456}
     assert config['foo'] == {'bar': {'baz': 'hello', 'qux': 456, 'asdf': [1, 2, 3]}}
 
-def test_set_valid_option(mocker):
+def test_set_valid_option():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     config['foo']['bar']['baz'] = 'hello'
     assert config['foo'] == {'bar': {'baz': 'hello', 'qux': 123, 'asdf': [1, 2, 3]}}
 
-def test_set_invalid_section(mocker):
+def test_set_invalid_section():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     with pytest.raises(TypeError, match=r"^Expected dict for foo, not str: 'asdf'$"):
         config['foo'] = 'asdf'
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
-def test_set_invalid_subsection(mocker):
+def test_set_invalid_subsection():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     with pytest.raises(TypeError, match=r"^Expected dict for bar, not str: 'asdf'$"):
         config['foo']['bar'] = 'asdf'
@@ -411,20 +411,20 @@ def test_set_invalid_subsection(mocker):
         config['foo.bar'] = 'asdf'
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
-def test_set_converts_option_to_list_if_applicable(mocker):
+def test_set_converts_option_to_list_if_applicable():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     config['foo']['bar']['asdf'] = 'not a list'
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': ['not', 'a', 'list']}}
     config['foo.bar.asdf'] = 'also not a list'
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': ['also', 'not', 'a', 'list']}}
 
-def test_set_unknown_section(mocker):
+def test_set_unknown_section():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['nope'] = {'bar': {'baz': 'asdf'}}
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
-def test_set_unknown_subsection(mocker):
+def test_set_unknown_subsection():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['foo']['nope'] = {'baz': 'asdf'}
@@ -432,7 +432,7 @@ def test_set_unknown_subsection(mocker):
         config['foo.nope'] = {'baz': 'asdf'}
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
-def test_set_unknown_option(mocker):
+def test_set_unknown_option():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['foo']['bar']['nope'] = 'hello'
