@@ -72,7 +72,6 @@ class TrackerBase(abc.ABC):
                 download_path=fs.dirname(self.info.content_path),
             )
             # Pass CreateTorrentJob output to AddTorrentJob input.
-            print(f"self.create_torrent_job.signal.register('output', {add_torrent_job.add})")
             self.create_torrent_job.signal.register('output', add_torrent_job.add)
             # Tell AddTorrentJob to finish the current upload and then finish.
             self.create_torrent_job.signal.register('finished', add_torrent_job.finalize)
