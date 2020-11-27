@@ -1,3 +1,5 @@
+import pytest
+
 from upsies import utils
 
 
@@ -50,3 +52,22 @@ def test_is_sequence():
     assert utils.is_sequence((1, 2, 3))
     assert utils.is_sequence([1, 2, 3])
     assert not utils.is_sequence('123')
+
+
+@pytest.mark.parametrize(
+    argnames=('a', 'b', 'merged'),
+    argvalues=(
+        ({1: 10}, {1: 20}, {1: 20}),
+        ({1: 10}, {2: 20}, {1: 10, 2: 20}),
+        ({1: 10}, {1: 20, 2: 2000}, {1: 20, 2: 2000}),
+        ({1: 10, 2: 2000}, {1: 20}, {1: 20, 2: 2000}),
+        ({1: {2: 20}}, {1: {2: 2000}}, {1: {2: 2000}}),
+        ({1: {2: 20}}, {1: {2: {3: 30}}}, {1: {2: {3: 30}}}),
+        ({1: {2: 20, 3: {5: 50}}}, {1: {3: {4: 40, 5: 5000}}}, {1: {2: 20, 3: {4: 40, 5: 5000}}}),
+    ),
+    ids=lambda v: str(v),
+)
+def test_merge_dicts(a, b, merged):
+    assert utils.merge_dicts(a, b) == merged
+    assert id(a) != id(merged)
+    assert id(b) != id(merged)

@@ -4,6 +4,7 @@ Low-level wrappers and helper functions
 
 import collections
 import importlib
+import itertools
 import types
 
 
@@ -98,3 +99,19 @@ def is_sequence(obj):
     """Return whether `obj` is a sequence and not a string"""
     return (isinstance(obj, collections.abc.Sequence)
             and not isinstance(obj, str))
+
+
+def merge_dicts(a, b, path=()):
+    """Merge nested dictionaries `a` and `b` into a new dictionary"""
+    keys = itertools.chain(a, b)
+    merged = {}
+    for key in keys:
+        if isinstance(a.get(key), dict) and isinstance(b.get(key), dict):
+            merged[key] = merge_dicts(a[key], b[key], path + (key,))
+        elif key in b:
+            # Value from b takes precedence
+            merged[key] = b[key]
+        elif key in a:
+            # Value from a is default
+            merged[key] = a[key]
+    return merged
