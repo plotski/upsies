@@ -301,11 +301,14 @@ def parse(args):
             },
             'VALUE': {
                 'nargs': '*',
+                'default': '',  # FIXME: https://bugs.python.org/issue41854
                 'help': 'New value for OPTION',
+                'group': 'value',
             },
             ('--reset', '-r'): {
                 'action': 'store_true',
                 'help': 'Reset OPTION to default value',
+                'group': 'value',
             },
         },
     )
