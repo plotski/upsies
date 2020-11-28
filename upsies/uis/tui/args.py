@@ -297,6 +297,7 @@ def parse(args):
         args={
             'OPTION': {
                 'type': OPTION,
+                'nargs': '?',
                 'help': 'Option to change or show',
             },
             'VALUE': {

@@ -325,7 +325,11 @@ class submit(CommandBase):
 
 
 class set(CommandBase):
-    """Change configuration file options"""
+    """
+    Change or show configuration file options
+
+    Without any arguments, all options are listed with the current values.
+    """
     @cache.property
     def jobs(self):
         return (
