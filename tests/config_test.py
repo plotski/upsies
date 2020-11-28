@@ -141,6 +141,23 @@ def test_init_reads_files(mocker):
     ]
 
 
+def test_paths():
+    d = Config(defaults={
+        'main': {'foo': {'a': 'x'},
+                 'bar': {'b': ['x'], (1, 2, 3): 'cee'}},
+        0: {'foo': {'x': 'asdf'},
+            None: {'y': 'fdsa', 'z': 'qux'}},
+    })
+    assert d.paths == tuple(sorted((
+        'main.foo.a',
+        'main.bar.b',
+        'main.bar.(1, 2, 3)',
+        '0.foo.x',
+        '0.None.y',
+        '0.None.z',
+    )))
+
+
 @patch('upsies.config._config._path_exists')
 def test_read_ignores_nonexisting_path(path_exists_mock):
     path_exists_mock.return_value = False

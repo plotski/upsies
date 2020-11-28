@@ -59,6 +59,20 @@ class Config:
         for section, filepath in files.items():
             self.read(section, filepath)
 
+    @utils.cache.property
+    def paths(self):
+        """Sorted tuple of ``section.subsection.option`` paths"""
+        def _get_paths(dct, parents=()):
+            paths = []
+            for k, v in dct.items():
+                k_parents = parents + (k,)
+                if isinstance(v, dict):
+                    paths.extend(_get_paths(v, parents=k_parents))
+                else:
+                    paths.append('.'.join(str(k) for k in k_parents))
+            return tuple(sorted(paths))
+        return _get_paths(self._defaults)
+
     def __repr__(self):
         return repr(self._cfg)
 
