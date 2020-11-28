@@ -112,6 +112,7 @@ def parse(args):
                         action='store_true')
 
     subparsers = parser.add_subparsers(title='commands')
+    mutex_groups = {}
 
     def add_subcmd(command, names, info='', args={}):
         description = textwrap.dedent(command.__doc__.strip('\n'))
@@ -126,9 +127,22 @@ def parse(args):
             formatter_class=MyHelpFormatter,
         )
         parser.set_defaults(subcmd=command)
-        for argname,argopts in args.items():
+
+        for argname, argopts in args.items():
             names = (argname,) if isinstance(argname, str) else argname
-            parser.add_argument(*names, **argopts)
+            group_name = argopts.pop('group', None)
+            if group_name:
+                # Put arguments with the same argopts["group"] in a mutually
+                # exclusive group.
+                # FIXME: https://bugs.python.org/issue41854
+                if not names[0].startswith('-') and argopts.get('default') is None:
+                    raise RuntimeError('Default values of mutually exclusive positional arguments '
+                                       'must not be None. See: https://bugs.python.org/issue41854')
+                if group_name not in mutex_groups:
+                    mutex_groups[group_name] = parser.add_mutually_exclusive_group()
+                mutex_groups[group_name].add_argument(*names, **argopts)
+            else:
+                parser.add_argument(*names, **argopts)
 
     # Command: id
     add_subcmd(
