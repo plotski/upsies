@@ -115,3 +115,8 @@ def merge_dicts(a, b, path=()):
             # Value from a is default
             merged[key] = a[key]
     return merged
+
+
+# Provide submodules; allow submodules to import stuff from __init__
+from . import (browser, cache, country, daemon, fs, guessit, html, http,
+               signal, subproc, timestamp, video)
