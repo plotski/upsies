@@ -134,7 +134,7 @@ class Config:
             return cfg
 
     def __getitem__(self, key):
-        if '.' in key:
+        if isinstance(key, str) and '.' in key:
             path = key.split('.') if isinstance(key, str) else list(key)
             value = self._cfg
             while path:
@@ -144,7 +144,7 @@ class Config:
             return self._cfg[key]
 
     def __setitem__(self, key, value):
-        if '.' in key:
+        if isinstance(key, str) and '.' in key:
             path = key.split('.') if isinstance(key, str) else list(key)
             target = self._cfg
             while len(path) > 1:

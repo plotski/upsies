@@ -295,6 +295,12 @@ def test_parse_uses_newlines_as_list_separator():
     assert cfg == {'foo': {'a': ['1', '2', '3']}}
 
 
+def test_get_nonstring_key():
+    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    with pytest.raises(KeyError, match=r"^\(1, 2, 3\)$"):
+        config[(1, 2, 3)]
+
 def test_get_section():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
                               'hey': {'you': {'there': 'whats', 'up': '?'}}})
@@ -381,6 +387,24 @@ def test_get_unknown_option_with_dot_notation():
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['foo.bar.nope']
 
+
+def test_set_nonstring_section():
+    config = Config(defaults={(1, 2, 3): {'bar': {'baz': 'asdf', 'qux': 123}},
+                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config[(1, 2, 3)]['bar']['baz'] = 'not asdf'
+    assert config[(1, 2, 3)] == {'bar': {'baz': 'not asdf', 'qux': 123}}
+
+def test_set_nonstring_subsection():
+    config = Config(defaults={'foo': {(1, 2, 3): {'baz': 'asdf', 'qux': 123}},
+                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config['foo'][(1, 2, 3)]['baz'] = 'not asdf'
+    assert config['foo'] == {(1, 2, 3): {'baz': 'not asdf', 'qux': 123}}
+
+def test_set_nonstring_option():
+    config = Config(defaults={'foo': {'bar': {(1, 2, 3): 'asdf', 'qux': 123}},
+                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config['foo']['bar'][(1, 2, 3)] = 'not asdf'
+    assert config['foo'] == {'bar': {(1, 2, 3): 'not asdf', 'qux': 123}}
 
 def test_set_valid_section():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
