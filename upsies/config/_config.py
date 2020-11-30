@@ -57,7 +57,7 @@ class Config:
 
     def __init__(self, defaults, **files):
         self._defaults = copy.deepcopy(defaults)
-        self._cfg = _SpecDict(self._defaults, types=self._build_types())
+        self._cfg = _ConfigDict(self._defaults, types=self._build_types())
         self._files = {}  # Map section names to file paths
         for section, filepath in files.items():
             self.read(section, filepath)
@@ -268,7 +268,7 @@ class Config:
 
 # Inherit from MutableMapping to get the ABC benefits. Inherit from dict so that
 # `isinstance(spec_dict_instance, dict)` returns True.
-class _SpecDict(collections.abc.MutableMapping, dict):
+class _ConfigDict(collections.abc.MutableMapping, dict):
     """
     Dictionary that only accepts certain keys and value types
 
@@ -339,7 +339,7 @@ class _SpecDict(collections.abc.MutableMapping, dict):
                 # Merge new dictionary into existing dictionary
                 if key in self._dct:
                     value = utils.merge_dicts(self._dct[key], value)
-                return _SpecDict(
+                return _ConfigDict(
                     value,
                     keys=self._keys[key],
                     types=self._types.get(key, None),

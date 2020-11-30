@@ -7,7 +7,7 @@ import pytest
 
 from upsies import errors
 from upsies.config import Config
-from upsies.config._config import _any2list, _any2string, _SpecDict
+from upsies.config._config import _any2list, _any2string, _ConfigDict
 
 
 @pytest.mark.parametrize(
@@ -41,41 +41,41 @@ def test_any2string(value, exp_value):
 
 
 @pytest.mark.parametrize(argnames='cls', argvalues=(dict, collections.abc.Mapping))
-def test_SpecDict_subclass(cls):
-    d = _SpecDict({'foo': 'baz'})
+def test_ConfigDict_subclass(cls):
+    d = _ConfigDict({'foo': 'baz'})
     assert isinstance(d, cls)
 
-def test_SpecDict_implements_delitem():
-    d = _SpecDict({'foo': 'bar', 'bar': 'abc'})
+def test_ConfigDict_implements_delitem():
+    d = _ConfigDict({'foo': 'bar', 'bar': 'abc'})
     del d['bar']
     assert d == {'foo': 'bar'}
 
-def test_SpecDict_implements_len():
-    d = _SpecDict({'foo': 'baz', 'bar': 'xyz'})
+def test_ConfigDict_implements_len():
+    d = _ConfigDict({'foo': 'baz', 'bar': 'xyz'})
     assert len(d) == 2
 
-def test_SpecDict_implements_repr():
-    d = _SpecDict({'foo': 'baz', 'bar': 'xyz'})
+def test_ConfigDict_implements_repr():
+    d = _ConfigDict({'foo': 'baz', 'bar': 'xyz'})
     assert repr(d) == repr({'foo': 'baz', 'bar': 'xyz'})
 
-def test_SpecDict_implements_getitem():
-    d = _SpecDict({'foo': 'bar', 'baz': 123})
+def test_ConfigDict_implements_getitem():
+    d = _ConfigDict({'foo': 'bar', 'baz': 123})
     assert d['foo'] == 'bar'
     assert d['baz'] == 123
 
-def test_SpecDict_implements_setitem():
-    d = _SpecDict({'foo': 'bar', 'baz': 123})
+def test_ConfigDict_implements_setitem():
+    d = _ConfigDict({'foo': 'bar', 'baz': 123})
     d['foo'] = 'hello'
     d['baz'] = 'world'
     assert d == {'foo': 'hello', 'baz': 'world'}
 
-def test_SpecDict_raises_KeyError_when_setting_unknown_key():
-    d = _SpecDict({'foo': 'bar'})
+def test_ConfigDict_raises_KeyError_when_setting_unknown_key():
+    d = _ConfigDict({'foo': 'bar'})
     with pytest.raises(KeyError, match=r"^'asdf'$"):
         d['asdf'] = 'hello'
 
-def test_SpecDict_with_custom_keys():
-    d = _SpecDict({'foo': 'bar'}, keys={'foo': None, 'bar': None, 123: None})
+def test_ConfigDict_with_custom_keys():
+    d = _ConfigDict({'foo': 'bar'}, keys={'foo': None, 'bar': None, 123: None})
     d['foo'] = 'asdf'
     d['bar'] = 'baz'
     d[123] = '456'
@@ -93,72 +93,72 @@ def test_SpecDict_with_custom_keys():
     ),
     ids=lambda value: str(value),
 )
-def test_SpecDict_with_custom_types(converter, value, exp_value):
-    d = _SpecDict(dct={'foo': 2, 'bar': ''}, types={'foo': converter})
+def test_ConfigDict_with_custom_types(converter, value, exp_value):
+    d = _ConfigDict(dct={'foo': 2, 'bar': ''}, types={'foo': converter})
     d['foo'] = value
     assert d['foo'] == exp_value
     for v in ('abc', 123, (1, 2, 3)):
         d['bar'] = v
         assert d['bar'] is v
 
-def test_SpecDict_converter_raises_ValueError():
+def test_ConfigDict_converter_raises_ValueError():
     dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
-    d = _SpecDict(dct=dct, types={0: {1: int}})
+    d = _ConfigDict(dct=dct, types={0: {1: int}})
     with pytest.raises(ValueError, match=r'^Invalid value: hello$'):
         d[0][1] = 'hello'
 
-def test_SpecDict_converter_raises_TypeError():
+def test_ConfigDict_converter_raises_TypeError():
     dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
-    d = _SpecDict(dct=dct, types={0: {1: int}})
+    d = _ConfigDict(dct=dct, types={0: {1: int}})
     with pytest.raises(ValueError, match=r"^Invalid value: \['hello'\]$"):
         d[0][1] = ['hello']
 
-def test_SpecDict_subdictionaries_are_SpecDicts():
-    d = _SpecDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}})
-    assert isinstance(d[0], _SpecDict)
-    assert isinstance(d[0][3], _SpecDict)
-    assert isinstance(d[0][3][8], _SpecDict)
+def test_ConfigDict_subdictionaries_are_ConfigDicts():
+    d = _ConfigDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}})
+    assert isinstance(d[0], _ConfigDict)
+    assert isinstance(d[0][3], _ConfigDict)
+    assert isinstance(d[0][3][8], _ConfigDict)
 
-def test_SpecDict_setting_subdictionary_merges_into_current_values():
+def test_ConfigDict_setting_subdictionary_merges_into_current_values():
     dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
-    d = _SpecDict(dct=dct)
+    d = _ConfigDict(dct=dct)
     d[0][3] = {6: 600, 8: {9: 1000}}
     assert d == {0: {1: 2, 3: {4: 5, 6: 600, 8: {9: 1000}}}}
-    assert isinstance(d[0], _SpecDict)
-    assert isinstance(d[0][3], _SpecDict)
-    assert isinstance(d[0][3][8], _SpecDict)
+    assert isinstance(d[0], _ConfigDict)
+    assert isinstance(d[0][3], _ConfigDict)
+    assert isinstance(d[0][3][8], _ConfigDict)
 
-def test_SpecDict_setting_subdictionary_creates_new_subdictionary():
+def test_ConfigDict_setting_subdictionary_creates_new_subdictionary():
     dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
-    d = _SpecDict(dct=dct)
+    d = _ConfigDict(dct=dct)
     del d[0][3]
     d[0][3] = {8: {9: 1000}}
     assert d == {0: {1: 2, 3: {8: {9: 1000}}}}
-    assert isinstance(d[0], _SpecDict)
-    assert isinstance(d[0][3], _SpecDict)
-    assert isinstance(d[0][3][8], _SpecDict)
+    assert isinstance(d[0], _ConfigDict)
+    assert isinstance(d[0][3], _ConfigDict)
+    assert isinstance(d[0][3][8], _ConfigDict)
 
-def test_SpecDict_setting_subdictionaries_copies_appropriate_subkeys():
-    d = _SpecDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}},
+def test_ConfigDict_setting_subdictionaries_copies_appropriate_subkeys():
+    d = _ConfigDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}},
                   keys={0: {1: None, 3: {4: None, 6: None, 8: {9: None}}}})
     assert d[0]._keys == {1: None, 3: {4: None, 6: None, 8: {9: None}}}
     assert d[0][3]._keys == {4: None, 6: None, 8: {9: None}}
     assert d[0][3][8]._keys == {9: None}
 
-def test_SpecDict_setting_subdictionaries_copies_appropriate_subtypes():
+def test_ConfigDict_setting_subdictionaries_copies_appropriate_subtypes():
     types = {0: {1: lambda x: None, 3: {4: lambda x: None, 6: lambda x: None, 8: {9: lambda x: None}}}}
-    d = _SpecDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}, types=types)
+    d = _ConfigDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}, types=types)
     assert d[0]._types is types[0]
     assert d[0][3]._types is types[0][3]
     assert d[0][3][8]._types is types[0][3][8]
 
-def test_SpecDict_setting_subdictionary_to_nondictionary():
-    d = _SpecDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}})
+def test_ConfigDict_setting_subdictionary_to_nondictionary():
+    d = _ConfigDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}})
     with pytest.raises(TypeError, match=r'^Expected dictionary for 8, not int: 100$'):
         d[0][3][8] = 100
 
-def test_SpecDict_nondictionary_value_to_dictionary():
-    d = _SpecDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}})
+def test_ConfigDict_nondictionary_value_to_dictionary():
+    d = _ConfigDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}})
     with pytest.raises(TypeError, match=r'^4 is not a dictionary: \{400: 4000\}$'):
         d[0][3][4] = {400: 4000}
 
@@ -173,17 +173,17 @@ def test_init_copies_defaults():
     assert id(config._defaults['section']['subsection1']) != id(defaults['section']['subsection1'])
     assert id(config._defaults['section']['subsection2']) != id(defaults['section']['subsection2'])
     assert config._cfg == config._defaults
-    assert isinstance(config._cfg, _SpecDict)
+    assert isinstance(config._cfg, _ConfigDict)
     assert id(config._cfg) != id(config._defaults)
 
-def test_init_creates_SpecDict(mocker):
+def test_init_creates_ConfigDict(mocker):
     defaults = {'section': {'subsection1': {'foo': 123, 'bar': 456},
                             'subsection2': {'foo': 789, 'baz': 'xxx'}}}
-    SpecDict_mock = mocker.patch('upsies.config._config._SpecDict')
+    ConfigDict_mock = mocker.patch('upsies.config._config._ConfigDict')
     mocker.patch('upsies.config.Config._build_types')
     config = Config(defaults=defaults)
-    assert config._cfg == SpecDict_mock.return_value
-    assert SpecDict_mock.call_args_list == [
+    assert config._cfg == ConfigDict_mock.return_value
+    assert ConfigDict_mock.call_args_list == [
         call(defaults, types=config._build_types.return_value),
     ]
 
@@ -386,10 +386,10 @@ def test_get_section():
     config._set('hey', 'you', 'up', '!')
     section = config['foo']
     assert section == {'bar': {'baz': 'asdf', 'qux': 456}}
-    assert isinstance(section, _SpecDict)
+    assert isinstance(section, _ConfigDict)
     section = config['hey']
     assert section == {'you': {'there': 'whats', 'up': '!'}}
-    assert isinstance(section, _SpecDict)
+    assert isinstance(section, _ConfigDict)
 
 def test_get_unknown_section():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
@@ -404,10 +404,10 @@ def test_get_subsection():
     config._set('hey', 'you', 'up', '!')
     subsection = config['foo']['bar']
     assert subsection == {'baz': 'asdf', 'qux': 456}
-    assert isinstance(subsection, _SpecDict)
+    assert isinstance(subsection, _ConfigDict)
     subsection = config['hey']['you']
     assert subsection == {'there': 'whats', 'up': '!'}
-    assert isinstance(subsection, _SpecDict)
+    assert isinstance(subsection, _ConfigDict)
 
 def test_get_subsection_with_dot_notation():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
@@ -416,10 +416,10 @@ def test_get_subsection_with_dot_notation():
     config._set('hey', 'you', 'up', '!')
     subsection = config['foo.bar']
     assert subsection == {'baz': 'asdf', 'qux': 456}
-    assert isinstance(subsection, _SpecDict)
+    assert isinstance(subsection, _ConfigDict)
     subsection = config['hey.you']
     assert subsection == {'there': 'whats', 'up': '!'}
-    assert isinstance(subsection, _SpecDict)
+    assert isinstance(subsection, _ConfigDict)
 
 def test_get_unknown_subsection():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
