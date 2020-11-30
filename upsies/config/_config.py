@@ -9,13 +9,29 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
+def _is_list(value):
+    return isinstance(value, collections.abc.Iterable) and not isinstance(value, str)
+
+def _any2list(value):
+    return list(value) if _is_list(value) else str(value).split()
+
+
+def _is_string(value):
+    return isinstance(value, str)
+
+def _any2string(value):
+    return ' '.join(str(v) for v in value) if _is_list(value) else str(value)
+
+
 class Config:
     """
     Combine multiple INI-style configuration files into nested dictionaries
 
-    Each top-level dictionary maps section names to subsections. A section name
-    is associated with an INI file. Subsections are sections in an INI
-    file. Subsections contain pairs of options and values.
+    Each top-level dictionary maps section names to subsections, subsections
+    contain pairs of options and values.
+
+    A section is mapped to an single INI file. The sections in the INI file are
+    subsections in this representations.
 
     Sections, subsections and options can be accessed like dictionaries.
 
@@ -36,28 +52,36 @@ class Config:
     :param defaults: Nested directory structure as described above with
         default values
     :param files: Map section names to file paths that are :meth:`read`
-        immediately
-
-    :raises ConfigError: if :meth:`read`ing fails
+        during initialization
     """
-
-    _converters = {
-        str: lambda value: value.split(),
-        collections.abc.Sequence: lambda value: ' '.join(value),
-        None: str,
-    }
 
     def __init__(self, defaults, **files):
         self._defaults = copy.deepcopy(defaults)
-        self._cfg = _SpecDict(
-            spec=defaults,
-            dct=defaults,
-            converters=self._converters,
-        )
-        # _files maps section names to file paths.
-        self._files = {}
+        self._cfg = _SpecDict(self._defaults, types=self._build_types())
+        self._files = {}  # Map section names to file paths
         for section, filepath in files.items():
             self.read(section, filepath)
+
+    _converters = {
+        _is_list: _any2list,
+        _is_string: _any2string,
+    }
+
+    def _build_types(self):
+        def get_type(value):
+            for is_type, converter in self._converters.items():
+                if is_type(value):
+                    return converter
+            return type(value)
+
+        types = {}
+        for section, subsections in self._defaults.items():
+            types[section] = {}
+            for subsection, options in subsections.items():
+                types[section][subsection] = {}
+                for option, value in options.items():
+                    types[section][subsection][option] = get_type(value)
+        return types
 
     @utils.cache.property
     def paths(self):
@@ -73,9 +97,6 @@ class Config:
             return tuple(sorted(paths))
         return _get_paths(self._defaults)
 
-    def __repr__(self):
-        return repr(self._cfg)
-
     def _set(self, section, subsection, option, value):
         if section not in self._cfg:
             raise errors.ConfigError(f'{section}: Unknown section')
@@ -86,7 +107,7 @@ class Config:
         else:
             try:
                 self._cfg[section][subsection][option] = value
-            except TypeError as e:
+            except (ValueError, TypeError) as e:
                 raise errors.ConfigError(f'{section}.{subsection}.{option}: {e}')
 
     def read(self, section, filepath, ignore_missing=False):
@@ -112,7 +133,6 @@ class Config:
                         except errors.ConfigError as e:
                             raise errors.ConfigError(f'{filepath}: {e}')
                 self._files[section] = filepath
-                _log.debug('Config after reading %r: %r', filepath, self._cfg)
 
     @staticmethod
     def _parse(section, string, filepath):
@@ -171,7 +191,7 @@ class Config:
 
     def reset(self, path=()):
         """
-        Set `path` to default value
+        Set section, subsection or option to default value(s)
 
         :param path: Section, section and subsection or section, subsection and
             option as sequence or string with `"."` as delimiter
@@ -219,71 +239,73 @@ class Config:
     def _as_ini(self, section):
         lines = []
         for subsection, options in self._cfg.get(section, {}).items():
-            lines.append(f'[{subsection}]')
+            lines_subsection = []
             for option, value in options.items():
+                if value == self._defaults[section][subsection][option]:
+                    continue
+
                 if utils.is_sequence(value):
                     if value:
-                        lines.append(f'{option} =\n  ' + '\n  '.join(str(v) for v in value))
+                        values = '\n  '.join(str(v) for v in value)
+                        lines_subsection.append(f'{option} =\n  {values}')
                     else:
-                        lines.append(f'{option} =')
+                        lines_subsection.append(f'{option} =')
                 else:
-                    lines.append(f'{option} = {value}')
-            # Empty line between subsections
-            lines.append('')
+                    lines_subsection.append(f'{option} = {value}')
+
+            if lines_subsection:
+                lines.append(f'[{subsection}]')
+                lines.extend(lines_subsection)
+
+                # Empty line between subsections
+                lines.append('')
+
         return '\n'.join(lines)
 
+    def __repr__(self):
+        return repr(self._cfg)
 
-# Inherit from MutableMapping to get the ABC benefits.
-# Inherit from dict so that `isinstance(spec_dict_instance, dict)` returns True.
+
+# Inherit from MutableMapping to get the ABC benefits. Inherit from dict so that
+# `isinstance(spec_dict_instance, dict)` returns True.
 class _SpecDict(collections.abc.MutableMapping, dict):
     """
     Dictionary that only accepts certain keys and value types
 
-    :param dict spec: Map allowed keys to value types. Values can be classes or
-        instances. Only the class of instances is stored.
     :param dict dct: Initial values
-    :param dict converters: Dictionary of classes to callables that take a value of
-        one type and return a value of a different type, e.g. to convert strings
-        to lists.
+    :param dict keys: Allowed keys. Values are ignored. If omitted, keys from
+        `dct` are used.
+    :param dict types: Value converters, converters get a value and must return
+        the value to store
 
-        Keys are classes or tuples of classes. Any value that is a subclass of
-        the key passed to the associated converter function and the return value
-        is used as the value.
+    Getting or setting keys that are not in `keys` raises `KeyError`.
 
-        The converter with the key `None` is used as a default instead of
-        raising `TypeError`.
+    Setting keys that are dictionaries to non-dictionaries raises `TypeError`.
+    Setting keys that are non-dictionaries to dictionaries raises `TypeError`.
 
-        Exceptions from converter functions are unhandled.
+    Subdictionaries are always instances of this class with the appropriate
+    `keys` and `types`.
 
-    Getting or setting keys that are not in `spec` raises `KeyError`.
-
-    Setting keys to values that are not subclasses of what is specified in
-    `spec` raises `TypeError` if there is no converter available for their
-    class.
-
-    Nested dictionaries are recursively converted to `_SpecDict` instances.
-
-    Setting subdictionaries updates the existing values instead of replacing
-    them.
+    Setting an existing subdictionary to a dictionary copies values instead of
+    replacing the subdictionary.
     """
 
-    def __init__(self, spec, dct, converters=None):
-        self._spec = self._build_spec(spec)
+    def __init__(self, dct, *, keys=None, types=None):
+        assert isinstance(dct, collections.abc.Mapping)
+        self._keys = self._build_keys(keys or dct)
+        self._types = types or {}
         self._dct = {}
-        self._converters = converters or {}
         for k, v in dct.items():
             self[k] = v
 
-    def _build_spec(self, spec):
-        built_spec = {}
-        for k, v in spec.items():
-            if isinstance(v, dict):
-                built_spec[k] = self._build_spec(v)
-            elif isinstance(v, type):
-                built_spec[k] = v
+    def _build_keys(self, keys):
+        built_keys = {}
+        for k, v in keys.items():
+            if isinstance(v, collections.abc.Mapping):
+                built_keys[k] = self._build_keys(v)
             else:
-                built_spec[k] = type(v)
-        return built_spec
+                built_keys[k] = None
+        return built_keys
 
     def __getitem__(self, key):
         return self._dct[key]
@@ -292,37 +314,41 @@ class _SpecDict(collections.abc.MutableMapping, dict):
         del self._dct[key]
 
     def __setitem__(self, key, value):
-        if key not in self._spec:
-            raise KeyError(key)
-        elif isinstance(self._spec[key], dict):
-            if not isinstance(value, dict):
-                raise TypeError(
-                    f'Expected {dict.__name__} for {key}, '
-                    f'not {type(value).__name__}: {value!r}'
-                )
-            if key in self._dct:
-                value = utils.merge_dicts(self._dct[key], value)
-            self._dct[key] = _SpecDict(spec=self._spec[key], dct=value, converters=self._converters)
-        else:
-            self._dct[key] = self._convert(key, value)
+        self._dct[key] = self._convert(key, value)
 
     def _convert(self, key, value):
-        if isinstance(value, self._spec[key]):
-            return value
+        if key not in self._keys:
+            raise KeyError(key)
 
-        for typ, converter in self._converters.items():
-            # `typ` may be single type or tuple of types
-            if typ is not None and isinstance(value, typ):
-                return converter(value)
+        if key in self._types:
+            if not isinstance(self._types[key], collections.abc.Mapping):
+                converter = self._types[key]
+                try:
+                    value = converter(value)
+                except (ValueError, TypeError):
+                    raise ValueError(f'Invalid value: {value}')
 
-        # Use default converter or raise TypeError
-        if None in self._converters:
-            return self._converters[None](value)
+        if isinstance(self._keys[key], collections.abc.Mapping):
+            # Setting a subdictionary
+            if not isinstance(value, collections.abc.Mapping):
+                raise TypeError(
+                    f'Expected dictionary for {key}, '
+                    f'not {type(value).__name__}: {value!r}'
+                )
+            else:
+                # Merge new dictionary into existing dictionary
+                if key in self._dct:
+                    value = utils.merge_dicts(self._dct[key], value)
+                return _SpecDict(
+                    value,
+                    keys=self._keys[key],
+                    types=self._types.get(key, None),
+                )
+        elif isinstance(value, collections.abc.Mapping):
+            # Key is not a dictionary, so value can't be one
+            raise TypeError(f'{key} is not a dictionary: {value!r}')
         else:
-            raise TypeError(
-                f'Expected {self._spec[key].__name__} for {key}, '
-                f'not {type(value).__name__}: {value!r}'
-            )
+            return value
 
     def __iter__(self):
         return iter(self._dct)

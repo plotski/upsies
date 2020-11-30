@@ -7,112 +7,160 @@ import pytest
 
 from upsies import errors
 from upsies.config import Config
-from upsies.config._config import _SpecDict
+from upsies.config._config import _any2list, _any2string, _SpecDict
 
-
-def test_SpecDict_is_dict_instance():
-    d = _SpecDict(
-        spec={'foo': 'bar'},
-        dct={'foo': 'baz'},
-    )
-    assert isinstance(d, dict)
-
-def test_SpecDict_implements_delitem():
-    d = _SpecDict(
-        spec={'foo': 'bar', 'bar': 'abc'},
-        dct={'foo': 'baz', 'bar': 'xyz'},
-    )
-    del d['bar']
-    assert d == {'foo': 'baz'}
-
-def test_SpecDict_implements_len():
-    d = _SpecDict(
-        spec={'foo': 'bar', 'bar': 'abc'},
-        dct={'foo': 'baz', 'bar': 'xyz'},
-    )
-    assert len(d) == 2
-
-def test_SpecDict_implements_repr():
-    d = _SpecDict(
-        spec={'foo': 'bar', 'bar': 'abc'},
-        dct={'foo': 'baz', 'bar': 'xyz'},
-    )
-    assert repr(d) == repr({'foo': 'baz', 'bar': 'xyz'})
-
-def test_SpecDict_raises_KeyError_when_setting_unknown_key():
-    d = _SpecDict(
-        spec={'foo': 'bar'},
-        dct={'foo': 'baz'},
-    )
-    with pytest.raises(KeyError, match=r"^'asdf'$"):
-        d['asdf'] = 'hello'
-
-def test_SpecDict_raises_TypeError_when_setting_wrong_type():
-    d = _SpecDict(
-        spec={'foo': [1, 2, 3]},
-        dct={'foo': [2, 3, 4]},
-    )
-    with pytest.raises(TypeError, match=r'^Expected list for foo, not int: 345$'):
-        d['foo'] = 345
-
-def test_SpecDict_accepts_correct_type():
-    d = _SpecDict(
-        spec={'foo': [1, 2, 3]},
-        dct={'foo': [2, 3, 4]},
-    )
-    d['foo'] = [3, 4, 5]
-    assert d['foo'] == [3, 4, 5]
 
 @pytest.mark.parametrize(
     argnames=('value', 'exp_value'),
     argvalues=(
-        (13, 26),
-        (13.35, 26.7),
-        ([3, 4, 5], '3:4:5'),
-        ((3, 4, 5), '3:4:5'),
-        (iter((3, 4, 5)), '3::4::5'),
-        (NotImplemented, '[NotImplemented]'),
+        (['a', 'b', 'c'], ['a', 'b', 'c']),
+        (('a', 'b', 'c'), ['a', 'b', 'c']),
+        (iter(('a', 'b', 'c')), ['a', 'b', 'c']),
+        ('a b c', ['a', 'b', 'c']),
+        ('abc def', ['abc', 'def']),
+        (123, ['123']),
     ),
     ids=lambda value: str(value),
 )
-def test_SpecDict_converts_with_converter(value, exp_value):
-    d = _SpecDict(
-        spec={'foo': '1'},
-        dct={'foo': '2'},
-        converters={
-            (int, float): lambda value: value * 2,
-            collections.abc.Sequence: lambda value: ':'.join(str(v) for v in value),
-            (collections.abc.Iterable,): lambda value: '::'.join(str(v) for v in value),
-            None: lambda value: f'[{value}]',
-        },
-    )
+def test_any2list(value, exp_value):
+    assert _any2list(value) == exp_value
+
+@pytest.mark.parametrize(
+    argnames=('value', 'exp_value'),
+    argvalues=(
+        ('a b c', 'a b c'),
+        (123, '123'),
+        (['a', 'b', 'c'], 'a b c'),
+        (('a', 'b', 'c'), 'a b c'),
+        (iter(('a', 'b', 'c')), 'a b c'),
+    ),
+    ids=lambda value: str(value),
+)
+def test_any2string(value, exp_value):
+    assert _any2string(value) == exp_value
+
+
+@pytest.mark.parametrize(argnames='cls', argvalues=(dict, collections.abc.Mapping))
+def test_SpecDict_subclass(cls):
+    d = _SpecDict({'foo': 'baz'})
+    assert isinstance(d, cls)
+
+def test_SpecDict_implements_delitem():
+    d = _SpecDict({'foo': 'bar', 'bar': 'abc'})
+    del d['bar']
+    assert d == {'foo': 'bar'}
+
+def test_SpecDict_implements_len():
+    d = _SpecDict({'foo': 'baz', 'bar': 'xyz'})
+    assert len(d) == 2
+
+def test_SpecDict_implements_repr():
+    d = _SpecDict({'foo': 'baz', 'bar': 'xyz'})
+    assert repr(d) == repr({'foo': 'baz', 'bar': 'xyz'})
+
+def test_SpecDict_implements_getitem():
+    d = _SpecDict({'foo': 'bar', 'baz': 123})
+    assert d['foo'] == 'bar'
+    assert d['baz'] == 123
+
+def test_SpecDict_implements_setitem():
+    d = _SpecDict({'foo': 'bar', 'baz': 123})
+    d['foo'] = 'hello'
+    d['baz'] = 'world'
+    assert d == {'foo': 'hello', 'baz': 'world'}
+
+def test_SpecDict_raises_KeyError_when_setting_unknown_key():
+    d = _SpecDict({'foo': 'bar'})
+    with pytest.raises(KeyError, match=r"^'asdf'$"):
+        d['asdf'] = 'hello'
+
+def test_SpecDict_with_custom_keys():
+    d = _SpecDict({'foo': 'bar'}, keys={'foo': None, 'bar': None, 123: None})
+    d['foo'] = 'asdf'
+    d['bar'] = 'baz'
+    d[123] = '456'
+    assert d == {'foo': 'asdf', 'bar': 'baz', 123: '456'}
+    with pytest.raises(KeyError, match=r"^'asdf'$"):
+        d['asdf'] = 'hello'
+
+@pytest.mark.parametrize(
+    argnames=('converter', 'value', 'exp_value'),
+    argvalues=(
+        (int, 13.5, 13),
+        (str, 13.5, '13.5'),
+        (lambda value: str(value).split(','), 'a,b,c', ['a', 'b', 'c']),
+        (lambda value: [int(v) for v in str(value).split(',')], '1,2,3', [1, 2, 3]),
+    ),
+    ids=lambda value: str(value),
+)
+def test_SpecDict_with_custom_types(converter, value, exp_value):
+    d = _SpecDict(dct={'foo': 2, 'bar': ''}, types={'foo': converter})
     d['foo'] = value
     assert d['foo'] == exp_value
+    for v in ('abc', 123, (1, 2, 3)):
+        d['bar'] = v
+        assert d['bar'] is v
+
+def test_SpecDict_converter_raises_ValueError():
+    dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
+    d = _SpecDict(dct=dct, types={0: {1: int}})
+    with pytest.raises(ValueError, match=r'^Invalid value: hello$'):
+        d[0][1] = 'hello'
+
+def test_SpecDict_converter_raises_TypeError():
+    dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
+    d = _SpecDict(dct=dct, types={0: {1: int}})
+    with pytest.raises(ValueError, match=r"^Invalid value: \['hello'\]$"):
+        d[0][1] = ['hello']
 
 def test_SpecDict_subdictionaries_are_SpecDicts():
-    dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
-    d = _SpecDict(spec=dct, dct=dct)
+    d = _SpecDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}})
     assert isinstance(d[0], _SpecDict)
     assert isinstance(d[0][3], _SpecDict)
     assert isinstance(d[0][3][8], _SpecDict)
 
-def test_SpecDict_setting_subdictionary_to_nondictionary():
+def test_SpecDict_setting_subdictionary_merges_into_current_values():
     dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
-    d = _SpecDict(spec=dct, dct=dct)
-    with pytest.raises(TypeError, match=r'^Expected dict for 8, not int: 100$'):
+    d = _SpecDict(dct=dct)
+    d[0][3] = {6: 600, 8: {9: 1000}}
+    assert d == {0: {1: 2, 3: {4: 5, 6: 600, 8: {9: 1000}}}}
+    assert isinstance(d[0], _SpecDict)
+    assert isinstance(d[0][3], _SpecDict)
+    assert isinstance(d[0][3][8], _SpecDict)
+
+def test_SpecDict_setting_subdictionary_creates_new_subdictionary():
+    dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
+    d = _SpecDict(dct=dct)
+    del d[0][3]
+    d[0][3] = {8: {9: 1000}}
+    assert d == {0: {1: 2, 3: {8: {9: 1000}}}}
+    assert isinstance(d[0], _SpecDict)
+    assert isinstance(d[0][3], _SpecDict)
+    assert isinstance(d[0][3][8], _SpecDict)
+
+def test_SpecDict_setting_subdictionaries_copies_appropriate_subkeys():
+    d = _SpecDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}},
+                  keys={0: {1: None, 3: {4: None, 6: None, 8: {9: None}}}})
+    assert d[0]._keys == {1: None, 3: {4: None, 6: None, 8: {9: None}}}
+    assert d[0][3]._keys == {4: None, 6: None, 8: {9: None}}
+    assert d[0][3][8]._keys == {9: None}
+
+def test_SpecDict_setting_subdictionaries_copies_appropriate_subtypes():
+    types = {0: {1: lambda x: None, 3: {4: lambda x: None, 6: lambda x: None, 8: {9: lambda x: None}}}}
+    d = _SpecDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}, types=types)
+    assert d[0]._types is types[0]
+    assert d[0][3]._types is types[0][3]
+    assert d[0][3][8]._types is types[0][3][8]
+
+def test_SpecDict_setting_subdictionary_to_nondictionary():
+    d = _SpecDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}})
+    with pytest.raises(TypeError, match=r'^Expected dictionary for 8, not int: 100$'):
         d[0][3][8] = 100
 
 def test_SpecDict_nondictionary_value_to_dictionary():
-    dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
-    d = _SpecDict(spec=dct, dct=dct)
-    with pytest.raises(TypeError, match=r'^Expected int for 4, not dict: \{400: 4000\}$'):
+    d = _SpecDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}})
+    with pytest.raises(TypeError, match=r'^4 is not a dictionary: \{400: 4000\}$'):
         d[0][3][4] = {400: 4000}
-
-def test_SpecDict_setting_subdictionary_merges():
-    dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
-    d = _SpecDict(spec=dct, dct=dct)
-    d[0][3] = {6: 600, 8: {9: 1000}}
-    assert d == {0: {1: 2, 3: {4: 5, 6: 600, 8: {9: 1000}}}}
 
 
 def test_init_copies_defaults():
@@ -128,6 +176,17 @@ def test_init_copies_defaults():
     assert isinstance(config._cfg, _SpecDict)
     assert id(config._cfg) != id(config._defaults)
 
+def test_init_creates_SpecDict(mocker):
+    defaults = {'section': {'subsection1': {'foo': 123, 'bar': 456},
+                            'subsection2': {'foo': 789, 'baz': 'xxx'}}}
+    SpecDict_mock = mocker.patch('upsies.config._config._SpecDict')
+    mocker.patch('upsies.config.Config._build_types')
+    config = Config(defaults=defaults)
+    assert config._cfg == SpecDict_mock.return_value
+    assert SpecDict_mock.call_args_list == [
+        call(defaults, types=config._build_types.return_value),
+    ]
+
 def test_init_reads_files(mocker):
     mocker.patch('upsies.config.Config.read')
     config = Config(
@@ -139,6 +198,21 @@ def test_init_reads_files(mocker):
         call('foo', 'path/to/foo.ini'),
         call('bar', 'path/to/bar.ini'),
     ]
+
+
+def test_build_types():
+    d = Config(defaults={
+        'main': {'foo': {'a': 'x'},
+                 'bar': {'b': ['x'], (1, 2, 3): ('cee',)}},
+        0: {'foo': {'x': ()},
+            None: {'y': 123, 'z': 123.5}},
+    })
+    assert d._build_types() == {
+        'main': {'foo': {'a': _any2string},
+                 'bar': {'b': _any2list, (1, 2, 3): _any2list}},
+        0: {'foo': {'x': _any2list},
+            None: {'y': int, 'z': float}},
+    }
 
 
 def test_paths():
@@ -156,6 +230,48 @@ def test_paths():
         '0.None.y',
         '0.None.z',
     )))
+
+
+def test_setting_unknown_section():
+    d = Config(defaults={
+        'main': {'foo': {'a': 'x'},
+                 'bar': {'b': ['x'], (1, 2, 3): 'cee'}},
+        0: {'foo': {'x': 'asdf'},
+            None: {'y': 'fdsa', 'z': 'qux'}},
+    })
+    with pytest.raises(errors.ConfigError, match=r'^nope: Unknown section$'):
+        d._set('nope', 'foo', 'a', 'x')
+
+def test_setting_unknown_subsection():
+    d = Config(defaults={
+        'main': {'foo': {'a': 'x'},
+                 'bar': {'b': ['x'], (1, 2, 3): 'cee'}},
+        0: {'foo': {'x': 'asdf'},
+            None: {'y': 'fdsa', 'z': 'qux'}},
+    })
+    with pytest.raises(errors.ConfigError, match=r'^main\.nope: Unknown subsection$'):
+        d._set('main', 'nope', 'a', 'x')
+
+def test_setting_unknown_option():
+    d = Config(defaults={
+        'main': {'foo': {'a': 'x'},
+                 'bar': {'b': ['x'], (1, 2, 3): 'cee'}},
+        0: {'foo': {'x': 'asdf'},
+            None: {'y': 'fdsa', 'z': 'qux'}},
+    })
+    with pytest.raises(errors.ConfigError, match=r'^main\.foo\.nope: Unknown option$'):
+        d._set('main', 'foo', 'nope', 'x')
+
+def test_setting_option_to_invalid_value():
+    d = Config(defaults={
+        'main': {'foo': {'a': 123},
+                 'bar': {'b': ['x'], (1, 2, 3): 'cee'}},
+        0: {'foo': {'x': 'asdf'},
+            None: {'y': 'fdsa', 'z': 'qux'}},
+    })
+    with pytest.raises(errors.ConfigError, match=r'^main\.foo\.a: Invalid value: not a number$'):
+        d._set('main', 'foo', 'a', 'not a number')
+    assert d['main.foo.a'] == 123
 
 
 @patch('upsies.config._config._path_exists')
@@ -190,61 +306,7 @@ def test_read_fails_to_read_file(ignore_missing, tmp_path):
         filepath.chmod(0o660)
 
 @pytest.mark.parametrize('ignore_missing', (True, False), ids=lambda v: f'ignore_missing={v!r}')
-def test_read_unknown_section(ignore_missing, tmp_path):
-    defaults = {
-        'main': {'foo': {'a': 'x'},
-                 'bar': {'b': ['x'], 'c': 'x'}},
-    }
-    file_main = tmp_path / 'file_main.ini'
-    file_main.write_text('[bar]\nc = cee\n\n[foo]\n')
-    config = Config(defaults=defaults)
-    with pytest.raises(errors.ConfigError, match=rf'{file_main}: nope: Unknown section'):
-        assert config.read('nope', file_main, ignore_missing=ignore_missing) is None
-    assert config._cfg == {
-        'main': {'foo': {'a': 'x'},
-                 'bar': {'b': ['x'], 'c': 'x'}},
-    }
-    assert config._files == {}
-    assert config._defaults == defaults
-
-@pytest.mark.parametrize('ignore_missing', (True, False), ids=lambda v: f'ignore_missing={v!r}')
-def test_read_unknown_subsection(ignore_missing, tmp_path):
-    defaults = {
-        'main': {'foo': {'a': 'x'},
-                 'bar': {'b': ['x'], 'c': 'x'}},
-    }
-    file_main = tmp_path / 'file_main.ini'
-    file_main.write_text('[nope]\nc = cee\n')
-    config = Config(defaults=defaults)
-    with pytest.raises(errors.ConfigError, match=rf'{file_main}: main.nope: Unknown subsection'):
-        assert config.read('main', file_main, ignore_missing=ignore_missing) is None
-    assert config._cfg == {
-        'main': {'foo': {'a': 'x'},
-                 'bar': {'b': ['x'], 'c': 'x'}},
-    }
-    assert config._files == {}
-    assert config._defaults == defaults
-
-@pytest.mark.parametrize('ignore_missing', (True, False), ids=lambda v: f'ignore_missing={v!r}')
-def test_read_unknown_option(ignore_missing, tmp_path):
-    defaults = {
-        'main': {'foo': {'a': 'x'},
-                 'bar': {'b': ['x'], 'c': 'x'}},
-    }
-    file_main = tmp_path / 'file_main.ini'
-    file_main.write_text('[bar]\nnope = dope\n')
-    config = Config(defaults=defaults)
-    with pytest.raises(errors.ConfigError, match=rf'{file_main}: main.bar.nope: Unknown option'):
-        assert config.read('main', file_main, ignore_missing=ignore_missing) is None
-    assert config._cfg == {
-        'main': {'foo': {'a': 'x'},
-                 'bar': {'b': ['x'], 'c': 'x'}},
-    }
-    assert config._files == {}
-    assert config._defaults == defaults
-
-@pytest.mark.parametrize('ignore_missing', (True, False), ids=lambda v: f'ignore_missing={v!r}')
-def test_read_updates_values(ignore_missing, tmp_path):
+def test_read_updates_values(ignore_missing, tmp_path, mocker):
     defaults = {
         'main': {'foo': {'a': 'x'},
                  'bar': {'b': ['x'], 'c': 'x'}},
@@ -252,28 +314,27 @@ def test_read_updates_values(ignore_missing, tmp_path):
                   'baz': {'y': 'fdsa', 'z': 'qux'}},
     }
     file_main = tmp_path / 'file_main.ini'
-    file_main.write_text('[bar]\nc = cee\n\n[foo]\n')
+    file_main.write_text('[bar]\nc = cee\n\n[foo]\na = z\n')
     file_other = tmp_path / 'file_other.ini'
     file_other.write_text('[foo]\nx = hello\n\n[baz]\ny = world\n')
+
+    mocker.patch('upsies.config.Config._set')
     config = Config(defaults=defaults)
 
     assert config.read('main', file_main, ignore_missing=ignore_missing) is None
-    assert config._cfg == {
-        'main': {'foo': {'a': 'x'},
-                 'bar': {'b': ['x'], 'c': 'cee'}},
-        'other': {'foo': {'x': 'asdf'},
-                  'baz': {'y': 'fdsa', 'z': 'qux'}},
-    }
+    assert config._set.call_args_list == [
+        call('main', 'bar', 'c', 'cee'),
+        call('main', 'foo', 'a', 'z'),
+    ]
     assert config._files == {'main': file_main}
     assert config._defaults == defaults
 
+    config._set.reset_mock()
     assert config.read('other', file_other, ignore_missing=ignore_missing) is None
-    assert config._cfg == {
-        'main': {'foo': {'a': 'x'},
-                 'bar': {'b': ['x'], 'c': 'cee'}},
-        'other': {'foo': {'x': 'hello'},
-                  'baz': {'y': 'world', 'z': 'qux'}},
-    }
+    assert config._set.call_args_list == [
+        call('other', 'foo', 'x', 'hello'),
+        call('other', 'baz', 'y', 'world'),
+    ]
     assert config._files == {'main': file_main, 'other': file_other}
     assert config._defaults == defaults
 
@@ -440,15 +501,15 @@ def test_set_valid_option():
 
 def test_set_invalid_section():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
-    with pytest.raises(TypeError, match=r"^Expected dict for foo, not str: 'asdf'$"):
+    with pytest.raises(TypeError, match=r"^Expected dictionary for foo, not str: 'asdf'$"):
         config['foo'] = 'asdf'
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
 def test_set_invalid_subsection():
     config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
-    with pytest.raises(TypeError, match=r"^Expected dict for bar, not str: 'asdf'$"):
+    with pytest.raises(TypeError, match=r"^Expected dictionary for bar, not str: 'asdf'$"):
         config['foo']['bar'] = 'asdf'
-    with pytest.raises(TypeError, match=r"^Expected dict for bar, not str: 'asdf'$"):
+    with pytest.raises(TypeError, match=r"^Expected dictionary for bar, not str: 'asdf'$"):
         config['foo.bar'] = 'asdf'
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
@@ -660,21 +721,26 @@ def test_as_ini():
     config = Config(
         defaults={'main': {
             'foo': {'a': 'aaa', 'b': [1, 2, 3], 'c': 123},
-            'bar': {'b': 'bbb', 'c': [], 'd': 456},
+            'bar': {'b': 'bbb', 'c': [4, 5, 6], 'd': 456},
+            'baz': {'c': 'ccc', 'd': [7, 8, 9], 'e': 789},
         }},
     )
+    config['main.foo.a'] = 'AAA'
+    config['main.bar.c'] = [100, 200, 300]
+    config['main.baz.d'] = []
+    config['main.baz.e'] = 1000
     exp_ini_string = (
         '[foo]\n'
-        'a = aaa\n'
-        'b =\n'
-        '  1\n'
-        '  2\n'
-        '  3\n'
-        'c = 123\n'
+        'a = AAA\n'
         '\n'
         '[bar]\n'
-        'b = bbb\n'
         'c =\n'
-        'd = 456\n'
+        '  100\n'
+        '  200\n'
+        '  300\n'
+        '\n'
+        '[baz]\n'
+        'd =\n'
+        'e = 1000\n'
     )
     assert config._as_ini('main') == exp_ini_string
