@@ -1,3 +1,13 @@
+"""
+Exceptions
+
+Abstraction layers should raise one of these exceptions to make error handling
+easy and straight-forward.
+
+For example, it doesn't matter which HTTP library :mod:`upsies.utils.http` uses,
+the only relevant exception from that module is :class:`RequestError`.
+"""
+
 class UpsiesError(Exception):
     """Base class for all exceptions raised by upsies"""
 
