@@ -47,7 +47,7 @@ class Config:
     >>> config["main.foo.bar"]
     'Ichi'
 
-    List values are stored with "\n" as a separator between list items.
+    List values use ``\\n`` as separators between items.
 
     :param defaults: Nested directory structure as described above with
         default values
