@@ -40,7 +40,7 @@ async def get(url, headers={}, params={}, auth=None,
 
     :param str url: URL to request
     :param dict headers: Custom headers (added to default headers)
-    :param dict params: Query arguments, e.g. {"k": "v"} -> http://foo/bar?k=v
+    :param dict params: Query arguments, e.g. `{"k": "v"} → http://foo/bar?k=v`
     :param auth: Basic access authentication; sequence of <username> and
         <password> or `None`
     :param bool cache: Whether to use cached response if available
