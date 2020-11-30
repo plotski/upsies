@@ -60,13 +60,26 @@ async def test_country(id, exp_country, store_response):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    argnames=('query', 'exp_year'),
+    argnames=('query', 'exp_result'),
     argvalues=(
-        (Query('The Gift', type='movie', year='2015'), '2015'),
+        (Query('Elephant', year='1989'),
+         {'title': 'Elephant', 'year': '1989', 'director': 'Alan Clarke'}),
+        (Query('The Gift', type='movie', year='2015'),
+         {'title': 'The Gift', 'year': '2015', 'director': 'Joel Edgerton'}),
     ),
     ids=lambda value: str(value),
 )
-async def test_search_year(query, exp_year, store_response):
+async def test_search(query, exp_result, store_response):
     results = await imdb.search(query)
-    for result in results:
-        assert result.year == exp_year, result
+    for r in results:
+        print(r)
+    print('Expected result:', exp_result)
+
+    def match(result):
+        print('Result:', result)
+        for k, v in exp_result.items():
+            if getattr(result, k) != v:
+                return False
+        return True
+
+    assert any(match(r) for r in results), results

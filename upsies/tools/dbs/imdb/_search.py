@@ -55,11 +55,9 @@ async def search(query):
         return ()
 
     url = f'{_url_base}/search/title/'
-    params = {
-        'title': query.title,
-        'title_type': _title_types[query.type],
-    }
-
+    params = {'title': query.title}
+    if query.type:
+        params['title_type'] = _title_types[query.type]
     if query.year is not None:
         params['release_date'] = f'{query.year}-01-01,{query.year}-12-31'
 
