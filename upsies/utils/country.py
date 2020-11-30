@@ -1,6 +1,3 @@
-"""
-Map ISO 3166-1 alpha-2 country codes to country names
-"""
 iso3166_alpha2_name = {
     "AF": "Afghanistan",
     "AX": "Aland Islands",
@@ -248,3 +245,4 @@ iso3166_alpha2_name = {
     "ZM": "Zambia",
     "ZW": "Zimbabwe"
 }
+"""Map ISO 3166-1 alpha-2 country codes to country names"""
