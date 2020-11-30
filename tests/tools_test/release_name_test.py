@@ -575,13 +575,16 @@ def test_group_setter(guessit_mock):
         ('movie', 'movie', 'movie'),
         ('movie', 'season', 'season'),
         ('movie', 'episode', 'episode'),
+        ('movie', '', 'movie'),
         ('season', 'movie', 'movie'),
         ('season', 'season', 'season'),
         ('season', 'episode', 'episode'),
+        ('season', '', 'season'),
         # For episodes, we trust guessit more than IMDb
         ('episode', 'movie', 'episode'),
         ('episode', 'season', 'episode'),
         ('episode', 'episode', 'episode'),
+        ('episode', '', 'episode'),
     ),
 )
 def test_update_attributes(guessit_mock, imdb_mock, guessit_type, imdb_type, exp_type):

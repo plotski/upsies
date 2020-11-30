@@ -314,11 +314,10 @@ class ReleaseName(collections.abc.Mapping):
             if info[key]:
                 setattr(self, attr, info[key])
 
-        # guessit can misdetect type (e.g. if mini-series doesn't contain
-        # "S01"). But if guessit detected an episode (e.g. "S04E03"), it's
-        # unlikely to be wrong. Also, `id` could be the ID for the whole
-        # "series" or a single "episode".
-        if self.type != 'episode':
+        # Use type from IMDb if known. guessit can misdetect type (e.g. if
+        # mini-series doesn't contain "S01"). But if guessit detected an episode
+        # (e.g. "S04E03"), it's unlikely to be wrong.
+        if info['type'] and self.type != 'episode':
             self.type = info['type']
 
     async def _update_year_required(self):
