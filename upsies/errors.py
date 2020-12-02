@@ -1,6 +1,4 @@
 """
-Exceptions
-
 Abstraction layers should raise one of these exceptions to make error handling
 easy and straight-forward.
 
