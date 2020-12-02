@@ -18,7 +18,8 @@ def run(argv, ignore_errors=False, join_stderr=False, cache=False):
 
     :param argv: Command to execute
     :type argv: list of str
-    :param bool ignore_errors: Do not raise `ProcessError` if stderr is non-empty
+    :param bool ignore_errors: Do not raise :class:`.ProcessError` if stderr is
+        non-empty
     :param bool join_stderr: Redirect stderr to stdout
     :param bool cache: Cache output based on `argv`
 
