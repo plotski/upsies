@@ -14,7 +14,7 @@ class SubmitJob(JobBase):
     :param tracker: :class:`Tracker` instance from one of the submodules of
         :mod:`~trackers`
 
-    This job adds the following signals to the :attr:`~JobBase.signal`
+    This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
         `logging_in`
