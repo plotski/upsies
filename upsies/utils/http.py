@@ -48,7 +48,7 @@ async def get(url, headers={}, params={}, auth=None,
     :param bool allow_redirects: Whether to follow redirects
 
     :return: Response text
-    :rtype: str
+    :rtype: Response
     """
     return await _request(
         method='GET',
@@ -77,7 +77,7 @@ async def post(url, headers={}, data={}, files={}, auth=None,
     :param bool allow_redirects: Whether to follow redirects
 
     :return: Response text
-    :rtype: str
+    :rtype: Response
     """
     return await _request(
         method='POST',
