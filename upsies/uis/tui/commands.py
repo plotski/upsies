@@ -1,12 +1,14 @@
 """
 A command provides a :attr:`~CommandBase.jobs` property that returns a
-sequence of :class:`JobBase` objects.  That is the only strict requirement.
+sequence of :class:`~.jobs.JobBase` instances.
 
-Jobs should be created by cached properties that always return the same object.
+It is important that the jobs are only instantiated once and the
+:attr:`~CommandBase.jobs` property doesn't create new jobs on every access. The
+easiest way to achieve this is with the :class:`.utils.cache.property`
+decorator.
 
-Jobs can be configured with CLI arguments and a config file. Both are
-conveniently provided as :attr:`~CommandBase.args` and
-:attr:`~CommandBase.config`.
+Jobs should use CLI arguments (:attr:`~CommandBase.args`) and config files
+(:attr:`~CommandBase.config`) to create arguments for jobs.
 """
 
 import abc
@@ -32,8 +34,7 @@ class CommandBase(abc.ABC):
         """
         Sequence of :class:`~jobs.JobBase` objects
 
-        For convenience, the sequence may also contain `None` instead of an
-        optional job.
+        For convenience, the sequence may also contain `None` instead.
         """
         pass
 
