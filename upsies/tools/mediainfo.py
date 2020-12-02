@@ -98,7 +98,7 @@ _standard_heights = (480, 576, 720, 1080, 2160, 4320)
 
 @functools.lru_cache(maxsize=None)
 def resolution(path):
-    """Return resolution of video file `path` (e.g. 1080p) or None"""
+    """Return resolution of video file `path` (e.g. 1080p) or `None`"""
     # Expect non-wide (1392x1080), narrow (1920x800) and weird (1918x1040)
     video_track = default_track('video', path)
     height = int(video_track.get('Height', 0))
@@ -154,7 +154,7 @@ _audio_translations = {
 
 @functools.lru_cache(maxsize=None)
 def audio_format(path):
-    """Return audio format (e.g. "DTS:X", "TrueHD Atmos") or None"""
+    """Return audio format (e.g. "DTS:X", "TrueHD Atmos") or `None`"""
     # Return audio format, e.g. "DTS"
     def format(audio_track):
         for fmt,regexs in _audio_translations['formats']:
@@ -189,7 +189,7 @@ def audio_format(path):
 
 @functools.lru_cache(maxsize=None)
 def audio_channels(path):
-    """Return audio channels (e.g. "5.1") or None"""
+    """Return audio channels (e.g. "5.1") or `None`"""
     audio_track = default_track('audio', path)
     audio_channels = None
     channels = audio_track.get('Channels', '')
@@ -214,7 +214,7 @@ _video_translations = (
 
 @functools.lru_cache(maxsize=None)
 def video_format(path):
-    """Return video format or x264/x265/XviD if they were used or None"""
+    """Return video format or x264/x265/XviD if they were used or `None`"""
     def format(video_track):
         for vfmt,regexs in _video_translations:
             for key,regex in regexs.items():
