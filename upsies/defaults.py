@@ -13,7 +13,6 @@ class _TrackerConfig(dict):
     def __new__(cls, **kwargs):
         return {**cls._defaults, **kwargs}
 
-
 defaults = {
     'trackers': {
         'dummy': _TrackerConfig(
@@ -42,3 +41,4 @@ defaults = {
         },
     },
 }
+"""Defaults for configuration options"""

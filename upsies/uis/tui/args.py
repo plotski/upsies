@@ -3,7 +3,7 @@ import functools
 import sys
 import textwrap
 
-from ... import __project_name__, __version__, config, trackers, utils
+from ... import __project_name__, __version__, constants, trackers, utils
 from ...tools import btclient as btclients
 from ...tools import dbs
 from ...tools import imghost as imghosts
@@ -77,7 +77,7 @@ def IMAGEHOST(string):
 
 
 def OPTION(string):
-    if string in config.constants.OPTION_PATHS:
+    if string in constants.OPTION_PATHS:
         return string.casefold()
     else:
         raise ValueError(f'Unknown option: {string}')
@@ -103,10 +103,10 @@ def parse(args):
                         help='Write debugging messages to FILE')
     parser.add_argument('--trackers-file', '-t',
                         help='Tracker configuration file path',
-                        default=config.constants.TRACKERS_FILEPATH)
+                        default=constants.TRACKERS_FILEPATH)
     parser.add_argument('--clients-file', '-c',
                         help='BitTorrent client configuration file path',
-                        default=config.constants.CLIENTS_FILEPATH)
+                        default=constants.CLIENTS_FILEPATH)
     parser.add_argument('--ignore-cache', '-ic',
                         help='Ignore existing files and information from previous calls',
                         action='store_true')
@@ -293,7 +293,7 @@ def parse(args):
     add_subcmd(
         command=commands.set,
         names=('set',),
-        info='options:\n  ' + '\n  '.join(o for o in config.constants.OPTION_PATHS),
+        info='options:\n  ' + '\n  '.join(o for o in constants.OPTION_PATHS),
         args={
             'OPTION': {
                 'type': OPTION,

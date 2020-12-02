@@ -1,3 +1,7 @@
+"""
+Configuration files
+"""
+
 import collections
 import configparser
 import copy
@@ -15,15 +19,13 @@ def _is_list(value):
 def _any2list(value):
     return list(value) if _is_list(value) else str(value).split()
 
-
 def _is_string(value):
     return isinstance(value, str)
 
 def _any2string(value):
     return ' '.join(str(v) for v in value) if _is_list(value) else str(value)
 
-
-class Config:
+class ConfigFiles:
     """
     Combine multiple INI-style configuration files into nested dictionaries
 

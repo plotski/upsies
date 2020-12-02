@@ -6,8 +6,8 @@ from unittest.mock import call, patch
 import pytest
 
 from upsies import errors
-from upsies.config import Config
-from upsies.config._config import _any2list, _any2string, _ConfigDict
+from upsies.utils.configfiles import (ConfigFiles, _any2list, _any2string,
+                                      _ConfigDict)
 
 
 @pytest.mark.parametrize(
@@ -140,7 +140,7 @@ def test_ConfigDict_setting_subdictionary_creates_new_subdictionary():
 
 def test_ConfigDict_setting_subdictionaries_copies_appropriate_subkeys():
     d = _ConfigDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}},
-                  keys={0: {1: None, 3: {4: None, 6: None, 8: {9: None}}}})
+                    keys={0: {1: None, 3: {4: None, 6: None, 8: {9: None}}}})
     assert d[0]._keys == {1: None, 3: {4: None, 6: None, 8: {9: None}}}
     assert d[0][3]._keys == {4: None, 6: None, 8: {9: None}}
     assert d[0][3][8]._keys == {9: None}
@@ -166,7 +166,7 @@ def test_ConfigDict_nondictionary_value_to_dictionary():
 def test_init_copies_defaults():
     defaults = {'section': {'subsection1': {'foo': 123, 'bar': 456},
                             'subsection2': {'foo': 789, 'baz': 'xxx'}}}
-    config = Config(defaults=defaults)
+    config = ConfigFiles(defaults=defaults)
     assert config._defaults == defaults
     assert id(config._defaults) != id(defaults)
     assert id(config._defaults['section']) != id(defaults['section'])
@@ -179,17 +179,17 @@ def test_init_copies_defaults():
 def test_init_creates_ConfigDict(mocker):
     defaults = {'section': {'subsection1': {'foo': 123, 'bar': 456},
                             'subsection2': {'foo': 789, 'baz': 'xxx'}}}
-    ConfigDict_mock = mocker.patch('upsies.config._config._ConfigDict')
-    mocker.patch('upsies.config.Config._build_types')
-    config = Config(defaults=defaults)
+    ConfigDict_mock = mocker.patch('upsies.utils.configfiles._ConfigDict')
+    mocker.patch('upsies.utils.configfiles.ConfigFiles._build_types')
+    config = ConfigFiles(defaults=defaults)
     assert config._cfg == ConfigDict_mock.return_value
     assert ConfigDict_mock.call_args_list == [
         call(defaults, types=config._build_types.return_value),
     ]
 
 def test_init_reads_files(mocker):
-    mocker.patch('upsies.config.Config.read')
-    config = Config(
+    mocker.patch('upsies.utils.configfiles.ConfigFiles.read')
+    config = ConfigFiles(
         defaults={},
         foo='path/to/foo.ini',
         bar='path/to/bar.ini',
@@ -201,7 +201,7 @@ def test_init_reads_files(mocker):
 
 
 def test_build_types():
-    d = Config(defaults={
+    d = ConfigFiles(defaults={
         'main': {'foo': {'a': 'x'},
                  'bar': {'b': ['x'], (1, 2, 3): ('cee',)}},
         0: {'foo': {'x': ()},
@@ -216,7 +216,7 @@ def test_build_types():
 
 
 def test_paths():
-    d = Config(defaults={
+    d = ConfigFiles(defaults={
         'main': {'foo': {'a': 'x'},
                  'bar': {'b': ['x'], (1, 2, 3): 'cee'}},
         0: {'foo': {'x': 'asdf'},
@@ -233,7 +233,7 @@ def test_paths():
 
 
 def test_setting_unknown_section():
-    d = Config(defaults={
+    d = ConfigFiles(defaults={
         'main': {'foo': {'a': 'x'},
                  'bar': {'b': ['x'], (1, 2, 3): 'cee'}},
         0: {'foo': {'x': 'asdf'},
@@ -243,7 +243,7 @@ def test_setting_unknown_section():
         d._set('nope', 'foo', 'a', 'x')
 
 def test_setting_unknown_subsection():
-    d = Config(defaults={
+    d = ConfigFiles(defaults={
         'main': {'foo': {'a': 'x'},
                  'bar': {'b': ['x'], (1, 2, 3): 'cee'}},
         0: {'foo': {'x': 'asdf'},
@@ -253,7 +253,7 @@ def test_setting_unknown_subsection():
         d._set('main', 'nope', 'a', 'x')
 
 def test_setting_unknown_option():
-    d = Config(defaults={
+    d = ConfigFiles(defaults={
         'main': {'foo': {'a': 'x'},
                  'bar': {'b': ['x'], (1, 2, 3): 'cee'}},
         0: {'foo': {'x': 'asdf'},
@@ -263,7 +263,7 @@ def test_setting_unknown_option():
         d._set('main', 'foo', 'nope', 'x')
 
 def test_setting_option_to_invalid_value():
-    d = Config(defaults={
+    d = ConfigFiles(defaults={
         'main': {'foo': {'a': 123},
                  'bar': {'b': ['x'], (1, 2, 3): 'cee'}},
         0: {'foo': {'x': 'asdf'},
@@ -274,18 +274,18 @@ def test_setting_option_to_invalid_value():
     assert d['main.foo.a'] == 123
 
 
-@patch('upsies.config._config._path_exists')
+@patch('upsies.utils.configfiles._path_exists')
 def test_read_ignores_nonexisting_path(path_exists_mock):
     path_exists_mock.return_value = False
-    config = Config(defaults={})
+    config = ConfigFiles(defaults={})
     config.read('foo', 'path/to/no/such/file.ini', ignore_missing=True)
     assert config._cfg == {}
     assert config._files == {'foo': 'path/to/no/such/file.ini'}
 
-@patch('upsies.config._config._path_exists')
+@patch('upsies.utils.configfiles._path_exists')
 def test_read_does_not_ignore_nonexisting_path(path_exists_mock):
     path_exists_mock.return_value = False
-    config = Config(defaults={})
+    config = ConfigFiles(defaults={})
     with pytest.raises(errors.ConfigError, match=r'^path/to/no/such/file.ini: No such file or directory$'):
         config.read('foo', 'path/to/no/such/file.ini', ignore_missing=False)
     assert config._cfg == {}
@@ -297,7 +297,7 @@ def test_read_fails_to_read_file(ignore_missing, tmp_path):
     filepath.write_text('abc')
     filepath.chmod(0o000)
     try:
-        config = Config(defaults={})
+        config = ConfigFiles(defaults={})
         with pytest.raises(errors.ConfigError, match=rf'^{filepath}: Permission denied$'):
             config.read('foo', filepath, ignore_missing=ignore_missing)
         assert config._cfg == {}
@@ -318,8 +318,8 @@ def test_read_updates_values(ignore_missing, tmp_path, mocker):
     file_other = tmp_path / 'file_other.ini'
     file_other.write_text('[foo]\nx = hello\n\n[baz]\ny = world\n')
 
-    mocker.patch('upsies.config.Config._set')
-    config = Config(defaults=defaults)
+    mocker.patch('upsies.utils.configfiles.ConfigFiles._set')
+    config = ConfigFiles(defaults=defaults)
 
     assert config.read('main', file_main, ignore_missing=ignore_missing) is None
     assert config._set.call_args_list == [
@@ -341,47 +341,47 @@ def test_read_updates_values(ignore_missing, tmp_path, mocker):
 
 def test_parse_option_outside_of_section():
     with pytest.raises(errors.ConfigError, match=r"^mock/path.ini: Line 1: foo = bar: Option outside of section$"):
-        Config._parse('section1', 'foo = bar\n', 'mock/path.ini')
+        ConfigFiles._parse('section1', 'foo = bar\n', 'mock/path.ini')
 
 def test_parse_finds_invalid_syntax():
     with pytest.raises(errors.ConfigError, match=r"^mock/path.ini: Line 2: 'foo\\n': Invalid syntax$"):
-        Config._parse('section1', '[section]\nfoo\n', 'mock/path.ini')
+        ConfigFiles._parse('section1', '[section]\nfoo\n', 'mock/path.ini')
 
 def test_parse_finds_duplicate_section():
-    config = Config(defaults={})
+    config = ConfigFiles(defaults={})
     with pytest.raises(errors.ConfigError, match=r'^mock/path.ini: Line 3: asdf: Duplicate section$'):
         config._parse('section1', '[asdf]\nfoo = bar\n[asdf]\na = b\n', 'mock/path.ini')
 
 def test_parse_finds_duplicate_option():
     with pytest.raises(errors.ConfigError, match=r'^mock/path.ini: Line 3: foo: Duplicate option$'):
-        Config._parse('section1', '[section]\nfoo = bar\nfoo = baz\n', 'mock/path.ini')
+        ConfigFiles._parse('section1', '[section]\nfoo = bar\nfoo = baz\n', 'mock/path.ini')
 
 @patch('configparser.ConfigParser')
 def test_parse_catches_generic_error(ConfigParser_mock):
     ConfigParser_mock.return_value.read_string.side_effect = configparser.Error('Something')
     with pytest.raises(errors.ConfigError, match=r"^mock/path.ini: Something$"):
-        Config._parse('section1', '', 'mock/path.ini')
+        ConfigFiles._parse('section1', '', 'mock/path.ini')
 
 def test_parse_returns_nested_dictionary():
-    cfg = Config._parse('section1', '[foo]\na = 1\nb = 2\n[bar]\n1 = one\n', 'mock/path.ini')
+    cfg = ConfigFiles._parse('section1', '[foo]\na = 1\nb = 2\n[bar]\n1 = one\n', 'mock/path.ini')
     assert cfg == {'foo': {'a': '1',
                            'b': '2'},
                    'bar': {'1': 'one'}}
 
 def test_parse_uses_newlines_as_list_separator():
-    cfg = Config._parse('section1', '[foo]\na = 1\n 2\n    3\n', 'mock/path.ini')
+    cfg = ConfigFiles._parse('section1', '[foo]\na = 1\n 2\n    3\n', 'mock/path.ini')
     assert cfg == {'foo': {'a': ['1', '2', '3']}}
 
 
 def test_get_nonstring_key():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     with pytest.raises(KeyError, match=r"^\(1, 2, 3\)$"):
         config[(1, 2, 3)]
 
 def test_get_section():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     config._set('foo', 'bar', 'qux', 456)
     config._set('hey', 'you', 'up', '!')
     section = config['foo']
@@ -392,14 +392,14 @@ def test_get_section():
     assert isinstance(section, _ConfigDict)
 
 def test_get_unknown_section():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['nope']
 
 def test_get_subsection():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     config._set('foo', 'bar', 'qux', 456)
     config._set('hey', 'you', 'up', '!')
     subsection = config['foo']['bar']
@@ -410,8 +410,8 @@ def test_get_subsection():
     assert isinstance(subsection, _ConfigDict)
 
 def test_get_subsection_with_dot_notation():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     config._set('foo', 'bar', 'qux', 456)
     config._set('hey', 'you', 'up', '!')
     subsection = config['foo.bar']
@@ -422,20 +422,20 @@ def test_get_subsection_with_dot_notation():
     assert isinstance(subsection, _ConfigDict)
 
 def test_get_unknown_subsection():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['foo']['nope']
 
 def test_get_unknown_subsection_with_dot_notation():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['foo.nope']
 
 def test_get_option():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     config._set('foo', 'bar', 'qux', 456)
     config._set('hey', 'you', 'up', '!')
     assert config['foo']['bar']['baz'] == 'asdf'
@@ -444,8 +444,8 @@ def test_get_option():
     assert config['hey']['you']['up'] == '!'
 
 def test_get_option_with_dot_notation():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     config._set('foo', 'bar', 'qux', 456)
     config._set('hey', 'you', 'up', '!')
     assert config['foo.bar.baz'] == 'asdf'
@@ -454,59 +454,59 @@ def test_get_option_with_dot_notation():
     assert config['hey.you.up'] == '!'
 
 def test_get_unknown_option():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['foo']['bar']['nope']
 
 def test_get_unknown_option_with_dot_notation():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['foo.bar.nope']
 
 
 def test_set_nonstring_section():
-    config = Config(defaults={(1, 2, 3): {'bar': {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={(1, 2, 3): {'bar': {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     config[(1, 2, 3)]['bar']['baz'] = 'not asdf'
     assert config[(1, 2, 3)] == {'bar': {'baz': 'not asdf', 'qux': 123}}
 
 def test_set_nonstring_subsection():
-    config = Config(defaults={'foo': {(1, 2, 3): {'baz': 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {(1, 2, 3): {'baz': 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     config['foo'][(1, 2, 3)]['baz'] = 'not asdf'
     assert config['foo'] == {(1, 2, 3): {'baz': 'not asdf', 'qux': 123}}
 
 def test_set_nonstring_option():
-    config = Config(defaults={'foo': {'bar': {(1, 2, 3): 'asdf', 'qux': 123}},
-                              'hey': {'you': {'there': 'whats', 'up': '?'}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {(1, 2, 3): 'asdf', 'qux': 123}},
+                                   'hey': {'you': {'there': 'whats', 'up': '?'}}})
     config['foo']['bar'][(1, 2, 3)] = 'not asdf'
     assert config['foo'] == {'bar': {(1, 2, 3): 'not asdf', 'qux': 123}}
 
 def test_set_valid_section():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     config['foo'] = {'bar': {'baz': 'hello', 'qux': 456}}
     assert config['foo'] == {'bar': {'baz': 'hello', 'qux': 456, 'asdf': [1, 2, 3]}}
 
 def test_set_valid_subsection():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     config['foo']['bar'] = {'baz': 'hello', 'qux': 456}
     assert config['foo'] == {'bar': {'baz': 'hello', 'qux': 456, 'asdf': [1, 2, 3]}}
 
 def test_set_valid_option():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     config['foo']['bar']['baz'] = 'hello'
     assert config['foo'] == {'bar': {'baz': 'hello', 'qux': 123, 'asdf': [1, 2, 3]}}
 
 def test_set_invalid_section():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     with pytest.raises(TypeError, match=r"^Expected dictionary for foo, not str: 'asdf'$"):
         config['foo'] = 'asdf'
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
 def test_set_invalid_subsection():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     with pytest.raises(TypeError, match=r"^Expected dictionary for bar, not str: 'asdf'$"):
         config['foo']['bar'] = 'asdf'
     with pytest.raises(TypeError, match=r"^Expected dictionary for bar, not str: 'asdf'$"):
@@ -514,20 +514,20 @@ def test_set_invalid_subsection():
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
 def test_set_converts_option_to_list_if_applicable():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     config['foo']['bar']['asdf'] = 'not a list'
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': ['not', 'a', 'list']}}
     config['foo.bar.asdf'] = 'also not a list'
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': ['also', 'not', 'a', 'list']}}
 
 def test_set_unknown_section():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['nope'] = {'bar': {'baz': 'asdf'}}
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
 def test_set_unknown_subsection():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['foo']['nope'] = {'baz': 'asdf'}
     with pytest.raises(KeyError, match=r"^'nope'$"):
@@ -535,7 +535,7 @@ def test_set_unknown_subsection():
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
 def test_set_unknown_option():
-    config = Config(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
+    config = ConfigFiles(defaults={'foo': {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}})
     with pytest.raises(KeyError, match=r"^'nope'$"):
         config['foo']['bar']['nope'] = 'hello'
     with pytest.raises(KeyError, match=r"^'nope'$"):
@@ -554,14 +554,14 @@ def test_set_unknown_option():
     ids=lambda value: str(value),
 )
 def test_reset_calls_private_reset_method(args, exp_args, mocker):
-    mocker.patch('upsies.config.Config._reset')
-    config = Config(defaults={})
+    mocker.patch('upsies.utils.configfiles.ConfigFiles._reset')
+    config = ConfigFiles(defaults={})
     config.reset(*args)
     assert config._reset.call_args_list == [call(*exp_args)]
 
 
 def test__reset_everything():
-    config = Config(defaults={
+    config = ConfigFiles(defaults={
         'foo': {
             'bar': {'baz': 'asdf', 'qux': 123},
             'this': {'that': 'arf', 'qux': 456},
@@ -577,7 +577,7 @@ def test__reset_everything():
     assert config._cfg == config._defaults
 
 def test__reset_section():
-    config = Config(defaults={
+    config = ConfigFiles(defaults={
         'foo': {
             'bar': {'baz': 'asdf', 'qux': 123},
             'this': {'that': 'arf', 'qux': 456},
@@ -601,7 +601,7 @@ def test__reset_section():
     }
 
 def test__reset_subsection():
-    config = Config(defaults={
+    config = ConfigFiles(defaults={
         'foo': {
             'bar': {'baz': 'asdf', 'qux': 123},
             'this': {'that': 'arf', 'qux': 456},
@@ -625,7 +625,7 @@ def test__reset_subsection():
     }
 
 def test__reset_option():
-    config = Config(defaults={
+    config = ConfigFiles(defaults={
         'foo': {
             'bar': {'baz': 'asdf', 'qux': 123},
             'this': {'that': 'arf', 'qux': 456},
@@ -666,7 +666,7 @@ def test_write_writes_given_files(args, tmp_path):
     file2 = tmp_path / 'file2.ini'
     file1.write_text('[foo]\nbar = baz\n')
     file2.write_text('[foo]\nbar = baz\n')
-    config = Config(
+    config = ConfigFiles(
         defaults={
             'File_1': {'foo': {'bar': 'qux'}},
             'File_2': {'foo': {'bar': 'qux'}},
@@ -692,7 +692,7 @@ def test_write_writes_given_files(args, tmp_path):
 def test_write_extracts_section_from_argument(arg, tmp_path):
     file = tmp_path / 'file1.ini'
     file.write_text('[foo]\nbar = baz\n')
-    config = Config(
+    config = ConfigFiles(
         defaults={
             'main': {'foo': {'bar': 'qux'}},
         },
@@ -705,7 +705,7 @@ def test_write_extracts_section_from_argument(arg, tmp_path):
 def test_write_fails_to_write_file(tmp_path):
     file = tmp_path / 'file1.ini'
     file.write_text('[foo]\nbar = baz\n')
-    config = Config(
+    config = ConfigFiles(
         defaults={'main': {'foo': {'bar': 'qux'}}},
         main=file,
     )
@@ -718,7 +718,7 @@ def test_write_fails_to_write_file(tmp_path):
 
 
 def test_as_ini():
-    config = Config(
+    config = ConfigFiles(
         defaults={'main': {
             'foo': {'a': 'aaa', 'b': [1, 2, 3], 'c': 123},
             'bar': {'b': 'bbb', 'c': [4, 5, 6], 'd': 456},
