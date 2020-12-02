@@ -21,9 +21,6 @@ class JobBase(abc.ABC):
 
     Any additional keyword arguments are passed on to :meth:`initialize`.
 
-    Exceptions
-    ==========
-
     Methods and properties of jobs should not raise any exceptions. Exceptions
     should be passed to :meth:`error` or :meth:`exception` and the job should
     :meth:`finish` immediately with an :attr:`exit_code` > 0.
