@@ -1,3 +1,7 @@
+"""
+Anything related to video files
+"""
+
 import functools
 import os
 import shlex

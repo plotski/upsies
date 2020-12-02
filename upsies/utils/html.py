@@ -1,3 +1,7 @@
+"""
+HTML parsing
+"""
+
 from .. import errors
 from . import LazyModule
 

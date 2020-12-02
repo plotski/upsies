@@ -1,3 +1,7 @@
+"""
+Open a URL in a web browser
+"""
+
 import asyncio
 import functools
 

@@ -1,3 +1,7 @@
+"""
+HTTP methods
+"""
+
 import asyncio
 import atexit
 import collections

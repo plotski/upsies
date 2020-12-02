@@ -1,3 +1,7 @@
+"""
+Caching
+"""
+
 try:
     from functools import cached_property as property
 except ImportError:

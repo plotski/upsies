@@ -1,3 +1,7 @@
+"""
+Translation between country names and codes
+"""
+
 iso3166_alpha2_name = {
     "AF": "Afghanistan",
     "AX": "Aland Islands",

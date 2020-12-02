@@ -1,3 +1,7 @@
+"""
+Timestamp parsing and normalizing
+"""
+
 def pretty(seconds):
     """
     Format `seconds` as H+:MM:SS

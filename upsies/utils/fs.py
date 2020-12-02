@@ -1,3 +1,7 @@
+"""
+File system helpers
+"""
+
 import functools
 import os
 import re

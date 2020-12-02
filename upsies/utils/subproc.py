@@ -1,3 +1,7 @@
+"""
+Execute external commands
+"""
+
 import os
 
 from .. import errors

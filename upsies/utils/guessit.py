@@ -1,3 +1,7 @@
+"""
+`guessit <https://guessit.io/>`_ abstraction layer
+"""
+
 import functools
 import os
 import re
