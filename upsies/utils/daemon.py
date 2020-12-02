@@ -23,7 +23,7 @@ class MsgType(enum.Enum):
 
 class DaemonProcess:
     """
-    Background worker process
+    :class:`multiprocessing.Process` abstraction with IPC
 
     Intended to offload heavy work (e.g. torrent creation) onto a different
     process. (Threads can still make the UI unresponsive because of the GIL.)
