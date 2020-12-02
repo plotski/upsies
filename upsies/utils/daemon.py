@@ -14,6 +14,9 @@ _log = logging.getLogger(__name__)
 
 
 class MsgType(enum.Enum):
+    """
+    Enum that specifies the type of an IPC message (info, error, etc)
+    """
     init = 'init'
     info = 'info'
     error = 'error'
