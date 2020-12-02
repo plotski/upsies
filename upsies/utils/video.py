@@ -66,7 +66,7 @@ def filter_similar_length(filepaths):
     This is useful to exclude samples or short .VOBs from DVD images.
 
     .. note:: Because this function is wrapped in `functools.lru_cache`,
-        `filepaths` should be a tuple (or any other hashable sequence).
+       `filepaths` should be a tuple (or any other hashable sequence).
 
     :params filepaths: Hashable sequence of video file paths
 
