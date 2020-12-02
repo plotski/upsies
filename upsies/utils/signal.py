@@ -27,13 +27,13 @@ class Signal:
 
     def register(self, signal, callback):
         """
-        Call `callback` when `signal` is :meth:`emit`ed
+        Call `callback` when `signal` is emited
 
-        :param signal: Previously :meth:`add`ed signal
+        :param signal: Previously added signal
         :param callback: Any callback. The signature depends on the caller of
             :meth:`emit`.
 
-        :raise ValueError: if `signal` was not :meth:`add`ed
+        :raise ValueError: if `signal` was not added first
         :raise TypeError: if `callback` is not callable
         """
         if signal not in self._signals:
@@ -45,11 +45,11 @@ class Signal:
 
     def emit(self, signal, *args, **kwargs):
         """
-        Call all callbacks that were previously :meth:`register`ed
+        Call callbacks that are registered to `signal`
 
-        :param signal: Previously :meth:`add`ed signal
+        :param signal: Previously added signal
 
-        Any other arguments are passed on to the registered callbacks.
+        Any other arguments are passed on to the callbacks.
         """
         for callback in self._signals[str(signal)]:
             callback(*args, **kwargs)
