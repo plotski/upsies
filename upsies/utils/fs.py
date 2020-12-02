@@ -77,12 +77,12 @@ def basename(path):
     """
     Return last segment in `path`
 
-    Unlike :func:`os.path.basename`, this `rstrip`s any directory separators
-    first.
+    Unlike :func:`os.path.basename`, this removes any trailing directory
+    separators first.
 
     >>> os.path.basename('a/b/c/')
     ''
-    >>> os.path.basename('a/b/c/'.rstrip('/'))
+    >>> upsies.utils.basename('a/b/c/')
     'c'
     """
     return os.path.basename(str(path).rstrip(os.sep))
@@ -92,12 +92,12 @@ def dirname(path):
     """
     Remove last segment in `path`
 
-    Unlike :func:`os.path.dirname`, this `rstrip`s any directory separators
-    first.
+    Unlike :func:`os.path.dirname`, this removes any trailing directory
+    separators first.
 
     >>> os.path.dirname('a/b/c/')
     'a/b/c'
-    >>> os.path.dirname('a/b/c/'.rstrip('/'))
+    >>> upsies.utils.dirname('a/b/c/')
     'a/b'
     """
     return os.path.dirname(str(path).rstrip(os.sep))
