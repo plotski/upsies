@@ -1,3 +1,7 @@
+"""
+Configuration files, defaults and hardcoded constants
+"""
+
+from . import _constants as constants
 from ._config import Config
-from ._defaults import (CLIENTS_FILEPATH, OPTION_PATHS, TRACKERS_FILEPATH,
-                        defaults)
+from ._defaults import defaults

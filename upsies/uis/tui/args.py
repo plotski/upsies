@@ -77,7 +77,7 @@ def IMAGEHOST(string):
 
 
 def OPTION(string):
-    if string in config.OPTION_PATHS:
+    if string in config.constants.OPTION_PATHS:
         return string.casefold()
     else:
         raise ValueError(f'Unknown option: {string}')
@@ -103,10 +103,10 @@ def parse(args):
                         help='Write debugging messages to FILE')
     parser.add_argument('--trackers-file', '-t',
                         help='Tracker configuration file path',
-                        default=config.TRACKERS_FILEPATH)
+                        default=config.constants.TRACKERS_FILEPATH)
     parser.add_argument('--clients-file', '-c',
                         help='BitTorrent client configuration file path',
-                        default=config.CLIENTS_FILEPATH)
+                        default=config.constants.CLIENTS_FILEPATH)
     parser.add_argument('--ignore-cache', '-ic',
                         help='Ignore existing files and information from previous calls',
                         action='store_true')
@@ -293,7 +293,7 @@ def parse(args):
     add_subcmd(
         command=commands.set,
         names=('set',),
-        info='options:\n  ' + '\n  '.join(o for o in config.OPTION_PATHS),
+        info='options:\n  ' + '\n  '.join(o for o in config.constants.OPTION_PATHS),
         args={
             'OPTION': {
                 'type': OPTION,
