@@ -9,6 +9,15 @@ _log = logging.getLogger(__name__)
 
 
 class MediainfoJob(JobBase):
+    """
+    Get output from ``mediainfo``
+
+    :param content_path: Path to video file or directory that contains a video
+        file
+
+    See :func:`.tools.mediainfo.as_string` for more information.
+    """
+
     name = 'mediainfo'
     label = 'Mediainfo'
 
