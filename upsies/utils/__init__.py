@@ -4,6 +4,7 @@ Low-level wrappers and helpers
 
 import collections
 import importlib
+import inspect
 import itertools
 import os
 import types
@@ -70,6 +71,23 @@ def submodules(package):
                 importlib.import_module(name=f'.{modname}', package=package)
             )
     return submods
+
+
+def subclasses(basecls, modules):
+    """
+    Return list of subclasses
+
+    :param type basecls: Class that all returned classes are a subclass of
+    :param modules: List of modules to search
+    """
+    subclses = []
+    for mod in modules:
+        for name, member in inspect.getmembers(mod):
+            if (member is not basecls and
+                isinstance(member, type) and
+                issubclass(member, basecls)):
+                subclses.append(member)
+    return subclses
 
 
 def closest_number(n, ns):

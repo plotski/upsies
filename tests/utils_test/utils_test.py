@@ -22,6 +22,19 @@ def test_submodules():
     }
 
 
+def test_subclasses():
+    from upsies.tools import btclient
+    from upsies.tools.btclient import dummy, transmission
+    subclses = utils.subclasses(
+        basecls=btclient.ClientApiBase,
+        modules=[dummy, transmission],
+    )
+    assert subclses == [
+        dummy.DummyClientApi,
+        transmission.TransmissionClientApi,
+    ]
+
+
 def test_closest_number():
     numbers = (10, 20, 30)
     for n in (-10, 0, 9, 10, 11, 14):
