@@ -3,6 +3,25 @@ import pytest
 from upsies import utils
 
 
+def test_submodules():
+    import importlib
+    assert set(utils.submodules('upsies.utils')) == {
+        importlib.import_module('upsies.utils.browser'),
+        importlib.import_module('upsies.utils.cache'),
+        importlib.import_module('upsies.utils.configfiles'),
+        importlib.import_module('upsies.utils.country'),
+        importlib.import_module('upsies.utils.daemon'),
+        importlib.import_module('upsies.utils.fs'),
+        importlib.import_module('upsies.utils.guessit'),
+        importlib.import_module('upsies.utils.html'),
+        importlib.import_module('upsies.utils.http'),
+        importlib.import_module('upsies.utils.signal'),
+        importlib.import_module('upsies.utils.subproc'),
+        importlib.import_module('upsies.utils.timestamp'),
+        importlib.import_module('upsies.utils.video'),
+    }
+
+
 def test_closest_number():
     numbers = (10, 20, 30)
     for n in (-10, 0, 9, 10, 11, 14):

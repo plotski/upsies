@@ -5,6 +5,7 @@ Low-level wrappers and helpers
 import collections
 import importlib
 import itertools
+import os
 import types
 
 
@@ -43,6 +44,32 @@ class LazyModule(types.ModuleType):
     def __dir__(self):
         module = self._load()
         return dir(module)
+
+
+def submodules(package):
+    """
+    Return list of submodules in `package`
+
+    :param str package: Qualified name to package, e.g. "upsies.tools.btclient"
+    """
+    # Get absolute path to parent directory of top-level package
+    own_path = os.path.dirname(__file__)
+    rel_path = __package__.replace('.', '/')
+    assert own_path.endswith(rel_path)
+    project_path = own_path[:-len(rel_path)]
+
+    # Add path to given package
+    package_path = os.path.join(project_path, package.replace('.', '/'))
+
+    # Find and import public submodules
+    submods = []
+    for name in os.listdir(package_path):
+        if not name.startswith('_') and name.endswith('.py'):
+            modname = name[:-3]  # Remove .py
+            submods.append(
+                importlib.import_module(name=f'.{modname}', package=package)
+            )
+    return submods
 
 
 def closest_number(n, ns):
