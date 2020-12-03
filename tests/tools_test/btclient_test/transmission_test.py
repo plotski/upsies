@@ -40,13 +40,13 @@ class RequestHandler:
 
 
 def test_name(tmp_path):
-    assert transmission.ClientApi.name == 'transmission'
+    assert transmission.TransmissionClientApi.name == 'transmission'
 
 
 @pytest.mark.asyncio
 async def test_request_connection_error():
     url = 'http://localhost:12345/'
-    api = transmission.ClientApi(url=url)
+    api = transmission.TransmissionClientApi(url=url)
     with pytest.raises(errors.TorrentError, match=f'^{re.escape(url)}: Failed to connect$'):
         await api._request('foo')
 
@@ -55,7 +55,7 @@ async def test_request_json_parsing_error(httpserver):
     path = '/transmission/rpc'
     httpserver.expect_request(uri=path).respond_with_data('this is not json')
     url = httpserver.url_for(path)
-    api = transmission.ClientApi(url=url)
+    api = transmission.TransmissionClientApi(url=url)
     with pytest.raises(errors.TorrentError, match='^Malformed JSON: this is not json: '):
         await api._request('foo')
 
@@ -86,7 +86,7 @@ async def test_request_CSRF_token(httpserver):
     handler = Handler()
     httpserver.expect_request(uri=path).respond_with_handler(handler)
 
-    api = transmission.ClientApi(url=httpserver.url_for(path))
+    api = transmission.TransmissionClientApi(url=httpserver.url_for(path))
     assert await api._request(data) == response
     assert handler.requests_seen == [
         {'method': 'POST', 'csrf_token': None, 'data': data},
@@ -105,7 +105,7 @@ async def test_request_authentication_credentials_are_sent(httpserver):
     ).respond_with_json(
         {'response': 'info'}
     )
-    api = transmission.ClientApi(
+    api = transmission.TransmissionClientApi(
         url=httpserver.url_for(path),
         username='foo',
         password='bar',
@@ -118,7 +118,7 @@ async def test_request_authentication_fails(httpserver):
     httpserver.expect_request(uri=path).respond_with_data(
         status=transmission.AUTH_ERROR_CODE,
     )
-    api = transmission.ClientApi(url=httpserver.url_for(path))
+    api = transmission.TransmissionClientApi(url=httpserver.url_for(path))
     with pytest.raises(errors.TorrentError, match='^Authentication failed$'):
         await api._request('request data')
 
@@ -133,7 +133,7 @@ async def test_add_torrent_with_download_path_argument(torrent_added_field, mock
         'arguments': {torrent_added_field: {'id': 1234}},
         'result': 'success',
     }
-    api = transmission.ClientApi()
+    api = transmission.TransmissionClientApi()
     mocker.patch.multiple(
         api,
         _request=AsyncMock(return_value=response),
@@ -165,7 +165,7 @@ async def test_add_torrent_without_download_path_argument(torrent_added_field, m
         'arguments': {torrent_added_field: {'id': 1234}},
         'result': 'success',
     }
-    api = transmission.ClientApi()
+    api = transmission.TransmissionClientApi()
     mocker.patch.multiple(
         api,
         _request=AsyncMock(return_value=response),
@@ -191,7 +191,7 @@ async def test_add_torrent_uses_result_field_as_error_message(mocker):
         'arguments': {},
         'result': 'Kaboom!',
     }
-    api = transmission.ClientApi()
+    api = transmission.TransmissionClientApi()
     mocker.patch.multiple(
         api,
         _request=AsyncMock(return_value=response),
@@ -212,7 +212,7 @@ async def test_add_torrent_uses_result_field_as_error_message(mocker):
 @pytest.mark.asyncio
 async def test_add_torrent_reports_generic_error(mocker):
     response = {'something': 'unexpected'}
-    api = transmission.ClientApi()
+    api = transmission.TransmissionClientApi()
     mocker.patch.multiple(
         api,
         _request=AsyncMock(return_value=response),

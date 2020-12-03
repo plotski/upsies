@@ -1,9 +1,13 @@
+"""
+Client API for the Transmission daemon
+"""
+
 import base64
 import json
 
 from ... import errors
 from ...utils import http
-from . import ClientApiBase
+from .base import ClientApiBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -15,11 +19,16 @@ CSRF_ERROR_CODE = 409
 CSRF_HEADER = 'X-Transmission-Session-Id'
 
 
-class ClientApi(ClientApiBase):
+class TransmissionClientApi(ClientApiBase):
     """
-    RPC for Transmission daemon
+    Implementation of Transmission daemon's RPC protocol
 
-    https://github.com/transmission/transmission/blob/master/extras/rpc-spec.txt
+    Reference: https://github.com/transmission/transmission/blob/master/extras/rpc-spec.txt
+
+    :param str username: Username used for authentication
+    :param str password: Password used for authentication
+    :param str url: Transmission RPC URL, defaults to
+        "http://localhost:9091/transmission/rpc"
     """
 
     name = 'transmission'

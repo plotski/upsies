@@ -1,27 +1,31 @@
 """
-Communication with BitTorrent clients
+API for BitTorrent clients
 """
 
-from ._base import ClientApiBase  # isort:skip
-from . import dummy, transmission
+from ... import utils
+from .base import ClientApiBase
+
+
+def clients():
+    """Return list of :class:`.ClientApiBase` subclasses"""
+    return utils.subclasses(ClientApiBase, utils.submodules(__package__))
 
 
 def client(name, **kwargs):
     """
-    Create client instance
+    Create :class:`.ClientApiBase` instance
 
-    :param str name: Name of a public module in this package
-    :param kwargs: All keyword arguments are passed to the module's
-        :class:`ClientApi` class
+    :param str name: Name of the client. A subclass of :class:`.ClientApiBase`
+        with the same :attr:`~.ClientApiBase.name` must exist in one of this
+        package's submodules
+    :param kwargs: All keyword arguments are passed to the subclass specified by
+        `name`
 
-    :raise ValueError: if `name` does not correspond to an existing module in
-        this package
+    :raise ValueError: if no matching subclass can be found
 
-    :return: :class:`ClientApi` instance
+    :return: :class:`.ClientApiBase` instance
     """
-    try:
-        module = globals()[name]
-    except KeyError:
-        raise ValueError(f'Unsupported client: {name}')
-    else:
-        return module.ClientApi(**kwargs)
+    for client in clients():
+        if client.name == name:
+            return client(**kwargs)
+    raise ValueError(f'Unsupported client: {name}')

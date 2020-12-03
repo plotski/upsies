@@ -1,9 +1,17 @@
+"""
+Base class for client APIs
+"""
+
 import abc
 
 from ... import errors
 
 
 class ClientApiBase(abc.ABC):
+    """
+    Base class for all BitTorrent client APIs
+    """
+
     @property
     @abc.abstractmethod
     def name(self):
