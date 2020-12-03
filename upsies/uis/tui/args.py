@@ -39,7 +39,7 @@ def _get_names(package, clsname, name_attribute):
 
 DB_NAMES = _get_names(dbs, '', 'label')
 TRACKER_NAMES = _get_names(trackers, 'Tracker', 'name')
-IMGHOST_NAMES = _get_names(imghosts, 'ImageHost', 'name')
+IMGHOST_NAMES = [cls.name for cls in imghosts.imghosts()]
 BTCLIENT_NAMES = [cls.name for cls in btclients.clients()]
 
 

@@ -1,6 +1,10 @@
+"""
+Image uploader for imgbox.com
+"""
+
 from ... import errors
 from ...utils import LazyModule
-from . import ImageHostBase
+from .base import ImageHostBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -8,7 +12,7 @@ _log = logging.getLogger(__name__)
 pyimgbox = LazyModule(module='pyimgbox', namespace=globals())
 
 
-class ImageHost(ImageHostBase):
+class ImgboxImageHost(ImageHostBase):
     """
     Upload images to a gallery on imgbox.com
 

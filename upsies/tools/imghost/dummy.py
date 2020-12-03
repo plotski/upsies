@@ -1,10 +1,14 @@
+"""
+Dummy image uploader for testing and debugging
+"""
+
 import asyncio
 import os
 
-from . import ImageHostBase
+from .base import ImageHostBase
 
 
-class ImageHost(ImageHostBase):
+class DummyImageHost(ImageHostBase):
     """Dummy service for testing and debugging"""
 
     name = 'dummy'

@@ -1,29 +1,32 @@
 """
-Common API for image hosting services
+API for image hosting services
 """
 
-# isort:skip_file
-from ._base import ImageHostBase
-from ._common import UploadedImage
-from . import dummy, imgbox
+from ... import utils
+from .base import ImageHostBase
+from .common import UploadedImage
+
+
+def imghosts():
+    """Return list of :class:`.ImageHostBase` subclasses"""
+    return utils.subclasses(ImageHostBase, utils.submodules(__package__))
 
 
 def imghost(name, **kwargs):
     """
-    Create ImageHost instance
+    Create :class:`.ImageHostBase` instance
 
-    :param str name: Name of a public module in this package
-    :param kwargs: All keyword arguments are passed to the module's
-        :class:`ImageHost` class
+    :param str name: Name of the image hosting service. A subclass of
+        :class:`.ImageHostBase` with the same :attr:`~.ImageHostBase.name` must
+        exist in one of this package's submodules.
+    :param kwargs: All keyword arguments are passed to the subclass specified by
+        `name`
 
-    :raise ValueError: if `name` does not correspond to an existing module in
-        this package
+    :raise ValueError: if no matching subclass can be found
 
-    :return: :class:`ImageHost` instance
+    :return: :class:`.ImageHostBase` instance
     """
-    try:
-        module = globals()[name]
-    except KeyError:
-        raise ValueError(f'Unsupported image host: {name}')
-    else:
-        return module.ImageHost(**kwargs)
+    for imghost in imghosts():
+        if imghost.name == name:
+            return imghost(**kwargs)
+    raise ValueError(f'Unsupported image hosting service: {name}')

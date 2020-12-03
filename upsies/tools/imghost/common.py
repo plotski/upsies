@@ -1,7 +1,11 @@
+"""
+Anything implementation-independent
+"""
+
 class UploadedImage(str):
     """
-    Subclass of `str` that holds arbitrary information from keyword arguments as
-    instance attributes
+    Subclass of :class:`str` that holds arbitrary information from keyword
+    arguments as instance attributes
 
     The instance itself is supposed to be the URL of an uploaded image. Keyword
     arguments can be additional URLs (e.g. thumbnail URL, delete URL) or other

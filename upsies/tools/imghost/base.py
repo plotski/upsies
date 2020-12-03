@@ -1,9 +1,13 @@
+"""
+Base class for image uploaders
+"""
+
 import abc
 import json
 import os
 
 from ...utils import fs
-from . import _common
+from . import common
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -11,10 +15,10 @@ _log = logging.getLogger(__name__)
 
 class ImageHostBase(abc.ABC):
     """
-    Base class for uploading images to image hosting services
+    Base class for image uploaders
 
     :param str cache_dir: Where to store URLs in JSON files; defaults to the
-        return value of :func:`utils.fs.tmpdir`
+        return value of :func:`.utils.fs.tmpdir`
     """
 
     def __init__(self, cache_dir=None):
@@ -35,7 +39,7 @@ class ImageHostBase(abc.ABC):
 
         :raise RequestError: if the upload fails
 
-        :return: :class:`UploadedImage`
+        :return: :class:`~.imghost.common.UploadedImage`
         """
         info = self._get_info_from_cache(image_path) if not force else {}
         if not info:
@@ -44,7 +48,7 @@ class ImageHostBase(abc.ABC):
             self._store_info_to_cache(image_path, info)
         if 'url' not in info:
             raise RuntimeError(f'Missing "url" key in {info}')
-        return _common.UploadedImage(**info)
+        return common.UploadedImage(**info)
 
     @abc.abstractmethod
     async def _upload(self, image_path):
