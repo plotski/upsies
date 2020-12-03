@@ -98,7 +98,7 @@ _standard_heights = (480, 576, 720, 1080, 2160, 4320)
 
 @functools.lru_cache(maxsize=None)
 def resolution(path):
-    """Return resolution of video file `path` (e.g. 1080p) or `None`"""
+    """Return resolution of video file `path` (e.g. "1080p") or `None`"""
     # Expect non-wide (1392x1080), narrow (1920x800) and weird (1918x1040)
     video_track = default_track('video', path)
     height = int(video_track.get('Height', 0))
