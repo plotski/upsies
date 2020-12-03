@@ -32,7 +32,8 @@ def as_string(path):
 
     The parent directory of `path` is removed from the returned string.
 
-    :param str path: Path to video file
+    :param str path: Path to video file or directory.
+        :func:`.utils.video.first_video` is applied.
 
     :raise MediainfoError: if something goes wrong
 
