@@ -2,7 +2,7 @@ import functools
 import re
 
 from ....utils import LazyModule, http
-from .. import _common
+from .. import common
 from . import _info, _url_base
 
 import logging  # isort:skip
@@ -11,7 +11,7 @@ _log = logging.getLogger(__name__)
 bs4 = LazyModule(module='bs4', namespace=globals())
 
 
-class ImdbSearchResult(_common.SearchResult):
+class ImdbSearchResult(common.SearchResult):
     @property
     def summary(self):
         return functools.partial(_info.summary, self.id)
@@ -29,8 +29,8 @@ class ImdbSearchResult(_common.SearchResult):
         return functools.partial(_info.country, self.id)
 
 
-# Scraping IMDb's advanced search website is slower but let's us specify type
-# and year.
+# Scraping IMDb's advanced search website is slower but lets us specify type and
+# year.
 
 _title_types = {
     'movie' : 'feature,tv_movie,documentary,video',
@@ -44,11 +44,11 @@ async def search(query):
     """
     Search for IMDb ID
 
-    :param query: :class:`~tools.dbs.Query` instance
+    :param query: :class:`~.tools.webdbs.Query` instance
 
     :raise RequestError: if the search request fails
 
-    :return: Sequence of :class:`~tools.dbs.SearchResult~ objects
+    :return: Sequence of :class:`~.tools.webdbs.SearchResult~ objects
     """
     _log.debug('Searching IMDb for %s', query)
     if not query.title:

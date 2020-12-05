@@ -2,7 +2,7 @@ import functools
 import re
 
 from ....utils import LazyModule, http
-from .. import _common
+from .. import common
 from . import _info, _url_base
 
 import logging  # isort:skip
@@ -11,7 +11,7 @@ _log = logging.getLogger(__name__)
 bs4 = LazyModule(module='bs4', namespace=globals())
 
 
-class TmdbSearchResult(_common.SearchResult):
+class TmdbSearchResult(common.SearchResult):
     @property
     def summary(self):
         return functools.partial(_info.summary, self.id)

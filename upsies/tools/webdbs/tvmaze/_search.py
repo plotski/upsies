@@ -3,7 +3,7 @@ import json
 
 from .... import errors
 from ....utils import http
-from .. import _common
+from .. import common
 from . import _get, _info, _url_base
 
 import logging  # isort:skip
@@ -47,7 +47,7 @@ async def search(query):
 
 
 def _make_result(show):
-    return _common.SearchResult(
+    return common.SearchResult(
         id=show['id'],
         url=show['url'],
         type='series',

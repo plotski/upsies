@@ -1,6 +1,6 @@
 import pytest
 
-from upsies.tools.dbs import Query, imdb
+from upsies.tools.webdbs import Query, imdb
 
 
 @pytest.mark.asyncio

@@ -3,4 +3,4 @@ Modules for searching and querying services like IMDb
 """
 
 from . import imdb, tmdb, tvmaze
-from ._common import Query, SearchResult
+from .common import Query, SearchResult, info

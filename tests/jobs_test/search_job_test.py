@@ -5,7 +5,7 @@ import pytest
 
 from upsies import errors
 from upsies.jobs import search
-from upsies.tools.dbs import Query
+from upsies.tools.webdbs import Query
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -64,7 +64,7 @@ def test_initialize_creates_searcher(tmp_path, mocker):
     )
     assert job._searcher is Searcher_mock.return_value
     assert Searcher_mock.call_args_list == [call(
-        search_coro=search.dbs.imdb.search,
+        search_coro=search.webdbs.imdb.search,
         results_callback=job.handle_search_results,
         error_callback=job.error,
         searching_callback=job.handle_searching_status,

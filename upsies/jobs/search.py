@@ -3,7 +3,7 @@ import collections
 from time import monotonic as time_monotonic
 
 from .. import errors
-from ..tools import dbs
+from ..tools import webdbs
 from . import JobBase
 
 import logging  # isort:skip
@@ -14,7 +14,7 @@ class SearchDbJob(JobBase):
     """
     Prompt user to select a specific search result from an internet database
 
-    :param str db: Name of the database (see :mod:`tools.dbs` for a list)
+    :param str db: Name of the database (see :mod:`tools.webdbs` for a list)
     :param str content_path: Path or name of the release
 
     :raise ValueError: if `db` is unknown
@@ -24,7 +24,7 @@ class SearchDbJob(JobBase):
 
         `search_results`
             Emitted after new search results are available. Registered callbacks
-            get a sequence of :class:`tools.dbs.SearchResult` instances as a
+            get a sequence of :class:`tools.webdbs.SearchResult` instances as a
             positional argument.
 
         `searching_status`
@@ -54,10 +54,10 @@ class SearchDbJob(JobBase):
 
     def initialize(self, db, content_path):
         try:
-            self._db = getattr(dbs, db)
+            self._db = getattr(webdbs, db)
         except AttributeError:
             raise ValueError(f'Unknown database: {db}')
-        self._query = dbs.Query.from_path(content_path)
+        self._query = webdbs.Query.from_path(content_path)
         self._is_searching = False
 
         self.signal.add('search_results')
@@ -107,7 +107,7 @@ class SearchDbJob(JobBase):
 
     def search(self, query):
         if not self.is_finished:
-            self._query = dbs.Query.from_string(query)
+            self._query = webdbs.Query.from_string(query)
             self._searcher.search(self._query)
             self.clear_errors()
 
@@ -160,7 +160,7 @@ class _Searcher:
         Schedule new query
 
         :param query: Query to make
-        :type query: :class:`~tools.dbs.Query`
+        :type query: :class:`~tools.webdbs.Query`
         """
         if self._search_task:
             self._search_task.cancel()

@@ -4,7 +4,7 @@ from prompt_toolkit.layout.containers import (DynamicContainer, HSplit, VSplit,
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.utils import get_cwidth
 
-from ....tools import dbs
+from ....tools import webdbs
 from ....utils import browser, cache
 from .. import widgets
 from . import JobWidgetBase
@@ -58,7 +58,7 @@ class SearchDbJobWidget(JobWidgetBase):
         self.job.signal.register('info_updated', self.handle_info_updated)
 
     def handle_query(self, buffer):
-        new_query = dbs.Query.from_string(self._widgets['query'].text)
+        new_query = webdbs.Query.from_string(self._widgets['query'].text)
         if new_query != self.job.query:
             self.job.search(new_query)
         else:

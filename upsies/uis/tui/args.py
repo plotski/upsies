@@ -5,7 +5,7 @@ import textwrap
 
 from ... import __project_name__, __version__, constants, trackers, utils
 from ...tools import btclient as btclients
-from ...tools import dbs
+from ...tools import webdbs
 from ...tools import imghost as imghosts
 from . import commands
 
@@ -37,7 +37,7 @@ def _get_names(package, clsname, name_attribute):
         return [utils.CaseInsensitiveString(getattr(mod, name_attribute))
                 for mod in modules]
 
-DB_NAMES = _get_names(dbs, '', 'label')
+DB_NAMES = _get_names(webdbs, '', 'label')
 TRACKER_NAMES = _get_names(trackers, 'Tracker', 'name')
 IMGHOST_NAMES = [cls.name for cls in imghosts.imghosts()]
 BTCLIENT_NAMES = [cls.name for cls in btclients.clients()]

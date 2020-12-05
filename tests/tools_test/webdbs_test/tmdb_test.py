@@ -1,7 +1,7 @@
 import pytest
 
-from upsies.tools.dbs import tmdb
-from upsies.tools.dbs.tmdb import _info
+from upsies.tools.webdbs import tmdb
+from upsies.tools.webdbs.tmdb import _info
 
 
 @pytest.mark.asyncio

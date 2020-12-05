@@ -1,7 +1,7 @@
 import pytest
 
-from upsies.tools.dbs import tvmaze
-from upsies.tools.dbs.tvmaze import _info
+from upsies.tools.webdbs import tvmaze
+from upsies.tools.webdbs.tvmaze import _info
 
 
 @pytest.mark.asyncio
