@@ -49,9 +49,10 @@ class LazyModule(types.ModuleType):
 
 def submodules(package):
     """
-    Return list of submodules in `package`
+    Return list of submodules and subpackages in `package`
 
-    :param str package: Qualified name to package, e.g. "upsies.tools.btclient"
+    :param str package: Qualified name of parent package,
+        e.g. "upsies.tools.btclient"
     """
     # Get absolute path to parent directory of top-level package
     own_path = os.path.dirname(__file__)
