@@ -115,7 +115,7 @@ class Query:
         return f'{type(self).__name__}({kwargs})'
 
 
-async def info(id, *corofuncs):
+async def gather(id, *corofuncs):
     """
     Combine return values from multiple coroutines into `dict`
 

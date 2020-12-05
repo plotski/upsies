@@ -298,7 +298,7 @@ class ReleaseName(collections.abc.Mapping):
             callback(self)
 
     async def _update_attributes(self, id):
-        info = await dbs.imdb.info(
+        info = await dbs.imdb.gather(
             id,
             dbs.imdb.type,
             dbs.imdb.title_english,

@@ -137,7 +137,7 @@ def test_Query_as_repr(query, exp_repr):
 
 
 @pytest.mark.asyncio
-async def test_info_preserves_affiliation():
+async def test_gather_preserves_affiliation():
     async def foo(id):
         await asyncio.sleep(0.1)
         return f'{id}:foo'
@@ -145,7 +145,7 @@ async def test_info_preserves_affiliation():
     async def bar(id):
         return f'{id}:bar'
 
-    assert await webdbs.info('123', foo, bar) == {
+    assert await webdbs.gather('123', foo, bar) == {
         'foo' : '123:foo',
         'bar' : '123:bar',
     }
@@ -253,7 +253,7 @@ async def test_search_for_series(db, store_response):
 
 
 expected_coroutine_functions = (
-    'search', 'info', 'summary', 'title_english', 'title_original', 'year',
+    'search', 'gather', 'summary', 'title_english', 'title_original', 'year',
 )
 expected_strings = ('label', '_url_base')
 
