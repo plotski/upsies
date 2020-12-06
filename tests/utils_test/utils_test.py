@@ -3,7 +3,7 @@ import pytest
 from upsies import utils
 
 
-def test_submodules():
+def test_submodules_finds_modules():
     import importlib
     assert set(utils.submodules('upsies.utils')) == {
         importlib.import_module('upsies.utils.browser'),
@@ -19,6 +19,16 @@ def test_submodules():
         importlib.import_module('upsies.utils.subproc'),
         importlib.import_module('upsies.utils.timestamp'),
         importlib.import_module('upsies.utils.video'),
+    }
+
+def test_submodules_finds_packages():
+    import importlib
+    assert set(utils.submodules('upsies.tools.webdbs')) == {
+        importlib.import_module('upsies.tools.webdbs.common'),
+        importlib.import_module('upsies.tools.webdbs.base'),
+        importlib.import_module('upsies.tools.webdbs.tvmaze'),
+        importlib.import_module('upsies.tools.webdbs.imdb'),
+        importlib.import_module('upsies.tools.webdbs.tmdb'),
     }
 
 

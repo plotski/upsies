@@ -51,7 +51,7 @@ def submodules(package):
     """
     Return list of submodules and subpackages in `package`
 
-    :param str package: Qualified name of parent package,
+    :param str package: Fully qualified name of parent package,
         e.g. "upsies.tools.btclient"
     """
     # Get absolute path to parent directory of top-level package
@@ -66,10 +66,11 @@ def submodules(package):
     # Find and import public submodules
     submods = []
     for name in os.listdir(package_path):
-        if not name.startswith('_') and name.endswith('.py'):
-            modname = name[:-3]  # Remove .py
+        if not name.startswith('_'):
+            if name.endswith('.py'):
+                name = name[:-3]
             submods.append(
-                importlib.import_module(name=f'.{modname}', package=package)
+                importlib.import_module(name=f'.{name}', package=package)
             )
     return submods
 
