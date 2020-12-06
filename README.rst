@@ -20,6 +20,8 @@ If :code:`pipx --version` is equal to or greater than 0.15.0.0:
 
 If :code:`pipx --version` is lower than 0.15.0.0:
 
+.. code:: sh
+
    $ pipx install upsies --spec 'git+https://github.com/plotski/upsies.git#egg=upsies'
 
 Setup
