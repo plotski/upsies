@@ -35,27 +35,39 @@ class Query:
     :raise ValueError: if an invalid argument is passed
     """
 
-    def __init__(self, title, year=None, type=None):
+    def __init__(self, title, year=None, type=Type.unknown):
+        if not isinstance(type, Type):
+            raise ValueError(f'Invalid type: {type!r}')
+        self.type = type
         self.title = str(title)
-
-        self.type = type if type is None else str(type).lower()
-        if self.type is not None and self.type not in self._types:
-            raise ValueError(f'Invalid type: {type}')
-
-        self.year = year if year is None else str(year)
+        self.year = None if year is None else str(year)
         if self.year is not None and not 1800 < int(self.year) < 2100:
             raise ValueError(f'Invalid year: {self.year}')
 
-    _types = ('movie', 'series')
-    _movie_types = ('movie', 'film')
-    _series_types = ('series', 'tv', 'show', 'tvshow', 'episode', 'season')
+    _types = {
+        Type.movie: ('movie', 'film'),
+        Type.season: ('season',),
+        Type.episode: ('episode',),
+        Type.series: ('series', 'tv', 'show', 'tvshow'),
+    }
+    _known_types = tuple(v for types in _types.values() for v in types)
     _kw_regex = {
         'year': r'year:(\d{4})',
-        'type': rf'type:({"|".join(_movie_types + _series_types)})',
+        'type': rf'type:({"|".join(_known_types)})',
     }
 
     @classmethod
     def from_string(cls, query):
+        """
+        Create instance from string
+
+        The returned :class:`Query` is case-insensitive and has any superfluous
+        whitespace removed.
+
+        Keyword arguments are extracted by looking for ``"year:YEAR"`` and
+        ``"type:TYPE"`` in `query` where ``YEAR`` is a four-digit number and
+        ``TYPE`` is something like "movie", "film", "tv", etc.
+        """
         # Normalize query:
         #   - Case-insensitive
         #   - Remove leading/trailing white space
@@ -67,10 +79,14 @@ class Query:
                 match = re.search(f'^{regex}$', part)
                 if match:
                     value = match.group(1)
-                    if kw == 'type' and value in cls._movie_types:
-                        return 'type', 'movie'
-                    elif kw == 'type' and value in cls._series_types:
-                        return 'type', 'series'
+                    if kw == 'type' and value in cls._types[Type.movie]:
+                        return 'type', Type.movie
+                    elif kw == 'type' and value in cls._types[Type.season]:
+                        return 'type', Type.season
+                    elif kw == 'type' and value in cls._types[Type.episode]:
+                        return 'type', Type.episode
+                    elif kw == 'type' and value in cls._types[Type.series]:
+                        return 'type', Type.series
                     elif kw == 'year':
                         return 'year', value
             return None, None
@@ -89,14 +105,25 @@ class Query:
 
     @classmethod
     def from_path(cls, path):
+        """
+        Create instance from file or directory name
+
+        `path` is passed to :func:`~.guessit.guessit` to get the arguments for
+        instantiation.
+        """
         guess = guessit.guessit(path)
         kwargs = {'title': guess['title']}
+
         if guess.get('year'):
             kwargs['year'] = guess['year']
+
         if guess.get('type').casefold() == 'movie':
-            kwargs['type'] = 'movie'
-        elif guess.get('type').casefold() in ('season', 'episode', 'series'):
-            kwargs['type'] = 'series'
+            kwargs['type'] = Type.movie
+        elif guess.get('type').casefold() == 'season':
+            kwargs['type'] = Type.season
+        elif guess.get('type').casefold() == 'episode':
+            kwargs['type'] = Type.episode
+
         return cls(**kwargs)
 
     def __eq__(self, other):
@@ -107,7 +134,7 @@ class Query:
             return (
                 normalize_title(self.title) == normalize_title(other.title)
                 and self.year == other.year
-                and self.type == other.type
+                and self.type is other.type
             )
         else:
             return NotImplemented
@@ -116,7 +143,7 @@ class Query:
         parts = [self.title]
         if self.year:
             parts.append(f'year:{self.year}')
-        if self.type:
+        if self.type is not Type.unknown:
             parts.append(f'type:{self.type}')
         return ' '.join(parts)
 
@@ -126,7 +153,7 @@ class Query:
             for k, v in (('title', self.title),
                          ('year', self.year),
                          ('type', self.type))
-            if v is not None
+            if v not in (None, Type.unknown)
         )
         return f'{type(self).__name__}({kwargs})'
 

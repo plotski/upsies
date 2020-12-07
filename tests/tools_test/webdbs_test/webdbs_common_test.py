@@ -3,6 +3,7 @@ import asyncio
 import pytest
 
 from upsies.tools import webdbs
+from upsies.tools.webdbs.common import Type
 
 
 def test_Query_title():
@@ -16,58 +17,17 @@ def test_Query_year():
     with pytest.raises(ValueError, match=r'^Invalid year: 1000$'):
         webdbs.Query('The Title', year=1000)
     with pytest.raises(ValueError, match=r'^Invalid year: 3000$'):
-        webdbs.Query('The Title', year=3000)
+        webdbs.Query('The Title', year='3000')
     with pytest.raises(ValueError, match=r'invalid literal for int\(\)'):
         webdbs.Query('The Title', year=2000.5)
 
-def test_Query_type():
-    assert webdbs.Query('The Title', type='movie').type == 'movie'
-    assert webdbs.Query('The Title', type='series').type == 'series'
-    assert webdbs.Query('The Title', type='Series').type == 'series'
-    with pytest.raises(ValueError, match=r'^Invalid type: foo$'):
+@pytest.mark.parametrize('typ', list(Type))
+def test_Query_valid_type(typ):
+    assert webdbs.Query('The Title', type=typ).type is typ
+
+def test_Query_invalid_type():
+    with pytest.raises(ValueError, match=r"^Invalid type: 'foo'$"):
         webdbs.Query('The Title', type='foo')
-
-@pytest.mark.parametrize(
-    argnames=('string', 'exp_query'),
-    argvalues=(
-        ('The Title', webdbs.Query('The Title', type=None, year=None)),
-        ('The Title type:movie', webdbs.Query('The Title', type='movie', year=None)),
-        ('The Title type:series', webdbs.Query('The Title', type='series', year=None)),
-        ('The Title year:2000', webdbs.Query('The Title', type=None, year='2000')),
-        ('The Title year:2003', webdbs.Query('The Title', type=None, year='2003')),
-        ('The Title type:movie year:2000', webdbs.Query('The Title', type='movie', year='2000')),
-        ('The Title type:series year:2003', webdbs.Query('The Title', type='series', year='2003')),
-        ('The Title type:film', webdbs.Query('The Title', type='movie')),
-        ('The Title type:tv', webdbs.Query('The Title', type='series')),
-        ('The Title type:show', webdbs.Query('The Title', type='series')),
-        ('The Title type:tvshow', webdbs.Query('The Title', type='series')),
-        ('The Title type:episode', webdbs.Query('The Title', type='series')),
-    ),
-)
-def test_Query_from_string(string, exp_query):
-    assert webdbs.Query.from_string(string) == exp_query
-
-@pytest.mark.parametrize(
-    argnames=('string', 'exp_query'),
-    argvalues=(
-        ('The Title type:foo', webdbs.Query('The Title type:foo', type=None, year=None)),
-        ('The Title year:bar', webdbs.Query('The Title year:bar', type=None, year=None)),
-    ),
-)
-def test_Query_from_string_with_unknown_value(string, exp_query):
-    assert webdbs.Query.from_string(string) == exp_query
-
-@pytest.mark.parametrize(
-    argnames=('path', 'exp_query'),
-    argvalues=(
-        ('path/to/The Title', webdbs.Query('The Title', type='movie', year=None)),
-        ('path/to/The Title 2015', webdbs.Query('The Title', type='movie', year='2015')),
-        ('path/to/The Title S04', webdbs.Query('The Title', type='series', year=None)),
-        ('path/to/The Title 2015 S04', webdbs.Query('The Title', type='series', year='2015')),
-    ),
-)
-def test_Query_from_path(path, exp_query):
-    assert webdbs.Query.from_path(path) == exp_query
 
 @pytest.mark.parametrize(
     argnames=('a', 'b'),
@@ -81,9 +41,9 @@ def test_Query_from_path(path, exp_query):
         (webdbs.Query('The Title'), webdbs.Query('the  title ')),
         (webdbs.Query('The Title'), webdbs.Query(' the title')),
         (webdbs.Query('The Title', year='2000'), webdbs.Query('The Title', year='2000')),
-        (webdbs.Query('The Title', type='movie'), webdbs.Query('The Title', type='movie')),
-        (webdbs.Query('The Title', type='series'), webdbs.Query('The Title', type='series')),
-        (webdbs.Query('The Title', type='series', year=2000), webdbs.Query('The Title', type='series', year=2000)),
+        (webdbs.Query('The Title', type=Type.movie), webdbs.Query('The Title', type=Type.movie)),
+        (webdbs.Query('The Title', type=Type.series), webdbs.Query('The Title', type=Type.series)),
+        (webdbs.Query('The Title', type=Type.series, year=2000), webdbs.Query('The Title', type=Type.series, year=2000)),
     ),
     ids=lambda value: str(value),
 )
@@ -96,11 +56,10 @@ def test_Query_equality(a, b):
     argvalues=(
         (webdbs.Query('The Title'), webdbs.Query('The Title 2')),
         (webdbs.Query('The Title', year='2000'), webdbs.Query('The Title', year='2001')),
-        (webdbs.Query('The Title', type='movie'), webdbs.Query('The Title', type='series')),
-        (webdbs.Query('The Title', type='series'), webdbs.Query('The Title', type='movie')),
-        (webdbs.Query('The Title', type='series', year=2000), webdbs.Query('The Title', type='movie', year=2000)),
-        (webdbs.Query('The Title', type='series', year=2000), webdbs.Query('The Title', type='series', year=2001)),
-        (webdbs.Query('The Title', type='series', year=2000), webdbs.Query('The Title', type='movie', year=2001)),
+        (webdbs.Query('The Title', type=Type.movie), webdbs.Query('The Title', type=Type.series)),
+        (webdbs.Query('The Title', type=Type.series, year=2000), webdbs.Query('The Title', type=Type.movie, year=2000)),
+        (webdbs.Query('The Title', type=Type.series, year=2000), webdbs.Query('The Title', type=Type.series, year=2001)),
+        (webdbs.Query('The Title', type=Type.series, year=2000), webdbs.Query('The Title', type=Type.movie, year=2001)),
     ),
     ids=lambda value: str(value),
 )
@@ -111,24 +70,71 @@ def test_Query_inequality(a, b):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_string'),
     argvalues=(
-        (webdbs.Query('The Title', type=None, year=None), 'The Title'),
-        (webdbs.Query('The Title', type='movie', year=None), 'The Title type:movie'),
-        (webdbs.Query('The Title', type='series', year=None), 'The Title type:series'),
-        (webdbs.Query('The Title', type='movie', year='2010'), 'The Title year:2010 type:movie'),
+        (webdbs.Query('The Title'), 'The Title'),
+        (webdbs.Query('The Title', type=Type.movie), 'The Title type:movie'),
+        (webdbs.Query('The Title', type=Type.series), 'The Title type:series'),
+        (webdbs.Query('The Title', type=Type.movie, year='2010'), 'The Title year:2010 type:movie'),
     ),
     ids=lambda value: str(value),
 )
 def test_Query_as_string(query, exp_string):
     assert str(query) == exp_string
 
+@pytest.mark.parametrize(
+    argnames=('string', 'exp_query'),
+    argvalues=(
+        ('The Title', webdbs.Query('The Title')),
+        ('The Title type:movie', webdbs.Query('The Title', type=Type.movie)),
+        ('The Title type:season', webdbs.Query('The Title', type=Type.season)),
+        ('The Title type:episode', webdbs.Query('The Title', type=Type.episode)),
+        ('The Title type:series', webdbs.Query('The Title', type=Type.series)),
+        ('The Title year:2000', webdbs.Query('The Title', year='2000')),
+        ('The Title year:2003', webdbs.Query('The Title', year='2003')),
+        ('The Title type:movie year:2000', webdbs.Query('The Title', type=Type.movie, year='2000')),
+        ('The Title type:series year:2003', webdbs.Query('The Title', type=Type.series, year='2003')),
+        ('The Title type:film', webdbs.Query('The Title', type=Type.movie)),
+        ('The Title type:tv', webdbs.Query('The Title', type=Type.series)),
+        ('The Title type:show', webdbs.Query('The Title', type=Type.series)),
+        ('The Title type:tvshow', webdbs.Query('The Title', type=Type.series)),
+        ('The Title type:season', webdbs.Query('The Title', type=Type.season)),
+        ('The Title type:episode', webdbs.Query('The Title', type=Type.episode)),
+    ),
+)
+def test_Query_from_string(string, exp_query):
+    assert webdbs.Query.from_string(string) == exp_query
+
+@pytest.mark.parametrize(
+    argnames=('string', 'exp_query'),
+    argvalues=(
+        ('The Title type:foo', webdbs.Query('The Title type:foo')),
+        ('The Title year:bar', webdbs.Query('The Title year:bar')),
+    ),
+)
+def test_Query_from_string_with_unknown_keyword_value(string, exp_query):
+    assert webdbs.Query.from_string(string) == exp_query
+
+@pytest.mark.parametrize(
+    argnames=('path', 'exp_query'),
+    argvalues=(
+        ('path/to/The Title', webdbs.Query('The Title', type=Type.movie)),
+        ('path/to/The Title 2015', webdbs.Query('The Title', type=Type.movie, year='2015')),
+        ('path/to/The Title S04', webdbs.Query('The Title', type=Type.season)),
+        ('path/to/The Title 2015 S04', webdbs.Query('The Title', type=Type.season, year='2015')),
+        ('path/to/The Title S04E03', webdbs.Query('The Title', type=Type.episode)),
+        ('path/to/The Title 2015 S04E03', webdbs.Query('The Title', type=Type.episode, year='2015')),
+    ),
+)
+def test_Query_from_path(path, exp_query):
+    assert webdbs.Query.from_path(path) == exp_query
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_repr'),
     argvalues=(
-        (webdbs.Query('The Title', type=None, year=None), "Query(title='The Title')"),
-        (webdbs.Query('The Title', type='movie', year=None), "Query(title='The Title', type='movie')"),
-        (webdbs.Query('The Title', type=None, year='1999'), "Query(title='The Title', year='1999')"),
-        (webdbs.Query('The Title', type='series', year='1999'), "Query(title='The Title', year='1999', type='series')"),
+        (webdbs.Query('The Title'), "Query(title='The Title')"),
+        (webdbs.Query('The Title', type=Type.movie), "Query(title='The Title', type=Type.movie)"),
+        (webdbs.Query('The Title', year='1999'), "Query(title='The Title', year='1999')"),
+        (webdbs.Query('The Title', type=Type.series, year='1999'), "Query(title='The Title', year='1999', type=Type.series)"),
     ),
     ids=lambda value: str(value),
 )
