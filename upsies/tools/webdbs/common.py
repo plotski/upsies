@@ -1,10 +1,27 @@
 import asyncio
+import enum
 import re
 
 from ...utils import guessit
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+
+class Type(enum.Enum):
+    """Movie, series, season, episode or unknown"""
+
+    movie = 'movie'
+    series = 'series'
+    season = 'season'
+    episode = 'episode'
+    unknown = 'unknown'
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return f'{type(self).__name__}.{self.value}'
 
 
 class Query:
