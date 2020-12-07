@@ -208,53 +208,22 @@ def test_SearchResult_with_invalid_type():
         with pytest.raises(ValueError, match=rf'Invalid type: {type!r}'):
             webdbs.SearchResult(type=type, **info)
 
-
-print(webdbs)
-print(dir(webdbs))
-movie_webdbs = {webdbs.imdb, webdbs.tmdb}
-series_webdbs = {webdbs.imdb, webdbs.tvmaze, webdbs.tmdb}
-all_webdbs = movie_webdbs | series_webdbs
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize('db', all_webdbs, ids=(db.label for db in all_webdbs))
-async def test_search_returns_SearchResults(db, store_response):
-    results = await db.search(webdbs.Query('Star Wars'))
-    for r in results:
-        assert isinstance(r, webdbs.SearchResult)
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize('db', all_webdbs, ids=(db.label for db in all_webdbs))
-async def test_search_for_specific_year(db, store_response):
-    results = await db.search(webdbs.Query('Star Wars Clone Wars', year=2008))
-    assert results[0].year == '2008'
-    results = await db.search(webdbs.Query('Star Wars Clone Wars', year=2003))
-    assert results[0].year == '2003'
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize('db', movie_webdbs, ids=(db.label for db in movie_webdbs))
-async def test_search_for_movie(db, store_response):
-    results = await db.search(webdbs.Query('Star Wars', type='movie'))
-    assert results[0].type == 'movie'
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize('db', series_webdbs, ids=(db.label for db in series_webdbs))
-async def test_search_for_series(db, store_response):
-    results = await db.search(webdbs.Query('Star Wars', type='series'))
-    assert results[0].type == 'series'
-
-
-expected_coroutine_functions = (
-    'search', 'gather', 'summary', 'title_english', 'title_original', 'year',
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_type'),
+    argvalues=(
+        ('123', str),
+        (123.0, float),
+        (123, int),
+    ),
 )
-expected_strings = ('label', '_url_base')
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize('db', all_webdbs, ids=(db.label for db in all_webdbs))
-async def test_mandatory_module_attributes(db, store_response):
-    for attr in expected_coroutine_functions:
-        assert hasattr(db, attr)
-        assert asyncio.iscoroutinefunction(getattr(db, attr))
-
-    for attr in expected_strings:
-        assert hasattr(db, attr)
-        assert isinstance(getattr(db, attr), str)
+def test_SearchResult_preserves_id_type(id, exp_type):
+    info = {
+        'id' : id,
+        'type': Type.series,
+        'url' : 'http://foo.bar/123',
+        'year' : '2000',
+        'title' : 'Foo',
+    }
+    result = webdbs.SearchResult(**info)
+    assert result.id == id
+    assert isinstance(result.id, exp_type)

@@ -184,7 +184,7 @@ class SearchResult:
         if not isinstance(type, Type):
             raise ValueError(f'Invalid type: {type!r}')
         self._info = {
-            'id' : str(id),
+            'id' : id,
             'url' : str(url),
             'type' : type,
             'year' : str(year),
