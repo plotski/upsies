@@ -181,12 +181,12 @@ class SearchResult:
     def __init__(self, *, id, url, type, year, title, title_original='',
                  title_english='', keywords=(), director='', cast=(), summary='',
                  country=''):
-        if type not in ('movie', 'series', 'episode', ''):
+        if not isinstance(type, Type):
             raise ValueError(f'Invalid type: {type!r}')
         self._info = {
             'id' : str(id),
             'url' : str(url),
-            'type' : str(type),
+            'type' : type,
             'year' : str(year),
             'title' : str(title),
 

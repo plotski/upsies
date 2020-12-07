@@ -146,7 +146,7 @@ def test_SearchResult_with_all_info():
     info = {
         'id' : '123',
         'url' : 'http://foo.bar/123',
-        'type' : 'movie',
+        'type' : Type.movie,
         'year' : '2000',
         'title' : 'Foo',
         'title_original' : 'Le Foo',
@@ -164,7 +164,7 @@ def test_SearchResult_with_only_mandatory_info():
     info = {
         'id' : '123',
         'url' : 'http://foo.bar/123',
-        'type' : 'movie',
+        'type' : Type.series,
         'year' : '2000',
         'title' : 'Foo',
     }
@@ -176,7 +176,7 @@ def test_SearchResult_with_lacking_mandatory_info():
     info = {
         'id' : '123',
         'url' : 'http://foo.bar/123',
-        'type' : 'movie',
+        'type' : Type.season,
         'year' : '2000',
         'title' : 'Foo',
     }
@@ -193,7 +193,7 @@ def test_SearchResult_with_valid_type():
         'year' : '2000',
         'title' : 'Foo',
     }
-    for type in ('movie', 'series', 'episode', ''):
+    for type in tuple(Type):
         sr = webdbs.SearchResult(type=type, **info)
         assert sr.type == type
 
