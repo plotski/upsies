@@ -136,21 +136,6 @@ def test_Query_as_repr(query, exp_repr):
     assert repr(query) == exp_repr
 
 
-@pytest.mark.asyncio
-async def test_gather_preserves_affiliation():
-    async def foo(id):
-        await asyncio.sleep(0.1)
-        return f'{id}:foo'
-
-    async def bar(id):
-        return f'{id}:bar'
-
-    assert await webdbs.gather('123', foo, bar) == {
-        'foo' : '123:foo',
-        'bar' : '123:bar',
-    }
-
-
 def test_SearchResult_with_all_info():
     info = {
         'id' : '123',

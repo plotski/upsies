@@ -1,4 +1,3 @@
-import asyncio
 import enum
 import re
 
@@ -130,25 +129,6 @@ class Query:
             if v is not None
         )
         return f'{type(self).__name__}({kwargs})'
-
-
-async def gather(id, *corofuncs):
-    """
-    Combine return values from multiple coroutines into `dict`
-
-    The keys of the returned dictionary are the names of the coroutine
-    functions.
-
-    :param str id: IMDb ID (starts with "tt")
-    :param corofuncs: Info getters
-    :type corofuncs: sequence of coroutine functions
-    """
-    aws = (corofunc(id) for corofunc in corofuncs)
-    results = await asyncio.gather(*aws)
-    # "The order of result values corresponds to the order of awaitables in `aws`."
-    # https://docs.python.org/3/library/asyncio-task.html#running-tasks-concurrently
-    return {corofunc.__name__: result
-            for corofunc, result in zip(corofuncs, results)}
 
 
 class SearchResult:
