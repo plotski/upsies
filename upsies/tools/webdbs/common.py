@@ -162,42 +162,44 @@ class SearchResult:
     """
     Information about a search result
 
-    :param str id: ID for the relevant DB (e.g. IMDb IDs start with "tt")
-    :param str type: "movie", "series", "episode" or "" (unknown)
-    :param str title: Title of the movie or series
-    :param str year: Release year; for series this should be the year of the
-        first airing of the first episode of the first season
-    :param keywords: Short list of keywords, e.g. `["horror", "commedy"]`
-    :type keywords: sequence of str
     :param str director: Name of director
     :param cast: Short list of actor names
     :type cast: sequence of str
+    :param str country: Name of the country of the movie or series
+    :param str id: ID for the relevant DB
+    :param keywords: Short list of keywords, e.g. `["horror", "commedy"]`
+    :type keywords: sequence of str
     :param summary: Short text that describes the movie or series
-    :type summary: str or coroutine function
+    :param str title: Title of the movie or series
+    :param str title_english: English title of the movie or series
+    :param str title_original: Original title of the movie or series
+    :param str type: :class:`~.webdbs.common.Type` attribute
+    :param str url: Web page of the search result
+    :param str year: Release year; for series this should be the year of the
+        first airing of the first episode of the first season
 
-    `summary`, `keywords`, `cast`, `title_original` and `title_english` can also
-    be coroutine functions that return the expected value.
+    `cast`, `country`, `director`, `keywords`, `summary`, `title_english` and
+    `title_original` may be coroutine functions that return the expected value.
     """
-    def __init__(self, *, id, url, type, year, title, title_original='',
-                 title_english='', keywords=(), director='', cast=(), summary='',
-                 country=''):
+    def __init__(self, *, id, type, url, year, cast=(), country='', director='',
+                 keywords=(), summary='', title, title_english='',
+                 title_original=''):
         if not isinstance(type, Type):
             raise ValueError(f'Invalid type: {type!r}')
         self._info = {
             'id' : id,
-            'url' : str(url),
-            'type' : type,
-            'year' : str(year),
             'title' : str(title),
-
+            'type' : type,
+            'url' : str(url),
+            'year' : str(year),
             # These may be coroutine functions
-            'title_original' : title_original,
-            'title_english' : title_english,
-            'keywords' : keywords,
-            'director' : director,
             'cast' : cast,
-            'summary' : summary,
             'country' : country,
+            'director' : director,
+            'keywords' : keywords,
+            'summary' : summary,
+            'title_english' : title_english,
+            'title_original' : title_original,
         }
 
     def __getattr__(self, name):
