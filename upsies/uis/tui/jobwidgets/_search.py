@@ -231,7 +231,7 @@ class _SearchResults(DynamicContainer):
                 ' '
                 f'{str(result.year or "").rjust(4)}'
                 ' '
-                f'{result.type.rjust(6)}'
+                f'{str(result.type).rjust(6)}'
             )))
 
             frags.append(('', '\n'))
