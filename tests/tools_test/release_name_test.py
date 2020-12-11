@@ -4,6 +4,7 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 from upsies.tools.release_name import ReleaseName
+from upsies.utils import ReleaseType
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -47,7 +48,7 @@ def test_len(guessit_mock):
         'audio_channels', 'video_format', 'group')
 )
 def test_getitem(guessit_mock, attr):
-    guessit_mock.return_value = {attr: 'mock value', 'type': 'movie'}
+    guessit_mock.return_value = {attr: 'mock value', 'type': ReleaseType.movie}
     rn = ReleaseName('path/to/something')
     if not attr.startswith('_'):
         rn[attr]
@@ -58,7 +59,7 @@ def test_getitem(guessit_mock, attr):
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 def test_usage_as_dictionary_in_str_format(guessit_mock):
     guessit_mock.return_value = {
-        'type': 'movie',
+        'type': ReleaseType.movie,
         'title': 'The Foo',
         'year': '1998',
         'source': 'BluRay',
@@ -75,32 +76,42 @@ def test_usage_as_dictionary_in_str_format(guessit_mock):
 
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 def test_type_getter(guessit_mock):
-    guessit_mock.return_value = {'type': 'movie'}
-    assert ReleaseName('path/to/something').type == 'movie'
-    guessit_mock.return_value = {'type': 'season'}
-    assert ReleaseName('path/to/something').type == 'season'
+    guessit_mock.return_value = {'type': ReleaseType.movie}
+    assert ReleaseName('path/to/something').type is ReleaseType.movie
+    guessit_mock.return_value = {'type': ReleaseType.series}
+    assert ReleaseName('path/to/something').type is ReleaseType.series
+    guessit_mock.return_value = {'type': ReleaseType.season}
+    assert ReleaseName('path/to/something').type is ReleaseType.season
+    guessit_mock.return_value = {'type': ReleaseType.episode}
+    assert ReleaseName('path/to/something').type is ReleaseType.episode
     guessit_mock.return_value = {}
-    assert ReleaseName('path/to/something').type == ''
+    assert ReleaseName('path/to/something').type is ReleaseType.unknown
 
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='value, exp_value',
     argvalues=(
-        ('movie', 'movie'),
-        ('season', 'season'),
-        ('episode', 'episode'),
-        ('', ''),
+        ('movie', ReleaseType.movie),
+        ('series', ReleaseType.series),
+        ('season', ReleaseType.season),
+        ('episode', ReleaseType.episode),
+        ('', ReleaseType.unknown),
+        (ReleaseType.movie, ReleaseType.movie),
+        (ReleaseType.series, ReleaseType.series),
+        (ReleaseType.season, ReleaseType.season),
+        (ReleaseType.episode, ReleaseType.episode),
+        (ReleaseType.unknown, ReleaseType.unknown),
     ),
 )
 def test_type_setter_with_valid_value(guessit_mock, value, exp_value):
     rn = ReleaseName('path/to/something')
     rn.type = value
-    assert rn.type == exp_value
+    assert rn.type is exp_value
 
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 def test_type_setter_with_invalid_value(guessit_mock):
     rn = ReleaseName('path/to/something')
-    with pytest.raises(ValueError, match=r"^Invalid type: 'asdf'$"):
+    with pytest.raises(ValueError, match=r"^'asdf' is not a valid ReleaseType$"):
         rn.type = 'asdf'
 
 
@@ -140,15 +151,15 @@ def test_title_aka_setter(guessit_mock):
 
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 def test_year_getter_with_movie(guessit_mock):
-    guessit_mock.return_value = {'year': '2000', 'type': 'movie'}
+    guessit_mock.return_value = {'year': '2000', 'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').year == '2000'
-    guessit_mock.return_value = {'year': '', 'type': 'movie'}
+    guessit_mock.return_value = {'year': '', 'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').year == 'UNKNOWN_YEAR'
-    guessit_mock.return_value = {'type': 'movie'}
+    guessit_mock.return_value = {'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').year == 'UNKNOWN_YEAR'
 
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-@pytest.mark.parametrize('type', ('season', 'episode'))
+@pytest.mark.parametrize('type', (ReleaseType.series, ReleaseType.season, ReleaseType.episode))
 def test_year_getter_with_series(guessit_mock, type):
     guessit_mock.return_value = {'year': '2000', 'type': type}
     assert ReleaseName('path/to/something').year == '2000'
@@ -169,18 +180,26 @@ def test_year_setter(guessit_mock):
 @pytest.mark.parametrize(
     argnames='type, year_required, year, exp_year',
     argvalues=(
-        ('movie', False, '1234', '1234'),
-        ('movie', False, '', 'UNKNOWN_YEAR'),
-        ('movie', True, '1234', '1234'),
-        ('movie', True, '', 'UNKNOWN_YEAR'),
-        ('season', False, '1234', '1234'),
-        ('season', False, '', ''),
-        ('season', True, '1234', '1234'),
-        ('season', True, '', 'UNKNOWN_YEAR'),
-        ('episode', False, '1234', '1234'),
-        ('episode', False, '', ''),
-        ('episode', True, '1234', '1234'),
-        ('episode', True, '', 'UNKNOWN_YEAR'),
+        (ReleaseType.movie, False, '1234', '1234'),
+        (ReleaseType.movie, False, '', 'UNKNOWN_YEAR'),
+        (ReleaseType.movie, True, '1234', '1234'),
+        (ReleaseType.movie, True, '', 'UNKNOWN_YEAR'),
+        (ReleaseType.series, False, '1234', '1234'),
+        (ReleaseType.series, False, '', ''),
+        (ReleaseType.series, True, '1234', '1234'),
+        (ReleaseType.series, True, '', 'UNKNOWN_YEAR'),
+        (ReleaseType.season, False, '1234', '1234'),
+        (ReleaseType.season, False, '', ''),
+        (ReleaseType.season, True, '1234', '1234'),
+        (ReleaseType.season, True, '', 'UNKNOWN_YEAR'),
+        (ReleaseType.episode, False, '1234', '1234'),
+        (ReleaseType.episode, False, '', ''),
+        (ReleaseType.episode, True, '1234', '1234'),
+        (ReleaseType.episode, True, '', 'UNKNOWN_YEAR'),
+        (ReleaseType.unknown, False, '1234', '1234'),
+        (ReleaseType.unknown, False, '', ''),
+        (ReleaseType.unknown, True, '1234', '1234'),
+        (ReleaseType.unknown, True, '', 'UNKNOWN_YEAR'),
     ),
 )
 def test_year_required(guessit_mock, type, year_required, year, exp_year):
@@ -195,12 +214,16 @@ def test_year_required(guessit_mock, type, year_required, year, exp_year):
 @pytest.mark.parametrize(
     argnames='type, season, exp_season',
     argvalues=(
-        ('movie', '3', ''),
-        ('movie', '', ''),
-        ('season', '3', '3'),
-        ('season', '', 'UNKNOWN_SEASON'),
-        ('episode', '3', '3'),
-        ('episode', '', 'UNKNOWN_SEASON'),
+        (ReleaseType.movie, '3', ''),
+        (ReleaseType.movie, '', ''),
+        (ReleaseType.series, '3', '3'),
+        (ReleaseType.series, '', 'UNKNOWN_SEASON'),
+        (ReleaseType.season, '3', '3'),
+        (ReleaseType.season, '', 'UNKNOWN_SEASON'),
+        (ReleaseType.episode, '3', '3'),
+        (ReleaseType.episode, '', 'UNKNOWN_SEASON'),
+        (ReleaseType.unknown, '3', '3'),
+        (ReleaseType.unknown, '', ''),
     ),
 )
 def test_season_getter(guessit_mock, type, season, exp_season):
@@ -211,15 +234,21 @@ def test_season_getter(guessit_mock, type, season, exp_season):
 @pytest.mark.parametrize(
     argnames='type, season, exp_season',
     argvalues=(
-        ('movie', '3', ''),
-        ('movie', 3, ''),
-        ('movie', '', ''),
-        ('season', '3', '3'),
-        ('season', 3, '3'),
-        ('season', '', 'UNKNOWN_SEASON'),
-        ('episode', '3', '3'),
-        ('episode', 3, '3'),
-        ('episode', '', 'UNKNOWN_SEASON'),
+        (ReleaseType.movie, '3', ''),
+        (ReleaseType.movie, 3, ''),
+        (ReleaseType.movie, '', ''),
+        (ReleaseType.series, '3', '3'),
+        (ReleaseType.series, 3, '3'),
+        (ReleaseType.series, '', 'UNKNOWN_SEASON'),
+        (ReleaseType.season, '3', '3'),
+        (ReleaseType.season, 3, '3'),
+        (ReleaseType.season, '', 'UNKNOWN_SEASON'),
+        (ReleaseType.episode, '3', '3'),
+        (ReleaseType.episode, 3, '3'),
+        (ReleaseType.episode, '', 'UNKNOWN_SEASON'),
+        (ReleaseType.unknown, '3', '3'),
+        (ReleaseType.unknown, 3, '3'),
+        (ReleaseType.unknown, '', ''),
     ),
 )
 def test_season_setter_with_valid_value(guessit_mock, type, season, exp_season):
@@ -249,15 +278,21 @@ def test_season_setter_with_invalid_value(guessit_mock):
 @pytest.mark.parametrize(
     argnames='type, episode, exp_episode',
     argvalues=(
-        ('movie', '3', ''),
-        ('movie', ['1', '2'], ''),
-        ('movie', '', ''),
-        ('season', '3', '3'),
-        ('season', ['1', '2'], ['1', '2']),
-        ('season', '', ''),
-        ('episode', '3', '3'),
-        ('episode', ['1', '2'], ['1', '2']),
-        ('episode', '', ''),
+        (ReleaseType.movie, '3', ''),
+        (ReleaseType.movie, ['1', '2'], ''),
+        (ReleaseType.movie, '', ''),
+        (ReleaseType.series, '3', '3'),
+        (ReleaseType.series, ['1', '2'], ['1', '2']),
+        (ReleaseType.series, '', ''),
+        (ReleaseType.season, '3', '3'),
+        (ReleaseType.season, ['1', '2'], ['1', '2']),
+        (ReleaseType.season, '', ''),
+        (ReleaseType.episode, '3', '3'),
+        (ReleaseType.episode, ['1', '2'], ['1', '2']),
+        (ReleaseType.episode, '', ''),
+        (ReleaseType.unknown, '3', '3'),
+        (ReleaseType.unknown, ['1', '2'], ['1', '2']),
+        (ReleaseType.unknown, '', ''),
     ),
 )
 def test_episode_getter(guessit_mock, type, episode, exp_episode):
@@ -270,18 +305,26 @@ def test_episode_getter(guessit_mock, type, episode, exp_episode):
 @pytest.mark.parametrize(
     argnames='type, episode, exp_episode',
     argvalues=(
-        ('movie', '3', ''),
-        ('movie', 3, ''),
-        ('movie', [1, '2'], ''),
-        ('movie', '', ''),
-        ('season', '3', '3'),
-        ('season', 3, '3'),
-        ('season', [1, '2'], ['1', '2']),
-        ('season', '', ''),
-        ('episode', '3', '3'),
-        ('episode', 3, '3'),
-        ('episode', [1, '2'], ['1', '2']),
-        ('episode', '', ''),
+        (ReleaseType.movie, '3', ''),
+        (ReleaseType.movie, 3, ''),
+        (ReleaseType.movie, [1, '2'], ''),
+        (ReleaseType.movie, '', ''),
+        (ReleaseType.series, '3', '3'),
+        (ReleaseType.series, 3, '3'),
+        (ReleaseType.series, [1, '2'], ['1', '2']),
+        (ReleaseType.series, '', ''),
+        (ReleaseType.season, '3', '3'),
+        (ReleaseType.season, 3, '3'),
+        (ReleaseType.season, [1, '2'], ['1', '2']),
+        (ReleaseType.season, '', ''),
+        (ReleaseType.episode, '3', '3'),
+        (ReleaseType.episode, 3, '3'),
+        (ReleaseType.episode, [1, '2'], ['1', '2']),
+        (ReleaseType.episode, '', ''),
+        (ReleaseType.unknown, '3', '3'),
+        (ReleaseType.unknown, 3, '3'),
+        (ReleaseType.unknown, [1, '2'], ['1', '2']),
+        (ReleaseType.unknown, '', ''),
     ),
 )
 def test_episode_setter_with_valid_value(guessit_mock, type, episode, exp_episode):
@@ -310,23 +353,30 @@ def test_episode_setter_with_invalid_value(guessit_mock):
 @pytest.mark.parametrize(
     argnames='type, episode_title, exp_episode_title',
     argvalues=(
-        ('movie', 'Something', ''),
-        ('movie', '', ''),
-        ('season', 'Something', ''),
-        ('season', '', ''),
-        ('episode', 'Something', 'Something'),
-        ('episode', '', ''),
+        (ReleaseType.movie, 'Something', ''),
+        (ReleaseType.movie, '', ''),
+        (ReleaseType.series, 'Something', ''),
+        (ReleaseType.series, '', ''),
+        (ReleaseType.season, 'Something', ''),
+        (ReleaseType.season, '', ''),
+        (ReleaseType.episode, 'Something', 'Something'),
+        (ReleaseType.episode, '', ''),
+        (ReleaseType.unknown, 'Something', ''),
+        (ReleaseType.unknown, '', ''),
     ),
 )
 def test_episode_title_getter(guessit_mock, type, episode_title, exp_episode_title):
     guessit_mock.return_value = {'episode_title': episode_title, 'type': type}
-    assert ReleaseName('path/to/something').episode_title == exp_episode_title
+    rn = ReleaseName('path/to/something')
+    assert rn.episode_title == exp_episode_title
+    rn.type = ReleaseType.episode
+    assert rn.episode_title == episode_title
 
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize('episode_title, exp_episode_title', (('Foo', 'Foo'), (123, '123')))
 def test_episode_title_setter(guessit_mock, episode_title, exp_episode_title):
     rn = ReleaseName('path/to/something')
-    rn.type = 'episode'
+    rn.type = ReleaseType.episode
     rn.episode_title = episode_title
     assert rn.episode_title == exp_episode_title
 
@@ -572,19 +622,19 @@ def test_group_setter(guessit_mock):
 @pytest.mark.parametrize(
     argnames='guessit_type, imdb_type, exp_type',
     argvalues=(
-        ('movie', 'movie', 'movie'),
-        ('movie', 'season', 'season'),
-        ('movie', 'episode', 'episode'),
-        ('movie', '', 'movie'),
-        ('season', 'movie', 'movie'),
-        ('season', 'season', 'season'),
-        ('season', 'episode', 'episode'),
-        ('season', '', 'season'),
+        (ReleaseType.movie, ReleaseType.movie, ReleaseType.movie),
+        (ReleaseType.movie, ReleaseType.season, ReleaseType.season),
+        (ReleaseType.movie, ReleaseType.episode, ReleaseType.episode),
+        (ReleaseType.movie, ReleaseType.unknown, ReleaseType.movie),
+        (ReleaseType.season, ReleaseType.movie, ReleaseType.movie),
+        (ReleaseType.season, ReleaseType.season, ReleaseType.season),
+        (ReleaseType.season, ReleaseType.episode, ReleaseType.episode),
+        (ReleaseType.season, ReleaseType.unknown, ReleaseType.season),
         # For episodes, we trust guessit more than IMDb
-        ('episode', 'movie', 'episode'),
-        ('episode', 'season', 'episode'),
-        ('episode', 'episode', 'episode'),
-        ('episode', '', 'episode'),
+        (ReleaseType.episode, ReleaseType.movie, ReleaseType.episode),
+        (ReleaseType.episode, ReleaseType.season, ReleaseType.episode),
+        (ReleaseType.episode, ReleaseType.episode, ReleaseType.episode),
+        (ReleaseType.episode, ReleaseType.unknown, ReleaseType.episode),
     ),
 )
 def test_update_attributes(guessit_mock, ImdbApi_mock, guessit_type, imdb_type, exp_type):
@@ -617,12 +667,12 @@ _same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
 @pytest.mark.parametrize(
     argnames='type, results, exp_year_required',
     argvalues=(
-        ('movie', _unique_titles, False),
-        ('movie', _same_titles, False),
-        ('season', _unique_titles, False),
-        ('season', _same_titles, True),
-        ('episode', _unique_titles, False),
-        ('episode', _same_titles, True),
+        (ReleaseType.movie, _unique_titles, False),
+        (ReleaseType.movie, _same_titles, False),
+        (ReleaseType.season, _unique_titles, False),
+        (ReleaseType.season, _same_titles, True),
+        (ReleaseType.episode, _unique_titles, False),
+        (ReleaseType.episode, _same_titles, True),
     ),
 )
 def test_update_year_required(guessit_mock, ImdbApi_mock, type, results, exp_year_required):

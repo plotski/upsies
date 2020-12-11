@@ -1,7 +1,7 @@
 import asyncio
 import collections
 
-from ..utils import guessit
+from ..utils import ReleaseType, guessit
 from . import mediainfo, webdbs
 
 import logging  # isort:skip
@@ -58,14 +58,15 @@ class ReleaseName(collections.abc.Mapping):
 
     @property
     def type(self):
-        '''"movie", "season", "episode" or empty string'''
-        return self._guess.get('type', '')
+        """:class:`~.utils.ReleaseType` enum or one of its value names"""
+        return self._guess.get('type', ReleaseType.unknown)
 
     @type.setter
     def type(self, value):
-        if value not in ('movie', 'season', 'episode', ''):
-            raise ValueError(f'Invalid type: {value!r}')
-        self._guess['type'] = value
+        if not value:
+            self._guess['type'] = ReleaseType.unknown
+        else:
+            self._guess['type'] = ReleaseType(value)
 
     @property
     def title(self):
@@ -97,7 +98,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def year(self):
         """Release year or "UNKNOWN_YEAR" for movies, empty string for series"""
-        if self.type == 'movie' or self.year_required:
+        if self.type is ReleaseType.movie or self.year_required:
             return self._guess.get('year') or 'UNKNOWN_YEAR'
         else:
             return self._guess.get('year') or ''
@@ -127,8 +128,12 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def season(self):
         """Season number, "UNKNOWN_SEASON" for series or empty string for movies"""
-        if self.type in ('season', 'episode'):
-            return self._guess.get('season') or 'UNKNOWN_SEASON'
+        if self.type in (ReleaseType.series, ReleaseType.season,
+                         ReleaseType.episode, ReleaseType.unknown):
+            if self.type is ReleaseType.unknown:
+                return self._guess.get('season') or ''
+            else:
+                return self._guess.get('season') or 'UNKNOWN_SEASON'
         else:
             return ''
 
@@ -144,7 +149,8 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def episode(self):
         """Episode number or empty string"""
-        if self.type in ('season', 'episode'):
+        if self.type in (ReleaseType.series, ReleaseType.season,
+                         ReleaseType.episode, ReleaseType.unknown):
             return self._guess.get('episode') or ''
         else:
             return ''
@@ -180,7 +186,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def episode_title(self):
         """Episode title if :attr:`type` is "episode" or empty string"""
-        if self.type == 'episode':
+        if self.type is ReleaseType.episode:
             return self._guess.get('episode_title') or ''
         else:
             return ''
@@ -318,14 +324,14 @@ class ReleaseName(collections.abc.Mapping):
         # Use type from IMDb if known. guessit can misdetect type (e.g. if
         # mini-series doesn't contain "S01"). But if guessit detected an episode
         # (e.g. "S04E03"), it's unlikely to be wrong.
-        if info['type'] and self.type != 'episode':
+        if info['type'] and self.type is not ReleaseType.episode:
             self.type = info['type']
 
     async def _update_year_required(self):
-        if self.type in ('season', 'episode'):
+        if self.type in (ReleaseType.season, ReleaseType.episode):
             # Find out if there are multiple series with this title
             results = await self._imdb.search(
-                webdbs.Query(title=self.title, type=webdbs.Type.series)
+                webdbs.Query(title=self.title, type=ReleaseType.series)
             )
             same_titles = tuple(
                 r for r in results
@@ -348,15 +354,15 @@ class ReleaseName(collections.abc.Mapping):
             else:
                 parts[1:] = ('AKA', self.title_aka)
 
-        if self.type == 'movie':
+        if self.type is ReleaseType.movie:
             parts.append(self.year)
 
-        elif self.type in ('season', 'episode'):
+        elif self.type in (ReleaseType.season, ReleaseType.episode):
             if self.year_required:
                 parts.append(self.year)
-            if self.type == 'season':
+            if self.type is ReleaseType.season:
                 parts.append(f'S{self.season.rjust(2, "0")}')
-            elif self.type == 'episode':
+            elif self.type is ReleaseType.episode:
                 # Episode may be multiple numbers, e.g. for double-long pilots
                 if not isinstance(self.episode, str):
                     episode_string = ''.join(f'E{e.rjust(2, "0")}' for e in self.episode)
