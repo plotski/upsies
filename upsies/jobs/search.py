@@ -126,9 +126,6 @@ class SearchDbJob(JobBase):
             self._info_updater.set_result(None)
         self.signal.emit('search_results', results)
 
-    def on_info_updated(self, callback):
-        self._info_updated_callbacks.append(callback)
-
     def update_info(self, attr, value):
         self.signal.emit('info_updated', attr, value)
 
