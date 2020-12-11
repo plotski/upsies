@@ -54,7 +54,7 @@ class ImdbApi(WebDbApiBase):
         soup = bs4.BeautifulSoup(html, features='html.parser')
 
         items = soup.find_all('div', class_='lister-item-content')
-        results = [ImdbSearchResult(soup=item, imdb_api=self)
+        results = [_ImdbSearchResult(soup=item, imdb_api=self)
                    for item in items]
         return results
 
@@ -172,7 +172,7 @@ class ImdbApi(WebDbApiBase):
         return str(info.get('base', {}).get('year', ''))
 
 
-class ImdbSearchResult(common.SearchResult):
+class _ImdbSearchResult(common.SearchResult):
     def __init__(self, *, soup, imdb_api):
         id = self._get_id(soup)
         return super().__init__(

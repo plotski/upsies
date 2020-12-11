@@ -38,7 +38,7 @@ class TvmazeApi(WebDbApiBase):
         except (ValueError, TypeError, AssertionError):
             raise errors.RequestError(f'Unexpected search response: {results_str}')
         else:
-            results = [TvmazeSearchResult(show=item['show'], tvmaze_api=self)
+            results = [_TvmazeSearchResult(show=item['show'], tvmaze_api=self)
                        for item in items]
             # The API doesn't allow us to search for a specific year
             if query.year:
@@ -105,7 +105,7 @@ class TvmazeApi(WebDbApiBase):
         return _get_year(show)
 
 
-class TvmazeSearchResult(common.SearchResult):
+class _TvmazeSearchResult(common.SearchResult):
     def __init__(self, *, show, tvmaze_api):
         return super().__init__(
             id=show['id'],

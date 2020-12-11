@@ -41,7 +41,7 @@ class TmdbApi(WebDbApiBase):
             tag.clear()
 
         items = soup.find_all('div', class_='card')
-        return [TmdbSearchResult(soup=item, tmdb_api=self)
+        return [_TmdbSearchResult(soup=item, tmdb_api=self)
                 for item in items]
 
     async def cast(self, id):
@@ -124,7 +124,7 @@ class TmdbApi(WebDbApiBase):
             return ''
 
 
-class TmdbSearchResult(common.SearchResult):
+class _TmdbSearchResult(common.SearchResult):
     def __init__(self, *, soup, tmdb_api):
         id = self._get_id(soup)
         return super().__init__(
