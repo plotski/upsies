@@ -37,10 +37,10 @@ def _get_names(package, clsname, name_attribute):
         return [utils.CaseInsensitiveString(getattr(mod, name_attribute))
                 for mod in modules]
 
-DB_NAMES = [cls.name for cls in webdbs.webdbs()]
 TRACKER_NAMES = _get_names(trackers, 'Tracker', 'name')
-IMGHOST_NAMES = [cls.name for cls in imghosts.imghosts()]
-BTCLIENT_NAMES = [cls.name for cls in btclients.clients()]
+DB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in webdbs.webdbs()]
+IMGHOST_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in imghosts.imghosts()]
+BTCLIENT_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in btclients.clients()]
 
 
 # Argument types should match metavar names and raise ValueError
