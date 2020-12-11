@@ -42,7 +42,7 @@ class SearchDbJob(JobBase):
 
     @property
     def name(self):
-        return f'{self._db.label.lower()}-id'
+        return f'{self._db.name}-id'
 
     @property
     def label(self):
@@ -53,10 +53,7 @@ class SearchDbJob(JobBase):
         return self._query
 
     def initialize(self, db, content_path):
-        try:
-            self._db = getattr(webdbs, db)
-        except AttributeError:
-            raise ValueError(f'Unknown database: {db}')
+        self._db = webdbs.webdb(db)
         self._query = webdbs.Query.from_path(content_path)
         self._is_searching = False
 
