@@ -2,7 +2,8 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies.tools.webdbs import Query, SearchResult, Type, tvmaze
+from upsies.tools.webdbs import Query, SearchResult, tvmaze
+from upsies.utils import ReleaseType
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -49,8 +50,8 @@ async def test_search_for_year(query, exp_titles, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
     argvalues=(
-        (Query('star wars clone', type=Type.series), ('Star Wars: Clone Wars', 'Star Wars: The Clone Wars')),
-        (Query('yes minister', type=Type.series), ('Yes Minister', 'Yes, Prime Minister', 'Yes, Prime Minister')),
+        (Query('star wars clone', type=ReleaseType.series), ('Star Wars: Clone Wars', 'Star Wars: The Clone Wars')),
+        (Query('yes minister', type=ReleaseType.series), ('Yes Minister', 'Yes, Prime Minister', 'Yes, Prime Minister')),
     ),
     ids=lambda value: str(value),
 )
@@ -63,8 +64,8 @@ async def test_search_for_series(query, exp_titles, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
     argvalues=(
-        (Query('star wars', type=Type.movie), ()),
-        (Query('yes minister', type=Type.movie), ()),
+        (Query('star wars', type=ReleaseType.movie), ()),
+        (Query('yes minister', type=ReleaseType.movie), ()),
     ),
     ids=lambda value: str(value),
 )
@@ -195,7 +196,7 @@ async def test_search_result_title(id, exp_title, api, store_response):
 async def test_search_result_type(api, store_response):
     results = await api.search(Query('Star Wars'))
     for result in results:
-        assert result.type is Type.series
+        assert result.type is ReleaseType.series
 
 @pytest.mark.parametrize(
     argnames=('title', 'exp_url'),

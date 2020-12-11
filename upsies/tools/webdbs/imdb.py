@@ -32,10 +32,10 @@ class ImdbApi(WebDbApiBase):
     # and year.
 
     _title_types = {
-        common.Type.movie: 'feature,tv_movie,documentary,video',
-        common.Type.series: 'tv_series,tv_miniseries',
-        common.Type.season: 'tv_series,tv_miniseries',
-        common.Type.episode: 'tv_episode',
+        utils.ReleaseType.movie: 'feature,tv_movie,documentary,video',
+        utils.ReleaseType.series: 'tv_series,tv_miniseries',
+        utils.ReleaseType.season: 'tv_series,tv_miniseries',
+        utils.ReleaseType.episode: 'tv_episode',
     }
 
     async def search(self, query):
@@ -45,7 +45,7 @@ class ImdbApi(WebDbApiBase):
 
         url = f'{self._url_base}/search/title/'
         params = {'title': query.title}
-        if query.type is not common.Type.unknown:
+        if query.type is not utils.ReleaseType.unknown:
             params['title_type'] = self._title_types[query.type]
         if query.year is not None:
             params['release_date'] = f'{query.year}-01-01,{query.year}-12-31'
@@ -159,13 +159,13 @@ class ImdbApi(WebDbApiBase):
         info = await self._imdbpie.get(id)
         title_type = info.get('base', {}).get('titleType', '').casefold()
         if 'movie' in title_type:
-            return common.Type.movie
+            return utils.ReleaseType.movie
         elif 'series' in title_type:
-            return common.Type.season
+            return utils.ReleaseType.season
         elif 'episode' in title_type:
-            return common.Type.episode
+            return utils.ReleaseType.episode
         else:
-            return common.Type.unknown
+            return utils.ReleaseType.unknown
 
     async def year(self, id):
         info = await self._imdbpie.get(id, 'title')
@@ -227,9 +227,9 @@ class ImdbSearchResult(common.SearchResult):
 
     def _get_type(self, soup):
         if soup.find(string=re.compile(r'Directors?:')):
-            return common.Type.movie
+            return utils.ReleaseType.movie
         else:
-            return common.Type.series
+            return utils.ReleaseType.series
 
     def _get_url(self, soup):
         id = self._get_id(soup)

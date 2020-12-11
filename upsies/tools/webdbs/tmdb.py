@@ -26,9 +26,9 @@ class TmdbApi(WebDbApiBase):
         params = {'query': query.title}
         if query.year is not None:
             params['query'] += f' y:{query.year}'
-        if query.type is common.Type.movie:
+        if query.type is utils.ReleaseType.movie:
             url = f'{self._url_base}/search/movie'
-        elif query.type in (common.Type.series, common.Type.season, common.Type.episode):
+        elif query.type in (utils.ReleaseType.series, utils.ReleaseType.season, utils.ReleaseType.episode):
             url = f'{self._url_base}/search/tv'
         else:
             url = f'{self._url_base}/search'
@@ -159,11 +159,11 @@ class TmdbSearchResult(common.SearchResult):
         href = soup.find('a', class_='result').get('href')
         tmdb_type = re.sub(r'(?:^|/)(\w+)/.*$', r'\1', href)
         if tmdb_type == 'movie':
-            return common.Type.movie
+            return utils.ReleaseType.movie
         elif tmdb_type == 'tv':
-            return common.Type.series
+            return utils.ReleaseType.series
         else:
-            return common.Type.unknown
+            return utils.ReleaseType.unknown
 
     def _get_title(self, soup):
         header = soup.select('.result > h2')

@@ -25,7 +25,7 @@ class TvmazeApi(WebDbApiBase):
 
     async def search(self, query):
         _log.debug('Searching TVmaze for %s', query)
-        if not query.title or query.type is common.Type.movie:
+        if not query.title or query.type is utils.ReleaseType.movie:
             return []
 
         url = f'{self._url_base}/search/shows'
@@ -110,7 +110,7 @@ class TvmazeSearchResult(common.SearchResult):
         return super().__init__(
             id=show['id'],
             title=show['name'],
-            type=common.Type.series,
+            type=utils.ReleaseType.series,
             url=show['url'],
             year=_get_year(show),
             cast=functools.partial(tvmaze_api.cast, show['id']),

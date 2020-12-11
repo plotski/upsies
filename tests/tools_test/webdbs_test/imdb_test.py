@@ -2,7 +2,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from upsies.tools.webdbs import Query, SearchResult, Type, imdb
+from upsies.tools.webdbs import Query, SearchResult, imdb
+from upsies.utils import ReleaseType
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -53,10 +54,10 @@ async def test_search_for_year(query, exp_top_title, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
     argvalues=(
-        (Query('star wars', type=Type.series), ('Star Wars: Clone Wars', 'Star Wars: The Clone Wars')),
-        (Query('rampage', type=Type.series), ('Road to Rampage', 'Rampage: Killing Without Reason')),
-        (Query('balada triste trompeta', type=Type.series), ()),
-        (Query('time traveling bong', type=Type.series), ('Time Traveling Bong',)),
+        (Query('star wars', type=ReleaseType.series), ('Star Wars: Clone Wars', 'Star Wars: The Clone Wars')),
+        (Query('rampage', type=ReleaseType.series), ('Road to Rampage', 'Rampage: Killing Without Reason')),
+        (Query('balada triste trompeta', type=ReleaseType.series), ()),
+        (Query('time traveling bong', type=ReleaseType.series), ('Time Traveling Bong',)),
     ),
     ids=lambda value: str(value),
 )
@@ -75,10 +76,10 @@ async def test_search_for_series(query, exp_titles, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
     argvalues=(
-        (Query('star wars', type=Type.movie), ('Star Wars: Episode IV - A New Hope', 'Star Wars: Episode I - The Phantom Menace')),
-        (Query('rampage', type=Type.movie), ('Rampage: Capital Punishment', 'American Rampage')),
-        (Query('balada triste trompeta', type=Type.movie), ('The Last Circus',)),
-        (Query('time traveling bong', type=Type.movie), ()),
+        (Query('star wars', type=ReleaseType.movie), ('Star Wars: Episode IV - A New Hope', 'Star Wars: Episode I - The Phantom Menace')),
+        (Query('rampage', type=ReleaseType.movie), ('Rampage: Capital Punishment', 'American Rampage')),
+        (Query('balada triste trompeta', type=ReleaseType.movie), ('The Last Circus',)),
+        (Query('time traveling bong', type=ReleaseType.movie), ()),
     ),
     ids=lambda value: str(value),
 )
@@ -113,10 +114,10 @@ async def test_search_result_cast(query, exp_cast, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_country'),
     argvalues=(
-        (Query('star wars', type=Type.movie, year=1977), 'United States'),
-        (Query('balada triste trompeta', type=Type.movie, year=2010), 'Spain'),
-        (Query('The Forest', type=Type.series, year=2017), 'France'),
-        (Query('Karppi', type=Type.series, year=2018), 'Finland'),
+        (Query('star wars', type=ReleaseType.movie, year=1977), 'United States'),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), 'Spain'),
+        (Query('The Forest', type=ReleaseType.series, year=2017), 'France'),
+        (Query('Karppi', type=ReleaseType.series, year=2018), 'Finland'),
     ),
     ids=lambda value: str(value),
 )
@@ -144,10 +145,10 @@ async def test_search_result_id(query, exp_id, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_director'),
     argvalues=(
-        (Query('star wars', type=Type.movie, year=1977), 'George Lucas'),
-        (Query('balada triste trompeta', type=Type.movie, year=2010), 'Álex de la Iglesia'),
-        (Query('The Forest', type=Type.series, year=2017), ''),
-        (Query('Karppi', type=Type.series, year=2018), ''),
+        (Query('star wars', type=ReleaseType.movie, year=1977), 'George Lucas'),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), 'Álex de la Iglesia'),
+        (Query('The Forest', type=ReleaseType.series, year=2017), ''),
+        (Query('Karppi', type=ReleaseType.series, year=2018), ''),
 
     ),
     ids=lambda value: str(value),
@@ -160,10 +161,10 @@ async def test_search_result_director(query, exp_director, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_keywords'),
     argvalues=(
-        (Query('star wars', type=Type.movie, year=1977), ('action', 'adventure', 'fantasy')),
-        (Query('balada triste trompeta', type=Type.movie, year=2010), ('comedy', 'drama', 'horror')),
-        (Query('The Forest', type=Type.series, year=2017), ('crime', 'drama')),
-        (Query('Deadwood', type=Type.series, year=2004), ('crime', 'drama', 'history')),
+        (Query('star wars', type=ReleaseType.movie, year=1977), ('action', 'adventure', 'fantasy')),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ('comedy', 'drama', 'horror')),
+        (Query('The Forest', type=ReleaseType.series, year=2017), ('crime', 'drama')),
+        (Query('Deadwood', type=ReleaseType.series, year=2004), ('crime', 'drama', 'history')),
     ),
     ids=lambda value: str(value),
 )
@@ -179,11 +180,11 @@ async def test_search_result_keywords(query, exp_keywords, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_summary'),
     argvalues=(
-        (Query('star wars', type=Type.movie, year=1977), 'Luke Skywalker joins forces with a Jedi'),
-        (Query('balada triste trompeta', type=Type.movie, year=2010), 'A young trapeze artist must decide'),
-        (Query('The Forest', type=Type.series, year=2017), 'Sixteen-year-old Jennifer disappears'),
-        (Query('Deadwood', type=Type.series, year=2004), 'set in the late 1800s'),
-        (Query('The Deadwood Coach', type=Type.movie, year=1924), ''),
+        (Query('star wars', type=ReleaseType.movie, year=1977), 'Luke Skywalker joins forces with a Jedi'),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), 'A young trapeze artist must decide'),
+        (Query('The Forest', type=ReleaseType.series, year=2017), 'Sixteen-year-old Jennifer disappears'),
+        (Query('Deadwood', type=ReleaseType.series, year=2004), 'set in the late 1800s'),
+        (Query('The Deadwood Coach', type=ReleaseType.movie, year=1924), ''),
     ),
     ids=lambda value: str(value),
 )
@@ -213,19 +214,19 @@ async def test_search_result_title(query, exp_top_title, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_title_english', 'exp_title_original'),
     argvalues=(
-        (Query('Aftermath', type=Type.movie, year=2012), 'Aftermath', 'Poklosie'),
-        (Query('Blues Brothers', type=Type.movie, year=1980), '', 'The Blues Brothers'),
-        (Query('February', type=Type.movie, year=2015), "The Blackcoat's Daughter", 'February'),
-        (Query('Hard Boiled', type=Type.movie, year=1992), 'Hard Boiled', 'Lat sau san taam'),
-        (Query('Sin Nombre', type=Type.movie, year=2009), '', 'Sin nombre'),
-        (Query('Star Wars', type=Type.movie, year=1977), 'Star Wars: Episode IV - A New Hope', 'Star Wars'),
-        (Query('Stone Cold', type=Type.movie, year=1991), '', 'Stone Cold'),
-        (Query('The Nest', type=Type.movie, year=2002), 'The Nest', 'Nid de guêpes'),
-        (Query('balada triste trompeta', type=Type.movie, year=2010), 'The Last Circus', 'Balada triste de trompeta'),
-        (Query('Deadwood', type=Type.series, year=2004), '', 'Deadwood'),
-        (Query('Karppi', type=Type.series, year=2018), 'Deadwind', 'Karppi'),
-        (Query('The Forest', type=Type.series, year=2017), 'The Forest', 'La forêt'),
-        (Query('Traffic Light', type=Type.series, year=2008), 'Traffic Light', 'Ramzor'),
+        (Query('Aftermath', type=ReleaseType.movie, year=2012), 'Aftermath', 'Poklosie'),
+        (Query('Blues Brothers', type=ReleaseType.movie, year=1980), '', 'The Blues Brothers'),
+        (Query('February', type=ReleaseType.movie, year=2015), "The Blackcoat's Daughter", 'February'),
+        (Query('Hard Boiled', type=ReleaseType.movie, year=1992), 'Hard Boiled', 'Lat sau san taam'),
+        (Query('Sin Nombre', type=ReleaseType.movie, year=2009), '', 'Sin nombre'),
+        (Query('Star Wars', type=ReleaseType.movie, year=1977), 'Star Wars: Episode IV - A New Hope', 'Star Wars'),
+        (Query('Stone Cold', type=ReleaseType.movie, year=1991), '', 'Stone Cold'),
+        (Query('The Nest', type=ReleaseType.movie, year=2002), 'The Nest', 'Nid de guêpes'),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), 'The Last Circus', 'Balada triste de trompeta'),
+        (Query('Deadwood', type=ReleaseType.series, year=2004), '', 'Deadwood'),
+        (Query('Karppi', type=ReleaseType.series, year=2018), 'Deadwind', 'Karppi'),
+        (Query('The Forest', type=ReleaseType.series, year=2017), 'The Forest', 'La forêt'),
+        (Query('Traffic Light', type=ReleaseType.series, year=2008), 'Traffic Light', 'Ramzor'),
     ),
     ids=lambda value: str(value),
 )
@@ -240,10 +241,10 @@ async def test_search_result_title_english_original(query, exp_title_english, ex
 @pytest.mark.parametrize(
     argnames=('query', 'exp_top_type'),
     argvalues=(
-        (Query('Blues Brothers', year=1980), Type.movie),
-        (Query('Blues Brothers', year=1998), Type.movie),
-        (Query('Star Wars', year=2008), Type.series),
-        (Query('Star Wars', year=2014), Type.series),
+        (Query('Blues Brothers', year=1980), ReleaseType.movie),
+        (Query('Blues Brothers', year=1998), ReleaseType.movie),
+        (Query('Star Wars', year=2008), ReleaseType.series),
+        (Query('Star Wars', year=2014), ReleaseType.series),
     ),
     ids=lambda value: str(value),
 )
@@ -376,11 +377,11 @@ async def test_title_english_original(id, exp_title_english, exp_title_original,
 @pytest.mark.parametrize(
     argnames=('id', 'exp_type'),
     argvalues=(
-        ('tt0076759', Type.movie),
-        ('tt0192802', Type.movie),
-        ('tt2372162', Type.season),
-        ('tt1453159', Type.season),
-        ('tt5440238', Type.episode),
+        ('tt0076759', ReleaseType.movie),
+        ('tt0192802', ReleaseType.movie),
+        ('tt2372162', ReleaseType.season),
+        ('tt1453159', ReleaseType.season),
+        ('tt5440238', ReleaseType.episode),
     ),
     ids=lambda value: str(value),
 )

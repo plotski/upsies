@@ -2,7 +2,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from upsies.tools.webdbs import Query, SearchResult, Type, tmdb
+from upsies.tools.webdbs import Query, SearchResult, tmdb
+from upsies.utils import ReleaseType
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -48,10 +49,10 @@ async def test_search_for_year(query, exp_top_result, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
     argvalues=(
-        (Query('wooster', type=Type.series), ('Jeeves and Wooster', 'The World of Wooster')),
-        (Query('wooster', type=Type.movie), ()),
-        (Query('Deadwood', type=Type.movie), ('Deadwood: The Movie',)),
-        (Query('Deadwood', type=Type.series), ('Deadwood',)),
+        (Query('wooster', type=ReleaseType.series), ('Jeeves and Wooster', 'The World of Wooster')),
+        (Query('wooster', type=ReleaseType.movie), ()),
+        (Query('Deadwood', type=ReleaseType.movie), ('Deadwood: The Movie',)),
+        (Query('Deadwood', type=ReleaseType.series), ('Deadwood',)),
     ),
     ids=lambda value: str(value),
 )
@@ -177,9 +178,9 @@ async def test_search_result_title_original(api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_type'),
     argvalues=(
-        (Query('The Blues Brothers', year=1980), Type.movie),
-        (Query('February', year=2017), Type.movie),
-        (Query('Deadwood', year=2004), Type.series),
+        (Query('The Blues Brothers', year=1980), ReleaseType.movie),
+        (Query('February', year=2017), ReleaseType.movie),
+        (Query('Deadwood', year=2004), ReleaseType.series),
     ),
     ids=lambda value: str(value),
 )
