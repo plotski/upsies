@@ -3,6 +3,7 @@ API for querying services like IMDb
 """
 
 from ... import utils
+from . import imdb, tmdb, tvmaze
 from .base import WebDbApiBase
 from .common import Query, SearchResult, Type
 
