@@ -3,6 +3,28 @@ import pytest
 from upsies import utils
 
 
+@pytest.mark.parametrize(
+    argnames=('name', 'bool_value'),
+    argvalues=(
+        ('movie', True),
+        ('series', True),
+        ('season', True),
+        ('episode', True),
+        ('unknown', False),
+    ),
+)
+def test_ReleaseType_truthiness(name, bool_value):
+    assert bool(getattr(utils.ReleaseType, name)) is bool_value
+
+@pytest.mark.parametrize('name', utils.ReleaseType.__members__)
+def test_ReleaseType_string(name):
+    assert str(getattr(utils.ReleaseType, name)) == name
+
+@pytest.mark.parametrize('name', utils.ReleaseType.__members__)
+def test_ReleaseType_repr(name):
+    assert repr(getattr(utils.ReleaseType, name)) == f'ReleaseType.{name}'
+
+
 def test_submodules_finds_modules():
     import importlib
     assert set(utils.submodules('upsies.utils')) == {
