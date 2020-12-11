@@ -136,6 +136,8 @@ class SearchResult:
     """
     Information about a search result
 
+    Keyword arguments are available as attributes.
+
     :param str director: Name of director
     :param cast: Short list of actor names
     :type cast: sequence of str
