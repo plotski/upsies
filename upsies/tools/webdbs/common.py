@@ -1,26 +1,9 @@
-import enum
 import re
 
-from ...utils import guessit
+from ...utils import ReleaseType, guessit
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
-
-
-class Type(enum.Enum):
-    """Movie, series, season, episode or unknown"""
-
-    movie = 'movie'
-    series = 'series'
-    season = 'season'
-    episode = 'episode'
-    unknown = 'unknown'
-
-    def __str__(self):
-        return str(self.value)
-
-    def __repr__(self):
-        return f'{type(self).__name__}.{self.value}'
 
 
 class Query:
@@ -28,27 +11,25 @@ class Query:
     Search query for databases like IMDb
 
     :param str title: Name of the movie or TV series
-    :param str type: "movie", "series" or "episode"
+    :param str type: :class:`~.utils.ReleaseType` enum or one of its value names
     :param year: Year of release
     :type year: str or int
 
     :raise ValueError: if an invalid argument is passed
     """
 
-    def __init__(self, title, year=None, type=Type.unknown):
-        if not isinstance(type, Type):
-            raise ValueError(f'Invalid type: {type!r}')
-        self.type = type
+    def __init__(self, title, year=None, type=ReleaseType.unknown):
+        self.type = ReleaseType(type)
         self.title = str(title)
         self.year = None if year is None else str(year)
         if self.year is not None and not 1800 < int(self.year) < 2100:
             raise ValueError(f'Invalid year: {self.year}')
 
     _types = {
-        Type.movie: ('movie', 'film'),
-        Type.season: ('season',),
-        Type.episode: ('episode',),
-        Type.series: ('series', 'tv', 'show', 'tvshow'),
+        ReleaseType.movie: ('movie', 'film'),
+        ReleaseType.season: ('season',),
+        ReleaseType.episode: ('episode',),
+        ReleaseType.series: ('series', 'tv', 'show', 'tvshow'),
     }
     _known_types = tuple(v for types in _types.values() for v in types)
     _kw_regex = {
@@ -79,14 +60,14 @@ class Query:
                 match = re.search(f'^{regex}$', part)
                 if match:
                     value = match.group(1)
-                    if kw == 'type' and value in cls._types[Type.movie]:
-                        return 'type', Type.movie
-                    elif kw == 'type' and value in cls._types[Type.season]:
-                        return 'type', Type.season
-                    elif kw == 'type' and value in cls._types[Type.episode]:
-                        return 'type', Type.episode
-                    elif kw == 'type' and value in cls._types[Type.series]:
-                        return 'type', Type.series
+                    if kw == 'type' and value in cls._types[ReleaseType.movie]:
+                        return 'type', ReleaseType.movie
+                    elif kw == 'type' and value in cls._types[ReleaseType.series]:
+                        return 'type', ReleaseType.series
+                    elif kw == 'type' and value in cls._types[ReleaseType.season]:
+                        return 'type', ReleaseType.season
+                    elif kw == 'type' and value in cls._types[ReleaseType.episode]:
+                        return 'type', ReleaseType.episode
                     elif kw == 'year':
                         return 'year', value
             return None, None
@@ -113,17 +94,10 @@ class Query:
         """
         guess = guessit.guessit(path)
         kwargs = {'title': guess['title']}
-
         if guess.get('year'):
             kwargs['year'] = guess['year']
-
-        if guess.get('type').casefold() == 'movie':
-            kwargs['type'] = Type.movie
-        elif guess.get('type').casefold() == 'season':
-            kwargs['type'] = Type.season
-        elif guess.get('type').casefold() == 'episode':
-            kwargs['type'] = Type.episode
-
+        if guess.get('type'):
+            kwargs['type'] = guess['type']
         return cls(**kwargs)
 
     def __eq__(self, other):
@@ -143,7 +117,7 @@ class Query:
         parts = [self.title]
         if self.year:
             parts.append(f'year:{self.year}')
-        if self.type is not Type.unknown:
+        if self.type is not ReleaseType.unknown:
             parts.append(f'type:{self.type}')
         return ' '.join(parts)
 
@@ -153,7 +127,7 @@ class Query:
             for k, v in (('title', self.title),
                          ('year', self.year),
                          ('type', self.type))
-            if v not in (None, Type.unknown)
+            if v not in (None, ReleaseType.unknown)
         )
         return f'{type(self).__name__}({kwargs})'
 
@@ -173,7 +147,7 @@ class SearchResult:
     :param str title: Title of the movie or series
     :param str title_english: English title of the movie or series
     :param str title_original: Original title of the movie or series
-    :param str type: :class:`~.webdbs.common.Type` attribute
+    :param str type: :class:`~.utils.ReleaseType` value
     :param str url: Web page of the search result
     :param str year: Release year; for series this should be the year of the
         first airing of the first episode of the first season
@@ -184,12 +158,10 @@ class SearchResult:
     def __init__(self, *, id, type, url, year, cast=(), country='', director='',
                  keywords=(), summary='', title, title_english='',
                  title_original=''):
-        if not isinstance(type, Type):
-            raise ValueError(f'Invalid type: {type!r}')
         self._info = {
             'id' : id,
             'title' : str(title),
-            'type' : type,
+            'type' : ReleaseType(type),
             'url' : str(url),
             'year' : str(year),
             # These may be coroutine functions

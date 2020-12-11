@@ -65,7 +65,7 @@ class WebDbApiBase(abc.ABC):
 
     @abc.abstractmethod
     async def type(self, id):
-        """Return :class:`~.webdbs.common.Type`"""
+        """Return :class:`~.utils.ReleaseType`"""
         pass
 
     @abc.abstractmethod
