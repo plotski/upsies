@@ -7,7 +7,7 @@ import os
 import re
 
 from ..tools import mediainfo
-from ..utils import LazyModule, fs
+from ..utils import LazyModule, ReleaseType, fs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ def guessit(path):
     - Return regular `dict`.
     - The ``alternative_title`` is replaced by ``aka`` and its value comes from
       splitting the title at "AKA".
-    - ``type`` is "season" if ``season`` is known but ``episode`` isn't.
+    - ``type`` is a :class:`~.utils.ReleaseType` enum
     - ``year``, ``season`` and ``episode`` are `str`, not `int`.
     - ``source`` is "WEB-DL" or "WEBRip", not just "Web".
     - ``source`` is "Web" is uppercased to "WEB"
@@ -57,6 +57,7 @@ def guessit(path):
     _enforce_list_fields(guess, 'edition')
     _enforce_str(guess, 'year', 'season', 'episode')
     _add_season_type(guess)
+    _use_ReleaseType_enum(guess)
     _detect_webdl_and_webrip(guess, path)
     _normalize_source(guess, path)
     _detect_any_streaming_service(guess, path)
@@ -109,6 +110,13 @@ def _add_season_type(guess):
     # If "season" exists and "episode" does not, set "type" to "season"
     if guess.get('type') == 'episode' and 'episode' not in guess:
         guess['type'] = 'season'
+
+
+def _use_ReleaseType_enum(guess):
+    if 'type' in guess:
+        guess['type'] = ReleaseType(guess['type'])
+    else:
+        guess['type'] = ReleaseType.unknown
 
 
 _web_source_regex = re.compile(r'[ \.](WEB-?(?:DL|Rip))(?:[ \.]|$)', flags=re.IGNORECASE)

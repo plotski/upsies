@@ -2,7 +2,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-from upsies.utils import guessit
+from upsies.utils import ReleaseType, guessit
 
 
 # guessit() is memoized so we must clear its cache before every test.
@@ -13,15 +13,15 @@ def clear_guessit_cache():
 
 @patch('upsies.utils.guessit._guessit')
 def test_return_value_is_regular_dict(guessit_mock):
-    guessit_mock.guessit.return_value = (('type', 'movie'),)
+    guessit_mock.guessit.return_value = (('title', 'The Foo'),)
     guess = guessit.guessit('path/to/foo.mkv')
     assert type(guess) is dict
-    assert guess == {'type': 'movie'}
+    assert guess == {'title': 'The Foo', 'type': ReleaseType.unknown}
     assert guessit_mock.guessit.call_args_list == [call('path/to/foo.mkv')]
 
 @patch('upsies.utils.guessit._guessit')
 def test_turn_other_field_into_list(guessit_mock):
-    guessit_mock.guessit.return_value = {'type': 'movie', 'other': 'Rip'}
+    guessit_mock.guessit.return_value = {'other': 'Rip'}
     guess = guessit.guessit('path/to/foo.mkv')
     assert guess['other'] == ['Rip']
 
@@ -59,27 +59,27 @@ def assert_guess(release_name,
 
 @pytest.mark.parametrize('release_name, expected', (
     ('The Foo 2000 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': 'movie', 'title': 'The Foo', 'year': '2000', 'season': None, 'episode': None,
+     {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000', 'season': None, 'episode': None,
       'screen_size': '1080p', 'streaming_service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo S01E04 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': 'episode', 'title': 'The Foo', 'year': None, 'season': '1', 'episode': '4',
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'year': None, 'season': '1', 'episode': '4',
       'screen_size': '1080p', 'streaming_service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo S01 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': 'season', 'title': 'The Foo', 'year': None, 'season': '1', 'episode': None,
+     {'type': ReleaseType.season, 'title': 'The Foo', 'year': None, 'season': '1', 'episode': None,
       'screen_size': '1080p', 'streaming_service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo 2000 S01 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': 'season', 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': None,
+     {'type': ReleaseType.season, 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': None,
       'screen_size': '1080p', 'streaming_service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo 2000 S01E02 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': 'episode', 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': '2',
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': '2',
       'screen_size': '1080p', 'streaming_service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo 2000 S01E01E02 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': 'episode', 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': ['1', '2'],
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': ['1', '2'],
       'screen_size': '1080p', 'streaming_service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
 ))
@@ -89,15 +89,15 @@ def test_type_and_year_season_and_episode(release_name, expected):
 
 @pytest.mark.parametrize('release_name, expected', (
     ('The Foo 1984 1080p BluRay DTS-ASDF',
-     {'type': 'movie', 'title': 'The Foo', 'year': '1984', 'season': None, 'episode': None,
+     {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984', 'season': None, 'episode': None,
       'screen_size': '1080p', 'streaming_service': None, 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
     ('1984 1984 1080p BluRay DTS-ASDF',
-     {'type': 'movie', 'title': '1984', 'year': '1984', 'season': None, 'episode': None,
+     {'type': ReleaseType.movie, 'title': '1984', 'year': '1984', 'season': None, 'episode': None,
       'screen_size': '1080p', 'streaming_service': None, 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
     ('1984 2000 1080p BluRay DTS-ASDF',
-     {'type': 'movie', 'title': '1984', 'year': '2000', 'season': None, 'episode': None,
+     {'type': ReleaseType.movie, 'title': '1984', 'year': '2000', 'season': None, 'episode': None,
       'screen_size': '1080p', 'streaming_service': None, 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
 ))
@@ -107,19 +107,19 @@ def test_title_and_year(release_name, expected):
 
 @pytest.mark.parametrize('release_name, expected', (
     ('The Foo - The Bar 1984 1080p BluRay DTS-ASDF',
-     {'type': 'movie', 'title': 'The Foo - The Bar', 'year': '1984', 'season': None, 'episode': None,
+     {'type': ReleaseType.movie, 'title': 'The Foo - The Bar', 'year': '1984', 'season': None, 'episode': None,
       'screen_size': '1080p', 'streaming_service': None, 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
     ('The Foo - The Bar - The Baz 1984 1080p BluRay DTS-ASDF',
-     {'type': 'movie', 'title': 'The Foo - The Bar - The Baz', 'year': '1984', 'season': None, 'episode': None,
+     {'type': ReleaseType.movie, 'title': 'The Foo - The Bar - The Baz', 'year': '1984', 'season': None, 'episode': None,
       'screen_size': '1080p', 'streaming_service': None, 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
     ('1984 AKA Nineteen Eighty-Four 1984 1080p BluRay DTS-ASDF',
-     {'type': 'movie', 'title': '1984', 'aka': 'Nineteen Eighty-Four', 'year': '1984',
+     {'type': ReleaseType.movie, 'title': '1984', 'aka': 'Nineteen Eighty-Four', 'year': '1984',
       'season': None, 'episode': None, 'screen_size': '1080p', 'streaming_service': None,
       'source': 'BluRay', 'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
     ('1984 - Foo AKA Nineteen Eighty-Four 1984 1080p BluRay DTS-ASDF',
-     {'type': 'movie', 'title': '1984 - Foo', 'aka': 'Nineteen Eighty-Four', 'year': '1984',
+     {'type': ReleaseType.movie, 'title': '1984 - Foo', 'aka': 'Nineteen Eighty-Four', 'year': '1984',
       'season': None, 'episode': None, 'screen_size': '1080p', 'streaming_service': None,
       'source': 'BluRay', 'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}),
 ))
@@ -140,7 +140,7 @@ source_samples = (
 @pytest.mark.parametrize('source, exp_source', source_samples)
 def test_source(source, exp_source):
     release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
-    expected = {'type': 'movie', 'title': 'The Foo', 'year': '1984', 'season': None, 'episode': None,
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984', 'season': None, 'episode': None,
                 'screen_size': '1080p', 'streaming_service': None, 'source': exp_source,
                 'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}
     assert_guess(release_name, **expected)
@@ -157,7 +157,7 @@ source_from_encoder_samples = (
 def test_source_from_encoder(source, video_format, exp_source, mocker):
     mocker.patch('upsies.tools.mediainfo.video_format', Mock(return_value=video_format))
     release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
-    expected = {'type': 'movie', 'title': 'The Foo', 'year': '1984', 'season': None, 'episode': None,
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984', 'season': None, 'episode': None,
                 'screen_size': '1080p', 'streaming_service': None, 'source': exp_source,
                 'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}
     assert_guess(release_name, **expected)
@@ -171,7 +171,7 @@ extended_source_samples = (
 @pytest.mark.parametrize('source, exp_source', extended_source_samples)
 def test_extended_source(source, exp_source):
     release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
-    expected = {'type': 'movie', 'title': 'The Foo', 'year': '1984', 'season': None, 'episode': None,
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984', 'season': None, 'episode': None,
                 'screen_size': '1080p', 'streaming_service': None, 'source': exp_source,
                 'audio_codec': 'DTS', 'audio_channels': None, 'group': 'ASDF'}
     assert_guess(release_name, **expected)
@@ -193,7 +193,7 @@ service_samples = (
 @pytest.mark.parametrize('service, service_abbrev', service_samples)
 def test_streaming_service_is_abbreviated(service, service_abbrev):
     release_name = f'The Foo S10 1080p {service} WEB-DL AAC H.264-ASDF'
-    expected = {'type': 'season', 'title': 'The Foo', 'year': None, 'season': '10', 'episode': None,
+    expected = {'type': ReleaseType.season, 'title': 'The Foo', 'year': None, 'season': '10', 'episode': None,
                 'screen_size': '1080p', 'streaming_service': service_abbrev, 'source': 'WEB-DL',
                 'audio_codec': 'AAC', 'audio_channels': None, 'video_codec': 'H.264', 'group': 'ASDF'}
     assert_guess(release_name, **expected)
@@ -214,7 +214,7 @@ audio_codec_samples = (
 @pytest.mark.parametrize('audio_codec, audio_codec_abbrev', audio_codec_samples)
 def test_audio_codec_is_abbreviated(audio_codec, audio_codec_abbrev):
     release_name = f'The Foo S10 1080p WEB-DL {audio_codec} H.264-ASDF'
-    expected = {'type': 'season', 'title': 'The Foo', 'year': None, 'season': '10', 'episode': None,
+    expected = {'type': ReleaseType.season, 'title': 'The Foo', 'year': None, 'season': '10', 'episode': None,
                 'screen_size': '1080p', 'source': 'WEB-DL',
                 'audio_codec': audio_codec_abbrev, 'audio_channels': None, 'video_codec': 'H.264', 'group': 'ASDF'}
     assert_guess(release_name, **expected)
@@ -229,7 +229,7 @@ video_codec_samples = (
 
 @pytest.mark.parametrize('release_name, video_codec', video_codec_samples)
 def test_video_codec(release_name, video_codec):
-    expected = {'type': 'movie', 'title': 'The Foo', 'year': '2000',
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
                 'screen_size': '1080p',
                 'audio_codec': 'DTS', 'video_codec': video_codec, 'group': 'ASDF'}
     assert_guess(release_name, **expected)
@@ -242,7 +242,7 @@ edition_samples = (
 
 @pytest.mark.parametrize('release_name, edition', edition_samples)
 def test_edition(release_name, edition):
-    expected = {'type': 'movie', 'title': 'The Foo', 'year': '2000',
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
                 'edition': edition, 'screen_size': '1080p',
                 'audio_codec': 'DTS', 'video_codec': 'x264', 'group': 'ASDF'}
     assert_guess(release_name, **expected)
