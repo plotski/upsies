@@ -2,7 +2,7 @@ import asyncio
 import collections
 
 from ..utils import guessit
-from . import webdbs, mediainfo
+from . import mediainfo, webdbs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ class ReleaseName(collections.abc.Mapping):
     def __init__(self, path):
         self._path = str(path)
         self._guess = guessit.guessit(self._path)
+        self._imdb = webdbs.imdb.ImdbApi()
 
     def __repr__(self):
         return f'{type(self).__name__}({self._path!r})'
@@ -298,19 +299,19 @@ class ReleaseName(collections.abc.Mapping):
             callback(self)
 
     async def _update_attributes(self, id):
-        info = await dbs.imdb.gather(
+        info = await self._imdb.gather(
             id,
-            dbs.imdb.type,
-            dbs.imdb.title_english,
-            dbs.imdb.title_original,
-            dbs.imdb.year,
+            'type',
+            'title_english',
+            'title_original',
+            'year',
         )
         for attr, key in (
                 ('title', 'title_original'),
                 ('title_aka', 'title_english'),
                 ('year', 'year')
         ):
-            # Test that "no info" doesn't overload existing attrs
+            # Only overload non-empty values
             if info[key]:
                 setattr(self, attr, info[key])
 
@@ -323,8 +324,9 @@ class ReleaseName(collections.abc.Mapping):
     async def _update_year_required(self):
         if self.type in ('season', 'episode'):
             # Find out if there are multiple series with this title
-            results = await dbs.imdb.search(dbs.Query(title=self.title,
-                                                      type='series'))
+            results = await self._imdb.search(
+                webdbs.Query(title=self.title, type=webdbs.Type.series)
+            )
             same_titles = tuple(
                 r for r in results
                 if r.title.casefold() == self.title.casefold()

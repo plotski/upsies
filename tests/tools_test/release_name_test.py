@@ -567,7 +567,7 @@ def test_group_setter(guessit_mock):
     assert rn.group == '123'
 
 
-@patch('upsies.tools.dbs.imdb')
+@patch('upsies.tools.webdbs.imdb.ImdbApi')
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='guessit_type, imdb_type, exp_type',
@@ -587,15 +587,15 @@ def test_group_setter(guessit_mock):
         ('episode', '', 'episode'),
     ),
 )
-def test_update_attributes(guessit_mock, imdb_mock, guessit_type, imdb_type, exp_type):
+def test_update_attributes(guessit_mock, ImdbApi_mock, guessit_type, imdb_type, exp_type):
     id_mock = '12345'
-    info_mock = {
+    gather_mock = {
         'type': imdb_type,
         'title_original': 'Le Foo',
         'title_english': 'The Foo',
         'year': '2010',
     }
-    imdb_mock.info = AsyncMock(return_value=info_mock)
+    ImdbApi_mock.return_value.gather = AsyncMock(return_value=gather_mock)
     guessit_mock.return_value = {'type': guessit_type}
     rn = ReleaseName('path/to/something')
     assert rn.type == guessit_type
@@ -604,15 +604,15 @@ def test_update_attributes(guessit_mock, imdb_mock, guessit_type, imdb_type, exp
     assert rn.title_aka == 'The Foo'
     assert rn.year == '2010'
     assert rn.type == exp_type
-    assert imdb_mock.info.call_args_list == [
-        call(id_mock, imdb_mock.type, imdb_mock.title_english, imdb_mock.title_original, imdb_mock.year),
+    assert ImdbApi_mock.return_value.gather.call_args_list == [
+        call(id_mock, 'type', 'title_english', 'title_original', 'year'),
     ]
 
 
 _unique_titles = (Mock(title='The Foo'), Mock(title='The Bar'))
 _same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
 
-@patch('upsies.tools.dbs.imdb')
+@patch('upsies.tools.webdbs.imdb.ImdbApi')
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, results, exp_year_required',
@@ -625,8 +625,8 @@ _same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
         ('episode', _same_titles, True),
     ),
 )
-def test_update_year_required(guessit_mock, imdb_mock, type, results, exp_year_required):
-    imdb_mock.search = AsyncMock(return_value=results)
+def test_update_year_required(guessit_mock, ImdbApi_mock, type, results, exp_year_required):
+    ImdbApi_mock.return_value.search = AsyncMock(return_value=results)
     guessit_mock.return_value = {'type': type, 'title': 'The Foo'}
     rn = ReleaseName('path/to/something')
     assert rn.year_required is False
