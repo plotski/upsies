@@ -6,8 +6,6 @@ import functools
 import os
 import re
 
-import natsort
-
 from .. import __project_name__, errors
 from . import LazyModule, pretty_bytes
 
@@ -15,6 +13,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 tempfile = LazyModule(module='tempfile', namespace=globals())
+natsort = LazyModule(module='natsort', namespace=globals())
 
 
 def assert_file_readable(filepath):
