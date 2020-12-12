@@ -141,7 +141,6 @@ class TrackerBase(abc.ABC):
             homedir=self.info.homedir,
             ignore_cache=self.info.ignore_cache,
             content_path=self.info.content_path,
-            # TODO: Add --number and --timestamps arguments
         )
 
     @cache.property
