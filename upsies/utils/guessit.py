@@ -111,7 +111,6 @@ def _add_season_type(guess):
     if guess.get('type') == 'episode' and 'episode' not in guess:
         guess['type'] = 'season'
 
-
 def _use_ReleaseType_enum(guess):
     if 'type' in guess:
         guess['type'] = ReleaseType(guess['type'])
