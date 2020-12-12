@@ -5,6 +5,8 @@ Dummy image uploader for testing and debugging
 import asyncio
 import os
 
+from ... import errors
+from ...utils import fs
 from .base import ImageHostBase
 
 
@@ -14,6 +16,11 @@ class DummyImageHost(ImageHostBase):
     name = 'dummy'
 
     async def _upload(self, image_path):
-        await asyncio.sleep(1)
-        url = f'http://localhost/{os.path.basename(image_path)}'
-        return {'url': url}
+        try:
+            fs.assert_file_readable(image_path)
+        except errors.ContentError as e:
+            raise errors.RequestError(e)
+        else:
+            await asyncio.sleep(1)
+            url = f'http://localhost/{os.path.basename(image_path)}'
+            return {'url': url}
