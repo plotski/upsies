@@ -107,8 +107,8 @@ def parse(args):
     parser.add_argument('--clients-file', '-c',
                         help='BitTorrent client configuration file path',
                         default=constants.CLIENTS_FILEPATH)
-    parser.add_argument('--ignore-cache', '-ic',
-                        help='Ignore existing files and information from previous calls',
+    parser.add_argument('--ignore-cache', '-C',
+                        help='Ignore results from previous calls',
                         action='store_true')
 
     subparsers = parser.add_subparsers(title='commands')
