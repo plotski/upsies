@@ -25,7 +25,7 @@ class Tracker(TrackerBase):
     @cache.property
     def category_job(self):
         # Season or Episode
-        if guessit.guessit(self.info.content_path).get('type') == 'episode':
+        if str(guessit.guessit(self.info.content_path).get('type')) == 'episode':
             guessed = 'Episode'
         else:
             guessed = 'Season'

@@ -7,6 +7,7 @@ from pytest_httpserver.httpserver import Response
 
 from upsies import __project_name__, __version__, errors
 from upsies.trackers import nbl
+from upsies.utils import ReleaseType
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -83,8 +84,13 @@ def test_jobs_before_upload(tmp_path, mocker):
 @pytest.mark.parametrize(
     argnames=('guessit_guess', 'focused_choice'),
     argvalues=(
+        (ReleaseType.episode, 'Episode'),
+        (ReleaseType.season, 'Season'),
+        (ReleaseType.movie, 'Season'),
+        (ReleaseType.unknown, 'Season'),
         ('episode', 'Episode'),
         ('season', 'Season'),
+        ('movie', 'Season'),
         ('', 'Season'),
         (None, 'Season'),
     ),
