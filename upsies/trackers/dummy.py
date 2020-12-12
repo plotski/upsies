@@ -3,7 +3,7 @@ import os
 import random
 
 from .. import errors, jobs
-from ..utils import cache, fs, guessit
+from ..utils import ReleaseType, cache, fs, guessit
 from .base import TrackerBase
 
 import logging  # isort:skip
@@ -24,18 +24,23 @@ class DummyTracker(TrackerBase):
             self.imdb_job,
             self.tmdb_job,
             self.release_name_job,
-            self.choice_prompt_job,
+            self.category_job,
         )
 
     @cache.property
-    def choice_prompt_job(self):
+    def category_job(self):
+        guess = guessit.guessit(self.info.content_path).get('type')
+        if guess:
+            guess = str(guess).capitalize()
+        else:
+            guess = 'Season'
         return jobs.prompt.ChoiceJob(
-            name='dummy-choice',
-            label='Dummy Choice',
-            homedir=fs.projectdir(self.info.content_path),
+            name='category',
+            label='Category',
+            homedir=self.info.homedir,
             ignore_cache=self.info.ignore_cache,
-            choices=('Foo', 'Bar', 'Baz'),
-            focused=random.choice(('Foo', 'Bar', 'Baz')),
+            choices=(str(t).capitalize() for t in ReleaseType),
+            focused=guess,
         )
 
     async def login(self):
