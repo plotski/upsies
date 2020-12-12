@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/application-742baef46663642eb518338a0dbf1022864eb5ae21c4ab2d52f7995b6a4a37ab.css" media="screen">
     
     
-      <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/media-aed4a16b1d1cb5f8f2942b1ba9dc1ed092b4e8440e63c616ebcc9bb4e9d15f48.css" media="screen">
+      <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/media-bc4d9264e78334673d1031f8ce8e050a3f3baf35bef4b0431d74dbb0316a2af5.css" media="screen">
       
     
       <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/ott-8ba1c148276d5c56ba11f9d687d4a2baf77db72a1877bf63349cd824e94da015.css" media="screen">
@@ -263,34 +263,71 @@
   <section class="inner_content tv_content backdrop poster">
     <style>
   
-    .k-tooltip.custom_theme {
-      background-color: #ffffff;
-      color: #000000;
+    html {
+      --primaryColor: #24252B;
+      --primaryColorContrast: #ffffff;
     }
 
-    .custom_theme .k-callout-n {
-      border-bottom-color: #ffffff;
+    div.header {
+      background: linear-gradient(to bottom right, rgba(14.12%, 14.51%, 16.86%, 1.00), rgba(14.12%, 14.51%, 16.86%, 0.84));
     }
 
-    .custom_theme .k-callout-e {
-      border-left-color: #ffffff;
+    div.column_wrapper div.settings_panel h3 {
+      color: var(--primaryColorContrast);
     }
 
-    .custom_theme .k-callout-w {
-      border-right-color: #ffffff;
+    div.settings_panel h3.background_color {
+      background-color: var(--primaryColor);
     }
 
-    .custom_theme .k-callout-s {
-      border-top-color: #ffffff;
+    section.inner_content a, section.media_panel div.menu ul li.active a {
+      color: #000;
+    }
+
+    section.inner_content a:hover {
+      color: rgba(0,0,0,0.8);
+    }
+
+    section.media_panel div.menu ul li.active {
+      border-bottom-color: #000000;
     }
 
     #shortcut_bar_scroller.scroller_wrap, div.single_column_wrapper {
-      border-bottom: 1px solid rgba(18.24%, 18.43%, 19.61%, 1.00);
+      border-bottom: 1px solid var(--primaryColor);
+    }
+
+    
+      section.inner_content div.header div.single_column *, section.inner_content div.header div.single_column a {
+        color: #fff;
+      }
+
+      section.inner_content div.header div.single_column a:hover {
+        color: rgba(255,255,255,0.7);
+      }
+
+      section.inner_content div.header div.single_column div.facts span.certification {
+        border: 1px solid rgba(255,255,255,0.6);
+        color: rgba(255,255,255,0.6);
+      }
+
+      section.inner_content section.header ul.actions li.video span, div.column_wrapper div.settings_panel h3 span.glyphicons_v2, section.inner_content section.header div.trailer a span {
+        filter: invert(1);
+      }
+    
+
+    p.new_button.rounded, section.content_score div.content_score div, div.leaderboard div.histogram div.bar span {
+      border-color: var(--primaryColor);
+      background-color: var(--primaryColor);
+      color: var(--primaryColorContrast);
+    }
+
+    p.new_button.rounded a, section.content_score div.content_score div p {
+      color: var(--primaryColorContrast);
     }
 
     
       div.header.large.first {
-        border-bottom: 1px solid rgba(18.24%, 18.43%, 19.61%, 1.00);
+        border-bottom: 1px solid var(--primaryColor);
         background-position: right -200px top;
         background-size: cover;
         background-repeat: no-repeat;
@@ -298,73 +335,11 @@
       }
     
 
-    section.inner_content section.header div.facts span.certification {
-      border: 1px solid rgba(100.00%, 100.00%, 100.00%, 0.60);
-      color: rgba(100.00%, 100.00%, 100.00%, 0.60);
-    }
-
-    
-
-    section div.header.first div.single_column {
-      background: transparent;
-    }
-
-    section.inner_content section.header {
-      color: #ffffff;
-    }
-
-    section.inner_content a, section.media_panel div.menu ul li.active a {
-      color: #000;
-    }
-
-    section.inner_content a:hover, section.media_panel div.menu ul li.active a:hover {
-      color: #24252b;
-    }
-
-    section.inner_content section.header ul.actions li.tooltip a, section.inner_content section.header ul.actions li.video a {
-      border-color: #ffffff;
-      color: #ffffff;
-    }
-
-    p.new_button a, section.media_panel div.menu ul li.view_all a, div.episode div.info span.episode_number, section.review div.review_container div.inner_content div.teaser p a {
-      color: #24252b;
-    }
-
-    p.rounded.new_button a:hover {
-      color: #ffffff;
-    }
-
-    section.media_panel div.menu ul li.active, section.inner_content ul.shortcut_bar li.selected, section.inner_content ul.shortcut_bar li:hover {
-      border-color: #24252b;
-    }
-
-    section.content_score div.content_score {
-      background-color: rgba(14.12%, 14.51%, 16.86%, 0.60);
-    }
-
-    div.settings_panel h3.background_color {
-      background-color: #24252b;
-    }
-
     
       section.inner_content div.custom_bg {
-        background-image: linear-gradient(to right, rgba(14.12%, 14.51%, 16.86%, 1.00) 150px, rgba(22.35%, 22.35%, 22.35%, 0.84) 100%);
-      }
-
-      section.inner_content.no_backdrop.poster div.custom_bg {
-        background-image: linear-gradient(to right, rgba(14.12%, 14.51%, 16.86%, 0.84) 0, rgba(22.35%, 22.35%, 22.35%, 0.64) 100%);
+        background-image: linear-gradient(to right, rgba(14.12%, 14.51%, 16.86%, 1.00) 150px, rgba(14.12%, 14.51%, 16.86%, 0.84) 100%);
       }
     
-
-    section.inner_content section.header a, section.inner_content section.header div.title a {
-      color: #ffffff;
-    }
-
-    p.new_button.rounded, section.content_score div.content_score div, div.leaderboard div.histogram div.bar span {
-      border-color: #24252b;
-      background-color: #24252b;
-    }
-
   
 </style><div id="shortcut_bar_scroller" class="scroller_wrap shortcut_bar_wrapper should_fade is_fading">
   <ul id="new_shortcut_bar" class="dropdown_menu scroller">
@@ -586,7 +561,7 @@
   
     
       <li class="video none">
-        <a class="no_click play_trailer" href="#" data-site="YouTube" data-id="mFIojradr4Y" data-title="Play Trailer"><span class="glyphicons_v2 play invert svg"></span> Play Trailer</a>
+        <a class="no_click play_trailer" href="#" data-site="YouTube" data-id="mFIojradr4Y" data-title="Play Trailer"><span class="glyphicons_v2 play"></span> Play Trailer</a>
       </li>
     
   
@@ -1612,7 +1587,7 @@
         },
         series: [{
           field: "value",
-          color: "#24252b",
+          color: "#24252B",
           width: 2
         }],
         tooltip: {
@@ -1978,7 +1953,7 @@
         </div>
       </nav>
 
-      <section>Build 337c650 (667)</section>
+      <section>Build 37ec70a (675)</section>
     </footer>
 
     
