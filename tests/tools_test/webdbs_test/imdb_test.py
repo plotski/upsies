@@ -216,6 +216,7 @@ async def test_search_result_title(query, exp_top_title, api, store_response):
     argvalues=(
         (Query('Aftermath', type=ReleaseType.movie, year=2012), 'Aftermath', 'Poklosie'),
         (Query('Blues Brothers', type=ReleaseType.movie, year=1980), '', 'The Blues Brothers'),
+        (Query('Cyborg', type=ReleaseType.movie, year=1989), '', 'Cyborg'),
         (Query('February', type=ReleaseType.movie, year=2015), "The Blackcoat's Daughter", 'February'),
         (Query('Hard Boiled', type=ReleaseType.movie, year=1992), 'Hard Boiled', 'Lat sau san taam'),
         (Query('Olympus Has Fallen', type=ReleaseType.movie, year=2013), '', 'Olympus Has Fallen'),
@@ -356,6 +357,7 @@ async def test_summary(id, exp_summary, api, store_response):
     argvalues=(
         ('tt0076759', 'Star Wars: Episode IV - A New Hope', 'Star Wars'),
         ('tt0080455', '', 'The Blues Brothers'),
+        ('tt0097138', '', 'Cyborg'),
         ('tt0102984', '', 'Stone Cold'),
         ('tt0104684', 'Hard Boiled', 'Lat sau san taam'),
         ('tt0280990', 'The Nest', 'Nid de guêpes'),

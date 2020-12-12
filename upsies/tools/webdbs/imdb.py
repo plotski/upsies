@@ -99,14 +99,15 @@ class ImdbApi(WebDbApiBase):
     async def title_english(self, id):
         info = await self._imdbpie.get(id, 'title_versions')
 
+        ignored_attributes = ('original script title', 'literal title')
+        ignored_types = ('working', 'tv')
+
         # Some titles should not be considered
         def title_looks_interesting(i):
             # Maybe we can just move any title that has an "attributes" field?
-            if 'original script title' in i.get('attributes', ()):
+            if any(a in i.get('attributes', ()) for a in ignored_attributes):
                 return False
-            elif 'literal title' in i.get('attributes', ()):
-                return False
-            elif 'working' in i.get('types', ()):
+            if any(t in i.get('types', ()) for t in ignored_types):
                 return False
             return True
 
