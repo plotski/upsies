@@ -2,9 +2,9 @@ import re
 import urllib
 
 from .. import errors
-from .. import jobs as _jobs
 from ..utils import cache, guessit, html, http
 from . import TrackerBase
+from .. import jobs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ class Tracker(TrackerBase):
             guessed = 'Episode'
         else:
             guessed = 'Season'
-        return _jobs.prompt.ChoiceJob(
+        return jobs.prompt.ChoiceJob(
             name='category',
             label='Category',
             homedir=self.info.homedir,
