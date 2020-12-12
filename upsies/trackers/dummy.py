@@ -29,7 +29,7 @@ class DummyTracker(TrackerBase):
 
     @cache.property
     def category_job(self):
-        guess = guessit.guessit(self.info.content_path).get('type')
+        guess = guessit.guessit(self.job_input.content_path).get('type')
         if guess:
             guess = str(guess).capitalize()
         else:
@@ -37,8 +37,8 @@ class DummyTracker(TrackerBase):
         return jobs.prompt.ChoiceJob(
             name='category',
             label='Category',
-            homedir=self.info.homedir,
-            ignore_cache=self.info.ignore_cache,
+            homedir=self.job_input.homedir,
+            ignore_cache=self.job_input.ignore_cache,
             choices=(str(t).capitalize() for t in ReleaseType),
             focused=guess,
         )

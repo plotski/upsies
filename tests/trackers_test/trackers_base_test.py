@@ -81,8 +81,8 @@ def test_info():
         this='that',
         something=(1, 2, 3),
     )
-    assert tracker.info.this == 'that'
-    assert tracker.info.something == (1, 2, 3)
+    assert tracker.job_input.this == 'that'
+    assert tracker.job_input.something == (1, 2, 3)
 
 
 def test_jobs_after_upload(mocker):
@@ -106,9 +106,9 @@ def test_create_torrent_job(mocker):
     assert tracker.create_torrent_job is CreateTorrentJob_mock.return_value
     assert CreateTorrentJob_mock.call_args_list == [
         call(
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
-            content_path=tracker.info.content_path,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
+            content_path=tracker.job_input.content_path,
             tracker_name=tracker.name,
             tracker_config=tracker.config,
         ),
@@ -140,9 +140,9 @@ def test_add_torrent_job_with_add_to_client_argument(mocker):
     assert tracker.add_torrent_job is AddTorrentJob_mock.return_value
     assert AddTorrentJob_mock.call_args_list == [
         call(
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
-            client=tracker.info.add_to_client,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
+            client=tracker.job_input.add_to_client,
             download_path='path/to/content',
         ),
     ]
@@ -177,9 +177,9 @@ def test_copy_torrent_job_with_torrent_destination_argument(mocker):
     assert tracker.copy_torrent_job is CopyTorrentJob_mock.return_value
     assert CopyTorrentJob_mock.call_args_list == [
         call(
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
-            destination=tracker.info.torrent_destination,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
+            destination=tracker.job_input.torrent_destination,
         ),
     ]
     assert (call('output', tracker.copy_torrent_job.copy)
@@ -199,9 +199,9 @@ def test_release_name_job(mocker):
     assert tracker.release_name_job is ReleaseNameJob_mock.return_value
     assert ReleaseNameJob_mock.call_args_list == [
         call(
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
-            content_path=tracker.info.content_path,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
+            content_path=tracker.job_input.content_path,
         ),
     ]
 
@@ -218,9 +218,9 @@ def test_imdb_job(mocker):
     assert tracker.imdb_job is SearchDbJob_mock.return_value
     assert SearchDbJob_mock.call_args_list == [
         call(
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
-            content_path=tracker.info.content_path,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
+            content_path=tracker.job_input.content_path,
             db='imdb',
         ),
     ]
@@ -240,9 +240,9 @@ def test_tmdb_job(mocker):
     assert tracker.tmdb_job is SearchDbJob_mock.return_value
     assert SearchDbJob_mock.call_args_list == [
         call(
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
-            content_path=tracker.info.content_path,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
+            content_path=tracker.job_input.content_path,
             db='tmdb',
         ),
     ]
@@ -259,9 +259,9 @@ def test_tvmaze_job(mocker):
     assert tracker.tvmaze_job is SearchDbJob_mock.return_value
     assert SearchDbJob_mock.call_args_list == [
         call(
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
-            content_path=tracker.info.content_path,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
+            content_path=tracker.job_input.content_path,
             db='tvmaze',
         ),
     ]
@@ -278,9 +278,9 @@ def test_screenshots_job(mocker):
     assert tracker.screenshots_job is ScreenshotsJob_mock.return_value
     assert ScreenshotsJob_mock.call_args_list == [
         call(
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
-            content_path=tracker.info.content_path,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
+            content_path=tracker.job_input.content_path,
         ),
     ]
 
@@ -311,9 +311,9 @@ def test_upload_screenshots_job_with_image_host_argument(mocker):
     assert tracker.upload_screenshots_job is ImageHostJob_mock.return_value
     assert ImageHostJob_mock.call_args_list == [
         call(
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
-            imghost=tracker.info.image_host,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
+            imghost=tracker.job_input.image_host,
         ),
     ]
     assert (call('output', tracker.upload_screenshots_job.upload)
@@ -333,8 +333,8 @@ def test_mediainfo_job(mocker):
     assert tracker.mediainfo_job is MediainfoJob_mock.return_value
     assert MediainfoJob_mock.call_args_list == [
         call(
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
-            content_path=tracker.info.content_path,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
+            content_path=tracker.job_input.content_path,
         ),
     ]

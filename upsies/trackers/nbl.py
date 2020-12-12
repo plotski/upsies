@@ -26,15 +26,15 @@ class NblTracker(TrackerBase):
     @cache.property
     def category_job(self):
         # Season or Episode
-        if str(guessit.guessit(self.info.content_path).get('type')) == 'episode':
+        if str(guessit.guessit(self.job_input.content_path).get('type')) == 'episode':
             guessed = 'Episode'
         else:
             guessed = 'Season'
         return jobs.prompt.ChoiceJob(
             name='category',
             label='Category',
-            homedir=self.info.homedir,
-            ignore_cache=self.info.ignore_cache,
+            homedir=self.job_input.homedir,
+            ignore_cache=self.job_input.ignore_cache,
             choices=('Season', 'Episode'),
             focused=guessed,
         )

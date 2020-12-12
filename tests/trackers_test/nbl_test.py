@@ -107,8 +107,8 @@ def test_category_job(guessit_guess, focused_choice, tmp_path, mocker):
         call(
             name='category',
             label='Category',
-            homedir=tracker.info.homedir,
-            ignore_cache=tracker.info.ignore_cache,
+            homedir=tracker.job_input.homedir,
+            ignore_cache=tracker.job_input.ignore_cache,
             choices=('Season', 'Episode'),
             focused=focused_choice,
         ),
