@@ -28,13 +28,11 @@ class TrackerBase(abc.ABC):
     @abc.abstractmethod
     def name(self):
         """Lower-case tracker name abbreviation"""
-        pass
 
     @property
     @abc.abstractmethod
     def label(self):
         """Tracker name abbreviation"""
-        pass
 
     @property
     def config(self):
@@ -50,7 +48,6 @@ class TrackerBase(abc.ABC):
     @abc.abstractmethod
     def jobs_before_upload(self):
         """Sequence of jobs that need to finish before :meth:`upload` can be called"""
-        pass
 
     @cache.property
     def jobs_after_upload(self):
@@ -180,12 +177,10 @@ class TrackerBase(abc.ABC):
 
         Authentication credentials should be taken from :attr:`config`.
         """
-        pass
 
     @abc.abstractmethod
     async def logout(self):
         """Stop user session"""
-        pass
 
     @abc.abstractmethod
     async def upload(self, metadata):
@@ -196,4 +191,3 @@ class TrackerBase(abc.ABC):
 
             .. note: Job output is always an immutable sequence.
         """
-        pass

@@ -14,13 +14,11 @@ class WebDbApiBase(abc.ABC):
     @abc.abstractmethod
     def name(self):
         """Unique name of this DB"""
-        pass
 
     @property
     @abc.abstractmethod
     def label(self):
         """User-facing name of this DB"""
-        pass
 
     @abc.abstractmethod
     async def search(self, query):
@@ -31,47 +29,38 @@ class WebDbApiBase(abc.ABC):
 
         :return: List of :class:`~.common.SearchResult` instances
         """
-        pass
 
     @abc.abstractmethod
     async def cast(self, id):
         """Return list of cast names"""
-        pass
 
     @abc.abstractmethod
     async def country(self, id):
         """Return name of country of origin"""
-        pass
 
     @abc.abstractmethod
     async def keywords(self, id):
         """Return list of keywords, e.g. genres"""
-        pass
 
     @abc.abstractmethod
     async def summary(self, id):
         """Return short plot description"""
-        pass
 
     @abc.abstractmethod
     async def title_english(self, id):
         """Return English title if different from original title or empty string"""
-        pass
 
     @abc.abstractmethod
     async def title_original(self, id):
         """Return original title (e.g. non-English) or empty string"""
-        pass
 
     @abc.abstractmethod
     async def type(self, id):
         """Return :class:`~.utils.ReleaseType`"""
-        pass
 
     @abc.abstractmethod
     async def year(self, id):
         """Return release year or empty string"""
-        pass
 
     async def gather(self, id, *methods):
         """

@@ -17,30 +17,24 @@ class UpsiesError(Exception):
 
 class CancelledError(UpsiesError):
     """User cancelled an operation"""
-    pass
 
 class ConfigError(UpsiesError):
     """Error while reading from a config file"""
-    pass
 
 class DependencyError(UpsiesError):
     """Some external tool is missing (e.g. mediainfo)"""
-    pass
 
 class MediainfoError(UpsiesError):
     """Getting mediainfo failed"""
-    pass
 
 class ContentError(UpsiesError):
     """
     Something is wrong with the user-provided content, e.g. no video files in
     the given directory or no permission to read
     """
-    pass
 
 class ProcessError(UpsiesError):
     """Executing subprocess failed"""
-    pass
 
 class RequestError(UpsiesError):
     """Network request failed"""
@@ -70,7 +64,6 @@ class ScreenshotError(UpsiesError):
 
 class TorrentError(UpsiesError):
     """Torrent file creation failed"""
-    pass
 
 def SubprocessError(exception, original_traceback):
     """Attach `original_traceback` to `exception`"""

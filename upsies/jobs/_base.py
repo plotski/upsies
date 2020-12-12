@@ -34,13 +34,11 @@ class JobBase(abc.ABC):
     @abc.abstractmethod
     def name(self):
         """Internal name (e.g. for the cache file name)"""
-        pass
 
     @property
     @abc.abstractmethod
     def label(self):
         """User-facing name"""
-        pass
 
     @property
     def homedir(self):
@@ -106,7 +104,6 @@ class JobBase(abc.ABC):
 
         This method should handle its arguments and return quickly.
         """
-        pass
 
     @abc.abstractmethod
     def execute(self):
@@ -115,7 +112,6 @@ class JobBase(abc.ABC):
 
         This method must not block.
         """
-        pass
 
     def start(self):
         """

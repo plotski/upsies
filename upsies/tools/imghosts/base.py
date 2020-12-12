@@ -28,7 +28,6 @@ class ImageHostBase(abc.ABC):
     @abc.abstractmethod
     def name(self):
         """Name of the image hosting service"""
-        pass
 
     async def upload(self, image_path, force=False):
         """

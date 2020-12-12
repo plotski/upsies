@@ -36,7 +36,6 @@ class CommandBase(abc.ABC):
 
         For convenience, the sequence may also contain `None` instead.
         """
-        pass
 
     @property
     def jobs_active(self):

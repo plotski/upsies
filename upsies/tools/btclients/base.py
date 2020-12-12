@@ -16,7 +16,6 @@ class ClientApiBase(abc.ABC):
     @abc.abstractmethod
     def name(self):
         """Name of the BitTorrent client"""
-        pass
 
     @abc.abstractmethod
     def add_torrent(self, torrent_path, download_path=None):
@@ -31,7 +30,6 @@ class ClientApiBase(abc.ABC):
 
         :return: ID of the added torrent in the client or `None`
         """
-        pass
 
     @staticmethod
     def read_torrent_file(torrent_path):

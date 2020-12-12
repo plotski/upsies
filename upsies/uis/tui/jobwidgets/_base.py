@@ -14,7 +14,7 @@ _log = logging.getLogger(__name__)
 
 
 class JobWidgetBase(abc.ABC):
-    """User-interaction and information display for :class:`JobBase` instance"""
+    """User-interaction and information display for :class:`~.jobs.JobBase` instance"""
 
     def __init__(self, job):
         self._job = job
@@ -67,7 +67,6 @@ class JobWidgetBase(abc.ABC):
 
         Create widgets and register :attr:`job` callbacks.
         """
-        pass
 
     @property
     @abc.abstractmethod
@@ -77,7 +76,6 @@ class JobWidgetBase(abc.ABC):
 
         :return: :class:`~prompt_toolkit.layout.containers.Window` object
         """
-        pass
 
     @property
     def info_widget(self):
