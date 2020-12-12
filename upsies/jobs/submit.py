@@ -87,6 +87,3 @@ class SubmitJob(JobBase):
                 self.signal.emit('logged_out')
         except errors.RequestError as e:
             self.error(e)
-
-    def execute(self):
-        pass

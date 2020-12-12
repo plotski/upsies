@@ -49,9 +49,6 @@ class ChoiceJob(JobBase):
         else:
             self._focused = self._choices[0]
 
-    def execute(self):
-        pass
-
     def choice_selected(self, choice):
         """
         Must be called by the UI when the user makes a choice

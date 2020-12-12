@@ -36,9 +36,6 @@ class ReleaseNameJob(JobBase):
         self._release_name = release_name.ReleaseName(content_path)
         self.signal.add('release_name_updated')
 
-    def execute(self):
-        pass
-
     def release_name_selected(self, name):
         """
         Must be called by the UI when the user accepts the release name

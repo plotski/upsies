@@ -48,6 +48,3 @@ class SetJob(JobBase):
             self.send(f'{option} = {" ".join(config[option])}')
         else:
             self.send(f'{option} = {config[option]}')
-
-    def execute(self):
-        pass

@@ -193,9 +193,6 @@ class AddTorrentJob(JobBase):
         """Finish after adding the current torrent"""
         self._torrent_path_queue.put_nowait((None, None))
 
-    def execute(self):
-        pass
-
     def finish(self):
         self._add_torrents_task.cancel()
 
@@ -268,9 +265,6 @@ class CopyTorrentJob(JobBase):
             for f in files:
                 self.copy(f)
             self.finish()
-
-    def execute(self):
-        pass
 
     MAX_FILE_SIZE = 10 * 2**20  # 10 MiB
 

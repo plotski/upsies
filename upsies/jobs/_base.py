@@ -97,21 +97,21 @@ class JobBase(abc.ABC):
         self._kwargs = kwargs
         self.initialize(**kwargs)
 
-    @abc.abstractmethod
     def initialize(self):
         """
         Called by :meth:`__init__` with additional keyword arguments
 
         This method should handle its arguments and return quickly.
         """
+        pass
 
-    @abc.abstractmethod
     def execute(self):
         """
         Do the job, e.g. prompt for user input or start background worker
 
         This method must not block.
         """
+        pass
 
     def start(self):
         """

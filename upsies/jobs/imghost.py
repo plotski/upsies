@@ -83,9 +83,6 @@ class ImageHostJob(JobBase):
         """Finish after the current upload is done"""
         self._image_path_queue.put_nowait(None)
 
-    def execute(self):
-        pass
-
     def finish(self):
         self._upload_images_task.cancel()
         super().finish()
