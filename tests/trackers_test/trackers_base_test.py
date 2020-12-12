@@ -2,8 +2,8 @@ from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
-from upsies.trackers.base import TrackerBase
 from upsies import trackers
+from upsies.trackers.base import TrackerBase
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it

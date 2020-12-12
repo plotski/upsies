@@ -1,8 +1,7 @@
 import re
 import urllib
 
-from .. import errors
-from .. import jobs
+from .. import errors, jobs
 from ..utils import ReleaseType, cache, guessit, html, http
 from .base import TrackerBase
 

@@ -3,7 +3,7 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 from upsies import binaries, errors
-from upsies.tools import mediainfo
+from upsies.utils import mediainfo
 
 
 def test_run_mediainfo_catches_ContentError_from_first_video(mocker):
@@ -89,7 +89,7 @@ def test_run_mediainfo_does_not_catch_ProcessError(mocker):
     ]
 
 
-@patch('upsies.tools.mediainfo._run_mediainfo')
+@patch('upsies.utils.mediainfo._run_mediainfo')
 def test_as_string_contains_relative_path_when_passed_file(run_mediainfo_mock):
     run_mediainfo_mock.return_value = (
         'Complete name : /path/to/foo.mkv\n'
@@ -100,7 +100,7 @@ def test_as_string_contains_relative_path_when_passed_file(run_mediainfo_mock):
         'Something     : asdf\n'
     )
 
-@patch('upsies.tools.mediainfo._run_mediainfo')
+@patch('upsies.utils.mediainfo._run_mediainfo')
 def test_as_string_contains_relative_path_when_passed_directory(run_mediainfo_mock):
     run_mediainfo_mock.return_value = (
         'Complete name : /path/to/this/foo.mkv\n'
@@ -114,7 +114,7 @@ def test_as_string_contains_relative_path_when_passed_directory(run_mediainfo_mo
     )
 
 
-@patch('upsies.tools.mediainfo._run_mediainfo')
+@patch('upsies.utils.mediainfo._run_mediainfo')
 def test_tracks_requests_json_output_from_mediainfo(run_mediainfo_mock):
     video_path = 'foo/bar.mkv'
     run_mediainfo_mock.return_value = '{"media": {"track": ["track1", "track2"]}}'
@@ -122,7 +122,7 @@ def test_tracks_requests_json_output_from_mediainfo(run_mediainfo_mock):
     assert run_mediainfo_mock.call_args_list == [call('foo/bar.mkv', '--Output=JSON')]
     assert tracks == ['track1', 'track2']
 
-@patch('upsies.tools.mediainfo._run_mediainfo')
+@patch('upsies.utils.mediainfo._run_mediainfo')
 def test_tracks_gets_unexpected_output_from_mediainfo(run_mediainfo_mock):
     video_path = 'foo/bar.mkv'
     run_mediainfo_mock.return_value = 'this is not JSON'
@@ -138,7 +138,7 @@ def test_tracks_gets_unexpected_output_from_mediainfo(run_mediainfo_mock):
         mediainfo.tracks(video_path)
 
 
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_default_track_returns_track_with_default_tag(tracks_mock):
     tracks_mock.return_value = [{'@type': 'Video'},
                                 {'@type': 'Audio', 'Some': 'information'},
@@ -147,7 +147,7 @@ def test_default_track_returns_track_with_default_tag(tracks_mock):
                                 {'@type': 'Video', 'Default': 'Yes'}]
     assert mediainfo.default_track('video', 'foo.mkv') == tracks_mock.return_value[-1]
 
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_default_track_returns_first_track(tracks_mock):
     tracks_mock.return_value = [{'@type': 'Video', 'Some': 'information'},
                                 {'@type': 'Audio', 'Other': 'information'}]
@@ -156,12 +156,12 @@ def test_default_track_returns_first_track(tracks_mock):
                                 {'@type': 'Video', 'Some': 'information'}]
     assert mediainfo.default_track('video', 'bar.mkv') == tracks_mock.return_value[1]
 
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_default_track_ignores_MediainfoError(tracks_mock):
     tracks_mock.side_effect = errors.MediainfoError('No')
     assert mediainfo.default_track('video', 'foo.mkv') == {}
 
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_default_track_raises_nonMediainfoError(tracks_mock):
     tracks_mock.side_effect = errors.DependencyError('I need something')
     with pytest.raises(errors.DependencyError, match=r'^I need something$'):
@@ -185,7 +185,7 @@ def test_default_track_raises_nonMediainfoError(tracks_mock):
     ids=lambda value: str(value),
 )
 @patch('os.path.exists', Mock(return_value=True))
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_resolution(tracks_mock, width, height, exp_res):
     tracks_mock.return_value = [{'@type': 'Video',
                                  'Width': str(width),
@@ -194,7 +194,7 @@ def test_resolution(tracks_mock, width, height, exp_res):
     assert mediainfo.resolution('foo.mkv') == exp_res
 
 @patch('os.path.exists', Mock(return_value=True))
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_resolution_is_unknown(tracks_mock):
     tracks_mock.return_value = [{'@type': 'Video'}]
     mediainfo.resolution.cache_clear()
@@ -218,13 +218,13 @@ def test_resolution_is_unknown(tracks_mock):
         ('MP3', {'Format': 'MPEG Audio'}),
     ),
 )
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_audio_format(tracks_mock, exp_audio_format, audio_dict):
     tracks_mock.return_value = [{**{'@type': 'Audio'}, **audio_dict}]
     mediainfo.audio_format.cache_clear()
     assert mediainfo.audio_format('foo.mkv') == exp_audio_format
 
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_audio_format_of_unsupported_or_nonexisting_file(tracks_mock):
     tracks_mock.side_effect = errors.MediainfoError('Something went wrong')
     mediainfo.audio_format.cache_clear()
@@ -246,13 +246,13 @@ def test_audio_format_of_unsupported_or_nonexisting_file(tracks_mock):
     ),
     ids=lambda value: str(value),
 )
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_audio_channels(tracks_mock, exp_audio_channels, audio_dict):
     tracks_mock.return_value = [{**{'@type': 'Audio'}, **audio_dict}]
     mediainfo.audio_channels.cache_clear()
     assert mediainfo.audio_channels('foo.mkv') == exp_audio_channels
 
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_audio_channels_of_unsupported_or_nonexisting_file(tracks_mock):
     tracks_mock.side_effect = errors.MediainfoError('Something went wrong')
     mediainfo.audio_channels.cache_clear()
@@ -273,13 +273,13 @@ def test_audio_channels_of_unsupported_or_nonexisting_file(tracks_mock):
     ),
     ids=lambda value: str(value),
 )
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_video_format(tracks_mock, exp_video_format, video_dict):
     tracks_mock.return_value = [{**{'@type': 'Video'}, **video_dict}]
     mediainfo.video_format.cache_clear()
     assert mediainfo.video_format('foo.mkv') == exp_video_format
 
-@patch('upsies.tools.mediainfo.tracks')
+@patch('upsies.utils.mediainfo.tracks')
 def test_video_format_of_unsupported_or_nonexisting_file(tracks_mock):
     tracks_mock.side_effect = errors.MediainfoError('Something went wrong')
     mediainfo.video_format.cache_clear()

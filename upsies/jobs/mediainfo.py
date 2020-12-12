@@ -1,7 +1,7 @@
 import asyncio
 
 from .. import errors
-from ..tools import mediainfo
+from ..utils import mediainfo
 from . import JobBase
 
 import logging  # isort:skip
@@ -10,12 +10,12 @@ _log = logging.getLogger(__name__)
 
 class MediainfoJob(JobBase):
     """
-    Get output from ``mediainfo``
+    Get output from ``mediainfo`` command
 
     :param content_path: Path to video file or directory that contains a video
         file
 
-    See :func:`.tools.mediainfo.as_string` for more information.
+    See :func:`.utils.mediainfo.as_string` for more information.
     """
 
     name = 'mediainfo'

@@ -1,8 +1,8 @@
 import asyncio
 import collections
 
-from ..utils import ReleaseType, guessit
-from . import mediainfo, webdbs
+from ..utils import ReleaseType, guessit, mediainfo
+from . import webdbs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)

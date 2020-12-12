@@ -6,8 +6,7 @@ import functools
 import os
 import re
 
-from ..tools import mediainfo
-from ..utils import LazyModule, ReleaseType, fs
+from . import LazyModule, ReleaseType, fs, mediainfo
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
