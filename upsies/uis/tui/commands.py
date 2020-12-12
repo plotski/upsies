@@ -326,7 +326,9 @@ class set(CommandBase):
     """
     Change or show configuration file options
 
-    Without any arguments, all options are listed with the current values.
+    Without any arguments, all options are listed with their current values.
+
+    The first segment in the option name is the file name without the extension.
     """
     @cache.property
     def jobs(self):
