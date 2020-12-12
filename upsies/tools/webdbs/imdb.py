@@ -35,7 +35,8 @@ class ImdbApi(WebDbApiBase):
         utils.ReleaseType.movie: 'feature,tv_movie,documentary,video',
         utils.ReleaseType.series: 'tv_series,tv_miniseries',
         utils.ReleaseType.season: 'tv_series,tv_miniseries',
-        utils.ReleaseType.episode: 'tv_episode',
+        # Searching for single episodes is currently not supported
+        utils.ReleaseType.episode: 'tv_series,tv_miniseries',
     }
 
     async def search(self, query):
