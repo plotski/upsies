@@ -2,16 +2,17 @@ import re
 import urllib
 
 from .. import errors
-from ..utils import cache, guessit, html, http
-from . import TrackerBase
 from .. import jobs
+from ..utils import ReleaseType, cache, guessit, html, http
+from .base import TrackerBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class Tracker(TrackerBase):
-    name = 'NBL'
+class NblTracker(TrackerBase):
+    name = 'nbl'
+    label = 'NBL'
 
     @cache.property
     def jobs_before_upload(self):

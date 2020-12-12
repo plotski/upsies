@@ -26,6 +26,12 @@ class TrackerBase(abc.ABC):
     @property
     @abc.abstractmethod
     def name(self):
+        """Lower-case tracker name abbreviation"""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def label(self):
         """Tracker name abbreviation"""
         pass
 
@@ -58,7 +64,7 @@ class TrackerBase(abc.ABC):
             homedir=self.info.homedir,
             ignore_cache=self.info.ignore_cache,
             content_path=self.info.content_path,
-            tracker_name=self.info.tracker_name,
+            tracker_name=self.name,
             tracker_config=self.config,
         )
 

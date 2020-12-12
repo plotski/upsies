@@ -2,7 +2,8 @@ from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
-from upsies.trackers._base import TrackerBase
+from upsies.trackers.base import TrackerBase
+from upsies import trackers
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -14,9 +15,40 @@ class AsyncMock(Mock):
         return coro()
 
 
+def test_trackers(mocker):
+    existing_trackers = (Mock(), Mock(), Mock())
+    submodules_mock = mocker.patch('upsies.utils.submodules')
+    subclasses_mock = mocker.patch('upsies.utils.subclasses', return_value=existing_trackers)
+    assert trackers.trackers() == existing_trackers
+    assert submodules_mock.call_args_list == [call('upsies.trackers')]
+    assert subclasses_mock.call_args_list == [call(trackers.base.TrackerBase, submodules_mock.return_value)]
+
+
+def test_tracker_returns_TrackerBase_instance(mocker):
+    existing_trackers = (Mock(), Mock(), Mock())
+    existing_trackers[0].configure_mock(name='foo')
+    existing_trackers[1].configure_mock(name='bar')
+    existing_trackers[2].configure_mock(name='baz')
+    mocker.patch('upsies.trackers.trackers', return_value=existing_trackers)
+    assert trackers.tracker('bar', x=123) is existing_trackers[1].return_value
+    assert existing_trackers[1].call_args_list == [call(x=123)]
+
+def test_tracker_fails_to_find_class(mocker):
+    existing_trackers = (Mock(), Mock(), Mock())
+    existing_trackers[0].configure_mock(name='foo')
+    existing_trackers[1].configure_mock(name='bar')
+    existing_trackers[2].configure_mock(name='baz')
+    mocker.patch('upsies.trackers.trackers', return_value=existing_trackers)
+    with pytest.raises(ValueError, match='^Unsupported tracker: bam$'):
+        trackers.tracker('bam', x=123)
+    for t in existing_trackers:
+        assert t.call_args_list == []
+
+
 def make_TestTracker(**kwargs):
     class TestTracker(TrackerBase):
-        name = 'ASDF'
+        name = 'asdf'
+        label = 'AsdF'
         jobs_before_upload = PropertyMock()
         login = AsyncMock()
         logout = AsyncMock()
@@ -70,7 +102,6 @@ def test_create_torrent_job(mocker):
         homedir=Mock(),
         ignore_cache=Mock(),
         content_path=Mock(),
-        tracker_name=Mock(),
     )
     assert tracker.create_torrent_job is CreateTorrentJob_mock.return_value
     assert CreateTorrentJob_mock.call_args_list == [
@@ -78,7 +109,7 @@ def test_create_torrent_job(mocker):
             homedir=tracker.info.homedir,
             ignore_cache=tracker.info.ignore_cache,
             content_path=tracker.info.content_path,
-            tracker_name=tracker.info.tracker_name,
+            tracker_name=tracker.name,
             tracker_config=tracker.config,
         ),
     ]
@@ -91,7 +122,6 @@ def test_add_torrent_job_without_add_to_client_argument(mocker):
         homedir=Mock(),
         ignore_cache=Mock(),
         content_path=Mock(),
-        tracker_name=Mock(),
         add_to_client=None,
     )
     assert tracker.add_torrent_job is None
@@ -105,7 +135,6 @@ def test_add_torrent_job_with_add_to_client_argument(mocker):
         homedir=Mock(),
         ignore_cache=Mock(),
         content_path='path/to/content/foo',
-        tracker_name=Mock(),
         add_to_client=Mock(),
     )
     assert tracker.add_torrent_job is AddTorrentJob_mock.return_value
@@ -130,7 +159,6 @@ def test_copy_torrent_job_without_torrent_destination_argument(mocker):
         homedir=Mock(),
         ignore_cache=Mock(),
         content_path=Mock(),
-        tracker_name=Mock(),
         torrent_destination=None,
     )
     assert tracker.copy_torrent_job is None
@@ -144,7 +172,6 @@ def test_copy_torrent_job_with_torrent_destination_argument(mocker):
         homedir=Mock(),
         ignore_cache=Mock(),
         content_path='path/to/content/foo',
-        tracker_name=Mock(),
         torrent_destination=Mock(),
     )
     assert tracker.copy_torrent_job is CopyTorrentJob_mock.return_value

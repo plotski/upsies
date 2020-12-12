@@ -294,14 +294,12 @@ class submit(CommandBase):
     @cache.property
     def tracker(self):
         """:class:`Tracker` instance from one of the submodules of :mod:`~trackers`"""
-        trackers_module = getattr(trackers, self.tracker_name)
-        tracker_cls = getattr(trackers_module, 'Tracker')
-        return tracker_cls(
+        return trackers.tracker(
+            name=self.tracker_name,
             config=self.tracker_config,
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
-            tracker_name=self.tracker_name,
             add_to_client=self._get_btclient(),
             torrent_destination=self.args.copy_to,
             image_host=self._get_imghost(),

@@ -37,8 +37,8 @@ def _get_names(package, clsname, name_attribute):
         return [utils.CaseInsensitiveString(getattr(mod, name_attribute))
                 for mod in modules]
 
-TRACKER_NAMES = _get_names(trackers, 'Tracker', 'name')
 DB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in webdbs.webdbs()]
+TRACKER_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in trackers.trackers()]
 IMGHOST_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in imghosts.imghosts()]
 BTCLIENT_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in btclients.clients()]
 

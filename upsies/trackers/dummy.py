@@ -3,15 +3,16 @@ import os
 import random
 
 from .. import errors, jobs
-from ..utils import cache, fs
-from . import TrackerBase
+from ..utils import cache, fs, guessit
+from .base import TrackerBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class Tracker(TrackerBase):
-    name = 'DUMMY'
+class DummyTracker(TrackerBase):
+    name = 'dummy'
+    label = 'DuMmY'
 
     @cache.property
     def jobs_before_upload(self):

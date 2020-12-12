@@ -54,24 +54,27 @@ def make_tracker(tmp_path, **kwargs):
         'homedir': tmp_path / 'foo.project',
         'ignore_cache': False,
         'content_path': '/path/to/foo',
-        'tracker_name': 'ASDF',
         'btclient': Mock(),
         'torrent_destination': None,
 
     }
     kw.update(kwargs)
-    return nbl.Tracker(**kw)
+    return nbl.NblTracker(**kw)
 
 
-def test_trackername():
-    assert nbl.Tracker.name == 'NBL'
+def test_name_attribute():
+    assert nbl.NblTracker.name == 'nbl'
+
+
+def test_label_attribute():
+    assert nbl.NblTracker.label == 'NBL'
 
 
 def test_jobs_before_upload(tmp_path, mocker):
-    create_torrent_job_mock = mocker.patch('upsies.trackers.nbl.Tracker.create_torrent_job', Mock())
-    mediainfo_job_mock = mocker.patch('upsies.trackers.nbl.Tracker.mediainfo_job', Mock())
-    tvmaze_job_mock = mocker.patch('upsies.trackers.nbl.Tracker.tvmaze_job', Mock())
-    category_job_mock = mocker.patch('upsies.trackers.nbl.Tracker.category_job', Mock())
+    create_torrent_job_mock = mocker.patch('upsies.trackers.nbl.NblTracker.create_torrent_job', Mock())
+    mediainfo_job_mock = mocker.patch('upsies.trackers.nbl.NblTracker.mediainfo_job', Mock())
+    tvmaze_job_mock = mocker.patch('upsies.trackers.nbl.NblTracker.tvmaze_job', Mock())
+    category_job_mock = mocker.patch('upsies.trackers.nbl.NblTracker.category_job', Mock())
     tracker = make_tracker(tmp_path)
     assert tuple(tracker.jobs_before_upload) == (
         create_torrent_job_mock,
@@ -291,7 +294,7 @@ async def test_upload_without_being_logged_in(tmp_path, mocker):
 @pytest.mark.asyncio
 async def test_upload_succeeds(tmp_path, mocker, httpserver):
     translate_category_mock = mocker.patch(
-        'upsies.trackers.nbl.Tracker._translate_category',
+        'upsies.trackers.nbl.NblTracker._translate_category',
         Mock(return_value=b'123'),
     )
 
@@ -370,7 +373,7 @@ async def test_upload_succeeds(tmp_path, mocker, httpserver):
 @pytest.mark.asyncio
 async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
     mocker.patch(
-        'upsies.trackers.nbl.Tracker._translate_category',
+        'upsies.trackers.nbl.NblTracker._translate_category',
         Mock(return_value=b'123'),
     )
     html_dump_mock = mocker.patch('upsies.utils.html.dump')
@@ -412,7 +415,7 @@ async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
 @pytest.mark.asyncio
 async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
     mocker.patch(
-        'upsies.trackers.nbl.Tracker._translate_category',
+        'upsies.trackers.nbl.NblTracker._translate_category',
         Mock(return_value=b'123'),
     )
     html_dump_mock = mocker.patch('upsies.utils.html.dump')
