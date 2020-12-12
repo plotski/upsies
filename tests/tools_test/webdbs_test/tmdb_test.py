@@ -36,7 +36,7 @@ async def test_search_returns_list_of_SearchResults(api, store_response):
     argvalues=(
         (Query('alien', year='1979'), {'title': 'Alien', 'year': '1979'}),
         (Query('aliens', year='1986'), {'title': 'Aliens', 'year': '1986'}),
-        (Query('alien 3', year='1992'), {'title': 'Alien³', 'year': '1992'}),
+        (Query('alien', year='1992'), {'title': 'Alien³', 'year': '1992'}),
     ),
     ids=lambda value: str(value),
 )
