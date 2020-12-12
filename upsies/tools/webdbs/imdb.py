@@ -135,7 +135,6 @@ class ImdbApi(WebDbApiBase):
         priorities = (
             ('US', 'en'),
             'US',
-            'en',
             ('XWW', 'en'),  # World-wide
         )
         for key in priorities:
