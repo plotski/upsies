@@ -15,7 +15,7 @@ import abc
 
 from ... import jobs as _jobs
 from ... import trackers
-from ...tools import btclient, imghost
+from ...tools import btclient, imghosts
 from ...utils import cache, fs
 
 import logging  # isort:skip
@@ -203,7 +203,7 @@ class screenshots(CommandBase):
             imghost_job = _jobs.imghost.ImageHostJob(
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
-                imghost=imghost.imghost(
+                imghost=imghosts.imghost(
                     name=self.args.upload_to,
                     cache_dir=fs.projectdir(self.args.CONTENT),
                     **self.config['imghosts'][self.args.upload_to],
@@ -237,7 +237,7 @@ class upload_images(CommandBase):
             _jobs.imghost.ImageHostJob(
                 homedir=fs.tmpdir(),
                 ignore_cache=self.args.ignore_cache,
-                imghost=imghost.imghost(
+                imghost=imghosts.imghost(
                     name=self.args.IMAGEHOST,
                     **self.config['imghosts'][self.args.IMAGEHOST],
                 ),
@@ -316,7 +316,7 @@ class submit(CommandBase):
     def _get_imghost(self):
         imghost_name = self.tracker_config.get('image_host', None)
         if imghost_name:
-            return imghost.imghost(
+            return imghosts.imghost(
                 name=imghost_name,
                 cache_dir=fs.projectdir(self.args.CONTENT),
                 **self.config['imghosts'][imghost_name],

@@ -11,7 +11,7 @@ class ImageHostJob(JobBase):
     """
     Upload images to an image hosting service
 
-    :param str imghost: Return value of :func:`tools.imghost.imghost`
+    :param str imghost: Return value of :func:`tools.imghosts.imghost`
     :param image_paths: Sequence of paths to image files
     :param images_total: Number of images that are going to be uploaded. The
         only purpose of this value is to provide it via the :attr:`images_total`

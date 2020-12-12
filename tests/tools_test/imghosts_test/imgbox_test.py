@@ -3,7 +3,7 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 from upsies import errors
-from upsies.tools.imghost import imgbox
+from upsies.tools.imghosts import imgbox
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it

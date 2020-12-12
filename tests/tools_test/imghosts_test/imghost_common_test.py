@@ -1,4 +1,4 @@
-from upsies.tools.imghost import common
+from upsies.tools.imghosts import common
 
 
 def test_UploadedImage_is_URL_string():

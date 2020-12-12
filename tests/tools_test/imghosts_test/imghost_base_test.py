@@ -4,7 +4,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-from upsies.tools import imghost
+from upsies.tools import imghosts
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -20,37 +20,37 @@ def test_imghosts(mocker):
     existing_imghosts = (Mock(), Mock(), Mock())
     submodules_mock = mocker.patch('upsies.utils.submodules')
     subclasses_mock = mocker.patch('upsies.utils.subclasses', return_value=existing_imghosts)
-    assert imghost.imghosts() == existing_imghosts
-    assert submodules_mock.call_args_list == [call('upsies.tools.imghost')]
-    assert subclasses_mock.call_args_list == [call(imghost.base.ImageHostBase, submodules_mock.return_value)]
+    assert imghosts.imghosts() == existing_imghosts
+    assert submodules_mock.call_args_list == [call('upsies.tools.imghosts')]
+    assert subclasses_mock.call_args_list == [call(imghosts.base.ImageHostBase, submodules_mock.return_value)]
 
 
 def test_imghost_returns_ImageHostBase_instance(mocker):
-    imghosts = (Mock(), Mock(), Mock())
-    imghosts[0].configure_mock(name='foo')
-    imghosts[1].configure_mock(name='bar')
-    imghosts[2].configure_mock(name='baz')
-    mocker.patch('upsies.tools.imghost.imghosts', return_value=imghosts)
-    assert imghost.imghost('bar', x=123) is imghosts[1].return_value
-    assert imghosts[1].call_args_list == [call(x=123)]
+    existing_imghosts = (Mock(), Mock(), Mock())
+    existing_imghosts[0].configure_mock(name='foo')
+    existing_imghosts[1].configure_mock(name='bar')
+    existing_imghosts[2].configure_mock(name='baz')
+    mocker.patch('upsies.tools.imghosts.imghosts', return_value=existing_imghosts)
+    assert imghosts.imghost('bar', x=123) is existing_imghosts[1].return_value
+    assert existing_imghosts[1].call_args_list == [call(x=123)]
 
 def test_imghost_fails_to_find_imghost(mocker):
-    imghosts = (Mock(), Mock(), Mock())
-    imghosts[0].configure_mock(name='foo')
-    imghosts[1].configure_mock(name='bar')
-    imghosts[2].configure_mock(name='baz')
-    mocker.patch('upsies.tools.imghost.imghosts', return_value=imghosts)
+    existing_imghosts = (Mock(), Mock(), Mock())
+    existing_imghosts[0].configure_mock(name='foo')
+    existing_imghosts[1].configure_mock(name='bar')
+    existing_imghosts[2].configure_mock(name='baz')
+    mocker.patch('upsies.tools.imghosts.imghosts', return_value=existing_imghosts)
     with pytest.raises(ValueError, match='^Unsupported image hosting service: bam$'):
-        imghost.imghost('bam', x=123)
-    for ih in imghosts:
+        imghosts.imghost('bam', x=123)
+    for ih in existing_imghosts:
         assert ih.call_args_list == []
 
 
-@pytest.mark.parametrize('method', imghost.ImageHostBase.__abstractmethods__)
+@pytest.mark.parametrize('method', imghosts.ImageHostBase.__abstractmethods__)
 def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in imghost.ImageHostBase.__abstractmethods__}
+    attrs = {name:lambda self: None for name in imghosts.ImageHostBase.__abstractmethods__}
     del attrs[method]
-    cls = type('TestImageHost', (imghost.ImageHostBase,), attrs)
+    cls = type('TestImageHost', (imghosts.ImageHostBase,), attrs)
     # Python 3.9 changed "methods" to "method"
     exp_msg = rf"^Can't instantiate abstract class TestImageHost with abstract methods? {method}$"
     with pytest.raises(TypeError, match=exp_msg):
@@ -58,7 +58,7 @@ def test_abstract_method(method):
 
 
 def make_TestImageHost(**kwargs):
-    class TestImageHost(imghost.ImageHostBase):
+    class TestImageHost(imghosts.ImageHostBase):
         name = 'imgw00t'
 
         def __init__(self, *args, mock_cache=False, **kwargs):
@@ -204,7 +204,7 @@ async def test_upload_gets_info_from_upload():
         'path/to/foo.png',
         {'url': 'http://foo.bar', 'more': 'info'},
     )]
-    assert isinstance(image, imghost.UploadedImage)
+    assert isinstance(image, imghosts.UploadedImage)
     assert image == 'http://foo.bar'
     assert image.more == 'info'
 
@@ -219,7 +219,7 @@ async def test_upload_gets_info_from_cache():
     assert ih._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
     assert ih._upload_mock.call_args_list == []
     assert ih._store_info_to_cache_mock.call_args_list == []
-    assert isinstance(image, imghost.UploadedImage)
+    assert isinstance(image, imghosts.UploadedImage)
     assert image == 'http://foo.bar'
     assert image.more == 'info'
 
@@ -241,7 +241,7 @@ async def test_upload_ignores_cache():
         'path/to/foo.png',
         {'url': 'http://baz.png', 'more': 'other info'},
     )]
-    assert isinstance(image, imghost.UploadedImage)
+    assert isinstance(image, imghosts.UploadedImage)
     assert image == 'http://baz.png'
     assert image.more == 'other info'
 

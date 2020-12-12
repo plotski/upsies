@@ -2,4 +2,4 @@
 High-level wrappers for generating torrents, screenshots, mediainfo, etc
 """
 
-from . import btclient, imghost, release_name, screenshot, torrent, webdbs
+from . import btclient, imghosts, release_name, screenshot, torrent, webdbs
