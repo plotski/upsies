@@ -32,7 +32,7 @@ class ImdbApi(WebDbApiBase):
     # and year.
 
     _title_types = {
-        utils.ReleaseType.movie: 'feature,tv_movie,documentary,video',
+        utils.ReleaseType.movie: 'feature,tv_movie,documentary,short,video,tv_short',
         utils.ReleaseType.series: 'tv_series,tv_miniseries',
         utils.ReleaseType.season: 'tv_series,tv_miniseries',
         # Searching for single episodes is currently not supported

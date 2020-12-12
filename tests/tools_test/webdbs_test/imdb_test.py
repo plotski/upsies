@@ -247,6 +247,7 @@ async def test_search_result_title_english_original(query, exp_title_english, ex
         (Query('Blues Brothers', year=1998), ReleaseType.movie),
         (Query('Star Wars', year=2008), ReleaseType.series),
         (Query('Star Wars', year=2014), ReleaseType.series),
+        (Query('Elephant', year=1989, type=ReleaseType.movie), ReleaseType.movie),
     ),
     ids=lambda value: str(value),
 )
