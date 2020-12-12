@@ -2,6 +2,8 @@ import os
 
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 
+from . import defaults
+
 TRACKERS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'trackers.ini')
 """Path to trackers configuration file"""
 
@@ -18,8 +20,5 @@ def _get_option_paths(cfg, parents=()):
             paths.append('.'.join(k_parents))
     return tuple(sorted(paths))
 
-# TODO: If _config.Config was a singleton, we could get the option paths from
-#       Config().path.
-from . import defaults  # isort:skip
 OPTION_PATHS = _get_option_paths(defaults.defaults)
 """Tuple of configuration option paths (`<section>.<subsection>.<option>`)"""
