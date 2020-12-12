@@ -4,7 +4,7 @@ import queue
 
 from .. import errors
 from ..tools import torrent
-from ..tools.btclient import ClientApiBase
+from ..tools.btclients import ClientApiBase
 from ..utils import daemon, fs
 from . import JobBase
 
@@ -117,7 +117,7 @@ class AddTorrentJob(JobBase):
     """
     Add torrent(s) to a BitTorrent client
 
-    :param client: Return value of :func:`tools.btclient.client`
+    :param client: Return value of :func:`tools.btclients.client`
     :param download_path: Path to the torrent's content files or None to use the
         default path
     :param torrents: Sequence of torrent file paths to add

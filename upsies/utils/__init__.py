@@ -79,7 +79,7 @@ def submodules(package):
     Return list of submodules and subpackages in `package`
 
     :param str package: Fully qualified name of parent package,
-        e.g. "upsies.tools.btclient"
+        e.g. "upsies.tools.btclients"
     """
     # Get absolute path to parent directory of top-level package
     own_path = os.path.dirname(__file__)

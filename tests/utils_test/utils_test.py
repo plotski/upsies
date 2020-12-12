@@ -56,10 +56,10 @@ def test_submodules_finds_packages():
 
 
 def test_subclasses():
-    from upsies.tools import btclient
-    from upsies.tools.btclient import dummy, transmission
+    from upsies.tools import btclients
+    from upsies.tools.btclients import dummy, transmission
     subclses = utils.subclasses(
-        basecls=btclient.ClientApiBase,
+        basecls=btclients.ClientApiBase,
         modules=[dummy, transmission],
     )
     assert subclses == [

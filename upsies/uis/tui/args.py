@@ -4,7 +4,7 @@ import sys
 import textwrap
 
 from ... import __project_name__, __version__, constants, trackers, utils
-from ...tools import btclient as btclients
+from ...tools import btclients
 from ...tools import imghosts
 from ...tools import webdbs
 from . import commands

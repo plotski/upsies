@@ -15,7 +15,7 @@ import abc
 
 from ... import jobs as _jobs
 from ... import trackers
-from ...tools import btclient, imghosts
+from ...tools import btclients, imghosts
 from ...utils import cache, fs
 
 import logging  # isort:skip
@@ -132,7 +132,7 @@ class create_torrent(CommandBase):
             add_torrent_job = _jobs.torrent.AddTorrentJob(
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
-                client=btclient.client(
+                client=btclients.client(
                     name=self.args.add_to,
                     **self.config['clients'][self.args.add_to],
                 ),
@@ -175,7 +175,7 @@ class add_torrent(CommandBase):
             _jobs.torrent.AddTorrentJob(
                 homedir=fs.tmpdir(),
                 ignore_cache=self.args.ignore_cache,
-                client=btclient.client(
+                client=btclients.client(
                     name=self.args.CLIENT,
                     **self.config['clients'][self.args.CLIENT],
                 ),
@@ -308,7 +308,7 @@ class submit(CommandBase):
     def _get_btclient(self):
         btclient_name = getattr(self.args, 'add_to', None)
         if btclient_name:
-            return btclient.client(
+            return btclients.client(
                 name=btclient_name,
                 **self.config['clients'][btclient_name],
             )
