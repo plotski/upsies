@@ -1,9 +1,8 @@
 import asyncio
 import os
-import random
 
 from .. import errors, jobs
-from ..utils import ReleaseType, cache, fs, guessit
+from ..utils import ReleaseType, cache, guessit
 from .base import TrackerBase
 
 import logging  # isort:skip

@@ -2,7 +2,7 @@ import re
 import urllib
 
 from .. import errors, jobs
-from ..utils import ReleaseType, cache, guessit, html, http
+from ..utils import cache, guessit, html, http
 from .base import TrackerBase
 
 import logging  # isort:skip
