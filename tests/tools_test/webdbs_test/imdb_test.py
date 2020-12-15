@@ -214,6 +214,7 @@ async def test_search_result_title(query, exp_top_title, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_title_english', 'exp_title_original'),
     argvalues=(
+        (Query('36th Chamber of Shaolin', type=ReleaseType.movie, year=1978), 'The 36th Chamber of Shaolin', 'Shao Lin san shi liu fang'),
         (Query('Aftermath', type=ReleaseType.movie, year=2012), 'Aftermath', 'Poklosie'),
         (Query('Blues Brothers', type=ReleaseType.movie, year=1980), '', 'The Blues Brothers'),
         (Query('Cyborg', type=ReleaseType.movie, year=1989), '', 'Cyborg'),
@@ -357,6 +358,7 @@ async def test_summary(id, exp_summary, api, store_response):
     argnames=('id', 'exp_title_english', 'exp_title_original'),
     argvalues=(
         ('tt0076759', 'Star Wars: Episode IV - A New Hope', 'Star Wars'),
+        ('tt0078243', 'The 36th Chamber of Shaolin', 'Shao Lin san shi liu fang'),
         ('tt0080455', '', 'The Blues Brothers'),
         ('tt0097138', '', 'Cyborg'),
         ('tt0102984', '', 'Stone Cold'),
