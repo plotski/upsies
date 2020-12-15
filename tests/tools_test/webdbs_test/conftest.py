@@ -7,13 +7,13 @@ import pytest
 @pytest.fixture(scope='module', autouse=True)
 def disable_http_requests(pytestconfig):
     from upsies.utils import http
-    if pytestconfig.getoption('--allow-http-requests', None):
+    if pytestconfig.getoption('--allow-requests', None):
         yield
     else:
         # We can't patch utils.http._request() because we want it to return
         # cached requests. utils.http._request() only uses
         # httpx.AsyncClient.send() so we can patch that.
-        exc = RuntimeError('HTTP requests are disabled; use --allow-http-requests')
+        exc = RuntimeError('HTTP requests are disabled; use --allow-requests')
         with patch.object(http._client, 'send', Mock(side_effect=exc)):
             yield
 
