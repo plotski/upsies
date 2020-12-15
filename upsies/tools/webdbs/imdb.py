@@ -112,8 +112,11 @@ class ImdbApi(WebDbApiBase):
                 return False
             return True
 
-        alternate_titles = [i for i in info.get('alternateTitles', ())
-                            if title_looks_interesting(i)]
+        alternate_titles = [
+            info for info in sorted(info.get('alternateTitles', ()),
+                                    key=lambda x: x.get('region', ''))
+            if title_looks_interesting(info)
+        ]
 
         # Map titles to region and language.
         # Both region and language may not exist or be empty.
