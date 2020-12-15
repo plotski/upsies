@@ -104,11 +104,11 @@ class ImdbApi(WebDbApiBase):
         ignored_types = ('working', 'tv')
 
         # Some titles should not be considered
-        def title_looks_interesting(i):
+        def title_looks_interesting(info):
             # Maybe we can just move any title that has an "attributes" field?
-            if any(a in i.get('attributes', ()) for a in ignored_attributes):
+            if any(a in info.get('attributes', ()) for a in ignored_attributes):
                 return False
-            if any(t in i.get('types', ()) for t in ignored_types):
+            if any(t in info.get('types', ()) for t in ignored_types):
                 return False
             return True
 
@@ -119,15 +119,15 @@ class ImdbApi(WebDbApiBase):
         # Both region and language may not exist or be empty.
         # Ensure regions are upper case and languages are lower case.
         titles = collections.defaultdict(lambda: [])
-        for i in alternate_titles:
-            language = i.get('language', '').lower()
-            region = i.get('region', '').upper()
+        for info in alternate_titles:
+            language = info.get('language', '').lower()
+            region = info.get('region', '').upper()
             if language:
-                titles[language] = i['title']
+                titles[language] = info['title']
             if region:
-                titles[region] = i['title']
+                titles[region] = info['title']
             if region and language:
-                titles[(region, language)] = i['title']
+                titles[(region, language)] = info['title']
 
         original_title = await self.title_original(id)
         _log.debug('Original title: %r', original_title)
