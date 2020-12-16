@@ -174,6 +174,10 @@ def test_year_setter(guessit_mock):
     assert rn.year == ''
     rn.year = '1999'
     assert rn.year == '1999'
+    with pytest.raises(TypeError, match=r'^Not a number: \(2, 0, 2, 0\)$'):
+        rn.year = (2, 0, 2, 0)
+    with pytest.raises(ValueError, match=r'^Invalid year: 123$'):
+        rn.year = '123'
 
 
 @patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
