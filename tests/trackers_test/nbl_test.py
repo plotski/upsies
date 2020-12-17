@@ -338,7 +338,7 @@ async def test_upload_succeeds(tmp_path, mocker, httpserver):
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
     metadata_mock = {
-        'create-torrent': (str(torrent_file),),
+        'torrent': (str(torrent_file),),
         'mediainfo': ('mocked mediainfo',),
         'tvmaze-id': ('12345',),
         'category': ('season',),
@@ -402,7 +402,7 @@ async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
     metadata_mock = {
-        'create-torrent': (str(torrent_file),),
+        'torrent': (str(torrent_file),),
         'mediainfo': ('mocked mediainfo',),
         'tvmaze-id': ('12345',),
         'category': ('season',),
@@ -440,7 +440,7 @@ async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
     metadata_mock = {
-        'create-torrent': (str(torrent_file),),
+        'torrent': (str(torrent_file),),
         'mediainfo': ('mocked mediainfo',),
         'tvmaze-id': ('12345',),
         'category': ('season',),

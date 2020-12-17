@@ -71,7 +71,7 @@ class SubmitJob(JobBase):
                 self.finish()
 
     async def _submit(self, metadata):
-        _log.debug('%s: Submitting %s', self._tracker.name, metadata.get('create-torrent'))
+        _log.debug('%s: Submitting %s', self._tracker.name, metadata.get('torrent'))
         try:
             self.signal.emit('logging_in')
             await self._tracker.login()

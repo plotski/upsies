@@ -30,8 +30,8 @@ class CreateTorrentJob(JobBase):
             positional argument.
     """
 
-    name = 'create-torrent'
-    label = 'Create Torrent'
+    name = 'torrent'
+    label = 'Torrent'
 
     def initialize(self, *, content_path, tracker_name, tracker_config):
         self._content_path = content_path

@@ -124,7 +124,7 @@ class NblTracker(TrackerBase):
         if not self.logged_in:
             raise RuntimeError('upload() called before login()')
 
-        torrent_filepath = metadata['create-torrent'][0]
+        torrent_filepath = metadata['torrent'][0]
         _log.debug('%s: Torrent: %r', self.name, torrent_filepath)
         tvmaze_id = metadata['tvmaze-id'][0]
         _log.debug('%s: TVmaze ID: %r', self.name, tvmaze_id)

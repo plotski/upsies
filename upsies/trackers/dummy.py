@@ -51,8 +51,9 @@ class DummyTracker(TrackerBase):
         await asyncio.sleep(1)
 
     async def upload(self, metadata):
-        # create-torrent output could be empty sequence or None
-        output = metadata.get('create-torrent')
+        # Output from torrent job could be empty sequence (error) or None (not
+        # finished)
+        output = metadata.get('torrent')
         if output:
             torrent_file = output[0]
         else:
