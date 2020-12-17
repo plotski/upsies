@@ -1,7 +1,7 @@
 import asyncio
 import collections
 
-from ..utils import ReleaseType, guessit, mediainfo
+from ..utils import ReleaseType, mediainfo, release_info
 from . import webdbs
 
 import logging  # isort:skip
@@ -28,7 +28,7 @@ class ReleaseName(collections.abc.Mapping):
 
     def __init__(self, path):
         self._path = str(path)
-        self._guess = guessit.guessit(self._path)
+        self._guess = release_info.ReleaseInfo(self._path)
         self._imdb = webdbs.imdb.ImdbApi()
 
     def __repr__(self):
@@ -50,8 +50,7 @@ class ReleaseName(collections.abc.Mapping):
     def __getitem__(self, name):
         if not isinstance(name, str):
             raise TypeError(f'Not a string: {name!r}')
-
-        if isinstance(getattr(type(self), name), property):
+        elif isinstance(getattr(type(self), name), property):
             return getattr(self, name)
         else:
             raise KeyError(name)
@@ -201,11 +200,11 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def service(self):
         """Service abbreviation (e.g. "AMZN", "NF") or empty string"""
-        return self._guess.get('streaming_service') or ''
+        return self._guess.get('service') or ''
 
     @service.setter
     def service(self, value):
-        self._guess['streaming_service'] = str(value)
+        self._guess['service'] = str(value)
 
     @property
     def edition(self):
@@ -232,12 +231,12 @@ class ReleaseName(collections.abc.Mapping):
         '''Resolution (e.g. "1080p") or "UNKNOWN_RESOLUTION"'''
         res = mediainfo.resolution(self._path)
         if res is None:
-            res = self._guess.get('screen_size') or 'UNKNOWN_RESOLUTION'
+            res = self._guess.get('resolution') or 'UNKNOWN_RESOLUTION'
         return res
 
     @resolution.setter
     def resolution(self, value):
-        self._guess['screen_size'] = str(value)
+        self._guess['resolution'] = str(value)
 
     @property
     def audio_format(self):
@@ -278,11 +277,11 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def group(self):
         '''Name of release group or "NOGROUP"'''
-        return self._guess.get('release_group') or 'NOGROUP'
+        return self._guess.get('group') or 'NOGROUP'
 
     @group.setter
     def group(self, value):
-        self._guess['release_group'] = str(value)
+        self._guess['group'] = str(value)
 
     async def fetch_info(self, id, callback=None):
         """
@@ -324,9 +323,9 @@ class ReleaseName(collections.abc.Mapping):
             if info[key]:
                 setattr(self, attr, info[key])
 
-        # Use type from IMDb if known. guessit can misdetect type (e.g. if
-        # mini-series doesn't contain "S01"). But if guessit detected an episode
-        # (e.g. "S04E03"), it's unlikely to be wrong.
+        # Use type from IMDb if known. ReleaseInfo can misdetect type (e.g. if
+        # mini-series doesn't contain "S01"). But if ReleaseInfo detected an
+        # episode (e.g. "S04E03"), it's unlikely to be wrong.
         if info['type'] and self.type is not ReleaseType.episode:
             self.type = info['type']
 

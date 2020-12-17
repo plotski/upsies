@@ -2,7 +2,7 @@ import asyncio
 import os
 
 from .. import errors, jobs
-from ..utils import ReleaseType, cache, guessit
+from ..utils import ReleaseType, cache, release_info
 from .base import TrackerBase
 
 import logging  # isort:skip
@@ -28,7 +28,7 @@ class DummyTracker(TrackerBase):
 
     @cache.property
     def category_job(self):
-        guess = guessit.guessit(self.job_input.content_path).get('type')
+        guess = release_info.ReleaseInfo(self.job_input.content_path).get('type')
         if guess:
             guess = str(guess).capitalize()
         else:

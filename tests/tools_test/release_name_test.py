@@ -23,23 +23,23 @@ def run_async(awaitable):
     return asyncio.get_event_loop().run_until_complete(awaitable)
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_str(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_str(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with patch.object(rn, 'format') as format_mock:
         format_mock.return_value = 'Pretty Release Name'
         assert str(rn) == 'Pretty Release Name'
         format_mock.call_args_list == [call()]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_len(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with patch.object(rn, 'format') as format_mock:
         format_mock.return_value = 'Pretty Release Name'
         assert len(rn) == len('Pretty Release Name')
         format_mock.call_args_list == [call()]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='attr',
     argvalues=(
@@ -47,18 +47,20 @@ def test_len(guessit_mock):
         'episode_title', 'service', 'edition', 'source', 'resolution', 'audio_format',
         'audio_channels', 'video_format', 'group')
 )
-def test_getitem(guessit_mock, attr):
-    guessit_mock.return_value = {attr: 'mock value', 'type': ReleaseType.movie}
+def test_getitem(ReleaseInfo_mock, attr):
+    ReleaseInfo_mock.return_value = {attr: 'mock value', 'type': ReleaseType.movie}
     rn = ReleaseName('path/to/something')
     if not attr.startswith('_'):
         rn[attr]
     with pytest.raises(KeyError, match=r"^'format'$"):
         assert rn['format']
+    with pytest.raises(TypeError, match=r"^Not a string: 123$"):
+        assert rn[123]
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_usage_as_dictionary_in_str_format(guessit_mock):
-    guessit_mock.return_value = {
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_usage_as_dictionary_in_str_format(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {
         'type': ReleaseType.movie,
         'title': 'The Foo',
         'year': '1998',
@@ -67,27 +69,27 @@ def test_usage_as_dictionary_in_str_format(guessit_mock):
         'audio_codec': 'AC3',
         'audio_channels': '5.1',
         'video_codec': 'x264',
-        'release_group': 'ASDF',
+        'group': 'ASDF',
     }
     rn = ReleaseName('path/to/something')
     fmt = '{title} ({year}) {audio_format} {video_format} {source}-{group}'
     assert fmt.format(**rn) == 'The Foo (1998) AC3 x264 BluRay-ASDF'
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_type_getter(guessit_mock):
-    guessit_mock.return_value = {'type': ReleaseType.movie}
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_type_getter(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').type is ReleaseType.movie
-    guessit_mock.return_value = {'type': ReleaseType.series}
+    ReleaseInfo_mock.return_value = {'type': ReleaseType.series}
     assert ReleaseName('path/to/something').type is ReleaseType.series
-    guessit_mock.return_value = {'type': ReleaseType.season}
+    ReleaseInfo_mock.return_value = {'type': ReleaseType.season}
     assert ReleaseName('path/to/something').type is ReleaseType.season
-    guessit_mock.return_value = {'type': ReleaseType.episode}
+    ReleaseInfo_mock.return_value = {'type': ReleaseType.episode}
     assert ReleaseName('path/to/something').type is ReleaseType.episode
-    guessit_mock.return_value = {}
+    ReleaseInfo_mock.return_value = {}
     assert ReleaseName('path/to/something').type is ReleaseType.unknown
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='value, exp_value',
     argvalues=(
@@ -103,44 +105,44 @@ def test_type_getter(guessit_mock):
         (ReleaseType.unknown, ReleaseType.unknown),
     ),
 )
-def test_type_setter_with_valid_value(guessit_mock, value, exp_value):
+def test_type_setter_with_valid_value(ReleaseInfo_mock, value, exp_value):
     rn = ReleaseName('path/to/something')
     rn.type = value
     assert rn.type is exp_value
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_type_setter_with_invalid_value(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_type_setter_with_invalid_value(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with pytest.raises(ValueError, match=r"^'asdf' is not a valid ReleaseType$"):
         rn.type = 'asdf'
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_title_getter(guessit_mock):
-    guessit_mock.return_value = {'title': 'The Foo'}
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_title_getter(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'title': 'The Foo'}
     assert ReleaseName('path/to/something').title == 'The Foo'
-    guessit_mock.return_value = {'title': 'The Bar'}
+    ReleaseInfo_mock.return_value = {'title': 'The Bar'}
     assert ReleaseName('path/to/something').title == 'The Bar'
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_title_setter(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_title_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.title != 'The Baz'
     rn.title = 'The Baz'
     assert rn.title == 'The Baz'
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_title_aka_getter(guessit_mock):
-    guessit_mock.return_value = {'title': 'The Foo', 'aka': ''}
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_title_aka_getter(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': ''}
     assert ReleaseName('path/to/something').title_aka == ''
-    guessit_mock.return_value = {'title': 'The Foo', 'aka': 'The Bar'}
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'The Bar'}
     assert ReleaseName('path/to/something').title_aka == 'The Bar'
-    guessit_mock.return_value = {'title': 'The Foo', 'aka': 'The Foo'}
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'The Foo'}
     assert ReleaseName('path/to/something').title_aka == ''
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_title_aka_setter(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_title_aka_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.title_aka != 'The Baz'
     rn.title_aka = 'The Baz'
@@ -149,27 +151,27 @@ def test_title_aka_setter(guessit_mock):
     assert rn.title_aka == ''
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_year_getter_with_movie(guessit_mock):
-    guessit_mock.return_value = {'year': '2000', 'type': ReleaseType.movie}
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_year_getter_with_movie(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'year': '2000', 'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').year == '2000'
-    guessit_mock.return_value = {'year': '', 'type': ReleaseType.movie}
+    ReleaseInfo_mock.return_value = {'year': '', 'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').year == 'UNKNOWN_YEAR'
-    guessit_mock.return_value = {'type': ReleaseType.movie}
+    ReleaseInfo_mock.return_value = {'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').year == 'UNKNOWN_YEAR'
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize('type', (ReleaseType.series, ReleaseType.season, ReleaseType.episode))
-def test_year_getter_with_series(guessit_mock, type):
-    guessit_mock.return_value = {'year': '2000', 'type': type}
+def test_year_getter_with_series(ReleaseInfo_mock, type):
+    ReleaseInfo_mock.return_value = {'year': '2000', 'type': type}
     assert ReleaseName('path/to/something').year == '2000'
-    guessit_mock.return_value = {'year': '', 'type': type}
+    ReleaseInfo_mock.return_value = {'year': '', 'type': type}
     assert ReleaseName('path/to/something').year == ''
-    guessit_mock.return_value = {'type': type}
+    ReleaseInfo_mock.return_value = {'type': type}
     assert ReleaseName('path/to/something').year == ''
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_year_setter(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_year_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.year == ''
     rn.year = '1999'
@@ -179,8 +181,7 @@ def test_year_setter(guessit_mock):
     with pytest.raises(ValueError, match=r'^Invalid year: 123$'):
         rn.year = '123'
 
-
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, year_required, year, exp_year',
     argvalues=(
@@ -206,15 +207,15 @@ def test_year_setter(guessit_mock):
         (ReleaseType.unknown, True, '', 'UNKNOWN_YEAR'),
     ),
 )
-def test_year_required(guessit_mock, type, year_required, year, exp_year):
-    guessit_mock.return_value = {'year': year, 'type': type}
+def test_year_required(ReleaseInfo_mock, type, year_required, year, exp_year):
+    ReleaseInfo_mock.return_value = {'year': year, 'type': type}
     rn = ReleaseName('path/to/something')
     assert rn.year_required is False
     rn.year_required = year_required
     assert rn.year == exp_year
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, season, exp_season',
     argvalues=(
@@ -230,11 +231,11 @@ def test_year_required(guessit_mock, type, year_required, year, exp_year):
         (ReleaseType.unknown, '', ''),
     ),
 )
-def test_season_getter(guessit_mock, type, season, exp_season):
-    guessit_mock.return_value = {'season': season, 'type': type}
+def test_season_getter(ReleaseInfo_mock, type, season, exp_season):
+    ReleaseInfo_mock.return_value = {'season': season, 'type': type}
     assert ReleaseName('path/to/something').season == exp_season
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, season, exp_season',
     argvalues=(
@@ -255,22 +256,22 @@ def test_season_getter(guessit_mock, type, season, exp_season):
         (ReleaseType.unknown, '', ''),
     ),
 )
-def test_season_setter_with_valid_value(guessit_mock, type, season, exp_season):
+def test_season_setter_with_valid_value(ReleaseInfo_mock, type, season, exp_season):
     rn = ReleaseName('path/to/something')
     rn.type = type
     rn.season = season
     assert rn.season == exp_season
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_season_setter_with_invalid_type(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_season_setter_with_invalid_type(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with pytest.raises(TypeError, match=r'^Invalid season: \(1, 2, 3\)$'):
         rn.season = (1, 2, 3)
     with pytest.raises(TypeError, match=r"^Invalid season: 1.3$"):
         rn.season = 1.3
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_season_setter_with_invalid_value(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_season_setter_with_invalid_value(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with pytest.raises(ValueError, match=r"^Invalid season: 'foo'$"):
         rn.season = 'foo'
@@ -278,7 +279,7 @@ def test_season_setter_with_invalid_value(guessit_mock):
         rn.season = -1
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, episode, exp_episode',
     argvalues=(
@@ -299,13 +300,13 @@ def test_season_setter_with_invalid_value(guessit_mock):
         (ReleaseType.unknown, '', ''),
     ),
 )
-def test_episode_getter(guessit_mock, type, episode, exp_episode):
-    guessit_mock.return_value = {'episode': episode, 'type': type}
+def test_episode_getter(ReleaseInfo_mock, type, episode, exp_episode):
+    ReleaseInfo_mock.return_value = {'episode': episode, 'type': type}
     assert ReleaseName('path/to/something').episode == exp_episode
-    guessit_mock.return_value = {'episode': episode, 'type': type, 'season': '1'}
+    ReleaseInfo_mock.return_value = {'episode': episode, 'type': type, 'season': '1'}
     assert ReleaseName('path/to/something').episode == exp_episode
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, episode, exp_episode',
     argvalues=(
@@ -331,21 +332,21 @@ def test_episode_getter(guessit_mock, type, episode, exp_episode):
         (ReleaseType.unknown, '', ''),
     ),
 )
-def test_episode_setter_with_valid_value(guessit_mock, type, episode, exp_episode):
+def test_episode_setter_with_valid_value(ReleaseInfo_mock, type, episode, exp_episode):
     rn = ReleaseName('path/to/something')
     rn.type = type
     assert rn.episode == ''
     rn.episode = episode
     assert rn.episode == exp_episode
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_episode_setter_with_invalid_type(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_episode_setter_with_invalid_type(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with pytest.raises(TypeError, match=r"^Invalid episode: 1.3$"):
         rn.episode = 1.3
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_episode_setter_with_invalid_value(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_episode_setter_with_invalid_value(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with pytest.raises(ValueError, match=r"^Invalid episode: 'foo'$"):
         rn.episode = 'foo'
@@ -353,7 +354,7 @@ def test_episode_setter_with_invalid_value(guessit_mock):
         rn.episode = -1
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, episode_title, exp_episode_title',
     argvalues=(
@@ -369,29 +370,29 @@ def test_episode_setter_with_invalid_value(guessit_mock):
         (ReleaseType.unknown, '', ''),
     ),
 )
-def test_episode_title_getter(guessit_mock, type, episode_title, exp_episode_title):
-    guessit_mock.return_value = {'episode_title': episode_title, 'type': type}
+def test_episode_title_getter(ReleaseInfo_mock, type, episode_title, exp_episode_title):
+    ReleaseInfo_mock.return_value = {'episode_title': episode_title, 'type': type}
     rn = ReleaseName('path/to/something')
     assert rn.episode_title == exp_episode_title
     rn.type = ReleaseType.episode
     assert rn.episode_title == episode_title
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize('episode_title, exp_episode_title', (('Foo', 'Foo'), (123, '123')))
-def test_episode_title_setter(guessit_mock, episode_title, exp_episode_title):
+def test_episode_title_setter(ReleaseInfo_mock, episode_title, exp_episode_title):
     rn = ReleaseName('path/to/something')
     rn.type = ReleaseType.episode
     rn.episode_title = episode_title
     assert rn.episode_title == exp_episode_title
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_service_getter(guessit_mock):
-    guessit_mock.return_value = {'streaming_service': 'FOO'}
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_service_getter(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'service': 'FOO'}
     assert ReleaseName('path/to/something').service == 'FOO'
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_service_setter(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_service_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.service == ''
     rn.service = 'FOO'
@@ -400,21 +401,21 @@ def test_service_setter(guessit_mock):
     assert rn.service == '256'
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_edition_getter_returns_same_list_with_no_edition(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_edition_getter_returns_same_list_with_no_edition(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.edition is rn.edition
     assert isinstance(rn.edition, list)
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_edition_getter_returns_same_list_with_given_edition(guessit_mock):
-    guessit_mock.return_value = {'edition': ['DC', 'Unrated']}
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_edition_getter_returns_same_list_with_given_edition(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'edition': ['DC', 'Unrated']}
     rn = ReleaseName('path/to/something')
     assert rn.edition == ['DC', 'Unrated']
     assert rn.edition is rn.edition
     assert isinstance(rn.edition, list)
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='edition, exp_edition',
     argvalues=(
@@ -422,14 +423,14 @@ def test_edition_getter_returns_same_list_with_given_edition(guessit_mock):
         ((1, 2, 3), ['1', '2', '3']),
     ),
 )
-def test_edition_setter(guessit_mock, edition, exp_edition):
+def test_edition_setter(ReleaseInfo_mock, edition, exp_edition):
     rn = ReleaseName('path/to/something')
     rn.edition = edition
     assert rn.edition == exp_edition
     assert rn.edition is rn.edition
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='source, exp_source',
     argvalues=(
@@ -437,11 +438,11 @@ def test_edition_setter(guessit_mock, edition, exp_edition):
         ('', 'UNKNOWN_SOURCE'),
     ),
 )
-def test_source_getter(guessit_mock, source, exp_source):
-    guessit_mock.return_value = {'source': source}
+def test_source_getter(ReleaseInfo_mock, source, exp_source):
+    ReleaseInfo_mock.return_value = {'source': source}
     assert ReleaseName('path/to/something').source == exp_source
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='source, exp_source',
     argvalues=(
@@ -450,38 +451,38 @@ def test_source_getter(guessit_mock, source, exp_source):
         (123, '123'),
     ),
 )
-def test_source_setter(guessit_mock, source, exp_source):
+def test_source_setter(ReleaseInfo_mock, source, exp_source):
     rn = ReleaseName('path/to/something')
     rn.source = source
     assert rn.source == exp_source
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_resolution_getter_prefers_mediainfo(mediainfo_mock, guessit_mock):
+def test_resolution_getter_prefers_mediainfo(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.resolution.return_value = '720p'
-    guessit_mock.return_value = {'screen_size': '1080p'}
+    ReleaseInfo_mock.return_value = {'resolution': '1080p'}
     assert ReleaseName('path/to/something').resolution == '720p'
     assert mediainfo_mock.resolution.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_resolution_getter_defaults_to_guessit(mediainfo_mock, guessit_mock):
+def test_resolution_getter_defaults_to_guess(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.resolution.return_value = None
-    guessit_mock.return_value = {'screen_size': '1080p'}
+    ReleaseInfo_mock.return_value = {'resolution': '1080p'}
     assert ReleaseName('path/to/something').resolution == '1080p'
     assert mediainfo_mock.resolution.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_resolution_getter_defaults_to_placeholder(mediainfo_mock, guessit_mock):
+def test_resolution_getter_defaults_to_placeholder(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.resolution.return_value = None
-    guessit_mock.return_value = {}
+    ReleaseInfo_mock.return_value = {}
     assert ReleaseName('path/to/something').resolution == 'UNKNOWN_RESOLUTION'
     assert mediainfo_mock.resolution.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_resolution_setter(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_resolution_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.resolution == 'UNKNOWN_RESOLUTION'
     rn.resolution = '1080p'
@@ -492,32 +493,32 @@ def test_resolution_setter(guessit_mock):
     assert rn.resolution == '1080'
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_audio_format_getter_prefers_mediainfo(mediainfo_mock, guessit_mock):
+def test_audio_format_getter_prefers_mediainfo(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.audio_format.return_value = 'AC3'
-    guessit_mock.return_value = {'audio_codec': 'DD+'}
+    ReleaseInfo_mock.return_value = {'audio_codec': 'DD+'}
     assert ReleaseName('path/to/something').audio_format == 'AC3'
     assert mediainfo_mock.audio_format.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_audio_format_getter_defaults_to_guessit(mediainfo_mock, guessit_mock):
+def test_audio_format_getter_defaults_to_guess(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.audio_format.return_value = None
-    guessit_mock.return_value = {'audio_codec': 'DD+'}
+    ReleaseInfo_mock.return_value = {'audio_codec': 'DD+'}
     assert ReleaseName('path/to/something').audio_format == 'DD+'
     assert mediainfo_mock.audio_format.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_audio_format_getter_defaults_to_placeholder(mediainfo_mock, guessit_mock):
+def test_audio_format_getter_defaults_to_placeholder(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.audio_format.return_value = None
-    guessit_mock.return_value = {'audio_codec': ''}
+    ReleaseInfo_mock.return_value = {'audio_codec': ''}
     assert ReleaseName('path/to/something').audio_format == 'UNKNOWN_AUDIO_FORMAT'
     assert mediainfo_mock.audio_format.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_audio_format_setter(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_audio_format_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.audio_format == 'UNKNOWN_AUDIO_FORMAT'
     rn.audio_format = 'AC3'
@@ -528,32 +529,32 @@ def test_audio_format_setter(guessit_mock):
     assert rn.audio_format == 'DD+'
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_audio_channels_getter_prefers_mediainfo(mediainfo_mock, guessit_mock):
+def test_audio_channels_getter_prefers_mediainfo(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.audio_channels.return_value = '5.1'
-    guessit_mock.return_value = {'audio_channels': '7.1'}
+    ReleaseInfo_mock.return_value = {'audio_channels': '7.1'}
     assert ReleaseName('path/to/something').audio_channels == '5.1'
     assert mediainfo_mock.audio_channels.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_audio_channels_getter_defaults_to_guessit(mediainfo_mock, guessit_mock):
+def test_audio_channels_getter_defaults_to_guess(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.audio_channels.return_value = None
-    guessit_mock.return_value = {'audio_channels': '7.1'}
+    ReleaseInfo_mock.return_value = {'audio_channels': '7.1'}
     assert ReleaseName('path/to/something').audio_channels == '7.1'
     assert mediainfo_mock.audio_channels.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_audio_channels_getter_defaults_to_empty_string(mediainfo_mock, guessit_mock):
+def test_audio_channels_getter_defaults_to_empty_string(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.audio_channels.return_value = None
-    guessit_mock.return_value = {}
+    ReleaseInfo_mock.return_value = {}
     assert ReleaseName('path/to/something').audio_channels == ''
     assert mediainfo_mock.audio_channels.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_audio_channels_setter(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_audio_channels_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.audio_channels == ''
     rn.audio_channels = '2.0'
@@ -564,32 +565,32 @@ def test_audio_channels_setter(guessit_mock):
     assert rn.audio_channels == '2.0'
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_video_format_getter_prefers_mediainfo(mediainfo_mock, guessit_mock):
+def test_video_format_getter_prefers_mediainfo(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.video_format.return_value = 'x264'
-    guessit_mock.return_value = {'video_codec': 'x265'}
+    ReleaseInfo_mock.return_value = {'video_codec': 'x265'}
     assert ReleaseName('path/to/something').video_format == 'x264'
     assert mediainfo_mock.video_format.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_video_format_getter_defaults_to_guessit(mediainfo_mock, guessit_mock):
+def test_video_format_getter_defaults_to_guess(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.video_format.return_value = None
-    guessit_mock.return_value = {'video_codec': 'x265'}
+    ReleaseInfo_mock.return_value = {'video_codec': 'x265'}
     assert ReleaseName('path/to/something').video_format == 'x265'
     assert mediainfo_mock.video_format.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.tools.release_name.mediainfo')
-def test_video_format_getter_defaults_to_placeholder(mediainfo_mock, guessit_mock):
+def test_video_format_getter_defaults_to_placeholder(mediainfo_mock, ReleaseInfo_mock):
     mediainfo_mock.video_format.return_value = None
-    guessit_mock.return_value = {}
+    ReleaseInfo_mock.return_value = {}
     assert ReleaseName('path/to/something').video_format == 'UNKNOWN_VIDEO_FORMAT'
     assert mediainfo_mock.video_format.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_video_format_setter(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_video_format_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.video_format == 'UNKNOWN_VIDEO_FORMAT'
     rn.video_format = 'x265'
@@ -600,17 +601,17 @@ def test_video_format_setter(guessit_mock):
     assert rn.video_format == '264'
 
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_group_getter(guessit_mock):
-    guessit_mock.return_value = {'release_group': 'ASDF'}
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_group_getter(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'group': 'ASDF'}
     assert ReleaseName('path/to/something').group == 'ASDF'
-    guessit_mock.return_value = {'release_group': ''}
+    ReleaseInfo_mock.return_value = {'release_group': ''}
     assert ReleaseName('path/to/something').group == 'NOGROUP'
-    guessit_mock.return_value = {}
+    ReleaseInfo_mock.return_value = {}
     assert ReleaseName('path/to/something').group == 'NOGROUP'
 
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
-def test_group_setter(guessit_mock):
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_group_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.group == 'NOGROUP'
     rn.group = 'ASDF'
@@ -622,9 +623,9 @@ def test_group_setter(guessit_mock):
 
 
 @patch('upsies.tools.webdbs.imdb.ImdbApi')
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
-    argnames='guessit_type, imdb_type, exp_type',
+    argnames='guessed_type, imdb_type, exp_type',
     argvalues=(
         (ReleaseType.movie, ReleaseType.movie, ReleaseType.movie),
         (ReleaseType.movie, ReleaseType.season, ReleaseType.season),
@@ -634,14 +635,14 @@ def test_group_setter(guessit_mock):
         (ReleaseType.season, ReleaseType.season, ReleaseType.season),
         (ReleaseType.season, ReleaseType.episode, ReleaseType.episode),
         (ReleaseType.season, ReleaseType.unknown, ReleaseType.season),
-        # For episodes, we trust guessit more than IMDb
+        # For episodes, we trust guessed type more than IMDb
         (ReleaseType.episode, ReleaseType.movie, ReleaseType.episode),
         (ReleaseType.episode, ReleaseType.season, ReleaseType.episode),
         (ReleaseType.episode, ReleaseType.episode, ReleaseType.episode),
         (ReleaseType.episode, ReleaseType.unknown, ReleaseType.episode),
     ),
 )
-def test_update_attributes(guessit_mock, ImdbApi_mock, guessit_type, imdb_type, exp_type):
+def test_update_attributes(ReleaseInfo_mock, ImdbApi_mock, guessed_type, imdb_type, exp_type):
     id_mock = '12345'
     gather_mock = {
         'type': imdb_type,
@@ -650,9 +651,9 @@ def test_update_attributes(guessit_mock, ImdbApi_mock, guessit_type, imdb_type, 
         'year': '2010',
     }
     ImdbApi_mock.return_value.gather = AsyncMock(return_value=gather_mock)
-    guessit_mock.return_value = {'type': guessit_type}
+    ReleaseInfo_mock.return_value = {'type': guessed_type}
     rn = ReleaseName('path/to/something')
-    assert rn.type == guessit_type
+    assert rn.type == guessed_type
     run_async(rn._update_attributes(id_mock))
     assert rn.title == 'Le Foo'
     assert rn.title_aka == 'The Foo'
@@ -667,7 +668,7 @@ _unique_titles = (Mock(title='The Foo'), Mock(title='The Bar'))
 _same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
 
 @patch('upsies.tools.webdbs.imdb.ImdbApi')
-@patch('upsies.utils.guessit.guessit', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, results, exp_year_required',
     argvalues=(
@@ -679,9 +680,9 @@ _same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
         (ReleaseType.episode, _same_titles, True),
     ),
 )
-def test_update_year_required(guessit_mock, ImdbApi_mock, type, results, exp_year_required):
+def test_update_year_required(ReleaseInfo_mock, ImdbApi_mock, type, results, exp_year_required):
     ImdbApi_mock.return_value.search = AsyncMock(return_value=results)
-    guessit_mock.return_value = {'type': type, 'title': 'The Foo'}
+    ReleaseInfo_mock.return_value = {'type': type, 'title': 'The Foo'}
     rn = ReleaseName('path/to/something')
     assert rn.year_required is False
     run_async(rn._update_year_required())

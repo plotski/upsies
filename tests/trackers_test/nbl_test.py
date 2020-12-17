@@ -85,7 +85,7 @@ def test_jobs_before_upload(tmp_path, mocker):
 
 
 @pytest.mark.parametrize(
-    argnames=('guessit_guess', 'focused_choice'),
+    argnames=('release_info', 'focused_choice'),
     argvalues=(
         (ReleaseType.episode, 'Episode'),
         (ReleaseType.season, 'Season'),
@@ -98,8 +98,8 @@ def test_jobs_before_upload(tmp_path, mocker):
         (None, 'Season'),
     ),
 )
-def test_category_job(guessit_guess, focused_choice, tmp_path, mocker):
-    mocker.patch('upsies.utils.guessit.guessit', return_value={'type': guessit_guess})
+def test_category_job(release_info, focused_choice, tmp_path, mocker):
+    mocker.patch('upsies.utils.release_info.ReleaseInfo', return_value={'type': release_info})
     ChoiceJob_mock = mocker.patch('upsies.jobs.prompt.ChoiceJob', Mock())
     tracker = make_tracker(tmp_path)
     assert tracker.category_job == ChoiceJob_mock.return_value

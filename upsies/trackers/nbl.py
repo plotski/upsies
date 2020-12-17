@@ -2,7 +2,7 @@ import re
 import urllib
 
 from .. import errors, jobs
-from ..utils import cache, guessit, html, http
+from ..utils import cache, html, http, release_info
 from .base import TrackerBase
 
 import logging  # isort:skip
@@ -25,7 +25,7 @@ class NblTracker(TrackerBase):
     @cache.property
     def category_job(self):
         # Season or Episode
-        if str(guessit.guessit(self.job_input.content_path).get('type')) == 'episode':
+        if str(release_info.ReleaseInfo(self.job_input.content_path).get('type')) == 'episode':
             guessed = 'Episode'
         else:
             guessed = 'Season'

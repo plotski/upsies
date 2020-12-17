@@ -192,5 +192,5 @@ def merge_dicts(a, b, path=()):
 
 
 # Provide submodules; allow submodules to import stuff from __init__
-from . import (browser, cache, configfiles, country, daemon, fs, guessit, html,
-               http, signal, subproc, timestamp, video)
+from . import (browser, cache, configfiles, country, daemon, fs, html, http,
+               release_info, signal, subproc, timestamp, video)

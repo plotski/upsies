@@ -1,6 +1,6 @@
 import re
 
-from ...utils import ReleaseType, guessit
+from ...utils import ReleaseType, release_info
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -89,10 +89,10 @@ class Query:
         """
         Create instance from file or directory name
 
-        `path` is passed to :func:`~.guessit.guessit` to get the arguments for
-        instantiation.
+        `path` is passed to :class:`~.release_info.ReleaseInfo` to get the
+        arguments for instantiation.
         """
-        guess = guessit.guessit(path)
+        guess = release_info.ReleaseInfo(path)
         kwargs = {'title': guess['title']}
         if guess.get('year'):
             kwargs['year'] = guess['year']
