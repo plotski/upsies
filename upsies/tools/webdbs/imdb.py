@@ -99,8 +99,9 @@ class ImdbApi(WebDbApiBase):
     async def title_english(self, id):
         info = await self._imdbpie.get(id, 'title_versions')
 
-        ignored_attributes = ( 'dubbed version', 'literal title', 'original script title',
-                               'short title', 'video box title')
+        ignored_attributes = ('alternative spelling', 'dubbed version',
+                              'literal title', 'original script title',
+                              'short title', 'video box title')
         ignored_types = ('working', 'tv')
 
         # Some titles should not be considered

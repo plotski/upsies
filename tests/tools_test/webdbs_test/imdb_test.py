@@ -368,6 +368,7 @@ async def test_summary(id, exp_summary, api, store_response):
         ('tt1127715', '', 'Sin nombre'),
         ('tt1405737', 'Traffic Light', 'Ramzor'),
         ('tt1572491', 'The Last Circus', 'Balada triste de trompeta'),
+        ('tt2172934', '', '3 Days to Kill'),
         ('tt2209300', 'Aftermath', 'Poklosie'),
         ('tt2302755', '', 'Olympus Has Fallen'),
         ('tt3286052', "The Blackcoat's Daughter", 'February'),
