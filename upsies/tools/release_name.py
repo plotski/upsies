@@ -10,18 +10,20 @@ _log = logging.getLogger(__name__)
 
 class ReleaseName(collections.abc.Mapping):
     """
-    Extract information from release name and re-assemble it
+    Extract information from release name and re-assemble it into string
 
     :param str path: Path to release content
 
-    If `path` exists, it is used to analyzed its data for certain parts of the
-    release name, e.g. to detect the resolution.
+    If `path` exists, it is used to analyze file contents for some parts of the
+    new release name, e.g. to detect the resolution.
 
     Example:
 
-    >>> rn = ReleaseName("The Foo 1984 1080p BluRay DTS-ASDF")
+    >>> rn = ReleaseName("The.Foo.1984.1080p.Blu-Ray.X264-ASDF")
     >>> rn.source
     'BluRay'
+    >>> rn.format()
+    'The Foo 1984 1080p BluRay DTS x264-ASDF'
     >>> "{title} ({year})".format(**rn)
     'The Foo (1984)'
     """
@@ -199,7 +201,7 @@ class ReleaseName(collections.abc.Mapping):
 
     @property
     def service(self):
-        """Service abbreviation (e.g. "AMZN", "NF") or empty string"""
+        """Streaming service abbreviation (e.g. "AMZN", "NF") or empty string"""
         return self._guess.get('service') or ''
 
     @service.setter
