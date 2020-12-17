@@ -2,7 +2,7 @@ import asyncio
 import os
 
 from .. import errors, jobs
-from ..utils import ReleaseType, cache, release_info
+from ..utils import ReleaseType, cached_property, release_info
 from .base import TrackerBase
 
 import logging  # isort:skip
@@ -13,7 +13,7 @@ class DummyTracker(TrackerBase):
     name = 'dummy'
     label = 'DuMmY'
 
-    @cache.property
+    @cached_property
     def jobs_before_upload(self):
         return (
             self.create_torrent_job,
@@ -26,7 +26,7 @@ class DummyTracker(TrackerBase):
             self.category_job,
         )
 
-    @cache.property
+    @cached_property
     def category_job(self):
         guess = release_info.ReleaseInfo(self.job_input.content_path).get('type')
         if guess:

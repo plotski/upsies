@@ -1,6 +1,6 @@
 import functools
 
-from ....utils import cache
+from ....utils import cached_property
 from .. import widgets
 from . import JobWidgetBase
 
@@ -24,7 +24,7 @@ class SubmitJobWidget(JobWidgetBase):
         for signal, msg in messages:
             self.job.signal.register(signal, functools.partial(self._set_status, msg))
 
-    @cache.property
+    @cached_property
     def runtime_widget(self):
         return self._status_info
 

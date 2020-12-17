@@ -2,7 +2,7 @@ import re
 import urllib
 
 from .. import errors, jobs
-from ..utils import cache, html, http, release_info
+from ..utils import cached_property, html, http, release_info
 from .base import TrackerBase
 
 import logging  # isort:skip
@@ -13,7 +13,7 @@ class NblTracker(TrackerBase):
     name = 'nbl'
     label = 'NBL'
 
-    @cache.property
+    @cached_property
     def jobs_before_upload(self):
         return (
             self.create_torrent_job,
@@ -22,7 +22,7 @@ class NblTracker(TrackerBase):
             self.category_job,
         )
 
-    @cache.property
+    @cached_property
     def category_job(self):
         # Season or Episode
         if str(release_info.ReleaseInfo(self.job_input.content_path).get('type')) == 'episode':

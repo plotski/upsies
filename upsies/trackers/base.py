@@ -2,7 +2,7 @@ import abc
 import types
 
 from .. import jobs as _jobs
-from ..utils import cache, fs
+from ..utils import cached_property, fs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class TrackerBase(abc.ABC):
     def jobs_before_upload(self):
         """Sequence of jobs that need to finish before :meth:`upload` can be called"""
 
-    @cache.property
+    @cached_property
     def jobs_after_upload(self):
         """Sequence of jobs that are started :meth:`upload` can be called"""
         return (
@@ -57,7 +57,7 @@ class TrackerBase(abc.ABC):
             self.copy_torrent_job,
         )
 
-    @cache.property
+    @cached_property
     def create_torrent_job(self):
         return _jobs.torrent.CreateTorrentJob(
             homedir=self.job_input.homedir,
@@ -67,7 +67,7 @@ class TrackerBase(abc.ABC):
             tracker_config=self.config,
         )
 
-    @cache.property
+    @cached_property
     def add_torrent_job(self):
         if self.job_input.add_to_client:
             add_torrent_job = _jobs.torrent.AddTorrentJob(
@@ -82,7 +82,7 @@ class TrackerBase(abc.ABC):
             self.create_torrent_job.signal.register('finished', add_torrent_job.finalize)
             return add_torrent_job
 
-    @cache.property
+    @cached_property
     def copy_torrent_job(self):
         if self.job_input.torrent_destination:
             copy_torrent_job = _jobs.torrent.CopyTorrentJob(
@@ -96,7 +96,7 @@ class TrackerBase(abc.ABC):
             self.create_torrent_job.signal.register('finished', copy_torrent_job.finish)
             return copy_torrent_job
 
-    @cache.property
+    @cached_property
     def release_name_job(self):
         return _jobs.release_name.ReleaseNameJob(
             homedir=self.job_input.homedir,
@@ -104,7 +104,7 @@ class TrackerBase(abc.ABC):
             content_path=self.job_input.content_path,
         )
 
-    @cache.property
+    @cached_property
     def imdb_job(self):
         imdb_job = _jobs.search.SearchDbJob(
             homedir=self.job_input.homedir,
@@ -116,7 +116,7 @@ class TrackerBase(abc.ABC):
         imdb_job.signal.register('output', self.release_name_job.fetch_info)
         return imdb_job
 
-    @cache.property
+    @cached_property
     def tmdb_job(self):
         return _jobs.search.SearchDbJob(
             homedir=self.job_input.homedir,
@@ -125,7 +125,7 @@ class TrackerBase(abc.ABC):
             db='tmdb',
         )
 
-    @cache.property
+    @cached_property
     def tvmaze_job(self):
         return _jobs.search.SearchDbJob(
             homedir=self.job_input.homedir,
@@ -134,7 +134,7 @@ class TrackerBase(abc.ABC):
             db='tvmaze',
         )
 
-    @cache.property
+    @cached_property
     def screenshots_job(self):
         return _jobs.screenshots.ScreenshotsJob(
             homedir=self.job_input.homedir,
@@ -142,7 +142,7 @@ class TrackerBase(abc.ABC):
             content_path=self.job_input.content_path,
         )
 
-    @cache.property
+    @cached_property
     def upload_screenshots_job(self):
         if self.job_input.image_host:
             imghost_job = _jobs.imghost.ImageHostJob(
@@ -162,7 +162,7 @@ class TrackerBase(abc.ABC):
             self.screenshots_job.signal.register('finished', imghost_job.finalize)
             return imghost_job
 
-    @cache.property
+    @cached_property
     def mediainfo_job(self):
         return _jobs.mediainfo.MediainfoJob(
             homedir=self.job_input.homedir,

@@ -5,7 +5,7 @@ from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.utils import get_cwidth
 
 from ....tools import webdbs
-from ....utils import browser, cache
+from ....utils import browser, cached_property
 from .. import widgets
 from . import JobWidgetBase
 
@@ -82,7 +82,7 @@ class SearchDbJobWidget(JobWidgetBase):
         self._widgets[attr].text = str(value)
         self.invalidate()
 
-    @cache.property
+    @cached_property
     def runtime_widget(self):
         layout = [
             VSplit([

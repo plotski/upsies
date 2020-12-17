@@ -4,7 +4,7 @@ import collections
 import json
 import os
 
-from ..utils import cache, signal
+from ..utils import cached_property, signal
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -305,7 +305,7 @@ class JobBase(abc.ABC):
                 except (ValueError, TypeError) as e:
                     raise RuntimeError(f'Unable to decode JSON: {content!r}: {e}')
 
-    @cache.property
+    @cached_property
     def cache_directory(self):
         """
         Path to directory that stores cache files
@@ -317,7 +317,7 @@ class JobBase(abc.ABC):
             os.mkdir(path)
         return path
 
-    @cache.property
+    @cached_property
     def cache_file(self):
         """
         File path in :attr:`cache_directory` to store cached :attr:`output` in

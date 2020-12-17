@@ -1,7 +1,7 @@
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.layout.containers import ConditionalContainer, HSplit
 
-from ....utils import cache, fs
+from ....utils import cached_property, fs
 from .. import widgets
 from . import JobWidgetBase
 
@@ -22,7 +22,7 @@ class ScreenshotsJobWidget(JobWidgetBase):
             self._screenshot_progress.percent = self.job.screenshots_created / self.job.screenshots_total * 100
             self.invalidate()
 
-    @cache.property
+    @cached_property
     def runtime_widget(self):
         return HSplit(
             children=[

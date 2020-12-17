@@ -4,7 +4,7 @@ sequence of :class:`~.jobs.JobBase` instances.
 
 It is important that the jobs are only instantiated once and the
 :attr:`~CommandBase.jobs` property doesn't create new jobs on every access. The
-easiest way to achieve this is with the :class:`.utils.cache.property`
+easiest way to achieve this is with the :class:`.utils.cached_property`
 decorator.
 
 Jobs should use CLI arguments (:attr:`~CommandBase.args`) and config files
@@ -16,7 +16,7 @@ import abc
 from ... import jobs as _jobs
 from ... import trackers
 from ...tools import btclients, imghosts
-from ...utils import cache, fs
+from ...utils import cached_property, fs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ class search_db(CommandBase):
     The focused search result can be opened in the default web browser by
     pressing Alt-Enter.
     """
-    @cache.property
+    @cached_property
     def jobs(self):
         return (
             _jobs.search.SearchDbJob(
@@ -87,11 +87,11 @@ class release_name(CommandBase):
     Missing required information is highlighted with placeholders,
     e.g. "UNKNOWN_RESOLUTION"
     """
-    @cache.property
+    @cached_property
     def jobs(self):
         return (self.imdb_job, self.release_name_job)
 
-    @cache.property
+    @cached_property
     def release_name_job(self):
         return _jobs.release_name.ReleaseNameJob(
             homedir=fs.projectdir(self.args.CONTENT),
@@ -99,7 +99,7 @@ class release_name(CommandBase):
             content_path=self.args.CONTENT,
         )
 
-    @cache.property
+    @cached_property
     def imdb_job(self):
         # To be able to fetch the original title, year, etc, we need to prompt
         # for an ID first. IMDb seems to be best.
@@ -115,7 +115,7 @@ class release_name(CommandBase):
 
 class create_torrent(CommandBase):
     """Create torrent file and optionally add it or move it"""
-    @cache.property
+    @cached_property
     def create_torrent_job(self):
         return _jobs.torrent.CreateTorrentJob(
             homedir=fs.projectdir(self.args.CONTENT),
@@ -125,7 +125,7 @@ class create_torrent(CommandBase):
             tracker_config=self.config['trackers'][self.args.TRACKER],
         )
 
-    @cache.property
+    @cached_property
     def add_torrent_job(self):
         if self.args.add_to:
             add_torrent_job = _jobs.torrent.AddTorrentJob(
@@ -143,7 +143,7 @@ class create_torrent(CommandBase):
             self.create_torrent_job.signal.register('finished', add_torrent_job.finalize)
             return add_torrent_job
 
-    @cache.property
+    @cached_property
     def copy_torrent_job(self):
         if self.args.copy_to:
             copy_torrent_job = _jobs.torrent.CopyTorrentJob(
@@ -157,7 +157,7 @@ class create_torrent(CommandBase):
             self.create_torrent_job.signal.register('finished', copy_torrent_job.finish)
             return copy_torrent_job
 
-    @cache.property
+    @cached_property
     def jobs(self):
         return (
             self.create_torrent_job,
@@ -168,7 +168,7 @@ class create_torrent(CommandBase):
 
 class add_torrent(CommandBase):
     """Add torrent file to BitTorrent client"""
-    @cache.property
+    @cached_property
     def jobs(self):
         return (
             _jobs.torrent.AddTorrentJob(
@@ -186,7 +186,7 @@ class add_torrent(CommandBase):
 
 class screenshots(CommandBase):
     """Create screenshots and optionally upload them"""
-    @cache.property
+    @cached_property
     def screenshots_job(self):
         return _jobs.screenshots.ScreenshotsJob(
             homedir=fs.projectdir(self.args.CONTENT),
@@ -196,7 +196,7 @@ class screenshots(CommandBase):
             number=self.args.number,
         )
 
-    @cache.property
+    @cached_property
     def upload_screenshots_job(self):
         if self.args.upload_to:
             imghost_job = _jobs.imghost.ImageHostJob(
@@ -220,7 +220,7 @@ class screenshots(CommandBase):
             self.screenshots_job.signal.register('finished', imghost_job.finalize)
             return imghost_job
 
-    @cache.property
+    @cached_property
     def jobs(self):
         return (
             self.screenshots_job,
@@ -230,7 +230,7 @@ class screenshots(CommandBase):
 
 class upload_images(CommandBase):
     """Upload images to image hosting service"""
-    @cache.property
+    @cached_property
     def jobs(self):
         return (
             _jobs.imghost.ImageHostJob(
@@ -254,7 +254,7 @@ class mediainfo(CommandBase):
 
     Any irrelevant leading parts in the file path are removed from the output.
     """
-    @cache.property
+    @cached_property
     def jobs(self):
         return (
             _jobs.mediainfo.MediainfoJob(
@@ -267,7 +267,7 @@ class mediainfo(CommandBase):
 
 class submit(CommandBase):
     """Generate all required metadata and upload to tracker"""
-    @cache.property
+    @cached_property
     def jobs(self):
         submit_job = _jobs.submit.SubmitJob(
             homedir=fs.projectdir(self.args.CONTENT),
@@ -280,17 +280,17 @@ class submit(CommandBase):
             + tuple(self.tracker.jobs_after_upload)
         )
 
-    @cache.property
+    @cached_property
     def tracker_name(self):
         """Lower-case abbreviation of tracker name"""
         return self.args.TRACKER.lower()
 
-    @cache.property
+    @cached_property
     def tracker_config(self):
         """Dictionary of :attr:`tracker_name` section in trackers configuration file"""
         return self.config['trackers'][self.tracker_name]
 
-    @cache.property
+    @cached_property
     def tracker(self):
         """:class:`Tracker` instance from one of the submodules of :mod:`~trackers`"""
         return trackers.tracker(
@@ -330,7 +330,7 @@ class set(CommandBase):
 
     The first segment in the option name is the file name without the extension.
     """
-    @cache.property
+    @cached_property
     def jobs(self):
         return (
             _jobs.config.SetJob(

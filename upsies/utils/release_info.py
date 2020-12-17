@@ -6,7 +6,7 @@ import collections
 import os
 import re
 
-from . import LazyModule, ReleaseType, cache, fs, mediainfo
+from . import LazyModule, ReleaseType, cached_property, fs, mediainfo
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         self._path = path
         self._dict = {}
 
-    @cache.property
+    @cached_property
     def _guessit(self):
         path = self._path
         # guessit doesn't detect AC3 if it's called "AC-3"
@@ -111,7 +111,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     _title_aka_regex = re.compile(r' +AKA +')
 
-    @cache.property
+    @cached_property
     def _title_parts(self):
         # Guess it splits AKA at " - ", we want to split at " AKA "
         title_parts = [self._guessit.get('title', '')]

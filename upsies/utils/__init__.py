@@ -10,6 +10,28 @@ import itertools
 import os
 import types
 
+try:
+    from functools import cached_property
+except ImportError:
+    import functools
+
+    # https://github.com/jackmaney/lazy-property/
+    class cached_property():
+        """Property that replaces itself with its return value on first access"""
+
+        def __init__(self, fget):
+            self.fget = fget
+            functools.update_wrapper(self, fget)
+            self.fset = None
+
+        def __get__(self, obj, cls):
+            if obj is None:
+                return self
+            else:
+                value = self.fget(obj)
+                setattr(obj, self.fget.__name__, value)
+                return value
+
 
 class ReleaseType(enum.Enum):
     '''
@@ -192,5 +214,5 @@ def merge_dicts(a, b, path=()):
 
 
 # Provide submodules; allow submodules to import stuff from __init__
-from . import (browser, cache, configfiles, country, daemon, fs, html, http,
+from . import (browser, configfiles, country, daemon, fs, html, http,
                release_info, signal, subproc, timestamp, video)

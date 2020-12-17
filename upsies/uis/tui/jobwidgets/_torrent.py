@@ -1,4 +1,4 @@
-from ....utils import cache, fs
+from ....utils import cached_property, fs
 from .. import widgets
 from . import JobWidgetBase
 
@@ -16,7 +16,7 @@ class CreateTorrentJobWidget(JobWidgetBase):
         self._progress.percent = percent_done
         self.invalidate()
 
-    @cache.property
+    @cached_property
     def runtime_widget(self):
         return self._progress
 
@@ -35,7 +35,7 @@ class AddTorrentJobWidget(JobWidgetBase):
         self._status.text = 'Done.'
         self.invalidate()
 
-    @cache.property
+    @cached_property
     def runtime_widget(self):
         return self._status
 
@@ -54,6 +54,6 @@ class CopyTorrentJobWidget(JobWidgetBase):
         self._status.text = 'Done.'
         self.invalidate()
 
-    @cache.property
+    @cached_property
     def runtime_widget(self):
         return self._status

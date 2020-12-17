@@ -1,4 +1,4 @@
-from ....utils import cache
+from ....utils import cached_property
 from .. import widgets
 from . import JobWidgetBase
 
@@ -17,6 +17,6 @@ class ImageHostJobWidget(JobWidgetBase):
             self._upload_progress.percent = self.job.images_uploaded / self.job.images_total * 100
             self.invalidate()
 
-    @cache.property
+    @cached_property
     def runtime_widget(self):
         return self._upload_progress

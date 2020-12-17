@@ -1,6 +1,6 @@
 from prompt_toolkit.layout.containers import Window
 
-from ....utils import cache
+from ....utils import cached_property
 from . import JobWidgetBase
 
 import logging  # isort:skip
@@ -11,6 +11,6 @@ class MediainfoJobWidget(JobWidgetBase):
     def setup(self):
         pass
 
-    @cache.property
+    @cached_property
     def runtime_widget(self):
         return Window(dont_extend_height=True)

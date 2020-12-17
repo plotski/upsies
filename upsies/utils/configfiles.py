@@ -85,7 +85,7 @@ class ConfigFiles:
                     types[section][subsection][option] = get_type(value)
         return types
 
-    @utils.cache.property
+    @utils.cached_property
     def paths(self):
         """Sorted tuple of ``section.subsection.option`` paths"""
         def _get_paths(dct, parents=()):

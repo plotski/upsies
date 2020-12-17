@@ -1,6 +1,27 @@
+import sys
+from unittest.mock import Mock, call
+
 import pytest
 
 from upsies import utils
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8, 0), reason='Python 3.8 functools includes cached_property')
+def test_cached_property_caches_return_value_of_decorated_function():
+    calculation_mock = Mock()
+    calculation_mock.return_value = 'expensive result'
+
+    class Foo():
+        @utils.cached_property
+        def bar(self):
+            return calculation_mock()
+
+    foo = Foo()
+    for _ in range(5):
+        assert foo.bar == 'expensive result'
+        assert calculation_mock.call_args_list == [call()]
+    foo.bar = 'asdf'
+    assert foo.bar == 'asdf'
 
 
 @pytest.mark.parametrize(
@@ -29,7 +50,6 @@ def test_submodules_finds_modules():
     import importlib
     assert set(utils.submodules('upsies.utils')) == {
         importlib.import_module('upsies.utils.browser'),
-        importlib.import_module('upsies.utils.cache'),
         importlib.import_module('upsies.utils.configfiles'),
         importlib.import_module('upsies.utils.country'),
         importlib.import_module('upsies.utils.daemon'),

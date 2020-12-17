@@ -1,4 +1,4 @@
-from ....utils import cache
+from ....utils import cached_property
 from .. import widgets
 from . import JobWidgetBase
 
@@ -17,6 +17,6 @@ class ChoiceJobWidget(JobWidgetBase):
     def handle_choice(self, choice):
         self.job.choice_selected(choice)
 
-    @cache.property
+    @cached_property
     def runtime_widget(self):
         return self._radiolist

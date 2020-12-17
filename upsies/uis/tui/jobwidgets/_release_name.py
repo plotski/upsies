@@ -1,4 +1,4 @@
-from ....utils import cache
+from ....utils import cached_property
 from .. import widgets
 from . import JobWidgetBase
 
@@ -27,6 +27,6 @@ class ReleaseNameJobWidget(JobWidgetBase):
         _log.debug('Approved release name: %r', self._release_name.text)
         self.job.release_name_selected(self._release_name.text)
 
-    @cache.property
+    @cached_property
     def runtime_widget(self):
         return self._release_name
