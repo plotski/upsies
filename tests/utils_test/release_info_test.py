@@ -5,11 +5,6 @@ import pytest
 from upsies.utils import ReleaseType, release_info
 
 
-def test_getting_unknown_key(mocker):
-    ri = release_info.ReleaseInfo('foo.mkv')
-    with pytest.raises(KeyError, match=r"^'foo'$"):
-        ri['foo']
-
 def test_getting_known_key(mocker):
     ri = release_info.ReleaseInfo('foo.mkv')
     mocker.patch.object(ri, '_get_title', Mock(return_value='Mocked Title'))
@@ -17,11 +12,16 @@ def test_getting_known_key(mocker):
         assert ri['title'] == 'Mocked Title'
     assert ri._get_title.call_args_list == [call()]
 
+def test_getting_unknown_key(mocker):
+    ri = release_info.ReleaseInfo('foo.mkv')
+    with pytest.raises(KeyError, match=r"^'foo'$"):
+        ri['foo']
+
 
 def test_setting_known_key(mocker):
     ri = release_info.ReleaseInfo('foo.mkv')
     assert ri['title'] == 'foo'
-    ri['foo'] = ''
+    ri['title'] = ''
     assert ri['title'] == ''
 
 def test_setting_unknown_key(mocker):
