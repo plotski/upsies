@@ -163,6 +163,18 @@ def test_title_and_alternative_title(release_name, expected):
     assert_info(release_name, **expected)
 
 
+edition_samples = (
+    ('The Foo 2000 EXTENDED 1080p DTS x264-ASDF', ['Extended']),
+    ('The Foo 2000 DC Uncut 1080p DTS x264-ASDF', ["Director's Cut", 'Uncut']),
+)
+@pytest.mark.parametrize('release_name, edition', edition_samples)
+def test_edition(release_name, edition):
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
+                'edition': edition, 'resolution': '1080p',
+                'audio_codec': 'DTS', 'video_codec': 'x264', 'group': 'ASDF'}
+    assert_info(release_name, **expected)
+
+
 source_samples = (
     ('DVDRip', 'DVDRip'), ('dvdrip', 'DVDRip'), ('dvd rip', 'DVDRip'), ('DVDRip hybrid', 'Hybrid DVDRip'),
     ('BluRay', 'BluRay'), ('bluray', 'BluRay'), ('Blu-ray', 'BluRay'),
@@ -288,13 +300,14 @@ def test_video_codec(release_name, video_codec):
     assert_info(release_name, **expected)
 
 
-edition_samples = (
-    ('The Foo 2000 EXTENDED 1080p DTS x264-ASDF', ['Extended']),
-    ('The Foo 2000 DC Uncut 1080p DTS x264-ASDF', ["Director's Cut", 'Uncut']),
+group_samples = (
+    ('The Foo 2000 1080p DTS x264-ASDF', 'ASDF'),
+    ('The Foo 2000 1080p DTS x264-AsdF', 'AsdF'),
+    ('The Foo 2000 1080p DTS x264-A-F', 'A-F'),
 )
-@pytest.mark.parametrize('release_name, edition', edition_samples)
-def test_edition(release_name, edition):
+@pytest.mark.parametrize('release_name, group', group_samples)
+def test_group(release_name, group):
     expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
-                'edition': edition, 'resolution': '1080p',
-                'audio_codec': 'DTS', 'video_codec': 'x264', 'group': 'ASDF'}
+                'resolution': '1080p',
+                'audio_codec': 'DTS', 'video_codec': 'x264', 'group': group}
     assert_info(release_name, **expected)
