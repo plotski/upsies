@@ -11,7 +11,7 @@ _log = logging.getLogger(__name__)
 class SubmitJobWidget(JobWidgetBase):
     def setup(self):
         self._status_info = widgets.TextField(
-            text='Waiting...',
+            text='',
         )
         messages = (
             ('logging_in', 'Logging in...'),
