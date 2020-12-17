@@ -403,7 +403,7 @@ def test_cache_is_not_written_if_cache_file_property_is_falsy(cache_file_value, 
     job.send('Foo')
     job.finish()
     assert job.cache_file is cache_file_value
-    with patch('upsies.jobs._base.open') as open_mock:
+    with patch('upsies.jobs.base.open') as open_mock:
         job._write_output_cache()
         assert open_mock.call_args_list == []
 
@@ -504,7 +504,7 @@ def test_cache_is_not_read_if_cache_file_property_is_falsy(cache_file_value, tmp
     class BarJob(FooJob):
         cache_file = cache_file_value
 
-    with patch('upsies.jobs._base.open') as open_mock:
+    with patch('upsies.jobs.base.open') as open_mock:
         job = BarJob(homedir=tmp_path, ignore_cache=False)
         assert job.cache_file is cache_file_value
         job.start()
