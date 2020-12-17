@@ -34,7 +34,6 @@ def test_submodules_finds_modules():
         importlib.import_module('upsies.utils.country'),
         importlib.import_module('upsies.utils.daemon'),
         importlib.import_module('upsies.utils.fs'),
-        importlib.import_module('upsies.utils.guessit'),
         importlib.import_module('upsies.utils.html'),
         importlib.import_module('upsies.utils.http'),
         importlib.import_module('upsies.utils.mediainfo'),
