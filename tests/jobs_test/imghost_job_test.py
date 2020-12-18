@@ -5,6 +5,7 @@ import pytest
 
 from upsies import errors
 from upsies.jobs.imghost import ImageHostJob
+from upsies.tools.imghosts import ImageHostBase
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -34,8 +35,12 @@ async def job(tmp_path, mocker, imghost):
 
 
 @pytest.fixture
-def imghost():
-    return Mock(upload=AsyncMock())
+def imghost(tmp_path):
+    class TestImageHost(ImageHostBase):
+        name = 'testhost'
+        upload = AsyncMock()
+        _upload = 'not an abstract base method'
+    return TestImageHost()
 
 
 def test_cache_file_is_None(job):
@@ -88,7 +93,7 @@ async def test_initialize_calls_upload_images(tmp_path, mocker, imghost):
         ImageHostJob(
             homedir=tmp_path,
             ignore_cache=False,
-            imghost=Mock(),
+            imghost=imghost,
             images_total=3,
         )
 
@@ -98,7 +103,7 @@ async def test_job_is_finished_when_upload_images_task_terminates(tmp_path, mock
     job = ImageHostJob(
         homedir=tmp_path,
         ignore_cache=False,
-        imghost=Mock(),
+        imghost=imghost,
         images_total=3,
     )
     assert not job._upload_images_task.done()

@@ -5,6 +5,7 @@ Upload images to image hosting services
 import asyncio
 
 from .. import errors
+from ..tools.imghosts import ImageHostBase
 from . import JobBase
 
 import logging  # isort:skip
@@ -51,6 +52,7 @@ class ImageHostJob(JobBase):
             else:
                 self._images_total = len(image_paths)
 
+        assert isinstance(imghost, ImageHostBase), f'Not an ImageHostBase: {imghost!r}'
         self._imghost = imghost
         self._images_uploaded = 0
         self._exit_code = 0
