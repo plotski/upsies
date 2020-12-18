@@ -3,8 +3,8 @@ Exception classes
 
 Abstraction layers should raise one of these exceptions if an error message
 should be displayed to the user. If the programmer made a mistake, any
-appropriate error from the standard library (e.g. :class:`ValueError`,
-:class:`TypeError`) or :class:`RuntimeError` should be raised.
+appropriate builtin exception (e.g. :class:`ValueError`, :class:`TypeError`) or
+:class:`RuntimeError` should be raised.
 
 For example, :func:`upsies.utils.http.get` always raises :class:`RequestError`,
 regardless of which library is used or what went wrong, except when something
@@ -24,18 +24,18 @@ class CancelledError(UpsiesError):
     """User cancelled an operation"""
 
 class ConfigError(UpsiesError):
-    """Error while reading from a config file"""
+    """Error while reading/writing config file or setting config file option"""
 
 class DependencyError(UpsiesError):
     """Some external tool is missing (e.g. ``mediainfo``)"""
 
 class MediainfoError(UpsiesError):
-    """Getting mediainfo failed"""
+    """Getting information from ``mediainfo`` command failed"""
 
 class ContentError(UpsiesError):
     """
-    Something is wrong with the user-provided content, e.g. no video files in
-    the given directory or no permission to read
+    Something is wrong with user-provided content, e.g. no video files in the
+    given directory or no permission to read
     """
 
 class ProcessError(UpsiesError):
