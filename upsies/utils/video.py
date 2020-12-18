@@ -79,11 +79,15 @@ def filter_similar_length(filepaths):
 
     :raise ContentError: if any path in `filepaths` is not readable
     """
-    lengths = {fp: length(fp) for fp in filepaths}
-    avg = sum(lengths.values()) / len(lengths)
-    min_length = avg * 0.5
-    return tuple(fp for fp,l in lengths.items()
-                 if l >= min_length)
+    filepaths = tuple(filepaths)
+    if len(filepaths) < 2:
+        return filepaths
+    else:
+        lengths = {fp: length(fp) for fp in filepaths}
+        avg = sum(lengths.values()) / len(lengths)
+        min_length = avg * 0.5
+        return tuple(fp for fp,l in lengths.items()
+                     if l >= min_length)
 
 
 @functools.lru_cache(maxsize=None)

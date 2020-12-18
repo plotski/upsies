@@ -102,7 +102,7 @@ def test_first_video_gets_dvd_image(tmp_path, mocker):
     ]
 
 
-def test_filter_similar_length(mocker):
+def test_filter_similar_length_gets_multiple_files(mocker):
     lengths = {
         'a.mkv': 50,
         'b.mkv': 500,
@@ -113,7 +113,7 @@ def test_filter_similar_length(mocker):
         'g.mkv': 10500,
         'h.mkv': 9000,
     }
-    mocker.patch(
+    length_mock = mocker.patch(
         'upsies.utils.video.length',
         side_effect=tuple(lengths.values()),
     )
@@ -123,6 +123,26 @@ def test_filter_similar_length(mocker):
         'g.mkv',
         'h.mkv',
     )
+    assert length_mock.call_args_list == [
+        call('a.mkv'),
+        call('b.mkv'),
+        call('c.mkv'),
+        call('d.mkv'),
+        call('e.mkv'),
+        call('f.mkv'),
+        call('g.mkv'),
+        call('h.mkv'),
+    ]
+
+def test_filter_similar_length_gets_single_file(mocker):
+    length_mock = mocker.patch('upsies.utils.video.length', return_value=12345)
+    assert video.filter_similar_length(('foo.mkv',)) == ('foo.mkv',)
+    assert length_mock.call_args_list == []
+
+def test_filter_similar_length_gets_no_files(mocker):
+    length_mock = mocker.patch('upsies.utils.video.length', return_value=12345)
+    assert video.filter_similar_length(()) == ()
+    assert length_mock.call_args_list == []
 
 
 @patch('upsies.utils.subproc.run')
