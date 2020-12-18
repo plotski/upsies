@@ -4,7 +4,7 @@ Timestamp parsing and normalizing
 
 def pretty(seconds):
     """
-    Format `seconds` as H+:MM:SS
+    Format `seconds` as "[[H+:]MM:]SS"
 
     Invalid values are returned unchanged.
 
@@ -12,7 +12,10 @@ def pretty(seconds):
         ":"-separated string
     :type seconds: int or float or "[[H+:]M+:]S+"
 
-    :return: "H+:MM:SS"
+    :raise TypeError: if `seconds` is of invalid type
+    :raise ValueError: if `seconds` is negative
+
+    :return: "[[H+:]MM:]SS""
     """
     if isinstance(seconds, str):
         seconds = parse(seconds)
@@ -31,13 +34,14 @@ def pretty(seconds):
 
 def parse(string):
     """
-    Convert string format "[[HH:]MM:]SS" into integer
+    Convert string format "[[H+:]MM:]SS" into integer
 
-    :param string: Hours, minutes and seconds as ":"-separated string
+    :param string: Hours, minutes and seconds as ":"-separated string or number
+        of seconds
     :type string: str or int or float
 
-    :raise TypeError: if `string` is of unsupported type
-    :raise ValueError: if `string` has an unsupported format
+    :raise TypeError: if `string` is of invalid type
+    :raise ValueError: if `string` has an invalid format
 
     :return: Number of seconds
     """

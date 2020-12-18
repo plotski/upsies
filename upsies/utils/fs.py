@@ -57,7 +57,7 @@ def tmpdir():
 @functools.lru_cache(maxsize=None)
 def projectdir(content_path):
     """
-    Return path to existing directory in which jobs put their files
+    Return path to existing directory in which jobs put their files and output
 
     :param str content_path: Path to torrent content
 

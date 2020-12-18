@@ -18,7 +18,7 @@ _run_output_cache = {}
 
 def run(argv, ignore_errors=False, join_stderr=False, cache=False):
     """
-    Execute subprocess
+    Execute command in subprocess
 
     :param argv: Command to execute
     :type argv: list of str
@@ -30,7 +30,7 @@ def run(argv, ignore_errors=False, join_stderr=False, cache=False):
     :raise DependencyError: if the command fails to execute
     :raise ProcessError: if stdout is not empty and `ignore_errors` is `False`
 
-    :return: stdout from process
+    :return: Output from process
     :rtype: str
     """
     argv = tuple(str(arg) for arg in argv)

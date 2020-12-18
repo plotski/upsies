@@ -30,8 +30,8 @@ def first_video(path):
     Paths to Blu-ray images (directories that contain a "BDMV" directory) are
     simply returned.
 
-    For paths to DVD images (directories that contain a "VIDEO_TS" directory),
-    the first .VOB file with a reasonable length is returned.
+    To avoid samples and similar files, `path` is filtered through
+    :func:`filter_similar_length`.
 
     :param str path: Path to file or directory
 
@@ -69,8 +69,9 @@ def filter_similar_length(filepaths):
 
     This is useful to exclude samples or short .VOBs from DVD images.
 
-    .. note:: Because this function is wrapped in `functools.lru_cache`,
-       `filepaths` should be a tuple (or any other hashable sequence).
+    .. note:: Because this function is decorated with
+       :func:`functools.lru_cache`, `filepaths` should be a tuple (or any other
+       hashable sequence).
 
     :params filepaths: Hashable sequence of video file paths
 

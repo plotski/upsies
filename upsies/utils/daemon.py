@@ -29,7 +29,8 @@ class DaemonProcess:
     :class:`multiprocessing.Process` abstraction with IPC
 
     Intended to offload heavy work (e.g. torrent creation) onto a different
-    process. (Threads can still make the UI unresponsive because of the GIL.)
+    process. (Threads can still make the UI unresponsive because of the
+    `GIL <https://wiki.python.org/moin/GlobalInterpreterLock>`_.)
     """
 
     def __init__(self, target, name=None, args=(), kwargs={},

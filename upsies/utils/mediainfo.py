@@ -1,3 +1,7 @@
+"""
+`mediainfo <https://mediaarea.net/en/MediaInfo>`_ abstraction layer
+"""
+
 import functools
 import json
 import os
@@ -45,7 +49,7 @@ def as_string(path):
 
 def tracks(path):
     """
-    Get tracks from video file
+    Get all tracks from video file
 
     Run ``mediainfo --Output=JSON path/to/video.mkv`` to find available fields.
 

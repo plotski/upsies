@@ -53,6 +53,7 @@ async def get(url, headers={}, params={}, auth=None,
 
     :return: Response text
     :rtype: Response
+    :raise RequestError: if the request fails for any expected reason
     """
     return await _request(
         method='GET',
@@ -82,6 +83,7 @@ async def post(url, headers={}, data={}, files={}, auth=None,
 
     :return: Response text
     :rtype: Response
+    :raise RequestError: if the request fails for any expected reason
     """
     return await _request(
         method='POST',
@@ -98,9 +100,9 @@ async def post(url, headers={}, data={}, files={}, auth=None,
 
 class Response(str):
     """
-    Response to a HTTP request
+    Response to an HTTP request
 
-    This is a subclass of `str` with additional attributes and methods.
+    This is a subclass of :class:`str` with additional attributes and methods.
     """
 
     def __new__(cls, text, headers={}, status_code=None):

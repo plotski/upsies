@@ -126,10 +126,11 @@ def submodules(package):
 
 def subclasses(basecls, modules):
     """
-    Return list of subclasses
+    Find subclasses in modules
 
     :param type basecls: Class that all returned classes are a subclass of
-    :param modules: List of modules to search
+    :param modules: Modules to search
+    :type modules: list of module objects
     """
     subclses = []
     for mod in modules:
@@ -198,7 +199,10 @@ def is_sequence(obj):
 
 
 def merge_dicts(a, b, path=()):
-    """Merge nested dictionaries `a` and `b` into a new dictionary"""
+    """
+    Merge nested dictionaries `a` and `b` into new dictionary with same
+    structure
+    """
     keys = itertools.chain(a, b)
     merged = {}
     for key in keys:
