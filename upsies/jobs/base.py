@@ -209,7 +209,7 @@ class JobBase(abc.ABC):
 
     @property
     def output(self):
-        """Result of this job as a sequence of strings"""
+        """Result of this job as an immutable sequence of strings"""
         return tuple(self._output)
 
     @property
