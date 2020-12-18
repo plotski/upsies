@@ -292,7 +292,10 @@ class submit(CommandBase):
 
     @cached_property
     def tracker(self):
-        """:class:`Tracker` instance from one of the submodules of :mod:`~trackers`"""
+        """
+        :class:`~.trackers.Tracker` instance from one of the submodules of
+        :mod:`.trackers`
+        """
         return trackers.tracker(
             name=self.tracker_name,
             config=self.tracker_config,
