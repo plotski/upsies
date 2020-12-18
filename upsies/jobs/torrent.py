@@ -151,7 +151,7 @@ class AddTorrentJob(JobBase):
         return None
 
     def initialize(self, *, client, download_path=None, torrents=()):
-        assert isinstance(client, ClientApiBase)
+        assert isinstance(client, ClientApiBase), f'Not a ClientApiBase: {client!r}'
         self._client = client
         self._download_path = download_path
         self._add_task = None
