@@ -1,3 +1,7 @@
+"""
+NBL API
+"""
+
 import re
 import urllib
 

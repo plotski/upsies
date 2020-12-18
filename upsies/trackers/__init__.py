@@ -1,11 +1,11 @@
 """
 API for trackers
 
-:class:`~.base.TrackerBase` provide a common interface for all trackers. They
-have two main purposes:
+:class:`~.base.TrackerBase` provides a uniform interface for all trackers. Its
+subclasses have two main purposes:
 
-1. Specify jobs that generate metadata, e.g. torrent creation, running
-   ``mediainfo`` and searching for IDs.
+1. Specify jobs that generate metadata, e.g. torrent creation, ``mediainfo``
+   output, IMDb ID, etc.
 
 2. Provide coroutine methods, e.g. for :meth:`~.base.TrackerBase.upload`\ ing
    the generated metadata.

@@ -1,3 +1,7 @@
+"""
+Abstract base class for tracker APIs
+"""
+
 import abc
 import types
 
@@ -28,12 +32,12 @@ class TrackerBase(abc.ABC):
     @property
     @abc.abstractmethod
     def name(self):
-        """Lower-case tracker name abbreviation"""
+        """Lower-case tracker name abbreviation for internal use"""
 
     @property
     @abc.abstractmethod
     def label(self):
-        """Tracker name abbreviation"""
+        """User-facing tracker name abbreviation"""
 
     @property
     def config(self):
@@ -52,7 +56,7 @@ class TrackerBase(abc.ABC):
 
     @cached_property
     def jobs_after_upload(self):
-        """Sequence of jobs that are started :meth:`upload` can be called"""
+        """Sequence of jobs that are started after :meth:`upload` finished"""
         return (
             self.add_torrent_job,
             self.copy_torrent_job,
@@ -188,7 +192,9 @@ class TrackerBase(abc.ABC):
         """
         Upload torrent and other metadata
 
-        :param dict metadata: Map of job names to job output
+        :param dict metadata: Map :attr:`~.JobBase.name` to
+            :attr:`~.JobBase.output` attributes for each job in
+            :attr:`jobs_before_upload`
 
             .. note: Job output is always an immutable sequence.
         """
