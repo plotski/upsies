@@ -5,6 +5,7 @@ import pytest
 
 from upsies import errors
 from upsies.jobs.submit import SubmitJob
+from upsies.trackers import TrackerBase
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -29,16 +30,18 @@ def job(tmp_path, tracker):
 
 @pytest.fixture
 def tracker():
-    return Mock(
-        jobs_before_upload=(
+    class TestTracker(TrackerBase):
+        name = 'test'
+        label = 'TeST'
+        jobs_before_upload = (
             Mock(wait=AsyncMock()),
             Mock(wait=AsyncMock()),
             Mock(wait=AsyncMock()),
-        ),
-        login=AsyncMock(),
-        logout=AsyncMock(),
-        upload=AsyncMock(),
-    )
+        )
+        login = AsyncMock()
+        logout = AsyncMock()
+        upload = AsyncMock()
+    return TestTracker(config='mock config')
 
 
 def test_cache_file(job):

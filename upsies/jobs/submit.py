@@ -5,6 +5,7 @@ Share generated metadata
 import asyncio
 
 from .. import errors
+from ..trackers.base import TrackerBase
 from . import JobBase
 
 import logging  # isort:skip
@@ -54,6 +55,7 @@ class SubmitJob(JobBase):
         return None
 
     def initialize(self, tracker):
+        assert isinstance(tracker, TrackerBase), f'Not a TrackerBase: {tracker!r}'
         self._tracker = tracker
         self._submit_lock = asyncio.Lock()
         self.signal.add('logging_in')
