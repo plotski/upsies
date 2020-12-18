@@ -209,6 +209,7 @@ def test_release_name_job(mocker):
 def test_imdb_job(mocker):
     SearchDbJob_mock = mocker.patch('upsies.jobs.search.SearchDbJob', Mock())
     mocker.patch('upsies.jobs.release_name.ReleaseNameJob', Mock())
+    webdb_mock = mocker.patch('upsies.tools.webdbs.webdb')
     tracker = make_TestTracker(
         config=Mock(),
         homedir=Mock(),
@@ -221,9 +222,10 @@ def test_imdb_job(mocker):
             homedir=tracker.job_input.homedir,
             ignore_cache=tracker.job_input.ignore_cache,
             content_path=tracker.job_input.content_path,
-            db='imdb',
+            db=webdb_mock.return_value,
         ),
     ]
+    assert webdb_mock.call_args_list == [call('imdb')]
     assert tracker.imdb_job.signal.register.call_args_list == [
         call('output', tracker.release_name_job.fetch_info),
     ]
@@ -231,6 +233,7 @@ def test_imdb_job(mocker):
 
 def test_tmdb_job(mocker):
     SearchDbJob_mock = mocker.patch('upsies.jobs.search.SearchDbJob', Mock())
+    webdb_mock = mocker.patch('upsies.tools.webdbs.webdb')
     tracker = make_TestTracker(
         config=Mock(),
         homedir=Mock(),
@@ -243,13 +246,15 @@ def test_tmdb_job(mocker):
             homedir=tracker.job_input.homedir,
             ignore_cache=tracker.job_input.ignore_cache,
             content_path=tracker.job_input.content_path,
-            db='tmdb',
+            db=webdb_mock.return_value,
         ),
     ]
+    assert webdb_mock.call_args_list == [call('tmdb')]
 
 
 def test_tvmaze_job(mocker):
     SearchDbJob_mock = mocker.patch('upsies.jobs.search.SearchDbJob', Mock())
+    webdb_mock = mocker.patch('upsies.tools.webdbs.webdb')
     tracker = make_TestTracker(
         config=Mock(),
         homedir=Mock(),
@@ -262,9 +267,10 @@ def test_tvmaze_job(mocker):
             homedir=tracker.job_input.homedir,
             ignore_cache=tracker.job_input.ignore_cache,
             content_path=tracker.job_input.content_path,
-            db='tvmaze',
+            db=webdb_mock.return_value,
         ),
     ]
+    assert webdb_mock.call_args_list == [call('tvmaze')]
 
 
 def test_screenshots_job(mocker):
