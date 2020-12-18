@@ -5,7 +5,7 @@ import pytest
 
 from upsies import errors
 from upsies.jobs import search
-from upsies.tools.webdbs import Query
+from upsies.tools.webdbs import Query, WebDbApiBase
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -22,23 +22,32 @@ class AsyncMock(Mock):
 
 @pytest.fixture
 def foodb(mocker):
-    foodb = Mock()
-    foodb.configure_mock(name='foodb', label='FooDB', search=AsyncMock())
-    return foodb
+    class TestDb(WebDbApiBase):
+        name = 'foodb'
+        label = 'FooDB'
+        search = AsyncMock()
+        cast = AsyncMock()
+        country = AsyncMock()
+        keywords = AsyncMock()
+        summary = AsyncMock()
+        title_english = AsyncMock()
+        title_original = AsyncMock()
+        type = AsyncMock()
+        year = AsyncMock()
+    return TestDb()
+
 
 @pytest.fixture
 def job(foodb, tmp_path, mocker):
     mocker.patch('upsies.jobs.search._Searcher', Mock(return_value=Mock(wait=AsyncMock())))
     mocker.patch('upsies.jobs.search._InfoUpdater', Mock(return_value=Mock(wait=AsyncMock())))
-    webdb_mock = mocker.patch('upsies.tools.webdbs.webdb', return_value=foodb)
     job = search.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
-        db='foodb',
+        db=foodb,
         content_path='path/to/foo',
     )
     assert job._db is foodb
-    assert webdb_mock.call_args_list == [call('foodb')]
     return job
 
 
@@ -54,23 +63,12 @@ def test_query(job):
     assert isinstance(job.query, Query)
 
 
-def test_unknown_db(tmp_path):
-    with pytest.raises(ValueError, match=r'^Unsupported web DB: bardb$'):
-        search.SearchDbJob(
-            homedir=tmp_path,
-            ignore_cache=False,
-            db='bardb',
-            content_path='path/to/foo',
-        )
-
-
 def test_initialize_creates_searcher(tmp_path, mocker, foodb):
     Searcher_mock = mocker.patch('upsies.jobs.search._Searcher', Mock())
-    mocker.patch('upsies.tools.webdbs.webdb', return_value=foodb)
     job = search.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
-        db='foodb',
+        db=foodb,
         content_path='path/to/foo',
     )
     assert job._searcher is Searcher_mock.return_value
@@ -83,7 +81,6 @@ def test_initialize_creates_searcher(tmp_path, mocker, foodb):
 
 def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
     InfoUpdater_mock = mocker.patch('upsies.jobs.search._InfoUpdater', Mock())
-    mocker.patch('upsies.tools.webdbs.webdb', return_value=foodb)
     make_update_info_func_mock = mocker.patch(
         'upsies.jobs.search.SearchDbJob._make_update_info_func',
         Mock(
@@ -102,7 +99,7 @@ def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
     job = search.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
-        db='foodb',
+        db=foodb,
         content_path='path/to/foo',
     )
     assert job._info_updater is InfoUpdater_mock.return_value
@@ -133,11 +130,10 @@ def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
 
 def test_make_update_info_func(tmp_path, mocker, foodb):
     mocker.patch('upsies.jobs.search.SearchDbJob.update_info')
-    mocker.patch('upsies.tools.webdbs.webdb', return_value=foodb)
     job = search.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
-        db='foodb',
+        db=foodb,
         content_path='path/to/foo',
     )
     func = job._make_update_info_func('key')

@@ -56,7 +56,7 @@ class SearchDbJob(JobBase):
         return self._query
 
     def initialize(self, db, content_path):
-        assert isinstance(db, webdbs.WebDbApiBase)
+        assert isinstance(db, webdbs.WebDbApiBase), f'Not a WebDbApiBase: {db!r}'
         self._db = db
         self._query = webdbs.Query.from_path(content_path)
         self._is_searching = False
