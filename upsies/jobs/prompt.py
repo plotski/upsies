@@ -54,8 +54,16 @@ class ChoiceJob(JobBase):
         Must be called by the UI when the user makes a choice
 
         :param choice: Chosen value or index in :attr:`choices`
+
+        :raise ValueError: if `choice` is not valid
         """
-        choice_str = str(choice)
-        assert choice_str in self._choices
-        self.send(choice_str)
+        if str(choice) in self._choices:
+            self.send(str(choice))
+        elif isinstance(choice, int):
+            if 0 <= choice < len(self._choices):
+                self.send(self._choices[choice])
+            else:
+                self.exception(ValueError(f'Invalid index: {choice}'))
+        else:
+            self.exception(ValueError(f'Invalid value: {choice}'))
         self.finish()
