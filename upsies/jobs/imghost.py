@@ -1,3 +1,7 @@
+"""
+Upload images to image hosting services
+"""
+
 import asyncio
 
 from .. import errors
@@ -11,15 +15,15 @@ class ImageHostJob(JobBase):
     """
     Upload images to an image hosting service
 
-    :param str imghost: Return value of :func:`tools.imghosts.imghost`
+    :param ImageHostBase imghost: Return value of :func:`.tools.imghosts.imghost`
     :param image_paths: Sequence of paths to image files
     :param images_total: Number of images that are going to be uploaded. The
         only purpose of this value is to provide it via the :attr:`images_total`
         property to calculate progress.
 
-    If image_paths is given, the job finishes after all images are uploaded.
+    If `image_paths` is given, the job finishes after all images are uploaded.
 
-    If image_patahs is not given, calls to :meth:`upload` are expected and
+    If `image_paths` is not given, calls to :meth:`upload` are expected and
     :meth:`finalize` must be called after the last call.
 
     `image_paths` and `images_total` must not be given at the same time.
@@ -30,9 +34,12 @@ class ImageHostJob(JobBase):
 
     @property
     def cache_file(self):
-        # No cache file since we may not know which files we're going to upload
-        # before execution. This is not a problem because ImageHostBase
-        # implements caching.
+        """
+        Don't cache output
+
+        This should not be a problem because
+        :class:`~.imghosts.base.ImageHostBase` implements caching.
+        """
         return None
 
     def initialize(self, imghost, image_paths=(), images_total=0):

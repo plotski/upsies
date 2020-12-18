@@ -1,3 +1,7 @@
+"""
+Generate uniform release name
+"""
+
 import asyncio
 
 from ..tools import release_name
@@ -13,15 +17,15 @@ class ReleaseNameJob(JobBase):
 
     :param content_path: Path to the release
 
-    :class:`~release_name.ReleaseName` is used to create the release name.
+    :class:`~.release_name.ReleaseName` is used to create the release name.
 
-    This job adds the following signals to the :attr:`~JobBase.signal`
+    This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
-        `release_name_updated`
-            Emitted after :meth:`fetch_info` updated the release name from
-            online sources. Registered callbacks the the new release name as a
-            positional argument.
+        ``release_name_updated``
+            Emitted after :meth:`~.ReleaseName.fetch_info` updated the release
+            name from online sources. Registered callbacks the the new release
+            name as a positional argument.
     """
 
     name = 'release-name'
@@ -29,7 +33,7 @@ class ReleaseNameJob(JobBase):
 
     @property
     def release_name(self):
-        """:class:`ReleaseName` instance"""
+        """:class:`~.release_name.ReleaseName` instance"""
         return self._release_name
 
     def initialize(self, content_path):
@@ -48,10 +52,10 @@ class ReleaseNameJob(JobBase):
 
     def fetch_info(self, *args, **kwargs):
         """
-        Synchronous wrapper around :meth:`ReleaseName.fetch_info` that emits the
+        Synchronous wrapper around :meth:`.ReleaseName.fetch_info` that emits the
         `release_name_updated` signal after the release name is updated
 
-        All arguments are passed on to :meth:`ReleaseName.fetch_info`.
+        All arguments are passed on to :meth:`.ReleaseName.fetch_info`.
         """
         task = asyncio.ensure_future(
             self.release_name.fetch_info(*args, **kwargs),

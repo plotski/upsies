@@ -1,3 +1,7 @@
+"""
+Get information from the user
+"""
+
 from . import JobBase
 
 import logging  # isort:skip

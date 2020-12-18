@@ -1,3 +1,7 @@
+"""
+Manage configuration files
+"""
+
 from .. import errors, utils
 from . import JobBase
 
@@ -9,7 +13,7 @@ class SetJob(JobBase):
     """
     Change or show option in configuration file
 
-    :param config: :class:`config.Config` instance
+    :param config: :class:`~.configfiles.ConfigFiles` instance
     :param str option: "."-delimited path to option or None to display all options
     :param value: New value for `option` or any falsy value to display the
         current value

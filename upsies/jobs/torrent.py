@@ -1,3 +1,7 @@
+"""
+Create torrent file
+"""
+
 import asyncio
 import os
 import queue
@@ -21,10 +25,10 @@ class CreateTorrentJob(JobBase):
     :param tracker_config: Tracker configuration as a dictionary (should be the
         relevant section of the trackers configuration file)
 
-    This job adds the following signals to the :attr:`~JobBase.signal`
+    This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
-        `progress_update`
+        ``progress_update``
             Emitted in roughly equal intervals to provide creation progress.
             Registered callbacks get a `float` between 0.0 and 100.0 as a
             positional argument.
@@ -117,7 +121,7 @@ class AddTorrentJob(JobBase):
     """
     Add torrent(s) to a BitTorrent client
 
-    :param client: Return value of :func:`tools.btclients.client`
+    :param client: Return value of :func:`.tools.btclients.client`
     :param download_path: Path to the torrent's content files or None to use the
         default path
     :param torrents: Sequence of torrent file paths to add
@@ -125,14 +129,14 @@ class AddTorrentJob(JobBase):
     If `torrents` is given and not empty, this job is finished as soon as its
     last item is added.
 
-    This job adds the following signals to the :attr:`~JobBase.signal`
+    This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
-        `adding`
+        ``adding``
             Emitted when attempting to add a torrent. Registered callbacks get
             the path to the torrent file as a positional argument.
 
-        `added`
+        ``added``
             Emitted when the torrent was added successfully. Registered
             callbacks get the some kind of ID that uniquely identifies the added
             torrent for the client. It depends on the `client` object what that
@@ -180,9 +184,9 @@ class AddTorrentJob(JobBase):
         """
         Upload `torrent_path`
 
-        :param download_path: `download_path` location of the torrent's content;
-            defaults to the `download_path` argument passed to
-            :meth:`initialize`
+        :param torrent_path: Path to torrent file
+        :param download_path: Location of the torrent's content; defaults to the
+            `download_path` argument passed to :meth:`initialize`
         """
         self._torrent_path_queue.put_nowait((
             torrent_path,
@@ -237,14 +241,14 @@ class CopyTorrentJob(JobBase):
     If `files` is given and not empty, this job is finished as soon as its last
     item is added.
 
-    This job adds the following signals to the :attr:`~JobBase.signal`
+    This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
-        `copying`
+        ``copying``
             Emitted when attempting to copy a file. Registered callbacks get the
-            source path to file as a positional argument.
+            source file path as a positional argument.
 
-        `copied`
+        ``copied``
             Emitted when the copy attempt ended. Registered callbacks get the
             destination file path (success) or the source file path (failure) as
             a positional argument.

@@ -1,3 +1,7 @@
+"""
+Abstract base class for jobs
+"""
+
 import abc
 import asyncio
 import collections
@@ -21,13 +25,14 @@ class JobBase(abc.ABC):
 
     Any additional keyword arguments are passed on to :meth:`initialize`.
 
-    Methods and properties of jobs should not raise any exceptions. Exceptions
-    should be passed to :meth:`error` or :meth:`exception` and the job should
-    :meth:`finish` immediately with an :attr:`exit_code` > 0.
+    If possible, arguments should be validated before creating a job to fail
+    early when sibling jobs haven't started doing work that has to be cancelled
+    in case of error.
 
-    Arguments should be validated before creating a job to fail early when
-    sibling jobs haven't started doing work that has to be cancelled in case of
-    error.
+    Methods and properties of jobs should not raise any expected exceptions.
+    Exceptions should instead be passed to :meth:`error` (report message to
+    user) or to :meth:`exception` (throw traceback at user), and the job should
+    :meth:`finish` immediately with an :attr:`exit_code` `> 0`.
     """
 
     @property
@@ -67,20 +72,23 @@ class JobBase(abc.ABC):
     @property
     def signal(self):
         """
-        :class:`~signal.Signal` instance
+        :class:`~.signal.Signal` instance
 
         The following signals are added by the base class. Subclasses can add
         their own signals.
 
-        `finished` is emitted when :meth:`finish` is called or when output is
-        read from cache. Registered callbacks get no arguments.
+        ``finished``
+            is emitted when :meth:`finish` is called or when output is read from
+            cache. Registered callbacks get no arguments.
 
-        `output` is emitted when :meth:`send` is called or when output is read
-        from cache. Registered callbacks get the value passed to :meth:`send` as
-        a positional argument.
+        ``output``
+            is emitted when :meth:`send` is called or when output is read from
+            cache. Registered callbacks get the value passed to :meth:`send` as
+            a positional argument.
 
-        `error` is emitted when :meth:`error` is called. Registered callbacks
-        get the value passed to :meth:`error` as a positional argument.
+        ``error``
+            is emitted when :meth:`error` is called. Registered callbacks get
+            the value passed to :meth:`error` as a positional argument.
         """
         return self._signal
 
@@ -117,8 +125,8 @@ class JobBase(abc.ABC):
         """
         Called by the main entry point when this job is executed
 
-        If there is cached output available, load it, emit `finished` signal and
-        finally call :meth:`finish`. Otherwise, call :meth:`execute`.
+        If there is cached output available, load it and call :meth:`finish`.
+        Otherwise, call :meth:`execute`.
 
         :raise RuntimeError: if this method is called multiple times or if
             reading from cache file fails unexpectedly
@@ -147,7 +155,10 @@ class JobBase(abc.ABC):
         """
         Wait for this job to finish
 
-        This method returns when :meth:`finish` is called.
+        Subclasses that need to wait for I/O should override this method to
+        `await` their coroutines before awaiting ``super().wait()``.
+
+        This method must return when :meth:`finish` is called.
 
         :attr:`is_finished` is `False` before this method returns and `True`
         afterwards.
@@ -165,7 +176,7 @@ class JobBase(abc.ABC):
 
     def finish(self):
         """
-        Cancel this job if it is not finished yet
+        Cancel this job if it is not finished yet and emit ``finished`` signal
 
         Calling this method unblocks any calls to :meth:`wait`.
 
@@ -210,7 +221,7 @@ class JobBase(abc.ABC):
         return ''
 
     def send(self, output):
-        """Append `output` to :attr:`output` and emit `output` signal"""
+        """Append `output` to :attr:`output` and emit ``output`` signal"""
         if not self.is_finished:
             if output:
                 output_str = str(output)
@@ -229,7 +240,7 @@ class JobBase(abc.ABC):
 
     def error(self, error, finish=False):
         """
-        Append `error` to :attr:`errors` and emit `error` signal
+        Append `error` to :attr:`errors` and emit ``error`` signal
 
         :param bool finish: Whether to call :meth:`finish` after handling
             `error`
@@ -245,7 +256,7 @@ class JobBase(abc.ABC):
         Set exception to raise in :meth:`wait` and call :meth:`finish`
 
         .. warning:: Setting an exception means you want to throw a traceback in
-                     the user's face, which is likely not a good idea.
+                     the user's face, which may not be a good idea.
 
         :param Exception exception: Exception instance
         """
@@ -262,7 +273,7 @@ class JobBase(abc.ABC):
         Store :attr:`output` in :attr:`cache_file`
 
         The base class implementation stores output as JSON. Child classes may
-        want to use other formats.
+        use other formats.
 
         :raise RuntimeError: if :attr:`output` is not JSON-encodable or
             :attr:`cache_file` is not writable
@@ -324,7 +335,7 @@ class JobBase(abc.ABC):
 
         It is important that the file name is unique for each output. By
         default, this is achieved by including the keyword arguments for
-        :meth:`initialize`. See :attr:`ScreenshotsJob.cache_file` for a
+        :meth:`initialize`. See :attr:`.screenshots.ScreenshotsJob.cache_file` for a
         different implementation.
 
         If this property returns a falsy value, no cache file is read or

@@ -1,3 +1,7 @@
+"""
+Create screenshots from video file(s)
+"""
+
 import os
 import queue
 
@@ -19,24 +23,24 @@ class ScreenshotsJob(JobBase):
 
     :param str content_path: Path to file or directory (see
         :func:`~.video.first_video`)
-    :param timestamps: Positions in the video to make screenshots
-    :type timestamps: sequence of "[[HH:]MM:]SS" strings or seconds
-    :param number: Amount of screenshots to make
+    :param timestamps: Positions in the video to make screenshots at
+    :type timestamps: sequence of "[[H+:]M+:]S+" strings or seconds
+    :param number: How many screenshots to make
 
     If `timestamps` and `number` are not given, screenshot positions are
     generated.
 
-    This job adds the following signals to the :attr:`~JobBase.signal`
+    This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
-        `video_file`
+        ``video_file``
             Emitted after the video file to take screenshots from is determined.
             Registered callbacks get the path to the video file as a positional
             argument.
 
-        `timestamps`
+        ``timestamps``
             Emitted after the screenshot timestamps are determined. Registered
-            callbacks get the list of timestamps in the form for "H+:MM:SS" as a
+            callbacks get the list of timestamps in the form of "H+:MM:SS" as a
             positional argument.
     """
 
@@ -45,6 +49,7 @@ class ScreenshotsJob(JobBase):
 
     @property
     def cache_file(self):
+        """Use given `timestamps` and `number` as unique cache handle"""
         timestamps = self.kwargs.get('timestamps')
         number = self.kwargs.get('number')
         filename = [f'{self.name}']
@@ -131,8 +136,8 @@ class ScreenshotsJob(JobBase):
         """
         Path to video file screenshots are taken from
 
-        .. note:: This is an empty string until the screenshot process picked a
-                  file.
+        .. note:: This is an empty string before the the ``video_file``
+                  :attr:`~.JobBase.signal` is emitted.
         """
         return self._video_file
 
@@ -141,8 +146,8 @@ class ScreenshotsJob(JobBase):
         """
         List of normalized and validated human-readable timestamps
 
-        .. note:: This is an empty sequence until the screenshot process picked
-                  a file.
+        .. note:: This is an empty sequence before the ``timestamps``
+                  :attr:`~.JobBase.signal` is emitted.
         """
         return self._timestamps
 
@@ -151,8 +156,8 @@ class ScreenshotsJob(JobBase):
         """
         Total number of screenshots to make
 
-        .. note:: This is zero until the screenshot process validated and
-                  normalized `timestamps` and `number` arguments.
+        .. note:: This is an empty sequence before the ``timestamps``
+                  :attr:`~.JobBase.signal` is emitted.
         """
         return self._screenshots_total
 

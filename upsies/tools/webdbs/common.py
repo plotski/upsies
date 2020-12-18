@@ -143,6 +143,9 @@ class SearchResult:
 
     Keyword arguments are available as attributes.
 
+    `cast`, `country`, `director`, `keywords`, `summary`, `title_english` and
+    `title_original` may be coroutine functions that return the expected value.
+
     :param str director: Name of director
     :param cast: Short list of actor names
     :type cast: sequence of str
@@ -158,9 +161,6 @@ class SearchResult:
     :param str url: Web page of the search result
     :param str year: Release year; for series this should be the year of the
         first airing of the first episode of the first season
-
-    `cast`, `country`, `director`, `keywords`, `summary`, `title_english` and
-    `title_original` may be coroutine functions that return the expected value.
     """
     def __init__(self, *, id, type, url, year, cast=(), country='', director='',
                  keywords=(), summary='', title, title_english='',

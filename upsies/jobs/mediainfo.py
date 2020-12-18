@@ -1,3 +1,7 @@
+"""
+Wrapper for ``mediainfo`` command
+"""
+
 import asyncio
 
 from .. import errors

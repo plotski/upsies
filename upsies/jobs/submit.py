@@ -1,3 +1,7 @@
+"""
+Share generated metadata
+"""
+
 import asyncio
 
 from .. import errors
@@ -11,33 +15,32 @@ class SubmitJob(JobBase):
     """
     Submit torrent file and other metadata to tracker
 
-    :param tracker: :class:`Tracker` instance from one of the submodules of
-        :mod:`~trackers`
+    :param TrackerBase tracker: Return value of :func:`~.trackers.tracker`
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
-        `logging_in`
+        ``logging_in``
             Emitted when attempting to start a user session. Registered
             callbacks get no arguments.
 
-        `logged_in`
+        ``logged_in``
             Emitted when login attempt ended. Registered callbacks get no
             arguments.
 
-        `uploading`
+        ``uploading``
             Emitted when attempting to upload metadata. Registered callbacks get
             no arguments.
 
-        `uploaded`
+        ``uploaded``
             Emitted when upload attempt ended. Registered callbacks get no
             arguments.
 
-        `logging_out`
+        ``logging_out``
             Emitted when attempting to end a user session. Registered callbacks
             get no arguments.
 
-        `logged_out`
+        ``logged_out``
             Emitted when logout attempt ended. Registered callbacks get no
             arguments.
     """
@@ -47,6 +50,7 @@ class SubmitJob(JobBase):
 
     @property
     def cache_file(self):
+        """Don't cache output"""
         return None
 
     def initialize(self, tracker):
