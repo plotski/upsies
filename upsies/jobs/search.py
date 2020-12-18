@@ -18,10 +18,8 @@ class SearchDbJob(JobBase):
     """
     Prompt user to select a specific search result from an internet database
 
-    :param str db: Name of the database (see :mod:`.tools.webdbs` for a list)
+    :param WebDbApiBase client: Return value of :func:`.tools.webdbs.webdb`
     :param str content_path: Path or name of the release
-
-    :raise ValueError: if `db` is unknown
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
@@ -58,7 +56,8 @@ class SearchDbJob(JobBase):
         return self._query
 
     def initialize(self, db, content_path):
-        self._db = webdbs.webdb(db)
+        assert isinstance(db, webdbs.WebDbApiBase)
+        self._db = db
         self._query = webdbs.Query.from_path(content_path)
         self._is_searching = False
 

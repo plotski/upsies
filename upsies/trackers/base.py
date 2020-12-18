@@ -2,6 +2,7 @@ import abc
 import types
 
 from .. import jobs as _jobs
+from ..tools import webdbs
 from ..utils import cached_property, fs
 
 import logging  # isort:skip
@@ -110,7 +111,7 @@ class TrackerBase(abc.ABC):
             homedir=self.job_input.homedir,
             ignore_cache=self.job_input.ignore_cache,
             content_path=self.job_input.content_path,
-            db='imdb',
+            db=webdbs.webdb('imdb'),
         )
         # Update release name with IMDb data
         imdb_job.signal.register('output', self.release_name_job.fetch_info)
@@ -122,7 +123,7 @@ class TrackerBase(abc.ABC):
             homedir=self.job_input.homedir,
             ignore_cache=self.job_input.ignore_cache,
             content_path=self.job_input.content_path,
-            db='tmdb',
+            db=webdbs.webdb('tmdb'),
         )
 
     @cached_property
@@ -131,7 +132,7 @@ class TrackerBase(abc.ABC):
             homedir=self.job_input.homedir,
             ignore_cache=self.job_input.ignore_cache,
             content_path=self.job_input.content_path,
-            db='tvmaze',
+            db=webdbs.webdb('tvmaze'),
         )
 
     @cached_property

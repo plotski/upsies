@@ -15,7 +15,7 @@ import abc
 
 from ... import jobs as _jobs
 from ... import trackers
-from ...tools import btclients, imghosts
+from ...tools import btclients, imghosts, webdbs
 from ...utils import cached_property, fs
 
 import logging  # isort:skip
@@ -70,7 +70,7 @@ class search_db(CommandBase):
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.CONTENT,
-                db=self.args.DB,
+                db=webdbs.webdb(self.args.DB),
             ),
         )
 
@@ -107,7 +107,7 @@ class release_name(CommandBase):
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
-            db='imdb',
+            db=webdbs.webdb('imdb'),
         )
         imdb_job.signal.register('output', self.release_name_job.fetch_info)
         return imdb_job
