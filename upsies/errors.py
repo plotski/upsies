@@ -1,9 +1,14 @@
 """
-Abstraction layers should raise one of these exceptions to make error handling
-easy and straight-forward.
+Exception classes
 
-For example, it doesn't matter which HTTP library :mod:`upsies.utils.http` uses,
-the only relevant exception from that module is :class:`RequestError`.
+Abstraction layers should raise one of these exceptions if an error message
+should be displayed to the user. If the programmer made a mistake, any
+appropriate error from the standard library (e.g. :class:`ValueError`,
+:class:`TypeError`) or :class:`RuntimeError` should be raised.
+
+For example, :func:`upsies.utils.http.get` always raises :class:`RequestError`,
+regardless of which library is used or what went wrong, except when something
+like caching fails, which is most likely due to a bug.
 """
 
 class UpsiesError(Exception):
@@ -22,7 +27,7 @@ class ConfigError(UpsiesError):
     """Error while reading from a config file"""
 
 class DependencyError(UpsiesError):
-    """Some external tool is missing (e.g. mediainfo)"""
+    """Some external tool is missing (e.g. ``mediainfo``)"""
 
 class MediainfoError(UpsiesError):
     """Getting mediainfo failed"""
