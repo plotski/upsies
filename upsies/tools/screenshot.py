@@ -1,3 +1,7 @@
+"""
+Dump frames from video file
+"""
+
 import os
 import re
 
@@ -29,7 +33,7 @@ def _make_ffmpeg_cmd(video_file, timestamp, screenshot_file):
 
 def create(video_file, timestamp, screenshot_file, overwrite=False):
     """
-    Create screenshot from video file
+    Create single screenshot from video file
 
     :param str video_file: Path to video file
     :param timestamp: Time location in the video

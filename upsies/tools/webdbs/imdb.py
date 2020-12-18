@@ -1,3 +1,7 @@
+"""
+API for imdb.com
+"""
+
 import asyncio
 import builtins
 import collections

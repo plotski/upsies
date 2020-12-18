@@ -1,3 +1,7 @@
+"""
+Parse and create release name
+"""
+
 import asyncio
 import collections
 
@@ -59,7 +63,11 @@ class ReleaseName(collections.abc.Mapping):
 
     @property
     def type(self):
-        """:class:`~.utils.ReleaseType` enum or one of its value names"""
+        """
+        :class:`~.utils.ReleaseType` enum or one of its value names
+
+        See also :meth:`fetch_info`.
+        """
         return self._guess.get('type', ReleaseType.unknown)
 
     @type.setter
@@ -71,7 +79,11 @@ class ReleaseName(collections.abc.Mapping):
 
     @property
     def title(self):
-        '''Original name of movie or series or "UNKNOWN_TITLE"'''
+        """
+        Original name of movie or series or "UNKNOWN_TITLE"
+
+        See also :meth:`fetch_info`.
+        """
         return self._guess.get('title') or 'UNKNOWN_TITLE'
 
     @title.setter
@@ -85,6 +97,8 @@ class ReleaseName(collections.abc.Mapping):
 
         For non-English original titles, this should be the English title. If
         :attr:`title` is identical, this is an empty string.
+
+        See also :meth:`fetch_info`.
         """
         aka = self._guess.get('aka') or ''
         if aka and aka != self.title:
@@ -98,7 +112,12 @@ class ReleaseName(collections.abc.Mapping):
 
     @property
     def year(self):
-        """Release year or "UNKNOWN_YEAR" for movies, empty string for series"""
+        """
+        Release year or "UNKNOWN_YEAR" for movies, empty string for series unless
+        :attr:`year_required` is set
+
+        See also :meth:`fetch_info`.
+        """
         if self.type is ReleaseType.movie or self.year_required:
             return self._guess.get('year') or 'UNKNOWN_YEAR'
         else:
@@ -116,12 +135,14 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def year_required(self):
         """
-        Whether release year is needed to make :attr:`title` unique
+        Whether release year is needed to make :attr:`title` of TV series unique
 
-        For TV series, :attr:`year` should only be added to the release name if
-        multiple series with the same title exist.
+        If set to `True`, :meth:`format` appends :attr:`year` after
+        :attr:`title` even if :attr:`type` is not :attr:`ReleaseType.movie`.
 
-        This property is set by :meth:`fetch_info`.
+        For movies, this property should have no effect.
+
+        See also :meth:`fetch_info`.
         """
         return getattr(self, '_year_required', False)
 
@@ -293,12 +314,12 @@ class ReleaseName(collections.abc.Mapping):
         :param callable callback: Function to call after fetching; gets the
             instance (`self`) as a keyword argument
 
-        Calling this coroutine function overrides these attributes:
+        This coroutine function tries to set these attributes:
 
-        - :attr:`title`
-        - :attr:`title_aka`
-        - :attr:`year`
-        - :attr:`year_required`
+          - :attr:`title`
+          - :attr:`title_aka`
+          - :attr:`year`
+          - :attr:`year_required`
         """
         await asyncio.gather(
             self._update_attributes(id),

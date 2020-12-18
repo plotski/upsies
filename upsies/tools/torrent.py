@@ -1,3 +1,7 @@
+"""
+Create torrent file
+"""
+
 from os.path import exists as _path_exists
 
 from .. import __project_name__, __version__, errors
@@ -15,12 +19,33 @@ def create(*, content_path, announce, torrent_path,
     """
     Generate and write torrent file
 
-    :param str content_path: Path to the torrent's content
+    :param str content_path: Path to the torrent's payload
     :param str announce: Announce URL
     :param str torrent_path: Path of the generated torrent file
     :param str init_callback: Callable that is called once before torrent
-        generation commences, gets a nested sequence of `(directory_name,
-        ((file_name, file_size), ...))` `(file_name, file_size)` tuples
+        generation commences. It gets `content_path` as a tree where a node is a
+        tuple in which the first item is the directory name and the second item
+        is a list of `(file_name, file_size)` tuples.
+
+        Example:
+
+        .. code::
+
+           ('Parent',
+               ('Foo', (
+                   ('Picture.jpg', 82489),
+                   ('Music.mp3', 5315672),
+                   ('More files', (
+                       ('This.txt', 57734),
+                       ('And that.txt', 184),
+                       ('Also some of this.txt', 88433),
+                   )),
+               )),
+               ('Bar', (
+                   ('Yee.mp4', 288489392),
+                   ('Yah.mkv', 3883247384),
+               )),
+           )
     :param str progress_callback: Callable that gets the progress as a number
         between 0 and 100. Torrent creation is cancelled if `progress_callback`
         returns `True` or any other truthy value.

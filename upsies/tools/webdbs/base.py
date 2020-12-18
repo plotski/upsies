@@ -1,3 +1,7 @@
+"""
+Abstract base class for online databases
+"""
+
 import abc
 import asyncio
 

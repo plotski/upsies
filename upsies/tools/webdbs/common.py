@@ -1,3 +1,8 @@
+"""
+Classes and functions that are used by all :class:`~.base.WebDbApiBase`
+subclasses
+"""
+
 import re
 
 from ...utils import ReleaseType, release_info

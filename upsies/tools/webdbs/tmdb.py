@@ -1,3 +1,7 @@
+"""
+API for themoviedb.org
+"""
+
 import functools
 import re
 

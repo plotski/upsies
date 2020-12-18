@@ -1,3 +1,7 @@
+"""
+API for tvmaze.com
+"""
+
 import functools
 import json
 

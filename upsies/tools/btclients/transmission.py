@@ -21,7 +21,7 @@ CSRF_HEADER = 'X-Transmission-Session-Id'
 
 class TransmissionClientApi(ClientApiBase):
     """
-    Implementation of Transmission daemon's RPC protocol
+    Transmission daemon API
 
     Reference: https://github.com/transmission/transmission/blob/master/extras/rpc-spec.txt
 

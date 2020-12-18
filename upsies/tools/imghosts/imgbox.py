@@ -16,7 +16,8 @@ class ImgboxImageHost(ImageHostBase):
     """
     Upload images to a gallery on imgbox.com
 
-    :param int thumb_width: Horizontal width of the thumbnails
+    :param int thumb_width: Width of the thumbnails (automatically snaps to
+        closest supported value)
     """
 
     DEFAULT_THUMBNAIL_WIDTH = 300
