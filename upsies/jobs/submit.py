@@ -49,10 +49,8 @@ class SubmitJob(JobBase):
     name = 'submit'
     label = 'Submit'
 
-    @property
-    def cache_file(self):
-        """Don't cache output"""
-        return None
+    # Don't cache output
+    cache_file = None
 
     def initialize(self, tracker):
         assert isinstance(tracker, TrackerBase), f'Not a TrackerBase: {tracker!r}'
