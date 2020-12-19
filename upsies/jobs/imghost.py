@@ -33,15 +33,9 @@ class ImageHostJob(JobBase):
     name = 'imghost'
     label = 'Image URLs'
 
-    @property
-    def cache_file(self):
-        """
-        Don't cache output
-
-        This should not be a problem because
-        :class:`~.imghosts.base.ImageHostBase` implements caching.
-        """
-        return None
+    # Don't cache output. This should not be a problem because ImageHostBase
+    # implements caching.
+    cache_file = None
 
     def initialize(self, imghost, image_paths=(), images_total=0):
         if image_paths and images_total:
