@@ -10,6 +10,14 @@ import itertools
 import os
 import types
 
+
+def os_family():
+    """
+    Return "windows" or "unix"
+    """
+    return 'windows' if os.name == 'nt' else 'unix'
+
+
 try:
     from functools import cached_property
 except ImportError:
