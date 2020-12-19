@@ -93,7 +93,6 @@ class ImageHostBase(abc.ABC):
             image_path = os.path.basename(image_path)
         else:
             image_path = os.path.abspath(image_path)
-        # Max file name length is ususally 255 bytes and can't contain directory
-        # separators
-        filename = image_path[-200:].replace(os.sep, '_') + f'.{self.name}.json'
+        # Max file name length is ususally 255 bytes
+        filename = fs.sanitize_filename(image_path[-200:]) + f'.{self.name}.json'
         return os.path.join(self._cache_dir, filename)
