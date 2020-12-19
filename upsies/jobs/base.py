@@ -8,7 +8,7 @@ import collections
 import json
 import os
 
-from ..utils import cached_property, signal
+from ..utils import cached_property, fs, signal
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -333,40 +333,57 @@ class JobBase(abc.ABC):
         """
         File path in :attr:`cache_directory` to store cached :attr:`output` in
 
-        It is important that the file name is unique for each output. By
-        default, this is achieved by including the keyword arguments for
-        :meth:`initialize`. See :attr:`.screenshots.ScreenshotsJob.cache_file` for a
-        different implementation.
-
-        If this property returns a falsy value, no cache file is read or
-        written.
+        If this property returns `None`, cache is not read or written.
         """
-        if self._kwargs:
-            def string_value(value):
-                if isinstance(value, collections.abc.Sequence) and not isinstance(value, str):
-                    return ','.join((string_value(v) for v in value))
-
-                elif isinstance(value, collections.abc.Mapping):
-                    return ','.join((f'{k}={string_value(v)}' for k, v in value.items()))
-
-                # Use same cache file for absolute and relative paths
-                if isinstance(value, (str, os.PathLike)) and os.path.exists(value):
-                    return str(os.path.realpath(value))
-
-                return str(value)
-
-            kwargs_str_max_len = 250 - len(self.name) - len('..json')
-            kwargs_str = ','.join(f'{k}={string_value(v)}'
-                                  for k, v in self._kwargs.items())
-            if len(kwargs_str) > kwargs_str_max_len:
-                kwargs_str = ''.join((
-                    kwargs_str[:int(kwargs_str_max_len / 2 - 1)],
-                    '…',
-                    kwargs_str[-int(kwargs_str_max_len / 2 - 1):],
-                ))
-            filename = f'{self.name}.{kwargs_str}.json'
-        else:
+        cache_id = self.cache_id
+        if cache_id is None:
+            return None
+        elif cache_id == '':
             filename = f'{self.name}.json'
-        filename = filename.replace("/", "_")
-        assert len(filename) < 250
+        else:
+            # Avoid file name being too long. 255 bytes seems common. Leave
+            # some headroom for multibytes.
+            # https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits
+            max_len = 250 - len(self.name) - len('..json')
+            cache_id_str = self._cache_data_as_string(cache_id)
+            if len(cache_id_str) > max_len:
+                cache_id_str = ''.join((
+                    cache_id_str[:int(max_len / 2 - 1)],
+                    '…',
+                    cache_id_str[-int(max_len / 2 - 1):],
+                ))
+            if cache_id_str:
+                filename = f'{self.name}.{cache_id_str}.json'
+            else:
+                filename = f'{self.name}.json'
+            filename = fs.sanitize_filename(filename)
         return os.path.join(self.cache_directory, filename)
+
+    @cached_property
+    def cache_id(self):
+        """
+        Unique object based on the job's input data
+
+        The return value is turned into a string. Items of non-string iterables
+        are passed to :class:`str` and :meth:`~.str.join`\\ ed with ",".
+
+        If this property returns `None`, cache is not read or written.
+
+        The default implementation uses the arguments passed to
+        :meth:`initialize`.
+        """
+        return self._kwargs
+
+    def _cache_data_as_string(self, value):
+        if isinstance(value, collections.abc.Mapping):
+            return ','.join((f'{k}-{self._cache_data_as_string(v)}' for k, v in value.items()))
+
+        elif isinstance(value, collections.abc.Iterable) and not isinstance(value, str):
+            return ','.join((self._cache_data_as_string(v) for v in value))
+
+        elif isinstance(value, (str, os.PathLike)) and os.path.exists(value):
+            # Use same cache file for absolute and relative paths
+            return str(os.path.realpath(value))
+
+        else:
+            return str(value)

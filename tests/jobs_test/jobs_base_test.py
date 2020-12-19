@@ -334,21 +334,43 @@ async def test_exception_finishes(job):
     assert job.is_finished
 
 
-def test_cache_file_name_includes_keyword_arguments(tmp_path):
+def test_cache_id_includes_keyword_arguments(tmp_path):
     class BarJob(FooJob):
-        def initialize(self, bar, baz):
+        def initialize(self, foo, bar, baz):
             pass
 
-    job = BarJob(homedir=tmp_path, ignore_cache=False, bar=1, baz='asdf')
-    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.bar=1,baz=asdf.json')
+    kwargs = {'foo': 'asdf', 'bar': (1, 2, 3), 'baz': {'hey': 'ho', 'hoo': ['ha', 'ha', 'ha']}}
+    job = BarJob(homedir=tmp_path, ignore_cache=False, **kwargs)
+    assert job.cache_id == kwargs
 
-def test_cache_file_name_does_not_contain_illegal_characters(tmp_path):
+
+def test_cache_file_with_cache_id_being_None(tmp_path, mocker):
     class BarJob(FooJob):
-        def initialize(self, baz):
-            pass
+        cache_id = None
 
-    job = BarJob(homedir=tmp_path, ignore_cache=False, baz='hey/you')
-    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.baz=hey_you.json')
+    job = BarJob(homedir=tmp_path, ignore_cache=False)
+    assert job.cache_file is None
+
+def test_cache_file_with_cache_id_being_empty(tmp_path, mocker):
+    class BarJob(FooJob):
+        cache_id = {}
+
+    job = BarJob(homedir=tmp_path, ignore_cache=False)
+    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.json')
+
+def test_cache_file_with_cache_id_being_non_string(tmp_path, mocker):
+    class BarJob(FooJob):
+        cache_id = 123
+
+    job = BarJob(homedir=tmp_path, ignore_cache=False)
+    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.123.json')
+
+def test_cache_file_with_cache_id_being_iterable(tmp_path, mocker):
+    class BarJob(FooJob):
+        cache_id = iter((1, 'two', 3))
+
+    job = BarJob(homedir=tmp_path, ignore_cache=False)
+    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.1,two,3.json')
 
 def test_cache_file_normalizes_existing_paths(tmp_path):
     class BarJob(FooJob):
@@ -369,6 +391,15 @@ def test_cache_file_normalizes_existing_paths(tmp_path):
         assert job1.cache_file == job2.cache_file
     finally:
         os.chdir(orig_cwd)
+
+def test_cache_file_name_does_not_contain_illegal_characters(tmp_path, mocker):
+    class BarJob(FooJob):
+        cache_id = 'hey you there'
+
+    mocker.patch('upsies.utils.fs.sanitize_filename',
+                 side_effect=lambda path: path.replace(' ', '#'))
+    job = BarJob(homedir=tmp_path, ignore_cache=False)
+    assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.hey#you#there.json')
 
 def test_cache_file_has_correct_parent(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
