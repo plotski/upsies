@@ -145,10 +145,7 @@ class AddTorrentJob(JobBase):
 
     name = 'add-torrent'
     label = 'Add Torrent'
-
-    @property
-    def cache_file(self):
-        return None
+    cache_file = None
 
     def initialize(self, *, client, download_path=None, torrents=()):
         assert isinstance(client, ClientApiBase), f'Not a ClientApiBase: {client!r}'
@@ -256,10 +253,7 @@ class CopyTorrentJob(JobBase):
 
     name = 'copy-torrent'
     label = 'Copy Torrent'
-
-    @property
-    def cache_file(self):
-        return None
+    cache_file = None
 
     def initialize(self, *, destination, files=()):
         self._destination = None if not destination else str(destination)
