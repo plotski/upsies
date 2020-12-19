@@ -8,6 +8,7 @@ from time import monotonic as time_monotonic
 
 from .. import errors
 from ..tools import webdbs
+from ..utils import cached_property
 from . import JobBase
 
 import logging  # isort:skip
@@ -55,9 +56,14 @@ class SearchDbJob(JobBase):
     def query(self):
         return self._query
 
+    @cached_property
+    def cache_id(self):
+        return (self._db.name, self._content_path)
+
     def initialize(self, db, content_path):
         assert isinstance(db, webdbs.WebDbApiBase), f'Not a WebDbApiBase: {db!r}'
         self._db = db
+        self._content_path = content_path
         self._query = webdbs.Query.from_path(content_path)
         self._is_searching = False
 

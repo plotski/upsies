@@ -63,6 +63,10 @@ def test_query(job):
     assert isinstance(job.query, Query)
 
 
+def test_cache_id(job):
+    assert job.cache_id == (job._db.name, job._content_path)
+
+
 def test_initialize_creates_searcher(tmp_path, mocker, foodb):
     Searcher_mock = mocker.patch('upsies.jobs.webdb._Searcher', Mock())
     job = webdb.SearchDbJob(
