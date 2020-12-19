@@ -6,8 +6,8 @@ import abc
 import asyncio
 import collections
 import json
-import re
 import os
+import re
 
 from ..utils import cached_property, fs, signal
 

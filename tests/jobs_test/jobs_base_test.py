@@ -350,7 +350,7 @@ def test_cache_id_complains_about_keyword_arguments_with_no_string_representatio
 
     kwargs = {'foo': 'asdf', 'bar': (1, 2, 3), 'baz': object()}
     job = BarJob(homedir=tmp_path, ignore_cache=False, **kwargs)
-    with pytest.raises(RuntimeError, match=rf"<class 'object'> has no string representation"):
+    with pytest.raises(RuntimeError, match=r"<class 'object'> has no string representation"):
         job.cache_id
 
 
