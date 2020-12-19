@@ -207,7 +207,7 @@ def test_release_name_job(mocker):
 
 
 def test_imdb_job(mocker):
-    SearchDbJob_mock = mocker.patch('upsies.jobs.search.SearchDbJob', Mock())
+    SearchDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchDbJob', Mock())
     mocker.patch('upsies.jobs.release_name.ReleaseNameJob', Mock())
     webdb_mock = mocker.patch('upsies.tools.webdbs.webdb')
     tracker = make_TestTracker(
@@ -232,7 +232,7 @@ def test_imdb_job(mocker):
 
 
 def test_tmdb_job(mocker):
-    SearchDbJob_mock = mocker.patch('upsies.jobs.search.SearchDbJob', Mock())
+    SearchDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchDbJob', Mock())
     webdb_mock = mocker.patch('upsies.tools.webdbs.webdb')
     tracker = make_TestTracker(
         config=Mock(),
@@ -253,7 +253,7 @@ def test_tmdb_job(mocker):
 
 
 def test_tvmaze_job(mocker):
-    SearchDbJob_mock = mocker.patch('upsies.jobs.search.SearchDbJob', Mock())
+    SearchDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchDbJob', Mock())
     webdb_mock = mocker.patch('upsies.tools.webdbs.webdb')
     tracker = make_TestTracker(
         config=Mock(),

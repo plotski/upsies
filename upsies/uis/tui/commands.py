@@ -66,7 +66,7 @@ class search_db(CommandBase):
     @cached_property
     def jobs(self):
         return (
-            _jobs.search.SearchDbJob(
+            _jobs.webdb.SearchDbJob(
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.CONTENT,
@@ -103,7 +103,7 @@ class release_name(CommandBase):
     def imdb_job(self):
         # To be able to fetch the original title, year, etc, we need to prompt
         # for an ID first. IMDb seems to be best.
-        imdb_job = _jobs.search.SearchDbJob(
+        imdb_job = _jobs.webdb.SearchDbJob(
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,

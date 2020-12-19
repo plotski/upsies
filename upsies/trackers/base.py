@@ -111,7 +111,7 @@ class TrackerBase(abc.ABC):
 
     @cached_property
     def imdb_job(self):
-        imdb_job = _jobs.search.SearchDbJob(
+        imdb_job = _jobs.webdb.SearchDbJob(
             homedir=self.job_input.homedir,
             ignore_cache=self.job_input.ignore_cache,
             content_path=self.job_input.content_path,
@@ -123,7 +123,7 @@ class TrackerBase(abc.ABC):
 
     @cached_property
     def tmdb_job(self):
-        return _jobs.search.SearchDbJob(
+        return _jobs.webdb.SearchDbJob(
             homedir=self.job_input.homedir,
             ignore_cache=self.job_input.ignore_cache,
             content_path=self.job_input.content_path,
@@ -132,7 +132,7 @@ class TrackerBase(abc.ABC):
 
     @cached_property
     def tvmaze_job(self):
-        return _jobs.search.SearchDbJob(
+        return _jobs.webdb.SearchDbJob(
             homedir=self.job_input.homedir,
             ignore_cache=self.job_input.ignore_cache,
             content_path=self.job_input.content_path,

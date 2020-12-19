@@ -4,7 +4,7 @@ from unittest.mock import Mock, call
 import pytest
 
 from upsies import errors
-from upsies.jobs import search
+from upsies.jobs import webdb
 from upsies.tools.webdbs import Query, WebDbApiBase
 
 
@@ -39,9 +39,9 @@ def foodb(mocker):
 
 @pytest.fixture
 def job(foodb, tmp_path, mocker):
-    mocker.patch('upsies.jobs.search._Searcher', Mock(return_value=Mock(wait=AsyncMock())))
-    mocker.patch('upsies.jobs.search._InfoUpdater', Mock(return_value=Mock(wait=AsyncMock())))
-    job = search.SearchDbJob(
+    mocker.patch('upsies.jobs.webdb._Searcher', Mock(return_value=Mock(wait=AsyncMock())))
+    mocker.patch('upsies.jobs.webdb._InfoUpdater', Mock(return_value=Mock(wait=AsyncMock())))
+    job = webdb.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db=foodb,
@@ -64,8 +64,8 @@ def test_query(job):
 
 
 def test_initialize_creates_searcher(tmp_path, mocker, foodb):
-    Searcher_mock = mocker.patch('upsies.jobs.search._Searcher', Mock())
-    job = search.SearchDbJob(
+    Searcher_mock = mocker.patch('upsies.jobs.webdb._Searcher', Mock())
+    job = webdb.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db=foodb,
@@ -80,9 +80,9 @@ def test_initialize_creates_searcher(tmp_path, mocker, foodb):
     )]
 
 def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
-    InfoUpdater_mock = mocker.patch('upsies.jobs.search._InfoUpdater', Mock())
+    InfoUpdater_mock = mocker.patch('upsies.jobs.webdb._InfoUpdater', Mock())
     make_update_info_func_mock = mocker.patch(
-        'upsies.jobs.search.SearchDbJob._make_update_info_func',
+        'upsies.jobs.webdb.SearchDbJob._make_update_info_func',
         Mock(
             side_effect=(
                 'id func',
@@ -96,7 +96,7 @@ def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
             ),
         )
     )
-    job = search.SearchDbJob(
+    job = webdb.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db=foodb,
@@ -129,8 +129,8 @@ def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
 
 
 def test_make_update_info_func(tmp_path, mocker, foodb):
-    mocker.patch('upsies.jobs.search.SearchDbJob.update_info')
-    job = search.SearchDbJob(
+    mocker.patch('upsies.jobs.webdb.SearchDbJob.update_info')
+    job = webdb.SearchDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db=foodb,
@@ -242,7 +242,7 @@ def test_id_selected_while_searching(job):
 
 @pytest.fixture
 async def searcher():
-    searcher = search._Searcher(
+    searcher = webdb._Searcher(
         search_coro=AsyncMock(),
         results_callback=Mock(),
         error_callback=Mock(),
@@ -333,7 +333,7 @@ async def test_Searcher__search_reports_error(searcher, mocker):
 
 @pytest.mark.asyncio
 async def test_Searcher_delay_sleeps(searcher, mocker):
-    mocker.patch('upsies.jobs.search.time_monotonic', Mock(side_effect=(1003, 1003.001)))
+    mocker.patch('upsies.jobs.webdb.time_monotonic', Mock(side_effect=(1003, 1003.001)))
     sleep_mock = mocker.patch('asyncio.sleep', new_callable=AsyncMock)
     searcher._min_seconds_between_searches = 5
     searcher._previous_search_time = 1000
@@ -343,7 +343,7 @@ async def test_Searcher_delay_sleeps(searcher, mocker):
 
 @pytest.mark.asyncio
 async def test_Searcher_delay_does_not_sleep(searcher, mocker):
-    mocker.patch('upsies.jobs.search.time_monotonic', Mock(side_effect=(1006, 1006.001)))
+    mocker.patch('upsies.jobs.webdb.time_monotonic', Mock(side_effect=(1006, 1006.001)))
     sleep_mock = mocker.patch('asyncio.sleep', new_callable=AsyncMock)
     searcher._min_seconds_between_searches = 5
     searcher._previous_search_time = 1000
@@ -354,7 +354,7 @@ async def test_Searcher_delay_does_not_sleep(searcher, mocker):
 
 @pytest.fixture
 async def info_updater():
-    info_updater = search._InfoUpdater(
+    info_updater = webdb._InfoUpdater(
         targets={},
         error_callback=Mock(),
     )
