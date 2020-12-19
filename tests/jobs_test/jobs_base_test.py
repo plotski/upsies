@@ -343,6 +343,16 @@ def test_cache_id_includes_keyword_arguments(tmp_path):
     job = BarJob(homedir=tmp_path, ignore_cache=False, **kwargs)
     assert job.cache_id == kwargs
 
+def test_cache_id_complains_about_keyword_arguments_with_no_string_representation(tmp_path):
+    class BarJob(FooJob):
+        def initialize(self, foo, bar, baz):
+            pass
+
+    kwargs = {'foo': 'asdf', 'bar': (1, 2, 3), 'baz': object()}
+    job = BarJob(homedir=tmp_path, ignore_cache=False, **kwargs)
+    with pytest.raises(RuntimeError, match=rf"<class 'object'> has no string representation"):
+        job.cache_id
+
 
 def test_cache_file_with_cache_id_being_None(tmp_path, mocker):
     class BarJob(FooJob):

@@ -6,6 +6,7 @@ import abc
 import asyncio
 import collections
 import json
+import re
 import os
 
 from ..utils import cached_property, fs, signal
@@ -372,6 +373,14 @@ class JobBase(abc.ABC):
         The default implementation uses the arguments passed to
         :meth:`initialize`.
         """
+        # Check if any values don't have a string representation to prevent
+        # random cache IDs
+        no_str_regex = re.compile(r'^<[\w\.]+ object at 0x[a-f\d]+>$')
+        for key, value in self.kwargs.items():
+            if no_str_regex.search(str(key)):
+                raise RuntimeError(f'{type(key)!r} has no string representation')
+            elif no_str_regex.search(str(value)):
+                raise RuntimeError(f'{type(value)!r} has no string representation')
         return self._kwargs
 
     def _cache_data_as_string(self, value):
