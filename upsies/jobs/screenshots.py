@@ -47,19 +47,6 @@ class ScreenshotsJob(JobBase):
     name = 'screenshots'
     label = 'Screenshots'
 
-    @property
-    def cache_file(self):
-        """Use given `timestamps` and `number` as unique cache handle"""
-        timestamps = self.kwargs.get('timestamps')
-        number = self.kwargs.get('number')
-        filename = [f'{self.name}']
-        if timestamps:
-            filename.append(f'timestamps={",".join(str(t) for t in timestamps)}')
-        if number:
-            filename.append(f'number={number}')
-        filename.append('json')
-        return os.path.join(self.cache_directory, '.'.join(filename))
-
     def initialize(self, content_path, timestamps=(), number=0):
         self._screenshots_created = 0
         self._screenshots_total = -1
