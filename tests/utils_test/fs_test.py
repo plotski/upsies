@@ -167,6 +167,15 @@ def test_dirname():
     assert fs.dirname(pathlib.Path('a/b/c//d/')) == 'a/b/c'
 
 
+def test_sanitize_path_on_unix(mocker):
+    mocker.patch('upsies.utils.fs.os_family', return_value='unix')
+    assert fs.sanitize_filename('foo/bar/baz') == 'foo_bar_baz'
+
+def test_sanitize_path_on_windows(mocker):
+    mocker.patch('upsies.utils.fs.os_family', return_value='windows')
+    assert fs.sanitize_filename('foo<bar>baz :a"b/c \\1|2?3*4.txt') == 'foo_bar_baz _a_b_c _1_2_3_4.txt'
+
+
 def test_file_extension():
     assert fs.file_extension('Something.x264-GRP.mkv') == 'mkv'
     assert fs.file_extension('Something.x264-GRP.mp4') == 'mp4'

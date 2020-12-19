@@ -7,7 +7,7 @@ import os
 import re
 
 from .. import __project_name__, errors
-from . import LazyModule, pretty_bytes
+from . import LazyModule, os_family, pretty_bytes
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -104,6 +104,18 @@ def dirname(path):
     'a/b'
     """
     return os.path.dirname(str(path).rstrip(os.sep))
+
+
+def sanitize_filename(filename):
+    """
+    Replace illegal characters in `filename` with "_"
+    """
+    if os_family() == 'windows':
+        for char in ('<', '>', ':', '"', '/', '\\', '|', '?', '*'):
+            filename = filename.replace(char, '_')
+        return filename
+    else:
+        return filename.replace('/', '_')
 
 
 def file_extension(path):
