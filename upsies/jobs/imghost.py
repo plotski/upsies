@@ -5,7 +5,7 @@ Upload images to image hosting services
 import asyncio
 
 from .. import errors
-from ..tools.imghosts import ImageHostBase
+from ..utils.imghosts import ImageHostBase
 from . import JobBase
 
 import logging  # isort:skip
@@ -16,7 +16,7 @@ class ImageHostJob(JobBase):
     """
     Upload images to an image hosting service
 
-    :param ImageHostBase imghost: Return value of :func:`.tools.imghosts.imghost`
+    :param ImageHostBase imghost: Return value of :func:`.utils.imghosts.imghost`
     :param image_paths: Sequence of paths to image files
     :param images_total: Number of images that are going to be uploaded. The
         only purpose of this value is to provide it via the :attr:`images_total`

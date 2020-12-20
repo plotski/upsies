@@ -2,14 +2,14 @@
 API for image hosting services
 """
 
-from ... import utils
+from .. import subclasses, submodules
 from .base import ImageHostBase
 from .common import UploadedImage
 
 
 def imghosts():
     """Return list of :class:`.ImageHostBase` subclasses"""
-    return utils.subclasses(ImageHostBase, utils.submodules(__package__))
+    return subclasses(ImageHostBase, submodules(__package__))
 
 
 def imghost(name, **kwargs):

@@ -6,7 +6,7 @@ import asyncio
 import os
 
 from ... import errors
-from ...utils import fs
+from .. import fs
 from .base import ImageHostBase
 
 

@@ -3,7 +3,7 @@ Image uploader for imgbox.com
 """
 
 from ... import errors
-from ...utils import LazyModule
+from .. import LazyModule
 from .base import ImageHostBase
 
 import logging  # isort:skip

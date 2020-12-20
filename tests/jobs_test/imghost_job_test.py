@@ -5,7 +5,7 @@ import pytest
 
 from upsies import errors
 from upsies.jobs.imghost import ImageHostJob
-from upsies.tools.imghosts import ImageHostBase
+from upsies.utils.imghosts import ImageHostBase
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it

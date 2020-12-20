@@ -6,7 +6,7 @@ import abc
 import json
 import os
 
-from ...utils import fs
+from .. import fs
 from . import common
 
 import logging  # isort:skip
