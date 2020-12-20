@@ -50,6 +50,7 @@ def test_submodules_finds_modules():
     import importlib
     assert set(utils.submodules('upsies.utils')) == {
         importlib.import_module('upsies.utils.browser'),
+        importlib.import_module('upsies.utils.btclients'),
         importlib.import_module('upsies.utils.configfiles'),
         importlib.import_module('upsies.utils.country'),
         importlib.import_module('upsies.utils.daemon'),
@@ -78,8 +79,8 @@ def test_submodules_finds_packages():
 
 
 def test_subclasses():
-    from upsies.tools import btclients
-    from upsies.tools.btclients import dummy, transmission
+    from upsies.utils import btclients
+    from upsies.utils.btclients import dummy, transmission
     subclses = utils.subclasses(
         basecls=btclients.ClientApiBase,
         modules=[dummy, transmission],

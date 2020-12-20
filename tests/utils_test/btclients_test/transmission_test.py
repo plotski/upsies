@@ -7,7 +7,7 @@ import pytest
 from pytest_httpserver.httpserver import Response
 
 from upsies import errors
-from upsies.tools.btclients import transmission
+from upsies.utils.btclients import transmission
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it

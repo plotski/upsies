@@ -6,7 +6,7 @@ import base64
 import json
 
 from ... import errors
-from ...utils import http
+from .. import http
 from .base import ClientApiBase
 
 import logging  # isort:skip

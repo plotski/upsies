@@ -2,13 +2,13 @@
 API for BitTorrent clients
 """
 
-from ... import utils
+from .. import subclasses, submodules
 from .base import ClientApiBase
 
 
 def clients():
     """Return list of :class:`.ClientApiBase` subclasses"""
-    return utils.subclasses(ClientApiBase, utils.submodules(__package__))
+    return subclasses(ClientApiBase, submodules(__package__))
 
 
 def client(name, **kwargs):

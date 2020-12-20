@@ -7,8 +7,7 @@ import os
 import queue
 
 from .. import errors
-from ..tools.btclients import ClientApiBase
-from ..utils import daemon, fs, torrent
+from ..utils import btclients, daemon, fs, torrent
 from . import JobBase
 
 import logging  # isort:skip
@@ -120,7 +119,7 @@ class AddTorrentJob(JobBase):
     """
     Add torrent(s) to a BitTorrent client
 
-    :param client: Return value of :func:`.tools.btclients.client`
+    :param client: Return value of :func:`.utils.btclients.client`
     :param download_path: Path to the torrent's content files or None to use the
         default path
     :param torrents: Sequence of torrent file paths to add
@@ -147,7 +146,7 @@ class AddTorrentJob(JobBase):
     cache_file = None
 
     def initialize(self, *, client, download_path=None, torrents=()):
-        assert isinstance(client, ClientApiBase), f'Not a ClientApiBase: {client!r}'
+        assert isinstance(client, btclients.ClientApiBase), f'Not a ClientApiBase: {client!r}'
         self._client = client
         self._download_path = download_path
         self._add_task = None
