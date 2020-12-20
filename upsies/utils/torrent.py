@@ -5,7 +5,7 @@ Create torrent file
 from os.path import exists as _path_exists
 
 from .. import __project_name__, __version__, errors
-from ..utils import LazyModule
+from . import LazyModule
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)

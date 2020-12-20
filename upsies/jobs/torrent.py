@@ -7,9 +7,8 @@ import os
 import queue
 
 from .. import errors
-from ..tools import torrent
 from ..tools.btclients import ClientApiBase
-from ..utils import daemon, fs
+from ..utils import daemon, fs, torrent
 from . import JobBase
 
 import logging  # isort:skip

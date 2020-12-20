@@ -42,7 +42,7 @@ def queues():
     queues.input.cancel_join_thread()
 
 
-@patch('upsies.tools.torrent.create')
+@patch('upsies.utils.torrent.create')
 def test_torrent_process_creates_torrent(create_mock, queues):
     create_mock.return_value = 'path/to/foo.mkv.torrent'
     _torrent_process(queues.output, queues.input, some='argument', another='one')
@@ -56,7 +56,7 @@ def test_torrent_process_creates_torrent(create_mock, queues):
         another='one',
     )]
 
-@patch('upsies.tools.torrent.create')
+@patch('upsies.utils.torrent.create')
 def test_torrent_process_catches_TorrentError(create_mock, queues):
     create_mock.side_effect = errors.TorrentError('Argh')
     _torrent_process(queues.output, queues.input, some='argument')
@@ -68,7 +68,7 @@ def test_torrent_process_initializes_with_file_tree(mocker, queues):
     def create_mock(init_callback, **kwargs):
         init_callback('this is not a file tree')
 
-    mocker.patch('upsies.tools.torrent.create', create_mock)
+    mocker.patch('upsies.utils.torrent.create', create_mock)
     _torrent_process(queues.output, queues.input, some='argument')
     assert queues.output.get() == (MsgType.init, 'this is not a file tree')
 
@@ -77,7 +77,7 @@ def test_torrent_process_sends_progress(mocker, queues):
         for progress in (10, 50, 100):
             progress_callback(progress)
 
-    mocker.patch('upsies.tools.torrent.create', create_mock)
+    mocker.patch('upsies.utils.torrent.create', create_mock)
     _torrent_process(queues.output, queues.input, some='argument')
     assert queues.output.get() == (MsgType.info, 10)
     assert queues.output.get() == (MsgType.info, 50)
@@ -94,7 +94,7 @@ def test_torrent_process_cancels_when_terminator_is_in_input_queue(mocker, queue
             time.sleep(0.1)
         return 'mocked result'
 
-    mocker.patch('upsies.tools.torrent.create', create_mock)
+    mocker.patch('upsies.utils.torrent.create', create_mock)
     _torrent_process(queues.output, queues.input, some='argument')
     info = []
     while not queues.output.empty():

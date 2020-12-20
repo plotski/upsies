@@ -61,6 +61,7 @@ def test_submodules_finds_modules():
         importlib.import_module('upsies.utils.signal'),
         importlib.import_module('upsies.utils.subproc'),
         importlib.import_module('upsies.utils.timestamp'),
+        importlib.import_module('upsies.utils.torrent'),
         importlib.import_module('upsies.utils.video'),
     }
 
