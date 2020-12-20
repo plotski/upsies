@@ -138,6 +138,7 @@ class ImdbApi(WebDbApiBase):
                 titles[(region, language)] = info['title']
 
         original_title = await self.title_original(id)
+        original_title_norm = self._normalize_title(original_title)
         _log.debug('Original title: %r', original_title)
 
         # Find English title. US titles seem to be the most commonly used, but they
@@ -149,7 +150,8 @@ class ImdbApi(WebDbApiBase):
         )
         for key in priorities:
             if key in titles:
-                if self._normalize_title(titles[key]) != self._normalize_title(original_title):
+                title_norm = self._normalize_title(titles[key])
+                if title_norm not in original_title_norm and original_title_norm not in title_norm:
                     _log.debug('English title: %s: %r', key, titles[key])
                     return titles[key]
 

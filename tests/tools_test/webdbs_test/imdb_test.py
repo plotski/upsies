@@ -225,7 +225,7 @@ async def test_search_result_title(query, exp_top_title, api, store_response):
         (Query('Karppi', type=ReleaseType.series, year=2018), 'Deadwind', 'Karppi'),
         (Query('Olympus Has Fallen', type=ReleaseType.movie, year=2013), '', 'Olympus Has Fallen'),
         (Query('Sin Nombre', type=ReleaseType.movie, year=2009), '', 'Sin nombre'),
-        (Query('Star Wars', type=ReleaseType.movie, year=1977), 'Star Wars: Episode IV - A New Hope', 'Star Wars'),
+        (Query('Star Wars', type=ReleaseType.movie, year=1977), '', 'Star Wars'),
         (Query('Stone Cold', type=ReleaseType.movie, year=1991), '', 'Stone Cold'),
         (Query('The Forest', type=ReleaseType.series, year=2017), 'The Forest', 'La forêt'),
         (Query('The Nest', type=ReleaseType.movie, year=2002), 'The Nest', 'Nid de guêpes'),
@@ -357,7 +357,7 @@ async def test_summary(id, exp_summary, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_title_english', 'exp_title_original'),
     argvalues=(
-        ('tt0076759', 'Star Wars: Episode IV - A New Hope', 'Star Wars'),
+        ('tt0076759', '', 'Star Wars'),
         ('tt0078243', 'The 36th Chamber of Shaolin', 'Shao Lin san shi liu fang'),
         ('tt0080455', '', 'The Blues Brothers'),
         ('tt0097138', '', 'Cyborg'),
@@ -365,6 +365,7 @@ async def test_summary(id, exp_summary, api, store_response):
         ('tt0104684', 'Hard Boiled', 'Lat sau san taam'),
         ('tt0280990', 'The Nest', 'Nid de guêpes'),
         ('tt0348914', '', 'Deadwood'),
+        ('tt0396184', '', 'Pusher II'),
         ('tt1127715', '', 'Sin nombre'),
         ('tt1405737', 'Traffic Light', 'Ramzor'),
         ('tt1572491', 'The Last Circus', 'Balada triste de trompeta'),
