@@ -4,7 +4,7 @@ Generate uniform release name
 
 import asyncio
 
-from ..tools import release_name
+from ..utils import release_info
 from . import JobBase
 
 import logging  # isort:skip
@@ -17,7 +17,7 @@ class ReleaseNameJob(JobBase):
 
     :param content_path: Path to the release
 
-    :class:`~.release_name.ReleaseName` is used to create the release name.
+    :class:`~.ReleaseName` is used to create the release name.
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
@@ -33,11 +33,11 @@ class ReleaseNameJob(JobBase):
 
     @property
     def release_name(self):
-        """:class:`~.release_name.ReleaseName` instance"""
+        """:class:`~.ReleaseName` instance"""
         return self._release_name
 
     def initialize(self, content_path):
-        self._release_name = release_name.ReleaseName(content_path)
+        self._release_name = release_info.ReleaseName(content_path)
         self.signal.add('release_name_updated')
 
     def release_name_selected(self, name):
