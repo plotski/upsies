@@ -225,6 +225,6 @@ def merge_dicts(a, b, path=()):
     return merged
 
 
-# Provide submodules; allow submodules to import stuff from __init__
-from . import (browser, configfiles, country, daemon, fs, html, http,
-               release_info, signal, subproc, timestamp, video)
+from . import (browser, btclients, configfiles, country, daemon, fs, html,
+               http, imghosts, mediainfo, release_info, screenshot, signal,
+               subproc, timestamp, torrent, video, webdbs)
