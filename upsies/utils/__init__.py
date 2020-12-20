@@ -1,5 +1,5 @@
 """
-Low-level wrappers and helpers
+Swiss Army knife
 """
 
 import collections
