@@ -7,8 +7,7 @@ import collections
 from time import monotonic as time_monotonic
 
 from .. import errors
-from ..tools import webdbs
-from ..utils import cached_property
+from ..utils import cached_property, webdbs
 from . import JobBase
 
 import logging  # isort:skip
@@ -19,7 +18,7 @@ class SearchDbJob(JobBase):
     """
     Prompt user to select a specific search result from an internet database
 
-    :param WebDbApiBase client: Return value of :func:`.tools.webdbs.webdb`
+    :param WebDbApiBase client: Return value of :func:`.utils.webdbs.webdb`
     :param str content_path: Path or name of the release
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
@@ -27,7 +26,7 @@ class SearchDbJob(JobBase):
 
         ``search_results``
             Emitted after new search results are available. Registered callbacks
-            get a sequence of :class:`~.tools.webdbs.common.SearchResult`
+            get a sequence of :class:`~.utils.webdbs.common.SearchResult`
             instances as a positional argument.
 
         ``searching_status``
@@ -39,7 +38,7 @@ class SearchDbJob(JobBase):
             Emitted when additional information is available. Registered
             callbacks are called for each piece of information and get ``key``
             and ``value`` as positional arguments. ``key`` is an attribute of a
-            :class:`~.tools.webdbs.common.SearchResult` object that returns a
+            :class:`~.utils.webdbs.common.SearchResult` object that returns a
             coroutine function. ``value`` is the return value of that coroutine
             function.
     """
@@ -164,7 +163,7 @@ class _Searcher:
         Schedule new query
 
         :param query: Query to make
-        :type query: :class:`~tools.webdbs.Query`
+        :type query: :class:`~.utils.webdbs.Query`
         """
         if self._search_task:
             self._search_task.cancel()

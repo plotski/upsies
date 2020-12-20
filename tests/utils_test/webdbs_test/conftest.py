@@ -16,7 +16,7 @@ def disable_http_requests(pytestconfig, module_mocker):
         module_mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
 
         # IMDb uses imdbpie which doesn't use our utils.http module.
-        module_mocker.patch('upsies.tools.webdbs.imdb._ImdbPie._sync_request', Mock(side_effect=exc))
+        module_mocker.patch('upsies.utils.webdbs.imdb._ImdbPie._sync_request', Mock(side_effect=exc))
 
 
 # When HTTP requests are allowed, store responses in ./cached_responses.

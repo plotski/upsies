@@ -46,7 +46,7 @@ def test_ReleaseType_repr(name):
     assert repr(getattr(utils.ReleaseType, name)) == f'ReleaseType.{name}'
 
 
-def test_submodules_finds_modules():
+def test_submodules_finds_modules_and_packages():
     import importlib
     assert set(utils.submodules('upsies.utils')) == {
         importlib.import_module('upsies.utils.browser'),
@@ -66,16 +66,7 @@ def test_submodules_finds_modules():
         importlib.import_module('upsies.utils.timestamp'),
         importlib.import_module('upsies.utils.torrent'),
         importlib.import_module('upsies.utils.video'),
-    }
-
-def test_submodules_finds_packages():
-    import importlib
-    assert set(utils.submodules('upsies.tools.webdbs')) == {
-        importlib.import_module('upsies.tools.webdbs.common'),
-        importlib.import_module('upsies.tools.webdbs.base'),
-        importlib.import_module('upsies.tools.webdbs.tvmaze'),
-        importlib.import_module('upsies.tools.webdbs.imdb'),
-        importlib.import_module('upsies.tools.webdbs.tmdb'),
+        importlib.import_module('upsies.utils.webdbs'),
     }
 
 

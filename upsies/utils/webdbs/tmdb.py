@@ -5,14 +5,15 @@ API for themoviedb.org
 import functools
 import re
 
-from ... import errors, utils
+from ... import errors
+from .. import LazyModule, ReleaseType, http
 from . import common
 from .base import WebDbApiBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-bs4 = utils.LazyModule(module='bs4', namespace=globals())
+bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 class TmdbApi(WebDbApiBase):
@@ -30,14 +31,14 @@ class TmdbApi(WebDbApiBase):
         params = {'query': query.title}
         if query.year is not None:
             params['query'] += f' y:{query.year}'
-        if query.type is utils.ReleaseType.movie:
+        if query.type is ReleaseType.movie:
             url = f'{self._url_base}/search/movie'
-        elif query.type in (utils.ReleaseType.series, utils.ReleaseType.season, utils.ReleaseType.episode):
+        elif query.type in (ReleaseType.series, ReleaseType.season, ReleaseType.episode):
             url = f'{self._url_base}/search/tv'
         else:
             url = f'{self._url_base}/search'
 
-        html = await utils.http.get(url, params=params, cache=True)
+        html = await http.get(url, params=params, cache=True)
         soup = bs4.BeautifulSoup(html, features='html.parser')
 
         # When search for year, unmatching results are included but hidden.
@@ -50,7 +51,7 @@ class TmdbApi(WebDbApiBase):
 
     async def cast(self, id):
         try:
-            html = await utils.http.get(f'{self._url_base}/{id}', cache=True)
+            html = await http.get(f'{self._url_base}/{id}', cache=True)
         except errors.RequestError:
             return ''
 
@@ -69,7 +70,7 @@ class TmdbApi(WebDbApiBase):
 
     async def keywords(self, id):
         try:
-            html = await utils.http.get(f'{self._url_base}/{id}', cache=True)
+            html = await http.get(f'{self._url_base}/{id}', cache=True)
         except errors.RequestError:
             return ''
 
@@ -92,7 +93,7 @@ class TmdbApi(WebDbApiBase):
 
     async def summary(self, id):
         try:
-            html = await utils.http.get(f'{self._url_base}/{id}', cache=True)
+            html = await http.get(f'{self._url_base}/{id}', cache=True)
         except errors.RequestError:
             return ''
 
@@ -115,7 +116,7 @@ class TmdbApi(WebDbApiBase):
 
     async def year(self, id):
         try:
-            html = await utils.http.get(f'{self._url_base}/{id}', cache=True)
+            html = await http.get(f'{self._url_base}/{id}', cache=True)
         except errors.RequestError:
             return ''
 
@@ -163,11 +164,11 @@ class _TmdbSearchResult(common.SearchResult):
         href = soup.find('a', class_='result').get('href')
         tmdb_type = re.sub(r'(?:^|/)(\w+)/.*$', r'\1', href)
         if tmdb_type == 'movie':
-            return utils.ReleaseType.movie
+            return ReleaseType.movie
         elif tmdb_type == 'tv':
-            return utils.ReleaseType.series
+            return ReleaseType.series
         else:
-            return utils.ReleaseType.unknown
+            return ReleaseType.unknown
 
     def _get_title(self, soup):
         header = soup.select('.result > h2')

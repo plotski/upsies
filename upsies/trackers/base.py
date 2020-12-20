@@ -6,8 +6,7 @@ import abc
 import types
 
 from .. import jobs as _jobs
-from ..tools import webdbs
-from ..utils import cached_property, fs
+from ..utils import cached_property, fs, webdbs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)

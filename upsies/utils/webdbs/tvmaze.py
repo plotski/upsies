@@ -5,7 +5,8 @@ API for tvmaze.com
 import functools
 import json
 
-from ... import errors, utils
+from ... import errors
+from .. import LazyModule, ReleaseType, http
 from . import common
 from .base import WebDbApiBase
 from .imdb import ImdbApi
@@ -13,7 +14,7 @@ from .imdb import ImdbApi
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-bs4 = utils.LazyModule(module='bs4', namespace=globals())
+bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 class TvmazeApi(WebDbApiBase):
@@ -29,13 +30,13 @@ class TvmazeApi(WebDbApiBase):
 
     async def search(self, query):
         _log.debug('Searching TVmaze for %s', query)
-        if not query.title or query.type is utils.ReleaseType.movie:
+        if not query.title or query.type is ReleaseType.movie:
             return []
 
         url = f'{self._url_base}/search/shows'
         params = {'q': query.title}
 
-        results_str = await utils.http.get(url, params=params, cache=True)
+        results_str = await http.get(url, params=params, cache=True)
         try:
             items = json.loads(results_str)
             assert isinstance(items, list)
@@ -56,7 +57,7 @@ class TvmazeApi(WebDbApiBase):
     async def _get_show(self, id):
         url = f'{self._url_base}/shows/{id}'
         params = {'embed': 'cast'}
-        response = await utils.http.get(url, params=params, cache=True)
+        response = await http.get(url, params=params, cache=True)
         try:
             show = json.loads(response)
             assert isinstance(show, dict)
@@ -114,7 +115,7 @@ class _TvmazeSearchResult(common.SearchResult):
         return super().__init__(
             id=show['id'],
             title=show['name'],
-            type=utils.ReleaseType.series,
+            type=ReleaseType.series,
             url=show['url'],
             year=_get_year(show),
             cast=functools.partial(tvmaze_api.cast, show['id']),

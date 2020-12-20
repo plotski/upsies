@@ -622,7 +622,7 @@ def test_group_setter(ReleaseInfo_mock):
     assert rn.group == '123'
 
 
-@patch('upsies.tools.webdbs.imdb.ImdbApi')
+@patch('upsies.utils.webdbs.imdb.ImdbApi')
 @patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='guessed_type, imdb_type, exp_type',
@@ -667,7 +667,7 @@ def test_update_attributes(ReleaseInfo_mock, ImdbApi_mock, guessed_type, imdb_ty
 _unique_titles = (Mock(title='The Foo'), Mock(title='The Bar'))
 _same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
 
-@patch('upsies.tools.webdbs.imdb.ImdbApi')
+@patch('upsies.utils.webdbs.imdb.ImdbApi')
 @patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, results, exp_year_required',

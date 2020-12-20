@@ -5,7 +5,7 @@ import pytest
 
 from upsies import errors
 from upsies.jobs import webdb
-from upsies.tools.webdbs import Query, WebDbApiBase
+from upsies.utils.webdbs import Query, WebDbApiBase
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it

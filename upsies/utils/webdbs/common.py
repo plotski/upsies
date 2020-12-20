@@ -5,7 +5,7 @@ subclasses
 
 import re
 
-from ...utils import ReleaseType, release_info
+from .. import ReleaseType, release_info
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)

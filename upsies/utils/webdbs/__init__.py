@@ -2,7 +2,7 @@
 API for querying services like IMDb
 """
 
-from ... import utils
+from .. import subclasses, submodules
 from . import imdb, tmdb, tvmaze
 from .base import WebDbApiBase
 from .common import Query, SearchResult
@@ -10,7 +10,7 @@ from .common import Query, SearchResult
 
 def webdbs():
     """Return list of :class:`.WebDbApiBase` subclasses"""
-    return utils.subclasses(WebDbApiBase, utils.submodules(__package__))
+    return subclasses(WebDbApiBase, submodules(__package__))
 
 
 def webdb(name, **kwargs):

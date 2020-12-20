@@ -2,8 +2,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from upsies.tools.webdbs import Query, SearchResult, tmdb
 from upsies.utils import ReleaseType
+from upsies.utils.webdbs import Query, SearchResult, tmdb
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it

@@ -7,7 +7,7 @@ import collections
 import os
 import re
 
-from ..tools import webdbs
+from ..utils import webdbs
 from . import LazyModule, ReleaseType, cached_property, fs, mediainfo
 
 import logging  # isort:skip

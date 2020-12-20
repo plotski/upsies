@@ -1,7 +1,6 @@
 import pytest
 
-from upsies.tools import webdbs
-from upsies.utils import ReleaseType
+from upsies.utils import ReleaseType, webdbs
 
 
 def test_Query_title():

@@ -4,8 +4,7 @@ import sys
 import textwrap
 
 from ... import __project_name__, __version__, constants, trackers, utils
-from ...tools import webdbs
-from ...utils import btclients, imghosts
+from ...utils import btclients, imghosts, webdbs
 from . import commands
 
 import logging  # isort:skip

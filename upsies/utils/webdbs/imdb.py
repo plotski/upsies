@@ -11,15 +11,15 @@ import os
 import re
 import string
 
-from ... import utils
+from .. import LazyModule, ReleaseType, country, fs, http
 from . import common
 from .base import WebDbApiBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-imdbpie = utils.LazyModule(module='imdbpie', namespace=globals())
-bs4 = utils.LazyModule(module='bs4', namespace=globals())
+imdbpie = LazyModule(module='imdbpie', namespace=globals())
+bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 class ImdbApi(WebDbApiBase):
@@ -36,11 +36,11 @@ class ImdbApi(WebDbApiBase):
     # and year.
 
     _title_types = {
-        utils.ReleaseType.movie: 'feature,tv_movie,documentary,short,video,tv_short',
-        utils.ReleaseType.series: 'tv_series,tv_miniseries',
-        utils.ReleaseType.season: 'tv_series,tv_miniseries',
+        ReleaseType.movie: 'feature,tv_movie,documentary,short,video,tv_short',
+        ReleaseType.series: 'tv_series,tv_miniseries',
+        ReleaseType.season: 'tv_series,tv_miniseries',
         # Searching for single episodes is currently not supported
-        utils.ReleaseType.episode: 'tv_series,tv_miniseries',
+        ReleaseType.episode: 'tv_series,tv_miniseries',
     }
 
     async def search(self, query):
@@ -50,12 +50,12 @@ class ImdbApi(WebDbApiBase):
 
         url = f'{self._url_base}/search/title/'
         params = {'title': query.title}
-        if query.type is not utils.ReleaseType.unknown:
+        if query.type is not ReleaseType.unknown:
             params['title_type'] = self._title_types[query.type]
         if query.year is not None:
             params['release_date'] = f'{query.year}-01-01,{query.year}-12-31'
 
-        html = await utils.http.get(url, params=params, cache=True)
+        html = await http.get(url, params=params, cache=True)
         soup = bs4.BeautifulSoup(html, features='html.parser')
 
         items = soup.find_all('div', class_='lister-item-content')
@@ -77,7 +77,6 @@ class ImdbApi(WebDbApiBase):
         info = await self._imdbpie.get(id, 'title_versions')
         codes = info.get('origins', '')  # Two-letter code (ISO 3166-1 alpha-2)
         if codes:
-            from ...utils import country
             return country.iso3166_alpha2_name.get(codes[0], '')
         else:
             return ''
@@ -171,13 +170,13 @@ class ImdbApi(WebDbApiBase):
         info = await self._imdbpie.get(id)
         title_type = info.get('base', {}).get('titleType', '').casefold()
         if 'movie' in title_type:
-            return utils.ReleaseType.movie
+            return ReleaseType.movie
         elif 'series' in title_type:
-            return utils.ReleaseType.season
+            return ReleaseType.season
         elif 'episode' in title_type:
-            return utils.ReleaseType.episode
+            return ReleaseType.episode
         else:
-            return utils.ReleaseType.unknown
+            return ReleaseType.unknown
 
     async def year(self, id):
         info = await self._imdbpie.get(id, 'title')
@@ -239,9 +238,9 @@ class _ImdbSearchResult(common.SearchResult):
 
     def _get_type(self, soup):
         if soup.find(string=re.compile(r'Directors?:')):
-            return utils.ReleaseType.movie
+            return ReleaseType.movie
         else:
-            return utils.ReleaseType.series
+            return ReleaseType.series
 
     def _get_url(self, soup):
         id = self._get_id(soup)
@@ -286,7 +285,7 @@ class _ImdbPie:
         # more than once.
         request_lock_key = (id, key, builtins.id(asyncio.get_event_loop()))
         async with self._request_lock[request_lock_key]:
-            cache_file = os.path.join(utils.fs.tmpdir(), f'imdb.{id}.{key}.json')
+            cache_file = os.path.join(fs.tmpdir(), f'imdb.{id}.{key}.json')
 
             # Try to read info from cache
             try:

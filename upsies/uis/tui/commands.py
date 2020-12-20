@@ -15,8 +15,7 @@ import abc
 
 from ... import jobs as _jobs
 from ... import trackers
-from ...tools import webdbs
-from ...utils import btclients, cached_property, fs, imghosts
+from ...utils import btclients, cached_property, fs, imghosts, webdbs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)

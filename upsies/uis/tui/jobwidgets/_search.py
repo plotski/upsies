@@ -4,8 +4,7 @@ from prompt_toolkit.layout.containers import (DynamicContainer, HSplit, VSplit,
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.utils import get_cwidth
 
-from ....tools import webdbs
-from ....utils import browser, cached_property
+from ....utils import browser, cached_property, webdbs
 from .. import widgets
 from . import JobWidgetBase
 

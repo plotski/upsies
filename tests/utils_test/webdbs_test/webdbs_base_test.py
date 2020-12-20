@@ -2,7 +2,7 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies.tools.webdbs.base import WebDbApiBase
+from upsies.utils.webdbs.base import WebDbApiBase
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
