@@ -5,8 +5,8 @@ Create screenshots from video file(s)
 import os
 import queue
 
-from .. import errors, tools
-from ..utils import LazyModule, daemon, fs, timestamp, video
+from .. import errors
+from ..utils import LazyModule, daemon, fs, screenshot, timestamp, video
 from . import JobBase
 
 import logging  # isort:skip
@@ -238,7 +238,7 @@ def _screenshots_process(output_queue, input_queue,
                     fs.basename(video_file) + f'.{ts}.png',
                 )
                 try:
-                    tools.screenshot.create(
+                    screenshot.create(
                         video_file=video_file,
                         screenshot_file=screenshot_file,
                         timestamp=ts,

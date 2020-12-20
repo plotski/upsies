@@ -3,7 +3,7 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 from upsies import errors
-from upsies.tools import screenshot
+from upsies.utils import screenshot
 
 
 @patch('upsies.utils.fs.assert_file_readable')

@@ -84,7 +84,7 @@ def screenshots_process_patches(mocker):
     mocker.patch('upsies.utils.video.first_video', parent.first_video)
     mocker.patch('upsies.jobs.screenshots._shall_terminate', parent.shall_terminate)
     mocker.patch('upsies.jobs.screenshots._normalize_timestamps', parent.normalize_timestamps)
-    mocker.patch('upsies.tools.screenshot.create', parent.screenshot_create)
+    mocker.patch('upsies.utils.screenshot.create', parent.screenshot_create)
     yield parent
 
 def test_screenshots_process_fails_to_find_first_video(tmp_path, screenshots_process_patches):
