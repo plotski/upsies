@@ -30,7 +30,7 @@
     <link rel="preload" href="https://www.themoviedb.org/assets/2/source-sans-pro-v13-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="https://www.themoviedb.org/assets/2/source-sans-pro-v13-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/fonts-f578d72aab1b29e57199fe0eefab11f965977296ecc398469564152d147e08c9.css" media="screen">
-    <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/application-742baef46663642eb518338a0dbf1022864eb5ae21c4ab2d52f7995b6a4a37ab.css" media="screen">
+    <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/application-07149aceb141ceb6fcf7a2eb9f9fe1ea5f4cc9cf1b358975fc35eb1139c1da43.css" media="screen">
     
     
       <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/media-bc4d9264e78334673d1031f8ce8e050a3f3baf35bef4b0431d74dbb0316a2af5.css" media="screen">
@@ -230,12 +230,12 @@
     <style>
   
     html {
-      --primaryColor: #3C2126;
+      --primaryColor: #1b0e16;
       --primaryColorContrast: #ffffff;
     }
 
     div.header {
-      background: linear-gradient(to bottom right, rgba(23.53%, 12.94%, 14.90%, 1.00), rgba(23.53%, 12.94%, 14.90%, 0.84));
+      background: linear-gradient(to bottom right, rgba(10.59%, 5.49%, 8.63%, 1.00), rgba(10.59%, 5.49%, 8.63%, 0.84));
     }
 
     div.column_wrapper div.settings_panel h3 {
@@ -303,7 +303,7 @@
 
     
       section.inner_content div.custom_bg {
-        background-image: linear-gradient(to right, rgba(23.53%, 12.94%, 14.90%, 1.00) 150px, rgba(23.53%, 12.94%, 14.90%, 0.84) 100%);
+        background-image: linear-gradient(to right, rgba(10.59%, 5.49%, 8.63%, 1.00) 150px, rgba(10.59%, 5.49%, 8.63%, 0.84) 100%);
       }
     
   
@@ -1164,7 +1164,7 @@
         },
         series: [{
           field: "value",
-          color: "#3C2126",
+          color: "#1b0e16",
           width: 2
         }],
         tooltip: {
@@ -1530,7 +1530,7 @@
         </div>
       </nav>
 
-      <section>Build 37ec70a (675)</section>
+      <section>Build 68f56ea (685)</section>
     </footer>
 
     
