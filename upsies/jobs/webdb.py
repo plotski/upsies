@@ -86,7 +86,7 @@ class SearchDbJob(JobBase):
                 'keywords': self._make_update_info_func('keywords'),
                 'director': self._make_update_info_func('director'),
                 'cast': self._make_update_info_func('cast'),
-                'country': self._make_update_info_func('country'),
+                'countries': self._make_update_info_func('countries'),
             },
         )
 

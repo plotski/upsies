@@ -46,7 +46,7 @@ class SearchDbJobWidget(JobWidgetBase):
                 width=right_column_width,
                 height=2,
             ),
-            'country' : widgets.TextField(
+            'countries' : widgets.TextField(
                 width=right_column_width,
                 height=1,
             ),
@@ -103,7 +103,7 @@ class SearchDbJobWidget(JobWidgetBase):
                     widgets.VLabel('Keywords', self._widgets['keywords']),
                     widgets.VLabel('Director', self._widgets['director']),
                     widgets.VLabel('Cast', self._widgets['cast']),
-                    widgets.VLabel('Country', self._widgets['country']),
+                    widgets.VLabel('Country', self._widgets['countries']),
                 ]),
             ]),
             widgets.vspacer,

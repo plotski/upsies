@@ -27,7 +27,7 @@ def foodb(mocker):
         label = 'FooDB'
         search = AsyncMock()
         cast = AsyncMock()
-        country = AsyncMock()
+        countries = AsyncMock()
         keywords = AsyncMock()
         summary = AsyncMock()
         title_english = AsyncMock()
@@ -96,7 +96,7 @@ def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
                 'keywords func',
                 'director func',
                 'cast func',
-                'country func',
+                'countries func',
             ),
         )
     )
@@ -117,7 +117,7 @@ def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
             'keywords': 'keywords func',
             'director': 'director func',
             'cast': 'cast func',
-            'country': 'country func',
+            'countries': 'countries func',
         },
     )]
     assert make_update_info_func_mock.call_args_list == [
@@ -128,7 +128,7 @@ def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
         call('keywords'),
         call('director'),
         call('cast'),
-        call('country'),
+        call('countries'),
     ]
 
 
