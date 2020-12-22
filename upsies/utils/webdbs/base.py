@@ -39,8 +39,8 @@ class WebDbApiBase(abc.ABC):
         """Return list of cast names"""
 
     @abc.abstractmethod
-    async def country(self, id):
-        """Return name of country of origin"""
+    async def countries(self, id):
+        """Return list of country names"""
 
     @abc.abstractmethod
     async def keywords(self, id):

@@ -92,18 +92,20 @@ async def test_search_result_cast(title, exp_cast, api, store_response):
         assert member in cast
 
 @pytest.mark.parametrize(
-    argnames=('title', 'exp_country'),
+    argnames=('title', 'exp_countries'),
     argvalues=(
-        ('Star Wars: Clone Wars', 'United States'),
-        ('Something in the Rain', 'Korea, Republic of'),
-        ('Le Chalet', 'France'),
+        ('Star Wars: Clone Wars', ['United States']),
+        ('Something in the Rain', ['Korea, Republic of']),
+        ('Le Chalet', ['France']),
+        ('Bron / Broen', ['Sweden']),
     ),
 )
 @pytest.mark.asyncio
-async def test_search_result_country(title, exp_country, api, store_response):
+async def test_search_result_countries(title, exp_countries, api, store_response):
     results = await api.search(Query(title))
     results_dict = {r.title: r for r in results}
-    assert results_dict[title].country == exp_country
+    print(results_dict)
+    assert results_dict[title].countries == exp_countries
 
 @pytest.mark.parametrize(
     argnames=('title', 'exp_id'),
@@ -243,16 +245,17 @@ async def test_cast(id, exp_cast, api, store_response):
         assert member in cast
 
 @pytest.mark.parametrize(
-    argnames=('id', 'exp_country'),
+    argnames=('id', 'exp_countries'),
     argvalues=(
-        (1259, 'United States'),
-        (35256, 'Korea, Republic of'),
-        (36072, 'France'),
+        (1259, ['United States']),
+        (35256, ['Korea, Republic of']),
+        (36072, ['France']),
+        (1910, ['Sweden']),
     ),
 )
 @pytest.mark.asyncio
-async def test_country(id, exp_country, api, store_response):
-    assert await api.country(id) == exp_country
+async def test_countries(id, exp_countries, api, store_response):
+    assert await api.countries(id) == exp_countries
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_keywords'),

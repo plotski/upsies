@@ -84,10 +84,10 @@ async def test_search_result_cast(query, exp_cast, api, store_response):
         assert member in cast
 
 @pytest.mark.asyncio
-async def test_search_result_country(api, store_response):
+async def test_search_result_countries(api, store_response):
     results = await api.search(Query('Star Wars'))
     for result in results:
-        assert result.country == ''
+        assert result.countries == []
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_id'),
@@ -238,9 +238,9 @@ async def test_cast(id, exp_cast, api, store_response):
 
 @pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))
 @pytest.mark.asyncio
-async def test_country(id, api, store_response):
+async def test_countries(id, api, store_response):
     with pytest.raises(NotImplementedError, match=r'^Country lookup is not implemented for TMDb$'):
-        await api.country(id)
+        await api.countries(id)
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_keywords'),

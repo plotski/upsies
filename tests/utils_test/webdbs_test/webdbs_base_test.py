@@ -20,7 +20,7 @@ class TestApi(WebDbApiBase):
     search = AsyncMock()
 
     cast = AsyncMock()
-    country = AsyncMock()
+    countries = AsyncMock()
     keywords = AsyncMock()
     summary = AsyncMock()
     title_english = AsyncMock()
@@ -55,7 +55,7 @@ async def test_gather(webdb):
         'year': 'mock year',
     }
     assert webdb.cast.call_args_list == [call('mock id')]
-    assert webdb.country.call_args_list == []
+    assert webdb.countries.call_args_list == []
     assert webdb.summary.call_args_list == []
     assert webdb.title_english.call_args_list == []
     assert webdb.title_original.call_args_list == []

@@ -64,8 +64,6 @@ async def test_search_for_year(query, exp_top_title, api, store_response):
 @pytest.mark.asyncio
 async def test_search_for_series(query, exp_titles, api, store_response):
     results = await api.search(query)
-    for r in results:
-        print(r.title, r.type, r.year)
     titles = [r.title for r in results]
     if exp_titles:
         for exp_title in exp_titles:
@@ -86,8 +84,6 @@ async def test_search_for_series(query, exp_titles, api, store_response):
 @pytest.mark.asyncio
 async def test_search_for_movie(query, exp_titles, api, store_response):
     results = await api.search(query)
-    for r in results:
-        print(r.title, r.type, r.year)
     titles = [r.title for r in results]
     if exp_titles:
         for exp_title in exp_titles:
@@ -111,21 +107,23 @@ async def test_search_result_cast(query, exp_cast, api, store_response):
     for member in exp_cast:
         assert member in cast
 
+
 @pytest.mark.parametrize(
-    argnames=('query', 'exp_country'),
+    argnames=('query', 'exp_countries'),
     argvalues=(
-        (Query('star wars', type=ReleaseType.movie, year=1977), 'United States'),
-        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), 'Spain'),
-        (Query('The Forest', type=ReleaseType.series, year=2017), 'France'),
-        (Query('Karppi', type=ReleaseType.series, year=2018), 'Finland'),
+        (Query('Star Wars', type=ReleaseType.movie, year=1977), ['USA'],),
+        (Query('Bron Broen', type=ReleaseType.series, year=2011), ['Sweden', 'Denmark', 'Germany']),
+        (Query('The Forest', type=ReleaseType.series, year=2017), ['France']),
+        (Query('Karppi', type=ReleaseType.series, year=2018), ['Finland', 'Germany']),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_search_result_country(query, exp_country, api, store_response):
+async def test_search_result_country(query, exp_countries, api, store_response):
     results = await api.search(query)
-    country = await results[0].country()
-    assert country == exp_country
+    countries = await results[0].countries()
+    assert countries == exp_countries
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_id'),
@@ -142,6 +140,7 @@ async def test_search_result_id(query, exp_id, api, store_response):
     results = await api.search(query)
     assert results[0].id == exp_id
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_director'),
     argvalues=(
@@ -149,7 +148,6 @@ async def test_search_result_id(query, exp_id, api, store_response):
         (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), 'Álex de la Iglesia'),
         (Query('The Forest', type=ReleaseType.series, year=2017), ''),
         (Query('Karppi', type=ReleaseType.series, year=2018), ''),
-
     ),
     ids=lambda value: str(value),
 )
@@ -161,21 +159,17 @@ async def test_search_result_director(query, exp_director, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_keywords'),
     argvalues=(
-        (Query('star wars', type=ReleaseType.movie, year=1977), ('action', 'adventure', 'fantasy')),
-        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ('comedy', 'drama', 'horror')),
-        (Query('The Forest', type=ReleaseType.series, year=2017), ('crime', 'drama')),
-        (Query('Deadwood', type=ReleaseType.series, year=2004), ('crime', 'drama', 'history')),
+        (Query('star wars', type=ReleaseType.movie, year=1977), ['action', 'adventure', 'fantasy']),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ['action', 'adventure', 'comedy']),
+        (Query('The Forest', type=ReleaseType.series, year=2017), ['crime', 'drama']),
+        (Query('Deadwood', type=ReleaseType.series, year=2004), ['crime', 'drama', 'history']),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
 async def test_search_result_keywords(query, exp_keywords, api, store_response):
     results = await api.search(query)
-    if exp_keywords:
-        for kw in exp_keywords:
-            assert kw in results[0].keywords
-    else:
-        assert not results[0].keywords
+    assert results[0].keywords == exp_keywords
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_summary'),
@@ -224,8 +218,8 @@ async def test_search_result_title(query, exp_top_title, api, store_response):
         (Query('Hard Boiled', type=ReleaseType.movie, year=1992), 'Hard Boiled', 'Lat sau san taam'),
         (Query('Karppi', type=ReleaseType.series, year=2018), 'Deadwind', 'Karppi'),
         (Query('Olympus Has Fallen', type=ReleaseType.movie, year=2013), '', 'Olympus Has Fallen'),
-        (Query('Sin Nombre', type=ReleaseType.movie, year=2009), '', 'Sin nombre'),
-        (Query('Star Wars', type=ReleaseType.movie, year=1977), '', 'Star Wars'),
+        (Query('Sin Nombre', type=ReleaseType.movie, year=2009), '', 'Sin Nombre'),
+        (Query('Star Wars', type=ReleaseType.movie, year=1977), '', 'Star Wars: Episode IV - A New Hope'),
         (Query('Stone Cold', type=ReleaseType.movie, year=1991), '', 'Stone Cold'),
         (Query('The Forest', type=ReleaseType.series, year=2017), 'The Forest', 'La forêt'),
         (Query('The Nest', type=ReleaseType.movie, year=2002), 'The Nest', 'Nid de guêpes'),
@@ -287,77 +281,112 @@ async def test_search_result_year(query, exp_year, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),
     argvalues=(
-        ('tt0080455', ('Dan Aykroyd', 'John Belushi')),      # Blues Brothers
-        ('tt0348914', ('Timothy Olyphant', 'Ian McShane')),  # Deadwood
+        ('tt0080455', ['Tom Erhart', 'Gerald Walling', 'John Belushi',
+                       'Walter Levine', 'Frank Oz']),  # Blues Brothers (movie)
+        ('tt0192802', ['Alan Bennett', 'Michael Palin', 'Michael Gambon',
+                       'Rik Mayall', 'James Villiers']),  # Wind in the Willows (TV movie)
+        ('tt0471711', ['Billy West', 'Katey Sagal', 'John DiMaggio', 'Tress MacNeille',
+                       'Maurice LaMarche']),  # Bender's Big Score (Video)
+        ('tt0097270', ['Gary Walker', 'Bill Hamilton', 'Michael Foyle', 'Danny Small',
+                       'Robert J. Taylor']),  # Elephant (TV Short)
+        ('tt3472226', ['David Sandberg', 'Jorma Taccone', 'Steven Chew',
+                       'Leopold Nilsson', 'Andreas Cahling']),  # Kung Fury (Short)
+        ('tt6560040', ['Samuel Labarthe', 'Suzanne Clément', 'Alexia Barlier',
+                       'Frédéric Diefenthal', 'Patrick Ridremont']),  # The Forest (TV mini-series)
+        ('tt2372162', ['Taylor Schilling', 'Kate Mulgrew', 'Uzo Aduba',
+                       'Danielle Brooks', 'Dascha Polanco']),  # Orange Is the New Black (series)
+        ('tt5440238', ['Taylor Schilling', 'Natasha Lyonne', 'Uzo Aduba',
+                       'Danielle Brooks', 'Jackie Cruz']),  # Orange Is the New Black - S07E01 (episode)
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
 async def test_cast(id, exp_cast, api, store_response):
     cast = await api.cast(id)
-    if exp_cast:
-        for member in exp_cast:
-            assert member in cast
-    else:
-        assert not cast
+    assert cast == exp_cast
+
 
 @pytest.mark.parametrize(
-    argnames=('id', 'exp_country'),
+    argnames=('id', 'exp_countries'),
     argvalues=(
-        ('tt0080455', 'United States'),   # Blues Brothers
-        ('tt6560040', 'France'),          # The Forest
-        ('tt1572491', 'Spain'),           # The Last Circus
-        ('tt3286052', 'Canada'),          # February
+        ('tt0080455', ['USA']),                           # Blues Brothers (movie)
+        ('tt3286052', ['Canada']),                        # February (movie)
+        ('tt0192802', ['UK']),                            # Wind in the Willows (TV movie)
+        ('tt0471711', ['USA']),                           # Bender's Big Score (Video)
+        ('tt0097270', ['UK']),                            # Elephant (TV Short)
+        ('tt3472226', ['Sweden']),                        # Kung Fury (Short)
+        ('tt1733785', ['Sweden', 'Denmark', 'Germany']),  # The Bridge (series)
+        ('tt0348914', ['USA']),                           # Deadwood (series)
+        ('tt0556307', ['USA']),                           # Deadwood - S02E04 (episode)
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_country(id, exp_country, api, store_response):
-    country = await api.country(id)
-    assert country == exp_country
+async def test_countries(id, exp_countries, api, store_response):
+    countries = await api.countries(id)
+    assert countries == exp_countries
+
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_keywords'),
     argvalues=(
-        ('tt0080455', ('action', 'adventure', 'comedy', 'crime', 'music')),  # Blues Brothers
-        ('tt6560040', ('crime', 'drama')),                                   # The Forest
-        ('tt1572491', ('comedy', 'drama', 'horror')),                        # The Last Circus
-        ('tt3286052', ('horror', 'mystery', 'thriller')),                    # February
+        ('tt0080455', ['action', 'adventure', 'comedy']),   # Blues Brothers (movie)
+        ('tt0192802', ['animation', 'family']),             # Wind in the Willows (TV movie)
+        ('tt0471711', ['animation', 'comedy', 'romance']),  # Bender's Big Score (Video)
+        ('tt0097270', ['short', 'crime', 'drama']),         # Elephant (TV Short)
+        ('tt3472226', ['short', 'action', 'comedy']),       # Kung Fury (Short)
+        ('tt6560040', ['crime', 'drama']),                  # The Forest (mini series)
+        ('tt0348914', ['crime', 'drama', 'history']),       # Deadwood (series)
+        ('tt0556307', ['crime', 'drama', 'history']),       # Deadwood - S02E04 (episode)
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
 async def test_keywords(id, exp_keywords, api, store_response):
     keywords = await api.keywords(id)
-    if exp_keywords:
-        for kw in exp_keywords:
-            assert kw in keywords
-    else:
-        assert not keywords
+    assert keywords == exp_keywords
+
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
-        ('tt0080455', 'Jake Blues, just released from prison'),           # Blues Brothers
-        ('tt6560040', 'Sixteen-year-old Jennifer disappears'),            # The Forest
-        ('tt1572491', 'young trapeze artist must decide'),                # The Last Circus
-        ('tt3286052', 'Two girls must battle a mysterious evil force'),   # February
-        ('tt0014838', ''),                                                # The Deadwood Coach
+        ('tt0080455', ('Jake Blues, just released from prison, puts together '
+                       'his old band to save the Catholic home where he and '
+                       'his brother Elwood were raised.')),  # Blues Brothers (movie)
+        ('tt0192802', ('When three tight friends Mole "Alan Bennett", Ratty "Sir Michael Palin", '
+                       'and Badger "Sir Michael Gambon", find out that the infamous Mr. Toad '
+                       '"Rik Mayall" of Toad Hall has been up to no good, they must find him and '
+                       'change his ways for good.')),  # Wind in the Willows (TV movie)
+        ('tt0471711', ('Planet Express sees a hostile takeover and Bender falls into the hands of '
+                       'criminals where he is used to fulfill their schemes.')),  # Bender's Big Score (Video)
+        ('tt0097270', ('A depiction of a series of violent killings in Northern Ireland '
+                       'with no clue as to exactly who is responsible.')),  # Elephant (TV Short)
+        ('tt3472226', ('In 1985, Kung Fury, the toughest martial artist cop in Miami, goes '
+                       'back in time to kill the worst criminal of all time - Kung Führer, '
+                       'a.k.a. Adolf Hitler.')),  # Kung Fury (Short)
+        ('tt6560040', ('Sixteen-year-old Jennifer disappears one night from her village '
+                       'in the Ardennes. Captain Gaspard Deker leads the investigation with '
+                       'local cop Virginie Musso, who knew the girl well. They are helped '
+                       'by Eve, a lonely and mysterious woman.')),  # The Forest (TV mini-series)
+        ('tt0348914', ('A show set in the late 1800s, revolving around the characters of Deadwood, '
+                       'South Dakota; a town of deep corruption and crime.')),  # Deadwood (series)
+        ('tt0556307', ('Doc contemplates a procedure that could cure Swearengen - or kill him. '
+                       'Bullock attempts to settle into domesticity, while Sol gets a new '
+                       'student bookkeeper - Trixie. Alma cuts ties with ...')),  # Deadwood - S02E04 (episode)
+        ('tt0014838', ''),  # The Deadwood Coach
     ),
-    ids=lambda value: str(value),
+    ids=lambda value: str(value)[:30] or '<empty>',
 )
 @pytest.mark.asyncio
 async def test_summary(id, exp_summary, api, store_response):
     summary = await api.summary(id)
-    if exp_summary:
-        assert exp_summary in summary
-    else:
-        assert not summary
+    assert exp_summary == summary
+
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_title_english', 'exp_title_original'),
     argvalues=(
-        ('tt0076759', '', 'Star Wars'),
+        ('tt0076759', '', 'Star Wars: Episode IV - A New Hope'),
         ('tt0078243', 'The 36th Chamber of Shaolin', 'Shao Lin san shi liu fang'),
         ('tt0080455', '', 'The Blues Brothers'),
         ('tt0097138', '', 'Cyborg'),
@@ -366,7 +395,7 @@ async def test_summary(id, exp_summary, api, store_response):
         ('tt0280990', 'The Nest', 'Nid de guêpes'),
         ('tt0348914', '', 'Deadwood'),
         ('tt0396184', '', 'Pusher II'),
-        ('tt1127715', '', 'Sin nombre'),
+        ('tt1127715', '', 'Sin Nombre'),
         ('tt1405737', 'Traffic Light', 'Ramzor'),
         ('tt1572491', 'The Last Circus', 'Balada triste de trompeta'),
         ('tt2172934', '', '3 Days to Kill'),
@@ -383,14 +412,18 @@ async def test_title_english_original(id, exp_title_english, exp_title_original,
     assert await api.title_english(id) == exp_title_english
     assert await api.title_original(id) == exp_title_original
 
+
 @pytest.mark.parametrize(
     argnames=('id', 'exp_type'),
     argvalues=(
-        ('tt0076759', ReleaseType.movie),
-        ('tt0192802', ReleaseType.movie),
-        ('tt2372162', ReleaseType.season),
-        ('tt1453159', ReleaseType.season),
-        ('tt5440238', ReleaseType.episode),
+        ('tt0080455', ReleaseType.movie),    # Blues Brothers (movie)
+        ('tt0192802', ReleaseType.movie),    # Wind in the Willows (TV movie)
+        ('tt0471711', ReleaseType.movie),    # Bender's Big Score (Video)
+        ('tt0097270', ReleaseType.movie),    # Elephant (TV Short)
+        ('tt3472226', ReleaseType.movie),    # Kung Fury (Short)
+        ('tt6560040', ReleaseType.season),   # The Forest (mini series)
+        ('tt0348914', ReleaseType.season),   # Deadwood (series)
+        ('tt0556307', ReleaseType.episode),  # Deadwood - S02E04 (episode)
     ),
     ids=lambda value: str(value),
 )
@@ -398,15 +431,18 @@ async def test_title_english_original(id, exp_title_english, exp_title_original,
 async def test_type(id, exp_type, api, store_response):
     assert await api.type(id) == exp_type
 
+
 @pytest.mark.parametrize(
     argnames=('id', 'exp_year'),
     argvalues=(
-        ('tt0080455', '1980'),  # Blues Brothers
-        ('tt1572491', '2010'),  # The Last Circus
-        ('tt3286052', '2015'),  # February
-        ('tt6560040', '2017'),  # The Forest
-        ('tt0348914', '2004'),  # Deadwood
-        ('tt6616260', '2018'),  # Karppi
+        ('tt0080455', '1980'),  # Blues Brothers (movie)
+        ('tt0192802', '1995'),  # Wind in the Willows (TV movie)
+        ('tt0471711', '2007'),  # Bender's Big Score (Video)
+        ('tt0097270', '1989'),  # Elephant (TV Short)
+        ('tt3472226', '2015'),  # Kung Fury (Short)
+        ('tt6560040', '2017'),  # The Forest (mini series)
+        ('tt0348914', '2004'),  # Deadwood (series)
+        ('tt0556307', '2005'),  # Deadwood - S02E04 (episode)
     ),
     ids=lambda value: str(value),
 )

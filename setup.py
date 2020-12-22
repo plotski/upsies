@@ -32,7 +32,6 @@ setuptools.setup(
     python_requires='>=3.6',
     install_requires=[
         'httpx==0.16.*',
-        'imdbpie==5.6.*',
         'beautifulsoup4==4.*',
         'guessit==3.*',
         'natsort==7.*',

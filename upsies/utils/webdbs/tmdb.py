@@ -65,7 +65,7 @@ class TmdbApi(WebDbApiBase):
                     cast.append(strings[0])
         return cast
 
-    async def country(self, id):
+    async def countries(self, id):
         raise NotImplementedError('Country lookup is not implemented for TMDb')
 
     async def keywords(self, id):
@@ -139,7 +139,7 @@ class _TmdbSearchResult(common.SearchResult):
             url=self._get_url(soup),
             year=self._get_year(soup),
             cast=functools.partial(tmdb_api.cast, id),
-            country='',
+            countries=[],
             director='',
             keywords=functools.partial(tmdb_api.keywords, id),
             summary=functools.partial(tmdb_api.summary, id),

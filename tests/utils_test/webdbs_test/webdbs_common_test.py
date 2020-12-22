@@ -155,7 +155,7 @@ def test_SearchResult_with_all_info():
         'keywords' : ('foo', 'some bar'),
         'cast' : ('This Guy', 'That Dude'),
         'summary' : 'I dunno.',
-        'country' : 'Antarctica',
+        'countries' : ['Antarctica'],
     }
     sr = webdbs.SearchResult(**info)
     for k, v in info.items():

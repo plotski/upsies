@@ -71,9 +71,9 @@ class TvmazeApi(WebDbApiBase):
         cast = show.get('_embedded', {}).get('cast', ())
         return tuple(str(c['person']['name']) for c in cast)
 
-    async def country(self, id):
+    async def countries(self, id):
         show = await self._get_show(id)
-        return _get_country(show)
+        return _get_countries(show)
 
     async def keywords(self, id):
         show = await self._get_show(id)
@@ -119,7 +119,7 @@ class _TvmazeSearchResult(common.SearchResult):
             url=show['url'],
             year=_get_year(show),
             cast=functools.partial(tvmaze_api.cast, show['id']),
-            country=_get_country(show),
+            countries=_get_countries(show),
             director='',
             keywords=_get_keywords(show),
             summary=_get_summary(show),
@@ -152,12 +152,12 @@ def _get_keywords(show):
     else:
         return ()
 
-def _get_country(show):
+def _get_countries(show):
     network = show.get('network', None)
     if network:
         country = network.get('country', None)
         if country:
             name = country.get('name', None)
             if name:
-                return name
+                return [name]
     return ''

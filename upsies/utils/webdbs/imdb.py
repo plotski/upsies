@@ -2,23 +2,17 @@
 API for imdb.com
 """
 
-import asyncio
-import builtins
-import collections
 import functools
-import json
-import os
 import re
 import string
 
-from .. import LazyModule, ReleaseType, country, fs, http
+from .. import LazyModule, ReleaseType, http
 from . import common
 from .base import WebDbApiBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-imdbpie = LazyModule(module='imdbpie', namespace=globals())
 bs4 = LazyModule(module='bs4', namespace=globals())
 
 
@@ -29,11 +23,19 @@ class ImdbApi(WebDbApiBase):
     label = 'IMDb'
     _url_base = 'http://imdb.com'
 
-    def __init__(self):
-        self._imdbpie = _ImdbPie()
+    _soup_cache = {}
 
-    # Scraping IMDb's advanced search website is slower but lets us specify type
-    # and year.
+    async def _get_soup(self, path, params={}):
+        cache_id = (path, tuple(sorted(params.items())))
+        if cache_id in self._soup_cache:
+            return self._soup_cache[cache_id]
+        html = await http.get(
+            url=f'{self._url_base}/{path}',
+            params=params,
+            cache=True,
+        )
+        self._soup_cache[cache_id] = bs4.BeautifulSoup(html, features='html.parser')
+        return self._soup_cache[cache_id]
 
     _title_types = {
         ReleaseType.movie: 'feature,tv_movie,documentary,short,video,tv_short',
@@ -48,139 +50,195 @@ class ImdbApi(WebDbApiBase):
         if not query.title:
             return []
 
-        url = f'{self._url_base}/search/title/'
+        path = 'search/title/'
         params = {'title': query.title}
         if query.type is not ReleaseType.unknown:
             params['title_type'] = self._title_types[query.type]
         if query.year is not None:
             params['release_date'] = f'{query.year}-01-01,{query.year}-12-31'
 
-        html = await http.get(url, params=params, cache=True)
-        soup = bs4.BeautifulSoup(html, features='html.parser')
-
+        soup = await self._get_soup(path, params=params)
         items = soup.find_all('div', class_='lister-item-content')
         results = [_ImdbSearchResult(soup=item, imdb_api=self)
                    for item in items]
         return results
 
     async def cast(self, id):
-        info = await self._imdbpie.get(id, 'title_credits')
+        soup = await self._get_soup(f'title/{id}')
+        cast_tag = soup.find(class_='cast_list')
         cast = []
-        try:
-            for member in info['credits']['cast'][:20]:
-                cast.append(member['name'])
-            return cast
-        except KeyError:
-            return []
+        tr_tags = cast_tag.find_all('tr')
+        for tr_tag in tr_tags:
+            td_tags = tr_tag.find_all('td')
+            try:
+                cast.append(''.join(td_tags[1].stripped_strings))
+            except IndexError:
+                pass
+            else:
+                if len(cast) >= 5:
+                    break
+        return cast
 
-    async def country(self, id):
-        info = await self._imdbpie.get(id, 'title_versions')
-        codes = info.get('origins', '')  # Two-letter code (ISO 3166-1 alpha-2)
-        if codes:
-            return country.iso3166_alpha2_name.get(codes[0], '')
-        else:
-            return ''
+    async def countries(self, id):
+        soup = await self._get_soup(f'title/{id}')
+        details_tag = soup.find(id='titleDetails')
+        countries_tag = details_tag.find(string='Country:').parent.parent
+        countries = []
+        for country_tag in countries_tag.find_all('a'):
+            countries.append(''.join(country_tag.stripped_strings))
+        return countries
 
     async def keywords(self, id):
-        info = await self._imdbpie.get(id, 'title_genres')
-        try:
-            return [str(g).lower() for g in info['genres'][:5]]
-        except KeyError:
-            return []
+        soup = await self._get_soup(f'title/{id}')
+        subtext_tag = soup.find(class_='subtext')
+        if subtext_tag:
+            subtexts = ''.join(subtext_tag.stripped_strings).lower().split('|')
+            for subtext in subtexts:
+                keywords = re.findall(r'(\w+)(?:\s*,\s*|\s*$)', subtext)
+                if len(keywords) > 1:
+                    return keywords
+        return []
 
     async def summary(self, id):
-        info = await self._imdbpie.get(id)
-        try:
-            return info['plot']['outline']['text']
-        except KeyError:
-            try:
-                return info['plot']['summaries'][0]['text']
-            except (KeyError, IndexError):
-                pass
+        soup = await self._get_soup(f'title/{id}')
+        summary_tag = soup.find(class_='summary_text')
+        if summary_tag:
+            summary = ''.join(summary_tag.stripped_strings).strip()
+            if 'add a plot' not in summary.lower():
+                return re.sub(r'\s*See full summary\W+$', '', summary)
         return ''
 
-    async def title_english(self, id):
-        info = await self._imdbpie.get(id, 'title_versions')
-
-        ignored_attributes = ('alternative spelling', 'dubbed version',
-                              'literal title', 'original script title',
-                              'short title', 'video box title')
-        ignored_types = ('working', 'tv')
-
-        # Some titles should not be considered
-        def title_looks_interesting(info):
-            # Maybe we can just move any title that has an "attributes" field?
-            if any(a in info.get('attributes', ()) for a in ignored_attributes):
-                return False
-            if any(t in info.get('types', ()) for t in ignored_types):
-                return False
-            return True
-
-        alternate_titles = [
-            info for info in sorted(info.get('alternateTitles', ()),
-                                    key=lambda x: x.get('region', ''))
-            if title_looks_interesting(info)
-        ]
-
-        # Map titles to region and language.
-        # Both region and language may not exist or be empty.
-        # Ensure regions are upper case and languages are lower case.
-        titles = collections.defaultdict(lambda: [])
-        for info in alternate_titles:
-            language = info.get('language', '').lower()
-            region = info.get('region', '').upper()
-            if language:
-                titles[language] = info['title']
-            if region:
-                titles[region] = info['title']
-            if region and language:
-                titles[(region, language)] = info['title']
-
-        original_title = await self.title_original(id)
-        original_title_norm = self._normalize_title(original_title)
-        _log.debug('Original title: %r', original_title)
-
-        # Find English title. US titles seem to be the most commonly used, but they
-        # can also be in Spanish.
-        priorities = (
-            ('US', 'en'),
-            'US',
-            ('XWW', 'en'),  # World-wide
-        )
-        for key in priorities:
-            if key in titles:
-                title_norm = self._normalize_title(titles[key])
-                if title_norm not in original_title_norm and original_title_norm not in title_norm:
-                    _log.debug('English title: %s: %r', key, titles[key])
-                    return titles[key]
-
+    async def title_english(self, id, allow_empty=True):
+        akas = await self._get_akas(id)
+        original_title = akas.get('(original title)', '')
+        for key, english_title in akas.items():
+            for regex in self._english_akas_keys:
+                if regex.search(key):
+                    _log.debug('Interesting English title: %r -> %r', key, english_title)
+                    if not allow_empty:
+                        _log.debug('Forcing first match: %r', english_title)
+                        return english_title
+                    if self._titles_are_similar(english_title, original_title):
+                        _log.debug('Similar to original title %r: %r', original_title, english_title)
+                    else:
+                        _log.debug('English title: %r', english_title)
+                        _log.debug('Original title: %r', original_title)
+                        return english_title
         return ''
-
-    @staticmethod
-    def _normalize_title(title):
-        """Return casefolded `title` with any punctuation removed"""
-        trans = title.maketrans('', '', string.punctuation)
-        return title.translate(trans).casefold()
 
     async def title_original(self, id):
-        info = await self._imdbpie.get(id, 'title_versions')
-        return info.get('originalTitle', '')
+        akas = await self._get_akas(id)
+        original_title = akas.get('(original title)', '')
+        english_title = await self.title_english(id, allow_empty=False)
+        if original_title:
+            if self._titles_are_similar(original_title, english_title):
+                _log.debug('Similar to English title %r: %r', english_title, original_title)
+            else:
+                _log.debug('Original title: %r', original_title)
+                _log.debug('English title: %r', english_title)
+                return original_title
+        _log.debug('Defaulting to English title: %r', english_title)
+        return english_title
+
+    def _titles_are_similar(self, a, b):
+        """Whether normalized `a` contains normalized `b` or vice versa"""
+        an = self._normalize_title(a)
+        bn = self._normalize_title(b)
+        return an and bn and (an in bn or bn in an)
+
+    _normalize_title_translation = str.maketrans('', '', string.punctuation)
+
+    def _normalize_title(self, title):
+        """Return casefolded `title` without punctuation and deduplicated whitespace"""
+        return ' '.join(title.translate(self._normalize_title_translation).casefold().split())
+
+    _ignored_akas_keys = (
+        re.compile(r'\(TV title\)$'),
+        re.compile(r'\(alternative spelling\)$'),
+        re.compile(r'\(dubbed version\)$'),
+        re.compile(r'\(literal title\)$'),
+        re.compile(r'\(original script title\)$'),
+        re.compile(r'\(short title\)$'),
+        re.compile(r'\(video box title\)$'),
+        re.compile(r'\(working title\)$'),
+    )
+    _english_akas_keys = (
+        re.compile(r'^USA.*English'),
+        re.compile(r'^USA$'),
+        re.compile(r'^World-wide.*English'),
+    )
+
+    async def _get_akas(self, id):
+        soup = await self._get_soup(f'title/{id}/releaseinfo')
+        akas = {}
+
+        def is_item_key_class(class_):
+            # Class may also be named "aka-item__name-empty"
+            return class_ and class_.startswith('aka-item__name')
+
+        for item in soup.find_all('tr', class_='aka-item'):
+            key_tag = item.find('td', class_=is_item_key_class)
+            key = ''.join(key_tag.stripped_strings).strip()
+
+            title_tag = item.find('td', class_='aka-item__title')
+            title = ''.join(title_tag.stripped_strings).strip()
+
+            if not title:
+                _log.debug('Ignoring empty title: %r -> %r', key, title)
+            elif any(regex.search(key) for regex in self._ignored_akas_keys):
+                _log.debug('Ignoring AKA: %r -> %r', key, title)
+            else:
+                akas[key] = title
+
+        return akas
 
     async def type(self, id):
-        info = await self._imdbpie.get(id)
-        title_type = info.get('base', {}).get('titleType', '').casefold()
-        if 'movie' in title_type:
-            return ReleaseType.movie
-        elif 'series' in title_type:
-            return ReleaseType.season
-        elif 'episode' in title_type:
-            return ReleaseType.episode
-        else:
-            return ReleaseType.unknown
+        soup = await self._get_soup(f'title/{id}')
+        subtext_tag = soup.find(class_='subtext')
+        if subtext_tag:
+            # reversed() because interesting info is on the right side
+            subtexts = ''.join(subtext_tag.stripped_strings).lower().split('|')
+            if 'episode' in subtexts[-1]:
+                return ReleaseType.episode
+            elif 'tv series' in subtexts[-1]:
+                return ReleaseType.season
+            elif 'tv mini-series' in subtexts[-1]:
+                return ReleaseType.season
+            elif 'tv short' in subtexts[-1]:
+                return ReleaseType.movie
+            elif 'short' in subtexts[2].split(','):
+                return ReleaseType.movie
+            elif 'video' in subtexts[-1].split(' '):
+                return ReleaseType.movie
+            elif 'tv movie' in subtexts[-1]:
+                return ReleaseType.movie
+            elif re.search(r'^\d+ [a-z]+ \d{4}', subtexts[-1]):
+                return ReleaseType.movie
+        return ReleaseType.unknown
 
     async def year(self, id):
-        info = await self._imdbpie.get(id, 'title')
-        return str(info.get('base', {}).get('year', ''))
+        soup = await self._get_soup(f'title/{id}')
+
+        # Movies
+        year_tag = soup.find(id='titleYear')
+        if year_tag:
+            return ''.join(year_tag.stripped_strings).strip('()')
+
+        # Series
+        subtext_tag = soup.find(class_='subtext')
+        if subtext_tag:
+            # reversed() because year is on the very right
+            for tag in reversed(subtext_tag.find_all()):
+                text = ''.join(tag.stripped_strings)
+                # Looking for one of these:
+                #   - "TV Mini-Series (<YEAR>)"
+                #   - "TV Series (<YEAR>–<year>)" (the "–" is an EN DASH / U+2013)
+                #   - "<day> <month> <YEAR>"
+                match = re.search(r'\b(\d{4})\b', text)
+                if match:
+                    return match.group(1)
+
+        return ''
 
 
 class _ImdbSearchResult(common.SearchResult):
@@ -188,7 +246,7 @@ class _ImdbSearchResult(common.SearchResult):
         id = self._get_id(soup)
         return super().__init__(
             cast=self._get_cast(soup),
-            country=functools.partial(imdb_api.country, id),
+            countries=functools.partial(imdb_api.countries, id),
             director=self._get_director(soup),
             id=self._get_id(soup),
             keywords=self._get_keywords(soup),
@@ -263,50 +321,3 @@ class _ImdbSearchResult(common.SearchResult):
             return str(int(year[:4]))
         except (ValueError, TypeError):
             return ''
-
-
-class _ImdbPie:
-    def __init__(self):
-        self._imdbpie = imdbpie.Imdb()
-        self._request_lock = collections.defaultdict(lambda: asyncio.Lock())
-
-    def _sync_request(self, method, id):
-        # https://github.com/richardARPANET/imdb-pie/blob/master/CLIENT.rst#available-methods
-        return getattr(self._imdbpie, f'get_{method}')(id)
-
-    async def _async_request(self, method, id):
-        wrapped = functools.partial(self._sync_request, method, id)
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, wrapped)
-
-    async def get(self, id, key='title'):
-        # By using one Lock per requested information, we can savely call this
-        # method multiple times concurrently without downloading the same data
-        # more than once.
-        request_lock_key = (id, key, builtins.id(asyncio.get_event_loop()))
-        async with self._request_lock[request_lock_key]:
-            cache_file = os.path.join(fs.tmpdir(), f'imdb.{id}.{key}.json')
-
-            # Try to read info from cache
-            try:
-                with open(cache_file, 'r') as f:
-                    return json.loads(f.read())
-            except (OSError, ValueError):
-                pass
-
-            # Make API request and return empty dict on failure
-            try:
-                info = await self._async_request(key, id)
-            except (LookupError, imdbpie.exceptions.ImdbAPIError) as e:
-                _log.debug('IMDb error: %r', e)
-                info = {}
-
-            # Cache info unless the request failed
-            if info:
-                try:
-                    with open(cache_file, 'w') as f:
-                        f.write(json.dumps(info))
-                except OSError:
-                    pass
-
-            return info
