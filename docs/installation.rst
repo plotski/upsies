@@ -29,7 +29,7 @@ completely.
 .. _installing/pipx:
 
 pipx (recommended)
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 1. Try installing `pipx`_ with your package manager, e.g.
 
