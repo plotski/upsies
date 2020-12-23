@@ -123,8 +123,8 @@ class create_torrent(CommandBase):
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
-            tracker_name=self.args.TRACKER,
-            tracker_config=self.config['trackers'][self.args.TRACKER],
+            tracker_name=self.args.TRACKER.lower(),
+            tracker_config=self.config['trackers'][self.args.TRACKER.lower()],
         )
 
     @cached_property
