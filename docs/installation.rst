@@ -17,8 +17,8 @@ Dependencies
 * `mediainfo <https://mediaarea.net/en/MediaInfo>`_
 * `ffmpeg and ffprobe <https://ffmpeg.org/>`_
 
-Installing
-----------
+Installing Current Release
+--------------------------
 
 :ref:`pipx <installing/pipx>` is the recommended installation tool. It creates a
 separate virtual environment for each installed Python package that contains all
@@ -85,3 +85,19 @@ Only do this if you don't care or if :ref:`installing with pipx
    $ pip install --user --upgrade upsies
    $ # Remove upsies (but not its dependencies)
    $ pip uninstall upsies
+
+Installing Latest Commit
+------------------------
+
+If you just want to run the current development version without having to clone,
+you can also do that with `pipx`_.
+
+For ``pipx --version >= 0.15.0.0``
+    .. code:: sh
+
+       $ pipx install 'git+https://github.com/plotski/upsies'
+
+For ``pipx --version < 0.15.0.0``
+    .. code:: sh
+
+       $ pipx install upsies --spec 'git+https://github.com/plotski/upsies.git#egg=upsies'
