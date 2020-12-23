@@ -445,7 +445,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
       - ``service`` (Streaming service abbreviation)
       - ``source`` ("BluRay", "WEB-DL", etc)
       - ``audio_codec`` (Audio codec abbreviation)
-      - ``audio_channels`` (e.g. 2.0 or 7.1)
+      - ``audio_channels`` (e.g. "2.0" or "7.1")
       - ``video_codec``
       - ``group``
 
