@@ -6,4 +6,6 @@ sphinx:
   fail_on_warning: true
 
 python:
-  version: 3
+  install:
+    - method: pip
+      path: .
