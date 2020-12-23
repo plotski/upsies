@@ -2,8 +2,7 @@ Quickstart
 ==========
 
 These commands should get you started quickly. Inexperienced users should read
-the :doc:`installation manual <./installation>` and the :doc:`user manual
-<./manual>`.
+the :doc:`installation manual <./installation>`.
 
 Installing
 ----------
