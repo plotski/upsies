@@ -29,11 +29,9 @@ class ConfigFiles:
     """
     Combine multiple INI-style configuration files into nested dictionaries
 
-    Each top-level dictionary maps section names to subsections, subsections
-    contain pairs of options and values.
-
-    A section is mapped to an single INI file. The sections in the INI file are
-    subsections in this representations.
+    Each top-level dictionary represents one INI file. It maps section names to
+    subsections. Subsections (which are sections in the INI file) contain pairs
+    of options and values.
 
     Sections, subsections and options can be accessed like dictionaries.
 
@@ -49,11 +47,12 @@ class ConfigFiles:
     >>> config["main.foo.bar"]
     'Ichi'
 
-    List values use ``\\n`` as separators between items.
+    List values use ``"\\n  "`` (newline followed by two spaces) as separators
+    between items.
 
     :param defaults: Nested directory structure as described above with
         default values
-    :param files: Map section names to file paths that are :meth:`read`
+    :param files: Mapping of section names to file paths that are :meth:`read`
         during initialization
     """
 

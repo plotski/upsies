@@ -1,14 +1,17 @@
 """
 A command provides a :attr:`~CommandBase.jobs` property that returns a
-sequence of :class:`~.jobs.JobBase` instances.
+sequence of :class:`~.jobs.base.JobBase` instances.
 
 It is important that the jobs are only instantiated once and the
-:attr:`~CommandBase.jobs` property doesn't create new jobs on every access. The
-easiest way to achieve this is with the :class:`.utils.cached_property`
-decorator.
+:attr:`~CommandBase.jobs` property doesn't create new jobs every time it is
+accessed. The easiest way to achieve this is with the
+:obj:`.utils.cached_property` decorator.
 
 Jobs should use CLI arguments (:attr:`~CommandBase.args`) and config files
 (:attr:`~CommandBase.config`) to create arguments for jobs.
+
+The docstrings of :class:`CommandBase` subclasses are used as the descriptionin
+the ``--help`` output.
 """
 
 import abc
@@ -31,14 +34,14 @@ class CommandBase(abc.ABC):
     @abc.abstractmethod
     def jobs(self):
         """
-        Sequence of :class:`~jobs.JobBase` objects
+        Sequence of :class:`~.jobs.base.JobBase` objects
 
         For convenience, the sequence may also contain `None` instead.
         """
 
     @property
     def jobs_active(self):
-        """Same as :attr:`jobs` but with `None` filtered out"""
+        """Same as :attr:`jobs` but without `None` values"""
         return [j for j in self.jobs if j is not None]
 
     @property
@@ -48,7 +51,7 @@ class CommandBase(abc.ABC):
 
     @property
     def config(self):
-        """Config file options as :class:`~config.Config` object"""
+        """Config file options as :class:`~.configfiles.ConfigFiles` object"""
         return self._config
 
 
@@ -56,11 +59,11 @@ class search_db(CommandBase):
     """
     Search online database like IMDb to get an ID
 
-    Pressing Enter searches for the current query. Pressing Enter again without
+    Pressing ``Enter`` searches for the current query. Pressing ``Enter`` again without
     changing the query selects the focused search result.
 
-    The focused search result can be opened in the default web browser by
-    pressing Alt-Enter.
+    The focused search result can be opened in the default web browser with
+    ``Alt-Enter``.
     """
     @cached_property
     def jobs(self):
@@ -292,7 +295,7 @@ class submit(CommandBase):
     @cached_property
     def tracker(self):
         """
-        :class:`~.trackers.Tracker` instance from one of the submodules of
+        :class:`~.trackers.base.TrackerBase` instance from one of the submodules of
         :mod:`.trackers`
         """
         return trackers.tracker(
@@ -330,7 +333,12 @@ class set(CommandBase):
 
     Without any arguments, all options are listed with their current values.
 
-    The first segment in the option name is the file name without the extension.
+    The first segment in the option name is the file name without the
+    extension. The second segment is the section name in that file. The third
+    segment is the option name.
+
+    List values must be given as separate arguments. If non-list values are
+    given as multiple arguments, they are concatenated with single spaces.
     """
     @cached_property
     def jobs(self):

@@ -27,10 +27,10 @@ def JobWidget(job):
     Factory that returns JobWidgetBase instances based on job type
 
     The widget class name is created by adding "Widget" to `job`'s class name.
-    The widget class is imported from :mod:`jobwidgets`.
+    The widget class is imported from :mod:`.jobwidgets`.
 
     :param job: Job instance
-    :type job: :class:`JobBase`
+    :type job: :class:`~.jobs.base.JobBase`
 
     :raise RuntimeError: if `job`'s type is not supported
     """

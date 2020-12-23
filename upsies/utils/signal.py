@@ -17,7 +17,7 @@ class Signal:
         """
         Create new `signal`
 
-        :param signal: Any hashable object
+        :param hashable signal: Any hashable object
 
         :raise TypeError: if `signal` is not hashable
         :raise RuntimeError: if `signal` has been added previously
@@ -33,8 +33,8 @@ class Signal:
         """
         Call `callback` when `signal` is emited
 
-        :param signal: Previously added signal
-        :param callback: Any callback. The signature depends on the caller of
+        :param hashable signal: Previously added signal
+        :param callable callback: Any callback. The signature depends on the caller of
             :meth:`emit`.
 
         :raise ValueError: if `signal` was not added first
@@ -51,7 +51,7 @@ class Signal:
         """
         Call callbacks that are registered to `signal`
 
-        :param signal: Previously added signal
+        :param hashable signal: Previously added signal
 
         Any other arguments are passed on to the callbacks.
         """

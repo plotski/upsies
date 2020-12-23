@@ -21,14 +21,14 @@ class ScreenshotsJob(JobBase):
     """
     Create screenshots
 
-    :param str content_path: Path to file or directory (see
+    :param str content_path: Path to file or directory (filtered through
         :func:`~.video.first_video`)
     :param timestamps: Positions in the video to make screenshots at
     :type timestamps: sequence of "[[H+:]M+:]S+" strings or seconds
     :param number: How many screenshots to make
 
-    If `timestamps` and `number` are not given, screenshot positions are
-    generated.
+    If `timestamps` and `number` are not given, screenshot positions are picked
+    at even intervals.
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:

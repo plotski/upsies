@@ -179,7 +179,7 @@ class TrackerBase(abc.ABC):
         """
         Start user session
 
-        Authentication credentials should be taken from :attr:`config`.
+        Authentication credentials should be taken from :attr:`~.config`.
         """
 
     @abc.abstractmethod
@@ -193,7 +193,7 @@ class TrackerBase(abc.ABC):
 
         :param dict metadata: Map :attr:`~.JobBase.name` to
             :attr:`~.JobBase.output` attributes for each job in
-            :attr:`jobs_before_upload`
+            :attr:`~.jobs_before_upload`
 
-            .. note: Job output is always an immutable sequence.
+        .. note:: Job output is always an immutable sequence.
         """
