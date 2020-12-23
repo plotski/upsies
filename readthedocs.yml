@@ -7,5 +7,6 @@ sphinx:
 
 python:
   install:
+    version: 3.8
     - method: pip
       path: .
