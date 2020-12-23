@@ -4,11 +4,11 @@ Installation
 OS Support
 ----------
 
-Any Linux or Unix distribution that comes with Python 3.6 or later should work.
+Any Linux or Unix distribution that provides the dependencies below should work.
 
 Feel free to try other operating systems and report any issues_ you find.
 
-.. _issues: https://github.com/plotski/upsies/
+.. _issues: https://github.com/plotski/upsies/issues
 
 Dependencies
 ------------
@@ -22,16 +22,16 @@ Installing
 
 :ref:`pipx <installing/pipx>` is the recommended installation tool. It creates a
 separate virtual environment for each installed Python package that contains all
-the dependencies to avoid conflicts and to make it easy to uninstall packges
+the dependencies to avoid conflicts and to make it trivial to uninstall packges
 completely.
 
 .. _pipx: https://pipxproject.github.io/pipx/
 .. _installing/pipx:
 
-`pipx`_ (recommended)
+pipx (recommended)
 ^^^^^^^^^^^^^^^^^^^^^
 
-1. Try installing ``pipx`` with your package manager, e.g.
+1. Try installing `pipx`_ with your package manager, e.g.
 
    .. code-block:: sh
 
@@ -68,12 +68,11 @@ completely.
 
       $ pipx uninstall upsies
 
-``pip``
-^^^^^^^
+pip
+^^^
 
 Installing with ``pip`` is messy because it installs everything in the same
-environment, and it doesn't provide an easy way to remove dependencies when you
-want to uninstall it.
+environment and it doesn't provide any way to remove dependencies.
 
 Only do this if you don't care or if :ref:`installing with pipx
 <installing/pipx>` is not possible for some reason.

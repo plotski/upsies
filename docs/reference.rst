@@ -14,8 +14,8 @@ them more predictable and easier to replace if necessary.
 Utilities
 ^^^^^^^^^
 
-Utilities are the lowest abstraction layer. They do the most basic work like
-HTTP requests and executing subprocesses.
+:mod:`Utilities <upsies.utils>` are the lowest abstraction layer. They do the most
+basic work like performing HTTP requests and executing subprocesses.
 
 Utilities also provide high-level tools for creating torrents and screenshots,
 querying online databases, etc. They produce convenient objects and exceptions
@@ -24,8 +24,8 @@ that are fit for presentation to the user.
 Jobs
 ^^^^
 
-Jobs are the intermediaries between utilities and a user interface. They provide
-data from utilities to the UI and handle user input.
+:mod:`Jobs <upsies.jobs>` are the intermediaries between utilities and a user
+interface. They provide data from utilities to the UI and handle user input.
 
 Jobs are instantiated with all the necessary input, e.g. from CLI arguments or
 configuration files.
@@ -56,9 +56,9 @@ two very simple purposes:
 Trackers
 ^^^^^^^^
 
-Trackers implement anything that is specific to a certain tracker. They provide
-a list of jobs that generate the necessary metadata as well as an upload method
-to upload that metadata.
+:mod:`Trackers <upsies.trackers>` implement anything that is specific to a
+certain tracker. They provide a list of jobs that generate the necessary
+metadata as well as an upload method to upload that metadata.
 
 Index
 -----

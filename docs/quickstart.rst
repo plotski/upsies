@@ -5,21 +5,24 @@ These commands should get you started quickly. Inexperienced users should read
 the :doc:`installation manual <./installation>` and the :doc:`user manual
 <./manual>`.
 
-#. Installing
+Installing
+----------
 
 .. code-block:: sh
 
-  $ sudo apt install pipx ffmpeg mediainfo
-  $ pipx install upsies
+   $ sudo apt install pipx ffmpeg mediainfo
+   $ pipx install upsies
 
-#. Getting help
+Getting help
+------------
 
 .. code-block:: sh
 
    $ upsies -h
    $ upsies <command> -h
 
-#. Configuration
+Configuration
+-------------
 
 .. code-block:: sh
 
@@ -27,7 +30,8 @@ the :doc:`installation manual <./installation>` and the :doc:`user manual
    $ upsies set <option> <value>
    $ $EDITOR ~/.config/upsies/*.ini
 
-#. Submission
+Submission
+----------
 
 .. code-block:: sh
 
@@ -35,13 +39,15 @@ the :doc:`installation manual <./installation>` and the :doc:`user manual
      [--add-to <client>] \
      [--copy-to <path/to/watch/directory>]
 
-#. Upgrading
+Upgrading
+---------
 
 .. code-block:: sh
 
-  $ pipx upgrade upsies
+   $ pipx upgrade upsies
 
-#. Uninstalling
+Uninstalling
+------------
 
 .. code-block:: sh
 
