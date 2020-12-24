@@ -55,7 +55,7 @@ class CommandBase(abc.ABC):
         return self._config
 
 
-class search_db(CommandBase):
+class search_webdb(CommandBase):
     """
     Search online database like IMDb to get an ID
 
@@ -68,7 +68,7 @@ class search_db(CommandBase):
     @cached_property
     def jobs(self):
         return (
-            _jobs.webdb.SearchDbJob(
+            _jobs.webdb.SearchWebDbJob(
                 homedir=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.CONTENT,
@@ -105,7 +105,7 @@ class release_name(CommandBase):
     def imdb_job(self):
         # To be able to fetch the original title, year, etc, we need to prompt
         # for an ID first. IMDb seems to be best.
-        imdb_job = _jobs.webdb.SearchDbJob(
+        imdb_job = _jobs.webdb.SearchWebDbJob(
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,

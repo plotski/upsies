@@ -41,7 +41,7 @@ def foodb(mocker):
 def job(foodb, tmp_path, mocker):
     mocker.patch('upsies.jobs.webdb._Searcher', Mock(return_value=Mock(wait=AsyncMock())))
     mocker.patch('upsies.jobs.webdb._InfoUpdater', Mock(return_value=Mock(wait=AsyncMock())))
-    job = webdb.SearchDbJob(
+    job = webdb.SearchWebDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db=foodb,
@@ -69,7 +69,7 @@ def test_cache_id(job):
 
 def test_initialize_creates_searcher(tmp_path, mocker, foodb):
     Searcher_mock = mocker.patch('upsies.jobs.webdb._Searcher', Mock())
-    job = webdb.SearchDbJob(
+    job = webdb.SearchWebDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db=foodb,
@@ -86,7 +86,7 @@ def test_initialize_creates_searcher(tmp_path, mocker, foodb):
 def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
     InfoUpdater_mock = mocker.patch('upsies.jobs.webdb._InfoUpdater', Mock())
     make_update_info_func_mock = mocker.patch(
-        'upsies.jobs.webdb.SearchDbJob._make_update_info_func',
+        'upsies.jobs.webdb.SearchWebDbJob._make_update_info_func',
         Mock(
             side_effect=(
                 'id func',
@@ -100,7 +100,7 @@ def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
             ),
         )
     )
-    job = webdb.SearchDbJob(
+    job = webdb.SearchWebDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db=foodb,
@@ -133,8 +133,8 @@ def test_initialize_creates_info_updater(tmp_path, mocker, foodb):
 
 
 def test_make_update_info_func(tmp_path, mocker, foodb):
-    mocker.patch('upsies.jobs.webdb.SearchDbJob.update_info')
-    job = webdb.SearchDbJob(
+    mocker.patch('upsies.jobs.webdb.SearchWebDbJob.update_info')
+    job = webdb.SearchWebDbJob(
         homedir=tmp_path,
         ignore_cache=False,
         db=foodb,

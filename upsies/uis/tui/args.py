@@ -35,7 +35,7 @@ def _get_names(package, clsname, name_attribute):
         return [utils.CaseInsensitiveString(getattr(mod, name_attribute))
                 for mod in modules]
 
-DB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in webdbs.webdbs()]
+WEBDB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in webdbs.webdbs()]
 TRACKER_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in trackers.trackers()]
 IMGHOST_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in imghosts.imghosts()]
 BTCLIENT_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in btclients.clients()]
@@ -49,11 +49,11 @@ def NUMBER(string):
 def TIMESTAMP(string):
     return utils.timestamp.parse(string)
 
-def DB(string):
-    if string in DB_NAMES:
+def WEBDB(string):
+    if string in WEBDB_NAMES:
         return string.casefold()
     else:
-        raise ValueError(f'Unsupported databasae: {string}')
+        raise ValueError(f'Unsupported online databasae: {string}')
 
 def TRACKER(string):
     if string in TRACKER_NAMES:
@@ -72,7 +72,6 @@ def IMAGEHOST(string):
         return string.casefold()
     else:
         raise ValueError(f'Unsupported image hosting service: {string}')
-
 
 def OPTION(string):
     if string in constants.OPTION_PATHS:
@@ -144,13 +143,13 @@ def parse(args):
 
     # Command: id
     add_subcmd(
-        command=commands.search_db,
+        command=commands.search_webdb,
         names=('id',),
         args={
             'DB': {
-                'type': DB,
+                'type': WEBDB,
                 'help': ('Case-insensitive database name.\n'
-                         'Supported databases: ' + ', '.join(DB_NAMES)),
+                         'Supported databases: ' + ', '.join(WEBDB_NAMES)),
             },
             'CONTENT': {'help': 'Path to release content'},
         },

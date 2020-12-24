@@ -207,7 +207,7 @@ def test_release_name_job(mocker):
 
 
 def test_imdb_job(mocker):
-    SearchDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchDbJob', Mock())
+    SearchWebDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchWebDbJob', Mock())
     mocker.patch('upsies.jobs.release_name.ReleaseNameJob', Mock())
     webdb_mock = mocker.patch('upsies.utils.webdbs.webdb')
     tracker = make_TestTracker(
@@ -216,8 +216,8 @@ def test_imdb_job(mocker):
         ignore_cache=Mock(),
         content_path=Mock(),
     )
-    assert tracker.imdb_job is SearchDbJob_mock.return_value
-    assert SearchDbJob_mock.call_args_list == [
+    assert tracker.imdb_job is SearchWebDbJob_mock.return_value
+    assert SearchWebDbJob_mock.call_args_list == [
         call(
             homedir=tracker.job_input.homedir,
             ignore_cache=tracker.job_input.ignore_cache,
@@ -232,7 +232,7 @@ def test_imdb_job(mocker):
 
 
 def test_tmdb_job(mocker):
-    SearchDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchDbJob', Mock())
+    SearchWebDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchWebDbJob', Mock())
     webdb_mock = mocker.patch('upsies.utils.webdbs.webdb')
     tracker = make_TestTracker(
         config=Mock(),
@@ -240,8 +240,8 @@ def test_tmdb_job(mocker):
         ignore_cache=Mock(),
         content_path=Mock(),
     )
-    assert tracker.tmdb_job is SearchDbJob_mock.return_value
-    assert SearchDbJob_mock.call_args_list == [
+    assert tracker.tmdb_job is SearchWebDbJob_mock.return_value
+    assert SearchWebDbJob_mock.call_args_list == [
         call(
             homedir=tracker.job_input.homedir,
             ignore_cache=tracker.job_input.ignore_cache,
@@ -253,7 +253,7 @@ def test_tmdb_job(mocker):
 
 
 def test_tvmaze_job(mocker):
-    SearchDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchDbJob', Mock())
+    SearchWebDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchWebDbJob', Mock())
     webdb_mock = mocker.patch('upsies.utils.webdbs.webdb')
     tracker = make_TestTracker(
         config=Mock(),
@@ -261,8 +261,8 @@ def test_tvmaze_job(mocker):
         ignore_cache=Mock(),
         content_path=Mock(),
     )
-    assert tracker.tvmaze_job is SearchDbJob_mock.return_value
-    assert SearchDbJob_mock.call_args_list == [
+    assert tracker.tvmaze_job is SearchWebDbJob_mock.return_value
+    assert SearchWebDbJob_mock.call_args_list == [
         call(
             homedir=tracker.job_input.homedir,
             ignore_cache=tracker.job_input.ignore_cache,
