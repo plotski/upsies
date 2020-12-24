@@ -23,6 +23,22 @@ Features
 * Create ``.torrent`` file and add it to supported BitTorrent client
 * Do multiple jobs simultaneously
 * Submit metadata to supported private trackers
+* Add the ``.torrent`` file to a supported BitTorrent client
+
+Supported Trackers
+^^^^^^^^^^^^^^^^^^
+
+* NBL
+
+Supported BitTorrent Clients
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* Transmission (only the daemon)
+
+Supported Image Hosting Services
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* imgbox.com
 
 Table of Contents
 -----------------
