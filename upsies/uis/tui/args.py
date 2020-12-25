@@ -111,14 +111,14 @@ def parse(args):
     subparsers = parser.add_subparsers(title='commands')
     mutex_groups = {}
 
-    def add_subcmd(command, names, info='', args={}):
+    def add_subcmd(command, info='', args={}):
         description = textwrap.dedent(command.__doc__.strip('\n'))
         if info:
             description += f'\n\n{info}'
         help = description.split('\n', 1)[0]
         parser = subparsers.add_parser(
-            names[0],
-            aliases=names[1:],
+            command.names[0],
+            aliases=command.names[1:],
             help=help,
             description=description,
             formatter_class=MyHelpFormatter,
@@ -144,7 +144,6 @@ def parse(args):
     # Command: id
     add_subcmd(
         command=commands.search_webdb,
-        names=('id',),
         args={
             'DB': {
                 'type': WEBDB,
@@ -158,7 +157,6 @@ def parse(args):
     # Command: release-name
     add_subcmd(
         command=commands.release_name,
-        names=('release-name', 'rn'),
         args={
             'CONTENT': {'help': 'Path to release content'},
         },
@@ -167,7 +165,6 @@ def parse(args):
     # Command: create-torrent
     add_subcmd(
         command=commands.create_torrent,
-        names=('create-torrent', 'ct'),
         args={
             'TRACKER': {
                 'type': TRACKER,
@@ -191,7 +188,6 @@ def parse(args):
     # Command: add-torrent
     add_subcmd(
         command=commands.add_torrent,
-        names=('add-torrent', 'at'),
         args={
             'CLIENT': {
                 'type': CLIENT,
@@ -212,7 +208,6 @@ def parse(args):
     # Command: screenshots
     add_subcmd(
         command=commands.screenshots,
-        names=('screenshots', 'ss'),
         args={
             'CONTENT': {'help': 'Path to release content'},
             ('--timestamps', '-t'): {
@@ -239,7 +234,6 @@ def parse(args):
     # Command: upload-images
     add_subcmd(
         command=commands.upload_images,
-        names=('upload-images', 'ui'),
         args={
             'IMAGEHOST': {
                 'type': IMAGEHOST,
@@ -256,7 +250,6 @@ def parse(args):
     # Command: mediainfo
     add_subcmd(
         command=commands.mediainfo,
-        names=('mediainfo', 'mi'),
         args={
             'CONTENT': {'help': 'Path to release content'},
         },
@@ -265,7 +258,6 @@ def parse(args):
     # Command: submit
     add_subcmd(
         command=commands.submit,
-        names=('submit',),
         args={
             'TRACKER': {
                 'type': TRACKER,
@@ -289,7 +281,6 @@ def parse(args):
     # Command: set
     add_subcmd(
         command=commands.set,
-        names=('set',),
         info='options:\n  ' + '\n  '.join(o for o in constants.OPTION_PATHS),
         args={
             'OPTION': {

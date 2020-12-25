@@ -26,9 +26,17 @@ _log = logging.getLogger(__name__)
 
 class CommandBase(abc.ABC):
     """Base class for all commands"""
+
     def __init__(self, args, config):
         self._args = args
         self._config = config
+
+    names = NotImplemented
+    """
+    Sequence of command names
+
+    The first name is the full name and the rest are aliases.
+    """
 
     @property
     @abc.abstractmethod
@@ -65,6 +73,9 @@ class search_webdb(CommandBase):
     The focused search result can be opened in the default web browser with
     ``Alt-Enter``.
     """
+
+    names = ('id',)
+
     @cached_property
     def jobs(self):
         return (
@@ -89,6 +100,9 @@ class release_name(CommandBase):
     Missing required information is highlighted with placeholders,
     e.g. "UNKNOWN_RESOLUTION"
     """
+
+    names = ('release-name', 'rn')
+
     @cached_property
     def jobs(self):
         return (self.imdb_job, self.release_name_job)
@@ -117,6 +131,9 @@ class release_name(CommandBase):
 
 class create_torrent(CommandBase):
     """Create torrent file and optionally add it or move it"""
+
+    names = ('create-torrent', 'ct')
+
     @cached_property
     def create_torrent_job(self):
         return _jobs.torrent.CreateTorrentJob(
@@ -170,6 +187,9 @@ class create_torrent(CommandBase):
 
 class add_torrent(CommandBase):
     """Add torrent file to BitTorrent client"""
+
+    names = ('add-torrent', 'at')
+
     @cached_property
     def jobs(self):
         return (
@@ -188,6 +208,9 @@ class add_torrent(CommandBase):
 
 class screenshots(CommandBase):
     """Create screenshots and optionally upload them"""
+
+    names = ('screenshots', 'ss')
+
     @cached_property
     def screenshots_job(self):
         return _jobs.screenshots.ScreenshotsJob(
@@ -232,6 +255,9 @@ class screenshots(CommandBase):
 
 class upload_images(CommandBase):
     """Upload images to image hosting service"""
+
+    names = ('upload-images', 'ui')
+
     @cached_property
     def jobs(self):
         return (
@@ -256,6 +282,9 @@ class mediainfo(CommandBase):
 
     Any irrelevant leading parts in the file path are removed from the output.
     """
+
+    names = ('mediainfo', 'mi')
+
     @cached_property
     def jobs(self):
         return (
@@ -269,6 +298,9 @@ class mediainfo(CommandBase):
 
 class submit(CommandBase):
     """Generate all required metadata and upload to tracker"""
+
+    names = ('submit',)
+
     @cached_property
     def jobs(self):
         submit_job = _jobs.submit.SubmitJob(
@@ -340,6 +372,9 @@ class set(CommandBase):
     List values must be given as separate arguments. If non-list values are
     given as multiple arguments, they are concatenated with single spaces.
     """
+
+    names = ('set',)
+
     @cached_property
     def jobs(self):
         return (
