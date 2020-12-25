@@ -275,7 +275,7 @@ class upload_images(CommandBase):
 
 class mediainfo(CommandBase):
     """
-    Get mediainfo output
+    Print mediainfo of first file with irrelevant paths removed
 
     Directories are recursively searched for the first video file in natural
     order, e.g. "File1.mp4" comes before "File10.mp4".
