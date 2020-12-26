@@ -14,10 +14,19 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class NblTracker(base.TrackerBase):
-    name = 'nbl'
-    label = 'NBL'
+class NblTrackerConfig(base.TrackerConfigBase):
+    defaults = {
+        'base_url'   : base64.b64decode('aHR0cHM6Ly9uZWJ1bGFuY2UuaW8=').decode('ascii'),
+        'username'   : '',
+        'password'   : '',
+        'announce'   : '',
+        'exclude'    : [],
+        'source'     : 'NBL',
+        'image_host' : '',
+    }
 
+
+class NblTrackerJobs(base.TrackerJobsBase):
     @cached_property
     def jobs_before_upload(self):
         return (
@@ -30,18 +39,25 @@ class NblTracker(base.TrackerBase):
     @cached_property
     def category_job(self):
         # Season or Episode
-        if str(release_info.ReleaseInfo(self.job_input.content_path).get('type')) == 'episode':
+        if str(release_info.ReleaseInfo(self.content_path).get('type')) == 'episode':
             guessed = 'Episode'
         else:
             guessed = 'Season'
         return jobs.prompt.ChoiceJob(
             name='category',
             label='Category',
-            homedir=self.job_input.homedir,
-            ignore_cache=self.job_input.ignore_cache,
             choices=('Season', 'Episode'),
             focused=guessed,
+            **self.common_job_args,
         )
+
+
+class NblTracker(base.TrackerBase):
+    name = 'nbl'
+    label = 'NBL'
+
+    TrackerConfig = NblTrackerConfig
+    TrackerJobs = NblTrackerJobs
 
     _url_path = {
         'login': '/login.php',
@@ -190,15 +206,3 @@ class NblTracker(base.TrackerBase):
             return '3'
         else:
             raise errors.RequestError(f'Unsupported type: {category}')
-
-
-class NblTrackerConfig(base.TrackerConfigBase):
-    defaults = {
-        'base_url'   : base64.b64decode('aHR0cHM6Ly9uZWJ1bGFuY2UuaW8=').decode('ascii'),
-        'username'   : '',
-        'password'   : '',
-        'announce'   : '',
-        'exclude'    : [],
-        'source'     : 'NBL',
-        'image_host' : '',
-    }

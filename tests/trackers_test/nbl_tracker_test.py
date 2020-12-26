@@ -6,8 +6,7 @@ import pytest
 from pytest_httpserver.httpserver import Response
 
 from upsies import __project_name__, __version__, errors
-from upsies.trackers import nbl
-from upsies.utils import ReleaseType
+from upsies.trackers.nbl import NblTracker
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -42,84 +41,25 @@ class RequestHandler:
         raise NotImplementedError()
 
 
-def make_tracker(tmp_path, **kwargs):
-    kw = {
-        'config': {
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-        'homedir': tmp_path / 'foo.project',
-        'ignore_cache': False,
-        'content_path': '/path/to/foo',
-        'btclient': Mock(),
-        'torrent_destination': None,
-
-    }
-    kw.update(kwargs)
-    return nbl.NblTracker(**kw)
-
-
 def test_name_attribute():
-    assert nbl.NblTracker.name == 'nbl'
+    assert NblTracker.name == 'nbl'
 
 
 def test_label_attribute():
-    assert nbl.NblTracker.label == 'NBL'
-
-
-def test_jobs_before_upload(tmp_path, mocker):
-    create_torrent_job_mock = mocker.patch('upsies.trackers.nbl.NblTracker.create_torrent_job', Mock())
-    mediainfo_job_mock = mocker.patch('upsies.trackers.nbl.NblTracker.mediainfo_job', Mock())
-    tvmaze_job_mock = mocker.patch('upsies.trackers.nbl.NblTracker.tvmaze_job', Mock())
-    category_job_mock = mocker.patch('upsies.trackers.nbl.NblTracker.category_job', Mock())
-    tracker = make_tracker(tmp_path)
-    assert tuple(tracker.jobs_before_upload) == (
-        create_torrent_job_mock,
-        mediainfo_job_mock,
-        tvmaze_job_mock,
-        category_job_mock,
-    )
-
-
-@pytest.mark.parametrize(
-    argnames=('release_info', 'focused_choice'),
-    argvalues=(
-        (ReleaseType.episode, 'Episode'),
-        (ReleaseType.season, 'Season'),
-        (ReleaseType.movie, 'Season'),
-        (ReleaseType.unknown, 'Season'),
-        ('episode', 'Episode'),
-        ('season', 'Season'),
-        ('movie', 'Season'),
-        ('', 'Season'),
-        (None, 'Season'),
-    ),
-)
-def test_category_job(release_info, focused_choice, tmp_path, mocker):
-    mocker.patch('upsies.utils.release_info.ReleaseInfo', return_value={'type': release_info})
-    ChoiceJob_mock = mocker.patch('upsies.jobs.prompt.ChoiceJob', Mock())
-    tracker = make_tracker(tmp_path)
-    assert tracker.category_job == ChoiceJob_mock.return_value
-    assert ChoiceJob_mock.call_args_list == [
-        call(
-            name='category',
-            label='Category',
-            homedir=tracker.job_input.homedir,
-            ignore_cache=tracker.job_input.ignore_cache,
-            choices=('Season', 'Episode'),
-            focused=focused_choice,
-        ),
-    ]
+    assert NblTracker.label == 'NBL'
 
 
 @pytest.mark.asyncio
-async def test_login_does_nothing_if_already_logged_in(tmp_path, mocker):
+async def test_login_does_nothing_if_already_logged_in(mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = make_tracker(tmp_path)
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url='http://nbl.local',
+        announce='http://nbl.local/announce',
+        exclude='some files',
+    )
     tracker._logout_url = 'anything'
     tracker._auth_key = 'something'
     assert tracker.logged_in
@@ -131,7 +71,7 @@ async def test_login_does_nothing_if_already_logged_in(tmp_path, mocker):
     assert tracker._auth_key == 'something'
 
 @pytest.mark.asyncio
-async def test_login_succeeds(tmp_path, mocker):
+async def test_login_succeeds(mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(
         return_value='''
@@ -141,7 +81,13 @@ async def test_login_succeeds(tmp_path, mocker):
             </html>
         ''',
     ))
-    tracker = make_tracker(tmp_path)
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url='http://nbl.local',
+        announce='http://nbl.local/announce',
+        exclude='some files',
+    )
     await tracker.login()
     assert get_mock.call_args_list == []
     assert post_mock.call_args_list == [call(
@@ -167,7 +113,7 @@ async def test_login_succeeds(tmp_path, mocker):
     ),
 )
 @pytest.mark.asyncio
-async def test_login_dumps_html_if_handling_response_fails(method_name, tmp_path, mocker):
+async def test_login_dumps_html_if_handling_response_fails(method_name, mocker):
     response = '''
     <html>
         <input name="auth" value="12345" />
@@ -177,7 +123,13 @@ async def test_login_dumps_html_if_handling_response_fails(method_name, tmp_path
     html_dump_mock = mocker.patch('upsies.utils.html.dump')
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
-    tracker = make_tracker(tmp_path)
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url='http://nbl.local',
+        announce='http://nbl.local/announce',
+        exclude='some files',
+    )
     with patch.object(tracker, method_name) as method_mock:
         method_mock.side_effect = Exception('Oooph!')
         with pytest.raises(Exception, match=r'^Oooph!$'):
@@ -216,7 +168,7 @@ async def test_login_dumps_html_if_handling_response_fails(method_name, tmp_path
         ),
     ),
 )
-def test_report_login_error(error, exp_message, tmp_path):
+def test_report_login_error(error, exp_message):
     def get_stored_response(name):
         filepath = os.path.join(
             os.path.dirname(__file__),
@@ -225,7 +177,13 @@ def test_report_login_error(error, exp_message, tmp_path):
         )
         return open(filepath, 'r').read()
 
-    tracker = make_tracker(tmp_path)
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url='http://nbl.local',
+        announce='http://nbl.local/announce',
+        exclude='some files',
+    )
     html = bs4.BeautifulSoup(
         markup=get_stored_response(error),
         features='html.parser',
@@ -234,8 +192,14 @@ def test_report_login_error(error, exp_message, tmp_path):
         tracker._report_login_error(html)
 
 
-def test_logged_in(tmp_path):
-    tracker = make_tracker(tmp_path)
+def test_logged_in():
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url='http://nbl.local',
+        announce='http://nbl.local/announce',
+        exclude='some files',
+    )
     # tracker.logged_in must be True if "_logout_url" and "_auth_key" are set
     assert tracker.logged_in is False
     tracker._logout_url = 'asdf'
@@ -259,10 +223,16 @@ def test_logged_in(tmp_path):
     ),
 )
 @pytest.mark.asyncio
-async def test_logout(logout_url, auth_key, tmp_path, mocker):
+async def test_logout(logout_url, auth_key, mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = make_tracker(tmp_path)
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url='http://nbl.local',
+        announce='http://nbl.local/announce',
+        exclude='some files',
+    )
     if logout_url is not None:
         tracker._logout_url = logout_url
     if auth_key is not None:
@@ -280,8 +250,14 @@ async def test_logout(logout_url, auth_key, tmp_path, mocker):
 
 
 @pytest.mark.asyncio
-async def test_upload_without_being_logged_in(tmp_path, mocker):
-    tracker = make_tracker(tmp_path)
+async def test_upload_without_being_logged_in(mocker):
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url='http://nbl.local',
+        announce='http://nbl.local/announce',
+        exclude='some files',
+    )
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     metadata_mock = {'torrent': '/path/to/torrent'}
@@ -325,15 +301,12 @@ async def test_upload_succeeds(tmp_path, mocker, httpserver):
 
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
-    tracker = make_tracker(
-        tmp_path,
-        config={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': httpserver.url_for(''),
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url=httpserver.url_for(''),
+        announce='http://nbl.local/announce',
+        exclude='some files',
     )
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
@@ -389,15 +362,12 @@ async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
 
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
-    tracker = make_tracker(
-        tmp_path,
-        config={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': httpserver.url_for(''),
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url=httpserver.url_for(''),
+        announce='http://nbl.local/announce',
+        exclude='some files',
     )
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
@@ -427,15 +397,12 @@ async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
 
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
-    tracker = make_tracker(
-        tmp_path,
-        config={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': httpserver.url_for(''),
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url=httpserver.url_for(''),
+        announce='http://nbl.local/announce',
+        exclude='some files',
     )
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
@@ -464,11 +431,23 @@ async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
         ('SEASON', '3'),
     ),
 )
-def test_valid_request_category(category, exp_category, tmp_path):
-    tracker = make_tracker(tmp_path)
+def test_valid_request_category(category, exp_category):
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url='http://nbl.local',
+        announce='http://nbl.local/announce',
+        exclude='some files',
+    )
     assert tracker._translate_category(category) == exp_category
 
-def test_invalid_request_category(tmp_path):
-    tracker = make_tracker(tmp_path)
+def test_invalid_request_category():
+    tracker = NblTracker(
+        username='bunny',
+        password='hunter2',
+        base_url='http://nbl.local',
+        announce='http://nbl.local/announce',
+        exclude='some files',
+    )
     with pytest.raises(errors.RequestError, match=r'^Unsupported type: movie$'):
         tracker._translate_category('movie')

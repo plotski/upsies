@@ -4,6 +4,7 @@ Dummy tracker for testing and debugging
 
 import asyncio
 import os
+import pprint
 
 from .. import errors, jobs
 from ..utils import ReleaseType, cached_property, release_info
@@ -13,10 +14,19 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class DummyTracker(base.TrackerBase):
-    name = 'dummy'
-    label = 'DuMmY'
+class DummyTrackerConfig(base.TrackerConfigBase):
+    defaults = {
+        'base_url'   : 'http://localhost',
+        'username'   : '',
+        'password'   : '',
+        'announce'   : 'http://localhost:12345/dummy/announce',
+        'exclude'    : [],
+        'source'     : 'DMY',
+        'image_host' : 'dummy',
+    }
 
+
+class DummyTrackerJobs(base.TrackerJobsBase):
     @cached_property
     def jobs_before_upload(self):
         return (
@@ -32,26 +42,36 @@ class DummyTracker(base.TrackerBase):
 
     @cached_property
     def category_job(self):
-        guess = release_info.ReleaseInfo(self.job_input.content_path).get('type')
-        if guess:
-            guess = str(guess).capitalize()
-        else:
-            guess = 'Season'
+        category = self.type2category(release_info.ReleaseInfo(self.content_path).get('type'))
         return jobs.prompt.ChoiceJob(
             name='category',
             label='Category',
-            homedir=self.job_input.homedir,
-            ignore_cache=self.job_input.ignore_cache,
             choices=(str(t).capitalize() for t in ReleaseType),
-            focused=guess,
+            focused=category,
+            **self.common_job_args,
         )
 
+    @staticmethod
+    def type2category(type):
+        if type:
+            return str(type).capitalize()
+        else:
+            return str(ReleaseType.unknown).capitalize()
+
+
+class DummyTracker(base.TrackerBase):
+    name = 'dummy'
+    label = 'DuMmY'
+
+    TrackerJobs = DummyTrackerJobs
+    TrackerConfig = DummyTrackerConfig
+
     async def login(self):
-        _log.debug('Logging in with %r', self.config)
+        _log.debug('%s: Logging in with %r', self.name, self.config)
         await asyncio.sleep(1)
 
     async def logout(self):
-        _log.debug('Logging out')
+        _log.debug('%s: Logging out', self.name)
         await asyncio.sleep(1)
 
     async def upload(self, metadata):
@@ -62,18 +82,6 @@ class DummyTracker(base.TrackerBase):
             torrent_file = output[0]
         else:
             raise errors.RequestError('Something went wrong')
-        _log.debug('Uploading %r', torrent_file)
+        _log.debug('%s: Uploading %s', self.name, pprint.pformat(metadata))
         await asyncio.sleep(1)
         return f'http://localhost/{os.path.basename(torrent_file)}'
-
-
-class DummyTrackerConfig(base.TrackerConfigBase):
-    defaults = {
-        'base_url'   : 'http://localhost',
-        'username'   : '',
-        'password'   : '',
-        'announce'   : 'http://localhost:12345/dummy/announce',
-        'exclude'    : [],
-        'source'     : 'DMY',
-        'image_host' : 'dummy',
-    }

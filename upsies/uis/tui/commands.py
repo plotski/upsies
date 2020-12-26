@@ -307,11 +307,12 @@ class submit(CommandBase):
             homedir=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             tracker=self.tracker,
+            tracker_jobs=self.tracker_jobs,
         )
         return (
-            tuple(self.tracker.jobs_before_upload)
+            tuple(self.tracker_jobs.jobs_before_upload)
             + (submit_job,)
-            + tuple(self.tracker.jobs_after_upload)
+            + tuple(self.tracker_jobs.jobs_after_upload)
         )
 
     @cached_property
@@ -332,13 +333,26 @@ class submit(CommandBase):
         """
         return trackers.tracker(
             name=self.tracker_name,
-            config=self.tracker_config,
-            homedir=fs.projectdir(self.args.CONTENT),
-            ignore_cache=self.args.ignore_cache,
+            **self.tracker_config,
+        )
+
+    @cached_property
+    def tracker_jobs(self):
+        """
+        :class:`~.trackers.base.TrackerJobsBase` instance from one of the submodules
+        of :mod:`.trackers`
+        """
+        return self.tracker.TrackerJobs(
+            tracker_name=self.tracker_name,
+            tracker_config=self.tracker_config,
             content_path=self.args.CONTENT,
-            add_to_client=self._get_btclient(),
-            torrent_destination=self.args.copy_to,
             image_host=self._get_imghost(),
+            bittorrent_client=self._get_btclient(),
+            torrent_destination=self.args.copy_to,
+            common_job_args={
+                'homedir': fs.projectdir(self.args.CONTENT),
+                'ignore_cache': self.args.ignore_cache,
+            },
         )
 
     def _get_btclient(self):

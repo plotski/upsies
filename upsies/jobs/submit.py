@@ -5,7 +5,7 @@ Share generated metadata
 import asyncio
 
 from .. import errors
-from ..trackers.base import TrackerBase
+from ..trackers.base import TrackerBase, TrackerJobsBase
 from . import JobBase
 
 import logging  # isort:skip
@@ -52,9 +52,11 @@ class SubmitJob(JobBase):
     # Don't cache output
     cache_file = None
 
-    def initialize(self, tracker):
+    def initialize(self, tracker, tracker_jobs):
         assert isinstance(tracker, TrackerBase), f'Not a TrackerBase: {tracker!r}'
+        assert isinstance(tracker_jobs, TrackerJobsBase), f'Not a TrackerJobsBase: {tracker_jobs!r}'
         self._tracker = tracker
+        self._tracker_jobs = tracker_jobs
         self._submit_lock = asyncio.Lock()
         self.signal.add('logging_in')
         self.signal.add('logged_in')
@@ -66,10 +68,10 @@ class SubmitJob(JobBase):
     async def wait(self):
         async with self._submit_lock:
             if not self.is_finished:
-                _log.debug('Waiting for jobs before upload: %r', self._tracker.jobs_before_upload)
-                await asyncio.gather(*(job.wait() for job in self._tracker.jobs_before_upload))
-                names = [job.name for job in self._tracker.jobs_before_upload]
-                outputs = [job.output for job in self._tracker.jobs_before_upload]
+                _log.debug('Waiting for jobs before upload: %r', self._tracker_jobs.jobs_before_upload)
+                await asyncio.gather(*(job.wait() for job in self._tracker_jobs.jobs_before_upload))
+                names = [job.name for job in self._tracker_jobs.jobs_before_upload]
+                outputs = [job.output for job in self._tracker_jobs.jobs_before_upload]
                 metadata = dict(zip(names, outputs))
                 await self._submit(metadata)
                 self.finish()
