@@ -7,13 +7,13 @@ import os
 
 from .. import errors, jobs
 from ..utils import ReleaseType, cached_property, release_info
-from .base import TrackerBase
+from . import base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class DummyTracker(TrackerBase):
+class DummyTracker(base.TrackerBase):
     name = 'dummy'
     label = 'DuMmY'
 
@@ -65,3 +65,15 @@ class DummyTracker(TrackerBase):
         _log.debug('Uploading %r', torrent_file)
         await asyncio.sleep(1)
         return f'http://localhost/{os.path.basename(torrent_file)}'
+
+
+class DummyTrackerConfig(base.TrackerConfigBase):
+    defaults = {
+        'base_url'   : 'http://localhost',
+        'username'   : '',
+        'password'   : '',
+        'announce'   : 'http://localhost:12345/dummy/announce',
+        'exclude'    : [],
+        'source'     : 'DMY',
+        'image_host' : 'dummy',
+    }

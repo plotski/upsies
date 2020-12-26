@@ -198,3 +198,18 @@ class TrackerBase(abc.ABC):
 
             .. note:: Job output is always an immutable sequence.
         """
+
+
+class TrackerConfigBase(dict):
+    """
+    Dictionary with default values that can be defined on the subclass
+    """
+
+    defaults = {}
+    """Default values"""
+
+    def __new__(cls, **kwargs):
+        for k in kwargs:
+            if k not in cls.defaults:
+                raise TypeError(f'Unknown option: {k!r}')
+        return {**cls.defaults, **kwargs}

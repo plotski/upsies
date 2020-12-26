@@ -2,18 +2,19 @@
 NBL API
 """
 
+import base64
 import re
 import urllib
 
 from .. import errors, jobs
 from ..utils import cached_property, html, http, release_info
-from .base import TrackerBase
+from . import base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class NblTracker(TrackerBase):
+class NblTracker(base.TrackerBase):
     name = 'nbl'
     label = 'NBL'
 
@@ -189,3 +190,15 @@ class NblTracker(TrackerBase):
             return '3'
         else:
             raise errors.RequestError(f'Unsupported type: {category}')
+
+
+class NblTrackerConfig(base.TrackerConfigBase):
+    defaults = {
+        'base_url'   : base64.b64decode('aHR0cHM6Ly9uZWJ1bGFuY2UuaW8=').decode('ascii'),
+        'username'   : '',
+        'password'   : '',
+        'announce'   : '',
+        'exclude'    : [],
+        'source'     : 'NBL',
+        'image_host' : '',
+    }
