@@ -24,7 +24,7 @@ class ReleaseNameJob(JobBase):
 
         ``release_name_updated``
             Emitted after :meth:`~.ReleaseName.fetch_info` updated the release
-            name from online sources. Registered callbacks the the new release
+            name from online sources. Registered callbacks get the new release
             name as a positional argument.
     """
 
