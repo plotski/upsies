@@ -34,17 +34,6 @@ def job(tmp_path):
     return FooJob(homedir=tmp_path, ignore_cache=False)
 
 
-@pytest.mark.parametrize('method', JobBase.__abstractmethods__)
-def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in JobBase.__abstractmethods__}
-    del attrs[method]
-    cls = type('FooJob', (JobBase,), attrs)
-    # Python 3.9 changed "methods" to "method"
-    exp_msg = rf"^Can't instantiate abstract class FooJob with abstract methods? {method}$"
-    with pytest.raises(TypeError, match=exp_msg):
-        cls()
-
-
 def test_homedir_property(tmp_path):
     job = FooJob(homedir=tmp_path, ignore_cache=False)
     assert job.homedir == str(tmp_path)

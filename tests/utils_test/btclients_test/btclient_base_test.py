@@ -36,17 +36,6 @@ def test_client_fails_to_find_client(mocker):
         assert c.call_args_list == []
 
 
-@pytest.mark.parametrize('method', btclients.ClientApiBase.__abstractmethods__)
-def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in btclients.ClientApiBase.__abstractmethods__}
-    del attrs[method]
-    cls = type('TestClientApi', (btclients.ClientApiBase,), attrs)
-    # Python 3.9 changed "methods" to "method"
-    exp_msg = rf"^Can't instantiate abstract class TestClientApi with abstract methods? {method}$"
-    with pytest.raises(TypeError, match=exp_msg):
-        cls()
-
-
 def test_read_torrent_file_returns_bytes(tmp_path):
     torrent_file = tmp_path / 'file.torrent'
     torrent_file.write_text('test data')

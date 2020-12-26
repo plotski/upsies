@@ -46,17 +46,6 @@ def test_imghost_fails_to_find_imghost(mocker):
         assert ih.call_args_list == []
 
 
-@pytest.mark.parametrize('method', imghosts.ImageHostBase.__abstractmethods__)
-def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in imghosts.ImageHostBase.__abstractmethods__}
-    del attrs[method]
-    cls = type('TestImageHost', (imghosts.ImageHostBase,), attrs)
-    # Python 3.9 changed "methods" to "method"
-    exp_msg = rf"^Can't instantiate abstract class TestImageHost with abstract methods? {method}$"
-    with pytest.raises(TypeError, match=exp_msg):
-        cls()
-
-
 def make_TestImageHost(**kwargs):
     class TestImageHost(imghosts.ImageHostBase):
         name = 'imgw00t'

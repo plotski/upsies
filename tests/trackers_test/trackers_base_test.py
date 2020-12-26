@@ -57,17 +57,6 @@ def make_TestTracker(**kwargs):
     return TestTracker(**kwargs)
 
 
-@pytest.mark.parametrize('method', TrackerBase.__abstractmethods__)
-def test_abstract_method(method):
-    attrs = {name:lambda self: None for name in TrackerBase.__abstractmethods__}
-    del attrs[method]
-    cls = type('Tracker', (TrackerBase,), attrs)
-    # Python 3.9 changed "methods" to "method"
-    exp_msg = rf"^Can't instantiate abstract class Tracker with abstract methods? {method}$"
-    with pytest.raises(TypeError, match=exp_msg):
-        cls()
-
-
 def test_config():
     tracker = make_TestTracker(
         config={'username': 'foo', 'password': 'bar'},
