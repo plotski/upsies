@@ -5,7 +5,7 @@ sequence of :class:`~.jobs.base.JobBase` instances.
 It is important that the jobs are only instantiated once and the
 :attr:`~CommandBase.jobs` property doesn't create new jobs every time it is
 accessed. The easiest way to achieve this is with the
-:obj:`.utils.cached_property` decorator.
+:func:`~functools.cached_property` decorator.
 
 Jobs should use CLI arguments (:attr:`~CommandBase.args`) and config files
 (:attr:`~CommandBase.config`) to create arguments for jobs.
