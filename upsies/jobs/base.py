@@ -67,7 +67,7 @@ class JobBase(abc.ABC):
 
     @property
     def kwargs(self):
-        """Job-specific keyword arguments as a dictionary"""
+        """Keyword arguments from instantiation as :class:`dict`"""
         return self._kwargs
 
     @property
