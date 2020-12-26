@@ -122,8 +122,8 @@ class UI:
         # any events are fired.
         jobws = [widgets.JobWidget(j) for j in self._jobs]
 
-        # Start all jobs. Interactive jobs and jobs that need on output from
-        # other jobs will block when their wait() is called.
+        # Start all jobs. Interactive jobs and jobs that need output from other
+        # jobs will block when their wait() is called.
         for job in self._jobs:
             job.start()
 
