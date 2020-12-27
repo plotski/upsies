@@ -20,8 +20,9 @@ class CreateTorrentJob(JobBase):
 
     :param content_path: Path to torrent content
     :param str tracker_name: Tracker name abbreviation
-    :param tracker_config: Tracker configuration as a dictionary (should be the
-        relevant section of the trackers configuration file)
+    :param tracker_config: Tracker configuration as a dictionary. Must contain
+        the keys ``announce``, ``source`` and ``exclude``. Consider using
+        :class:`~.trackers.base.TrackerConfigBase` subclass.
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
