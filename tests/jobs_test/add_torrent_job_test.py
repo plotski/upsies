@@ -48,16 +48,14 @@ async def make_AddTorrentJob(tmp_path, client):
     return make_AddTorrentJob
 
 
-@patch('asyncio.ensure_future', Mock())
-@patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', Mock())
+@patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', AsyncMock())
 def test_cache_file_is_None(make_AddTorrentJob):
     job = make_AddTorrentJob()
     assert job.cache_file is None
 
 
-@patch('asyncio.ensure_future')
-@patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', new_callable=Mock)
-def test_initialize_with_torrents_argument(add_torrents_mock, ensure_future_mock, make_AddTorrentJob):
+@patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', new_callable=AsyncMock)
+def test_initialize_with_torrents_argument(add_torrents_mock, make_AddTorrentJob):
     job = make_AddTorrentJob(
         torrents=('foo.torrent', 'bar.torrent'),
         download_path='some/path',
@@ -66,27 +64,35 @@ def test_initialize_with_torrents_argument(add_torrents_mock, ensure_future_mock
     assert queued_torrents == [('foo.torrent', 'some/path'),
                                ('bar.torrent', 'some/path'),
                                (None, None)]
-    assert add_torrents_mock.call_args_list == [call()]
-    assert job._add_torrents_task == ensure_future_mock.return_value
-    assert ensure_future_mock.call_args_list == [call(add_torrents_mock.return_value)]
+    assert add_torrents_mock.call_args_list == []
+    assert job._add_torrents_task is None
 
-@patch('asyncio.ensure_future')
-@patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', new_callable=Mock)
-def test_initialize_without_torrents_argument(add_torrents_mock, ensure_future_mock, make_AddTorrentJob):
+@patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', new_callable=AsyncMock)
+def test_initialize_without_torrents_argument(add_torrents_mock, make_AddTorrentJob):
     job = make_AddTorrentJob(
         download_path='some/path',
     )
     with pytest.raises(asyncio.QueueEmpty):
         job._torrent_path_queue.get_nowait()
+    assert add_torrents_mock.call_args_list == []
+    assert job._add_torrents_task is None
+
+
+@patch('asyncio.ensure_future')
+@patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', new_callable=Mock)
+def test_execute(add_torrents_mock, ensure_future_mock, make_AddTorrentJob):
+    job = make_AddTorrentJob()
+    job.execute()
     assert add_torrents_mock.call_args_list == [call()]
-    assert job._add_torrents_task == ensure_future_mock.return_value
     assert ensure_future_mock.call_args_list == [call(add_torrents_mock.return_value)]
+    assert job._add_torrents_task == ensure_future_mock.return_value
 
 
 @pytest.mark.asyncio
 async def test_job_is_finished_when_add_torrents_task_terminates(tmp_path, mocker, make_AddTorrentJob):
     mocker.patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', AsyncMock())
     job = make_AddTorrentJob()
+    job.execute()
     assert not job._add_torrents_task.done()
     assert not job.is_finished
     await job.wait()
@@ -97,7 +103,7 @@ async def test_job_is_finished_when_add_torrents_task_terminates(tmp_path, mocke
 @patch('asyncio.ensure_future', Mock())
 @patch('upsies.jobs.torrent.AddTorrentJob.initialize', Mock())
 @patch('upsies.jobs.torrent.AddTorrentJob._add_torrent', new_callable=AsyncMock)
-def test_add_torrents(_add_torrent_mock, make_AddTorrentJob):
+def test_add_torrents_reads_queue(_add_torrent_mock, make_AddTorrentJob):
     job = make_AddTorrentJob()
     job._torrent_path_queue = asyncio.Queue()
     job._torrent_path_queue.put_nowait(('foo.torrent', None))
@@ -139,8 +145,16 @@ def test_finalize_sends_termination_sentinel(make_AddTorrentJob):
 
 
 @pytest.mark.asyncio
-async def test_finish_cancels_upload_images_task(make_AddTorrentJob):
+async def test_finish_before_execute_is_called(make_AddTorrentJob):
     job = make_AddTorrentJob()
+    asyncio.get_event_loop().call_later(0.1, job.finish)
+    await job.wait()
+    assert job._add_torrents_task is None
+
+@pytest.mark.asyncio
+async def test_finish_after_execute_is_called(make_AddTorrentJob):
+    job = make_AddTorrentJob()
+    job.execute()
     asyncio.get_event_loop().call_later(0.1, job.finish)
     await job.wait()
     assert job._add_torrents_task.done()
@@ -148,15 +162,24 @@ async def test_finish_cancels_upload_images_task(make_AddTorrentJob):
 
 
 @pytest.mark.asyncio
-async def test_wait(make_AddTorrentJob):
+async def test_wait_before_execute_is_called(make_AddTorrentJob):
     job = make_AddTorrentJob()
+    assert job._add_torrents_task is None
+    asyncio.get_event_loop().call_later(0.1, job.finish)
+    await job.wait()
+    assert job._add_torrents_task is None
+    assert job.is_finished
+
+@pytest.mark.asyncio
+async def test_wait_after_execute_is_called(make_AddTorrentJob):
+    job = make_AddTorrentJob()
+    job.execute()
     assert not job._add_torrents_task.done()
     asyncio.get_event_loop().call_soon(job.finalize())
     await job.wait()
     assert job._add_torrents_task.done()
     assert not job._add_torrents_task.cancelled()
     assert job.is_finished
-    assert job.exit_code != 0
 
 
 @patch('asyncio.ensure_future', Mock())

@@ -150,7 +150,7 @@ class AddTorrentJob(JobBase):
         assert isinstance(client, btclients.ClientApiBase), f'Not a ClientApiBase: {client!r}'
         self._client = client
         self._download_path = download_path
-        self._add_task = None
+        self._add_torrents_task = None
         self.signal.add('adding')
         self.signal.add('added')
         self._torrent_path_queue = asyncio.Queue()
@@ -158,6 +158,8 @@ class AddTorrentJob(JobBase):
             for t in torrents:
                 self.add(t)
             self.finalize()
+
+    def execute(self):
         self._add_torrents_task = asyncio.ensure_future(self._add_torrents())
         self._add_torrents_task.add_done_callback(lambda _: self.finish())
 
@@ -182,7 +184,7 @@ class AddTorrentJob(JobBase):
 
         :param torrent_path: Path to torrent file
         :param download_path: Location of the torrent's content; defaults to the
-            `download_path` argument passed to :meth:`initialize`
+            `download_path` argument from instantiation
         """
         self._torrent_path_queue.put_nowait((
             torrent_path,
@@ -194,13 +196,15 @@ class AddTorrentJob(JobBase):
         self._torrent_path_queue.put_nowait((None, None))
 
     def finish(self):
-        self._add_torrents_task.cancel()
+        if self._add_torrents_task:
+            self._add_torrents_task.cancel()
 
     async def wait(self):
-        try:
-            await self._add_torrents_task
-        except asyncio.CancelledError:
-            self.error('Cancelled')
+        if self._add_torrents_task:
+            try:
+                await self._add_torrents_task
+            except asyncio.CancelledError:
+                self.error('Cancelled')
         super().finish()
         await super().wait()
 
