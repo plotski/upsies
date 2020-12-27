@@ -174,7 +174,7 @@ class AddTorrentJob(JobBase):
                 if torrent_path is None:
                     break
                 else:
-                    await self.add_async(torrent_path, download_path)
+                    await self._add_torrent(torrent_path, download_path)
 
     def add(self, torrent_path, download_path=None):
         """
@@ -206,7 +206,7 @@ class AddTorrentJob(JobBase):
 
     MAX_TORRENT_SIZE = 10 * 2**20  # 10 MiB
 
-    async def add_async(self, torrent_path, download_path=None):
+    async def _add_torrent(self, torrent_path, download_path=None):
         _log.debug('Adding %s to %s', torrent_path, self._client.name)
         self.signal.emit('adding', torrent_path)
 

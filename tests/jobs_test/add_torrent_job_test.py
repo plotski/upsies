@@ -96,15 +96,15 @@ async def test_job_is_finished_when_add_torrents_task_terminates(tmp_path, mocke
 
 @patch('asyncio.ensure_future', Mock())
 @patch('upsies.jobs.torrent.AddTorrentJob.initialize', Mock())
-@patch('upsies.jobs.torrent.AddTorrentJob.add_async', new_callable=AsyncMock)
-def test_add_torrents(add_async_mock, make_AddTorrentJob):
+@patch('upsies.jobs.torrent.AddTorrentJob._add_torrent', new_callable=AsyncMock)
+def test_add_torrents(_add_torrent_mock, make_AddTorrentJob):
     job = make_AddTorrentJob()
     job._torrent_path_queue = asyncio.Queue()
     job._torrent_path_queue.put_nowait(('foo.torrent', None))
     job._torrent_path_queue.put_nowait(('bar.torrent', 'some/path'))
     job._torrent_path_queue.put_nowait((None, None))
     run_async(job._add_torrents())
-    assert add_async_mock.call_args_list == [
+    assert _add_torrent_mock.call_args_list == [
         call('foo.torrent', None),
         call('bar.torrent', 'some/path'),
     ]
@@ -162,14 +162,14 @@ async def test_wait(make_AddTorrentJob):
 @patch('asyncio.ensure_future', Mock())
 @patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', Mock())
 @pytest.mark.asyncio
-async def test_add_async_call_order(make_AddTorrentJob):
+async def test__add_torrent_call_order(make_AddTorrentJob):
     job = make_AddTorrentJob()
     cb = Mock()
     job.signal.register('adding', cb.adding)
     job.signal.register('added', cb.added)
     cb.add_torrent = AsyncMock(return_value=123)
     job._client.add_torrent = cb.add_torrent
-    await job.add_async('foo.torrent')
+    await job._add_torrent('foo.torrent')
     assert cb.mock_calls == [
         call.adding('foo.torrent'),
         call.add_torrent(torrent_path='foo.torrent', download_path=None),
@@ -179,23 +179,23 @@ async def test_add_async_call_order(make_AddTorrentJob):
 @patch('asyncio.ensure_future', Mock())
 @patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', Mock())
 @pytest.mark.asyncio
-async def test_add_async_complains_about_large_torrent_file(make_AddTorrentJob, tmp_path):
+async def test__add_torrent_complains_about_large_torrent_file(make_AddTorrentJob, tmp_path):
     torrent_file = tmp_path / 'foo.torrent'
     f = open(torrent_file, 'wb')
     f.truncate(AddTorrentJob.MAX_TORRENT_SIZE + 1)  # Sparse file
     f.close()
     job = make_AddTorrentJob()
-    await job.add_async(torrent_file)
+    await job._add_torrent(torrent_file)
     assert job.errors == (f'{torrent_file}: File is too large',)
     assert job.output == ()
 
 @patch('asyncio.ensure_future', Mock())
 @patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', Mock())
 @pytest.mark.asyncio
-async def test_add_async_catches_TorrentError(make_AddTorrentJob):
+async def test__add_torrent_catches_TorrentError(make_AddTorrentJob):
     job = make_AddTorrentJob()
     job._client.add_torrent.side_effect = errors.TorrentError('No such file')
-    await job.add_async('foo.torrent')
+    await job._add_torrent('foo.torrent')
     assert job.errors == (
         'Failed to add foo.torrent to mocksy: No such file',
     )
@@ -204,9 +204,9 @@ async def test_add_async_catches_TorrentError(make_AddTorrentJob):
 @patch('asyncio.ensure_future', Mock())
 @patch('upsies.jobs.torrent.AddTorrentJob._add_torrents', Mock())
 @pytest.mark.asyncio
-async def test_add_async_sends_torrent_id(make_AddTorrentJob):
+async def test__add_torrent_sends_torrent_id(make_AddTorrentJob):
     job = make_AddTorrentJob()
     job._client.add_torrent.return_value = '12345'
-    await job.add_async('foo.torrent')
+    await job._add_torrent('foo.torrent')
     assert job.output == ('12345',)
     assert job.errors == ()
