@@ -51,6 +51,12 @@ def test_hidden_property(tmp_path):
     assert FooJob(homedir=tmp_path, ignore_cache=False, hidden='').hidden is False
     assert FooJob(homedir=tmp_path, ignore_cache=False, hidden=1).hidden is True
 
+def test_autostart_property(tmp_path):
+    assert FooJob(homedir=tmp_path, ignore_cache=False, autostart=False).autostart is False
+    assert FooJob(homedir=tmp_path, ignore_cache=False, autostart=True).autostart is True
+    assert FooJob(homedir=tmp_path, ignore_cache=False, autostart='').autostart is False
+    assert FooJob(homedir=tmp_path, ignore_cache=False, autostart=1).autostart is True
+
 def test_kwargs_property(tmp_path):
     assert FooJob(homedir=tmp_path, ignore_cache=False, foo='a').kwargs.get('foo') == 'a'
     assert FooJob(homedir=tmp_path, ignore_cache=False, foo='a').kwargs.get('bar') is None

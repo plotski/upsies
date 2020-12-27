@@ -23,6 +23,7 @@ class JobBase(abc.ABC):
     :param str ignore_cache: Whether cached output and previously created files
         should not be re-used
     :param bool hidden: Whether to hide the job's output in the UI
+    :param bool autostart: Whether this job is started automatically
 
     Any additional keyword arguments are passed on to :meth:`initialize`.
 
@@ -66,6 +67,18 @@ class JobBase(abc.ABC):
         return self._hidden
 
     @property
+    def autostart(self):
+        """
+        Whether this job is started automatically
+
+        This property is not used by this class itself. It is only a flag that
+        is supposed to be evaluated by any job starting facilities.
+
+        If this value is falsy, :meth:`start` must be called manually.
+        """
+        return self._autostart
+
+    @property
     def kwargs(self):
         """Keyword arguments from instantiation as :class:`dict`"""
         return self._kwargs
@@ -93,10 +106,12 @@ class JobBase(abc.ABC):
         """
         return self._signal
 
-    def __init__(self, *, homedir='.', ignore_cache=False, hidden=False, **kwargs):
+    def __init__(self, *, homedir='.', ignore_cache=False, hidden=False,
+                 autostart=True, **kwargs):
         self._homedir = str(homedir)
         self._ignore_cache = bool(ignore_cache)
         self._hidden = bool(hidden)
+        self._autostart = bool(autostart)
         self._is_started = False
         self._exception = None
         self._errors = []
