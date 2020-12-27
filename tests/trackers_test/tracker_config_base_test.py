@@ -22,6 +22,9 @@ def test_no_arguments():
             'baz': 'asdf',
         }
     assert TestTrackerConfig() == {
+        'announce': '',
+        'source': '',
+        'exclude': [],
         'foo': '1',
         'bar': '',
         'baz': 'asdf',
@@ -35,7 +38,10 @@ def test_arguments_overload_defaults():
             'bar': '',
             'baz': 'asdf',
         }
-    assert TestTrackerConfig(bar='hello', foo='2') == {
+    assert TestTrackerConfig(bar='hello', foo='2', source='123') == {
+        'announce': '',
+        'source': '123',
+        'exclude': [],
         'foo': '2',
         'bar': 'hello',
         'baz': 'asdf',

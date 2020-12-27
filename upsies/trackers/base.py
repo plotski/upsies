@@ -14,16 +14,25 @@ _log = logging.getLogger(__name__)
 class TrackerConfigBase(dict):
     """
     Dictionary with default values that are defined by the subclass
+
+    The keys ``announce``, ``source`` and ``exclude`` always exist.
     """
+
+    _defaults = {
+        'announce'   : '',
+        'source'     : '',
+        'exclude'    : [],
+    }
 
     defaults = {}
     """Default values"""
 
     def __new__(cls, **kwargs):
+        combined_defaults = {**cls._defaults, **cls.defaults}
         for k in kwargs:
-            if k not in cls.defaults:
+            if k not in combined_defaults:
                 raise TypeError(f'Unknown option: {k!r}')
-        return {**cls.defaults, **kwargs}
+        return {**combined_defaults, **kwargs}
 
 
 class TrackerJobsBase(abc.ABC):
