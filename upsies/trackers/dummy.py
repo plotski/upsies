@@ -42,7 +42,8 @@ class DummyTrackerJobs(base.TrackerJobsBase):
 
     @cached_property
     def category_job(self):
-        category = self.type2category(release_info.ReleaseInfo(self.content_path).get('type'))
+        type = release_info.ReleaseInfo(self.content_path)['type']
+        category = self.type2category(type)
         return jobs.prompt.ChoiceJob(
             name='category',
             label='Category',
