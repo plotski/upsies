@@ -121,8 +121,8 @@ class AddTorrentJob(JobBase):
     Add torrent(s) to a BitTorrent client
 
     :param client: Return value of :func:`.utils.btclients.client`
-    :param download_path: Path to the torrent's content files or None to use the
-        default path
+    :param download_path: Path to the torrent's content files or `None` to use
+        the default path
     :param torrents: Sequence of torrent file paths to add
 
     If `torrents` is given and not empty, this job is finished as soon as its
