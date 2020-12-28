@@ -1,4 +1,3 @@
-import asyncio
 from unittest.mock import Mock, call
 
 import pytest
@@ -21,20 +20,6 @@ class AsyncMock(Mock):
 
 
 @pytest.fixture
-async def job(tmp_path, mocker, imghost):
-    job = ImageHostJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        imghost=imghost,
-        images_total=3,
-    )
-    assert job.images_total == 3
-    yield job
-    job.finish()
-    await job.wait()
-
-
-@pytest.fixture
 def imghost(tmp_path):
     class TestImageHost(ImageHostBase):
         name = 'testhost'
@@ -42,179 +27,97 @@ def imghost(tmp_path):
         _upload = 'not an abstract base method'
     return TestImageHost()
 
+@pytest.fixture
+async def make_ImageHostJob(tmp_path, imghost):
+    def make_ImageHostJob(images_total=0, enqueue=()):
+        return ImageHostJob(
+            homedir=tmp_path,
+            ignore_cache=False,
+            imghost=imghost,
+            images_total=images_total,
+            enqueue=enqueue,
+        )
+    return make_ImageHostJob
 
-def test_cache_file_is_None(job):
+
+def test_cache_file_is_None(make_ImageHostJob):
+    job = make_ImageHostJob(images_total=1)
     assert job.cache_file is None
 
 
-@pytest.mark.asyncio
-async def test_initialize_is_called_with_path_and_images_total(tmp_path, mocker, imghost):
-    mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
-    with pytest.raises(RuntimeError, match=r'^You must not specify both "image_paths" and "images_total"\.$'):
-        ImageHostJob(
-            homedir=tmp_path,
-            ignore_cache=False,
-            imghost=imghost,
-            images_total=3,
-            image_paths=('foo.jpg',),
-        )
+def test_initialize_is_called_with_enqueue_and_images_total(make_ImageHostJob):
+    with pytest.raises(RuntimeError, match=(r'^You must not give both arguments '
+                                            r'"enqueue" and "images_total"\.$')):
+        make_ImageHostJob(images_total=24, enqueue=('a', 'b', 'c'))
+
+def test_initialize_is_called_without_enqueue_and_images_total(make_ImageHostJob, mocker):
+    job = make_ImageHostJob()
+    assert job.images_total == 0
+
 
 @pytest.mark.asyncio
-async def test_initialize_is_called_without_path_and_images_total(tmp_path, mocker, imghost):
-    mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
-    job = ImageHostJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        imghost=imghost,
-    )
-    assert job._images_total == 0
-
-@pytest.mark.asyncio
-async def test_initialize_fills_upload_queue_with_image_paths(tmp_path, mocker, imghost):
-    mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
-    image_paths = ['foo.jpg', 'bar.jpg', 'baz.jpg']
-    job = ImageHostJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        imghost=imghost,
-        image_paths=image_paths,
-    )
-    queued_paths = [job._image_path_queue.get_nowait() for _ in range(3)]
-    assert queued_paths == image_paths
+async def test_initialize_is_called_with_enqueue(make_ImageHostJob, mocker):
+    job = make_ImageHostJob(enqueue=('a', 'b', 'c'))
+    assert job.images_total == 3
     await job.wait()
-
-@pytest.mark.asyncio
-async def test_initialize_calls_upload_images(tmp_path, mocker, imghost):
-    mocker.patch(
-        'upsies.jobs.imghost.ImageHostJob._upload_images',
-        Mock(side_effect=RuntimeError('greetings from upload_images')),
-    )
-    with pytest.raises(RuntimeError, match=r'^greetings from upload_images'):
-        ImageHostJob(
-            homedir=tmp_path,
-            ignore_cache=False,
-            imghost=imghost,
-            images_total=3,
-        )
-
-@pytest.mark.asyncio
-async def test_job_is_finished_when_upload_images_task_terminates(tmp_path, mocker, imghost):
-    mocker.patch('upsies.jobs.imghost.ImageHostJob._upload_images', AsyncMock())
-    job = ImageHostJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        imghost=imghost,
-        images_total=3,
-    )
-    assert not job._upload_images_task.done()
-    assert not job.is_finished
-    await job.wait()
-    assert job._upload_images_task.done()
     assert job.is_finished
 
-
 @pytest.mark.asyncio
-async def test_images_total_property(job):
-    job.images_total = 5
+async def test_initialize_is_called_with_images_total(make_ImageHostJob, mocker):
+    job = make_ImageHostJob(images_total=5)
     assert job.images_total == 5
+
+
+def test_images_total_property(make_ImageHostJob):
+    job = make_ImageHostJob(images_total=4)
+    job.images_total = 4
+    assert job.images_total == 4
     job.set_images_total(10)
     assert job.images_total == 10
 
 
 @pytest.mark.asyncio
-async def test_upload_images_returns_when_finalize_is_called(job):
-    for f in ('foo.jpg', 'bar.jpg', 'baz.jpg'):
-        job.upload(f)
-    assert not job.is_finished
-    job.finalize()
-    await asyncio.sleep(0.1)
-    assert job.is_finished
-
-@pytest.mark.asyncio
-async def test_upload_images_reports_to_send_and_error(job):
-    job._imghost.upload.side_effect = [
-        'http://foo',
-        errors.RequestError('bar.jpg is bad'),
-        'http://baz',
-    ]
+async def test_handle_input_sends_image_url(make_ImageHostJob):
+    job = make_ImageHostJob(images_total=3)
+    job._imghost.upload.side_effect = ('http://foo', 'http://bar')
     assert job.images_uploaded == 0
 
-    job.upload('foo.jpg')
-    await asyncio.sleep(0.1)
+    await job._handle_input('foo.jpg')
+    assert job._imghost.upload.call_args_list == [
+        call('foo.jpg', force=job.ignore_cache),
+    ]
     assert job.output == ('http://foo',)
     assert job.errors == ()
     assert job.images_uploaded == 1
-    assert job._imghost.upload.call_args_list == [
-        call('foo.jpg', force=job.ignore_cache),
-    ]
 
-    job.upload('bar.jpg')
-    await asyncio.sleep(0.1)
-    assert job.output == ('http://foo',)
-    assert job.errors == (errors.RequestError('bar.jpg is bad'),)
-    assert job.images_uploaded == 1
+    await job._handle_input('bar.jpg')
     assert job._imghost.upload.call_args_list == [
         call('foo.jpg', force=job.ignore_cache),
         call('bar.jpg', force=job.ignore_cache),
     ]
+    assert job.output == ('http://foo', 'http://bar')
+    assert job.errors == ()
+    assert job.images_uploaded == 2
 
-    job.upload('baz.jpg')
-    await asyncio.sleep(0.1)
-    assert job.output == ('http://foo',)
-    assert job.errors == (errors.RequestError('bar.jpg is bad'),)
-    assert job.images_uploaded == 1
+@pytest.mark.asyncio
+async def test_handle_input_handles_RequestError(make_ImageHostJob):
+    job = make_ImageHostJob(images_total=3)
+    job._imghost.upload.side_effect = errors.RequestError('ugly image')
+    await job._handle_input('foo.jpg')
     assert job._imghost.upload.call_args_list == [
         call('foo.jpg', force=job.ignore_cache),
-        call('bar.jpg', force=job.ignore_cache),
     ]
+    assert job.output == ()
+    assert job.errors == (errors.RequestError('ugly image'),)
+    assert job.images_uploaded == 0
 
 
 @pytest.mark.asyncio
-async def test_finish_cancels_upload_images_task(job):
-    asyncio.get_event_loop().call_later(0.1, job.finish)
-    await job.wait()
-    assert job._upload_images_task.done()
-    assert job._upload_images_task.cancelled()
-
-
-@pytest.mark.asyncio
-async def test_wait_catches_CancelledError_from_upload_images_task(job):
+async def test_exit_code(make_ImageHostJob):
+    job = make_ImageHostJob(images_total=123)
     assert job.exit_code is None
-    job._upload_images_task.cancel()
+    job.execute()
+    assert job.exit_code is None
+    job.finish()
     await job.wait()
-    assert job.exit_code == 1
-    assert job.is_finished is True
-
-
-@pytest.mark.asyncio
-async def test_exit_code_when_all_uploads_succeed(job):
-    job._imghost.upload.side_effect = [
-        'http://foo',
-        'http://bar',
-        'http://baz',
-    ]
-    for _ in range(3):
-        job.upload('foo.jpg')
-        await asyncio.sleep(0.1)
-        assert job.exit_code is None
-    job.finalize()
-    await asyncio.sleep(0.1)
-    assert job.exit_code == 0
-
-@pytest.mark.asyncio
-async def test_exit_code_when_one_upload_fails(job):
-    job._imghost.upload.side_effect = [
-        'http://foo',
-        errors.RequestError('Network error'),
-        'http://baz',
-    ]
-    for i in range(3):
-        job.upload('foo.jpg')
-        await asyncio.sleep(0.1)
-        if i == 0:
-            assert job.exit_code is None
-        else:
-            assert job.exit_code == 1
-    job.finalize()
-    await asyncio.sleep(0.1)
-    assert job.exit_code == 1
+    assert job.exit_code is job._exit_code

@@ -2,17 +2,15 @@
 Upload images to image hosting services
 """
 
-import asyncio
-
 from .. import errors
 from ..utils.imghosts import ImageHostBase
-from . import JobBase
+from . import QueueJobBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class ImageHostJob(JobBase):
+class ImageHostJob(QueueJobBase):
     """
     Upload images to an image hosting service
 
@@ -37,65 +35,31 @@ class ImageHostJob(JobBase):
     # implements caching.
     cache_file = None
 
-    def initialize(self, imghost, image_paths=(), images_total=0):
-        if image_paths and images_total:
-            raise RuntimeError('You must not specify both "image_paths" and "images_total".')
+    def initialize(self, *, imghost, enqueue=(), images_total=0):
+        assert isinstance(imghost, ImageHostBase), f'Not an ImageHostBase: {imghost!r}'
+
+        if enqueue and images_total:
+            raise RuntimeError('You must not give both arguments "enqueue" and "images_total".')
         else:
             if images_total > 0:
                 self._images_total = images_total
             else:
-                self._images_total = len(image_paths)
+                self._images_total = len(enqueue)
 
-        assert isinstance(imghost, ImageHostBase), f'Not an ImageHostBase: {imghost!r}'
         self._imghost = imghost
         self._images_uploaded = 0
         self._exit_code = 0
-        self._image_path_queue = asyncio.Queue()
 
-        if image_paths:
-            for image_path in image_paths:
-                self.upload(image_path)
-            self.finalize()
-
-        self._upload_images_task = asyncio.ensure_future(self._upload_images())
-        self._upload_images_task.add_done_callback(lambda _: self.finish())
-
-    async def _upload_images(self):
-        while True:
-            image_path = await self._image_path_queue.get()
-            if image_path is None:
-                _log.debug('All images uploaded')
-                break
-            else:
-                try:
-                    info = await self._imghost.upload(image_path, force=self.ignore_cache)
-                except errors.RequestError as e:
-                    self._exit_code = 1
-                    self.error(e)
-                    break
-                else:
-                    _log.debug('Uploaded image: %r', info)
-                    self._images_uploaded += 1
-                    self.send(info)
-
-    def upload(self, image_path):
-        """Upload `image_path`"""
-        self._image_path_queue.put_nowait(image_path)
-
-    def finalize(self):
-        """Finish after the current upload is done"""
-        self._image_path_queue.put_nowait(None)
-
-    def finish(self):
-        self._upload_images_task.cancel()
-        super().finish()
-
-    async def wait(self):
+    async def _handle_input(self, image_path):
         try:
-            await self._upload_images_task
-        except asyncio.CancelledError:
+            info = await self._imghost.upload(image_path, force=self.ignore_cache)
+        except errors.RequestError as e:
             self._exit_code = 1
-        await super().wait()
+            self.error(e)
+        else:
+            _log.debug('Uploaded image: %r', info)
+            self._images_uploaded += 1
+            self.send(info)
 
     @property
     def exit_code(self):

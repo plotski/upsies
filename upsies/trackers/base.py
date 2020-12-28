@@ -225,7 +225,7 @@ class TrackerJobsBase(abc.ABC):
                 lambda timestamps: imghost_job.set_images_total(len(timestamps)),
             )
             # Pass ScreenshotsJob's output to ImageHostJob input.
-            self.screenshots_job.signal.register('output', imghost_job.upload)
+            self.screenshots_job.signal.register('output', imghost_job.enqueue)
             # Tell imghost_job to finish the current upload and then finish.
             self.screenshots_job.signal.register('finished', imghost_job.finalize)
             return imghost_job
