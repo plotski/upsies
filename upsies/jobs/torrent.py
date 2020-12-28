@@ -2,7 +2,6 @@
 Create torrent file
 """
 
-import asyncio
 import os
 import queue
 
@@ -175,15 +174,15 @@ class AddTorrentJob(base.QueueJobBase):
             self.signal.emit('added', torrent_id)
 
 
-class CopyTorrentJob(JobBase):
+class CopyTorrentJob(base.QueueJobBase):
     """
     Copy file(s)
 
     :param destination: Where to put the file(s)
-    :param files: Sequence of file paths to copy
+    :param enqueue: Sequence of file paths to copy
 
-    If `files` is given and not empty, this job is finished as soon as its last
-    item is added.
+    If `enqueue` is given and not empty, this job is finished as soon as its
+    last item is copied.
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
@@ -202,47 +201,36 @@ class CopyTorrentJob(JobBase):
     label = 'Copy Torrent'
     cache_file = None
 
-    def initialize(self, *, destination, files=()):
+    def initialize(self, *, destination, enqueue=()):
         self._destination = None if not destination else str(destination)
         self.signal.add('copying')
         self.signal.add('copied')
-        if files:
-            for f in files:
-                self.copy(f)
-            self.finish()
 
     MAX_FILE_SIZE = 10 * 2**20  # 10 MiB
 
-    def copy(self, filepath, destination=None):
-        if self.is_finished:
-            raise RuntimeError(f'{type(self).__name__} is already finished')
-
-        dest = destination or self._destination
-        if not dest:
-            raise RuntimeError('Cannot copy without destination')
-        _log.debug('Copying %s to %s', filepath, dest)
+    async def _handle_input(self, filepath):
+        _log.debug('Copying %s to %s', filepath, self._destination)
 
         if not os.path.exists(filepath):
             self.error(f'{filepath}: No such file')
-            return
 
         elif os.path.getsize(filepath) > self.MAX_FILE_SIZE:
             self.error(f'{filepath}: File is too large')
-            return
 
-        self.signal.emit('copying', filepath)
-
-        import shutil
-        try:
-            new_path = shutil.copy2(filepath, dest)
-        except OSError as e:
-            if e.strerror:
-                msg = e.strerror
-            else:
-                msg = str(e)
-            self.error(f'Failed to copy {filepath} to {dest}: {msg}')
-            # Default to original torrent path
-            self.send(filepath)
         else:
-            self.send(new_path)
-            self.signal.emit('copied', new_path)
+            self.signal.emit('copying', filepath)
+
+            import shutil
+            try:
+                new_path = shutil.copy2(filepath, self._destination)
+            except OSError as e:
+                if e.strerror:
+                    msg = e.strerror
+                else:
+                    msg = str(e)
+                self.error(f'Failed to copy {filepath} to {self._destination}: {msg}')
+                # Default to original torrent path
+                self.send(filepath)
+            else:
+                self.send(new_path)
+                self.signal.emit('copied', new_path)

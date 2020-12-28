@@ -1,4 +1,4 @@
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call
 
 import pytest
 
@@ -7,185 +7,98 @@ from upsies.jobs.torrent import CopyTorrentJob
 
 @pytest.fixture
 async def make_CopyTorrentJob(tmp_path):
-    def make_CopyTorrentJob(destination=None, files=()):
+    def make_CopyTorrentJob(destination, enqueue=()):
         return CopyTorrentJob(
             homedir=tmp_path,
             ignore_cache=False,
             destination=destination,
-            files=files,
+            enqueue=enqueue,
         )
     return make_CopyTorrentJob
 
 
-def test_cache_file_is_None(make_CopyTorrentJob):
-    job = make_CopyTorrentJob()
+def test_cache_file_is_None(make_CopyTorrentJob, tmp_path):
+    job = make_CopyTorrentJob(destination=tmp_path)
     assert job.cache_file is None
 
 
-@patch('upsies.jobs.torrent.CopyTorrentJob.copy', Mock())
-@pytest.mark.parametrize(
-    argnames='destination, exp_destination',
-    argvalues=(
-        (None, None),
-        ('', None),
-        ('foo', 'foo'),
-        (123, '123'),
-    ),
-)
-def test_initialize_with_destination(destination, exp_destination, make_CopyTorrentJob):
-    job = make_CopyTorrentJob(destination=destination)
-    assert job._destination == exp_destination
-    assert not job.is_finished
+@pytest.mark.asyncio
+async def test_handle_input_call_order(make_CopyTorrentJob, mocker, tmp_path):
+    job = make_CopyTorrentJob(destination=tmp_path)
 
-@patch('upsies.jobs.torrent.CopyTorrentJob.copy', Mock())
-def test_initialize_without_files(make_CopyTorrentJob):
-    job = make_CopyTorrentJob()
-    assert job.copy.call_args_list == []
-    assert not job.is_finished
+    filepath = tmp_path / 'foo.torrent'
+    filepath.write_text('hello')
 
-@patch('upsies.jobs.torrent.CopyTorrentJob.copy')
-@pytest.mark.parametrize(
-    argnames='destination',
-    argvalues=(None, '/foo/bar'),
-)
-def test_initialize_with_files(copy_mock, destination, make_CopyTorrentJob):
-    job = make_CopyTorrentJob(files=('a.jpg', 'b.jpg'),
-                              destination=destination)
-    assert copy_mock.call_args_list == [
-        call('a.jpg'),
-        call('b.jpg'),
+    mocks = Mock()
+    job.signal.register('copying', mocks.copying)
+    job.signal.register('copied', mocks.copied)
+    copy2_mock = mocker.patch('shutil.copy2', return_value=str(tmp_path / filepath.name))
+    mocks.attach_mock(copy2_mock, 'copy2')
+
+    await job._handle_input(str(filepath))
+    assert mocks.mock_calls == [
+        call.copying(str(filepath)),
+        call.copy2(str(filepath), str(tmp_path)),
+        call.copied(copy2_mock.return_value),
     ]
-    assert job.is_finished
 
-
-@patch('shutil.copy2')
-def test_copy_on_finished_job(copy2_mock, make_CopyTorrentJob):
-    job = make_CopyTorrentJob()
-
-    cb = Mock()
-    job.signal.register('copying', cb.copying)
-    copy2_mock.side_effect = cb.copy2
-    job.signal.register('copied', cb.copied)
-
-    job.finish()
-    with pytest.raises(RuntimeError, match=r'CopyTorrentJob is already finished'):
-        job.copy('foo')
-    assert job.output == ()
-    assert job.errors == ()
-    assert job.is_finished
-    assert cb.mock_calls == []
-
-@patch('shutil.copy2')
-def test_copy_without_destination(copy2_mock, make_CopyTorrentJob):
-    job = make_CopyTorrentJob()
-
-    cb = Mock()
-    job.signal.register('copying', cb.copying)
-    copy2_mock.side_effect = cb.copy2
-    job.signal.register('copied', cb.copied)
-
-    with pytest.raises(RuntimeError, match=r'Cannot copy without destination'):
-        job.copy('foo')
-    assert job.output == ()
-    assert job.errors == ()
-    assert not job.is_finished
-    assert cb.mock_calls == []
-
-@patch('shutil.copy2')
-def test_copy_nonexisting_file(copy2_mock, make_CopyTorrentJob):
+@pytest.mark.asyncio
+async def test_handle_input_reports_nonexisting_file(make_CopyTorrentJob, mocker):
     job = make_CopyTorrentJob(destination='foo')
 
-    cb = Mock()
-    job.signal.register('copying', cb.copying)
-    copy2_mock.side_effect = cb.copy2
-    job.signal.register('copied', cb.copied)
+    mocks = Mock()
+    job.signal.register('copying', mocks.copying)
+    job.signal.register('copied', mocks.copied)
+    copy2_mock = mocker.patch('shutil.copy2')
+    mocks.attach_mock(copy2_mock, 'copy2')
 
-    job.copy('bar')
+    await job._handle_input('foo')
     assert job.output == ()
-    assert job.errors == ('bar: No such file',)
-    assert not job.is_finished
-    assert cb.mock_calls == []
+    assert job.errors == ('foo: No such file',)
+    assert mocks.mock_calls == []
 
-@patch('shutil.copy2')
-def test_copy_too_large_file(copy2_mock, tmp_path, make_CopyTorrentJob):
+@pytest.mark.asyncio
+async def test_copy_too_large_file(make_CopyTorrentJob, mocker, tmp_path):
+    job = make_CopyTorrentJob(destination='foo')
+
     filepath = tmp_path / 'foo.torrent'
     f = open(filepath, 'wb')
     f.truncate(CopyTorrentJob.MAX_FILE_SIZE + 1)  # Sparse file
     f.close()
-    job = make_CopyTorrentJob(destination='foo')
 
-    cb = Mock()
-    job.signal.register('copying', cb.copying)
-    copy2_mock.side_effect = cb.copy2
-    job.signal.register('copied', cb.copied)
+    mocks = Mock()
+    job.signal.register('copying', mocks.copying)
+    job.signal.register('copied', mocks.copied)
+    copy2_mock = mocker.patch('shutil.copy2')
+    mocks.attach_mock(copy2_mock, 'copy2')
 
-    job.copy(filepath)
+    await job._handle_input(filepath)
     assert job.output == ()
     assert job.errors == (f'{filepath}: File is too large',)
-    assert not job.is_finished
-    assert cb.mock_calls == []
+    assert mocks.mock_calls == []
 
-@patch('shutil.copy2')
-def test_copy_with_destination_from_initialize(copy2_mock, tmp_path, make_CopyTorrentJob):
-    filepath = tmp_path / 'foo.torrent'
-    filepath.write_bytes(b'metainfo')
+@pytest.mark.asyncio
+async def test_handle_input_sends_destination_path_on_success(make_CopyTorrentJob, mocker, tmp_path):
     job = make_CopyTorrentJob(destination='foo')
 
-    cb = Mock()
-    job.signal.register('copying', cb.copying)
-    copy2_mock.side_effect = cb.copy2
-    cb.copy2.return_value = 'destination/path'
-    job.signal.register('copied', cb.copied)
+    filepath = tmp_path / 'foo.torrent'
+    filepath.write_bytes(b'content')
 
-    job.copy(filepath)
+    mocker.patch('shutil.copy2', return_value='destination/path')
+
+    await job._handle_input(filepath)
     assert job.output == ('destination/path',)
     assert job.errors == ()
-    assert not job.is_finished
-    assert cb.mock_calls == [
-        call.copying(filepath),
-        call.copy2(filepath, 'foo'),
-        call.copied('destination/path'),
-    ]
 
-@patch('shutil.copy2')
-def test_copy_with_destination_from_argument(copy2_mock, tmp_path, make_CopyTorrentJob):
+@pytest.mark.asyncio
+async def test_handle_input_sends_source_path_on_failure(make_CopyTorrentJob, mocker, tmp_path):
+    job = make_CopyTorrentJob(destination='foo')
+
     filepath = tmp_path / 'foo.torrent'
-    filepath.write_bytes(b'metainfo')
-    job = make_CopyTorrentJob()
+    filepath.write_bytes(b'content')
 
-    cb = Mock()
-    job.signal.register('copying', cb.copying)
-    copy2_mock.side_effect = cb.copy2
-    cb.copy2.return_value = 'destination/path'
-    job.signal.register('copied', cb.copied)
+    mocker.patch('shutil.copy2', side_effect=PermissionError('Permission denied'))
 
-    job.copy(filepath, 'bar')
-    assert job.output == ('destination/path',)
-    assert job.errors == ()
-    assert not job.is_finished
-    assert cb.mock_calls == [
-        call.copying(filepath),
-        call.copy2(filepath, 'bar'),
-        call.copied('destination/path'),
-    ]
-
-@patch('shutil.copy2')
-def test_copy_catches_OSError(copy2_mock, tmp_path, make_CopyTorrentJob):
-    filepath = tmp_path / 'foo.torrent'
-    filepath.write_bytes(b'metainfo')
-    job = make_CopyTorrentJob()
-
-    cb = Mock()
-    job.signal.register('copying', cb.copying)
-    copy2_mock.side_effect = cb.copy2
-    cb.copy2.side_effect = OSError('Do it yourself')
-    job.signal.register('copied', cb.copied)
-
-    job.copy(filepath, '/root')
+    await job._handle_input(filepath)
     assert job.output == (str(filepath),)
-    assert job.errors == (f'Failed to copy {filepath} to /root: Do it yourself',)
-    assert not job.is_finished
-    assert cb.mock_calls == [
-        call.copying(filepath),
-        call.copy2(filepath, '/root'),
-    ]
+    assert job.errors == (f'Failed to copy {filepath} to {job._destination}: Permission denied',)

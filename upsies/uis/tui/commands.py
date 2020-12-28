@@ -171,9 +171,9 @@ class create_torrent(CommandBase):
                 destination=self.args.copy_to,
             )
             # Pass CreateTorrentJob output to CopyTorrentJob input.
-            self.create_torrent_job.signal.register('output', copy_torrent_job.copy)
+            self.create_torrent_job.signal.register('output', copy_torrent_job.enqueue)
             # Tell CopyTorrentJob to finish when CreateTorrentJob is done.
-            self.create_torrent_job.signal.register('finished', copy_torrent_job.finish)
+            self.create_torrent_job.signal.register('finished', copy_torrent_job.finalize)
             return copy_torrent_job
 
     @cached_property
