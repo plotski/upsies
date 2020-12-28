@@ -4,6 +4,9 @@ Managing callbacks
 
 import collections
 
+import logging  # isort:skip
+_log = logging.getLogger(__name__)
+
 
 class Signal:
     """Simple callback registry"""
