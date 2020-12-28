@@ -411,3 +411,76 @@ class JobBase(abc.ABC):
 
         else:
             return str(value)
+
+
+class QueueJobBase(JobBase):
+    """
+    Subclass of :class:`JobBase` with an :class:`asyncio.Queue`
+
+    This job is used to process input asynchronously, e.g. from another job. For
+    example, :meth:`enqueue` from :class:`~.jobs.imghost.ImageHostJob` can be
+    connected to the ``output`` :class:`~.utils.signal.Signal` of
+    :class:`~.jobs.screenshots.ScreenshotsJob`.
+
+    It's also possible to use this job conventionally by passing a sequence of
+    values as the `enqueue` argument. This processes all values and finishes the
+    job without waiting for more.
+
+    The :meth:`initialize` method of subclasses must accept `enqueue` as a
+    keyword argument.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._queue = asyncio.Queue()
+        self._read_queue_task = None
+        enqueue = kwargs.get('enqueue', ())
+        if enqueue:
+            for value in enqueue:
+                self.enqueue(value)
+            self.finalize()
+
+    def execute(self):
+        self._read_queue_task = asyncio.ensure_future(self._read_queue())
+
+    async def _read_queue(self):
+        while True:
+            value = await self._queue.get()
+            if self.is_finished:
+                raise RuntimeError(f'{type(self).__name__} is already finished')
+            elif value is None:
+                break
+            else:
+                await self._handle_input(value)
+
+    @abc.abstractmethod
+    async def _handle_input(self, value):
+        """Handle `value` from queue"""
+
+    def enqueue(self, value):
+        """Put `value` in queue"""
+        self._queue.put_nowait(value)
+
+    def finalize(self):
+        """Finish after all currently queued values are handled"""
+        self._queue.put_nowait(None)
+
+    def finish(self):
+        """
+        Stop reading from queue
+
+        Unlike :meth:`JobBase.finish`, this does not finish the job. The job is
+        not finished until :meth:`wait` returns.
+        """
+        if self._read_queue_task:
+            self._read_queue_task.cancel()
+
+    async def wait(self):
+        """Wait for internal queue reading task and finish job"""
+        if self._read_queue_task:
+            try:
+                await self._read_queue_task
+            except asyncio.CancelledError:
+                self.error('Cancelled')
+        super().finish()
+        await super().wait()
