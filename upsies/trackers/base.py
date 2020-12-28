@@ -145,7 +145,7 @@ class TrackerJobsBase(abc.ABC):
                 **self.common_job_args,
             )
             # Pass CreateTorrentJob output to AddTorrentJob input.
-            self.create_torrent_job.signal.register('output', add_torrent_job.add)
+            self.create_torrent_job.signal.register('output', add_torrent_job.enqueue)
             # Tell AddTorrentJob to finish the current upload and then finish.
             self.create_torrent_job.signal.register('finished', add_torrent_job.finalize)
             return add_torrent_job

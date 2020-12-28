@@ -157,7 +157,7 @@ class create_torrent(CommandBase):
                 download_path=fs.dirname(self.args.CONTENT),
             )
             # Pass CreateTorrentJob output to AddTorrentJob input.
-            self.create_torrent_job.signal.register('output', add_torrent_job.add)
+            self.create_torrent_job.signal.register('output', add_torrent_job.enqueue)
             # Tell AddTorrentJob to finish the current upload and then finish.
             self.create_torrent_job.signal.register('finished', add_torrent_job.finalize)
             return add_torrent_job
@@ -201,7 +201,7 @@ class add_torrent(CommandBase):
                     **self.config['clients'][self.args.CLIENT],
                 ),
                 download_path=self.args.download_path,
-                torrents=self.args.TORRENT,
+                enqueue=self.args.TORRENT,
             ),
         )
 

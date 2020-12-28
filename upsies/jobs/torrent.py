@@ -8,13 +8,13 @@ import queue
 
 from .. import errors
 from ..utils import btclients, daemon, fs, torrent
-from . import JobBase
+from . import base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class CreateTorrentJob(JobBase):
+class CreateTorrentJob(base.JobBase):
     """
     Create torrent file
 
@@ -116,16 +116,16 @@ def _torrent_process(output_queue, input_queue, *args, **kwargs):
         output_queue.put((daemon.MsgType.result, torrent_path))
 
 
-class AddTorrentJob(JobBase):
+class AddTorrentJob(base.QueueJobBase):
     """
     Add torrent(s) to a BitTorrent client
 
     :param client: Return value of :func:`.utils.btclients.client`
-    :param download_path: Path to the torrent's content files or `None` to use
-        the default path
-    :param torrents: Sequence of torrent file paths to add
+    :param download_path: Path to the torrent's content or `None` to use the
+        client's default path
+    :param enqueue: Sequence of torrent file paths to add
 
-    If `torrents` is given and not empty, this job is finished as soon as its
+    If `enqueue` is given and not empty, this job is finished as soon as its
     last item is added.
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
@@ -146,71 +146,16 @@ class AddTorrentJob(JobBase):
     label = 'Add Torrent'
     cache_file = None
 
-    def initialize(self, *, client, download_path=None, torrents=()):
+    def initialize(self, *, client, download_path=None, enqueue=()):
         assert isinstance(client, btclients.ClientApiBase), f'Not a ClientApiBase: {client!r}'
         self._client = client
         self._download_path = download_path
-        self._add_torrents_task = None
         self.signal.add('adding')
         self.signal.add('added')
-        self._torrent_path_queue = asyncio.Queue()
-        if torrents:
-            for t in torrents:
-                self.add(t)
-            self.finalize()
-
-    def execute(self):
-        self._add_torrents_task = asyncio.ensure_future(self._add_torrents())
-        self._add_torrents_task.add_done_callback(lambda _: self.finish())
-
-    async def _add_torrents(self):
-        while True:
-            try:
-                torrent_path, download_path = await asyncio.wait_for(
-                    self._torrent_path_queue.get(),
-                    timeout=0.1,
-                )
-            except asyncio.TimeoutError:
-                pass
-            else:
-                if torrent_path is None:
-                    break
-                else:
-                    await self._add_torrent(torrent_path, download_path)
-
-    def add(self, torrent_path, download_path=None):
-        """
-        Upload `torrent_path`
-
-        :param torrent_path: Path to torrent file
-        :param download_path: Location of the torrent's content; defaults to the
-            `download_path` argument from instantiation
-        """
-        self._torrent_path_queue.put_nowait((
-            torrent_path,
-            download_path or self._download_path,
-        ))
-
-    def finalize(self):
-        """Finish after adding the current torrent"""
-        self._torrent_path_queue.put_nowait((None, None))
-
-    def finish(self):
-        if self._add_torrents_task:
-            self._add_torrents_task.cancel()
-
-    async def wait(self):
-        if self._add_torrents_task:
-            try:
-                await self._add_torrents_task
-            except asyncio.CancelledError:
-                self.error('Cancelled')
-        super().finish()
-        await super().wait()
 
     MAX_TORRENT_SIZE = 10 * 2**20  # 10 MiB
 
-    async def _add_torrent(self, torrent_path, download_path=None):
+    async def _handle_input(self, torrent_path):
         _log.debug('Adding %s to %s', torrent_path, self._client.name)
         self.signal.emit('adding', torrent_path)
 
@@ -221,11 +166,10 @@ class AddTorrentJob(JobBase):
         try:
             torrent_id = await self._client.add_torrent(
                 torrent_path=torrent_path,
-                download_path=download_path or self._download_path,
+                download_path=self._download_path,
             )
         except errors.TorrentError as e:
-            self.error(f'Failed to add {fs.basename(torrent_path)} '
-                       f'to {self._client.name}: {e}')
+            self.error(f'Failed to add {torrent_path} to {self._client.name}: {e}')
         else:
             self.send(torrent_id)
             self.signal.emit('added', torrent_id)
