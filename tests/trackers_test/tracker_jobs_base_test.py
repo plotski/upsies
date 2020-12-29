@@ -102,7 +102,7 @@ def test_add_torrent_job_with_add_to_client_argument(mocker):
         ),
     ]
     assert tracker_jobs.create_torrent_job.signal.register.call_args_list == [
-        call('output', tracker_jobs.add_torrent_job.add),
+        call('output', tracker_jobs.add_torrent_job.enqueue),
         call('finished', tracker_jobs.add_torrent_job.finalize),
     ]
 
@@ -136,8 +136,8 @@ def test_copy_torrent_job_with_torrent_destination_argument(mocker):
         ),
     ]
     assert tracker_jobs.create_torrent_job.signal.register.call_args_list == [
-        call('output', tracker_jobs.copy_torrent_job.copy),
-        call('finished', tracker_jobs.copy_torrent_job.finish),
+        call('output', tracker_jobs.copy_torrent_job.enqueue),
+        call('finished', tracker_jobs.copy_torrent_job.finalize),
     ]
 
 
@@ -279,7 +279,7 @@ def test_upload_screenshots_job_with_image_host_argument(mocker):
     # ScreenshotsJob also registers a callback for "timestamps", but that
     # doesn't concern us
     assert tracker_jobs.screenshots_job.signal.register.call_args_list[-2:] == [
-        call('output', tracker_jobs.upload_screenshots_job.upload),
+        call('output', tracker_jobs.upload_screenshots_job.enqueue),
         call('finished', tracker_jobs.upload_screenshots_job.finalize),
     ]
 
