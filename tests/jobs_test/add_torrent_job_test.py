@@ -20,7 +20,7 @@ class AsyncMock(Mock):
 
 
 @pytest.fixture
-def client(tmp_path):
+def client():
     class MockClient(btclients.ClientApiBase):
         name = 'mocksy'
         add_torrent = AsyncMock()
