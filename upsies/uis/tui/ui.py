@@ -125,7 +125,8 @@ class UI:
         # Start all jobs. Interactive jobs and jobs that need output from other
         # jobs will block when their wait() is called.
         for job in self._jobs:
-            job.start()
+            if job.autostart:
+                job.start()
 
         # Separate interactive jobs from non-interactive jobs.
         background_jobws = [jw for jw in jobws if not jw.is_interactive]

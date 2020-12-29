@@ -1,6 +1,6 @@
 import asyncio
 import random
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import pytest
 from prompt_toolkit.application import Application
@@ -119,3 +119,18 @@ def test_all_jobs_are_stopped_if_one_job_exits_with_exit_code_greater_zero(mocke
         Mock(exit_code=0, wait=block),
     ))
     assert ui.run() == 1
+
+def test_jobs_with_autostart_set_to_False_are_not_started(mocker):
+    jobs = [
+        Mock(autostart=False, wait=AsyncMock()),
+        Mock(autostart=True, wait=AsyncMock()),
+        Mock(autostart=False, wait=AsyncMock()),
+        Mock(autostart=True, wait=AsyncMock()),
+    ]
+    ui = UI(jobs=jobs)
+    ui.run()
+    for job in jobs:
+        if job.autostart:
+            assert job.start.call_args_list == [call()]
+        else:
+            assert job.start.call_args_list == []
