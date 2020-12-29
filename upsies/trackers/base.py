@@ -118,7 +118,14 @@ class TrackerJobsBase(abc.ABC):
         Sequence of jobs that are started after :meth:`~.TrackerBase.upload`
         finished
 
-        :attr:`.add_torrent_job` and :attr:`.copy_torrent_job` by default.
+        .. note::
+
+           Jobs returned by this class should have :attr:`~.JobBase.autostart`
+           set to False or they will be started along with
+           :attr:`.jobs_before_upload`.
+
+        By default, this returns :attr:`.add_torrent_job` and
+        :attr:`.copy_torrent_job`.
         """
         return (
             self.add_torrent_job,
