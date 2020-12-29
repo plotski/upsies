@@ -4,7 +4,7 @@ Share generated metadata
 
 import asyncio
 
-from .. import errors
+from .. import errors, utils
 from ..trackers.base import TrackerBase, TrackerJobsBase
 from . import JobBase
 
@@ -48,8 +48,6 @@ class SubmitJob(JobBase):
 
     name = 'submit'
     label = 'Submit'
-
-    # Don't cache output
     cache_file = None
 
     def initialize(self, tracker, tracker_jobs):
@@ -68,12 +66,22 @@ class SubmitJob(JobBase):
     async def wait(self):
         async with self._submit_lock:
             if not self.is_finished:
-                _log.debug('Waiting for jobs before upload: %r', self._tracker_jobs.jobs_before_upload)
-                await asyncio.gather(*(job.wait() for job in self._tracker_jobs.jobs_before_upload))
-                names = [job.name for job in self._tracker_jobs.jobs_before_upload]
-                outputs = [job.output for job in self._tracker_jobs.jobs_before_upload]
+                # Create post-upload jobs so they can register signals to
+                # connect to pre-upload jobs.
+                self.jobs_after_upload
+
+                _log.debug('Waiting for jobs before upload: %r', self.jobs_before_upload)
+                await asyncio.gather(*(job.wait() for job in self.jobs_before_upload))
+                names = [job.name for job in self.jobs_before_upload]
+                outputs = [job.output for job in self.jobs_before_upload]
                 metadata = dict(zip(names, outputs))
                 await self._submit(metadata)
+
+                for job in self.jobs_after_upload:
+                    job.start()
+                _log.debug('Waiting for jobs after upload: %r', self.jobs_after_upload)
+                await asyncio.gather(*(job.wait() for job in self.jobs_after_upload))
+
                 self.finish()
 
     async def _submit(self, metadata):
@@ -93,3 +101,11 @@ class SubmitJob(JobBase):
                 self.signal.emit('logged_out')
         except errors.RequestError as e:
             self.error(e)
+
+    @utils.cached_property
+    def jobs_before_upload(self):
+        return tuple(job for job in self._tracker_jobs.jobs_before_upload if job)
+
+    @utils.cached_property
+    def jobs_after_upload(self):
+        return tuple(job for job in self._tracker_jobs.jobs_after_upload if job)

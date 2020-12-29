@@ -1,11 +1,12 @@
 import asyncio
-from unittest.mock import Mock, call
+from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
 from upsies import errors
 from upsies.jobs.submit import SubmitJob
-from upsies.trackers import TrackerBase
+from upsies.trackers import TrackerBase, TrackerConfigBase, TrackerJobsBase
+from upsies.utils.btclients import ClientApiBase
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -21,11 +22,12 @@ class AsyncMock(Mock):
 
 
 @pytest.fixture
-def job(tmp_path, tracker):
+def job(tmp_path, tracker, tracker_jobs):
     return SubmitJob(
         homedir=tmp_path,
         ignore_cache=False,
         tracker=tracker,
+        tracker_jobs=tracker_jobs,
     )
 
 @pytest.fixture
@@ -33,15 +35,49 @@ def tracker():
     class TestTracker(TrackerBase):
         name = 'test'
         label = 'TeST'
-        jobs_before_upload = (
-            Mock(wait=AsyncMock()),
-            Mock(wait=AsyncMock()),
-            Mock(wait=AsyncMock()),
-        )
+        TrackerConfig = 'tracker config class'
+        TrackerJobs = 'tracker jobs class'
         login = AsyncMock()
         logout = AsyncMock()
         upload = AsyncMock()
-    return TestTracker(config='mock config')
+
+    return TestTracker()
+
+@pytest.fixture
+def tracker_jobs(btclient, tracker_config):
+    kwargs = {
+        'content_path': 'content/path',
+        'tracker_name': 'tracker name',
+        'tracker_config': tracker_config,
+        'image_host': 'image host',
+        'bittorrent_client': btclient,
+        'torrent_destination': 'torrent/destination',
+        'common_job_args': {},
+    }
+
+    class TestTrackerJobs(TrackerJobsBase):
+        def __init__(self, **kw):
+            return super().__init__(**{**kwargs, **kw})
+
+        jobs_before_upload = PropertyMock()
+        jobs_after_upload = PropertyMock()
+
+    return TestTrackerJobs()
+
+@pytest.fixture
+def tracker_config():
+    class TestTrackerConfig(TrackerConfigBase):
+        defaults = {'username': 'foo', 'password': 'bar'}
+
+    return TestTrackerConfig()
+
+@pytest.fixture
+def btclient():
+    class TestClient(ClientApiBase):
+        name = 'mock client'
+        add_torrent = AsyncMock()
+
+    return TestClient()
 
 
 def test_cache_file(job):
@@ -49,67 +85,125 @@ def test_cache_file(job):
 
 
 @pytest.mark.asyncio
-async def test_wait_finishes(job, mocker):
-    mocker.patch.object(job, '_submit', AsyncMock())
-    assert not job.is_finished
-    await job.wait()
-    assert job.is_finished
+async def test_wait_creates_all_jobs_before_calling_submit(tmp_path, tracker, tracker_jobs, mocker):
+    logged = []
 
-@pytest.mark.asyncio
-async def test_wait_waits_for_jobs(job, mocker):
-    mocker.patch.object(job, '_submit', AsyncMock())
-    for subjob in job._tracker.jobs_before_upload:
-        assert subjob.wait.call_args_list == []
-    await job.wait()
-    for subjob in job._tracker.jobs_before_upload:
-        assert subjob.wait.call_args_list == [call()]
+    def log(msg, return_value):
+        logged.append(msg)
+        return return_value
 
-@pytest.mark.asyncio
-async def test_wait_passes_job_output_to_submit(job, mocker):
-    mocker.patch.object(job, '_submit', AsyncMock())
-    for j, (name, output) in zip(job._tracker.jobs_before_upload,
-                                 (('foo', ('a',)), ('bar', ('b1', 'b2')), ('baz', ('c',)))):
-        j.configure_mock(name=name, output=output)
+    mocker.patch('upsies.jobs.submit.SubmitJob._submit',
+                 side_effect=lambda *_, **__: log('Calling _submit', None))
+    type(tracker_jobs).jobs_before_upload = PropertyMock(
+        side_effect=lambda *_, **__: log('Instantiating jobs before upload',
+                                         [Mock(wait=AsyncMock()), Mock(wait=AsyncMock())]),
+    )
+    type(tracker_jobs).jobs_after_upload = PropertyMock(
+        side_effect=lambda *_, **__: log('Instantiating jobs after upload',
+                                         [Mock(wait=AsyncMock()), Mock(wait=AsyncMock())]),
+    )
+    job = SubmitJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        tracker=tracker,
+        tracker_jobs=tracker_jobs,
+    )
     await job.wait()
-    assert job._submit.call_args_list == [
-        call({'foo': ('a',), 'bar': ('b1', 'b2'), 'baz': ('c',)}),
-    ]
-
-@pytest.mark.asyncio
-async def test_wait_does_nothing_after_the_first_call(job, mocker):
-    mocker.patch.object(job, '_submit', AsyncMock())
-    for j, (name, output) in zip(job._tracker.jobs_before_upload,
-                                 (('foo', ('a',)), ('bar', ('b',)), ('baz', ('c',)))):
-        j.configure_mock(name=name, output=output)
-    assert not job.is_finished
-    for _ in range(3):
-        await job.wait()
-        assert job.is_finished
-    assert job._submit.call_args_list == [
-        call({'foo': ('a',), 'bar': ('b',), 'baz': ('c',)}),
-    ]
+    assert logged[-1] == 'Calling _submit'
 
 @pytest.mark.asyncio
 async def test_wait_can_be_called_multiple_times_simultaneously(job, mocker):
     mocker.patch.object(job, '_submit', AsyncMock())
 
-    for subjob, (name, output) in zip(job._tracker.jobs_before_upload,
-                                      (('foo', 'a'), ('bar', 'b'), ('baz', 'c'))):
-        subjob.configure_mock(name=name)
+    simultaneous_calls = 3
+    jobs_before_upload = []
+    jobs_after_upload = []
+    for (name, output) in (('before1', 'a'), ('before2', 'b'), ('before3', 'c'),
+                           ('after1', 'd'), ('after2', 'e')):
+        subjob = Mock()
 
-        async def set_output(subjob=subjob, output=output, calls=[1, 2, 3]):
+        async def wait(subjob=subjob, output=output, call_indexes=list(range(1, simultaneous_calls + 1))):
             # Keep track of call index
-            c = calls.pop(0)
+            ci = call_indexes.pop(0)
             # Last subjob.wait() finishes first unless it is blocked by previous calls
-            await asyncio.sleep(1 / c / 10)
-            subjob.output = f'{c}: {output}'
+            await asyncio.sleep(1 / ci / 10)
+            subjob.configure_mock(output=f'call #{ci}: output={output}')
 
-        subjob.wait = set_output
+        subjob.configure_mock(name=name, wait=wait)
+        if name.startswith('before'):
+            jobs_before_upload.append(subjob)
+        else:
+            jobs_after_upload.append(subjob)
 
-    await asyncio.gather(job.wait(), job.wait(), job.wait())
+    mocker.patch.object(job, 'jobs_before_upload', jobs_before_upload)
+    mocker.patch.object(job, 'jobs_after_upload', jobs_after_upload)
+
+    coros = tuple(corofunc() for corofunc in [job.wait] * simultaneous_calls)
+    await asyncio.gather(*coros)
     assert job._submit.call_args_list == [
-        call({'foo': '1: a', 'bar': '1: b', 'baz': '1: c'}),
+        call({
+            'before1': 'call #1: output=a',
+            'before2': 'call #1: output=b',
+            'before3': 'call #1: output=c',
+        }),
     ]
+
+@pytest.mark.asyncio
+async def test_wait_does_nothing_after_the_first_call(job, mocker):
+    mocks = AsyncMock()
+    mocks.before1.configure_mock(start=Mock(), name='before1', output='before1 output')
+    mocks.before2.configure_mock(start=Mock(), name='before2', output='before2 output')
+    mocks.after1.configure_mock(start=Mock(), name='after1', output='after1 output')
+    mocks.after2.configure_mock(start=Mock(), name='after1', output='after2 output')
+    mocker.patch.object(job, '_submit', mocks._submit)
+    mocker.patch.object(job, 'jobs_before_upload', (mocks.before1, mocks.before2))
+    mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
+    assert not job.is_finished
+    for _ in range(3):
+        await job.wait()
+        assert job.is_finished
+    assert job._submit.call_args_list == [
+        call({
+            'before1': 'before1 output',
+            'before2': 'before2 output',
+        }),
+    ]
+
+@pytest.mark.asyncio
+async def test_wait_does_everything_in_correct_order(job, mocker):
+    mocks = AsyncMock()
+    mocks.before1.configure_mock(start=Mock(), name='before1', output='before1 output')
+    mocks.before2.configure_mock(start=Mock(), name='before2', output='before2 output')
+    mocks.before3.configure_mock(start=Mock(), name='before3', output='before3 output')
+    mocks.after1.configure_mock(start=Mock(), name='after1', output='after1 output')
+    mocks.after2.configure_mock(start=Mock(), name='after1', output='after2 output')
+    mocker.patch.object(job, '_submit', mocks._submit)
+    mocker.patch.object(job, 'jobs_before_upload', (mocks.before1, mocks.before2, mocks.before3))
+    mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
+    await job.wait()
+    assert mocks.mock_calls == [
+        call.before1.wait(),
+        call.before2.wait(),
+        call.before3.wait(),
+        call._submit({
+            'before1': 'before1 output',
+            'before2': 'before2 output',
+            'before3': 'before3 output',
+        }),
+        call.after1.start(),
+        call.after2.start(),
+        call.after1.wait(),
+        call.after2.wait(),
+    ]
+
+@pytest.mark.asyncio
+async def test_wait_finishes(job, mocker):
+    mocker.patch.object(job, '_submit', AsyncMock())
+    mocker.patch.object(job, 'jobs_before_upload', ())
+    mocker.patch.object(job, 'jobs_after_upload', ())
+    assert not job.is_finished
+    await job.wait()
+    assert job.is_finished
 
 
 @pytest.mark.parametrize('method', ('login', 'logout', 'upload'))
@@ -161,3 +255,21 @@ async def test_submit_sends_upload_return_value_as_output(job):
     job._tracker.upload.return_value = 'http://torrent.url/'
     await job._submit({})
     assert job.output == ('http://torrent.url/',)
+
+
+@pytest.mark.parametrize('attrname', ('jobs_before_upload', 'jobs_after_upload'))
+@pytest.mark.asyncio
+async def test_None_is_filtered_from_jobs(attrname, tmp_path, tracker, tracker_jobs, mocker):
+    mocker.patch('upsies.jobs.submit.SubmitJob._submit')
+    setattr(
+        type(tracker_jobs),
+        attrname,
+        PropertyMock(return_value=[None, 'foo', None, 'bar']),
+    )
+    job = SubmitJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        tracker=tracker,
+        tracker_jobs=tracker_jobs,
+    )
+    assert getattr(job, attrname) == ('foo', 'bar')

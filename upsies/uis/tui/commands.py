@@ -312,7 +312,7 @@ class submit(CommandBase):
         return (
             tuple(self.tracker_jobs.jobs_before_upload)
             + (submit_job,)
-            + tuple(self.tracker_jobs.jobs_after_upload)
+            # jobs_after_upload are started by SubmitJob.wait()
         )
 
     @cached_property
