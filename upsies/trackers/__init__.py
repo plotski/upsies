@@ -13,7 +13,7 @@ subclasses have two main purposes:
 
 from .. import utils
 from . import dummy, nbl
-from .base import TrackerBase, TrackerJobsBase, TrackerConfigBase
+from .base import TrackerBase, TrackerConfigBase, TrackerJobsBase
 
 
 def trackers():
