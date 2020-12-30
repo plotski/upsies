@@ -93,7 +93,7 @@ async def test_wait_creates_all_jobs_before_calling_submit(tmp_path, tracker, tr
         return return_value
 
     mocker.patch('upsies.jobs.submit.SubmitJob._submit',
-                 side_effect=lambda *_, **__: log('Calling _submit', None))
+                 side_effect=lambda *_, **__: log('Calling _submit', AsyncMock()))
     type(tracker_jobs).jobs_before_upload = PropertyMock(
         side_effect=lambda *_, **__: log('Instantiating jobs before upload',
                                          [Mock(wait=AsyncMock()), Mock(wait=AsyncMock())]),
@@ -181,20 +181,27 @@ async def test_wait_does_everything_in_correct_order(job, mocker):
     mocker.patch.object(job, 'jobs_before_upload', (mocks.before1, mocks.before2, mocks.before3))
     mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
     await job.wait()
-    assert mocks.mock_calls == [
-        call.before1.wait(),
-        call.before2.wait(),
-        call.before3.wait(),
-        call._submit({
-            'before1': 'before1 output',
-            'before2': 'before2 output',
-            'before3': 'before3 output',
-        }),
-        call.after1.start(),
-        call.after2.start(),
-        call.after1.wait(),
-        call.after2.wait(),
-    ]
+    # Order doesn't need to be precise and is random for Python < 3.8. Compare
+    # strings of call() objects because they aren't hashable and sets can only
+    # contain hashable values.
+    assert set((str(call) for call in mocks.mock_calls[:3])) == {
+        str(call.before1.wait()),
+        str(call.before2.wait()),
+        str(call.before3.wait()),
+    }
+    assert mocks.mock_calls[3] == call._submit({
+        'before1': 'before1 output',
+        'before2': 'before2 output',
+        'before3': 'before3 output',
+    })
+    assert set((str(call) for call in mocks.mock_calls[4:6])) == {
+        str(call.after1.start()),
+        str(call.after2.start()),
+    }
+    assert set((str(call) for call in mocks.mock_calls[6:8])) == {
+        str(call.after1.wait()),
+        str(call.after2.wait()),
+    }
 
 @pytest.mark.asyncio
 async def test_wait_finishes(job, mocker):
