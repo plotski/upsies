@@ -82,7 +82,7 @@ class DummyTracker(base.TrackerBase):
         if output:
             torrent_file = output[0]
         else:
-            raise errors.RequestError('Something went wrong')
+            raise errors.RequestError('Torrent file was not created.')
         _log.debug('%s: Uploading %s', self.name, pprint.pformat(metadata))
         await asyncio.sleep(1)
         return f'http://localhost/{os.path.basename(torrent_file)}'
