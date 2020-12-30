@@ -114,16 +114,16 @@ class ImdbApi(WebDbApiBase):
         for key, english_title in akas.items():
             for regex in self._english_akas_keys:
                 if regex.search(key):
-                    _log.debug('Interesting English title: %r -> %r', key, english_title)
+                    # _log.debug('Interesting English title: %r -> %r', key, english_title)
                     if not allow_empty:
-                        _log.debug('Forcing first match: %r', english_title)
+                        # _log.debug('Forcing first match: %r', english_title)
                         return english_title
-                    if self._titles_are_similar(english_title, original_title):
-                        _log.debug('Similar to original title %r: %r', original_title, english_title)
-                    else:
-                        _log.debug('English title: %r', english_title)
-                        _log.debug('Original title: %r', original_title)
+                    if not self._titles_are_similar(english_title, original_title):
+                        # _log.debug('English title: %r', english_title)
+                        # _log.debug('Original title: %r', original_title)
                         return english_title
+                    # else:
+                    #     _log.debug('Similar to original title %r: %r', original_title, english_title)
         return ''
 
     async def title_original(self, id):
@@ -131,13 +131,13 @@ class ImdbApi(WebDbApiBase):
         original_title = akas.get('(original title)', '')
         english_title = await self.title_english(id, allow_empty=False)
         if original_title:
-            if self._titles_are_similar(original_title, english_title):
-                _log.debug('Similar to English title %r: %r', english_title, original_title)
-            else:
-                _log.debug('Original title: %r', original_title)
-                _log.debug('English title: %r', english_title)
+            if not self._titles_are_similar(original_title, english_title):
+                # _log.debug('Original title: %r', original_title)
+                # _log.debug('English title: %r', english_title)
                 return original_title
-        _log.debug('Defaulting to English title: %r', english_title)
+            # else:
+            #     _log.debug('Similar to English title %r: %r', english_title, original_title)
+        # _log.debug('Defaulting to English title: %r', english_title)
         return english_title
 
     def _titles_are_similar(self, a, b):
@@ -183,12 +183,13 @@ class ImdbApi(WebDbApiBase):
             title_tag = item.find('td', class_='aka-item__title')
             title = ''.join(title_tag.stripped_strings).strip()
 
-            if not title:
-                _log.debug('Ignoring empty title: %r -> %r', key, title)
-            elif any(regex.search(key) for regex in self._ignored_akas_keys):
-                _log.debug('Ignoring AKA: %r -> %r', key, title)
-            else:
-                akas[key] = title
+            if title:
+                if not any(regex.search(key) for regex in self._ignored_akas_keys):
+                    akas[key] = title
+            #     else:
+            #         _log.debug('Ignoring AKA: %r -> %r', key, title)
+            # else:
+            #     _log.debug('Ignoring empty title: %r -> %r', key, title)
 
         return akas
 
