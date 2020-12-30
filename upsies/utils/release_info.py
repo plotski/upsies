@@ -362,14 +362,11 @@ class ReleaseName(collections.abc.Mapping):
     async def _update_year_required(self):
         if self.type in (ReleaseType.season, ReleaseType.episode):
             # Find out if there are multiple series with this title
-            results = await self._imdb.search(
-                webdbs.Query(title=self.title, type=ReleaseType.series)
-            )
-            same_titles = tuple(
-                r for r in results
-                if r.title.casefold() == self.title.casefold()
-            )
-            _log.debug('Found multiple search results for %r', same_titles)
+            query = webdbs.Query(title=self.title, type=ReleaseType.series)
+            results = await self._imdb.search(query)
+            same_titles = tuple(f'{r.title} ({r.year})' for r in results
+                                if r.title.casefold() == self.title.casefold())
+            _log.debug('Found multiple search results for %r: %r', query, same_titles)
             if len(same_titles) >= 2:
                 self.year_required = True
             else:
