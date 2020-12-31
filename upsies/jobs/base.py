@@ -263,9 +263,9 @@ class JobBase(abc.ABC):
         """
         if not self.is_finished:
             self._errors.append(error)
-            self.signal.emit('error', error)
             if finish:
                 self.finish()
+            self.signal.emit('error', error)
 
     def exception(self, exception):
         """
