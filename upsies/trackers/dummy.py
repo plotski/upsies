@@ -47,7 +47,7 @@ class DummyTrackerJobs(base.TrackerJobsBase):
         return jobs.prompt.ChoiceJob(
             name='category',
             label='Category',
-            choices=(str(t).capitalize() for t in ReleaseType),
+            choices=(str(t).capitalize() for t in ReleaseType if t),
             focused=category,
             **self.common_job_args,
         )
