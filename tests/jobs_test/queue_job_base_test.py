@@ -169,5 +169,4 @@ async def test_wait_handles_CancelledError_from_read_queue_task(qjob):
     await qjob.wait()
     assert qjob.is_finished
     assert qjob.exit_code == 1
-    assert qjob.errors == ('Cancelled',)
     assert qjob._read_queue_task is not None

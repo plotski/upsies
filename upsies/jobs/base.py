@@ -481,6 +481,6 @@ class QueueJobBase(JobBase):
             try:
                 await self._read_queue_task
             except asyncio.CancelledError:
-                self.error('Cancelled')
+                pass
         super().finish()
         await super().wait()
