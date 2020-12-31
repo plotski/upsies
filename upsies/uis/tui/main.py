@@ -40,10 +40,10 @@ def _main(args=None):
 
     # Run UI
     try:
+        ui = UI()
         cmd = args.subcmd(args=args, config=cfg)
         assert isinstance(cmd, CommandBase)
-        ui = UI(jobs=cmd.jobs_active)
-        exit_code = ui.run()
+        exit_code = ui.run(cmd.jobs_active)
 
     # TUI was terminated by user prematurely
     except errors.CancelledError as e:
