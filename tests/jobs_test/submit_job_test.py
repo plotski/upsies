@@ -85,33 +85,6 @@ def test_cache_file(job):
 
 
 @pytest.mark.asyncio
-async def test_wait_creates_all_jobs_before_calling_submit(tmp_path, tracker, tracker_jobs, mocker):
-    logged = []
-
-    def log(msg, return_value):
-        logged.append(msg)
-        return return_value
-
-    mocker.patch('upsies.jobs.submit.SubmitJob._submit',
-                 side_effect=lambda *_, **__: log('Calling _submit', AsyncMock()))
-    type(tracker_jobs).jobs_before_upload = PropertyMock(
-        side_effect=lambda *_, **__: log('Instantiating jobs before upload',
-                                         [Mock(wait=AsyncMock()), Mock(wait=AsyncMock())]),
-    )
-    type(tracker_jobs).jobs_after_upload = PropertyMock(
-        side_effect=lambda *_, **__: log('Instantiating jobs after upload',
-                                         [Mock(wait=AsyncMock()), Mock(wait=AsyncMock())]),
-    )
-    job = SubmitJob(
-        homedir=tmp_path,
-        ignore_cache=False,
-        tracker=tracker,
-        tracker_jobs=tracker_jobs,
-    )
-    await job.wait()
-    assert logged[-1] == 'Calling _submit'
-
-@pytest.mark.asyncio
 async def test_wait_can_be_called_multiple_times_simultaneously(job, mocker):
     mocker.patch.object(job, '_submit', AsyncMock())
 
@@ -120,7 +93,7 @@ async def test_wait_can_be_called_multiple_times_simultaneously(job, mocker):
     jobs_after_upload = []
     for (name, output) in (('before1', 'a'), ('before2', 'b'), ('before3', 'c'),
                            ('after1', 'd'), ('after2', 'e')):
-        subjob = Mock()
+        subjob = Mock(exit_code=0)
 
         async def wait(subjob=subjob, output=output, call_indexes=list(range(1, simultaneous_calls + 1))):
             # Keep track of call index
@@ -151,10 +124,10 @@ async def test_wait_can_be_called_multiple_times_simultaneously(job, mocker):
 @pytest.mark.asyncio
 async def test_wait_does_nothing_after_the_first_call(job, mocker):
     mocks = AsyncMock()
-    mocks.before1.configure_mock(start=Mock(), name='before1', output='before1 output')
-    mocks.before2.configure_mock(start=Mock(), name='before2', output='before2 output')
-    mocks.after1.configure_mock(start=Mock(), name='after1', output='after1 output')
-    mocks.after2.configure_mock(start=Mock(), name='after1', output='after2 output')
+    mocks.before1.configure_mock(start=Mock(), name='before1', output='before1 output', exit_code=0)
+    mocks.before2.configure_mock(start=Mock(), name='before2', output='before2 output', exit_code=0)
+    mocks.after1.configure_mock(start=Mock(), name='after1', output='after1 output', exit_code=0)
+    mocks.after2.configure_mock(start=Mock(), name='after1', output='after2 output', exit_code=0)
     mocker.patch.object(job, '_submit', mocks._submit)
     mocker.patch.object(job, 'jobs_before_upload', (mocks.before1, mocks.before2))
     mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
@@ -170,19 +143,49 @@ async def test_wait_does_nothing_after_the_first_call(job, mocker):
     ]
 
 @pytest.mark.asyncio
+async def test_wait_creates_all_jobs_before_calling_submit(tmp_path, tracker, tracker_jobs, mocker):
+    logged = []
+
+    def log(msg, return_value):
+        logged.append(msg)
+        return return_value
+
+    mocker.patch('upsies.jobs.submit.SubmitJob._submit',
+                 side_effect=lambda *_, **__: log('Calling _submit', AsyncMock()))
+    type(tracker_jobs).jobs_before_upload = PropertyMock(
+        side_effect=lambda *_, **__: log('Instantiating jobs before upload',
+                                         [Mock(wait=AsyncMock(), exit_code=0),
+                                          Mock(wait=AsyncMock(), exit_code=0)]),
+    )
+    type(tracker_jobs).jobs_after_upload = PropertyMock(
+        side_effect=lambda *_, **__: log('Instantiating jobs after upload',
+                                         [Mock(wait=AsyncMock(), exit_code=0),
+                                          Mock(wait=AsyncMock(), exit_code=0)]),
+    )
+    job = SubmitJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        tracker=tracker,
+        tracker_jobs=tracker_jobs,
+    )
+    await job.wait()
+    assert logged[-1] == 'Calling _submit'
+
+@pytest.mark.asyncio
 async def test_wait_does_everything_in_correct_order(job, mocker):
     mocks = AsyncMock()
-    mocks.before1.configure_mock(start=Mock(), name='before1', output='before1 output')
-    mocks.before2.configure_mock(start=Mock(), name='before2', output='before2 output')
-    mocks.before3.configure_mock(start=Mock(), name='before3', output='before3 output')
-    mocks.after1.configure_mock(start=Mock(), name='after1', output='after1 output')
-    mocks.after2.configure_mock(start=Mock(), name='after1', output='after2 output')
+    mocks.before1.configure_mock(start=Mock(), name='before1', output='before1 output', exit_code=0)
+    mocks.before2.configure_mock(start=Mock(), name='before2', output='before2 output', exit_code=0)
+    mocks.before3.configure_mock(start=Mock(), name='before3', output='before3 output', exit_code=0)
+    mocks.after1.configure_mock(start=Mock(), name='after1', output='after1 output', exit_code=0)
+    mocks.after2.configure_mock(start=Mock(), name='after1', output='after2 output', exit_code=0)
     mocker.patch.object(job, '_submit', mocks._submit)
+    mocks._submit.side_effect = lambda *_, **__: job.send('mock torrent url')
     mocker.patch.object(job, 'jobs_before_upload', (mocks.before1, mocks.before2, mocks.before3))
     mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
     await job.wait()
-    # Order doesn't need to be precise and is random for Python < 3.8. Compare
-    # strings of call() objects because they aren't hashable and sets can only
+    # Order of before* and after* jobs doesn't matter and is random for Python <
+    # 3.8. Compare str(call()) because call() isn't hashable and sets can only
     # contain hashable values.
     assert set((str(call) for call in mocks.mock_calls[:3])) == {
         str(call.before1.wait()),
@@ -202,6 +205,39 @@ async def test_wait_does_everything_in_correct_order(job, mocker):
         str(call.after1.wait()),
         str(call.after2.wait()),
     }
+
+@pytest.mark.parametrize('failed_job_number', (1, 2, 3))
+@pytest.mark.asyncio
+async def test_wait_does_not_submit_if_any_jobs_before_upload_fail(failed_job_number, job, mocker):
+    mocks = AsyncMock()
+    mocks.before1.configure_mock(start=Mock(), name='before1', output='before1 output', exit_code=0)
+    mocks.before2.configure_mock(start=Mock(), name='before2', output='before2 output', exit_code=0)
+    mocks.before3.configure_mock(start=Mock(), name='before3', output='before3 output', exit_code=0)
+    mocks.after1.configure_mock(start=Mock(), name='after1', output='after1 output', exit_code=0)
+    mocks.after2.configure_mock(start=Mock(), name='after1', output='after2 output', exit_code=0)
+    getattr(mocks, f'before{failed_job_number}').exit_code = 1
+    mocker.patch.object(job, '_submit', mocks._submit)
+    mocker.patch.object(job, 'jobs_before_upload', (mocks.before1, mocks.before2, mocks.before3))
+    mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
+    await job.wait()
+    assert job._submit.call_args_list == []
+    assert set((str(call) for call in mocks.mock_calls)) == {
+        str(call.before1.wait()),
+        str(call.before2.wait()),
+        str(call.before3.wait()),
+    }
+    assert job.is_finished
+
+@pytest.mark.asyncio
+async def test_wait_does_not_call_jobs_after_upload_if_submit_fails(job, mocker):
+    mocks = AsyncMock()
+    mocks.after1.configure_mock(start=Mock(), name='after1', output='after1 output', exit_code=0)
+    mocks.after2.configure_mock(start=Mock(), name='after1', output='after2 output', exit_code=0)
+    mocker.patch.object(job, '_submit', mocks._submit)
+    mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
+    await job.wait()
+    assert mocks.mock_calls == [call._submit({})]
+    assert job.is_finished
 
 @pytest.mark.asyncio
 async def test_wait_finishes(job, mocker):

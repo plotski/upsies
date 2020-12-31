@@ -75,12 +75,19 @@ class SubmitJob(JobBase):
                 names = [job.name for job in self.jobs_before_upload]
                 outputs = [job.output for job in self.jobs_before_upload]
                 metadata = dict(zip(names, outputs))
-                await self._submit(metadata)
 
-                for job in self.jobs_after_upload:
-                    job.start()
-                _log.debug('Waiting for jobs after upload: %r', self.jobs_after_upload)
-                await asyncio.gather(*(job.wait() for job in self.jobs_after_upload))
+                # Ensure metadata was generated successfully
+                if all(job.exit_code == 0 for job in self.jobs_before_upload):
+                    _log.debug('Submitting metadata')
+                    await self._submit(metadata)
+
+                    # Run jobs_after_upload only if submission succeeded
+                    if self.output:
+                        for job in self.jobs_after_upload:
+                            _log.debug('Starting %r', job.name)
+                            job.start()
+                        _log.debug('Waiting for jobs after upload: %r', self.jobs_after_upload)
+                        await asyncio.gather(*(job.wait() for job in self.jobs_after_upload))
 
                 self.finish()
 
