@@ -354,7 +354,7 @@ class JobBase(abc.ABC):
         cache_id = self.cache_id
         if cache_id is None:
             return None
-        elif cache_id == '':
+        elif not cache_id:
             filename = f'{self.name}.json'
         else:
             # Avoid file name being too long. 255 bytes seems common. Leave

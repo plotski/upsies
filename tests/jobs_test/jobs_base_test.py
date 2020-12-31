@@ -356,9 +356,10 @@ def test_cache_file_with_cache_id_being_None(tmp_path, mocker):
     job = BarJob(homedir=tmp_path, ignore_cache=False)
     assert job.cache_file is None
 
-def test_cache_file_with_cache_id_being_empty(tmp_path, mocker):
+@pytest.mark.parametrize('falsy_cache_id', ('', {}, ()))
+def test_cache_file_with_cache_id_being_falsy(falsy_cache_id, tmp_path, mocker):
     class BarJob(FooJob):
-        cache_id = {}
+        cache_id = falsy_cache_id
 
     job = BarJob(homedir=tmp_path, ignore_cache=False)
     assert job.cache_file == str(tmp_path / '.output' / f'{job.name}.json')
