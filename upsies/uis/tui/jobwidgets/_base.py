@@ -21,10 +21,15 @@ class JobWidgetBase(abc.ABC):
         self.setup()
         main_widget = HSplit(
             children=[
-                # Status or progress information
+                # Status information or user interaction
                 ConditionalContainer(
                     filter=Condition(lambda: not self.job.is_finished),
                     content=self.runtime_widget,
+                ),
+                # Result
+                ConditionalContainer(
+                    filter=Condition(lambda: self.job.output),
+                    content=self.output_widget,
                 ),
                 # Additional info that isn't part of the job's main result
                 # (e.g. CreateTorrentJobWidget can show the files in the
@@ -32,11 +37,6 @@ class JobWidgetBase(abc.ABC):
                 ConditionalContainer(
                     filter=Condition(lambda: bool(self.job.info)),
                     content=self.info_widget,
-                ),
-                # Final output
-                ConditionalContainer(
-                    filter=Condition(lambda: self.job.output),
-                    content=self.output_widget,
                 ),
                 # Errors
                 ConditionalContainer(
