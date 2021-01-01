@@ -39,9 +39,6 @@ def mock_JobWidget(mocker):
     )
     mocker.patch('upsies.uis.tui.widgets.JobWidget', Mock(return_value=job_widget))
 
-async def block():
-    await asyncio.sleep(100)
-
 
 def test_add_jobs_registers_signals(mocker):
     jobs = (
@@ -76,7 +73,7 @@ def test_add_jobs_registers_signals(mocker):
                 call('error', ui._exit),
             ]
 
-def test_add_jobs_does_not_start_jobs_with_autostart_set_to_False(mocker):
+def test_add_jobs_does_not_start_jobs_with_autostart_set_to_False():
     jobs = (
         Mock(autostart=False, wait=AsyncMock(), exit_code=0),
         Mock(autostart=True, wait=AsyncMock(), exit_code=0),
@@ -92,7 +89,7 @@ def test_add_jobs_does_not_start_jobs_with_autostart_set_to_False(mocker):
             assert job.start.call_args_list == []
 
 
-def test_update_jobs_container_sorts_interactive_jobs_above_background_jobs(mocker):
+def test_update_jobs_container_sorts_interactive_jobs_above_background_jobs():
     ui = UI()
     ui._jobs = {
         'a': SimpleNamespace(job=Mock(), widget=Mock(is_interactive=True), container=Mock()),
@@ -108,7 +105,7 @@ def test_update_jobs_container_sorts_interactive_jobs_above_background_jobs(mock
         ui._jobs['d'].container,
     ]
 
-def test_update_jobs_container_only_adds_first_unfinished_job(mocker):
+def test_update_jobs_container_only_adds_first_unfinished_job():
     ui = UI()
     ui._jobs = {
         'a': SimpleNamespace(job=Mock(is_finished=False), widget=Mock(is_interactive=True), container=Mock()),
@@ -158,7 +155,7 @@ def test_exception_is_raised_by_wait_for_all_jobs(mocker):
     with pytest.raises(RuntimeError, match=r'^This is bad$'):
         ui.run(())
 
-def test_exception_is_raised_by_background_coroutine(mocker):
+def test_exception_is_raised_by_background_coroutine():
     def delayed_exception():
         async def raise_exception():
             await asyncio.sleep(0.1)
@@ -167,7 +164,7 @@ def test_exception_is_raised_by_background_coroutine(mocker):
 
     jobs = (
         Mock(wait=AsyncMock(), start=delayed_exception, exit_code=0),
-        Mock(wait=block, exit_code=0),
+        Mock(wait=lambda: asyncio.sleep(100), exit_code=0),
         Mock(wait=AsyncMock(), exit_code=0),
     )
     ui = UI()
@@ -178,7 +175,7 @@ def test_exception_is_raised_by_background_coroutine(mocker):
     for job in jobs:
         assert job.finish.call_args_list == [call()]
 
-def test_exceptions_are_raised_by_job_start(mocker):
+def test_exceptions_are_raised_by_job_start():
     jobs = (
         Mock(wait=AsyncMock()),
         Mock(wait=AsyncMock()),
@@ -193,7 +190,7 @@ def test_exceptions_are_raised_by_job_start(mocker):
     for job in jobs:
         assert job.finish.call_args_list == []
 
-def test_exceptions_are_raised_by_job_wait(mocker):
+def test_exceptions_are_raised_by_job_wait():
     jobs = (
         Mock(wait=AsyncMock(), exit_code=0),
         Mock(wait=AsyncMock(side_effect=RuntimeError('This is bad'))),
@@ -210,7 +207,7 @@ def test_exceptions_are_raised_by_job_wait(mocker):
     for job in jobs:
         assert job.finish.call_args_list == [call()]
 
-def test_jobs_return_with_nonzero_exit_code(mocker):
+def test_jobs_return_with_nonzero_exit_code():
     jobs = (
         Mock(wait=AsyncMock(), exit_code=0),
         Mock(wait=AsyncMock(), exit_code=123),
