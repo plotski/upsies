@@ -18,7 +18,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-hspacer = Window(FormattedTextControl('  '), dont_extend_width=True, dont_extend_height=True)
+hspacer = Window(FormattedTextControl(' '), dont_extend_width=True, dont_extend_height=True)
 vspacer = Window(FormattedTextControl(''), dont_extend_width=True, dont_extend_height=True)
 
 
