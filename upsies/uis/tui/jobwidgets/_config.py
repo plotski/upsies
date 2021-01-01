@@ -1,18 +1,18 @@
+from prompt_toolkit.layout.containers import Window
+
 from ....utils import cached_property
-from .. import widgets
 from . import JobWidgetBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
+# This job is hidden so we only need a dummy widget.
+
 class SetJobWidget(JobWidgetBase):
     def setup(self):
-        if self.job.output:
-            self._setting = widgets.TextField(self.job.output[0])
-        else:
-            self._setting = widgets.TextField()
+        pass
 
     @cached_property
     def runtime_widget(self):
-        return self._setting
+        return Window()
