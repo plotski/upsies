@@ -7,10 +7,15 @@ import json
 import os
 import re
 
-from .. import binaries, errors, utils
+from .. import errors, utils
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+if utils.os_family() == 'windows':
+    _mediainfo_executable = 'mediainfo.exe'
+else:
+    _mediainfo_executable = 'mediainfo'
 
 
 def _run_mediainfo(path, *args):
@@ -19,7 +24,7 @@ def _run_mediainfo(path, *args):
     except errors.ContentError as e:
         raise errors.MediainfoError(e)
 
-    cmd = (binaries.mediainfo, video_file_path) + args
+    cmd = (_mediainfo_executable, video_file_path) + args
 
     # Catch DependencyError because we want a nice error message if mediainfo is
     # not installed. Do not catch ProcessError because things like wrong

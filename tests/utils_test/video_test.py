@@ -3,7 +3,7 @@ from unittest.mock import call, patch
 
 import pytest
 
-from upsies import binaries, errors
+from upsies import errors
 from upsies.utils import video
 
 
@@ -150,7 +150,7 @@ def test_length_calls_ffprobe(run_mock, tmp_path):
     filepath = tmp_path / 'foo.mkv'
     filepath.write_bytes(b'foo data')
     exp_cmd = (
-        binaries.ffprobe,
+        video._ffprobe_executable,
         '-v', 'error',
         '-show_entries', 'format=duration',
         '-of', 'default=noprint_wrappers=1:nokey=1',
@@ -197,7 +197,7 @@ def test_length_crashes_if_ffprobe_returns_unexpected_value(run_mock, tmp_path):
     filepath = tmp_path / 'the foo.mkv'
     filepath.write_bytes(b'the data')
     exp_cmd = (
-        binaries.ffprobe,
+        video._ffprobe_executable,
         '-v', 'error',
         '-show_entries', 'format=duration',
         '-of', 'default=noprint_wrappers=1:nokey=1',

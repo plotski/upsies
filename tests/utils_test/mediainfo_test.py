@@ -2,7 +2,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-from upsies import binaries, errors
+from upsies import errors
 from upsies.utils import mediainfo
 
 
@@ -30,7 +30,7 @@ def test_run_mediainfo_runs_mediainfo_on_first_video(mocker):
         call('some/path'),
     ]
     assert run_mock.call_args_list == [
-        call((binaries.mediainfo, 'some/path/to/file.mkv'),
+        call((mediainfo._mediainfo_executable, 'some/path/to/file.mkv'),
              cache=True),
     ]
 
@@ -46,7 +46,7 @@ def test_run_mediainfo_passes_positional_args_to_mediainfo_command(mocker):
         call('some/path'),
     ]
     assert run_mock.call_args_list == [
-        call((binaries.mediainfo, 'some/path/to/file.mkv') + args,
+        call((mediainfo._mediainfo_executable, 'some/path/to/file.mkv') + args,
              cache=True),
     ]
 
@@ -65,7 +65,7 @@ def test_run_mediainfo_catches_DependencyError(mocker):
         call('some/path'),
     ]
     assert run_mock.call_args_list == [
-        call((binaries.mediainfo, 'some/path/to/file.mkv'),
+        call((mediainfo._mediainfo_executable, 'some/path/to/file.mkv'),
              cache=True),
     ]
 
@@ -84,7 +84,7 @@ def test_run_mediainfo_does_not_catch_ProcessError(mocker):
         call('some/path'),
     ]
     assert run_mock.call_args_list == [
-        call((binaries.mediainfo, 'some/path/to/file.mkv'),
+        call((mediainfo._mediainfo_executable, 'some/path/to/file.mkv'),
              cache=True),
     ]
 

@@ -5,24 +5,26 @@ Dump frames from video file
 import os
 import re
 
-from .. import binaries, errors
-from ..utils import fs, subproc
-from ..utils import timestamp as ts
-from ..utils import video
+from .. import errors, utils
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+if utils.os_family() == 'windows':
+    _ffmpeg_executable = 'ffmpeg.exe'
+else:
+    _ffmpeg_executable = 'ffmpeg'
 
 _timestamp_format = re.compile(r'^(?:(?:\d+:|)\d{2}:|)\d{2}$')
 
 
 def _make_ffmpeg_cmd(video_file, timestamp, screenshot_file):
     return (
-        binaries.ffmpeg,
+        _ffmpeg_executable,
         '-y',
         '-loglevel', 'level+error',
         '-ss', str(timestamp),
-        '-i', video.make_ffmpeg_input(video_file),
+        '-i', utils.video.make_ffmpeg_input(video_file),
         '-vframes', '1',
         # Use correct aspect ratio
         # https://ffmpeg.org/ffmpeg-filters.html#toc-Examples-99
@@ -44,7 +46,7 @@ def create(video_file, timestamp, screenshot_file, overwrite=False):
     :raise ScreenshotError: if something goes wrong
     """
     try:
-        fs.assert_file_readable(video_file)
+        utils.fs.assert_file_readable(video_file)
     except errors.ContentError as e:
         raise errors.ScreenshotError(e)
 
@@ -58,14 +60,14 @@ def create(video_file, timestamp, screenshot_file, overwrite=False):
         _log.debug('Screenshot already exists: %s', screenshot_file)
         return
 
-    videolength = video.length(video_file)
-    if videolength <= ts.parse(timestamp):
+    videolength = utils.video.length(video_file)
+    if videolength <= utils.timestamp.parse(timestamp):
         raise errors.ScreenshotError(
-            f'Timestamp is after video end ({ts.pretty(videolength)}): '
-            + ts.pretty(timestamp)
+            f'Timestamp is after video end ({utils.timestamp.pretty(videolength)}): '
+            + utils.timestamp.pretty(timestamp)
         )
 
     cmd = _make_ffmpeg_cmd(video_file, timestamp, screenshot_file)
-    output = subproc.run(cmd, ignore_errors=True, join_stderr=True)
+    output = utils.subproc.run(cmd, ignore_errors=True, join_stderr=True)
     if not os.path.exists(screenshot_file):
         raise errors.ScreenshotError(output, video_file, timestamp)

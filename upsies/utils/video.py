@@ -6,13 +6,18 @@ import functools
 import os
 import shlex
 
-from .. import binaries, errors
-from . import LazyModule, fs, subproc
+from .. import errors
+from . import LazyModule, fs, os_family, subproc
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 natsort = LazyModule(module='natsort', namespace=globals())
+
+if os_family() == 'windows':
+    _ffprobe_executable = 'ffprobe.exe'
+else:
+    _ffprobe_executable = 'ffprobe'
 
 
 _video_file_extensions = ('mkv', 'mp4', 'ts', 'avi')
@@ -101,7 +106,7 @@ def length(filepath):
     """
     fs.assert_file_readable(filepath)
     cmd = (
-        binaries.ffprobe,
+        _ffprobe_executable,
         '-v', 'error',
         '-show_entries', 'format=duration',
         '-of', 'default=noprint_wrappers=1:nokey=1',
