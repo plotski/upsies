@@ -127,12 +127,11 @@ class UI:
         try:
             self._app.run(set_exception_handler=False)
         finally:
+            self._finish_jobs()
             try:
                 asyncio.get_event_loop().run_until_complete(self._wait_for_all_jobs_task)
             except asyncio.CancelledError:
                 pass
-            finally:
-                self._finish_jobs()
 
         if self._exception:
             raise self._exception
