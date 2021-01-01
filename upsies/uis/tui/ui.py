@@ -110,7 +110,7 @@ class UI:
 
     def run(self, jobs):
         """
-        Block while running `jobs` or until UI terminates for some reason
+        Block while running `jobs`
 
         :param jobs: Iterable of :class:`~.jobs.base.JobBase` instances
 
