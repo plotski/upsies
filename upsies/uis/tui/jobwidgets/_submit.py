@@ -10,9 +10,7 @@ _log = logging.getLogger(__name__)
 
 class SubmitJobWidget(JobWidgetBase):
     def setup(self):
-        self._status_info = widgets.TextField(
-            text='',
-        )
+        self._status_info = widgets.TextField()
         messages = (
             ('logging_in', 'Logging in...'),
             ('logged_in', 'Logged in successfully.'),
