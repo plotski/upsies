@@ -217,33 +217,41 @@ class RadioList:
 class HLabel:
     _groups = collections.defaultdict(lambda: [])
 
-    def __init__(self, label, content, group=None):
-        label = Window(
-            content=FormattedTextControl(text=f'{label} ',
-                                         style='class:textfield.label'),
+    def __init__(self, text, content, group=None, style=''):
+        self.text = text
+        self.width = get_cwidth(text)
+        self.label = Window(
+            content=FormattedTextControl(text=text),
             dont_extend_width=True,
-            dont_extend_height=False,
-            width=get_cwidth(label) + 1,
+            dont_extend_height=True,
+            style=' '.join(('class:label', style)),
             align=WindowAlign.RIGHT,
         )
-        self.container = VSplit([label, content])
+        # The HSplit makes the label non-greedy, i.e. the label itself takes
+        # only one line and the space below is empty with default background
+        # color.
+        self.container = VSplit([HSplit([self.label]), hspacer, content])
 
         self._group = group
         if group is not None:
-            self._groups[group].append(label)
-            max_width = max(label.width for label in self._groups[group])
+            self._groups[group].append(self)
+            max_width = max(l.width for l in self._groups[group])
             for label in self._groups[group]:
-                label.width = max_width
+                label.label.width = max_width + 1
 
     def __pt_container__(self):
         return self.container
 
 
 class VLabel:
-    def __init__(self, label, content):
+    def __init__(self, text, content, style=''):
         self.container = HSplit([
-            Window(FormattedTextControl(text=label, style='class:textfield.label'),
-                   dont_extend_height=True),
+            Window(
+                FormattedTextControl(text=text),
+                dont_extend_width=False,
+                dont_extend_height=True,
+                style=' '.join(('class:label', style)),
+            ),
             content,
         ])
 
