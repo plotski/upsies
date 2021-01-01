@@ -188,6 +188,7 @@ class RadioList:
             content=self.control,
             style='class:textfield.info',
             dont_extend_height=True,
+            always_hide_cursor=True,
         )
 
     def _get_text_fragments(self):
