@@ -151,6 +151,10 @@ class AddTorrentJob(base.QueueJobBase):
         self._download_path = download_path
         self.signal.add('adding')
         self.signal.add('added')
+        self._info = ''
+        self.signal.register('adding', lambda tp: setattr(self, '_info', f'Adding {fs.basename(tp)}'))
+        self.signal.register('added', lambda _: setattr(self, '_info', ''))
+        self.signal.register('finished', lambda: setattr(self, '_info', ''))
 
     MAX_TORRENT_SIZE = 10 * 2**20  # 10 MiB
 
@@ -172,6 +176,11 @@ class AddTorrentJob(base.QueueJobBase):
         else:
             self.send(torrent_id)
             self.signal.emit('added', torrent_id)
+
+    @property
+    def info(self):
+        """Status message"""
+        return self._info
 
 
 class CopyTorrentJob(base.QueueJobBase):

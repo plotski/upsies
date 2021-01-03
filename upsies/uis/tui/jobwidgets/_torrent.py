@@ -23,21 +23,12 @@ class CreateTorrentJobWidget(JobWidgetBase):
 
 class AddTorrentJobWidget(JobWidgetBase):
     def setup(self):
-        self._status = widgets.TextField(style='class:info')
-        self.job.signal.register('adding', self.handle_adding_torrent)
-        self.job.signal.register('finished', self.handle_finished)
-
-    def handle_adding_torrent(self, torrent_path):
-        self._status.text = f'Adding {fs.basename(torrent_path)}...'
-        self.invalidate()
-
-    def handle_finished(self):
-        self._status.text = 'Done.'
-        self.invalidate()
+        self.job.signal.register('adding', lambda _: self.invalidate())
+        self.job.signal.register('added', lambda _: self.invalidate())
 
     @cached_property
     def runtime_widget(self):
-        return self._status
+        return None
 
 
 class CopyTorrentJobWidget(JobWidgetBase):
