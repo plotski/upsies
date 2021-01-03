@@ -21,6 +21,6 @@ class DummyImageHost(ImageHostBase):
         except errors.ContentError as e:
             raise errors.RequestError(e)
         else:
-            await asyncio.sleep(1)
+            await asyncio.sleep(3)
             url = f'http://localhost/{os.path.basename(image_path)}'
             return {'url': url}
