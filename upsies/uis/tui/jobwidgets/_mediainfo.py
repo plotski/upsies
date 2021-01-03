@@ -1,5 +1,3 @@
-from prompt_toolkit.layout.containers import Window
-
 from ....utils import cached_property
 from . import JobWidgetBase
 
@@ -13,4 +11,4 @@ class MediainfoJobWidget(JobWidgetBase):
 
     @cached_property
     def runtime_widget(self):
-        return Window(dont_extend_height=True)
+        return None
