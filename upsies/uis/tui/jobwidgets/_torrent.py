@@ -23,7 +23,7 @@ class CreateTorrentJobWidget(JobWidgetBase):
 
 class AddTorrentJobWidget(JobWidgetBase):
     def setup(self):
-        self._status = widgets.TextField()
+        self._status = widgets.TextField(style='class:info')
         self.job.signal.register('adding', self.handle_adding_torrent)
         self.job.signal.register('finished', self.handle_finished)
 
@@ -42,7 +42,7 @@ class AddTorrentJobWidget(JobWidgetBase):
 
 class CopyTorrentJobWidget(JobWidgetBase):
     def setup(self):
-        self._status = widgets.TextField()
+        self._status = widgets.TextField(style='class:info')
         self.job.signal.register('copying', self.handle_copying_torrent)
         self.job.signal.register('finished', self.handle_finished)
 

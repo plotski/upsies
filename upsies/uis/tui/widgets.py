@@ -57,7 +57,7 @@ class TextField:
             dont_extend_height=True,
             dont_extend_width=not extend_width,
             wrap_lines=True,
-            style=' '.join(('class:textfield.info', style)),
+            style=style,
         )
 
     @property
@@ -92,7 +92,7 @@ class InputField:
     """Single line of user-editable text"""
 
     def __init__(self, text='', width=None, extend_width=True, read_only=False,
-                 on_accepted=None, on_changed=None):
+                 on_accepted=None, on_changed=None, style=''):
         self.read_only = read_only
         self.on_accepted = on_accepted
         self.buffer = Buffer(
@@ -107,7 +107,7 @@ class InputField:
             width=width,
             dont_extend_height=True,
             dont_extend_width=not extend_width,
-            style='class:textfield.input',
+            style=style,
         )
         if text:
             self.set_text(text, ignore_callback=True)
@@ -186,7 +186,7 @@ class RadioList:
         )
         self.window = Window(
             content=self.control,
-            style='class:textfield.info',
+            style='class:prompt.choice',
             dont_extend_height=True,
             always_hide_cursor=True,
         )
@@ -195,13 +195,12 @@ class RadioList:
         result = []
         width = max(len(value) for value in self.choices)
         for i, value in enumerate(self.choices):
-            focused = i == self.focused_index
-            if focused:
-                style = 'class:radiolist.focus'
+            if i == self.focused_index:
+                style = 'class:prompt.choice.focused'
                 result.append(('[SetCursorPosition]', ''))
                 result.append((style, '*'))
             else:
-                style = 'class:radiolist'
+                style = 'class:prompt.choice'
                 result.append((style, ' '))
             result.append((style, ' '))
             result.extend(to_formatted_text(value.ljust(width), style=style))
@@ -224,7 +223,7 @@ class HLabel:
             content=FormattedTextControl(text=text),
             dont_extend_width=True,
             dont_extend_height=True,
-            style=' '.join(('class:label', style)),
+            style=style,
             align=WindowAlign.RIGHT,
         )
         # The HSplit makes the label non-greedy, i.e. the label itself takes
@@ -235,7 +234,7 @@ class HLabel:
         self._group = group
         if group is not None:
             self._groups[group].append(self)
-            max_width = max(l.width for l in self._groups[group])
+            max_width = max(label.width for label in self._groups[group])
             for label in self._groups[group]:
                 label.label.width = max_width + 1
 
@@ -250,7 +249,7 @@ class VLabel:
                 FormattedTextControl(text=text),
                 dont_extend_width=False,
                 dont_extend_height=True,
-                style=' '.join(('class:label', style)),
+                style=style,
             ),
             content,
         ])
@@ -264,12 +263,12 @@ class ProgressBar:
         self.percent = 0
         self.container = VSplit([
             Window(
-                style='class:progressbar class:progressbar.progress',
+                style='class:info.progressbar.progress',
                 width=lambda: Dimension(weight=int(self.percent)),
                 height=1,
             ),
             Window(
-                style='class:progressbar',
+                style='class:info.progressbar',
                 width=lambda: Dimension(weight=int(100 - self.percent)),
                 height=1,
             ),

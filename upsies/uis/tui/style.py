@@ -1,26 +1,35 @@
 from prompt_toolkit import styles
 
-# flake8: noqa: E241
+# flake8: noqa: E241 multiple spaces after ','
 
 # Remove defaults
 styles.defaults.PROMPT_TOOLKIT_STYLE.clear()
 styles.defaults.WIDGETS_STYLE.clear()
 
+# https://python-prompt-toolkit.readthedocs.io/en/master/pages/advanced_topics/styling.html
+
 style = styles.Style([
-    ('job.output', 'bg:#333 fg:#eee'),
-    ('job.info',   'bg:#333 fg:#bb9'),
-    ('job.error',  'bg:#333 fg:#ff4f00 bold'),
+    ('default',                       ''),
+    ('label',                         'bold'),
 
-    ('textfield.input', 'bg:#999 fg:#000'),
-    ('textfield.info',  'bg:#333 fg:#ddd'),
-    ('textfield.label', 'bold'),
+    ('output',                        'bg:#222 fg:#ddd'),
+    ('error',                         'fg:#f40'),
 
-    ('radiolist',       'bg:#333 fg:#ddd'),
-    ('radiolist.focus', 'bg:#999 fg:#000'),
+    ('info',                          'bg:#444 fg:#dd5'),
+    ('info.progressbar',              ''),
+    ('info.progressbar.progress',     'reverse'),
 
-    ('search.result',         'bg:#333 fg:#ccc'),
-    ('search.result focused', 'bg:#999 fg:#000'),
+    ('prompt',                        'bg:#444 fg:#5dd'),
 
-    ('progressbar',          'bg:#333 fg:#ccc'),
-    ('progressbar.progress', 'reverse'),
+    ('prompt.text',                   ''),
+
+    ('prompt.choice',                 ''),
+    ('prompt.choice.focused',         'reverse'),
+
+    ('prompt.search',                 'bg:default'),
+    ('prompt.search.label',           'bold underline'),
+    ('prompt.search.query',           'bg:#222'),
+    ('prompt.search.info',            'bg:#222'),
+    ('prompt.search.results',         'bg:#222'),
+    ('prompt.search.results.focused', 'reverse'),
 ])

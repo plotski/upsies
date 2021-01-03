@@ -16,37 +16,45 @@ class SearchWebDbJobWidget(JobWidgetBase):
     def setup(self):
         right_column_width = 40
         self._widgets = {
-            'id' : widgets.TextField(width=15),
+            'id' : widgets.TextField(width=15, style='class:prompt.search.info'),
             'query' : widgets.InputField(
+                style='class:prompt.search.query',
                 text=str(self.job.query),
                 on_accepted=self.handle_query,
             ),
             'search_results' : _SearchResults(width=50),
             'summary' : widgets.TextField(
+                style='class:prompt.search.info',
                 width=right_column_width,
                 height=8,
             ),
             'title_original' : widgets.TextField(
+                style='class:prompt.search.info',
                 width=right_column_width,
                 height=1,
             ),
             'title_english' : widgets.TextField(
+                style='class:prompt.search.info',
                 width=right_column_width,
                 height=1,
             ),
             'keywords' : widgets.TextField(
+                style='class:prompt.search.info',
                 width=right_column_width,
                 height=2,
             ),
             'director' : widgets.TextField(
+                style='class:prompt.search.info',
                 width=right_column_width,
                 height=1,
             ),
             'cast' : widgets.TextField(
+                style='class:prompt.search.info',
                 width=right_column_width,
                 height=2,
             ),
             'countries' : widgets.TextField(
+                style='class:prompt.search.info',
                 width=right_column_width,
                 height=1,
             ),
@@ -83,27 +91,29 @@ class SearchWebDbJobWidget(JobWidgetBase):
 
     @cached_property
     def runtime_widget(self):
+        w = self._widgets
         layout = [
             VSplit([
-                self._widgets['query'],
+                w['query'],
                 widgets.hspacer,
                 widgets.HLabel(
-                    label='ID',
-                    content=self._widgets['id'],
+                    text='ID',
+                    content=w['id'],
+                    style='class:prompt.search.label',
                 ),
             ]),
             widgets.vspacer,
             VSplit([
-                widgets.VLabel('Results', self._widgets['search_results']),
+                widgets.VLabel('Results', w['search_results'], style='class:prompt.search.label'),
                 widgets.hspacer,
                 HSplit([
-                    widgets.VLabel('Summary', self._widgets['summary']),
-                    widgets.VLabel('Original Title', self._widgets['title_original']),
-                    widgets.VLabel('Also Known As', self._widgets['title_english']),
-                    widgets.VLabel('Keywords', self._widgets['keywords']),
-                    widgets.VLabel('Director', self._widgets['director']),
-                    widgets.VLabel('Cast', self._widgets['cast']),
-                    widgets.VLabel('Country', self._widgets['countries']),
+                    widgets.VLabel('Summary', w['summary'], style='class:prompt.search.label'),
+                    widgets.VLabel('Original Title', w['title_original'], style='class:prompt.search.label'),
+                    widgets.VLabel('Also Known As', w['title_english'], style='class:prompt.search.label'),
+                    widgets.VLabel('Keywords', w['keywords'], style='class:prompt.search.label'),
+                    widgets.VLabel('Director', w['director'], style='class:prompt.search.label'),
+                    widgets.VLabel('Cast', w['cast'], style='class:prompt.search.label'),
+                    widgets.VLabel('Country', w['countries'], style='class:prompt.search.label'),
                 ]),
             ]),
             widgets.vspacer,
@@ -118,6 +128,7 @@ class SearchWebDbJobWidget(JobWidgetBase):
                 HSplit(
                     children=layout,
                     key_bindings=self._make_keybindings(),
+                    style='class:prompt.search',
                 ),
             ],
         )
@@ -163,7 +174,7 @@ class _SearchResults(DynamicContainer):
             lambda: Window(
                 content=FormattedTextControl(self._get_text_fragments, focusable=False),
                 width=width,
-                style='class:search.result',
+                style='class:prompt.search.results',
             )
         )
 
@@ -207,18 +218,18 @@ class _SearchResults(DynamicContainer):
 
     def _get_text_fragments(self):
         if self._is_searching:
-            return [('class:search.result', 'Searching...')]
+            return [('class:prompt.search.results', 'Searching...')]
         elif not self._results:
             return 'No results'
 
         frags = []
         for i, result in enumerate(self._results):
-            title_style = 'class:search.result'
-
             if i == self._focused_index:
+                title_style = 'class:prompt.search.results.focused'
                 frags.append(('[SetCursorPosition]', ''))
-                title_style += ' class:focused'
                 self._focused_result = result
+            else:
+                title_style = 'class:prompt.search.results'
 
             if get_cwidth(result.title) > self._title_width:
                 title = result.title[:self._title_width - 1] + '…'

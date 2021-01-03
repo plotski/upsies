@@ -47,7 +47,8 @@ class JobWidgetBase(abc.ABC):
         )
         label = widgets.HLabel(
             group='jobs',
-            label=self.job.label,
+            text=self.job.label,
+            style='class:label',
             content=main_widget,
         )
         self._container = ConditionalContainer(
@@ -85,7 +86,7 @@ class JobWidgetBase(abc.ABC):
         :return: :class:`~prompt_toolkit.layout.containers.Window` object
         """
         return Window(
-            style='class:job.info',
+            style='class:info',
             content=FormattedTextControl(lambda: str(self.job.info)),
             dont_extend_height=True,
             wrap_lines=True,
@@ -99,7 +100,7 @@ class JobWidgetBase(abc.ABC):
         :return: :class:`~prompt_toolkit.layout.containers.Window` object
         """
         return Window(
-            style='class:job.output',
+            style='class:output',
             content=FormattedTextControl(lambda: '\n'.join(self.job.output)),
             dont_extend_height=True,
             wrap_lines=True,
@@ -113,7 +114,7 @@ class JobWidgetBase(abc.ABC):
         :return: :class:`~prompt_toolkit.layout.containers.Window` object
         """
         return Window(
-            style='class:job.error',
+            style='class:error',
             content=FormattedTextControl(lambda: '\n'.join(str(e) for e in self.job.errors)),
             dont_extend_height=True,
             wrap_lines=True,

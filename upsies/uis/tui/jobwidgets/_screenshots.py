@@ -12,7 +12,10 @@ _log = logging.getLogger(__name__)
 class ScreenshotsJobWidget(JobWidgetBase):
     def setup(self):
         content_name = fs.basename(self.job.kwargs['content_path'])
-        self._status_text = widgets.TextField(f'Analyzing {content_name} ...')
+        self._status_text = widgets.TextField(
+            text=f'Analyzing {content_name} ...',
+            style='class:info',
+        )
         self._screenshot_progress = widgets.ProgressBar()
         self.job.signal.register('output', self.handle_screenshot_path)
         self.job.signal.register('finished', self.invalidate)

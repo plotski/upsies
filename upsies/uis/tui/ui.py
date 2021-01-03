@@ -33,10 +33,12 @@ class UI:
         self._jobs_container = HSplit(
             width=Dimension(max=self._max_width),
             # FIXME: Layout does not accept an empty list of children. We add an
-            #        empty Window that doesn't display anything and remove it
-            #        once we've added the first real child.
+            #        empty Window that doesn't display anything that gets
+            #        removed automatically when we rebuild
+            #        self._jobs_container.children.
             #        https://github.com/prompt-toolkit/python-prompt-toolkit/issues/1257
             children=[Window()],
+            style='class:default',
         )
         self._layout = Layout(self._jobs_container)
 
