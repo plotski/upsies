@@ -63,7 +63,7 @@ class JobWidgetBase(abc.ABC):
 
     @property
     def job(self):
-        """Underlying :class:`JobBase` instance"""
+        """Underlying :class:`~.JobBase` instance"""
         return self._job
 
     @abc.abstractmethod
@@ -78,17 +78,18 @@ class JobWidgetBase(abc.ABC):
     @abc.abstractmethod
     def runtime_widget(self):
         """
-        Possibly interactive widget that is displayed while this job is running
+        Interactive or status that is displayed while this job is running
 
-        :return: :class:`~prompt_toolkit.layout.containers.Window` object
+        :return: :class:`~.prompt_toolkit.layout.containers.Window` object or
+            `None`
         """
 
     @property
     def info_widget(self):
         """
-        Optional info widget that is displayed while this job is running
+        Optional :attr:`~.JobBase.info` that is displayed while this job is running
 
-        :return: :class:`~prompt_toolkit.layout.containers.Window` object
+        :return: :class:`~.prompt_toolkit.layout.containers.Window` object
         """
         return Window(
             style='class:info',
@@ -102,7 +103,7 @@ class JobWidgetBase(abc.ABC):
         """
         Final result of :attr:`job` that is displayed when it finished
 
-        :return: :class:`~prompt_toolkit.layout.containers.Window` object
+        :return: :class:`~.prompt_toolkit.layout.containers.Window` object
         """
         return Window(
             style='class:output',
@@ -116,7 +117,7 @@ class JobWidgetBase(abc.ABC):
         """
         Any errors from :attr:`job`
 
-        :return: :class:`~prompt_toolkit.layout.containers.Window` object
+        :return: :class:`~.prompt_toolkit.layout.containers.Window` object
         """
         return Window(
             style='class:error',
