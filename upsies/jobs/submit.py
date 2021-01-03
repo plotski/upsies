@@ -56,12 +56,21 @@ class SubmitJob(JobBase):
         self._tracker = tracker
         self._tracker_jobs = tracker_jobs
         self._submit_lock = asyncio.Lock()
+        self._info = ''
         self.signal.add('logging_in')
         self.signal.add('logged_in')
         self.signal.add('uploading')
         self.signal.add('uploaded')
         self.signal.add('logging_out')
         self.signal.add('logged_out')
+        for signal, message in (('logging_in', 'Logging in'),
+                                ('logged_in', None),
+                                ('uploading', 'Uploading'),
+                                ('uploaded', None),
+                                ('logging_out', 'Logging out'),
+                                ('logged_out', '')):
+            if message is not None:
+                self.signal.register(signal, lambda msg=message: setattr(self, '_info', msg))
 
     async def wait(self):
         async with self._submit_lock:
@@ -116,3 +125,7 @@ class SubmitJob(JobBase):
     @utils.cached_property
     def jobs_after_upload(self):
         return tuple(job for job in self._tracker_jobs.jobs_after_upload if job)
+
+    @property
+    def info(self):
+        return self._info
