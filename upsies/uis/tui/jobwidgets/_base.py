@@ -40,7 +40,7 @@ class JobWidgetBase(abc.ABC):
                 # (e.g. CreateTorrentJobWidget can show the files in the
                 # torrent, but the output is the torrent file path.)
                 ConditionalContainer(
-                    filter=Condition(lambda: bool(self.job.info)),
+                    filter=Condition(lambda: not self.job.is_finished and bool(self.job.info)),
                     content=self.info_widget,
                 ),
                 # Errors
