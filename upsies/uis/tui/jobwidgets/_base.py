@@ -16,6 +16,11 @@ _log = logging.getLogger(__name__)
 class JobWidgetBase(abc.ABC):
     """User-interaction and information display for :class:`~.jobs.JobBase` instance"""
 
+    _no_runtime_widget = Window(
+        dont_extend_height=True,
+        style='class:info',
+    )
+
     def __init__(self, job):
         self._job = job
         self.setup()
@@ -24,7 +29,7 @@ class JobWidgetBase(abc.ABC):
                 # Status information or user interaction
                 ConditionalContainer(
                     filter=Condition(lambda: not self.job.is_finished),
-                    content=self.runtime_widget,
+                    content=self.runtime_widget or self._no_runtime_widget,
                 ),
                 # Result
                 ConditionalContainer(
@@ -123,9 +128,10 @@ class JobWidgetBase(abc.ABC):
     @property
     def is_interactive(self):
         """Whether this job needs user interaction"""
-        for c in walk(to_container(self.runtime_widget), skip_hidden=True):
-            if isinstance(c, Window) and c.content.is_focusable():
-                return True
+        if self.runtime_widget:
+            for c in walk(to_container(self.runtime_widget), skip_hidden=True):
+                if isinstance(c, Window) and c.content.is_focusable():
+                    return True
         return False
 
     def invalidate(self):
