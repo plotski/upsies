@@ -1,4 +1,4 @@
-from ....utils import cached_property, fs
+from ....utils import cached_property
 from .. import widgets
 from . import JobWidgetBase
 
@@ -33,18 +33,9 @@ class AddTorrentJobWidget(JobWidgetBase):
 
 class CopyTorrentJobWidget(JobWidgetBase):
     def setup(self):
-        self._status = widgets.TextField(style='class:info')
-        self.job.signal.register('copying', self.handle_copying_torrent)
-        self.job.signal.register('finished', self.handle_finished)
-
-    def handle_copying_torrent(self, file_path):
-        self._status.text = f'Copying {fs.basename(file_path)}...'
-        self.invalidate()
-
-    def handle_finished(self):
-        self._status.text = 'Done.'
-        self.invalidate()
+        self.job.signal.register('copying', lambda _: self.invalidate())
+        self.job.signal.register('copied', lambda _: self.invalidate())
 
     @cached_property
     def runtime_widget(self):
-        return self._status
+        return None

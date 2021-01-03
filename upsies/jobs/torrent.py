@@ -214,6 +214,10 @@ class CopyTorrentJob(base.QueueJobBase):
         self._destination = None if not destination else str(destination)
         self.signal.add('copying')
         self.signal.add('copied')
+        self._info = ''
+        self.signal.register('copying', lambda fp: setattr(self, '_info', f'Copying {fs.basename(fp)}'))
+        self.signal.register('copied', lambda _: setattr(self, '_info', ''))
+        self.signal.register('finished', lambda: setattr(self, '_info', ''))
 
     MAX_FILE_SIZE = 10 * 2**20  # 10 MiB
 
@@ -243,3 +247,8 @@ class CopyTorrentJob(base.QueueJobBase):
             else:
                 self.send(new_path)
                 self.signal.emit('copied', new_path)
+
+    @property
+    def info(self):
+        """Status message"""
+        return self._info
