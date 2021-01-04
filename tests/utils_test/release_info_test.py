@@ -236,9 +236,14 @@ def test_source_from_encoder(source, video_format, exp_source, mocker):
 
 
 extended_source_samples = (
-    ('BluRay REMUX', 'BluRay Remux'), ('remux BluRay', 'BluRay Remux'),
-    ('Hybrid BluRay', 'Hybrid BluRay'), ('BluRay hybrid', 'Hybrid BluRay'),
-    ('HYBRID BluRay REMUX', 'Hybrid BluRay Remux'), ('BluRay hybrid remux', 'Hybrid BluRay Remux'),
+    ('BluRay REMUX', 'BluRay Remux'),
+    ('remux BluRay', 'BluRay Remux'),
+    ('Hybrid BluRay', 'Hybrid BluRay'),
+    ('BluRay hybrid', 'Hybrid BluRay'),
+    ('HYBRID BluRay REMUX', 'Hybrid BluRay Remux'),
+    ('Bluray hybrid remux', 'Hybrid BluRay Remux'),
+    ('Blu-Ray REMUX hybrid', 'Hybrid BluRay Remux'),
+    ('remux BluRay Hybrid', 'Hybrid BluRay Remux'),
 )
 @pytest.mark.parametrize('source, exp_source', extended_source_samples)
 def test_extended_source(source, exp_source):

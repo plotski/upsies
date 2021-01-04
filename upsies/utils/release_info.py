@@ -610,11 +610,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
         re.compile(r'(?i:web-?rip)') : 'WEBRip',
         re.compile(r'(?i:web)')      : 'WEB',
     }
-    _sources_regex = r'(?:' + '|'.join(r.pattern for r in _source_translation) + ')'
-    _hybrid_regex = re.compile(rf'[\. ]+(?:hybrid[\. ]+{_sources_regex}'
-                               r'|'
-                               rf'{_sources_regex}[\. ]+hybrid)[\. ]+',
-                               flags=re.IGNORECASE)
+    # Look for "Hybrid" after year or season
+    _hybrid_regex = re.compile(r'[ \.]hybrid[ \.]', flags=re.IGNORECASE)
     _web_source_regex = re.compile(r'[ \.](WEB-?(?:DL|Rip))(?:[ \.]|$)', flags=re.IGNORECASE)
 
     def _get_source(self):
@@ -658,10 +655,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
                     break
 
         # guessit ignores "Hybrid"
-        for name in _file_and_parent(self._path):
-            if self._hybrid_regex.search(name):
-                source = 'Hybrid ' + source
-                break
+        if self._hybrid_regex.search(self.release_name_params):
+            source = 'Hybrid ' + source
 
         # Detect Remux
         if 'Remux' in self._guessit.get('other', ()):
