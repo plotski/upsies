@@ -48,13 +48,11 @@ class ImageHostJob(QueueJobBase):
 
         self._imghost = imghost
         self._images_uploaded = 0
-        self._exit_code = 0
 
     async def _handle_input(self, image_path):
         try:
             info = await self._imghost.upload(image_path, force=self.ignore_cache)
         except errors.RequestError as e:
-            self._exit_code = 1
             self.error(e)
         else:
             _log.debug('Uploaded image: %r', info)
@@ -64,7 +62,10 @@ class ImageHostJob(QueueJobBase):
     @property
     def exit_code(self):
         if self.is_finished:
-            return self._exit_code
+            if self.images_uploaded > 0 and self.images_uploaded == self.images_total:
+                return 0
+            else:
+                return 1
 
     @property
     def images_uploaded(self):

@@ -120,4 +120,10 @@ async def test_exit_code(make_ImageHostJob):
     assert job.exit_code is None
     job.finish()
     await job.wait()
-    assert job.exit_code is job._exit_code
+    assert job.exit_code is not None
+    job._images_uploaded = 0
+    assert job.exit_code == 1
+    job._images_uploaded = 122
+    assert job.exit_code == 1
+    job._images_uploaded = 123
+    assert job.exit_code == 0
