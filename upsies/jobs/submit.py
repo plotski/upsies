@@ -57,20 +57,16 @@ class SubmitJob(JobBase):
         self._tracker_jobs = tracker_jobs
         self._submit_lock = asyncio.Lock()
         self._info = ''
-        self.signal.add('logging_in')
-        self.signal.add('logged_in')
-        self.signal.add('uploading')
-        self.signal.add('uploaded')
-        self.signal.add('logging_out')
-        self.signal.add('logged_out')
         for signal, message in (('logging_in', 'Logging in'),
-                                ('logged_in', None),
+                                ('logged_in', 'Logged in'),
                                 ('uploading', 'Uploading'),
-                                ('uploaded', None),
+                                ('uploaded', 'Uploaded'),
                                 ('logging_out', 'Logging out'),
                                 ('logged_out', '')):
-            if message is not None:
-                self.signal.register(signal, lambda msg=message: setattr(self, '_info', msg))
+            self.signal.add(signal)
+            self.signal.register(signal, lambda msg=message: setattr(self, '_info', msg))
+        self.signal.register('finished', lambda: setattr(self, '_info', ''))
+        self.signal.register('error', lambda _: setattr(self, '_info', ''))
 
     async def wait(self):
         async with self._submit_lock:

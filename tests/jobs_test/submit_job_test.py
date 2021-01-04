@@ -299,6 +299,27 @@ async def test_submit_sends_upload_return_value_as_output(job):
     await job._submit({})
     assert job.output == ('http://torrent.url/',)
 
+@pytest.mark.asyncio
+async def test_submit_sets_info_property_to_current_status(job):
+    infos = [
+        'Logging in',
+        'Logged in',
+        'Uploading',
+        'Uploaded',
+        'Logging out',
+        '',
+    ]
+    def info_cb():
+        assert job.info == infos.pop(0)
+    job.signal.register('logging_in', info_cb)
+    job.signal.register('logged_in', info_cb)
+    job.signal.register('uploading', info_cb)
+    job.signal.register('uploaded', info_cb)
+    job.signal.register('logging_out', info_cb)
+    job.signal.register('logged_out', info_cb)
+    await job._submit({})
+    assert infos == []
+
 
 @pytest.mark.parametrize('attrname', ('jobs_before_upload', 'jobs_after_upload'))
 @pytest.mark.asyncio
