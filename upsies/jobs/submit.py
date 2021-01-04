@@ -56,6 +56,7 @@ class SubmitJob(JobBase):
         self._tracker = tracker
         self._tracker_jobs = tracker_jobs
         self._submit_lock = asyncio.Lock()
+        self._run_jobs_task = None
         self._info = ''
         for signal, message in (('logging_in', 'Logging in'),
                                 ('logged_in', 'Logged in'),
@@ -68,33 +69,53 @@ class SubmitJob(JobBase):
         self.signal.register('finished', lambda: setattr(self, '_info', ''))
         self.signal.register('error', lambda _: setattr(self, '_info', ''))
 
+    def finish(self):
+        for job in self.jobs_before_upload:
+            if not job.is_finished:
+                job.finish()
+        for job in self.jobs_after_upload:
+            if not job.is_finished:
+                job.finish()
+        if self._run_jobs_task:
+            self._run_jobs_task.cancel()
+        super().finish()
+
     async def wait(self):
         async with self._submit_lock:
             if not self.is_finished:
-                # Create post-upload jobs so they can register signals to
-                # connect to pre-upload jobs.
-                self.jobs_after_upload
+                self._run_jobs_task = asyncio.ensure_future(self._run_jobs())
+                try:
+                    await self._run_jobs_task
+                except asyncio.CancelledError:
+                    _log.debug('Submission was cancelled')
+                    pass
+                finally:
+                    self.finish()
+        await super().wait()
 
-                _log.debug('Waiting for jobs before upload: %r', self.jobs_before_upload)
-                await asyncio.gather(*(job.wait() for job in self.jobs_before_upload))
-                names = [job.name for job in self.jobs_before_upload]
-                outputs = [job.output for job in self.jobs_before_upload]
-                metadata = dict(zip(names, outputs))
+    async def _run_jobs(self):
+        # Create post-upload jobs so they can register signals to
+        # connect to pre-upload jobs.
+        self.jobs_after_upload
 
-                # Ensure metadata was generated successfully
-                if all(job.exit_code == 0 for job in self.jobs_before_upload):
-                    _log.debug('Submitting metadata')
-                    await self._submit(metadata)
+        _log.debug('Waiting for jobs before upload: %r', self.jobs_before_upload)
+        await asyncio.gather(*(job.wait() for job in self.jobs_before_upload))
+        names = [job.name for job in self.jobs_before_upload]
+        outputs = [job.output for job in self.jobs_before_upload]
+        metadata = dict(zip(names, outputs))
 
-                    # Run jobs_after_upload only if submission succeeded
-                    if self.output:
-                        for job in self.jobs_after_upload:
-                            _log.debug('Starting %r', job.name)
-                            job.start()
-                        _log.debug('Waiting for jobs after upload: %r', self.jobs_after_upload)
-                        await asyncio.gather(*(job.wait() for job in self.jobs_after_upload))
+        # Ensure metadata was generated successfully
+        if all(job.exit_code == 0 for job in self.jobs_before_upload):
+            _log.debug('Submitting metadata')
+            await self._submit(metadata)
 
-                self.finish()
+            # Run jobs_after_upload only if submission succeeded
+            if self.output:
+                for job in self.jobs_after_upload:
+                    _log.debug('Starting %r', job.name)
+                    job.start()
+                _log.debug('Waiting for jobs after upload: %r', self.jobs_after_upload)
+                await asyncio.gather(*(job.wait() for job in self.jobs_after_upload))
 
     async def _submit(self, metadata):
         _log.debug('%s: Submitting %s', self._tracker.name, metadata.get('torrent'))
