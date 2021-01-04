@@ -91,3 +91,40 @@ async def test_handle_input_sends_torrent_id(make_AddTorrentJob):
     await job._handle_input('foo.torrent')
     assert job.output == ('12345',)
     assert job.errors == ()
+
+@pytest.mark.asyncio
+async def test_handle_input_sets_info_property_on_success(make_AddTorrentJob):
+    infos = [
+        'Adding foo.torrent',
+        '',
+    ]
+
+    def info_cb(_):
+        assert job.info == infos.pop(0)
+
+    job = make_AddTorrentJob()
+    job.signal.register('adding', info_cb)
+    job.signal.register('added', info_cb)
+    job.signal.register('error', info_cb)
+    job.signal.register('finished', info_cb)
+    await job._handle_input('path/to/foo.torrent')
+    assert infos == []
+
+@pytest.mark.asyncio
+async def test_handle_input_sets_info_property_on_failure(make_AddTorrentJob):
+    infos = [
+        'Adding foo.torrent',
+        '',
+    ]
+
+    def info_cb(_):
+        assert job.info == infos.pop(0)
+
+    job = make_AddTorrentJob()
+    job._client.add_torrent.side_effect = errors.TorrentError('No')
+    job.signal.register('adding', info_cb)
+    job.signal.register('added', info_cb)
+    job.signal.register('error', info_cb)
+    job.signal.register('finished', info_cb)
+    await job._handle_input('path/to/foo.torrent')
+    assert infos == []
