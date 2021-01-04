@@ -68,6 +68,29 @@ def test_len(mocker):
     assert len(ri) == 15
 
 
+@pytest.mark.parametrize(
+    argnames=('path', 'exp_params'),
+    argvalues=(
+        ('path/to/The Foo 1984 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('path/to/The Foo S01 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('path/to/The Foo S01E01 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('path/to/The Foo S01E01E02 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('path/to/The Foo S01E01E02E03 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('path/to/The Foo Season 1 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('path/to/The Foo Season1 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('path/to/The Foo Season 1 Episode 1 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('path/to/The Foo Season 1 Episode 1 Episode 2 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('path/to/The Foo Season1 Episode1 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('path/to/The Foo Season1 Episode1 Episode2 foo bar baz.mkv', 'foo bar baz.mkv'),
+    ),
+)
+def test_release_name_params(path, exp_params):
+    for p, exp in ((path, exp_params),
+                   (path.replace(' ', '.'), exp_params.replace(' ', '.'))):
+        info = release_info.ReleaseInfo(p)
+        assert info.release_name_params == exp
+
+
 def assert_info(release_name,
                 type=ReleaseType.unknown, title='', aka='', year='', season='', episode='',
                 edition=[], resolution='', service='', source='',

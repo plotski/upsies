@@ -464,6 +464,26 @@ class ReleaseInfo(collections.abc.MutableMapping):
         _log.debug('Original guess: %r', guess)
         return guess
 
+    @cached_property
+    def release_name_params(self):
+        """
+        Release name without the title and year or season/episode info
+
+        guessit doesn't support some tags like "Hybrid", but we can't just look
+        for "Hybrid" anywhere in the release name because it might be part of
+        the title.
+        """
+        regex = re.compile(r'[ \.](?:'
+                           r'\d{4}|'
+                           r'S\d{2,}(?:E\d{2,})*|'
+                           r'Season[ \.]*\d+(?:[ \.]Episode[ \.]*\d+)*'
+                           r')[ \.]+(.*)$')
+        for name in _file_and_parent(self._path):
+            match = regex.search(name)
+            if match:
+                return match.group(1)
+        return fs.basename(self._path)
+
     def __contains__(self, name):
         return hasattr(self, f'_get_{name}')
 
