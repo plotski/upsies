@@ -103,17 +103,17 @@ class ScreenshotsJob(JobBase):
         if self.is_finished:
             if self.screenshots_total < 0:
                 # Job is finished but _screenshots_process() never sent us
-                # timestamps. That means we're using previously cached output.
+                # timestamps. That means we're either using previously cached
+                # output or the job was cancelled while _screenshots_process()
+                # was still initializing.
                 if self.output:
                     # Assume the cached number of screenshots is what the user
                     # wanted because the output of unsuccessful jobs is not
                     # cached (see JobBase._write_output_cache()).
                     return 0
                 else:
-                    # Caching of empty output should never happen.
-                    raise RuntimeError('ScreenshotJob finished with output from empty cache.')
+                    return 1
             elif len(self.output) == self.screenshots_total:
-                # We created the desired number of screenshots.
                 return 0
             else:
                 return 1

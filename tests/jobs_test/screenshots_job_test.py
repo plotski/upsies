@@ -417,20 +417,20 @@ def test_ScreenshotsJob_handle_error(job):
 
 
 @pytest.mark.parametrize(
-    argnames=('screenshots_total', 'output', 'exp_exit_code', 'exp_exception', 'exp_error'),
+    argnames=('screenshots_total', 'output', 'exp_exit_code'),
     argvalues=(
-        (-1, ('a.jpg', 'b.jpg', 'c.jpg'), 0, None, ''),
-        (-1, (), None, RuntimeError, r'^ScreenshotJob finished with output from empty cache\.$'),
-        (0, (), 0, None, ''),
-        (1, (), 1, None, ''),
-        (3, (), 1, None, ''),
-        (3, ('a.jpg',), 1, None, ''),
-        (3, ('a.jpg', 'b.jpg'), 1, None, ''),
-        (3, ('a.jpg', 'b.jpg', 'c.jpg'), 0, None, ''),
+        (-1, ('a.jpg', 'b.jpg', 'c.jpg'), 0),
+        (-1, (), 1),
+        (0, (), 0),
+        (1, (), 1),
+        (3, (), 1),
+        (3, ('a.jpg',), 1),
+        (3, ('a.jpg', 'b.jpg'), 1),
+        (3, ('a.jpg', 'b.jpg', 'c.jpg'), 0),
     ),
 )
 @pytest.mark.asyncio
-async def test_exit_code(screenshots_total, output, exp_exit_code, exp_exception, exp_error, job):
+async def test_exit_code(screenshots_total, output, exp_exit_code, job):
     assert job.exit_code is None
     for o in output:
         job.send(o)
@@ -438,11 +438,7 @@ async def test_exit_code(screenshots_total, output, exp_exit_code, exp_exception
     job.finish()
     await job.wait()
     assert job.is_finished
-    if exp_exception:
-        with pytest.raises(exp_exception, match=exp_error):
-            job.exit_code
-    else:
-        assert job.exit_code == exp_exit_code
+    assert job.exit_code == exp_exit_code
 
 
 def test_video_file(job):
