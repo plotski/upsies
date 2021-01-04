@@ -6,7 +6,6 @@ from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout import Layout
 from prompt_toolkit.layout.containers import HSplit, Window, to_container
-from prompt_toolkit.layout.dimension import Dimension
 
 from . import style, widgets
 
@@ -27,11 +26,8 @@ class UI:
         self._loop = asyncio.get_event_loop()
         self._loop.set_exception_handler(self._handle_exception)
 
-    _max_width = 120
-
     def _make_app(self):
         self._jobs_container = HSplit(
-            width=Dimension(max=self._max_width),
             # FIXME: Layout does not accept an empty list of children. We add an
             #        empty Window that doesn't display anything that gets
             #        removed automatically when we rebuild
