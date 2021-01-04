@@ -102,3 +102,52 @@ async def test_handle_input_sends_source_path_on_failure(make_CopyTorrentJob, mo
     await job._handle_input(filepath)
     assert job.output == (str(filepath),)
     assert job.errors == (f'Failed to copy {filepath} to {job._destination}: Permission denied',)
+
+@pytest.mark.asyncio
+async def test_handle_input_sets_info_property_on_success(make_CopyTorrentJob, mocker, tmp_path):
+    job = make_CopyTorrentJob(destination='foo')
+
+    filepath = tmp_path / 'foo.torrent'
+    filepath.write_bytes(b'content')
+
+    mocker.patch('shutil.copy2', return_value='destination/path')
+
+    infos = [
+        'Copying foo.torrent',
+        '',
+    ]
+
+    def info_cb(_):
+        assert job.info == infos.pop(0)
+
+    job.signal.register('copying', info_cb)
+    job.signal.register('copied', info_cb)
+    job.signal.register('error', info_cb)
+    job.signal.register('finished', info_cb)
+    await job._handle_input(filepath)
+    assert infos == []
+
+
+@pytest.mark.asyncio
+async def test_handle_input_sets_info_property_on_failure(make_CopyTorrentJob, mocker, tmp_path):
+    job = make_CopyTorrentJob(destination='foo')
+
+    filepath = tmp_path / 'foo.torrent'
+    filepath.write_bytes(b'content')
+
+    mocker.patch('shutil.copy2', side_effect=OSError('No'))
+
+    infos = [
+        'Copying foo.torrent',
+        '',
+    ]
+
+    def info_cb(_):
+        assert job.info == infos.pop(0)
+
+    job.signal.register('copying', info_cb)
+    job.signal.register('copied', info_cb)
+    job.signal.register('error', info_cb)
+    job.signal.register('finished', info_cb)
+    await job._handle_input(filepath)
+    assert infos == []
