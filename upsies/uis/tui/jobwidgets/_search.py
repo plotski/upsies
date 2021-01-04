@@ -22,7 +22,7 @@ class SearchWebDbJobWidget(JobWidgetBase):
                 text=str(self.job.query),
                 on_accepted=self.handle_query,
             ),
-            'search_results' : _SearchResults(width=50),
+            'search_results' : _SearchResults(width=40),
             'summary' : widgets.TextField(
                 style='class:prompt.search.info',
                 width=right_column_width,
@@ -104,12 +104,14 @@ class SearchWebDbJobWidget(JobWidgetBase):
             ]),
             widgets.vspacer,
             VSplit([
-                widgets.VLabel('Results', w['search_results'], style='class:prompt.search.label'),
+                HSplit([
+                    widgets.VLabel('Results', w['search_results'], style='class:prompt.search.label'),
+                    widgets.VLabel('Original Title', w['title_original'], style='class:prompt.search.label'),
+                    widgets.VLabel('Also Known As', w['title_english'], style='class:prompt.search.label'),
+                ]),
                 widgets.hspacer,
                 HSplit([
                     widgets.VLabel('Summary', w['summary'], style='class:prompt.search.label'),
-                    widgets.VLabel('Original Title', w['title_original'], style='class:prompt.search.label'),
-                    widgets.VLabel('Also Known As', w['title_english'], style='class:prompt.search.label'),
                     widgets.VLabel('Keywords', w['keywords'], style='class:prompt.search.label'),
                     widgets.VLabel('Director', w['director'], style='class:prompt.search.label'),
                     widgets.VLabel('Cast', w['cast'], style='class:prompt.search.label'),
