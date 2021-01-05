@@ -226,10 +226,14 @@ class HLabel:
             style=style,
             align=WindowAlign.RIGHT,
         )
-        # The HSplit makes the label non-greedy, i.e. the label itself takes
-        # only one line and the space below is empty with default background
-        # color.
-        self.container = VSplit([HSplit([self.label]), hspacer, content])
+        self.container = VSplit([
+            # The HSplit makes the label non-greedy, i.e. the label itself takes
+            # only one line and the space below is empty with default background
+            # color.
+            HSplit([self.label]),
+            hspacer,
+            content,
+        ])
 
         self._group = group
         if group is not None:
