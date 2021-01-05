@@ -6,15 +6,13 @@ import functools
 import json
 
 from ... import errors
-from .. import LazyModule, ReleaseType, http
+from .. import ReleaseType, html, http
 from . import common
 from .base import WebDbApiBase
 from .imdb import ImdbApi
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
-
-bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 class TvmazeApi(WebDbApiBase):
@@ -131,7 +129,7 @@ class _TvmazeSearchResult(common.SearchResult):
 def _get_summary(show):
     summary = show.get('summary', None)
     if summary:
-        soup = bs4.BeautifulSoup(summary, 'html.parser')
+        soup = html.parse(summary)
         return '\n'.join(paragraph.text for paragraph in soup.find_all('p'))
     else:
         return ''

@@ -6,14 +6,12 @@ import functools
 import re
 
 from ... import errors
-from .. import LazyModule, ReleaseType, http
+from .. import ReleaseType, html, http
 from . import common
 from .base import WebDbApiBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
-
-bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 class TmdbApi(WebDbApiBase):
@@ -38,8 +36,8 @@ class TmdbApi(WebDbApiBase):
         else:
             url = f'{self._url_base}/search'
 
-        html = await http.get(url, params=params, cache=True)
-        soup = bs4.BeautifulSoup(html, features='html.parser')
+        text = await http.get(url, params=params, cache=True)
+        soup = html.parse(text)
 
         # When search for year, unmatching results are included but hidden.
         for tag in soup.find_all('div', class_='hide'):
@@ -51,11 +49,11 @@ class TmdbApi(WebDbApiBase):
 
     async def cast(self, id):
         try:
-            html = await http.get(f'{self._url_base}/{id}', cache=True)
+            text = await http.get(f'{self._url_base}/{id}', cache=True)
         except errors.RequestError:
             return ''
 
-        soup = bs4.BeautifulSoup(html, features='html.parser')
+        soup = html.parse(text)
         cards = soup.select('.people > .card')
         cast = []
         for card in cards:
@@ -70,11 +68,11 @@ class TmdbApi(WebDbApiBase):
 
     async def keywords(self, id):
         try:
-            html = await http.get(f'{self._url_base}/{id}', cache=True)
+            text = await http.get(f'{self._url_base}/{id}', cache=True)
         except errors.RequestError:
             return ''
 
-        soup = bs4.BeautifulSoup(html, features='html.parser')
+        soup = html.parse(text)
         keywords = soup.find(class_='keywords')
         if not keywords:
             return []
@@ -93,11 +91,11 @@ class TmdbApi(WebDbApiBase):
 
     async def summary(self, id):
         try:
-            html = await http.get(f'{self._url_base}/{id}', cache=True)
+            text = await http.get(f'{self._url_base}/{id}', cache=True)
         except errors.RequestError:
             return ''
 
-        soup = bs4.BeautifulSoup(html, features='html.parser')
+        soup = html.parse(text)
         overview = ''.join(soup.find('div', class_='overview').stripped_strings)
         if any(text in overview for text in self._no_overview_texts):
             overview = ''
@@ -116,11 +114,11 @@ class TmdbApi(WebDbApiBase):
 
     async def year(self, id):
         try:
-            html = await http.get(f'{self._url_base}/{id}', cache=True)
+            text = await http.get(f'{self._url_base}/{id}', cache=True)
         except errors.RequestError:
             return ''
 
-        soup = bs4.BeautifulSoup(html, features='html.parser')
+        soup = html.parse(text)
         year = ''.join(soup.find(class_='release_date').stripped_strings).strip('()')
         _log.debug(year)
         if len(year) == 4 and year.isdigit():

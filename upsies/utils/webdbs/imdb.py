@@ -6,14 +6,12 @@ import functools
 import re
 import string
 
-from .. import LazyModule, ReleaseType, http
+from .. import ReleaseType, html, http
 from . import common
 from .base import WebDbApiBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
-
-bs4 = LazyModule(module='bs4', namespace=globals())
 
 
 class ImdbApi(WebDbApiBase):
@@ -29,12 +27,12 @@ class ImdbApi(WebDbApiBase):
         cache_id = (path, tuple(sorted(params.items())))
         if cache_id in self._soup_cache:
             return self._soup_cache[cache_id]
-        html = await http.get(
+        text = await http.get(
             url=f'{self._url_base}/{path}',
             params=params,
             cache=True,
         )
-        self._soup_cache[cache_id] = bs4.BeautifulSoup(html, features='html.parser')
+        self._soup_cache[cache_id] = html.parse(text)
         return self._soup_cache[cache_id]
 
     _title_types = {
