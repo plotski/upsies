@@ -10,7 +10,7 @@ bs4 = LazyModule(module='bs4', namespace=globals())
 
 def parse(string):
     """
-    Return :class:`~BeautifulSoup` instance
+    Return :class:`~.bs4.BeautifulSoup` instance
 
     :param string: HTML document
 
@@ -26,7 +26,7 @@ def dump(html, filepath):
     """
     Write `html` to `filepath` for debugging
 
-    :param html: String or :class:`~BeautifulSoup` instance
+    :param html: String or :class:`~.bs4.BeautifulSoup` instance
     """
     with open(filepath, 'w') as f:
         if isinstance(html, bs4.BeautifulSoup):
