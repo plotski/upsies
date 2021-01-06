@@ -44,6 +44,12 @@ class ReleaseName(collections.abc.Mapping):
         self._guess = ReleaseInfo(self._path)
         self._imdb = webdbs.imdb.ImdbApi()
 
+        # FIXME: Getting metainfo (e.g. resolution) lazily can block for several
+        #        seconds because utils.videos gets the length of every video
+        #        file in a directory to avoid junk. To mitigate this, we're
+        #        getting all the information ASAP.
+        asyncio.get_event_loop().run_in_executor(None, lambda: video.tracks(path))
+
     def __repr__(self):
         return f'{type(self).__name__}({self._path!r})'
 
