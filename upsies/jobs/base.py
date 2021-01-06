@@ -438,7 +438,7 @@ class QueueJobBase(JobBase):
         if enqueue:
             for value in enqueue:
                 self.enqueue(value)
-            self.finalize()
+            self.finish()
 
     def execute(self):
         self._read_queue_task = asyncio.ensure_future(self._read_queue())
@@ -452,6 +452,7 @@ class QueueJobBase(JobBase):
                 break
             else:
                 await self._handle_input(value)
+        self.finish()
 
     @abc.abstractmethod
     async def _handle_input(self, value):
@@ -474,6 +475,7 @@ class QueueJobBase(JobBase):
         """
         if self._read_queue_task:
             self._read_queue_task.cancel()
+        super().finish()
 
     async def wait(self):
         """Wait for internal queue reading task and finish job"""
@@ -482,5 +484,4 @@ class QueueJobBase(JobBase):
                 await self._read_queue_task
             except asyncio.CancelledError:
                 pass
-        super().finish()
         await super().wait()

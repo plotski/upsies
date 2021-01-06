@@ -54,13 +54,13 @@ def test_enqueue_argument_is_empty(mocker, tmp_path):
 def test_enqueue_argument_is_not_empty(mocker, tmp_path):
     mocks = Mock()
     mocker.patch('upsies.jobs.base.QueueJobBase.enqueue', mocks.enqueue)
-    mocker.patch('upsies.jobs.base.QueueJobBase.finalize', mocks.finalize)
+    mocker.patch('upsies.jobs.base.QueueJobBase.finish', mocks.finish)
     FooJob(enqueue=(1, 2, 3), homedir=tmp_path, ignore_cache=False)
     assert mocks.mock_calls == [
         call.enqueue(1),
         call.enqueue(2),
         call.enqueue(3),
-        call.finalize(),
+        call.finish(),
     ]
 
 
@@ -128,22 +128,23 @@ async def test_finalize(qjob):
 
 @pytest.mark.asyncio
 async def test_finish_without_running_read_queue_task(qjob):
-    qjob.finish()
-    assert qjob._read_queue_task is None
     assert not qjob.is_finished
+    qjob.finish()
+    assert qjob.is_finished
 
 @pytest.mark.asyncio
 async def test_finish_with_running_read_queue_task(qjob):
     qjob.execute()
-    qjob.finish()
-    assert qjob._read_queue_task is not None
     assert not qjob.is_finished
+    qjob.finish()
+    assert qjob.is_finished
 
 
 @pytest.mark.asyncio
 async def test_wait_without_running_read_queue_task(qjob):
     assert qjob._read_queue_task is None
     assert not qjob.is_finished
+    asyncio.get_event_loop().call_soon(qjob.finish())
     await qjob.wait()
     assert qjob.is_finished
     assert qjob.errors == ()
@@ -158,15 +159,17 @@ async def test_wait_awaits_read_queue_task(qjob):
     await qjob.wait()
     assert qjob.is_finished
     assert qjob.errors == ()
-    assert qjob._read_queue_task is not None
+    assert qjob._read_queue_task.done()
 
 @pytest.mark.asyncio
 async def test_wait_handles_CancelledError_from_read_queue_task(qjob):
     qjob.execute()
     assert qjob._read_queue_task is not None
+    for i in range(1000):
+        qjob.enqueue(i)
     assert not qjob.is_finished
-    qjob._read_queue_task.cancel()
+    asyncio.get_event_loop().call_soon(qjob.finish())
     await qjob.wait()
     assert qjob.is_finished
     assert qjob.exit_code == 1
-    assert qjob._read_queue_task is not None
+    assert qjob._read_queue_task.done()
