@@ -153,13 +153,10 @@ class UI:
             _log.debug('Waiting for %r to be running', self._app)
             await asyncio.sleep(0)
 
-        # Wait for all jobs to finish, abort on first failed job
-        for jobinfo in self._jobs.values():
-            await jobinfo.job.wait()
-            if jobinfo.job.exit_code != 0:
-                _log.debug('Got exit_code %r from %r: Not waiting for other jobs',
-                           jobinfo.job.exit_code, jobinfo.job.name)
-                break
+        # Wait for all jobs simultaneously so that the first exception raised by
+        # any job.wait() is raised here. We don't need to catch it because
+        # _handle_exception() will take care of it.
+        await asyncio.gather(*(jobinfo.job.wait() for jobinfo in self._jobs.values()))
 
         _log.debug('All jobs terminated successfully')
         self._exit()

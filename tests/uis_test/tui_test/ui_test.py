@@ -171,7 +171,7 @@ def test_exception_is_raised_by_background_coroutine():
     with pytest.raises(RuntimeError, match=r'^This is bad$'):
         ui.run(jobs)
     assert jobs[0].wait.call_args_list == [call()]
-    assert jobs[2].wait.call_args_list == []
+    assert jobs[2].wait.call_args_list == [call()]
     for job in jobs:
         assert job.finish.call_args_list == [call()]
 
@@ -179,15 +179,14 @@ def test_exceptions_are_raised_by_job_start():
     jobs = (
         Mock(wait=AsyncMock()),
         Mock(wait=AsyncMock()),
-        Mock(start=Mock(side_effect=RuntimeError('This is bad'))),
-        Mock(start=Mock(side_effect=RuntimeError('This is also bad'))),
+        Mock(wait=AsyncMock(), start=Mock(side_effect=RuntimeError('This is bad'))),
+        Mock(wait=AsyncMock(), start=Mock(side_effect=RuntimeError('This is also bad'))),
     )
     ui = UI()
     with pytest.raises(RuntimeError, match=r'^This is bad$'):
         ui.run(jobs)
-    assert jobs[0].wait.call_args_list == []
-    assert jobs[1].wait.call_args_list == []
     for job in jobs:
+        assert job.wait.call_args_list == []
         assert job.finish.call_args_list == []
 
 def test_exceptions_are_raised_by_job_wait():
@@ -200,11 +199,8 @@ def test_exceptions_are_raised_by_job_wait():
     ui = UI()
     with pytest.raises(RuntimeError, match=r'^This is bad$'):
         ui.run(jobs)
-    assert jobs[0].wait.call_args_list == [call()]
-    assert jobs[1].wait.call_args_list == [call()]
-    assert jobs[2].wait.call_args_list == []
-    assert jobs[3].wait.call_args_list == []
     for job in jobs:
+        assert job.wait.call_args_list == [call()]
         assert job.finish.call_args_list == [call()]
 
 def test_jobs_return_with_nonzero_exit_code():
@@ -216,9 +212,6 @@ def test_jobs_return_with_nonzero_exit_code():
     )
     ui = UI()
     assert ui.run(jobs) == 123
-    assert jobs[0].wait.call_args_list == [call()]
-    assert jobs[1].wait.call_args_list == [call()]
-    assert jobs[2].wait.call_args_list == []
-    assert jobs[3].wait.call_args_list == []
     for job in jobs:
+        assert job.wait.call_args_list == [call()]
         assert job.finish.call_args_list == [call()]
