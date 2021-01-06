@@ -12,14 +12,14 @@ style = styles.Style([
     ('default',                       ''),
     ('label',                         'bold'),
 
-    ('output',                        'bg:#222 fg:#ddd'),
-    ('error',                         'fg:#f40'),
+    ('output',                        ''),
+    ('error',                         'fg:#f60'),
 
-    ('info',                          'bg:#444 fg:#dd5'),
+    ('info',                          'bg:#222 fg:#dd5'),
     ('info.progressbar',              ''),
     ('info.progressbar.progress',     'reverse'),
 
-    ('prompt',                        'bg:#444 fg:#5dd'),
+    ('prompt',                        'bg:#222 fg:#5dd'),
 
     ('prompt.text',                   ''),
 
