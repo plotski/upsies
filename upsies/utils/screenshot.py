@@ -60,10 +60,10 @@ def create(video_file, timestamp, screenshot_file, overwrite=False):
         _log.debug('Screenshot already exists: %s', screenshot_file)
         return
 
-    videolength = utils.video.length(video_file)
-    if videolength <= utils.timestamp.parse(timestamp):
+    duration = utils.video.duration(video_file)
+    if duration <= utils.timestamp.parse(timestamp):
         raise errors.ScreenshotError(
-            f'Timestamp is after video end ({utils.timestamp.pretty(videolength)}): '
+            f'Timestamp is after video end ({utils.timestamp.pretty(duration)}): '
             + utils.timestamp.pretty(timestamp)
         )
 

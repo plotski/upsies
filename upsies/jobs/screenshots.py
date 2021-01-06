@@ -165,7 +165,7 @@ def _normalize_timestamps(video_file, timestamps, number):
     :raise ValueError: if an item in `timestamps` is invalid
     :raise ContentError: if `video_file` is not a video file
     """
-    total_secs = video.length(video_file)
+    total_secs = video.duration(video_file)
 
     timestamps_pretty = []
     for ts in timestamps:
@@ -180,7 +180,7 @@ def _normalize_timestamps(video_file, timestamps, number):
         # Convert timestamp strings to seconds
         timestamps = sorted(timestamp.parse(ts) for ts in timestamps_pretty)
 
-        # Fractions of total video length
+        # Fractions of total seconds
         positions = [ts / total_secs for ts in timestamps]
 
         # Include start and end of video

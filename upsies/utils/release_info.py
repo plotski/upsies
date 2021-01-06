@@ -8,7 +8,7 @@ import os
 import re
 
 from ..utils import webdbs
-from . import LazyModule, ReleaseType, cached_property, fs, mediainfo
+from . import LazyModule, ReleaseType, cached_property, fs, video
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -259,7 +259,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def resolution(self):
         '''Resolution (e.g. "1080p") or "UNKNOWN_RESOLUTION"'''
-        res = mediainfo.resolution(self._path)
+        res = video.resolution(self._path)
         if res is None:
             res = self._guess.get('resolution') or 'UNKNOWN_RESOLUTION'
         return res
@@ -271,7 +271,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def audio_format(self):
         '''Audio format or "UNKNOWN_AUDIO_FORMAT"'''
-        af = mediainfo.audio_format(self._path)
+        af = video.audio_format(self._path)
         if af is None:
             af = self._guess.get('audio_codec') or 'UNKNOWN_AUDIO_FORMAT'
         return af
@@ -283,7 +283,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def audio_channels(self):
         """Audio channels (e.g. "5.1") or empty string"""
-        ac = mediainfo.audio_channels(self._path)
+        ac = video.audio_channels(self._path)
         if ac is None:
             ac = self._guess.get('audio_channels') or ''
         return ac
@@ -295,7 +295,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def video_format(self):
         '''Video format (or encoder in case of x264/x265/XviD) or "UNKNOWN_VIDEO_FORMAT"'''
-        vf = mediainfo.video_format(self._path)
+        vf = video.video_format(self._path)
         if vf is None:
             vf = self._guess.get('video_codec') or 'UNKNOWN_VIDEO_FORMAT'
         return vf
@@ -627,7 +627,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
             # Guess WEBRip and WEB-DL based on encoder
             if source.lower() == 'web':
-                video_format = mediainfo.video_format(self._path)
+                video_format = video.video_format(self._path)
                 if video_format in ('x264', 'x265'):
                     source = 'WEBRip'
                 elif video_format in ('H.264', 'H.265'):

@@ -29,9 +29,6 @@ class ConfigError(UpsiesError):
 class DependencyError(UpsiesError):
     """Some external tool is missing (e.g. ``mediainfo``)"""
 
-class MediainfoError(UpsiesError):
-    """Getting information from ``mediainfo`` command failed"""
-
 class ContentError(UpsiesError):
     """
     Something is wrong with user-provided content, e.g. no video files in the

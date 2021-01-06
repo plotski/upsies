@@ -227,7 +227,7 @@ source_from_encoder_samples = (
 )
 @pytest.mark.parametrize('source, video_format, exp_source', source_from_encoder_samples)
 def test_source_from_encoder(source, video_format, exp_source, mocker):
-    mocker.patch('upsies.utils.mediainfo.video_format', Mock(return_value=video_format))
+    mocker.patch('upsies.utils.video.video_format', Mock(return_value=video_format))
     release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
     expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984', 'season': '', 'episode': '',
                 'resolution': '1080p', 'service': '', 'source': exp_source,

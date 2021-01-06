@@ -58,7 +58,6 @@ def test_submodules_finds_modules_and_packages():
         importlib.import_module('upsies.utils.html'),
         importlib.import_module('upsies.utils.http'),
         importlib.import_module('upsies.utils.imghosts'),
-        importlib.import_module('upsies.utils.mediainfo'),
         importlib.import_module('upsies.utils.release_info'),
         importlib.import_module('upsies.utils.screenshot'),
         importlib.import_module('upsies.utils.signal'),
