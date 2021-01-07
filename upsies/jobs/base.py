@@ -154,7 +154,7 @@ class JobBase(abc.ABC):
 
         try:
             self._read_output_cache()
-        except Exception:
+        except BaseException:
             self.finish()
             raise
 

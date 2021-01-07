@@ -82,4 +82,4 @@ class ImageHostJob(QueueJobBase):
         self._images_total = int(value)
 
     def set_images_total(self, value):
-        self.images_total = value
+        self.images_total = int(value)
