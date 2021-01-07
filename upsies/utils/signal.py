@@ -13,14 +13,18 @@ class Signal:
 
     def __init__(self, *signals):
         self._signals = {}
+        self._emissions = []
+        self._record_signals = []
         for signal in signals:
             self.add(signal)
 
-    def add(self, signal):
+    def add(self, signal, record=False):
         """
         Create new `signal`
 
         :param hashable signal: Any hashable object
+        :param bool record: Whether emissions of this signal are recorded in
+            :attr:`emissions`
 
         :raise TypeError: if `signal` is not hashable
         :raise RuntimeError: if `signal` has been added previously
@@ -31,6 +35,25 @@ class Signal:
             raise RuntimeError(f'Signal already added: {signal!r}')
         else:
             self._signals[signal] = []
+            if record:
+                self.record(signal)
+
+    @property
+    def signals(self):
+        """Mutable dictionary of signals mapped to a lists of callbacks"""
+        return self._signals
+
+    def record(self, signal):
+        """Record emissions of `signal` in :attr:`emissions`"""
+        if signal not in self._signals:
+            raise ValueError(f'Unknown signal: {signal!r}')
+        else:
+            self._record_signals.append(signal)
+
+    @property
+    def recording(self):
+        """class:`list` of signals that are recorded"""
+        return self._record_signals
 
     def register(self, signal, callback):
         """
@@ -60,8 +83,22 @@ class Signal:
         """
         for callback in self._signals[str(signal)]:
             callback(*args, **kwargs)
+        if signal in self._record_signals:
+            self._emissions.append((signal, {'args': args, 'kwargs': kwargs}))
 
     @property
-    def signals(self):
-        """Mutable dictionary of signals mapped to a lists of callbacks"""
-        return self._signals
+    def emissions(self):
+        """
+        Sequence of recorded :meth:`emit` calls
+
+        Each call is stored as a tuple like this::
+
+            (<signal>, {"args": <positional arguments>,
+                        "kwargs": <keyword arguments>})
+        """
+        return tuple(self._emissions)
+
+    def replay(self, emissions):
+        """:meth:`emit` previously recorded :attr:`emissions`"""
+        for signal, payload in emissions:
+            self.emit(signal, *payload['args'], **payload['kwargs'])

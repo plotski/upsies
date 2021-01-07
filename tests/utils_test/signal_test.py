@@ -23,12 +23,28 @@ def test_adding_duplicate_signal():
 def test_adding_adds_signal():
     s = Signal()
     assert s.signals == {}
+    assert s._record_signals == []
     s.add('foo')
     assert s.signals == {'foo': []}
-    s.add('bar')
+    assert s._record_signals == []
+    s.add('bar', record=True)
     assert s.signals == {'foo': [], 'bar': []}
-    s.add('baz')
+    assert s._record_signals == ['bar']
+    s.add('baz', record=False)
     assert s.signals == {'foo': [], 'bar': [], 'baz': []}
+    assert s._record_signals == ['bar']
+
+
+def test_record():
+    s = Signal('foo', 'bar')
+    assert s.recording == []
+    s.record('foo')
+    assert s.recording == ['foo']
+    s.record('bar')
+    assert s.recording == ['foo', 'bar']
+    with pytest.raises(ValueError, match=r"^Unknown signal: 'baz'$"):
+        s.record('baz')
+    assert s.recording == ['foo', 'bar']
 
 
 def test_registering_for_unknown_signal():
@@ -84,4 +100,42 @@ def test_emit_to_multiple_callbacks(args, kwargs):
         call.d(),
         call.e(),
         call.f(),
+    ]
+
+def test_emit_records_call():
+    s = Signal()
+    s.add('foo', record=True)
+    s.add('bar', record=True)
+    s.add('baz', record=False)
+    assert s.emissions == ()
+    s.emit('foo', 123)
+    s.emit('bar', 'hello', 'world')
+    s.emit('foo', 'and', this='that')
+    s.emit('baz', 0)
+    s.emit('bar', four=56)
+    assert s.emissions == (
+        ('foo', {'args': (123,), 'kwargs': {}}),
+        ('bar', {'args': ('hello', 'world'), 'kwargs': {}}),
+        ('foo', {'args': ('and',), 'kwargs': {'this': 'that'}}),
+        ('bar', {'args': (), 'kwargs': {'four': 56}}),
+    )
+
+def test_replay_emits():
+    emissions = (
+        ('foo', {'args': (123,), 'kwargs': {}}),
+        ('bar', {'args': ('hello', 'world'), 'kwargs': {}}),
+        ('foo', {'args': ('and',), 'kwargs': {'this': 'that'}}),
+        ('bar', {'args': (), 'kwargs': {'four': 56}}),
+    )
+    s = Signal('foo', 'bar', 'baz')
+    cb = Mock()
+    s.register('foo', cb.foo)
+    s.register('bar', cb.bar)
+    s.register('baz', cb.baz)
+    s.replay(emissions)
+    assert cb.mock_calls == [
+        call.foo(123),
+        call.bar('hello', 'world'),
+        call.foo('and', this='that'),
+        call.bar(four=56),
     ]
