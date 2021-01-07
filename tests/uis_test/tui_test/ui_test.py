@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from types import SimpleNamespace
 from unittest.mock import Mock, call
 
@@ -197,8 +198,12 @@ def test_exceptions_are_raised_by_job_wait():
         Mock(wait=AsyncMock(side_effect=RuntimeError('This is also bad'))),
     )
     ui = UI()
-    with pytest.raises(RuntimeError, match=r'^This is bad$'):
-        ui.run(jobs)
+    if sys.version_info >= (3, 7, 0):
+        with pytest.raises(RuntimeError, match=r'^This is bad$'):
+            ui.run(jobs)
+    else:
+        with pytest.raises(RuntimeError, match=r'^This is also bad$'):
+            ui.run(jobs)
     for job in jobs:
         assert job.wait.call_args_list == [call()]
         assert job.finish.call_args_list == [call()]
