@@ -74,12 +74,12 @@ class SubmitJob(JobBase):
         self.signal.register('error', lambda _: setattr(self, '_info', ''))
 
     def finish(self):
-        for job in self.jobs_before_upload:
-            if not job.is_finished:
-                job.finish()
-        for job in self.jobs_after_upload:
-            if not job.is_finished:
-                job.finish()
+        # Do not finish any other jobs here. This job might finish immediately
+        # with cached output while other jobs are still running. For example,
+        # after running "upsies submit ..." the user should be able to run the
+        # same command again with "--add-to ..." appended and it shouldn't
+        # submit the torrent again and it shouldn't finish the "--add-to ..."
+        # job prematurely.
         if self._run_jobs_task:
             self._run_jobs_task.cancel()
         super().finish()
