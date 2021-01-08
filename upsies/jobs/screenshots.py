@@ -53,7 +53,7 @@ class ScreenshotsJob(JobBase):
         self._video_file = ''
         self._timestamps = ()
         self.signal.add('video_file')
-        self.signal.add('timestamps')
+        self.signal.add('timestamps', record=True)
         self._screenshots_process = daemon.DaemonProcess(
             name=self.name,
             target=_screenshots_process,
