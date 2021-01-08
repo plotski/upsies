@@ -400,7 +400,7 @@ class JobBase(abc.ABC):
 
     def _cache_data_as_string(self, value):
         if isinstance(value, collections.abc.Mapping):
-            return ','.join((f'{k}-{self._cache_data_as_string(v)}' for k, v in value.items()))
+            return ','.join((f'{k}={self._cache_data_as_string(v)}' for k, v in value.items()))
 
         elif isinstance(value, collections.abc.Iterable) and not isinstance(value, str):
             return ','.join((self._cache_data_as_string(v) for v in value))
