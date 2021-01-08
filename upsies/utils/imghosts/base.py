@@ -29,22 +29,24 @@ class ImageHostBase(abc.ABC):
     def name(self):
         """Name of the image hosting service"""
 
-    async def upload(self, image_path, force=False):
+    async def upload(self, image_path, cache=True):
         """
         Upload image to gallery
 
         :param str image_path: Path to image file
-        :param bool force: Whether to ignore cached URL from previous upload
+        :param bool cache: Whether to attempt to get the image URL from cache or
+            cache it
 
         :raise RequestError: if the upload fails
 
         :return: :class:`~.imghost.common.UploadedImage`
         """
-        info = self._get_info_from_cache(image_path) if not force else {}
+        info = self._get_info_from_cache(image_path) if cache else {}
         if not info:
             info = await self._upload(image_path)
             _log.debug('Uploaded %r: %r', image_path, info)
-            self._store_info_to_cache(image_path, info)
+            if cache:
+                self._store_info_to_cache(image_path, info)
         if 'url' not in info:
             raise RuntimeError(f'Missing "url" key in {info}')
         return common.UploadedImage(**info)

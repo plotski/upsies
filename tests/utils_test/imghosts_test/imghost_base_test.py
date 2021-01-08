@@ -84,7 +84,7 @@ def make_TestImageHost(**kwargs):
 )
 @pytest.mark.parametrize('image_dir', (None, 'some/relative/path', '/absolute/path'))
 @patch('upsies.utils.fs.tmpdir')
-def test_cache_file_with_default_cache_dir(tmpdir_mock, image_dir, cache_dir, exp_cache_dir):
+def test_cache_file_uses_cache_dir_argument(tmpdir_mock, image_dir, cache_dir, exp_cache_dir):
     tmpdir_mock.return_value = exp_cache_dir
     imghost = make_TestImageHost(cache_dir=cache_dir)
     image_name = 'foo.png'
@@ -153,6 +153,11 @@ def test_get_info_from_cache_succeeds(tmp_path):
     assert info == {'this': 'and that'}
     assert os.path.exists(cache_file)
 
+def test_get_info_from_cache_with_nonexisting_cache_file(tmp_path):
+    imghost = make_TestImageHost(cache_dir=tmp_path)
+    info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
+    assert info is None
+
 def test_get_info_from_cache_fails_to_read(tmp_path):
     imghost = make_TestImageHost(cache_dir=tmp_path)
     cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
@@ -179,7 +184,7 @@ def test_get_info_from_cache_fails_to_decode_json(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_upload_gets_info_from_upload():
+async def test_upload_gets_info_from_upload_request():
     ih = make_TestImageHost(mock_cache=True)
     ih._get_info_from_cache_mock.return_value = None
     ih._upload_mock.return_value = {
@@ -213,28 +218,6 @@ async def test_upload_gets_info_from_cache():
     assert image.more == 'info'
 
 @pytest.mark.asyncio
-async def test_upload_ignores_cache():
-    ih = make_TestImageHost(mock_cache=True)
-    ih._get_info_from_cache_mock.return_value = {
-        'url': 'http://foo.bar',
-        'more': 'info',
-    }
-    ih._upload_mock.return_value = {
-        'url': 'http://baz.png',
-        'more': 'other info',
-    }
-    image = await ih.upload('path/to/foo.png', force=True)
-    assert ih._get_info_from_cache_mock.call_args_list == []
-    assert ih._upload_mock.call_args_list == [call('path/to/foo.png')]
-    assert ih._store_info_to_cache_mock.call_args_list == [call(
-        'path/to/foo.png',
-        {'url': 'http://baz.png', 'more': 'other info'},
-    )]
-    assert isinstance(image, imghosts.UploadedImage)
-    assert image == 'http://baz.png'
-    assert image.more == 'other info'
-
-@pytest.mark.asyncio
 async def test_upload_is_missing_url():
     ih = make_TestImageHost(mock_cache=True)
     ih._get_info_from_cache_mock.return_value = None
@@ -245,3 +228,22 @@ async def test_upload_is_missing_url():
     info_str = repr(ih._upload_mock.return_value)
     with pytest.raises(Exception, match=rf'^Missing "url" key in {re.escape(info_str)}$'):
         await ih.upload('path/to/foo.png')
+
+@pytest.mark.asyncio
+async def test_upload_with_cache_set_to_False():
+    ih = make_TestImageHost(mock_cache=True)
+    ih._get_info_from_cache_mock.return_value = {
+        'url': 'http://foo.bar',
+        'more': 'info',
+    }
+    ih._upload_mock.return_value = {
+        'url': 'http://baz.png',
+        'more': 'other info',
+    }
+    image = await ih.upload('path/to/foo.png', cache=False)
+    assert ih._get_info_from_cache_mock.call_args_list == []
+    assert ih._upload_mock.call_args_list == [call('path/to/foo.png')]
+    assert ih._store_info_to_cache_mock.call_args_list == []
+    assert isinstance(image, imghosts.UploadedImage)
+    assert image == 'http://baz.png'
+    assert image.more == 'other info'

@@ -51,7 +51,7 @@ class ImageHostJob(QueueJobBase):
 
     async def _handle_input(self, image_path):
         try:
-            info = await self._imghost.upload(image_path, force=self.ignore_cache)
+            info = await self._imghost.upload(image_path, cache=not self.ignore_cache)
         except errors.RequestError as e:
             self.error(e)
         else:
