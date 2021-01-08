@@ -103,6 +103,21 @@ def test_torrent_process_cancels_when_terminator_is_in_input_queue(mocker, queue
     assert (MsgType.info, 9) not in info
 
 
+def test_CreateTorrentJob_cache_id(tmp_path):
+    job = CreateTorrentJob(
+        homedir=tmp_path,
+        ignore_cache=False,
+        content_path='path/to/foo',
+        tracker_name='ASDF',
+        tracker_config={
+            'announce' : 'http://foo.bar',
+            'source'   : 'AsdF',
+            'exclude'  : ('a', 'b'),
+        },
+    )
+    assert job.cache_id == 'ASDF'
+
+
 @patch('upsies.jobs.torrent._torrent_process')
 def test_CreateTorrentJob_initialize_sets_variables(torrent_process_mock, tmp_path):
     ctj = CreateTorrentJob(

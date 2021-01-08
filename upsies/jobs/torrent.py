@@ -35,8 +35,14 @@ class CreateTorrentJob(base.JobBase):
     name = 'torrent'
     label = 'Torrent'
 
+    @property
+    def cache_id(self):
+        """Use tracker name for cache ID"""
+        return self._tracker_name
+
     def initialize(self, *, content_path, tracker_name, tracker_config):
         self._content_path = content_path
+        self._tracker_name = tracker_name
         self._torrent_path = os.path.join(
             self.homedir,
             f'{fs.basename(content_path)}.{tracker_name.lower()}.torrent',
