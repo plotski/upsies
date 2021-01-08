@@ -43,9 +43,9 @@ async def make_AddTorrentJob(tmp_path, client):
     return make_AddTorrentJob
 
 
-def test_cache_file_is_None(make_AddTorrentJob):
+def test_cache_id(make_AddTorrentJob):
     job = make_AddTorrentJob()
-    assert job.cache_file is None
+    assert job.cache_id is None
 
 
 @pytest.mark.asyncio

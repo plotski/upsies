@@ -40,9 +40,9 @@ async def make_ImageHostJob(tmp_path, imghost):
     return make_ImageHostJob
 
 
-def test_cache_file_is_None(make_ImageHostJob):
+def test_cache_id(make_ImageHostJob):
     job = make_ImageHostJob(images_total=1)
-    assert job.cache_file is None
+    assert job.cache_id is None
 
 
 def test_initialize_is_called_with_enqueue_and_images_total(make_ImageHostJob):

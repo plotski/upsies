@@ -143,7 +143,7 @@ class AddTorrentJob(base.QueueJobBase):
 
     name = 'add-torrent'
     label = 'Add Torrent'
-    cache_file = None
+    cache_id = None  # Don't cache output
 
     def initialize(self, *, client, download_path=None, enqueue=()):
         assert isinstance(client, btclients.ClientApiBase), f'Not a ClientApiBase: {client!r}'
@@ -209,7 +209,7 @@ class CopyTorrentJob(base.QueueJobBase):
 
     name = 'copy-torrent'
     label = 'Copy Torrent'
-    cache_file = None
+    cache_id = None  # Don't cache output
 
     def initialize(self, *, destination, enqueue=()):
         self._destination = None if not destination else str(destination)

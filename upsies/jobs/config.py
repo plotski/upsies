@@ -23,7 +23,7 @@ class SetJob(JobBase):
     name = 'set'
     label = 'Set'
     hidden = True
-    cache_file = None
+    cache_id = None  # Don't cache output
 
     def initialize(self, *, config, option=None, value='', reset=None):
         try:

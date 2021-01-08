@@ -33,7 +33,7 @@ class ImageHostJob(QueueJobBase):
 
     # Don't cache output. This should not be a problem because ImageHostBase
     # implements caching.
-    cache_file = None
+    cache_id = None
 
     def initialize(self, *, imghost, enqueue=(), images_total=0):
         assert isinstance(imghost, ImageHostBase), f'Not an ImageHostBase: {imghost!r}'

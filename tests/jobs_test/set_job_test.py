@@ -22,9 +22,9 @@ def config_mock(dct):
     )
 
 
-def test_cache_file():
+def test_cache_id():
     job = SetJob(config=config_mock({'foo': 'bar'}))
-    assert job.cache_file is None
+    assert job.cache_id is None
 
 
 def test_output_is_hidden():
