@@ -117,6 +117,9 @@ class JobBase(abc.ABC):
         self._errors = []
         self._output = []
         self._signal = signal.Signal('output', 'error', 'finished')
+        self._signal.register('output', lambda output: self._output.append(str(output)))
+        self._signal.register('error', lambda error: self._errors.append(error))
+        self._signal.record('output')
         self._finished_event = asyncio.Event()
         self._kwargs = kwargs
         self.initialize(**kwargs)
@@ -127,7 +130,6 @@ class JobBase(abc.ABC):
 
         This method should handle its arguments and return quickly.
         """
-        pass
 
     def execute(self):
         """
@@ -135,7 +137,6 @@ class JobBase(abc.ABC):
 
         This method must not block.
         """
-        pass
 
     def start(self):
         """
@@ -153,15 +154,13 @@ class JobBase(abc.ABC):
             self._is_started = True
 
         try:
-            self._read_output_cache()
+            cache_was_read = self._read_cache()
         except BaseException:
             self.finish()
             raise
 
-        if self.output:
+        if cache_was_read:
             _log.debug('Job was already done previously: %r', self)
-            for output in self.output:
-                self.signal.emit('output', output)
             self.finish()
         else:
             _log.debug('Executing %r', self)
@@ -207,7 +206,7 @@ class JobBase(abc.ABC):
         if not self.is_finished:
             self._finished_event.set()
             self.signal.emit('finished')
-            self._write_output_cache()
+            self._write_cache()
 
     @property
     def is_finished(self):
@@ -240,9 +239,7 @@ class JobBase(abc.ABC):
         """Append `output` to :attr:`output` and emit ``output`` signal"""
         if not self.is_finished:
             if output:
-                output_str = str(output)
-                self._output.append(output_str)
-                self.signal.emit('output', output_str)
+                self.signal.emit('output', str(output))
 
     @property
     def errors(self):
@@ -262,7 +259,6 @@ class JobBase(abc.ABC):
             `error`
         """
         if not self.is_finished:
-            self._errors.append(error)
             if finish:
                 self.finish()
             self.signal.emit('error', error)
@@ -284,7 +280,7 @@ class JobBase(abc.ABC):
             self._exception = exception
             self.finish()
 
-    def _write_output_cache(self):
+    def _write_cache(self):
         """
         Store :attr:`output` in :attr:`cache_file`
 
@@ -295,42 +291,39 @@ class JobBase(abc.ABC):
             :attr:`cache_file` is not writable
         """
         if self.output and self.exit_code == 0 and self.cache_file:
+            emissions_string = json.dumps(self.signal.emissions, indent=4)
             try:
-                output_string = json.dumps(self.output)
-            except (ValueError, TypeError) as e:
-                raise RuntimeError(f'Unable to serialize JSON: {self.output!r}: {e}')
-            else:
-                try:
-                    with open(self.cache_file, 'w') as f:
-                        f.write(output_string)
-                        f.write('\n')
-                except OSError as e:
-                    if e.strerror:
-                        raise RuntimeError(f'Unable to write cache {self.cache_file}: {e.strerror}')
-                    else:
-                        raise RuntimeError(f'Unable to write cache {self.cache_file}: {e}')
+                with open(self.cache_file, 'w') as f:
+                    f.write(emissions_string)
+                    f.write('\n')
+            except OSError as e:
+                if e.strerror:
+                    raise RuntimeError(f'Unable to write cache {self.cache_file}: {e.strerror}')
+                else:
+                    raise RuntimeError(f'Unable to write cache {self.cache_file}: {e}')
 
-    def _read_output_cache(self):
+    def _read_cache(self):
         """
         Set :attr:`output` to data stored in :attr:`cache_file`
 
-        :raise RuntimeError: if :attr:`cache_file` exists and is unreadable or
-            unparsable
+        :raise RuntimeError: if :attr:`cache_file` exists and is unreadable
+
+        :return: `True` if cache file was read, `False` otherwise
         """
         if not self._ignore_cache and self.cache_file and os.path.exists(self.cache_file):
             try:
                 with open(self.cache_file, 'r') as f:
-                    content = f.read()
+                    emissions_string = f.read()
             except OSError as e:
                 if e.strerror:
                     raise RuntimeError(f'Unable to read cache {self.cache_file}: {e.strerror}')
                 else:
                     raise RuntimeError(f'Unable to read cache {self.cache_file}: {e}')
             else:
-                try:
-                    self._output = json.loads(content)
-                except (ValueError, TypeError) as e:
-                    raise RuntimeError(f'Unable to decode JSON: {content!r}: {e}')
+                emissions = json.loads(emissions_string)
+                self.signal.replay(emissions)
+                return True
+        return False
 
     @cached_property
     def cache_directory(self):
