@@ -339,7 +339,7 @@ class JobBase(abc.ABC):
 
         The directory is created if it doesn't exist.
         """
-        path = os.path.join(self.homedir, '.output')
+        path = os.path.join(self.homedir, '.cache')
         if not os.path.exists(path):
             os.mkdir(path)
         return path
