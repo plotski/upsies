@@ -81,7 +81,7 @@ class Signal:
 
         Any other arguments are passed on to the callbacks.
         """
-        for callback in self._signals[str(signal)]:
+        for callback in self._signals[signal]:
             callback(*args, **kwargs)
         if signal in self._record_signals:
             self._emissions.append((signal, {'args': args, 'kwargs': kwargs}))
