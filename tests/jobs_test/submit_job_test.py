@@ -80,8 +80,8 @@ def btclient():
     return TestClient()
 
 
-def test_cache_file(job):
-    assert job.cache_file is None
+def test_cache_id(job):
+    assert job.cache_id == job._tracker.name
 
 
 @pytest.mark.asyncio

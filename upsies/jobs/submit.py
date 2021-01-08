@@ -48,7 +48,11 @@ class SubmitJob(JobBase):
 
     name = 'submit'
     label = 'Submit'
-    cache_file = None
+
+    @property
+    def cache_id(self):
+        """Use tracker name for cache ID"""
+        return self.kwargs['tracker'].name
 
     def initialize(self, tracker, tracker_jobs):
         assert isinstance(tracker, TrackerBase), f'Not a TrackerBase: {tracker!r}'
