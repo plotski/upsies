@@ -149,7 +149,6 @@ class TrackerJobsBase(abc.ABC):
             add_torrent_job = _jobs.torrent.AddTorrentJob(
                 client=self.bittorrent_client,
                 download_path=fs.dirname(self.content_path),
-                autostart=False,
                 **self.common_job_args,
             )
             # Pass CreateTorrentJob output to AddTorrentJob input.
@@ -164,7 +163,6 @@ class TrackerJobsBase(abc.ABC):
         if self.torrent_destination:
             copy_torrent_job = _jobs.torrent.CopyTorrentJob(
                 destination=self.torrent_destination,
-                autostart=False,
                 **self.common_job_args,
             )
             # Pass CreateTorrentJob output to CopyTorrentJob input.

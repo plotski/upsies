@@ -185,10 +185,6 @@ async def test_wait_does_everything_in_correct_order(job, mocker):
         'before3': 'before3 output',
     })
     assert set((str(call) for call in mocks.mock_calls[4:6])) == {
-        str(call.after1.start()),
-        str(call.after2.start()),
-    }
-    assert set((str(call) for call in mocks.mock_calls[6:8])) == {
         str(call.after1.wait()),
         str(call.after2.wait()),
     }

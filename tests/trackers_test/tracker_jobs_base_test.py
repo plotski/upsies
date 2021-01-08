@@ -97,7 +97,6 @@ def test_add_torrent_job_with_add_to_client_argument(mocker):
         call(
             client=bittorrent_client_mock,
             download_path='path/to/content/dir',
-            autostart=False,
             homedir='path/to/home',
             ignore_cache='mock bool',
         ),
@@ -132,7 +131,6 @@ def test_copy_torrent_job_with_torrent_destination_argument(mocker):
     assert CopyTorrentJob_mock.call_args_list == [
         call(
             destination='path/to/torrent/destination',
-            autostart=False,
             homedir='path/to/home',
             ignore_cache='mock bool',
         ),

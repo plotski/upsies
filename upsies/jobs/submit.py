@@ -115,9 +115,6 @@ class SubmitJob(JobBase):
 
             # Run jobs_after_upload only if submission succeeded
             if self.output:
-                for job in self.jobs_after_upload:
-                    _log.debug('Starting %r', job.name)
-                    job.start()
                 _log.debug('Waiting for jobs after upload: %r', self.jobs_after_upload)
                 await asyncio.gather(*(job.wait() for job in self.jobs_after_upload))
 
