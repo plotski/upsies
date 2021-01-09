@@ -37,7 +37,8 @@ class ImageHostJob(QueueJobBase):
 
     def initialize(self, *, imghost, enqueue=(), images_total=0):
         assert isinstance(imghost, ImageHostBase), f'Not an ImageHostBase: {imghost!r}'
-
+        self._imghost = imghost
+        self._images_uploaded = 0
         if enqueue and images_total:
             raise RuntimeError('You must not give both arguments "enqueue" and "images_total".')
         else:
@@ -45,9 +46,6 @@ class ImageHostJob(QueueJobBase):
                 self.images_total = images_total
             else:
                 self.images_total = len(enqueue)
-
-        self._imghost = imghost
-        self._images_uploaded = 0
 
     async def _handle_input(self, image_path):
         try:
