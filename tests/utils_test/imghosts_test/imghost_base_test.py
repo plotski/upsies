@@ -253,7 +253,10 @@ async def test_upload_with_cache_set_to_False():
     image = await ih.upload('path/to/foo.png', cache=False)
     assert ih._get_info_from_cache_mock.call_args_list == []
     assert ih._upload_mock.call_args_list == [call('path/to/foo.png')]
-    assert ih._store_info_to_cache_mock.call_args_list == []
+    assert ih._store_info_to_cache_mock.call_args_list == [call(
+        'path/to/foo.png',
+        {'url': 'http://baz.png', 'more': 'other info'},
+    )]
     assert isinstance(image, imghosts.UploadedImage)
     assert image == 'http://baz.png'
     assert image.more == 'other info'
