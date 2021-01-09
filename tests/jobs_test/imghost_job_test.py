@@ -59,6 +59,7 @@ def test_initialize_is_called_without_enqueue_and_images_total(make_ImageHostJob
 async def test_initialize_is_called_with_enqueue(make_ImageHostJob, mocker):
     job = make_ImageHostJob(enqueue=('a', 'b', 'c'))
     assert job.images_total == 3
+    job.execute()
     await job.wait()
     assert job.is_finished
 
