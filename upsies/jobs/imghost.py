@@ -31,8 +31,8 @@ class ImageHostJob(QueueJobBase):
     name = 'imghost'
     label = 'Image URLs'
 
-    # Don't cache output. This should not be a problem because ImageHostBase
-    # implements caching.
+    # Don't cache output and rely on caching in ImageHostBase. Otherwise, a
+    # single failed/cancelled upload would throw away all the gathered URLs.
     cache_id = None
 
     def initialize(self, *, imghost, enqueue=(), images_total=0):
