@@ -165,7 +165,6 @@ class JobBase(abc.ABC):
             raise
 
         if cache_was_read:
-            _log.debug('Job was already done previously: %r', self)
             self.finish()
         else:
             _log.debug('Executing %r', self)
@@ -325,6 +324,7 @@ class JobBase(abc.ABC):
                     raise RuntimeError(f'Unable to read cache {self.cache_file}: {e}')
             else:
                 emissions = json.loads(emissions_string)
+                _log.debug('%s: Replaying cached signals: %r', self.name, emissions)
                 self.signal.replay(emissions)
                 return True
         return False
