@@ -22,3 +22,5 @@ def test_UploadedImage_repr():
     )
     assert repr(image) == ("UploadedImage('http://url.to/image.jpg', "
                            "more_info='foo', also_this='bar')")
+    image = common.UploadedImage('http://url.to/image.jpg')
+    assert repr(image) == "UploadedImage('http://url.to/image.jpg')"

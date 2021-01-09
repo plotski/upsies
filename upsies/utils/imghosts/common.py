@@ -26,4 +26,7 @@ class UploadedImage(str):
 
     def __repr__(self):
         kwargs = ', '.join(f'{k}={repr(v)}' for k, v in self._info.items())
-        return f'{type(self).__name__}({repr(str(self))}, {kwargs})'
+        if kwargs:
+            return f'{type(self).__name__}({repr(str(self))}, {kwargs})'
+        else:
+            return f'{type(self).__name__}({repr(str(self))})'
