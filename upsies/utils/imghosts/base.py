@@ -62,11 +62,11 @@ class ImageHostBase(abc.ABC):
         """
 
     def _get_info_from_cache(self, image_path):
-        cache_path = self._cache_file(image_path)
-        if os.path.exists(cache_path):
-            _log.debug('Already uploaded: %s', cache_path)
+        cache_file = self._cache_file(image_path)
+        if os.path.exists(cache_file):
+            _log.debug('Already uploaded: %s', cache_file)
             try:
-                with open(cache_path, 'r') as f:
+                with open(cache_file, 'r') as f:
                     return json.loads(f.read())
             except (OSError, ValueError):
                 # We'll overwrite the corrupted cache file later
