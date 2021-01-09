@@ -41,7 +41,7 @@ def assert_dir_usable(path):
 
 @functools.lru_cache(maxsize=None)
 def tmpdir():
-    """Return temporary directory path in /tmp/ or similar"""
+    """Return path to existing temporary directory in /tmp/ or similar location"""
     tmpdir_ = tempfile.mkdtemp()
     parent_path = os.path.dirname(tmpdir_)
     tmpdir = os.path.join(parent_path, __project_name__)
@@ -57,7 +57,7 @@ def tmpdir():
 @functools.lru_cache(maxsize=None)
 def projectdir(content_path):
     """
-    Return path to existing directory in which jobs put their files and output
+    Return path to existing directory in which jobs put their files and cache
 
     :param str content_path: Path to torrent content
 
