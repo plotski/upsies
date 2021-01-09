@@ -194,7 +194,6 @@ class add_torrent(CommandBase):
     def jobs(self):
         return (
             _jobs.torrent.AddTorrentJob(
-                homedir=fs.tmpdir(),
                 ignore_cache=self.args.ignore_cache,
                 client=btclients.client(
                     name=self.args.CLIENT,
@@ -262,7 +261,6 @@ class upload_images(CommandBase):
     def jobs(self):
         return (
             _jobs.imghost.ImageHostJob(
-                homedir=fs.tmpdir(),
                 ignore_cache=self.args.ignore_cache,
                 imghost=imghosts.imghost(
                     name=self.args.IMAGEHOST,
