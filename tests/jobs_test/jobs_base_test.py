@@ -19,14 +19,12 @@ class FooJob(JobBase):
     def initialize(self, foo=None, bar=None):
         assert self.name == 'foo'
         assert self.label == 'Foo'
-        assert os.path.isdir(self.homedir)
         assert self.output == ()
         self.initialize_was_called = True
 
     def execute(self):
         assert self.name == 'foo'
         assert self.label == 'Foo'
-        assert os.path.isdir(self.homedir)
         assert self.output == ()
         self.execute_was_called = True
 
@@ -434,8 +432,15 @@ def test_read_cache_replays_signal_emissions(job, mocker):
     assert replay_mock.call_args_list == [call('emissions mock')]
 
 
-def test_cache_directory(job):
-    assert job.cache_directory == os.path.join(job.homedir, '.cache')
+def test_cache_directory_with_default_homedir(job, mocker):
+    tmpdir_mock = mocker.patch('upsies.utils.fs.tmpdir')
+    job = FooJob(ignore_cache=False)
+    assert job.cache_directory is tmpdir_mock.return_value
+
+def test_cache_directory_with_custom_homedir(job, mocker, tmp_path):
+    tmpdir_mock = mocker.patch('upsies.utils.fs.tmpdir')
+    job = FooJob(homedir=tmp_path, ignore_cache=False)
+    assert job.cache_directory == os.path.join(tmp_path, '.cache')
     assert os.path.exists(job.cache_directory)
     assert os.path.isdir(job.cache_directory)
     with open(os.path.join(job.cache_directory, 'foo'), 'w') as f:

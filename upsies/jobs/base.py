@@ -106,9 +106,14 @@ class JobBase(abc.ABC):
         """
         return self._signal
 
-    def __init__(self, *, homedir='.', ignore_cache=False, hidden=False,
+    def __init__(self, *, homedir=None, ignore_cache=False, hidden=False,
                  autostart=True, **kwargs):
-        self._homedir = str(homedir)
+        if homedir:
+            self._homedir = str(homedir)
+            self._cache_directory = os.path.join(self._homedir, '.cache')
+        else:
+            self._homedir = fs.tmpdir()
+            self._cache_directory = self.homedir
         self._ignore_cache = bool(ignore_cache)
         self._hidden = bool(hidden)
         self._autostart = bool(autostart)
@@ -326,15 +331,10 @@ class JobBase(abc.ABC):
 
     @cached_property
     def cache_directory(self):
-        """
-        Path to directory that stores cache files
-
-        The directory is created if it doesn't exist.
-        """
-        path = os.path.join(self.homedir, '.cache')
-        if not os.path.exists(path):
-            os.mkdir(path)
-        return path
+        """Path to existing directory that stores cache files"""
+        if not os.path.exists(self._cache_directory):
+            os.mkdir(self._cache_directory)
+        return self._cache_directory
 
     @cached_property
     def cache_file(self):
