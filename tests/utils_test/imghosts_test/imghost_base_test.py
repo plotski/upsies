@@ -75,6 +75,16 @@ def make_TestImageHost(**kwargs):
     return TestImageHost(**kwargs)
 
 
+@patch('upsies.utils.fs.tmpdir')
+def test_cache_directory_property(tmpdir_mock, tmp_path):
+    imghost = make_TestImageHost()
+    assert imghost.cache_directory is tmpdir_mock.return_value
+    imghost = make_TestImageHost(cache_directory=tmp_path)
+    assert imghost.cache_directory is tmp_path
+    imghost.cache_directory = 'path/to/foo'
+    assert imghost.cache_directory == 'path/to/foo'
+
+
 @pytest.mark.parametrize(
     argnames=('cache_dir', 'exp_cache_dir'),
     argvalues=(
@@ -86,7 +96,7 @@ def make_TestImageHost(**kwargs):
 @patch('upsies.utils.fs.tmpdir')
 def test_cache_file_uses_cache_dir_argument(tmpdir_mock, image_dir, cache_dir, exp_cache_dir):
     tmpdir_mock.return_value = exp_cache_dir
-    imghost = make_TestImageHost(cache_dir=cache_dir)
+    imghost = make_TestImageHost(cache_directory=cache_dir)
     image_name = 'foo.png'
     exp_cache_name = f'{image_name}.{imghost.name}.json'
     if image_dir is None:
@@ -105,7 +115,7 @@ def test_cache_file_uses_cache_dir_argument(tmpdir_mock, image_dir, cache_dir, e
 
 
 def test_store_info_to_cache_succeeds(tmp_path):
-    imghost = make_TestImageHost(cache_dir=tmp_path)
+    imghost = make_TestImageHost(cache_directory=tmp_path)
     imghost._store_info_to_cache(
         image_path=os.path.join(tmp_path, 'foo.png'),
         info={'this': 'and that'},
@@ -117,7 +127,7 @@ def test_store_info_to_cache_succeeds(tmp_path):
                              '}\n')
 
 def test_store_info_to_cache_fails_to_write(tmp_path):
-    imghost = make_TestImageHost(cache_dir=tmp_path)
+    imghost = make_TestImageHost(cache_directory=tmp_path)
     cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     os.chmod(tmp_path, 0o000)
     try:
@@ -131,7 +141,7 @@ def test_store_info_to_cache_fails_to_write(tmp_path):
         assert not os.path.exists(cache_file)
 
 def test_store_info_to_cache_fails_to_encode_json(tmp_path):
-    imghost = make_TestImageHost(cache_dir=tmp_path)
+    imghost = make_TestImageHost(cache_directory=tmp_path)
     cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     with pytest.raises(RuntimeError, match=(rf'^Unable to write cache {cache_file}: '
                                             r"Object of type '?function'? is not JSON serializable$")):
@@ -143,7 +153,7 @@ def test_store_info_to_cache_fails_to_encode_json(tmp_path):
 
 
 def test_get_info_from_cache_succeeds(tmp_path):
-    imghost = make_TestImageHost(cache_dir=tmp_path)
+    imghost = make_TestImageHost(cache_directory=tmp_path)
     cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     with open(cache_file, 'w') as f:
         f.write('{\n'
@@ -154,12 +164,12 @@ def test_get_info_from_cache_succeeds(tmp_path):
     assert os.path.exists(cache_file)
 
 def test_get_info_from_cache_with_nonexisting_cache_file(tmp_path):
-    imghost = make_TestImageHost(cache_dir=tmp_path)
+    imghost = make_TestImageHost(cache_directory=tmp_path)
     info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
     assert info is None
 
 def test_get_info_from_cache_fails_to_read(tmp_path):
-    imghost = make_TestImageHost(cache_dir=tmp_path)
+    imghost = make_TestImageHost(cache_directory=tmp_path)
     cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     with open(cache_file, 'w') as f:
         f.write('{\n'
@@ -173,7 +183,7 @@ def test_get_info_from_cache_fails_to_read(tmp_path):
     assert info is None
 
 def test_get_info_from_cache_fails_to_decode_json(tmp_path):
-    imghost = make_TestImageHost(cache_dir=tmp_path)
+    imghost = make_TestImageHost(cache_directory=tmp_path)
     cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     with open(cache_file, 'w') as f:
         f.write('{\n'

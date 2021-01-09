@@ -21,13 +21,22 @@ class ImageHostBase(abc.ABC):
         return value of :func:`.utils.fs.tmpdir`
     """
 
-    def __init__(self, cache_dir=None):
-        self._cache_dir = cache_dir or fs.tmpdir()
+    def __init__(self, cache_directory=None):
+        self._cache_dir = cache_directory or fs.tmpdir()
 
     @property
     @abc.abstractmethod
     def name(self):
         """Name of the image hosting service"""
+
+    @property
+    def cache_directory(self):
+        """Path to directory where upload info is cached"""
+        return self._cache_dir
+
+    @cache_directory.setter
+    def cache_directory(self, directory):
+        self._cache_dir = directory
 
     async def upload(self, image_path, cache=True):
         """
