@@ -170,18 +170,17 @@ class JobBase(abc.ABC):
         """
         Wait for this job to finish
 
-        Subclasses that need to wait for I/O should override this method to
-        `await` their coroutines before awaiting ``super().wait()``.
+        Subclasses that need to wait for I/O should do so by overriding this
+        method.
 
-        This method must return when :meth:`finish` is called.
+        Subclasses must call the parent's method (``super().wait()``).
+
+        This method returns when :meth:`finish` is called.
 
         :attr:`is_finished` is `False` before this method returns and `True`
         afterwards.
 
-        Calling this method multiple times simultaneously must be safe.
-
-        Subclass implementations of this method must call their parent's
-        implementation.
+        Calling this method multiple times simultaneously is safe.
 
         :raise: Any exceptions given to :meth:`exception`
         """
@@ -195,13 +194,13 @@ class JobBase(abc.ABC):
 
         Calling this method unblocks any calls to :meth:`wait`.
 
-        :attr:`is_finished` is `False` before this method returns and `True`
-        afterwards.
+        :attr:`is_finished` is `True` after this method was called.
 
-        Subclass implementations of this method must call their parent's
-        implementation.
+        Calling this method multiple times simultaneously is safe.
 
-        This method must not block.
+        Subclasses must call the parent's method (``super().finish()``).
+
+        This method does not block.
         """
         if not self.is_finished:
             self._finished_event.set()
