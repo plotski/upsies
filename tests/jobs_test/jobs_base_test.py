@@ -438,7 +438,7 @@ def test_cache_directory_with_default_homedir(job, mocker):
     assert job.cache_directory is tmpdir_mock.return_value
 
 def test_cache_directory_with_custom_homedir(job, mocker, tmp_path):
-    tmpdir_mock = mocker.patch('upsies.utils.fs.tmpdir')
+    mocker.patch('upsies.utils.fs.tmpdir')
     job = FooJob(homedir=tmp_path, ignore_cache=False)
     assert job.cache_directory == os.path.join(tmp_path, '.cache')
     assert os.path.exists(job.cache_directory)
