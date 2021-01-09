@@ -158,7 +158,7 @@ class UI:
         # _handle_exception() will take care of it.
         await asyncio.gather(*(jobinfo.job.wait() for jobinfo in self._jobs.values()))
 
-        _log.debug('All jobs terminated successfully')
+        _log.debug('All jobs terminated')
         self._exit()
 
     def _handle_exception(self, loop, context):
