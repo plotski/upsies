@@ -42,9 +42,9 @@ class ImageHostJob(QueueJobBase):
             raise RuntimeError('You must not give both arguments "enqueue" and "images_total".')
         else:
             if images_total > 0:
-                self._images_total = images_total
+                self.images_total = images_total
             else:
-                self._images_total = len(enqueue)
+                self.images_total = len(enqueue)
 
         self._imghost = imghost
         self._images_uploaded = 0
