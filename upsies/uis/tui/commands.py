@@ -228,7 +228,6 @@ class screenshots(CommandBase):
                 ignore_cache=self.args.ignore_cache,
                 imghost=imghosts.imghost(
                     name=self.args.upload_to,
-                    cache_directory=fs.projectdir(self.args.CONTENT),
                     **self.config['imghosts'][self.args.upload_to],
                 ),
             )
@@ -366,7 +365,6 @@ class submit(CommandBase):
         if imghost_name:
             return imghosts.imghost(
                 name=imghost_name,
-                cache_directory=fs.projectdir(self.args.CONTENT),
                 **self.config['imghosts'][imghost_name],
             )
 

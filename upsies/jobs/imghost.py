@@ -37,6 +37,7 @@ class ImageHostJob(QueueJobBase):
 
     def initialize(self, *, imghost, enqueue=(), images_total=0):
         assert isinstance(imghost, ImageHostBase), f'Not an ImageHostBase: {imghost!r}'
+        imghost.cache_directory = self.cache_directory
         self._imghost = imghost
         self._images_uploaded = 0
         if enqueue and images_total:
