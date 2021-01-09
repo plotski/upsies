@@ -426,14 +426,14 @@ class QueueJobBase(JobBase):
         super().__init__(**kwargs)
         self._queue = asyncio.Queue()
         self._read_queue_task = None
-        enqueue = kwargs.get('enqueue', ())
-        if enqueue:
-            for value in enqueue:
-                self.enqueue(value)
-            self.finish()
+        self._enqueue_args = kwargs.get('enqueue', ())
 
     def execute(self):
         self._read_queue_task = asyncio.ensure_future(self._read_queue())
+        if self._enqueue_args:
+            for value in self._enqueue_args:
+                self.enqueue(value)
+            self.finalize()
 
     async def _read_queue(self):
         while True:
