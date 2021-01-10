@@ -73,13 +73,27 @@ class SubmitJob(JobBase):
         self.signal.register('finished', lambda: setattr(self, '_info', ''))
         self.signal.register('error', lambda _: setattr(self, '_info', ''))
 
+        # Create jobs_after_upload now so they can connect to other jobs,
+        # e.g. add_torrent_job needs to register for create_torrent_job's output
+        # before create_torrent_job finishes.
+        self.jobs_after_upload
+
+        # Start jobs_after_upload only if the upload succeeds. This also works
+        # nicely when this job is getting it's output from cache (execute() is
+        # not called).
+        self.signal.register('output', self._start_jobs_after_upload)
+
+    def _start_jobs_after_upload(self, _):
+        for job in self.jobs_after_upload:
+            job.start()
+
     def finish(self):
         # Do not finish any other jobs here. This job might finish immediately
         # with cached output while other jobs are still running. For example,
         # after running "upsies submit ..." the user should be able to run the
         # same command again with "--add-to ..." appended and it shouldn't
-        # submit the torrent again and it shouldn't finish the "--add-to ..."
-        # job prematurely.
+        # submit the torrent again and it should wait for the "--add-to ..."
+        # job.
         if self._run_jobs_task:
             self._run_jobs_task.cancel()
         super().finish()
@@ -98,10 +112,6 @@ class SubmitJob(JobBase):
         await super().wait()
 
     async def _run_jobs(self):
-        # Create post-upload jobs so they can register signals to
-        # connect to pre-upload jobs.
-        self.jobs_after_upload
-
         _log.debug('Waiting for jobs before upload: %r', self.jobs_before_upload)
         await asyncio.gather(*(job.wait() for job in self.jobs_before_upload))
         names = [job.name for job in self.jobs_before_upload]
@@ -112,11 +122,6 @@ class SubmitJob(JobBase):
         if all(job.exit_code == 0 for job in self.jobs_before_upload):
             _log.debug('Submitting metadata')
             await self._submit(metadata)
-
-            # Run jobs_after_upload only if submission succeeded
-            if self.output:
-                _log.debug('Waiting for jobs after upload: %r', self.jobs_after_upload)
-                await asyncio.gather(*(job.wait() for job in self.jobs_after_upload))
 
     async def _submit(self, metadata):
         _log.debug('%s: Submitting %s', self._tracker.name, metadata.get('torrent'))

@@ -147,6 +147,7 @@ class TrackerJobsBase(abc.ABC):
         """:class:`~.jobs.torrent.AddTorrentJob` instance"""
         if self.bittorrent_client:
             add_torrent_job = _jobs.torrent.AddTorrentJob(
+                autostart=False,
                 client=self.bittorrent_client,
                 download_path=fs.dirname(self.content_path),
                 **self.common_job_args,
@@ -162,6 +163,7 @@ class TrackerJobsBase(abc.ABC):
         """:class:`~.jobs.torrent.CopyTorrentJob` instance"""
         if self.torrent_destination:
             copy_torrent_job = _jobs.torrent.CopyTorrentJob(
+                autostart=False,
                 destination=self.torrent_destination,
                 **self.common_job_args,
             )

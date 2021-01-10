@@ -95,6 +95,7 @@ def test_add_torrent_job_with_add_to_client_argument(mocker):
     assert tracker_jobs.add_torrent_job is AddTorrentJob_mock.return_value
     assert AddTorrentJob_mock.call_args_list == [
         call(
+            autostart=False,
             client=bittorrent_client_mock,
             download_path='path/to/content/dir',
             homedir='path/to/home',
@@ -130,6 +131,7 @@ def test_copy_torrent_job_with_torrent_destination_argument(mocker):
     assert tracker_jobs.copy_torrent_job is CopyTorrentJob_mock.return_value
     assert CopyTorrentJob_mock.call_args_list == [
         call(
+            autostart=False,
             destination='path/to/torrent/destination',
             homedir='path/to/home',
             ignore_cache='mock bool',
