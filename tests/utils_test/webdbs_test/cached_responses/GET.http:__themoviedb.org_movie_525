@@ -14,42 +14,42 @@
     
     <meta name="viewport" content="width=1120">
     
-    <meta name="msapplication-TileImage" content="https://www.themoviedb.org/assets/2/v4/icons/mstile-144x144-30e7905a8315a080978ad6aeb71c69222b72c2f75d26dab1224173a96fecc962.png">
+    <meta name="msapplication-TileImage" content="/assets/2/v4/icons/mstile-144x144-30e7905a8315a080978ad6aeb71c69222b72c2f75d26dab1224173a96fecc962.png">
 <meta name="msapplication-TileColor" content="#032541">
 <meta name="theme-color" content="#032541">
-<link rel="apple-touch-icon" sizes="180x180" href="https://www.themoviedb.org/assets/2/apple-touch-icon-57ed4b3b0450fd5e9a0c20f34e814b82adaa1085c79bdde2f00ca8787b63d2c4.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://www.themoviedb.org/assets/2/favicon-32x32-543a21832c8931d3494a68881f6afcafc58e96c5d324345377f3197a37b367b5.png">
-<link rel="icon" type="image/png" sizes="16x16" href="https://www.themoviedb.org/assets/2/favicon-16x16-b362d267873ce9c5a39f686a11fe67fec2a72ed25fa8396c11b71aa43c938b11.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/2/apple-touch-icon-57ed4b3b0450fd5e9a0c20f34e814b82adaa1085c79bdde2f00ca8787b63d2c4.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/2/favicon-32x32-543a21832c8931d3494a68881f6afcafc58e96c5d324345377f3197a37b367b5.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/2/favicon-16x16-b362d267873ce9c5a39f686a11fe67fec2a72ed25fa8396c11b71aa43c938b11.png">
 <link rel="manifest" href="/manifest.json?version=3">
     <link rel="canonical" href="https://www.themoviedb.org/movie/525-the-blues-brothers">
     <link rel="search" type="application/opensearchdescription+xml" title="TMDb Search" href="/opensearch.xml">
-    <link rel="preconnect" href="https://image.tmdb.org/" crossorigin>
-    <link rel="preload" href="https://www.themoviedb.org/assets/2/Consensus-3cba2c4d050ea63dbf7783173d288faf9ecb2942515a5e7f6e1beecabb2eaf72.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="https://www.themoviedb.org/assets/2/source-sans-pro-v13-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular-f38472b9e378b8c936f55a92677f575ab69e414d7cc3706ecfefeacd994b7975.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="https://www.themoviedb.org/assets/2/source-sans-pro-v13-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300-db9f15a13a9f8b8bc46db7756ab863e8834bd20a7a1124c4c0a5a8f7892f3e99.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="https://www.themoviedb.org/assets/2/source-sans-pro-v13-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="https://www.themoviedb.org/assets/2/source-sans-pro-v13-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/fonts-f578d72aab1b29e57199fe0eefab11f965977296ecc398469564152d147e08c9.css" media="screen">
-    <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/application-07149aceb141ceb6fcf7a2eb9f9fe1ea5f4cc9cf1b358975fc35eb1139c1da43.css" media="screen">
+    <link rel="preload" href="/assets/2/Consensus-3cba2c4d050ea63dbf7783173d288faf9ecb2942515a5e7f6e1beecabb2eaf72.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular-f38472b9e378b8c936f55a92677f575ab69e414d7cc3706ecfefeacd994b7975.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-italic-48273a74acbc1611b6ef1d0a771bb8ef042b9922b51d5bff560571dddcb5542a.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300-db9f15a13a9f8b8bc46db7756ab863e8834bd20a7a1124c4c0a5a8f7892f3e99.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen">
+    <link rel="stylesheet" href="/assets/2/application-a294576d87517e34efab9ccc38ef849872a6c3a7520061e74675fde872222802.css" media="screen">
     
     
-      <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/media-bc4d9264e78334673d1031f8ce8e050a3f3baf35bef4b0431d74dbb0316a2af5.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/media-13e11edeb59636d078c8f8a5658961aa257a06483d97df7a8f96e9032bffd844.css" media="screen">
       
     
-      <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/ott-8ba1c148276d5c56ba11f9d687d4a2baf77db72a1877bf63349cd824e94da015.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/ott-7b5a41663086623adc0e366cb966c8f26a417078d5966ab31b0dd15592d8abde.css" media="screen">
       
     
-      <link rel="stylesheet" href="https://www.themoviedb.org/assets/2/v4/image-e31e3ed50c1c6c590922be6df27d3c38c7e9bbf9087e00dab94c5e679deb739a.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/image-f92aec523e5c3b68d56abad962cf2e30934fa774ebaca9d06cf8584d5a464c09.css" media="screen">
       
     
     
         <meta property="og:title" content="The Blues Brothers">
   <meta property="og:description" content="Jake Blues is just out of jail, and teams up with his brother, Elwood on a 'mission from God' to raise funds for the orphanage in which they grew up. The only thing they can do is do what they do best: play music. So they get their old band together, and set out on their way—while getting in a bit of trouble here and there.">
   
-    <meta property="og:image" content="//image.tmdb.org/t/p/w500/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg">
+    <meta property="og:image" content="/t/p/w500/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg">
   
   
-    <meta property="og:image" content="//image.tmdb.org/t/p/w780/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg">
+    <meta property="og:image" content="/t/p/w780/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg">
   
 
 <meta property="og:type" content="movie">
@@ -60,7 +60,7 @@
   <meta name="twitter:title" content="The Blues Brothers">
   <meta name="twitter:description" content="Jake Blues is just out of jail, and teams up with his brother, Elwood on a 'mission from God' to raise funds for the orphanage in which they grew up. The only thing they can do is do what they do best: play music. So they get their old band together, and set out on their way—while getting in a bit of trouble here and there.">
   
-    <meta name="twitter:image" content="//image.tmdb.org/t/p/w780/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg">
+    <meta name="twitter:image" content="/t/p/w780/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg">
     <meta name="twitter:image:width" content="780">
     <meta name="twitter:image:height" content="439">
   
@@ -143,8 +143,8 @@
 
     
 
-    <script src="https://www.themoviedb.org/assets/2/lozad.min-7f803337d01a657607bca6b20e06f371c3895b36a5f2be03a8fa9b5e16c9a83e.js"></script>
-    <script src="https://www.themoviedb.org/assets/2/jquery-3.5.1.min-f7f6a5894f1d19ddad6fa392b2ece2c5e578cbf7da4ea805b6885eb6985b6e3d.js"></script>
+    <script src="/assets/2/lozad.min-7f803337d01a657607bca6b20e06f371c3895b36a5f2be03a8fa9b5e16c9a83e.js"></script>
+    <script src="/assets/2/jquery-3.5.1.min-f7f6a5894f1d19ddad6fa392b2ece2c5e578cbf7da4ea805b6885eb6985b6e3d.js"></script>
     <script>
       $(function() {
         jQuery.event.special.touchstart = {
@@ -154,10 +154,10 @@
         };
       });
     </script>
-    <script src="https://www.themoviedb.org/assets/2/kendo-fae9a5643b2ce630515830333c2ce1c86cecafc7ebe7837c4ae31e170c21a171.js"></script>
-    <script src="https://www.themoviedb.org/assets/2/application-8b439329775a36098a2cbd50c366be017846961294003d640f99dbd7b416c181.js"></script>
+    <script src="/assets/2/kendo-fae9a5643b2ce630515830333c2ce1c86cecafc7ebe7837c4ae31e170c21a171.js"></script>
+    <script src="/assets/2/application-8b439329775a36098a2cbd50c366be017846961294003d640f99dbd7b416c181.js"></script>
     
-      <script src="https://www.themoviedb.org/assets/2/application.desktop-fc642e932de23c6d7bd19995577faae48e55c0c22f1b7cf5f9a60845689e5d3c.js"></script>
+      <script src="/assets/2/application.desktop-fc642e932de23c6d7bd19995577faae48e55c0c22f1b7cf5f9a60845689e5d3c.js"></script>
     
 
     <script>
@@ -178,10 +178,10 @@
   
   
   
-    <script src="https://www.themoviedb.org/assets/2/kendo-2020.2.617/messages/kendo.messages.en-US.min-bca5bee854a9d1e5546abb31e5b16ae45e672d5c8739a9969483e769620830f8.js"></script>
+    <script src="/assets/2/kendo-2020.2.617/messages/kendo.messages.en-US.min-bca5bee854a9d1e5546abb31e5b16ae45e672d5c8739a9969483e769620830f8.js"></script>
   
   
-    <script src="https://www.themoviedb.org/assets/2/kendo-2020.2.617/cultures/kendo.culture.en-US.min-d7f7bc0e7130adf476f5d1d19bb64d908a43d3104ddc1d4264218803fb4d8264.js"></script>
+    <script src="/assets/2/kendo-2020.2.617/cultures/kendo.culture.en-US.min-d7f7bc0e7130adf476f5d1d19bb64d908a43d3104ddc1d4264218803fb4d8264.js"></script>
     <script>kendo.culture("en-US");</script>
   
 
@@ -193,7 +193,7 @@
       <div class="nav_wrapper">
         
           <a class="logo" href="/">
-            <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="The Movie Database (TMDb)" width="154" height="20">
+            <img src="/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="The Movie Database (TMDb)" width="154" height="20">
           </a>
         
 
@@ -351,7 +351,7 @@
         background-position: right -200px top;
         background-size: cover;
         background-repeat: no-repeat;
-        background-image: url('//image.tmdb.org/t/p/w1920_and_h800_multi_faces/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg');
+        background-image: url('/t/p/w1920_and_h800_multi_faces/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg');
       }
     
 
@@ -375,6 +375,9 @@
           <li><a href="/movie/525-the-blues-brothers/releases">Release Dates</a></li>
         
         <li><a href="/movie/525-the-blues-brothers/translations">Translations</a></li>
+        
+          <li><a href="/movie/525-the-blues-brothers/watch">Watch Now</a></li>
+        
 
         <li class="spacer"><a href="/movie/525-the-blues-brothers/changes" title="Changes">Changes</a></li>
 
@@ -387,7 +390,7 @@
       <ul class="media number_group">
         <li><a href="/movie/525-the-blues-brothers/images/backdrops">Backdrops <span class="count">14</span></a></li>
         <li><a href="/movie/525-the-blues-brothers/images/logos">Logos <span class="count">0</span></a></li>
-        <li><a href="/movie/525-the-blues-brothers/images/posters">Posters <span class="count">38</span></a></li>
+        <li><a href="/movie/525-the-blues-brothers/images/posters">Posters <span class="count">39</span></a></li>
         <li>
           Videos
 
@@ -454,7 +457,7 @@
   
         
     
-      <img class="poster lazyload" src="//image.tmdb.org/t/p/w300_and_h450_bestv2_filter(blur)/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg" data-src="//image.tmdb.org/t/p/w300_and_h450_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg" data-srcset="//image.tmdb.org/t/p/w300_and_h450_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 1x, //image.tmdb.org/t/p/w600_and_h900_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 2x" alt="The Blues Brothers">
+      <img class="poster lazyload" src="/t/p/w300_and_h450_bestv2_filter(blur)/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg" data-src="/t/p/w300_and_h450_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg" data-srcset="/t/p/w300_and_h450_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 1x, /t/p/w600_and_h900_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 2x" alt="The Blues Brothers">
     
   
 
@@ -479,7 +482,7 @@
 
     <div class="button">
       <div class="provider">
-        <img src="https://images.justwatch.com/icon/430993/s100" width="36" height="36" alt="Available to Rent or Buy on Amazon Video">
+        <img src="/t/p/original/sVBEF7q7LqjHAWSnKwDbzmr2EMY.jpg" width="36" height="36" alt="Available to Rent or Buy on Amazon Video">
       </div>
       <div class="text">
         <span>
@@ -586,7 +589,7 @@
   
     
       <li class="video none">
-        <a class="no_click play_trailer" href="#" data-site="YouTube" data-id="asM2-YAMWxg" data-title="Play Trailer"><span class="glyphicons_v2 play"></span> Play Trailer</a>
+        <a class="no_click play_trailer" href="#" data-site="YouTube" data-id="2HCR4c1zPyk" data-title="Play Trailer"><span class="glyphicons_v2 play"></span> Play Trailer</a>
       </li>
     
   
@@ -664,7 +667,7 @@
 
   function loadDropDown() {
     var ott_country_datasource = new kendo.data.DataSource({
-      data: [{"country_code":"AR","native_name":"Argentina","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/AR-af53c8037def87d38995d642d93f899f5e4922ca62843dde5b5cc361771c3bf0.png"},{"country_code":"AU","native_name":"Australia","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/AU-987875cfcb3626621074bb52ae1c72b43d15f51801aa8271888a32e25395b844.png"},{"country_code":"AT","native_name":"Austria","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/AT-1ca78073a82e2b8ad5093a822e70521cca2bccff557ded1d5707f26c62620755.png"},{"country_code":"BE","native_name":"Belgium","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/BE-cc3358e59c409a83da1607f9bae3cd79c63cf28db983355863b68382ba097008.png"},{"country_code":"BR","native_name":"Brazil","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/BR-9860aa017ee236029feb86e4a2f57a14d38d21a27798f7a4a533778a6ea6c06a.png"},{"country_code":"CA","native_name":"Canada","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/CA-38886a65a797a310778fb80880452089fe6970c466646eb1ad487cc08fc5f224.png"},{"country_code":"CL","native_name":"Chile","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/CL-b3ba3b4e958dc55a4732734d667f47a1703501a7baa19939d57912e9d8d9b50f.png"},{"country_code":"CO","native_name":"Colombia","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/CO-4ca65d222eddfe12f55aa2e04628fc0336f028124ec7c93712c8a46fa300a0a4.png"},{"country_code":"CZ","native_name":"Czech Republic","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/CZ-91dd5d92623653d7c7d1dbaf80f635092a5672d1d7d05d8c448595f1672578e1.png"},{"country_code":"DK","native_name":"Denmark","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/DK-fd8b7ed6b65fc796dab2c998bb9bf0c6151ebfa188ad939243a56c5089df696a.png"},{"country_code":"EC","native_name":"Ecuador","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/EC-385020285cbde4247c16e9bf8b9a344254dc3468cd4af49b5a56589f3f667720.png"},{"country_code":"EE","native_name":"Estonia","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/EE-aafc24f97bf432fa3530d2bdd689839058cac586c65e7017df4040837ed2c322.png"},{"country_code":"FI","native_name":"Finland","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/FI-c3bae4a5062e7a52e200d813b69753ff09734a07071dd50150b4731d1721b251.png"},{"country_code":"FR","native_name":"France","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/FR-45e57f71db90cee6ebd54ed7bb28cc7fdcbd2f4592ade4998f2bc6458d997b3f.png"},{"country_code":"DE","native_name":"Germany","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/DE-1877858abee51cabe053ceb7d0561f538597c5c1aca56ba25319abba343a9ca0.png"},{"country_code":"GR","native_name":"Greece","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/GR-6b6b3ee799e88c48a6e9326783dc220715e91d783520b7bf3e7d45703bbf3310.png"},{"country_code":"HU","native_name":"Hungary","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/HU-623b538d2d51a467de0dcad45401dc55f5228ae6325f7b6ec934527cd5d568ae.png"},{"country_code":"IN","native_name":"India","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/IN-5b73f4605171eaa60539e5d69a85bebe7b800f5ee6f94f24dafecaa0d47209fd.png"},{"country_code":"ID","native_name":"Indonesia","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/ID-ccecfd8d6955ec585cc23addeff613af78f182f20f520d263bfc682b95cf4b16.png"},{"country_code":"IE","native_name":"Ireland","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/IE-0d036291e102322c836051481b5f76bc64df1d147138be9dbbfe3dbf56aba128.png"},{"country_code":"IT","native_name":"Italy","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/IT-e1a18e2f092f368e800469ae610c25137573e555cd4984a03c74d1ef04579822.png"},{"country_code":"JP","native_name":"Japan","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/JP-094ae25e6726ba8c9eaece21da437f5236662d9419c198310d30e0960acebe1c.png"},{"country_code":"LV","native_name":"Latvia","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/LV-ba2030c39ecd68e7313d46aa1fd56025394ec39af6190a8e531d0c1a3d8c90eb.png"},{"country_code":"LT","native_name":"Lithuania","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/LT-85614c5fd7332fbf27b2bf9160944295f6067a6793dda105068a431e6f8e1252.png"},{"country_code":"MY","native_name":"Malaysia","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/MY-ab75bb0362b542f155ef53047806213086c302c5622a39c6f4f628b65935b11f.png"},{"country_code":"MX","native_name":"Mexico","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/MX-6e1feed2ded1b9d724497ba082957828cffe11b6cbe53c9914f837b5fd7d914e.png"},{"country_code":"NL","native_name":"Netherlands","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/NL-6f692817fdb935d856a9c976703fd7f4e1b656442bfcc1739a8643ba6a122a97.png"},{"country_code":"NZ","native_name":"New Zealand","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/NZ-55035bfdecb1f546e7d0f47515368c222cb5d781260ba283c268ec47c822d51b.png"},{"country_code":"NO","native_name":"Norway","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/NO-5190735f3735ed2a927a33177baf3125ce201263a704da930e526dee5a4352d8.png"},{"country_code":"PE","native_name":"Peru","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/PE-c12deb68829f455243b9d7aba016b8047676581473e73c579e2f3220a1033f9a.png"},{"country_code":"PH","native_name":"Philippines","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/PH-e184176368c0703af1e2d0d68daafc9134ff5ae913b22a08ac6dd58c0a18915d.png"},{"country_code":"PL","native_name":"Poland","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/PL-2c59201663e243a6301c363498eb34ec164bbce57521c1d29eef0121a5459b78.png"},{"country_code":"PT","native_name":"Portugal","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/PT-a02b40637d0de02097b2322c3117c80575be518c1669f0f28c69cfce0d20a826.png"},{"country_code":"RO","native_name":"Romania","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/RO-4098a7242007d38c3d0968bb58320ac70714d47fcdd064d76443c08087e9eb71.png"},{"country_code":"RU","native_name":"Russia","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/RU-44aaee85b78b6bd07f861e4927f147f4ca8b00dc8766fd20ecc88aa612d06fcd.png"},{"country_code":"SG","native_name":"Singapore","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/SG-327ee0325d7fc6424fdee9487353eac1ccea73db53298dfae0dd0c48231b3baa.png"},{"country_code":"ZA","native_name":"South Africa","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/ZA-4e8b8c43d8dd2f9cbb77d5d353fd98c5844f922eb227ad3478eb37af8329f8c4.png"},{"country_code":"KR","native_name":"South Korea","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/KR-42af849ebe299438948216ee9270f194b5358cac2e5604773fc07bb66802af14.png"},{"country_code":"ES","native_name":"Spain","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/ES-ef578e78363c45694fb713a7c8d6ceddf7f23e294c30d9bba1c7547f61ba42b2.png"},{"country_code":"SE","native_name":"Sweden","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/SE-5a97536c4c12f83fe02794f9aa3eb82b47ead7677217d0954a8cef22ac57233f.png"},{"country_code":"CH","native_name":"Switzerland","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/CH-5b64386f84ee6594a68b5dfc248a88892ab38178c1682702689d82c66ba8e20a.png"},{"country_code":"TH","native_name":"Thailand","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/TH-a7f1ca882f8d0c6a7b532c8c4d9ac056505a97dc5dd33e8d7b82b1312d4c348b.png"},{"country_code":"TR","native_name":"Turkey","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/TR-dde9ebaa44f6027c50ab4ebe6372c3f1656f12c7db00cdec8a447cb785fee93a.png"},{"country_code":"GB","native_name":"United Kingdom","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/GB-d20d3c377f9a6cd80339dd457b5ced7c2bbdd62197d8ef99085ec104fd1f7709.png"},{"country_code":"US","native_name":"United States","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/US-fc54af6e5c8237200d49fd6a49061fffeb8a7217bb9000acd1c02039b65b22ba.png"},{"country_code":"VE","native_name":"Venezuela","flag":"https://www.themoviedb.org/assets/2/flags_v2/48/VE-e7d4498591a5d5797b902e380aeee6715e1ae131f7b28588b0203673ede2ed99.png"}]
+      data: [{"country_code":"AR","native_name":"Argentina","flag":"/assets/2/flags_v2/48/AR-af53c8037def87d38995d642d93f899f5e4922ca62843dde5b5cc361771c3bf0.png"},{"country_code":"AU","native_name":"Australia","flag":"/assets/2/flags_v2/48/AU-987875cfcb3626621074bb52ae1c72b43d15f51801aa8271888a32e25395b844.png"},{"country_code":"AT","native_name":"Austria","flag":"/assets/2/flags_v2/48/AT-1ca78073a82e2b8ad5093a822e70521cca2bccff557ded1d5707f26c62620755.png"},{"country_code":"BE","native_name":"Belgium","flag":"/assets/2/flags_v2/48/BE-cc3358e59c409a83da1607f9bae3cd79c63cf28db983355863b68382ba097008.png"},{"country_code":"BR","native_name":"Brazil","flag":"/assets/2/flags_v2/48/BR-9860aa017ee236029feb86e4a2f57a14d38d21a27798f7a4a533778a6ea6c06a.png"},{"country_code":"CA","native_name":"Canada","flag":"/assets/2/flags_v2/48/CA-38886a65a797a310778fb80880452089fe6970c466646eb1ad487cc08fc5f224.png"},{"country_code":"CL","native_name":"Chile","flag":"/assets/2/flags_v2/48/CL-b3ba3b4e958dc55a4732734d667f47a1703501a7baa19939d57912e9d8d9b50f.png"},{"country_code":"CO","native_name":"Colombia","flag":"/assets/2/flags_v2/48/CO-4ca65d222eddfe12f55aa2e04628fc0336f028124ec7c93712c8a46fa300a0a4.png"},{"country_code":"CZ","native_name":"Czech Republic","flag":"/assets/2/flags_v2/48/CZ-91dd5d92623653d7c7d1dbaf80f635092a5672d1d7d05d8c448595f1672578e1.png"},{"country_code":"DK","native_name":"Denmark","flag":"/assets/2/flags_v2/48/DK-fd8b7ed6b65fc796dab2c998bb9bf0c6151ebfa188ad939243a56c5089df696a.png"},{"country_code":"EC","native_name":"Ecuador","flag":"/assets/2/flags_v2/48/EC-385020285cbde4247c16e9bf8b9a344254dc3468cd4af49b5a56589f3f667720.png"},{"country_code":"EE","native_name":"Estonia","flag":"/assets/2/flags_v2/48/EE-aafc24f97bf432fa3530d2bdd689839058cac586c65e7017df4040837ed2c322.png"},{"country_code":"FI","native_name":"Finland","flag":"/assets/2/flags_v2/48/FI-c3bae4a5062e7a52e200d813b69753ff09734a07071dd50150b4731d1721b251.png"},{"country_code":"FR","native_name":"France","flag":"/assets/2/flags_v2/48/FR-45e57f71db90cee6ebd54ed7bb28cc7fdcbd2f4592ade4998f2bc6458d997b3f.png"},{"country_code":"DE","native_name":"Germany","flag":"/assets/2/flags_v2/48/DE-1877858abee51cabe053ceb7d0561f538597c5c1aca56ba25319abba343a9ca0.png"},{"country_code":"GR","native_name":"Greece","flag":"/assets/2/flags_v2/48/GR-6b6b3ee799e88c48a6e9326783dc220715e91d783520b7bf3e7d45703bbf3310.png"},{"country_code":"HU","native_name":"Hungary","flag":"/assets/2/flags_v2/48/HU-623b538d2d51a467de0dcad45401dc55f5228ae6325f7b6ec934527cd5d568ae.png"},{"country_code":"IN","native_name":"India","flag":"/assets/2/flags_v2/48/IN-5b73f4605171eaa60539e5d69a85bebe7b800f5ee6f94f24dafecaa0d47209fd.png"},{"country_code":"ID","native_name":"Indonesia","flag":"/assets/2/flags_v2/48/ID-ccecfd8d6955ec585cc23addeff613af78f182f20f520d263bfc682b95cf4b16.png"},{"country_code":"IE","native_name":"Ireland","flag":"/assets/2/flags_v2/48/IE-0d036291e102322c836051481b5f76bc64df1d147138be9dbbfe3dbf56aba128.png"},{"country_code":"IT","native_name":"Italy","flag":"/assets/2/flags_v2/48/IT-e1a18e2f092f368e800469ae610c25137573e555cd4984a03c74d1ef04579822.png"},{"country_code":"JP","native_name":"Japan","flag":"/assets/2/flags_v2/48/JP-094ae25e6726ba8c9eaece21da437f5236662d9419c198310d30e0960acebe1c.png"},{"country_code":"LV","native_name":"Latvia","flag":"/assets/2/flags_v2/48/LV-ba2030c39ecd68e7313d46aa1fd56025394ec39af6190a8e531d0c1a3d8c90eb.png"},{"country_code":"LT","native_name":"Lithuania","flag":"/assets/2/flags_v2/48/LT-85614c5fd7332fbf27b2bf9160944295f6067a6793dda105068a431e6f8e1252.png"},{"country_code":"MY","native_name":"Malaysia","flag":"/assets/2/flags_v2/48/MY-ab75bb0362b542f155ef53047806213086c302c5622a39c6f4f628b65935b11f.png"},{"country_code":"MX","native_name":"Mexico","flag":"/assets/2/flags_v2/48/MX-6e1feed2ded1b9d724497ba082957828cffe11b6cbe53c9914f837b5fd7d914e.png"},{"country_code":"NL","native_name":"Netherlands","flag":"/assets/2/flags_v2/48/NL-6f692817fdb935d856a9c976703fd7f4e1b656442bfcc1739a8643ba6a122a97.png"},{"country_code":"NZ","native_name":"New Zealand","flag":"/assets/2/flags_v2/48/NZ-55035bfdecb1f546e7d0f47515368c222cb5d781260ba283c268ec47c822d51b.png"},{"country_code":"NO","native_name":"Norway","flag":"/assets/2/flags_v2/48/NO-5190735f3735ed2a927a33177baf3125ce201263a704da930e526dee5a4352d8.png"},{"country_code":"PE","native_name":"Peru","flag":"/assets/2/flags_v2/48/PE-c12deb68829f455243b9d7aba016b8047676581473e73c579e2f3220a1033f9a.png"},{"country_code":"PH","native_name":"Philippines","flag":"/assets/2/flags_v2/48/PH-e184176368c0703af1e2d0d68daafc9134ff5ae913b22a08ac6dd58c0a18915d.png"},{"country_code":"PL","native_name":"Poland","flag":"/assets/2/flags_v2/48/PL-2c59201663e243a6301c363498eb34ec164bbce57521c1d29eef0121a5459b78.png"},{"country_code":"PT","native_name":"Portugal","flag":"/assets/2/flags_v2/48/PT-a02b40637d0de02097b2322c3117c80575be518c1669f0f28c69cfce0d20a826.png"},{"country_code":"RO","native_name":"Romania","flag":"/assets/2/flags_v2/48/RO-4098a7242007d38c3d0968bb58320ac70714d47fcdd064d76443c08087e9eb71.png"},{"country_code":"RU","native_name":"Russia","flag":"/assets/2/flags_v2/48/RU-44aaee85b78b6bd07f861e4927f147f4ca8b00dc8766fd20ecc88aa612d06fcd.png"},{"country_code":"SG","native_name":"Singapore","flag":"/assets/2/flags_v2/48/SG-327ee0325d7fc6424fdee9487353eac1ccea73db53298dfae0dd0c48231b3baa.png"},{"country_code":"ZA","native_name":"South Africa","flag":"/assets/2/flags_v2/48/ZA-4e8b8c43d8dd2f9cbb77d5d353fd98c5844f922eb227ad3478eb37af8329f8c4.png"},{"country_code":"KR","native_name":"South Korea","flag":"/assets/2/flags_v2/48/KR-42af849ebe299438948216ee9270f194b5358cac2e5604773fc07bb66802af14.png"},{"country_code":"ES","native_name":"Spain","flag":"/assets/2/flags_v2/48/ES-ef578e78363c45694fb713a7c8d6ceddf7f23e294c30d9bba1c7547f61ba42b2.png"},{"country_code":"SE","native_name":"Sweden","flag":"/assets/2/flags_v2/48/SE-5a97536c4c12f83fe02794f9aa3eb82b47ead7677217d0954a8cef22ac57233f.png"},{"country_code":"CH","native_name":"Switzerland","flag":"/assets/2/flags_v2/48/CH-5b64386f84ee6594a68b5dfc248a88892ab38178c1682702689d82c66ba8e20a.png"},{"country_code":"TH","native_name":"Thailand","flag":"/assets/2/flags_v2/48/TH-a7f1ca882f8d0c6a7b532c8c4d9ac056505a97dc5dd33e8d7b82b1312d4c348b.png"},{"country_code":"TR","native_name":"Turkey","flag":"/assets/2/flags_v2/48/TR-dde9ebaa44f6027c50ab4ebe6372c3f1656f12c7db00cdec8a447cb785fee93a.png"},{"country_code":"GB","native_name":"United Kingdom","flag":"/assets/2/flags_v2/48/GB-d20d3c377f9a6cd80339dd457b5ced7c2bbdd62197d8ef99085ec104fd1f7709.png"},{"country_code":"US","native_name":"United States","flag":"/assets/2/flags_v2/48/US-fc54af6e5c8237200d49fd6a49061fffeb8a7217bb9000acd1c02039b65b22ba.png"},{"country_code":"VE","native_name":"Venezuela","flag":"/assets/2/flags_v2/48/VE-e7d4498591a5d5797b902e380aeee6715e1ae131f7b28588b0203673ede2ed99.png"}]
     });
 
     var watch_url_template = "/movie/525-the-blues-brothers/watch?translate=false&locale={0}";
@@ -791,49 +794,49 @@
                       <a href="/person/707-dan-aykroyd">
                           
     
-      <img loading="lazy" class="profile" src="//image.tmdb.org/t/p/w138_and_h175_face/iVMmeVJx8IpCEjlGBZWzIWvX5Qo.jpg" srcset="//image.tmdb.org/t/p/w138_and_h175_face/iVMmeVJx8IpCEjlGBZWzIWvX5Qo.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/iVMmeVJx8IpCEjlGBZWzIWvX5Qo.jpg 2x" alt="Dan Aykroyd">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/iVMmeVJx8IpCEjlGBZWzIWvX5Qo.jpg" srcset="/t/p/w138_and_h175_face/iVMmeVJx8IpCEjlGBZWzIWvX5Qo.jpg 1x, /t/p/w276_and_h350_face/iVMmeVJx8IpCEjlGBZWzIWvX5Qo.jpg 2x" alt="Dan Aykroyd">
     
   
 
                       </a>
 
                       <p><a href="/person/707-dan-aykroyd">Dan Aykroyd</a></p>
-                      <p class="character">Elwood Blues (as Elwood)</p>
+                      <p class="character">Elwood Blues</p>
                     </li>
                   
                     <li class="card">
                       <a href="/person/7171-john-belushi">
                           
     
-      <img loading="lazy" class="profile" src="//image.tmdb.org/t/p/w138_and_h175_face/9VmVattp8htG3GJnkPsPuhVIca2.jpg" srcset="//image.tmdb.org/t/p/w138_and_h175_face/9VmVattp8htG3GJnkPsPuhVIca2.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/9VmVattp8htG3GJnkPsPuhVIca2.jpg 2x" alt="John Belushi">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/9VmVattp8htG3GJnkPsPuhVIca2.jpg" srcset="/t/p/w138_and_h175_face/9VmVattp8htG3GJnkPsPuhVIca2.jpg 1x, /t/p/w276_and_h350_face/9VmVattp8htG3GJnkPsPuhVIca2.jpg 2x" alt="John Belushi">
     
   
 
                       </a>
 
                       <p><a href="/person/7171-john-belushi">John Belushi</a></p>
-                      <p class="character">'Joliet' Jake Blues (as Jake)</p>
+                      <p class="character">'Joliet' Jake Blues</p>
                     </li>
                   
                     <li class="card">
                       <a href="/person/7172-james-brown">
                           
     
-      <img loading="lazy" class="profile" src="//image.tmdb.org/t/p/w138_and_h175_face/q9Q3c7HsZEEqrwNIY9yDgsJ74uE.jpg" srcset="//image.tmdb.org/t/p/w138_and_h175_face/q9Q3c7HsZEEqrwNIY9yDgsJ74uE.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/q9Q3c7HsZEEqrwNIY9yDgsJ74uE.jpg 2x" alt="James Brown">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/q9Q3c7HsZEEqrwNIY9yDgsJ74uE.jpg" srcset="/t/p/w138_and_h175_face/q9Q3c7HsZEEqrwNIY9yDgsJ74uE.jpg 1x, /t/p/w276_and_h350_face/q9Q3c7HsZEEqrwNIY9yDgsJ74uE.jpg 2x" alt="James Brown">
     
   
 
                       </a>
 
                       <p><a href="/person/7172-james-brown">James Brown</a></p>
-                      <p class="character">Reverend Cleophus James</p>
+                      <p class="character">Cleophus James</p>
                     </li>
                   
                     <li class="card">
                       <a href="/person/7173-cab-calloway">
                           
     
-      <img loading="lazy" class="profile" src="//image.tmdb.org/t/p/w138_and_h175_face/hJYCgRoSPZ3dzqubti1mwjTkeeK.jpg" srcset="//image.tmdb.org/t/p/w138_and_h175_face/hJYCgRoSPZ3dzqubti1mwjTkeeK.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/hJYCgRoSPZ3dzqubti1mwjTkeeK.jpg 2x" alt="Cab Calloway">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/hJYCgRoSPZ3dzqubti1mwjTkeeK.jpg" srcset="/t/p/w138_and_h175_face/hJYCgRoSPZ3dzqubti1mwjTkeeK.jpg 1x, /t/p/w276_and_h350_face/hJYCgRoSPZ3dzqubti1mwjTkeeK.jpg 2x" alt="Cab Calloway">
     
   
 
@@ -847,7 +850,7 @@
                       <a href="/person/7174-ray-charles">
                           
     
-      <img loading="lazy" class="profile" src="//image.tmdb.org/t/p/w138_and_h175_face/afXvInx5OzPZVqCheAQnagqfwzb.jpg" srcset="//image.tmdb.org/t/p/w138_and_h175_face/afXvInx5OzPZVqCheAQnagqfwzb.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/afXvInx5OzPZVqCheAQnagqfwzb.jpg 2x" alt="Ray Charles">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/afXvInx5OzPZVqCheAQnagqfwzb.jpg" srcset="/t/p/w138_and_h175_face/afXvInx5OzPZVqCheAQnagqfwzb.jpg 1x, /t/p/w276_and_h350_face/afXvInx5OzPZVqCheAQnagqfwzb.jpg 2x" alt="Ray Charles">
     
   
 
@@ -861,7 +864,7 @@
                       <a href="/person/7175-aretha-franklin">
                           
     
-      <img loading="lazy" class="profile" src="//image.tmdb.org/t/p/w138_and_h175_face/6s14FO3kFARyC5arHqgnhwwSYvA.jpg" srcset="//image.tmdb.org/t/p/w138_and_h175_face/6s14FO3kFARyC5arHqgnhwwSYvA.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/6s14FO3kFARyC5arHqgnhwwSYvA.jpg 2x" alt="Aretha Franklin">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/6s14FO3kFARyC5arHqgnhwwSYvA.jpg" srcset="/t/p/w138_and_h175_face/6s14FO3kFARyC5arHqgnhwwSYvA.jpg 1x, /t/p/w276_and_h350_face/6s14FO3kFARyC5arHqgnhwwSYvA.jpg 2x" alt="Aretha Franklin">
     
   
 
@@ -875,7 +878,7 @@
                       <a href="/person/7176-steve-cropper">
                           
     
-      <img loading="lazy" class="profile" src="//image.tmdb.org/t/p/w138_and_h175_face/bpM7BVFPrnasFEecozKmeI34714.jpg" srcset="//image.tmdb.org/t/p/w138_and_h175_face/bpM7BVFPrnasFEecozKmeI34714.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/bpM7BVFPrnasFEecozKmeI34714.jpg 2x" alt="Steve Cropper">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/bpM7BVFPrnasFEecozKmeI34714.jpg" srcset="/t/p/w138_and_h175_face/bpM7BVFPrnasFEecozKmeI34714.jpg 1x, /t/p/w276_and_h350_face/bpM7BVFPrnasFEecozKmeI34714.jpg 2x" alt="Steve Cropper">
     
   
 
@@ -889,7 +892,7 @@
                       <a href="/person/7177-donald-duck-dunn">
                           
     
-      <img loading="lazy" class="profile" src="//image.tmdb.org/t/p/w138_and_h175_face/AjEOByuk15OkT4Pezlq5CvdM9Fx.jpg" srcset="//image.tmdb.org/t/p/w138_and_h175_face/AjEOByuk15OkT4Pezlq5CvdM9Fx.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/AjEOByuk15OkT4Pezlq5CvdM9Fx.jpg 2x" alt="Donald &quot;Duck&quot; Dunn">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/AjEOByuk15OkT4Pezlq5CvdM9Fx.jpg" srcset="/t/p/w138_and_h175_face/AjEOByuk15OkT4Pezlq5CvdM9Fx.jpg 1x, /t/p/w276_and_h350_face/AjEOByuk15OkT4Pezlq5CvdM9Fx.jpg 2x" alt="Donald &quot;Duck&quot; Dunn">
     
   
 
@@ -903,7 +906,7 @@
                       <a href="/person/7178-murphy-dunne">
                           
     
-      <img loading="lazy" class="profile" src="//image.tmdb.org/t/p/w138_and_h175_face/xhF3wqk5L1fc1Zo4TyqvtarQ7M2.jpg" srcset="//image.tmdb.org/t/p/w138_and_h175_face/xhF3wqk5L1fc1Zo4TyqvtarQ7M2.jpg 1x, //image.tmdb.org/t/p/w276_and_h350_face/xhF3wqk5L1fc1Zo4TyqvtarQ7M2.jpg 2x" alt="Murphy Dunne">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/xhF3wqk5L1fc1Zo4TyqvtarQ7M2.jpg" srcset="/t/p/w138_and_h175_face/xhF3wqk5L1fc1Zo4TyqvtarQ7M2.jpg 1x, /t/p/w276_and_h350_face/xhF3wqk5L1fc1Zo4TyqvtarQ7M2.jpg 2x" alt="Murphy Dunne">
     
   
 
@@ -962,7 +965,7 @@
         <div class="info">
           
           
-            <h3>A review by Cat Ellington</h3>
+            <h3><a href="/review/58a748bdc3a36850bd000ab3">A review by Cat Ellington</a></h3>
           
           <h5>Written by <a href="/u/CatEllington">Cat Ellington</a> on February 17, 2017</h5>
         </div>
@@ -1002,7 +1005,7 @@
                   <li class="active" dir="auto"><a id="popular" class="media_panel" href="#">Most Popular</a></li>
                   <li dir="auto"><a id="videos" class="media_panel" href="#">Videos <span>2</span></a></li>
                   <li dir="auto"><a id="backdrops" class="media_panel" href="#">Backdrops <span>14</span></a></li>
-                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>38</span></a></li>
+                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>39</span></a></li>
                   <li class="view_all"></li>
                 </ul>
               </div>
@@ -1022,7 +1025,7 @@
     <div class="backdrop">
         
     
-      <img loading="lazy" class="backdrop" src="//image.tmdb.org/t/p/w533_and_h300_bestv2/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg" srcset="//image.tmdb.org/t/p/w533_and_h300_bestv2/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg 1x, //image.tmdb.org/t/p/w1066_and_h600_bestv2/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg 2x" alt="The Blues Brothers">
+      <img loading="lazy" class="backdrop" src="/t/p/w533_and_h300_bestv2/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg" srcset="/t/p/w533_and_h300_bestv2/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg 1x, /t/p/w1066_and_h600_bestv2/eeFSDMA8Mufnqi1BGcAYlyDSYkJ.jpg 2x" alt="The Blues Brothers">
     
   
 
@@ -1035,7 +1038,7 @@
     <div class="poster">
         
     
-      <img class="poster" src="//image.tmdb.org/t/p/w220_and_h330_face/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg" srcset="//image.tmdb.org/t/p/w220_and_h330_face/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 1x, //image.tmdb.org/t/p/w440_and_h660_face/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 2x" alt="The Blues Brothers">
+      <img class="poster" src="/t/p/w220_and_h330_face/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg" srcset="/t/p/w220_and_h330_face/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 1x, /t/p/w440_and_h660_face/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 2x" alt="The Blues Brothers">
     
   
 
@@ -1246,14 +1249,14 @@
         <div class="avatar">
           <a href="/u/WardenclyffeTower">
             
-              <img loading="lazy" class="avatar" src="https://secure.gravatar.com/avatar/93c11aa74b87abcbc1c9830d6cd5af5a.jpg?s=45" srcset="https://secure.gravatar.com/avatar/93c11aa74b87abcbc1c9830d6cd5af5a.jpg?s=45 1x, https://secure.gravatar.com/avatar/93c11aa74b87abcbc1c9830d6cd5af5a.jpg?s=90 2x" alt="Wardenclyffe Tower">
+              <img loading="lazy" class="avatar" src="/t/p/w45_and_h45_face/5ltqKG3LDrEqRxRVO3Ws9HrZWLC.png" srcset="/t/p/w45_and_h45_face/5ltqKG3LDrEqRxRVO3Ws9HrZWLC.png 1x, /t/p/w90_and_h90_face/5ltqKG3LDrEqRxRVO3Ws9HrZWLC.png 2x" alt="Fuzzy Dunlop">
             
           </a>
         </div>
         <div class="info">
           <p class="edit_count">
             15<br>
-            <a href="/u/WardenclyffeTower">Wardenclyffe Tower</a>
+            <a href="/u/WardenclyffeTower">Fuzzy Dunlop</a>
           </p>
         </div>
       </div>
@@ -1783,7 +1786,7 @@
     <footer class="single_column movie header_large">
       <nav>
         <div class="join">
-          <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_2-d537fb228cf3ded904ef09b136fe3fec72548ebc1fea3fbbd1ad9e36364db38b.svg" alt="The Movie Database (TMDb)" width="130" height="94">
+          <img src="/assets/2/v4/logos/v2/blue_square_2-d537fb228cf3ded904ef09b136fe3fec72548ebc1fea3fbbd1ad9e36364db38b.svg" alt="The Movie Database (TMDb)" width="130" height="94">
 
           
             <a class="rounded" href="/signup">Join the Community</a>
@@ -1828,7 +1831,7 @@
         </div>
       </nav>
 
-      <section>Build 68f56ea (685)</section>
+      <section>Build c8e5215 (732)</section>
     </footer>
 
     
@@ -1926,22 +1929,22 @@
     </div>
 
     
-      <script src="https://www.themoviedb.org/assets/2/kendo-2020.2.617/kendo.color.min-3d5a8a6d88c76e837e3eb17b637b43273aa6a70c550f26fcd7efaadcffc440bc.js"></script>
+      <script src="/assets/2/kendo-2020.2.617/kendo.color.min-3d5a8a6d88c76e837e3eb17b637b43273aa6a70c550f26fcd7efaadcffc440bc.js"></script>
     
-      <script src="https://www.themoviedb.org/assets/2/kendo-2020.2.617/kendo.drawing.min-525f956d1ce4fce4d653e2380017b4cc9f3378e6f149bca3fd48c29b6d6549bf.js"></script>
+      <script src="/assets/2/kendo-2020.2.617/kendo.drawing.min-525f956d1ce4fce4d653e2380017b4cc9f3378e6f149bca3fd48c29b6d6549bf.js"></script>
     
-      <script src="https://www.themoviedb.org/assets/2/kendo-2020.2.617/kendo.dataviz.core.min-c5d7ab98bb5034331178920231441556eb552cfdd93cdd6eb051b1dc8343d739.js"></script>
+      <script src="/assets/2/kendo-2020.2.617/kendo.dataviz.core.min-c5d7ab98bb5034331178920231441556eb552cfdd93cdd6eb051b1dc8343d739.js"></script>
     
-      <script src="https://www.themoviedb.org/assets/2/kendo-2020.2.617/kendo.dataviz.themes.min-0abbe7cc6bbc68ec5828df6289fd0f42f80781aacd422c4d856f22ada8eb9c16.js"></script>
+      <script src="/assets/2/kendo-2020.2.617/kendo.dataviz.themes.min-0abbe7cc6bbc68ec5828df6289fd0f42f80781aacd422c4d856f22ada8eb9c16.js"></script>
     
-      <script src="https://www.themoviedb.org/assets/2/kendo-2020.2.617/kendo.dataviz.chart.min-36109b2b6945c687174e9971f696a5cafc64d41f7c2e110924d6abfe17fcb234.js"></script>
+      <script src="/assets/2/kendo-2020.2.617/kendo.dataviz.chart.min-36109b2b6945c687174e9971f696a5cafc64d41f7c2e110924d6abfe17fcb234.js"></script>
     
-      <script src="https://www.themoviedb.org/assets/2/kendo-2020.2.617/kendo.dataviz.sparkline.min-ab3273ae6d1bf82635f28857ad77524c237f04087e7e98962f2e295e894fdaf0.js"></script>
+      <script src="/assets/2/kendo-2020.2.617/kendo.dataviz.sparkline.min-ab3273ae6d1bf82635f28857ad77524c237f04087e7e98962f2e295e894fdaf0.js"></script>
     
 
-    <script src="https://www.themoviedb.org/assets/2/footer-88d8069a2b64f6a5751f9ec90b06b9d13a6f59e2caa683d857b36a4b1455a764.js"></script>
+    <script src="/assets/2/footer-88d8069a2b64f6a5751f9ec90b06b9d13a6f59e2caa683d857b36a4b1455a764.js"></script>
     
-      <script src="https://www.themoviedb.org/assets/2/timeago/locales/jquery.timeago.en-US-f9d144e55407ca11f35de7a0d44b0d54ec1ffc6c4039dffd5a11c0a12e6a9482.js"></script>
+      <script src="/assets/2/timeago/locales/jquery.timeago.en-US-f9d144e55407ca11f35de7a0d44b0d54ec1ffc6c4039dffd5a11c0a12e6a9482.js"></script>
     
 
     <script type="text/javascript" charset="utf-8">
@@ -2376,7 +2379,7 @@
         <div class="image_content profile">
           <a class="result" href="/person/${data.url}" title="${data.name}" alt="${data.name}">
             # if (data.profile_path) { #
-              <img class="" src="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path} 1x, //image.tmdb.org/t/p/w132_and_h132_face${data.profile_path} 2x">
+              <img class="" src="/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="/t/p/w66_and_h66_face${data.profile_path} 1x, /t/p/w132_and_h132_face${data.profile_path} 2x">
             # } else { #
               <div class="glyphicons_v2 picture profile ${gender_lookup[data.gender]} grey no_image_holder w45_and_h45"></div>
             # } #
@@ -2397,7 +2400,7 @@
       <div class="item profile list_item known_for">
         <div class="image_content profile">
           # if (data.profile_path) { #
-            <img class="" src="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path} 1x, //image.tmdb.org/t/p/w132_and_h132_face${data.profile_path} 2x">
+            <img class="" src="/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="/t/p/w66_and_h66_face${data.profile_path} 1x, /t/p/w132_and_h132_face${data.profile_path} 2x">
           # } else { #
             <div class="glyphicons_v2 picture grey no_image_holder w45_and_h45 profile"></div>
           # } #
@@ -2419,7 +2422,7 @@
       <div class="ac_item profile list_item known_for">
         <div class="image_content profile">
           # if (data.profile_path) { #
-            <img class="" src="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="//image.tmdb.org/t/p/w66_and_h66_face${data.profile_path} 1x, //image.tmdb.org/t/p/w132_and_h132_bestv2${data.profile_path} 2x">
+            <img class="" src="/t/p/w66_and_h66_face${data.profile_path}" alt="${data.name}" width="45" height="45" srcset="/t/p/w66_and_h66_face${data.profile_path} 1x, /t/p/w132_and_h132_bestv2${data.profile_path} 2x">
           # } else { #
             <div class="glyphicons_v2 picture grey no_image_holder w45_and_h45 profile"></div>
           # } #
@@ -2448,7 +2451,7 @@
         <div class="ac_item poster list_item">
           <div class="image_content poster">
             # if (data.poster_path) { #
-              <img class="" src="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path} 1x, //image.tmdb.org/t/p/w90_and_h134_bestv2${data.poster_path} 2x">
+              <img class="" src="/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="/t/p/w45_and_h67_bestv2${data.poster_path} 1x, /t/p/w90_and_h134_bestv2${data.poster_path} 2x">
             # } else { #
               <div class="glyphicons_v2 picture grey no_image_holder w45_and_h67"></div>
             # } #
@@ -2476,7 +2479,7 @@
       <div class="ac_item poster list_item">
         <div class="image_content poster">
           # if (data.poster_path) { #
-            <img class="" src="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path} 1x, //image.tmdb.org/t/p/w90_and_h134_bestv2${data.poster_path} 2x">
+            <img class="" src="/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="/t/p/w45_and_h67_bestv2${data.poster_path} 1x, /t/p/w90_and_h134_bestv2${data.poster_path} 2x">
           # } else { #
             <div class="glyphicons_v2 picture grey no_image_holder w45_and_h67"></div>
           # } #
@@ -2503,7 +2506,7 @@
       <div class="ac_item poster list_item">
         <div class="image_content poster">
           # if (data.poster_path) { #
-            <img class="" src="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="//image.tmdb.org/t/p/w45_and_h67_bestv2${data.poster_path} 1x, //image.tmdb.org/t/p/w90_and_h134_bestv2${data.poster_path} 2x">
+            <img class="" src="/t/p/w45_and_h67_bestv2${data.poster_path}" alt="${data.title}" width="45" height="67" srcset="/t/p/w45_and_h67_bestv2${data.poster_path} 1x, /t/p/w90_and_h134_bestv2${data.poster_path} 2x">
           # } else { #
             <div class="glyphicons_v2 picture grey no_image_holder w45_and_h67"></div>
           # } #
@@ -2625,7 +2628,7 @@
     <script id="network_combo_template" type="text/x-kendo-tmpl">
       <span class="k-state-default image">
         # if (data.logo_path) { #
-          <img src="//image.tmdb.org/t/p/h15${data.logo_path}" alt="${data.name}" srcset="//image.tmdb.org/t/p/h15${data.logo_path} 1x, //image.tmdb.org/t/p/h30${data.logo_path} 2x" height="15">&nbsp;&nbsp;-&nbsp;
+          <img src="/t/p/h15${data.logo_path}" alt="${data.name}" srcset="/t/p/h15${data.logo_path} 1x, /t/p/h30${data.logo_path} 2x" height="15">&nbsp;&nbsp;-&nbsp;
         # } #
         ${data.name}# if (data.origin_country) { # (${data.origin_country}) # } #
       </span>
