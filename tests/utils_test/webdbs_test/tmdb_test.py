@@ -205,19 +205,19 @@ async def test_search_result_url(query, exp_url, api, store_response):
     assert results[0].url == exp_url
 
 @pytest.mark.parametrize(
-    argnames=('query', 'exp_year'),
+    argnames=('query', 'exp_title', 'exp_year'),
     argvalues=(
-        (Query('The Blues Brothers', year=1980), '1980'),
-        (Query('February', year='2017'), '2017'),
-        (Query('Deadwood', year=2004), '2004'),
+        (Query('Blues Brothers', year=1980), 'The Blues Brothers', '1980'),
+        (Query('February', year='2017'), "The Blackcoat's Daughter", '2017'),
+        (Query('Deadwood', year=2004), 'Deadwood', '2004'),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_search_result_year(query, exp_year, api, store_response):
+async def test_search_result_year(query, exp_title, exp_year, api, store_response):
     results = await api.search(query)
     results_dict = {r.title: r for r in results}
-    assert results_dict[query.title].year == exp_year
+    assert results_dict[exp_title].year == exp_year
 
 
 @pytest.mark.parametrize(
