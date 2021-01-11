@@ -346,12 +346,20 @@ class submit(CommandBase):
             tracker=self.tracker,
             image_host=self._get_imghost(),
             bittorrent_client=self._get_btclient(),
-            torrent_destination=self.args.copy_to,
+            torrent_destination=self._get_torrent_destination(),
             common_job_args={
                 'home_directory': fs.projectdir(self.args.CONTENT),
                 'ignore_cache': self.args.ignore_cache,
             },
         )
+
+    def _get_imghost(self):
+        imghost_name = self.tracker_config.get('image_host', None)
+        if imghost_name:
+            return imghosts.imghost(
+                name=imghost_name,
+                **self.config['imghosts'][imghost_name],
+            )
 
     def _get_btclient(self):
         btclient_name = (getattr(self.args, 'add_to', None)
@@ -363,14 +371,10 @@ class submit(CommandBase):
                 **self.config['clients'][btclient_name],
             )
 
-    def _get_imghost(self):
-        imghost_name = self.tracker_config.get('image_host', None)
-        if imghost_name:
-            return imghosts.imghost(
-                name=imghost_name,
-                **self.config['imghosts'][imghost_name],
-            )
-
+    def _get_torrent_destination(self):
+        return (getattr(self.args, 'copy_to', None)
+                or self.tracker_config.get('copy-to', None)
+                or None)
 
 class set(CommandBase):
     """

@@ -13,4 +13,5 @@ def test_defaults():
         'source'     : 'NBL',
         'image_host' : '',
         'add-to'     : '',
+        'copy-to'    : '',
     }

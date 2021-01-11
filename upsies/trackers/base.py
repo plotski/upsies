@@ -23,6 +23,7 @@ class TrackerConfigBase(dict):
         'source'     : '',
         'exclude'    : [],
         'add-to'     : '',
+        'copy-to'    : '',
     }
 
     defaults = {}
