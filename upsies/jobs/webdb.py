@@ -57,7 +57,7 @@ class SearchWebDbJob(JobBase):
 
     @cached_property
     def cache_id(self):
-        return (self._db.name, self._content_path)
+        return self._content_path
 
     def initialize(self, db, content_path):
         assert isinstance(db, webdbs.WebDbApiBase), f'Not a WebDbApiBase: {db!r}'

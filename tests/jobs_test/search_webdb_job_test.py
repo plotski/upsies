@@ -64,7 +64,7 @@ def test_SearchWebDbJob_query(job):
 
 
 def test_SearchWebDbJob_cache_id(job):
-    assert job.cache_id == (job._db.name, job._content_path)
+    assert job.cache_id == job._content_path
 
 
 def test_SearchWebDbJob_initialize_creates_searcher(tmp_path, mocker, foodb):
