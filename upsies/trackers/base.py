@@ -252,7 +252,7 @@ class TrackerBase(abc.ABC):
     def TrackerConfig(self):
         """Subclass of :class:.TrackerConfigBase`"""
 
-    def __init__(self, **config):
+    def __init__(self, config={}):
         self._config = config
 
     @property

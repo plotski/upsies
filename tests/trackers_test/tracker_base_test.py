@@ -59,5 +59,6 @@ def make_TestTracker(**kwargs):
 
 
 def test_config():
-    tracker = make_TestTracker(username='foo', password='bar')
-    assert tracker.config == {'username': 'foo', 'password': 'bar'}
+    config = {'username': 'foo', 'password': 'bar'}
+    tracker = make_TestTracker(config=config)
+    assert tracker.config is config

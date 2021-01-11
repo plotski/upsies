@@ -142,7 +142,7 @@ class create_torrent(CommandBase):
             content_path=self.args.CONTENT,
             tracker=trackers.tracker(
                 name=self.args.TRACKER.lower(),
-                **self.config['trackers'][self.args.TRACKER.lower()],
+                config=self.config['trackers'][self.args.TRACKER.lower()],
             ),
         )
 
@@ -332,7 +332,7 @@ class submit(CommandBase):
         """
         return trackers.tracker(
             name=self.tracker_name,
-            **self.tracker_config,
+            config=self.tracker_config,
         )
 
     @cached_property
