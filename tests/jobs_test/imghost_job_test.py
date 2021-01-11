@@ -29,9 +29,9 @@ def imghost(tmp_path):
 
 @pytest.fixture
 async def make_ImageHostJob(tmp_path, imghost):
-    def make_ImageHostJob(homedir=tmp_path, images_total=0, enqueue=()):
+    def make_ImageHostJob(home_directory=tmp_path, images_total=0, enqueue=()):
         return ImageHostJob(
-            homedir=homedir,
+            home_directory=home_directory,
             ignore_cache=False,
             imghost=imghost,
             images_total=images_total,
@@ -48,7 +48,7 @@ def test_cache_id(make_ImageHostJob):
 def test_cache_directory_of_imghost(make_ImageHostJob, tmp_path):
     job = make_ImageHostJob()
     assert job._imghost.cache_directory is job.cache_directory
-    job = make_ImageHostJob(homedir=tmp_path)
+    job = make_ImageHostJob(home_directory=tmp_path)
     assert job._imghost.cache_directory is job.cache_directory
 
 

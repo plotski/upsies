@@ -9,7 +9,7 @@ from upsies.jobs.mediainfo import MediainfoJob
 def test_execute_gets_mediainfo(mediainfo_mock, tmp_path):
     mediainfo_mock.return_value = 'mock mediainfo output'
     mi = MediainfoJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )
@@ -30,7 +30,7 @@ def test_execute_gets_mediainfo(mediainfo_mock, tmp_path):
 def test_execute_catches_ContentError(mediainfo_mock, tmp_path):
     mediainfo_mock.side_effect = errors.ContentError('Ouch')
     mi = MediainfoJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )

@@ -314,7 +314,7 @@ def job(tmp_path, mocker):
     )
     mocker.patch('upsies.utils.daemon.DaemonProcess', DaemonProcess_mock)
     return ScreenshotsJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=False,
         content_path='some/path',
         timestamps=(120,),
@@ -325,7 +325,7 @@ def job(tmp_path, mocker):
 @patch('upsies.utils.daemon.DaemonProcess')
 def test_ScreenshotsJob_initialize(DaemonProcess_mock, tmp_path):
     job = ScreenshotsJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=False,
         content_path='some/path',
         timestamps=(120,),
@@ -338,7 +338,7 @@ def test_ScreenshotsJob_initialize(DaemonProcess_mock, tmp_path):
             'content_path' : 'some/path',
             'timestamps'   : (120,),
             'number'       : 2,
-            'output_dir'   : job.homedir,
+            'output_dir'   : job.home_directory,
             'overwrite'    : job.ignore_cache,
         },
         info_callback=job.handle_info,

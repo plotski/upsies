@@ -105,7 +105,7 @@ def test_torrent_process_cancels_when_terminator_is_in_input_queue(mocker, queue
 
 def test_CreateTorrentJob_cache_id(tmp_path):
     job = CreateTorrentJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
         tracker_name='ASDF',
@@ -121,7 +121,7 @@ def test_CreateTorrentJob_cache_id(tmp_path):
 @patch('upsies.jobs.torrent._torrent_process')
 def test_CreateTorrentJob_initialize_sets_variables(torrent_process_mock, tmp_path):
     ctj = CreateTorrentJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
         tracker_name='ASDF',
@@ -138,7 +138,7 @@ def test_CreateTorrentJob_initialize_sets_variables(torrent_process_mock, tmp_pa
 @patch('upsies.utils.daemon.DaemonProcess')
 def test_CreateTorrentJob_initialize_creates_torrent_process(DaemonProcess_mock, tmp_path):
     ctj = CreateTorrentJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
         tracker_name='ASDF',
@@ -153,7 +153,7 @@ def test_CreateTorrentJob_initialize_creates_torrent_process(DaemonProcess_mock,
         target=_torrent_process,
         kwargs={
             'content_path' : 'path/to/foo',
-            'torrent_path' : os.path.join(ctj.homedir, 'foo.asdf.torrent'),
+            'torrent_path' : os.path.join(ctj.home_directory, 'foo.asdf.torrent'),
             'overwrite'    : False,
             'announce'     : 'http://foo.bar',
             'source'       : 'AsdF',
@@ -175,7 +175,7 @@ def job(tmp_path):
     )
     with patch('upsies.utils.daemon.DaemonProcess', DaemonProcess_mock):
         return CreateTorrentJob(
-            homedir=tmp_path,
+            home_directory=tmp_path,
             ignore_cache=False,
             content_path='path/to/foo',
             tracker_name='ASDF',

@@ -52,7 +52,7 @@ def test_category_job(release_info, focused_choice, tmp_path, mocker):
         image_host=Mock(),
         bittorrent_client=Mock(),
         torrent_destination=Mock(),
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     assert tracker_jobs.category_job == ChoiceJob_mock.return_value
     assert ChoiceJob_mock.call_args_list == [
@@ -61,7 +61,7 @@ def test_category_job(release_info, focused_choice, tmp_path, mocker):
             label='Category',
             choices=('Season', 'Episode'),
             focused=focused_choice,
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]

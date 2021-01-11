@@ -9,7 +9,7 @@ from upsies.jobs.torrent import CopyTorrentJob
 async def make_CopyTorrentJob(tmp_path):
     def make_CopyTorrentJob(destination, enqueue=()):
         return CopyTorrentJob(
-            homedir=tmp_path,
+            home_directory=tmp_path,
             ignore_cache=False,
             destination=destination,
             enqueue=enqueue,

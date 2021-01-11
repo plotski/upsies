@@ -80,7 +80,7 @@ class search_webdb(CommandBase):
     def jobs(self):
         return (
             _jobs.webdb.SearchWebDbJob(
-                homedir=fs.projectdir(self.args.CONTENT),
+                home_directory=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.CONTENT,
                 db=webdbs.webdb(self.args.DB),
@@ -110,7 +110,7 @@ class release_name(CommandBase):
     @cached_property
     def release_name_job(self):
         return _jobs.release_name.ReleaseNameJob(
-            homedir=fs.projectdir(self.args.CONTENT),
+            home_directory=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
         )
@@ -120,7 +120,7 @@ class release_name(CommandBase):
         # To be able to fetch the original title, year, etc, we need to prompt
         # for an ID first. IMDb seems to be best.
         imdb_job = _jobs.webdb.SearchWebDbJob(
-            homedir=fs.projectdir(self.args.CONTENT),
+            home_directory=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
             db=webdbs.webdb('imdb'),
@@ -137,7 +137,7 @@ class create_torrent(CommandBase):
     @cached_property
     def create_torrent_job(self):
         return _jobs.torrent.CreateTorrentJob(
-            homedir=fs.projectdir(self.args.CONTENT),
+            home_directory=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
             tracker_name=self.args.TRACKER.lower(),
@@ -148,7 +148,7 @@ class create_torrent(CommandBase):
     def add_torrent_job(self):
         if self.args.add_to:
             add_torrent_job = _jobs.torrent.AddTorrentJob(
-                homedir=fs.projectdir(self.args.CONTENT),
+                home_directory=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 client=btclients.client(
                     name=self.args.add_to,
@@ -166,7 +166,7 @@ class create_torrent(CommandBase):
     def copy_torrent_job(self):
         if self.args.copy_to:
             copy_torrent_job = _jobs.torrent.CopyTorrentJob(
-                homedir=fs.projectdir(self.args.CONTENT),
+                home_directory=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 destination=self.args.copy_to,
             )
@@ -213,7 +213,7 @@ class screenshots(CommandBase):
     @cached_property
     def screenshots_job(self):
         return _jobs.screenshots.ScreenshotsJob(
-            homedir=fs.projectdir(self.args.CONTENT),
+            home_directory=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
             timestamps=self.args.timestamps,
@@ -224,7 +224,7 @@ class screenshots(CommandBase):
     def upload_screenshots_job(self):
         if self.args.upload_to:
             imghost_job = _jobs.imghost.ImageHostJob(
-                homedir=fs.projectdir(self.args.CONTENT),
+                home_directory=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 imghost=imghosts.imghost(
                     name=self.args.upload_to,
@@ -286,7 +286,7 @@ class mediainfo(CommandBase):
     def jobs(self):
         return (
             _jobs.mediainfo.MediainfoJob(
-                homedir=fs.projectdir(self.args.CONTENT),
+                home_directory=fs.projectdir(self.args.CONTENT),
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.CONTENT,
             ),
@@ -301,7 +301,7 @@ class submit(CommandBase):
     @cached_property
     def jobs(self):
         submit_job = _jobs.submit.SubmitJob(
-            homedir=fs.projectdir(self.args.CONTENT),
+            home_directory=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             tracker=self.tracker,
             tracker_jobs=self.tracker_jobs,
@@ -347,7 +347,7 @@ class submit(CommandBase):
             bittorrent_client=self._get_btclient(),
             torrent_destination=self.args.copy_to,
             common_job_args={
-                'homedir': fs.projectdir(self.args.CONTENT),
+                'home_directory': fs.projectdir(self.args.CONTENT),
                 'ignore_cache': self.args.ignore_cache,
             },
         )

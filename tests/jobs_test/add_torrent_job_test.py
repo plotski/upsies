@@ -34,7 +34,7 @@ def client():
 async def make_AddTorrentJob(tmp_path, client):
     def make_AddTorrentJob(download_path=tmp_path, torrents=()):
         return AddTorrentJob(
-            homedir=tmp_path,
+            home_directory=tmp_path,
             ignore_cache=False,
             client=client,
             enqueue=torrents,

@@ -61,7 +61,7 @@ class ScreenshotsJob(JobBase):
                 'content_path' : content_path,
                 'timestamps'   : timestamps,
                 'number'       : number,
-                'output_dir'   : self.homedir,
+                'output_dir'   : self.home_directory,
                 'overwrite'    : self.ignore_cache,
             },
             info_callback=self.handle_info,

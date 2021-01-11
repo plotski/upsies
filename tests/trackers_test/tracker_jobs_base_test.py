@@ -50,7 +50,7 @@ def test_create_torrent_job(mocker):
         content_path='path/to/content',
         tracker_name='asdf',
         tracker_config={'announce': 'http://foo:1234/announce', 'source': 'AsdF'},
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     # Return value must be singleton
     assert tracker_jobs.create_torrent_job is CreateTorrentJob_mock.return_value
@@ -60,7 +60,7 @@ def test_create_torrent_job(mocker):
             content_path='path/to/content',
             tracker_name='asdf',
             tracker_config={'announce': 'http://foo:1234/announce', 'source': 'AsdF'},
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]
@@ -72,7 +72,7 @@ def test_add_torrent_job_without_bittorrent_client_argument(mocker):
         content_path='path/to/content',
         tracker_name='asdf',
         tracker_config={'announce': 'http://foo:1234/announce', 'source': 'AsdF'},
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
         bittorrent_client=None,
     )
     # Return value must be singleton
@@ -87,7 +87,7 @@ def test_add_torrent_job_with_add_to_client_argument(mocker):
     bittorrent_client_mock = Mock()
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
         bittorrent_client=bittorrent_client_mock,
     )
     # Return value must be singleton
@@ -98,7 +98,7 @@ def test_add_torrent_job_with_add_to_client_argument(mocker):
             autostart=False,
             client=bittorrent_client_mock,
             download_path='path/to/content/dir',
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]
@@ -112,7 +112,7 @@ def test_copy_torrent_job_without_torrent_destination_argument(mocker):
     CopyTorrentJob_mock = mocker.patch('upsies.jobs.torrent.CopyTorrentJob', Mock())
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
         torrent_destination=None,
     )
     assert tracker_jobs.copy_torrent_job is None
@@ -123,7 +123,7 @@ def test_copy_torrent_job_with_torrent_destination_argument(mocker):
     mocker.patch('upsies.jobs.torrent.CreateTorrentJob', Mock())
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
         torrent_destination='path/to/torrent/destination',
     )
     # Return value must be singleton
@@ -133,7 +133,7 @@ def test_copy_torrent_job_with_torrent_destination_argument(mocker):
         call(
             autostart=False,
             destination='path/to/torrent/destination',
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]
@@ -147,7 +147,7 @@ def test_release_name_job(mocker):
     ReleaseNameJob_mock = mocker.patch('upsies.jobs.release_name.ReleaseNameJob', Mock())
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     # Return value must be singleton
     assert tracker_jobs.release_name_job is ReleaseNameJob_mock.return_value
@@ -155,7 +155,7 @@ def test_release_name_job(mocker):
     assert ReleaseNameJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]
@@ -167,7 +167,7 @@ def test_imdb_job(mocker):
     webdb_mock = mocker.patch('upsies.utils.webdbs.webdb')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     # Return value must be singleton
     assert tracker_jobs.imdb_job is SearchWebDbJob_mock.return_value
@@ -176,7 +176,7 @@ def test_imdb_job(mocker):
         call(
             content_path='path/to/content',
             db=webdb_mock.return_value,
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]
@@ -191,7 +191,7 @@ def test_tmdb_job(mocker):
     webdb_mock = mocker.patch('upsies.utils.webdbs.webdb')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     # Return value must be singleton
     assert tracker_jobs.tmdb_job is SearchWebDbJob_mock.return_value
@@ -200,7 +200,7 @@ def test_tmdb_job(mocker):
         call(
             content_path='path/to/content',
             db=webdb_mock.return_value,
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]
@@ -212,7 +212,7 @@ def test_tvmaze_job(mocker):
     webdb_mock = mocker.patch('upsies.utils.webdbs.webdb')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     # Return value must be singleton
     assert tracker_jobs.tvmaze_job is SearchWebDbJob_mock.return_value
@@ -221,7 +221,7 @@ def test_tvmaze_job(mocker):
         call(
             content_path='path/to/content',
             db=webdb_mock.return_value,
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]
@@ -232,7 +232,7 @@ def test_screenshots_job(mocker):
     ScreenshotsJob_mock = mocker.patch('upsies.jobs.screenshots.ScreenshotsJob', Mock())
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     # Return value must be singleton
     assert tracker_jobs.screenshots_job is ScreenshotsJob_mock.return_value
@@ -240,7 +240,7 @@ def test_screenshots_job(mocker):
     assert ScreenshotsJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]
@@ -251,7 +251,7 @@ def test_upload_screenshots_job_without_image_host_argument(mocker):
     mocker.patch('upsies.jobs.screenshots.ScreenshotsJob', Mock())
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
         image_host=None,
     )
     # Return value must be singleton
@@ -265,7 +265,7 @@ def test_upload_screenshots_job_with_image_host_argument(mocker):
     image_host_mock = Mock()
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
         image_host=image_host_mock,
     )
     # Return value must be singleton
@@ -274,7 +274,7 @@ def test_upload_screenshots_job_with_image_host_argument(mocker):
     assert ImageHostJob_mock.call_args_list == [
         call(
             imghost=image_host_mock,
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]
@@ -290,7 +290,7 @@ def test_mediainfo_job(mocker):
     MediainfoJob_mock = mocker.patch('upsies.jobs.mediainfo.MediainfoJob', Mock())
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'homedir': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     # Return value must be singleton
     assert tracker_jobs.mediainfo_job is MediainfoJob_mock.return_value
@@ -298,7 +298,7 @@ def test_mediainfo_job(mocker):
     assert MediainfoJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
-            homedir='path/to/home',
+            home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
     ]

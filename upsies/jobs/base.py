@@ -19,7 +19,8 @@ class JobBase(abc.ABC):
     """
     Base class for all jobs
 
-    :param str homedir: Directory that is used to store files and cache output
+    :param str home_directory: Directory that is used to store files and cache
+        output
     :param str ignore_cache: Whether cached output and previously created files
         should not be re-used
     :param bool hidden: Whether to hide the job's output in the UI
@@ -48,13 +49,13 @@ class JobBase(abc.ABC):
         """User-facing name"""
 
     @property
-    def homedir(self):
+    def home_directory(self):
         """
         Directory that is used to store files
 
         Cached output is stored in a subdirectory called ".output".
         """
-        return self._homedir
+        return self._home_directory
 
     @property
     def ignore_cache(self):
@@ -106,14 +107,14 @@ class JobBase(abc.ABC):
         """
         return self._signal
 
-    def __init__(self, *, homedir=None, ignore_cache=False, hidden=False,
+    def __init__(self, *, home_directory=None, ignore_cache=False, hidden=False,
                  autostart=True, **kwargs):
-        if homedir:
-            self._homedir = str(homedir)
-            self._cache_directory = os.path.join(self._homedir, '.cache')
+        if home_directory:
+            self._home_directory = str(home_directory)
+            self._cache_directory = os.path.join(self._home_directory, '.cache')
         else:
-            self._homedir = fs.tmpdir()
-            self._cache_directory = self.homedir
+            self._home_directory = fs.tmpdir()
+            self._cache_directory = self.home_directory
         self._ignore_cache = bool(ignore_cache)
         self._hidden = bool(hidden)
         self._autostart = bool(autostart)

@@ -24,7 +24,7 @@ class AsyncMock(Mock):
 @pytest.fixture
 def job(tmp_path, tracker, tracker_jobs):
     return SubmitJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=False,
         tracker=tracker,
         tracker_jobs=tracker_jobs,
@@ -96,7 +96,7 @@ async def test_initialize_creates_jobs_after_upload(tmp_path, tracker, tracker_j
         side_effect=lambda: log('Creating jobs_after_upload', [Mock(), Mock()]),
     )
     SubmitJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=False,
         tracker=tracker,
         tracker_jobs=tracker_jobs,
@@ -109,7 +109,7 @@ async def test_initialize_starts_jobs_after_upload_on_output(tmp_path, tracker, 
         return_value=[Mock(), Mock(), Mock()],
     )
     job = SubmitJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=False,
         tracker=tracker,
         tracker_jobs=tracker_jobs,
@@ -322,7 +322,7 @@ async def test_None_is_filtered_from_jobs(attrname, tmp_path, tracker, tracker_j
         PropertyMock(return_value=[None, 'foo', None, 'bar']),
     )
     job = SubmitJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=False,
         tracker=tracker,
         tracker_jobs=tracker_jobs,

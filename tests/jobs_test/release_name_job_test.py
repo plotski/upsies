@@ -22,7 +22,7 @@ class AsyncMock(Mock):
 def test_release_name_property(ReleaseName_mock, tmp_path):
     ReleaseName_mock.return_value = 'Mock Name'
     rnj = ReleaseNameJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )
@@ -34,7 +34,7 @@ def test_release_name_property(ReleaseName_mock, tmp_path):
 def test_release_name_selected(ReleaseName_mock, tmp_path):
     ReleaseName_mock.return_value = 'Mock Name'
     rnj = ReleaseNameJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )
@@ -46,7 +46,7 @@ def test_release_name_selected(ReleaseName_mock, tmp_path):
 @patch('upsies.utils.release_info.ReleaseName')
 def test_fetch_info(ReleaseName_mock, tmp_path):
     rnj = ReleaseNameJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )
@@ -65,7 +65,7 @@ def test_fetch_info(ReleaseName_mock, tmp_path):
 @patch('upsies.utils.release_info.ReleaseName')
 def test_fetch_info_raises_exception(ReleaseName_mock, tmp_path):
     rnj = ReleaseNameJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )
@@ -82,7 +82,7 @@ def test_fetch_info_raises_exception(ReleaseName_mock, tmp_path):
 @patch('upsies.utils.release_info.ReleaseName')
 def test_release_name_update_callback(ReleaseName_mock, tmp_path):
     rnj = ReleaseNameJob(
-        homedir=tmp_path,
+        home_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )

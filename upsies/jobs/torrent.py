@@ -44,7 +44,7 @@ class CreateTorrentJob(base.JobBase):
         self._content_path = content_path
         self._tracker_name = tracker_name
         self._torrent_path = os.path.join(
-            self.homedir,
+            self.home_directory,
             f'{fs.basename(content_path)}.{tracker_name.lower()}.torrent',
         )
         self.signal.add('progress_update')
