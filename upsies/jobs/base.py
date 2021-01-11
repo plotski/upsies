@@ -110,9 +110,13 @@ class JobBase(abc.ABC):
     def __init__(self, *, home_directory=None, ignore_cache=False, hidden=False,
                  autostart=True, **kwargs):
         if home_directory:
+            # Custome home specific to some content. Store cache in hidden
+            # directory in there.
             self._home_directory = str(home_directory)
             self._cache_directory = os.path.join(self._home_directory, '.cache')
         else:
+            # Default home, something like /tmp/upsies. We want to store files
+            # and cache in the same directory.
             self._home_directory = fs.tmpdir()
             self._cache_directory = self.home_directory
         self._ignore_cache = bool(ignore_cache)
