@@ -32,7 +32,7 @@ class TvmazeApi(WebDbApiBase):
             return []
 
         url = f'{self._url_base}/search/shows'
-        params = {'q': query.title}
+        params = {'q': query.title_normalized}
 
         results_str = await http.get(url, params=params, cache=True)
         try:

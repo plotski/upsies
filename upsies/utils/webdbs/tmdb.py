@@ -26,7 +26,7 @@ class TmdbApi(WebDbApiBase):
         if not query.title:
             return []
 
-        params = {'query': query.title}
+        params = {'query': query.title_normalized}
         if query.year is not None:
             params['query'] += f' y:{query.year}'
         if query.type is ReleaseType.movie:

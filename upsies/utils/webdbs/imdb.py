@@ -49,7 +49,7 @@ class ImdbApi(WebDbApiBase):
             return []
 
         path = 'search/title/'
-        params = {'title': query.title}
+        params = {'title': query.title_normalized}
         if query.type is not ReleaseType.unknown:
             params['title_type'] = self._title_types[query.type]
         if query.year is not None:
