@@ -12,4 +12,5 @@ def test_defaults():
         'exclude'    : [],
         'source'     : 'NBL',
         'image_host' : '',
+        'add-to'     : '',
     }

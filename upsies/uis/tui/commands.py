@@ -354,7 +354,9 @@ class submit(CommandBase):
         )
 
     def _get_btclient(self):
-        btclient_name = getattr(self.args, 'add_to', None)
+        btclient_name = (getattr(self.args, 'add_to', None)
+                         or self.tracker_config.get('add-to', None)
+                         or None)
         if btclient_name:
             return btclients.client(
                 name=btclient_name,
