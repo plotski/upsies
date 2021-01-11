@@ -27,12 +27,12 @@ class TrackerConfigBase(dict):
     defaults = {}
     """Default values"""
 
-    def __new__(cls, **kwargs):
+    def __new__(cls, config={}):
         combined_defaults = {**cls._defaults, **cls.defaults}
-        for k in kwargs:
+        for k in config:
             if k not in combined_defaults:
                 raise TypeError(f'Unknown option: {k!r}')
-        return {**combined_defaults, **kwargs}
+        return {**combined_defaults, **config}
 
 
 class TrackerJobsBase(abc.ABC):
