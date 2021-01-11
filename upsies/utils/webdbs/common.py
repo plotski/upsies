@@ -23,12 +23,37 @@ class Query:
     :raise ValueError: if an invalid argument is passed
     """
 
+    @staticmethod
+    def _normalize_title(title):
+        return ' '.join(title.casefold().strip().split())
+
     def __init__(self, title, year=None, type=ReleaseType.unknown):
-        self.type = ReleaseType(type)
-        self.title = str(title)
-        self.year = None if year is None else str(year)
-        if self.year is not None and not 1800 < int(self.year) < 2100:
-            raise ValueError(f'Invalid year: {self.year}')
+        self._type = ReleaseType(type)
+        self._title = str(title)
+        self._title_normalized = self._normalize_title(self._title)
+        self._year = None if year is None else str(year)
+        if self._year is not None and not 1800 < int(self._year) < 2100:
+            raise ValueError(f'Invalid year: {self._year}')
+
+    @property
+    def type(self):
+        """:class:`~.utils.ReleaseType` value"""
+        return self._type
+
+    @property
+    def title(self):
+        """Name of the movie or TV series"""
+        return self._title
+
+    @property
+    def title_normalized(self):
+        """Same as :attr:`title` but in stripped lower case with deduplicated spaces"""
+        return self._title_normalized
+
+    @property
+    def year(self):
+        """Year of release"""
+        return self._year
 
     _types = {
         ReleaseType.movie: ('movie', 'film'),
@@ -107,11 +132,8 @@ class Query:
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
-            def normalize_title(t):
-                return ' '.join(t.casefold().strip().split())
-
             return (
-                normalize_title(self.title) == normalize_title(other.title)
+                self.title_normalized == other.title_normalized
                 and self.year == other.year
                 and self.type is other.type
             )
