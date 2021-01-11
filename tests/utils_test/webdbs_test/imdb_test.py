@@ -179,6 +179,7 @@ async def test_search_result_keywords(query, exp_keywords, api, store_response):
         (Query('The Forest', type=ReleaseType.series, year=2017), 'Sixteen-year-old Jennifer disappears'),
         (Query('Deadwood', type=ReleaseType.series, year=2004), 'set in the late 1800s'),
         (Query('The Deadwood Coach', type=ReleaseType.movie, year=1924), ''),
+        (Query('Two Down', type=ReleaseType.movie, year=2015), 'Set in modern day London'),
     ),
     ids=lambda value: str(value),
 )

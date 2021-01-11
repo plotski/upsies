@@ -288,7 +288,17 @@ class _ImdbSearchResult(common.SearchResult):
 
     def _get_summary(self, soup):
         tags = soup.find_all(class_='text-muted')
-        return (tags[2].string or '').strip()
+        summary = (tags[2].string or '').strip()
+
+        # Look for "See full summary" link. Preceding text is summary.
+        if not summary:
+            summary_link = soup.find('a', text=re.compile(r'(?i:full\s+summary)'))
+            if summary_link:
+                summary_string = summary_link.previous_sibling
+                if summary_string:
+                    summary = summary_string.strip()
+
+        return summary
 
     def _get_title(self, soup):
         return soup.find('a').string.strip()
