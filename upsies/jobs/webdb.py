@@ -156,7 +156,10 @@ class _Searcher:
 
     async def wait(self):
         if self._search_task:
-            await self._search_task
+            try:
+                await self._search_task
+            except asyncio.CancelledError:
+                pass
 
     def search(self, query):
         """
