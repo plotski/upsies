@@ -1,6 +1,22 @@
 from unittest.mock import Mock, PropertyMock, call
 
+import pytest
+
 from upsies.trackers.base import TrackerJobsBase
+
+
+@pytest.fixture
+def tracker():
+    tracker = Mock()
+    tracker.configure_mock(
+        name='AsdF',
+        config={
+            'announce' : 'http://foo.bar',
+            'source'   : 'AsdF',
+            'exclude'  : ('a', 'b'),
+        },
+    )
+    return tracker
 
 
 def make_TestTrackerJobs(**kwargs):
@@ -8,9 +24,8 @@ def make_TestTrackerJobs(**kwargs):
         jobs_before_upload = PropertyMock()
 
     default_kwargs = {
-        'tracker_name': '',
-        'tracker_config': {},
         'content_path': '',
+        'tracker': Mock(),
         'image_host': '',
         'bittorrent_client': Mock(),
         'torrent_destination': '',
@@ -21,9 +36,8 @@ def make_TestTrackerJobs(**kwargs):
 
 def test_arguments():
     kwargs = {
-        'tracker_name': Mock(),
-        'tracker_config': Mock(),
         'content_path': Mock(),
+        'tracker': Mock(),
         'image_host': Mock(),
         'bittorrent_client': Mock(),
         'torrent_destination': Mock(),
@@ -48,8 +62,7 @@ def test_create_torrent_job(mocker):
     CreateTorrentJob_mock = mocker.patch('upsies.jobs.torrent.CreateTorrentJob', Mock())
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        tracker_name='asdf',
-        tracker_config={'announce': 'http://foo:1234/announce', 'source': 'AsdF'},
+        tracker='mock tracker',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     # Return value must be singleton
@@ -58,8 +71,7 @@ def test_create_torrent_job(mocker):
     assert CreateTorrentJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
-            tracker_name='asdf',
-            tracker_config={'announce': 'http://foo:1234/announce', 'source': 'AsdF'},
+            tracker='mock tracker',
             home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
@@ -70,8 +82,6 @@ def test_add_torrent_job_without_bittorrent_client_argument(mocker):
     AddTorrentJob_mock = mocker.patch('upsies.jobs.torrent.AddTorrentJob', Mock())
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        tracker_name='asdf',
-        tracker_config={'announce': 'http://foo:1234/announce', 'source': 'AsdF'},
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
         bittorrent_client=None,
     )
@@ -84,11 +94,11 @@ def test_add_torrent_job_with_add_to_client_argument(mocker):
     AddTorrentJob_mock = mocker.patch('upsies.jobs.torrent.AddTorrentJob', Mock())
     mocker.patch('upsies.jobs.torrent.CreateTorrentJob', Mock())
     mocker.patch('upsies.utils.fs.dirname', Mock(return_value='path/to/content/dir'))
-    bittorrent_client_mock = Mock()
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
+        tracker='mock tracker',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
-        bittorrent_client=bittorrent_client_mock,
+        bittorrent_client='bittorrent client mock',
     )
     # Return value must be singleton
     assert tracker_jobs.add_torrent_job is AddTorrentJob_mock.return_value
@@ -96,7 +106,7 @@ def test_add_torrent_job_with_add_to_client_argument(mocker):
     assert AddTorrentJob_mock.call_args_list == [
         call(
             autostart=False,
-            client=bittorrent_client_mock,
+            client='bittorrent client mock',
             download_path='path/to/content/dir',
             home_directory='path/to/home',
             ignore_cache='mock bool',

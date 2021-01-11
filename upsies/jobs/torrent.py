@@ -18,10 +18,7 @@ class CreateTorrentJob(base.JobBase):
     Create torrent file
 
     :param content_path: Path to torrent content
-    :param str tracker_name: Tracker name abbreviation
-    :param tracker_config: Tracker configuration as a dictionary. Must contain
-        the keys ``announce``, ``source`` and ``exclude``. Consider using
-        :class:`~.trackers.base.TrackerConfigBase` subclass.
+    :param str tracker: :class:`~.trackers.base.TrackerBase` subclass
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
@@ -38,14 +35,14 @@ class CreateTorrentJob(base.JobBase):
     @property
     def cache_id(self):
         """Use tracker name for cache ID"""
-        return self._tracker_name
+        return self._tracker.name
 
-    def initialize(self, *, content_path, tracker_name, tracker_config):
+    def initialize(self, *, tracker, content_path):
+        self._tracker = tracker
         self._content_path = content_path
-        self._tracker_name = tracker_name
         self._torrent_path = os.path.join(
             self.home_directory,
-            f'{fs.basename(content_path)}.{tracker_name.lower()}.torrent',
+            f'{fs.basename(content_path)}.{tracker.name.lower()}.torrent',
         )
         self.signal.add('progress_update')
         self._file_tree = ''
@@ -56,9 +53,9 @@ class CreateTorrentJob(base.JobBase):
                 'content_path' : self._content_path,
                 'torrent_path' : self._torrent_path,
                 'overwrite'    : self.ignore_cache,
-                'announce'     : tracker_config['announce'],
-                'source'       : tracker_config['source'],
-                'exclude'      : tracker_config['exclude'],
+                'announce'     : tracker.config['announce'],
+                'source'       : tracker.config['source'],
+                'exclude'      : tracker.config['exclude'],
             },
             init_callback=self.handle_file_tree,
             info_callback=self.handle_progress_update,

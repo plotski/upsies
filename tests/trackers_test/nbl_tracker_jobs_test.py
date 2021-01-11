@@ -12,9 +12,8 @@ def test_jobs_before_upload(tmp_path, mocker):
     tvmaze_job_mock = mocker.patch('upsies.trackers.nbl.NblTrackerJobs.tvmaze_job', Mock())
     category_job_mock = mocker.patch('upsies.trackers.nbl.NblTrackerJobs.category_job', Mock())
     tracker_jobs = NblTrackerJobs(
-        tracker_name=Mock(),
-        tracker_config=Mock(),
         content_path=Mock(),
+        tracker=Mock(),
         image_host=Mock(),
         bittorrent_client=Mock(),
         torrent_destination=Mock(),
@@ -46,9 +45,8 @@ def test_category_job(release_info, focused_choice, tmp_path, mocker):
     mocker.patch('upsies.utils.release_info.ReleaseInfo', return_value={'type': release_info})
     ChoiceJob_mock = mocker.patch('upsies.jobs.prompt.ChoiceJob', Mock())
     tracker_jobs = NblTrackerJobs(
-        tracker_name=Mock(),
-        tracker_config=Mock(),
         content_path=Mock(),
+        tracker=Mock(),
         image_host=Mock(),
         bittorrent_client=Mock(),
         torrent_destination=Mock(),

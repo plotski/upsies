@@ -44,11 +44,10 @@ def tracker():
     return TestTracker()
 
 @pytest.fixture
-def tracker_jobs(btclient, tracker_config):
+def tracker_jobs(btclient, tracker):
     kwargs = {
         'content_path': 'content/path',
-        'tracker_name': 'tracker name',
-        'tracker_config': tracker_config,
+        'tracker': tracker,
         'image_host': 'image host',
         'bittorrent_client': btclient,
         'torrent_destination': 'torrent/destination',

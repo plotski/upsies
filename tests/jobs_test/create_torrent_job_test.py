@@ -103,50 +103,48 @@ def test_torrent_process_cancels_when_terminator_is_in_input_queue(mocker, queue
     assert (MsgType.info, 9) not in info
 
 
-def test_CreateTorrentJob_cache_id(tmp_path):
-    job = CreateTorrentJob(
-        home_directory=tmp_path,
-        ignore_cache=False,
-        content_path='path/to/foo',
-        tracker_name='ASDF',
-        tracker_config={
+@pytest.fixture
+def tracker():
+    tracker = Mock()
+    tracker.configure_mock(
+        name='AsdF',
+        config={
             'announce' : 'http://foo.bar',
             'source'   : 'AsdF',
             'exclude'  : ('a', 'b'),
         },
     )
-    assert job.cache_id == 'ASDF'
+    return tracker
+
+def test_CreateTorrentJob_cache_id(tmp_path, tracker):
+    job = CreateTorrentJob(
+        home_directory=tmp_path,
+        ignore_cache=False,
+        content_path='path/to/foo',
+        tracker=tracker,
+    )
+    assert job.cache_id == 'AsdF'
 
 
 @patch('upsies.jobs.torrent._torrent_process')
-def test_CreateTorrentJob_initialize_sets_variables(torrent_process_mock, tmp_path):
+def test_CreateTorrentJob_initialize_sets_private_variables(torrent_process_mock, tracker, tmp_path):
     ctj = CreateTorrentJob(
         home_directory=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
-        tracker_name='ASDF',
-        tracker_config={
-            'announce' : 'http://foo.bar',
-            'source'   : 'AsdF',
-            'exclude'  : ('a', 'b'),
-        },
+        tracker=tracker,
     )
     assert ctj._content_path == 'path/to/foo'
     assert ctj._torrent_path == f'{tmp_path / "foo"}.asdf.torrent'
     assert ctj._file_tree == ''
 
 @patch('upsies.utils.daemon.DaemonProcess')
-def test_CreateTorrentJob_initialize_creates_torrent_process(DaemonProcess_mock, tmp_path):
+def test_CreateTorrentJob_initialize_creates_torrent_process(DaemonProcess_mock, tracker, tmp_path):
     ctj = CreateTorrentJob(
         home_directory=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
-        tracker_name='ASDF',
-        tracker_config={
-            'announce' : 'http://foo.bar',
-            'source'   : 'AsdF',
-            'exclude'  : ('a', 'b'),
-        },
+        tracker=tracker,
     )
     assert DaemonProcess_mock.call_args_list == [call(
         name=ctj.name,
@@ -167,7 +165,7 @@ def test_CreateTorrentJob_initialize_creates_torrent_process(DaemonProcess_mock,
 
 
 @pytest.fixture
-def job(tmp_path):
+def job(tmp_path, tracker):
     DaemonProcess_mock = Mock(
         return_value=Mock(
             join=AsyncMock(),
@@ -178,12 +176,7 @@ def job(tmp_path):
             home_directory=tmp_path,
             ignore_cache=False,
             content_path='path/to/foo',
-            tracker_name='ASDF',
-            tracker_config={
-                'announce' : 'http://foo.bar',
-                'source'   : 'AsdF',
-                'exclude'  : ('a', 'b'),
-            },
+            tracker=tracker,
         )
 
 def test_CreateTorrentJob_execute(job):

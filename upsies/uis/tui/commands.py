@@ -140,8 +140,10 @@ class create_torrent(CommandBase):
             home_directory=fs.projectdir(self.args.CONTENT),
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
-            tracker_name=self.args.TRACKER.lower(),
-            tracker_config=self.config['trackers'][self.args.TRACKER.lower()],
+            tracker=trackers.tracker(
+                name=self.args.TRACKER.lower(),
+                **self.config['trackers'][self.args.TRACKER.lower()],
+            ),
         )
 
     @cached_property
@@ -340,9 +342,8 @@ class submit(CommandBase):
         of :mod:`.trackers`
         """
         return self.tracker.TrackerJobs(
-            tracker_name=self.tracker_name,
-            tracker_config=self.tracker_config,
             content_path=self.args.CONTENT,
+            tracker=self.tracker,
             image_host=self._get_imghost(),
             bittorrent_client=self._get_btclient(),
             torrent_destination=self.args.copy_to,

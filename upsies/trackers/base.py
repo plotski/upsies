@@ -39,50 +39,37 @@ class TrackerJobsBase(abc.ABC):
     """
     Base class for tracker-specific :class:`jobs <upsies.jobs.base.JobBase>`
 
-    Every argument any job of any subclass needs must be given as an argument to
-    ths class when it is instantiated.
+    Jobs are instantiated on demand by an instance of this class, which means
+    all arguments for all jobs must be given to this class during instantiation.
 
-    Job instances are provided as :func:`~functools.cached_property` attributes
-    that return :class:`~.jobs.base.JobBase` instances. That means jobs are
-    created on demand and only once per session.
+    Job instances are provided as :func:`~functools.cached_property`, i.e. jobs
+    are created only once per session.
 
     This base class defines general-purpose jobs that can be used by subclasses
     by returning them in their :attr:`.jobs_before_upload` or
     :attr:`.jobs_after_upload` attributes.
 
-    For a description of the arguments see their corresponding properties.
+    For a description of the arguments see the corresponding properties.
     """
 
-    def __init__(self, *, content_path, tracker_name, tracker_config,
-                 image_host, bittorrent_client, torrent_destination,
-                 common_job_args):
-        self._tracker_name = tracker_name
-        self._tracker_config = tracker_config
+    def __init__(self, *, content_path, tracker, image_host, bittorrent_client,
+                 torrent_destination, common_job_args):
         self._content_path = content_path
+        self._tracker = tracker
         self._image_host = image_host
         self._bittorrent_client = bittorrent_client
         self._torrent_destination = torrent_destination
         self._common_job_args = common_job_args
 
     @property
-    def tracker_name(self):
-        """Lower-case tracker name abbreviation"""
-        return self._tracker_name
-
-    @property
-    def tracker_config(self):
-        """
-        User configuration as a :class:`dict`
-
-        This contains values users can configure via configuration files, CLI
-        arguments, UI widgets, etc.
-        """
-        return self._tracker_config
-
-    @property
     def content_path(self):
         """Path to the content to generate metadata for"""
         return self._content_path
+
+    @property
+    def tracker(self):
+        """:class:`~.trackers.base.TrackerBase` subclass"""
+        return self._tracker
 
     @property
     def image_host(self):
@@ -137,8 +124,7 @@ class TrackerJobsBase(abc.ABC):
         """:class:`~.jobs.torrent.CreateTorrentJob` instance"""
         return _jobs.torrent.CreateTorrentJob(
             content_path=self.content_path,
-            tracker_name=self.tracker_name,
-            tracker_config=self.tracker_config,
+            tracker=self.tracker,
             **self.common_job_args,
         )
 
@@ -256,6 +242,16 @@ class TrackerBase(abc.ABC):
         e.g. authentication credentials
     """
 
+    @property
+    @abc.abstractmethod
+    def TrackerJobs(self):
+        """Subclass of :class:.TrackerJobsBase`"""
+
+    @property
+    @abc.abstractmethod
+    def TrackerConfig(self):
+        """Subclass of :class:.TrackerConfigBase`"""
+
     def __init__(self, **config):
         self._config = config
 
@@ -273,16 +269,6 @@ class TrackerBase(abc.ABC):
     def config(self):
         """User configuration from :meth:`__init__` keyword arguments as dictionary"""
         return self._config
-
-    @property
-    @abc.abstractmethod
-    def TrackerJobs(self):
-        """Subclass of :class:.TrackerJobsBase`"""
-
-    @property
-    @abc.abstractmethod
-    def TrackerConfig(self):
-        """Subclass of :class:.TrackerConfigBase`"""
 
     @abc.abstractmethod
     async def login(self):
