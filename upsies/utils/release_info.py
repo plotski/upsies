@@ -666,7 +666,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
         # Detect Remux
         if 'Remux' in self._guessit.get('other', ()):
-            source += ' Remux'
+            if not any(s in source for s in ('WEBRip', 'WEB-DL')):
+                source += ' Remux'
 
         return source
 
