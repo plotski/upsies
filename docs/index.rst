@@ -41,6 +41,13 @@ Supported Image Hosting Services
 
 * imgbox.com
 
+Supported Database Services
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* IMDb
+* TMDb
+* TVmaze
+
 Table of Contents
 -----------------
 
