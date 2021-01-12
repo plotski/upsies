@@ -1,3 +1,7 @@
+"""
+Custom TUI widgets
+"""
+
 import collections
 import textwrap
 

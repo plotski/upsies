@@ -1,3 +1,7 @@
+"""
+TUI representation of :class:`jobs <upsies.jobs.base.JobBase>`
+"""
+
 from ._base import JobWidgetBase  # isort:skip
 
 from ._config import SetJobWidget

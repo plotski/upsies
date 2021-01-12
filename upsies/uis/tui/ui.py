@@ -1,3 +1,7 @@
+"""
+Main UI widget and job manager
+"""
+
 import asyncio
 import collections
 import types

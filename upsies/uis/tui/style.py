@@ -1,3 +1,7 @@
+"""
+Highlighting for :class:`job widgets <upsies.uis.tui.widgets.JobWidget>`
+"""
+
 from prompt_toolkit import styles
 
 # flake8: noqa: E241 multiple spaces after ','

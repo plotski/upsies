@@ -1,3 +1,7 @@
+"""
+CLI arguments
+"""
+
 import argparse
 import functools
 import sys

@@ -1,3 +1,7 @@
+"""
+Entry point
+"""
+
 import sys
 
 from ... import __homepage__, __project_name__, defaults, errors

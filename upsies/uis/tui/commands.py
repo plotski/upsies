@@ -1,4 +1,6 @@
 """
+CLI subcommands
+
 A command provides a :attr:`~CommandBase.jobs` property that returns a
 sequence of :class:`~.jobs.base.JobBase` instances.
 
@@ -7,10 +9,11 @@ It is important that the jobs are only instantiated once and the
 accessed. The easiest way to achieve this is with the
 :func:`~functools.cached_property` decorator.
 
-Jobs should use CLI arguments (:attr:`~CommandBase.args`) and config files
-(:attr:`~CommandBase.config`) to create arguments for jobs.
+CLI arguments are available as :attr:`~.CommandBase.args` and configuration
+files as :attr:`~.CommandBase.config`. These should be used to create arguments
+for jobs.
 
-The docstrings of :class:`CommandBase` subclasses are used as the descriptionin
+The docstrings of :class:`CommandBase` subclasses are used as the description in
 the ``--help`` output.
 """
 
