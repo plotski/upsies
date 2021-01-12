@@ -4,16 +4,16 @@ Quickstart
 These commands should get you started quickly. Inexperienced users should read
 the :doc:`installation manual <./installation>`.
 
-Installing
-----------
+Installation
+------------
 
 .. code-block:: sh
 
    $ sudo apt install pipx ffmpeg mediainfo
    $ pipx install upsies
 
-Getting help
-------------
+Help
+----
 
 .. code-block:: sh
 
