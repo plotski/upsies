@@ -16,10 +16,11 @@ def disable_http_requests(pytestconfig, module_mocker):
         module_mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
 
 
-# When HTTP requests are allowed, store responses in ./cached_responses.
-@pytest.fixture
-def store_response():
-    tmpdir = os.path.join(os.path.dirname(__file__), 'cached_responses')
+# When HTTP requests are allowed, store responses tests/data/webdbs.
+# See tests/conftest.py for the data_dir fixture.
+@pytest.fixture(scope='session')
+def store_response(data_dir):
+    tmpdir = os.path.join(data_dir, 'webdbs')
     if not os.path.exists(tmpdir):
         os.mkdir(tmpdir)
     with patch('upsies.utils.fs.tmpdir', Mock(return_value=tmpdir)):
