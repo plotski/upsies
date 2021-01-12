@@ -3,6 +3,8 @@ video metadata. It comes with a command line interface and can be used in shell
 scripts. It is written in pure Python and is designed to be friendly to users
 and useful for Python developers.
 
+.. image:: docs/demo.svg
+
 ..
    ``upsies`` is developed on `GitHub <https://github.com/plotski/upsies>`_. The
    latest release is available on `PyPI
