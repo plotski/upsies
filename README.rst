@@ -3,7 +3,11 @@ video metadata. It comes with a command line interface and can be used in shell
 scripts. It is written in pure Python and is designed to be friendly to users
 and useful for Python developers.
 
-.. image:: docs/demo.svg
+.. figure:: /demo.svg
+   :align: left
+
+   ``dummy`` is a no-op tracker and client. Every tracker defines a custom set
+   of jobs that generate the metadata needed for submission.
 
 ..
    ``upsies`` is developed on `GitHub <https://github.com/plotski/upsies>`_. The

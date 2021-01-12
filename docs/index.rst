@@ -1,7 +1,7 @@
 upsies
 ======
 
-.. include:: ../README.rst
+.. include:: /../README.rst
 
 Supported Trackers
 ^^^^^^^^^^^^^^^^^^
