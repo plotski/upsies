@@ -1,18 +1,7 @@
 upsies
 ======
 
-.. include:: /introduction.rst
-
-.. figure:: /demo.svg
-   :align: left
-
-   .. include:: /demo.rst
-
-.. include:: /urls.rst
-
-.. include:: /features.rst
-
-.. include:: /supported.rst
+.. include:: /../README.rst
 
 Table of Contents
 -----------------
