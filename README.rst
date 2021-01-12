@@ -9,14 +9,6 @@ and useful for Python developers.
    ``dummy`` is a no-op tracker and client. Every tracker defines a custom set
    of jobs that generate the metadata needed for submission.
 
-
-``upsies`` is developed on `GitHub <https://github.com/plotski/upsies>`_.
-
-..
-   The latest release is available on `PyPI <https://pypi.org/project/upsies>`_.
-
-Documentation is hosted on `Read the Docs <https://upsies.readthedocs.io/en/latest/>`_.
-
 Features
 --------
 
@@ -28,3 +20,10 @@ Features
   to a watch directory
 * Submit metadata to supported private tracker
 * Do everything simultaneously
+
+``upsies`` is developed on `GitHub <https://github.com/plotski/upsies>`_.
+
+..
+   The latest release is available on `PyPI <https://pypi.org/project/upsies>`_.
+
+Documentation is hosted on `Read the Docs <https://upsies.readthedocs.io/en/latest/>`_.
