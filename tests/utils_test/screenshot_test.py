@@ -1,9 +1,10 @@
+import os
 from unittest.mock import Mock, call, patch
 
 import pytest
 
 from upsies import errors
-from upsies.utils import screenshot
+from upsies.utils import screenshot, video
 
 
 @patch('upsies.utils.fs.assert_file_readable')
@@ -93,3 +94,14 @@ def test_overwrite_existing_screenshot_file(duration_mock, run_mock, exists_mock
     assert run_mock.call_args_list == [call(exp_cmd,
                                             ignore_errors=True,
                                             join_stderr=True)]
+
+
+def test_screenshot_has_display_aspect_ratio(data_dir, tmp_path):
+    video_file = os.path.join(data_dir, 'video', 'aspect_ratio.mkv')
+    screenshot_file = tmp_path / 'screenshot.jpg'
+    screenshot.create(video_file, 0, screenshot_file)
+    tracks = video._tracks(screenshot_file)
+    width = int(tracks['Image'][0]['Width'])
+    height = int(tracks['Image'][0]['Height'])
+    assert 1279 <= width <= 1280
+    assert height == 534
