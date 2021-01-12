@@ -90,7 +90,7 @@ def parse(args):
     """
     parser = argparse.ArgumentParser(
         description='Collect metadata for uploading content to private trackers',
-        formatter_class=MyHelpFormatter,
+        formatter_class=_MyHelpFormatter,
     )
     parser.add_argument('--version',
                         action='version',
@@ -121,7 +121,7 @@ def parse(args):
             aliases=command.names[1:],
             help=help,
             description=description,
-            formatter_class=MyHelpFormatter,
+            formatter_class=_MyHelpFormatter,
         )
         parser.set_defaults(subcmd=command)
 
@@ -314,7 +314,7 @@ def parse(args):
         return parsed
 
 
-class MyHelpFormatter(argparse.HelpFormatter):
+class _MyHelpFormatter(argparse.HelpFormatter):
     """Use "\n" to separate and preserve paragraphs and limit line width"""
 
     MAX_WIDTH = 90
