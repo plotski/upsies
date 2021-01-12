@@ -1,8 +1,9 @@
 Quickstart
 ==========
 
-These commands should get you started quickly. Inexperienced users should read
-the :doc:`installation manual <./installation>`.
+This is a very concise overview of how to get ``upsies`` up and running.
+
+Read the :doc:`installation manual <./installation>` for more details.
 
 Installation
 ------------

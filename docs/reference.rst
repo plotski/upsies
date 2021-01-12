@@ -27,31 +27,29 @@ Jobs
 :mod:`Jobs <upsies.jobs>` are the intermediaries between utilities and a user
 interface. They provide data from utilities to the UI and handle user input.
 
-Jobs are instantiated with all the necessary input, e.g. from CLI arguments or
-configuration files.
+For example, :class:`~.jobs.screenshots.ScreenshotsJob` takes a video file, the
+desired number of screenshots and a list of specific timestamps. It uses
+:mod:`.utils.timestamp` and :mod:`.utils.video` to validate the specific
+timestamps and add more until the desired number of screenshots is reached and
+then loops over :func:`.utils.screenshot.create`.
 
-For example, :class:`~.jobs.screenshots.ScreenshotsJob` takes the video file,
-the desired number of screenshots and a list of specific screenshot
-timestamps. It uses :mod:`.utils.timestamp` and :mod:`.utils.video` to validate
-the specific timestamps, add more timestamps until the desired number of
-screenshots is reached and then runs :func:`.utils.screenshot.create`. The
-resulting screenshot paths are then made available via
-:class:`~.utils.signal.Signal`\ s which the UI can connect to.
+The resulting screenshot paths are published via a
+:class:`~.utils.signal.Signal`. The UI uses that signal to display the paths of
+created screenshots as they appear. Other jobs can also connect to it, e.g.
+:class:`~.jobs.imghost.ImageHostJob` uploads screenshots as soon as they are
+ready.
 
-It's also possible to connect one job's output to another job's input. For
-example, :attr:`~.ScreenshotsJob.output` can be connected to
-:class:`~.ImageHostJob.upload` to upload screenshots as they are created.
+User Interface
+^^^^^^^^^^^^^^
 
-Commands
-^^^^^^^^
+The UI manages jobs, which basically means starting them and then wait until
+they are finished.
 
-Commands are specific to the TUI. They represent CLI subcommands and have only
-two very simple purposes:
+The UI also passes user input to jobs and displays output and errors from jobs.
 
-#. Specify one or more jobs to execute.
-
-#. Translate CLI arguments and configuration file contents into arguments for
-   those jobs.
+For example, a :class:`subcommand <upsies.uis.tui.commands.CommandBase>` in the
+default UI specifies a list of jobs and translates CLI arguments and
+configuration file contents into arguments for those jobs.
 
 Trackers
 ^^^^^^^^
@@ -71,5 +69,6 @@ Index
 
    upsies.utils
    upsies.jobs
+   upsies.uis
    upsies.trackers
    upsies.errors
