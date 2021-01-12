@@ -176,6 +176,7 @@ class _SearchResults(DynamicContainer):
             lambda: Window(
                 content=FormattedTextControl(self._get_text_fragments, focusable=False),
                 width=width,
+                height=14,
                 style='class:prompt.search.results',
             )
         )
