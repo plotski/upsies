@@ -155,6 +155,12 @@ def resolution(path):
     height = int(video_track.get('Height', 0))
     width = int(video_track.get('Width', 0))
     if height and width:
+        # Actual aspect ratio may differ from display aspect ratio,
+        # e.g.  960 x 534 is scaled up to 1280 x 534
+        dar = float(video_track.get('PixelAspectRatio', 0))
+        if dar:
+            height = height * dar
+
         # Find closest height and width in standard resolutions
         std_height = closest_number(height, _standard_heights)
         std_width = closest_number(width, _standard_widths)

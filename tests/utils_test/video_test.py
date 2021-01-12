@@ -1,3 +1,4 @@
+import os
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -242,6 +243,11 @@ def test_resolution_catches_ContentError_from_default_track(default_track_mock):
     default_track_mock.side_effect = errors.ContentError('Something went wrong')
     video.resolution.cache_clear()
     assert video.resolution('foo.mkv') is None
+
+def test_resolution_uses_display_aspect_ratio(data_dir):
+    video.resolution.cache_clear()
+    video_file = os.path.join(data_dir, 'video', 'aspect_ratio.mkv')
+    assert video.resolution(video_file) == '720p'
 
 
 @pytest.mark.parametrize(
