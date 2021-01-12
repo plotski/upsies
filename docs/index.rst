@@ -1,29 +1,18 @@
 upsies
 ======
 
-.. include:: /../README.rst
+.. include:: /introduction.rst
 
-Supported Trackers
-^^^^^^^^^^^^^^^^^^
+.. figure:: /demo.svg
+   :align: left
 
-* NBL
+   .. include:: /demo.rst
 
-Supported BitTorrent Clients
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. include:: /urls.rst
 
-* Transmission (only the daemon)
+.. include:: /features.rst
 
-Supported Image Hosting Services
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-* imgbox.com
-
-Supported Database Services
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-* IMDb
-* TMDb
-* TVmaze
+.. include:: /supported.rst
 
 Table of Contents
 -----------------
