@@ -7,7 +7,7 @@ import os
 import pprint
 
 from .. import errors, jobs
-from ..utils import ReleaseType, cached_property, release_info
+from ..utils import ReleaseType, cached_property, release
 from . import base
 
 import logging  # isort:skip
@@ -42,7 +42,7 @@ class DummyTrackerJobs(base.TrackerJobsBase):
 
     @cached_property
     def category_job(self):
-        type = release_info.ReleaseInfo(self.content_path)['type']
+        type = release.ReleaseInfo(self.content_path)['type']
         category = self.type2category(type)
         return jobs.prompt.ChoiceJob(
             name='category',

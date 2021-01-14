@@ -5,7 +5,7 @@ import pytest
 
 from upsies import errors
 from upsies.utils import ReleaseType
-from upsies.utils.release_info import ReleaseName
+from upsies.utils.release import ReleaseName
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -24,7 +24,7 @@ def run_async(awaitable):
     return asyncio.get_event_loop().run_until_complete(awaitable)
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_tracks_is_called_during_instantiation(ReleaseInfo_mock, mocker):
     mocker.patch.object(asyncio.get_event_loop(), 'run_in_executor')
     rn = ReleaseName('path/to/something')
@@ -32,7 +32,7 @@ def test_tracks_is_called_during_instantiation(ReleaseInfo_mock, mocker):
         call(None, rn._tracks),
     ]
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='raised_exception, exp_exception, exp_message',
     argvalues=(
@@ -51,7 +51,7 @@ def test_tracks_raises(ReleaseInfo_mock, raised_exception, exp_exception, exp_me
             rn._tracks()
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_str(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with patch.object(rn, 'format') as format_mock:
@@ -59,12 +59,12 @@ def test_str(ReleaseInfo_mock):
         assert str(rn) == 'Pretty Release Name'
         format_mock.call_args_list == [call()]
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert len(rn) == 17
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='attr',
     argvalues=tuple(ReleaseName('')),
@@ -80,7 +80,7 @@ def test_getitem(ReleaseInfo_mock, attr):
         rn[123]
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_usage_as_dictionary_in_str_format(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {
         'type': ReleaseType.movie,
@@ -98,7 +98,7 @@ def test_usage_as_dictionary_in_str_format(ReleaseInfo_mock):
     assert fmt.format(**rn) == 'The Foo (1998) AC3 x264 BluRay-ASDF'
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_type_getter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').type is ReleaseType.movie
@@ -111,7 +111,7 @@ def test_type_getter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {}
     assert ReleaseName('path/to/something').type is ReleaseType.unknown
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='value, exp_value',
     argvalues=(
@@ -132,21 +132,21 @@ def test_type_setter_with_valid_value(ReleaseInfo_mock, value, exp_value):
     rn.type = value
     assert rn.type is exp_value
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_type_setter_with_invalid_value(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with pytest.raises(ValueError, match=r"^'asdf' is not a valid ReleaseType$"):
         rn.type = 'asdf'
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_title_getter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {'title': 'The Foo'}
     assert ReleaseName('path/to/something').title == 'The Foo'
     ReleaseInfo_mock.return_value = {'title': 'The Bar'}
     assert ReleaseName('path/to/something').title == 'The Bar'
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_title_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.title != 'The Baz'
@@ -154,7 +154,7 @@ def test_title_setter(ReleaseInfo_mock):
     assert rn.title == 'The Baz'
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_title_aka_getter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': ''}
     assert ReleaseName('path/to/something').title_aka == ''
@@ -163,7 +163,7 @@ def test_title_aka_getter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'The Foo'}
     assert ReleaseName('path/to/something').title_aka == ''
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_title_aka_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.title_aka != 'The Baz'
@@ -173,7 +173,7 @@ def test_title_aka_setter(ReleaseInfo_mock):
     assert rn.title_aka == ''
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_year_getter_with_movie(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {'year': '2000', 'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').year == '2000'
@@ -182,7 +182,7 @@ def test_year_getter_with_movie(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').year == 'UNKNOWN_YEAR'
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize('type', (ReleaseType.series, ReleaseType.season, ReleaseType.episode))
 def test_year_getter_with_series(ReleaseInfo_mock, type):
     ReleaseInfo_mock.return_value = {'year': '2000', 'type': type}
@@ -192,7 +192,7 @@ def test_year_getter_with_series(ReleaseInfo_mock, type):
     ReleaseInfo_mock.return_value = {'type': type}
     assert ReleaseName('path/to/something').year == ''
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_year_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.year == ''
@@ -203,7 +203,7 @@ def test_year_setter(ReleaseInfo_mock):
     with pytest.raises(ValueError, match=r'^Invalid year: 123$'):
         rn.year = '123'
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, year_required, year, exp_year',
     argvalues=(
@@ -237,7 +237,7 @@ def test_year_required(ReleaseInfo_mock, type, year_required, year, exp_year):
     assert rn.year == exp_year
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, season, exp_season',
     argvalues=(
@@ -257,7 +257,7 @@ def test_season_getter(ReleaseInfo_mock, type, season, exp_season):
     ReleaseInfo_mock.return_value = {'season': season, 'type': type}
     assert ReleaseName('path/to/something').season == exp_season
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, season, exp_season',
     argvalues=(
@@ -284,7 +284,7 @@ def test_season_setter_with_valid_value(ReleaseInfo_mock, type, season, exp_seas
     rn.season = season
     assert rn.season == exp_season
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_season_setter_with_invalid_type(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with pytest.raises(TypeError, match=r'^Invalid season: \(1, 2, 3\)$'):
@@ -292,7 +292,7 @@ def test_season_setter_with_invalid_type(ReleaseInfo_mock):
     with pytest.raises(TypeError, match=r"^Invalid season: 1.3$"):
         rn.season = 1.3
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_season_setter_with_invalid_value(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with pytest.raises(ValueError, match=r"^Invalid season: 'foo'$"):
@@ -301,7 +301,7 @@ def test_season_setter_with_invalid_value(ReleaseInfo_mock):
         rn.season = -1
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, episode, exp_episode',
     argvalues=(
@@ -328,7 +328,7 @@ def test_episode_getter(ReleaseInfo_mock, type, episode, exp_episode):
     ReleaseInfo_mock.return_value = {'episode': episode, 'type': type, 'season': '1'}
     assert ReleaseName('path/to/something').episode == exp_episode
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, episode, exp_episode',
     argvalues=(
@@ -361,13 +361,13 @@ def test_episode_setter_with_valid_value(ReleaseInfo_mock, type, episode, exp_ep
     rn.episode = episode
     assert rn.episode == exp_episode
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_episode_setter_with_invalid_type(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with pytest.raises(TypeError, match=r"^Invalid episode: 1.3$"):
         rn.episode = 1.3
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_episode_setter_with_invalid_value(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     with pytest.raises(ValueError, match=r"^Invalid episode: 'foo'$"):
@@ -376,7 +376,7 @@ def test_episode_setter_with_invalid_value(ReleaseInfo_mock):
         rn.episode = -1
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, episode_title, exp_episode_title',
     argvalues=(
@@ -399,7 +399,7 @@ def test_episode_title_getter(ReleaseInfo_mock, type, episode_title, exp_episode
     rn.type = ReleaseType.episode
     assert rn.episode_title == episode_title
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize('episode_title, exp_episode_title', (('Foo', 'Foo'), (123, '123')))
 def test_episode_title_setter(ReleaseInfo_mock, episode_title, exp_episode_title):
     rn = ReleaseName('path/to/something')
@@ -408,12 +408,12 @@ def test_episode_title_setter(ReleaseInfo_mock, episode_title, exp_episode_title
     assert rn.episode_title == exp_episode_title
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_service_getter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {'service': 'FOO'}
     assert ReleaseName('path/to/something').service == 'FOO'
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_service_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.service == ''
@@ -423,13 +423,13 @@ def test_service_setter(ReleaseInfo_mock):
     assert rn.service == '256'
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_edition_getter_returns_same_list_with_no_edition(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.edition is rn.edition
     assert isinstance(rn.edition, list)
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_edition_getter_returns_same_list_with_given_edition(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {'edition': ['DC', 'Unrated']}
     rn = ReleaseName('path/to/something')
@@ -437,7 +437,7 @@ def test_edition_getter_returns_same_list_with_given_edition(ReleaseInfo_mock):
     assert rn.edition is rn.edition
     assert isinstance(rn.edition, list)
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='edition, exp_edition',
     argvalues=(
@@ -452,7 +452,7 @@ def test_edition_setter(ReleaseInfo_mock, edition, exp_edition):
     assert rn.edition is rn.edition
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='source, exp_source',
     argvalues=(
@@ -464,7 +464,7 @@ def test_source_getter(ReleaseInfo_mock, source, exp_source):
     ReleaseInfo_mock.return_value = {'source': source}
     assert ReleaseName('path/to/something').source == exp_source
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='source, exp_source',
     argvalues=(
@@ -479,7 +479,7 @@ def test_source_setter(ReleaseInfo_mock, source, exp_source):
     assert rn.source == exp_source
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.utils.video.resolution')
 def test_resolution_getter_prefers_mediainfo(resolution_mock, ReleaseInfo_mock):
     resolution_mock.return_value = '720p'
@@ -487,7 +487,7 @@ def test_resolution_getter_prefers_mediainfo(resolution_mock, ReleaseInfo_mock):
     assert ReleaseName('path/to/something').resolution == '720p'
     assert resolution_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.utils.video.resolution')
 def test_resolution_getter_defaults_to_guess(resolution_mock, ReleaseInfo_mock):
     resolution_mock.return_value = None
@@ -495,7 +495,7 @@ def test_resolution_getter_defaults_to_guess(resolution_mock, ReleaseInfo_mock):
     assert ReleaseName('path/to/something').resolution == '1080p'
     assert resolution_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.utils.video.resolution')
 def test_resolution_getter_defaults_to_placeholder(resolution_mock, ReleaseInfo_mock):
     resolution_mock.return_value = None
@@ -503,7 +503,7 @@ def test_resolution_getter_defaults_to_placeholder(resolution_mock, ReleaseInfo_
     assert ReleaseName('path/to/something').resolution == 'UNKNOWN_RESOLUTION'
     assert resolution_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_resolution_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.resolution == 'UNKNOWN_RESOLUTION'
@@ -515,7 +515,7 @@ def test_resolution_setter(ReleaseInfo_mock):
     assert rn.resolution == '1080'
 
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_format')
 def test_audio_format_getter_prefers_mediainfo(audio_format_mock, ReleaseInfo_mock):
     audio_format_mock.return_value = 'AC3'
@@ -523,7 +523,7 @@ def test_audio_format_getter_prefers_mediainfo(audio_format_mock, ReleaseInfo_mo
     assert ReleaseName('path/to/something').audio_format == 'AC3'
     assert audio_format_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_format')
 def test_audio_format_getter_defaults_to_guess(audio_format_mock, ReleaseInfo_mock):
     audio_format_mock.return_value = None
@@ -531,7 +531,7 @@ def test_audio_format_getter_defaults_to_guess(audio_format_mock, ReleaseInfo_mo
     assert ReleaseName('path/to/something').audio_format == 'DD+'
     assert audio_format_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_format')
 def test_audio_format_getter_defaults_to_placeholder(audio_format_mock, ReleaseInfo_mock):
     audio_format_mock.return_value = None
@@ -539,7 +539,7 @@ def test_audio_format_getter_defaults_to_placeholder(audio_format_mock, ReleaseI
     assert ReleaseName('path/to/something').audio_format == 'UNKNOWN_AUDIO_FORMAT'
     assert audio_format_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 def test_audio_format_setter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {}
     rn = ReleaseName('path/to/something')
@@ -552,7 +552,7 @@ def test_audio_format_setter(ReleaseInfo_mock):
     assert rn.audio_format == 'DD+'
 
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_channels')
 def test_audio_channels_getter_prefers_mediainfo(audio_channels_mock, ReleaseInfo_mock):
     audio_channels_mock.return_value = '5.1'
@@ -560,7 +560,7 @@ def test_audio_channels_getter_prefers_mediainfo(audio_channels_mock, ReleaseInf
     assert ReleaseName('path/to/something').audio_channels == '5.1'
     assert audio_channels_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_channels')
 def test_audio_channels_getter_defaults_to_guess(audio_channels_mock, ReleaseInfo_mock):
     audio_channels_mock.return_value = None
@@ -568,7 +568,7 @@ def test_audio_channels_getter_defaults_to_guess(audio_channels_mock, ReleaseInf
     assert ReleaseName('path/to/something').audio_channels == '7.1'
     assert audio_channels_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_channels')
 def test_audio_channels_getter_defaults_to_empty_string(audio_channels_mock, ReleaseInfo_mock):
     audio_channels_mock.return_value = None
@@ -576,7 +576,7 @@ def test_audio_channels_getter_defaults_to_empty_string(audio_channels_mock, Rel
     assert ReleaseName('path/to/something').audio_channels == ''
     assert audio_channels_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 def test_audio_channels_setter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {}
     rn = ReleaseName('path/to/something')
@@ -589,7 +589,7 @@ def test_audio_channels_setter(ReleaseInfo_mock):
     assert rn.audio_channels == '2.0'
 
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.video_format')
 def test_video_format_getter_prefers_mediainfo(video_format_mock, ReleaseInfo_mock):
     video_format_mock.return_value = 'x264'
@@ -597,7 +597,7 @@ def test_video_format_getter_prefers_mediainfo(video_format_mock, ReleaseInfo_mo
     assert ReleaseName('path/to/something').video_format == 'x264'
     assert video_format_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.video_format')
 def test_video_format_getter_defaults_to_guess(video_format_mock, ReleaseInfo_mock):
     video_format_mock.return_value = None
@@ -605,7 +605,7 @@ def test_video_format_getter_defaults_to_guess(video_format_mock, ReleaseInfo_mo
     assert ReleaseName('path/to/something').video_format == 'x265'
     assert video_format_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.video_format')
 def test_video_format_getter_defaults_to_placeholder(video_format_mock, ReleaseInfo_mock):
     video_format_mock.return_value = None
@@ -613,7 +613,7 @@ def test_video_format_getter_defaults_to_placeholder(video_format_mock, ReleaseI
     assert ReleaseName('path/to/something').video_format == 'UNKNOWN_VIDEO_FORMAT'
     assert video_format_mock.call_args_list == [call('path/to/something')]
 
-@patch('upsies.utils.release_info.ReleaseInfo')
+@patch('upsies.utils.release.ReleaseInfo')
 def test_video_format_setter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {}
     rn = ReleaseName('path/to/something')
@@ -626,7 +626,7 @@ def test_video_format_setter(ReleaseInfo_mock):
     assert rn.video_format == '264'
 
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_group_getter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {'group': 'ASDF'}
     assert ReleaseName('path/to/something').group == 'ASDF'
@@ -635,7 +635,7 @@ def test_group_getter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {}
     assert ReleaseName('path/to/something').group == 'NOGROUP'
 
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_group_setter(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
     assert rn.group == 'NOGROUP'
@@ -647,7 +647,7 @@ def test_group_setter(ReleaseInfo_mock):
     assert rn.group == '123'
 
 
-@patch('upsies.utils.release_info.ReleaseName._tracks')
+@patch('upsies.utils.release.ReleaseName._tracks')
 @pytest.mark.parametrize(
     argnames='audio_tracks, exp_value',
     argvalues=(
@@ -673,7 +673,7 @@ def test_has_commentary_setter():
 
 
 @patch('upsies.utils.webdbs.imdb.ImdbApi')
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='guessed_type, imdb_type, exp_type',
     argvalues=(
@@ -718,7 +718,7 @@ _unique_titles = (Mock(title='The Foo'), Mock(title='The Bar'))
 _same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
 
 @patch('upsies.utils.webdbs.imdb.ImdbApi')
-@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, results, exp_year_required',
     argvalues=(

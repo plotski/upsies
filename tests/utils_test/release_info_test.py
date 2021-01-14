@@ -2,49 +2,49 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies.utils import ReleaseType, release_info
+from upsies.utils import ReleaseType, release
 
 
 def test_getting_known_key(mocker):
-    ri = release_info.ReleaseInfo('foo.mkv')
+    ri = release.ReleaseInfo('foo.mkv')
     mocker.patch.object(ri, '_get_title', Mock(return_value='Mocked Title'))
     for _ in range(3):
         assert ri['title'] == 'Mocked Title'
     assert ri._get_title.call_args_list == [call()]
 
 def test_getting_unknown_key(mocker):
-    ri = release_info.ReleaseInfo('foo.mkv')
+    ri = release.ReleaseInfo('foo.mkv')
     with pytest.raises(KeyError, match=r"^'foo'$"):
         ri['foo']
 
 
 def test_setting_known_key(mocker):
-    ri = release_info.ReleaseInfo('foo.mkv')
+    ri = release.ReleaseInfo('foo.mkv')
     assert ri['title'] == 'foo'
     ri['title'] = ''
     assert ri['title'] == ''
 
 def test_setting_unknown_key(mocker):
-    ri = release_info.ReleaseInfo('foo.mkv')
+    ri = release.ReleaseInfo('foo.mkv')
     with pytest.raises(KeyError, match=r"^'foo'$"):
         ri['foo'] = 'bar'
     assert 'foo' not in ri
 
 
 def test_deleting_unknown_key(mocker):
-    ri = release_info.ReleaseInfo('foo.mkv')
+    ri = release.ReleaseInfo('foo.mkv')
     with pytest.raises(KeyError, match=r"^'foo'$"):
         del ri['foo']
 
 def test_deleting_known_key(mocker):
-    ri = release_info.ReleaseInfo('foo.mkv')
+    ri = release.ReleaseInfo('foo.mkv')
     assert ri['title'] == 'foo'
     del ri['title']
     assert ri['title'] == 'foo'
 
 
 def test_iter(mocker):
-    ri = release_info.ReleaseInfo('foo.mkv')
+    ri = release.ReleaseInfo('foo.mkv')
     assert set(ri) == {
         'type',
         'title',
@@ -65,7 +65,7 @@ def test_iter(mocker):
     }
 
 def test_len(mocker):
-    ri = release_info.ReleaseInfo('foo.mkv')
+    ri = release.ReleaseInfo('foo.mkv')
     assert len(ri) == 16
 
 
@@ -88,7 +88,7 @@ def test_len(mocker):
 def test_release_name_params(path, exp_params):
     for p, exp in ((path, exp_params),
                    (path.replace(' ', '.'), exp_params.replace(' ', '.'))):
-        info = release_info.ReleaseInfo(p)
+        info = release.ReleaseInfo(p)
         assert info.release_name_params == exp
 
 
@@ -100,7 +100,7 @@ def assert_info(release_name,
     for rn in (release_name, release_name.replace(' ', '.')):
         # Test release name in file and in parent directory name
         for path in (f'foo/{rn}.mkv', f'{rn}/foo.mkv'):
-            info = release_info.ReleaseInfo(path)
+            info = release.ReleaseInfo(path)
             assert info['type'] == type
             assert info['title'] == title
             assert info['aka'] == aka
@@ -363,7 +363,7 @@ group_samples = (
     ),
 )
 def test_has_commentary(value, exp_value):
-    ri = release_info.ReleaseInfo('The Foo')
+    ri = release.ReleaseInfo('The Foo')
     assert ri['has_commentary'] is None
     ri['has_commentary'] = value
     assert ri['has_commentary'] is exp_value

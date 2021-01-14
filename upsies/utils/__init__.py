@@ -226,5 +226,5 @@ def merge_dicts(a, b, path=()):
 
 
 from . import (browser, btclients, configfiles, country, daemon, fs, html,
-               http, imghosts, release_info, screenshot, signal, subproc,
-               timestamp, torrent, video, webdbs)
+               http, imghosts, release, screenshot, signal, subproc, timestamp,
+               torrent, video, webdbs)

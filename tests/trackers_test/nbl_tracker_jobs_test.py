@@ -42,7 +42,7 @@ def test_jobs_before_upload(tmp_path, mocker):
     ),
 )
 def test_category_job(release_info, focused_choice, tmp_path, mocker):
-    mocker.patch('upsies.utils.release_info.ReleaseInfo', return_value={'type': release_info})
+    mocker.patch('upsies.utils.release.ReleaseInfo', return_value={'type': release_info})
     ChoiceJob_mock = mocker.patch('upsies.jobs.prompt.ChoiceJob', Mock())
     tracker_jobs = NblTrackerJobs(
         content_path=Mock(),

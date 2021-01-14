@@ -5,7 +5,7 @@ subclasses
 
 import re
 
-from .. import ReleaseType, release_info
+from .. import ReleaseType, release
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -119,10 +119,10 @@ class Query:
         """
         Create instance from file or directory name
 
-        `path` is passed to :class:`~.release_info.ReleaseInfo` to get the
+        `path` is passed to :class:`~.release.ReleaseInfo` to get the
         arguments for instantiation.
         """
-        guess = release_info.ReleaseInfo(path)
+        guess = release.ReleaseInfo(path)
         kwargs = {'title': guess['title']}
         if guess.get('year'):
             kwargs['year'] = guess['year']

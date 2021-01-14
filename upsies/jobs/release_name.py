@@ -4,7 +4,7 @@ Generate uniform release name
 
 import asyncio
 
-from ..utils import release_info
+from ..utils import release
 from . import JobBase
 
 import logging  # isort:skip
@@ -37,7 +37,7 @@ class ReleaseNameJob(JobBase):
         return self._release_name
 
     def initialize(self, content_path):
-        self._release_name = release_info.ReleaseName(content_path)
+        self._release_name = release.ReleaseName(content_path)
         self.signal.add('release_name_updated')
 
     def release_name_selected(self, name):
