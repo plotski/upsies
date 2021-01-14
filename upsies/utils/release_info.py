@@ -625,10 +625,9 @@ class ReleaseInfo(collections.abc.MutableMapping):
     def _get_service(self):
         service = self._guessit.get('streaming_service', '')
         if not service:
-            for name in _file_and_parent(self._path):
-                match = self._streaming_service_regex.search(name)
-                if match:
-                    service = match.group(1)
+            match = self._streaming_service_regex.search(self.release_name_params)
+            if match:
+                service = match.group(1)
 
         for regex,abbrev in self._streaming_service_translation.items():
             if regex.search(service):
@@ -651,13 +650,10 @@ class ReleaseInfo(collections.abc.MutableMapping):
     def _get_source(self):
         source = self._guessit.get('source', '')
         if source.lower() == 'web':
-            # Distinguish between WEB-DL and WEBRip
-            # Look in file name and parent directory name
-            for name in _file_and_parent(self._path):
-                match = self._web_source_regex.search(name)
-                if match:
-                    source = match.group(1)
-                    break
+            # guessit doesn't distinguish between WEB-DL and WEBRip
+            match = self._web_source_regex.search(self.release_name_params)
+            if match:
+                source = match.group(1)
 
             # Guess WEBRip and WEB-DL based on encoder
             if source.lower() == 'web':
@@ -673,13 +669,10 @@ class ReleaseInfo(collections.abc.MutableMapping):
                 source = 'DVDRip'
             # Detect DVD images
             else:
-                for name in _file_and_parent(self._path):
-                    if 'DVD9' in name:
-                        source = 'DVD9'
-                        break
-                    if 'DVD5' in name:
-                        source = 'DVD5'
-                        break
+                if 'DVD9' in self.release_name_params:
+                    source = 'DVD9'
+                elif 'DVD5' in self.release_name_params:
+                    source = 'DVD5'
 
         if source:
             # Fix spelling
@@ -740,16 +733,14 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
             return audio_codec
 
-    # Look for channels after year or season
-    _audio_channels_regex = re.compile(r'[ \.](?i:\d{4}|s\d{2,}).*?[ \.]+(\d\.\d)[ \.]')
+    _audio_channels_regex = re.compile(r'[ \.](\d\.\d)[ \.]')
 
     def _get_audio_channels(self):
         audio_channels = self._guessit.get('audio_channels', '')
         if not audio_channels:
-            for name in _file_and_parent(self._path):
-                match = self._audio_channels_regex.search(name)
-                if match:
-                    return match.group(1)
+            match = self._audio_channels_regex.search(self.release_name_params)
+            if match:
+                return match.group(1)
         return audio_channels
 
     _x264_regex = re.compile(r'(?i:[\. ]+x264[\. -])')
@@ -758,14 +749,12 @@ class ReleaseInfo(collections.abc.MutableMapping):
     def _get_video_codec(self):
         video_codec = self._guessit.get('video_codec', '')
         if video_codec == 'H.264':
-            for name in _file_and_parent(self._path):
-                if self._x264_regex.search(name):
-                    return 'x264'
+            if self._x264_regex.search(self.release_name_params):
+                return 'x264'
 
         elif video_codec == 'H.265':
-            for name in _file_and_parent(self._path):
-                if self._x265_regex.search(name):
-                    return 'x265'
+            if self._x265_regex.search(self.release_name_params):
+                return 'x265'
 
         return video_codec
 
