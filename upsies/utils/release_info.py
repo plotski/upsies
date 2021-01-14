@@ -65,7 +65,7 @@ class ReleaseName(collections.abc.Mapping):
         return self.format()
 
     def __len__(self):
-        return len(self.format())
+        return len(tuple(iter(self)))
 
     def __iter__(self):
         # Non-private properties are dictionary keys

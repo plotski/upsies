@@ -62,10 +62,7 @@ def test_str(ReleaseInfo_mock):
 @patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
-    with patch.object(rn, 'format') as format_mock:
-        format_mock.return_value = 'Pretty Release Name'
-        assert len(rn) == len('Pretty Release Name')
-        format_mock.call_args_list == [call()]
+    assert len(rn) == 17
 
 @patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
