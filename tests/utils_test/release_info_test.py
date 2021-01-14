@@ -61,11 +61,12 @@ def test_iter(mocker):
         'audio_channels',
         'video_codec',
         'group',
+        'has_commentary',
     }
 
 def test_len(mocker):
     ri = release_info.ReleaseInfo('foo.mkv')
-    assert len(ri) == 15
+    assert len(ri) == 16
 
 
 @pytest.mark.parametrize(
@@ -94,7 +95,7 @@ def test_release_name_params(path, exp_params):
 def assert_info(release_name,
                 type=ReleaseType.unknown, title='', aka='', year='', season='', episode='',
                 edition=[], resolution='', service='', source='',
-                audio_codec='', audio_channels='', video_codec='', group=''):
+                audio_codec='', audio_channels='', video_codec='', group='', has_commentary=None):
     # Test space- and dot-separated release name
     for rn in (release_name, release_name.replace(' ', '.')):
         # Test release name in file and in parent directory name
@@ -114,6 +115,7 @@ def assert_info(release_name,
             assert info['audio_channels'] == audio_channels
             assert info['video_codec'] == video_codec
             assert info['group'] == group
+            assert info['has_commentary'] == has_commentary
 
 
 @pytest.mark.parametrize('release_name, expected', (
@@ -341,3 +343,25 @@ def test_group(release_name, group):
                 'resolution': '1080p',
                 'audio_codec': 'DTS', 'video_codec': 'x264', 'group': group}
     assert_info(release_name, **expected)
+
+
+group_samples = (
+    ('The Foo 2000 1080p DTS x264-ASDF', 'ASDF'),
+    ('The Foo 2000 1080p DTS x264-AsdF', 'AsdF'),
+    ('The Foo 2000 1080p DTS x264-A-F', 'A-F'),
+)
+@pytest.mark.parametrize(
+    argnames='value, exp_value',
+    argvalues=(
+        (True, True),
+        (False, False),
+        (None, None),
+        ('', False),
+        (1, True),
+    ),
+)
+def test_has_commentary(value, exp_value):
+    ri = release_info.ReleaseInfo('The Foo')
+    assert ri['has_commentary'] is None
+    ri['has_commentary'] = value
+    assert ri['has_commentary'] is exp_value

@@ -459,6 +459,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
       - ``audio_channels`` (e.g. "2.0" or "7.1")
       - ``video_codec``
       - ``group``
+      - ``has_commentary`` (:class:`bool` or `None` for unknown)
 
     Unless documented otherwise above, all values are strings. Unknown values
     are empty strings.
@@ -754,6 +755,14 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     def _get_group(self):
         return self._guessit.get('release_group', '')
+
+    def _get_has_commentary(self):
+        return self._guessit.get('has_commentary', None)
+
+    def _set_has_commentary(self, value):
+        if value is not None:
+            value = bool(value)
+        return value
 
 
 def _file_and_parent(path):
