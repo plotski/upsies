@@ -513,6 +513,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
     def __setitem__(self, name, value):
         if not hasattr(self, f'_get_{name}'):
             raise KeyError(name)
+        elif hasattr(self, f'_set_{name}'):
+            self._dict[name] = getattr(self, f'_set_{name}')(value)
         else:
             self._dict[name] = value
 
