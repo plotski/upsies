@@ -591,6 +591,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         re.compile(r'(?i:Playstation Network)')  : 'PSN',
         re.compile(r'(?i:Vudu)')                 : 'VUDU',
         re.compile(r'(?i:YouTube Red)')          : 'RED',
+        re.compile(r'(?i:Crackle)')              : 'CRKL',
     }
     _streaming_service_regex = re.compile(r'[ \.]([A-Z]+)[ \.](?i:WEB-?(?:DL|Rip))(?:[ \.]|$)')
 

@@ -266,6 +266,7 @@ service_samples = (
     ('HULU', 'HULU'), ('Hulu', 'HULU'),
     ('IT', 'IT'), ('iTunes', 'IT'),
     ('VUDU', 'VUDU'),
+    ('CRKL', 'CRKL'),
 )
 @pytest.mark.parametrize('service, service_abbrev', service_samples)
 def test_service_is_abbreviated(service, service_abbrev):
