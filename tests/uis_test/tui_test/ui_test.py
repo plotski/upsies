@@ -202,7 +202,8 @@ def test_exceptions_are_raised_by_job_wait():
         with pytest.raises(RuntimeError, match=r'^This is bad$'):
             ui.run(jobs)
     else:
-        with pytest.raises(RuntimeError, match=r'^This is also bad$'):
+        # In Python 3.6 asyncio.gather() raises exceptions randomly
+        with pytest.raises(RuntimeError, match=r'^This is (?:also |)bad$'):
             ui.run(jobs)
     for job in jobs:
         assert job.wait.call_args_list == [call()]
