@@ -448,7 +448,7 @@ class ReleaseName(collections.abc.Mapping):
 
 class ReleaseInfo(collections.abc.MutableMapping):
     """
-    Get information from release name
+    Parse information from path or parent directory
 
     .. note::
 
