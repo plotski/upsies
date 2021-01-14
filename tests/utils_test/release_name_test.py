@@ -3,6 +3,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
+from upsies import errors
 from upsies.utils import ReleaseType
 from upsies.utils.release_info import ReleaseName
 
@@ -21,6 +22,33 @@ class AsyncMock(Mock):
 
 def run_async(awaitable):
     return asyncio.get_event_loop().run_until_complete(awaitable)
+
+
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_tracks_is_called_during_instantiation(ReleaseInfo_mock, mocker):
+    mocker.patch.object(asyncio.get_event_loop(), 'run_in_executor')
+    rn = ReleaseName('path/to/something')
+    assert asyncio.get_event_loop().run_in_executor.call_args_list == [
+        call(None, rn._tracks),
+    ]
+
+@patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@pytest.mark.parametrize(
+    argnames='raised_exception, exp_exception, exp_message',
+    argvalues=(
+        (None, None, None),
+        (errors.ContentError('no such file'), None, None),
+        (RuntimeError('Argh'), RuntimeError, 'Argh'),
+    ),
+    ids=lambda v: repr(v),
+)
+def test_tracks_raises(ReleaseInfo_mock, raised_exception, exp_exception, exp_message, mocker):
+    mocker.patch.object(asyncio.get_event_loop(), 'run_in_executor')
+    mocker.patch('upsies.utils.video.tracks', side_effect=raised_exception)
+    rn = ReleaseName('path/to/something')
+    if exp_exception:
+        with pytest.raises(exp_exception, match=rf'^{exp_message}$'):
+            rn._tracks()
 
 
 @patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))

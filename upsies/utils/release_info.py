@@ -7,6 +7,7 @@ import collections
 import os
 import re
 
+from .. import errors
 from ..utils import webdbs
 from . import LazyModule, ReleaseType, cached_property, fs, video
 
@@ -43,12 +44,19 @@ class ReleaseName(collections.abc.Mapping):
         self._path = str(path)
         self._guess = ReleaseInfo(self._path)
         self._imdb = webdbs.imdb.ImdbApi()
-
-        # FIXME: Getting metainfo (e.g. resolution) lazily can block for several
+        # FIXME: Getting metainfo (e.g. resolution) can block for several
         #        seconds because utils.videos gets the length of every video
-        #        file in a directory to avoid junk. To mitigate this, we're
-        #        getting all the information ASAP.
-        asyncio.get_event_loop().run_in_executor(None, lambda: video.tracks(path))
+        #        file in a directory to avoid junk (e.g. samples). To reduce
+        #        delays while the user is waiting, we're getting all the
+        #        information ASAP in an async background thread.
+        asyncio.get_event_loop().run_in_executor(None, self._tracks)
+
+    def _tracks(self):
+        # Ignore non-existing files and other file system issues
+        try:
+            return video.tracks(self._path)
+        except errors.ContentError:
+            return {}
 
     def __repr__(self):
         return f'{type(self).__name__}({self._path!r})'
