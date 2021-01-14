@@ -67,10 +67,7 @@ def test_len(ReleaseInfo_mock):
 @patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='attr',
-    argvalues=(
-        'type', 'title', 'title_aka', 'year', 'season', 'episode',
-        'episode_title', 'service', 'edition', 'source', 'resolution', 'audio_format',
-        'audio_channels', 'video_format', 'group', 'has_commentary')
+    argvalues=tuple(ReleaseName('')),
 )
 def test_getitem(ReleaseInfo_mock, attr):
     ReleaseInfo_mock.return_value = {attr: 'mock value', 'type': ReleaseType.movie}
