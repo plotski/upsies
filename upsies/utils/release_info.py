@@ -683,7 +683,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
         # guessit ignores "Hybrid"
         if self._hybrid_regex.search(self.release_name_params):
-            source = 'Hybrid ' + source
+            source = ('Hybrid ' + source).strip()
 
         # Detect Remux
         if 'Remux' in self._guessit.get('other', ()):
