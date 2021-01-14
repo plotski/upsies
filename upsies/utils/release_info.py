@@ -448,8 +448,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
       - ``aka`` (Also Known As; anything after "AKA" in the title)
       - ``year``
       - ``season``
-      - ``episode`` (may be a :class:`list` for multi-episodes,
-        e.g. "S01E01E02")
+      - ``episode`` (:class:`str` or :class:`list` for multi-episodes,
+        e.g. "S01E01E02" -> ["1", "2"])
       - ``episode_title``
       - ``edition`` (:class:`list` of "Extended", "Uncut", etc)
       - ``resolution``
