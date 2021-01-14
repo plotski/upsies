@@ -1,5 +1,13 @@
 """
 Release name parsing and formatting
+
+:class:`ReleaseInfo` parses a string into a dictionary-like object with a
+specific set of keys, e.g. "title", "resolution", "source", etc.
+
+:class:`ReleaseName` wraps :class:`ReleaseInfo` to do the same, but in addition
+it tries to read media data from the file system to get information. It also
+adds a :class:`~.ReleaseName.format` method to turn everything back into a
+string.
 """
 
 import asyncio
