@@ -81,9 +81,9 @@ def test_getitem(ReleaseInfo_mock, attr):
     if not attr.startswith('_'):
         rn[attr]
     with pytest.raises(KeyError, match=r"^'format'$"):
-        assert rn['format']
+        rn['format']
     with pytest.raises(TypeError, match=r"^Not a string: 123$"):
-        assert rn[123]
+        rn[123]
 
 
 @patch('upsies.utils.release_info.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
