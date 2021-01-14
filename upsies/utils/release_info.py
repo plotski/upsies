@@ -327,6 +327,22 @@ class ReleaseName(collections.abc.Mapping):
     def group(self, value):
         self._guess['group'] = str(value)
 
+    @property
+    def has_commentary(self):
+        """Whether this release has a commentary audio track"""
+        if self._guess.get('has_commentary') is None:
+            tracks = self._tracks()
+            self._guess['has_commentary'] = False
+            for track in tracks.get('Audio', {}):
+                if 'commentary' in track.get('Title', '').lower():
+                    self._guess['has_commentary'] = True
+                    break
+        return self._guess['has_commentary']
+
+    @has_commentary.setter
+    def has_commentary(self, value):
+        self._guess['has_commentary'] = bool(value)
+
     async def fetch_info(self, id, callback=None):
         """
         Fill in information from IMDb

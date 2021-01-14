@@ -73,7 +73,7 @@ def test_len(ReleaseInfo_mock):
     argvalues=(
         'type', 'title', 'title_aka', 'year', 'season', 'episode',
         'episode_title', 'service', 'edition', 'source', 'resolution', 'audio_format',
-        'audio_channels', 'video_format', 'group')
+        'audio_channels', 'video_format', 'group', 'has_commentary')
 )
 def test_getitem(ReleaseInfo_mock, attr):
     ReleaseInfo_mock.return_value = {attr: 'mock value', 'type': ReleaseType.movie}
@@ -651,6 +651,31 @@ def test_group_setter(ReleaseInfo_mock):
     assert rn.group == 'NOGROUP'
     rn.group = 123
     assert rn.group == '123'
+
+
+@patch('upsies.utils.release_info.ReleaseName._tracks')
+@pytest.mark.parametrize(
+    argnames='audio_tracks, exp_value',
+    argvalues=(
+        ([{'Title': 'Something'}, {'Title': 'Commentary with Foo Bar'}], True),
+        ([{'Title': 'COMMENTARY'}, {'Title': 'Something'}], True),
+        ([{'Title': 'Something'}], False),
+        ([], False),
+    ),
+    ids=lambda v: str(v),
+)
+def test_has_commentary_getter(tracks_mock, audio_tracks, exp_value):
+    tracks_mock.return_value = {'Audio': audio_tracks}
+    rn = ReleaseName('path/to/something')
+    assert rn.has_commentary is exp_value
+    assert rn._guess['has_commentary'] is exp_value
+
+def test_has_commentary_setter():
+    rn = ReleaseName('path/to/something')
+    assert rn.has_commentary is False
+    assert rn._guess['has_commentary'] is False
+    rn.has_commentary = 'yes'
+    assert rn._guess['has_commentary'] is True
 
 
 @patch('upsies.utils.webdbs.imdb.ImdbApi')
