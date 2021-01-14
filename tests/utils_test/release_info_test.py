@@ -189,14 +189,16 @@ def test_title_and_alternative_title(release_name, expected):
 
 
 edition_samples = (
-    ('The Foo 2000 EXTENDED 1080p DTS x264-ASDF', ['Extended']),
-    ('The Foo 2000 DC Uncut 1080p DTS x264-ASDF', ["Director's Cut", 'Uncut']),
+    ('The Foo 2000 EXTENDED 1080p DTS x264-ASDF', {'edition': ['Extended']}),
+    ('The Foo 2000 DC Uncut 1080p DTS x264-ASDF', {'edition': ["Director's Cut", 'Uncut']}),
+    ('The Foo 2000 1080p Hybrid Unrated Something DTS x264-ASDF', {'edition': ['Unrated'], 'source': 'Hybrid'}),
 )
-@pytest.mark.parametrize('release_name, edition', edition_samples)
-def test_edition(release_name, edition):
+@pytest.mark.parametrize('release_name, exp_values', edition_samples)
+def test_edition(release_name, exp_values):
     expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
-                'edition': edition, 'resolution': '1080p',
-                'audio_codec': 'DTS', 'video_codec': 'x264', 'group': 'ASDF'}
+                'resolution': '1080p', 'audio_codec': 'DTS', 'video_codec': 'x264',
+                'group': 'ASDF'}
+    expected.update(exp_values)
     assert_info(release_name, **expected)
 
 
