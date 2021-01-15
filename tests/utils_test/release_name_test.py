@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, PropertyMock, call, patch
 
 import pytest
 
@@ -647,29 +647,51 @@ def test_group_setter(ReleaseInfo_mock):
     assert rn.group == '123'
 
 
-@patch('upsies.utils.release.ReleaseName._tracks')
+
 @pytest.mark.parametrize(
-    argnames='audio_tracks, exp_value',
+    argnames='path_exists, audio_tracks, release_info, exp_value',
     argvalues=(
-        ([{'Title': 'Something'}, {'Title': 'Commentary with Foo Bar'}], True),
-        ([{'Title': 'COMMENTARY'}, {'Title': 'Something'}], True),
-        ([{'Title': 'Something'}], False),
-        ([], False),
+        ('path_exists', [{'Title': 'Commentary with Foo Bar'}], {'has_commentary': True}, True),
+        ('path_exists', [{'Title': 'Commentary with Foo Bar'}], {'has_commentary': False}, True),
+
+        ('path_exists', [{'Title': 'Something'}], {'has_commentary': True}, False),
+        ('path_exists', [{'Title': 'Something'}], {'has_commentary': False}, False),
+
+        ('path_exists', [], {'has_commentary': True}, False),
+        ('path_exists', [], {'has_commentary': False}, False),
+
+        ('path_does_not_exist', [{'Title': 'Commentary with Foo Bar'}], {'has_commentary': True}, True),
+        ('path_does_not_exist', [{'Title': 'Commentary with Foo Bar'}], {'has_commentary': False}, False),
+
+        ('path_does_not_exist', [{'Title': 'Something'}], {'has_commentary': True}, True),
+        ('path_does_not_exist', [{'Title': 'Something'}], {'has_commentary': False}, False),
+
+        ('path_does_not_exist', [], {'has_commentary': True}, True),
+        ('path_does_not_exist', [], {'has_commentary': False}, False),
     ),
     ids=lambda v: str(v),
 )
-def test_has_commentary_getter(tracks_mock, audio_tracks, exp_value):
-    tracks_mock.return_value = {'Audio': audio_tracks}
+def test_has_commentary(path_exists, audio_tracks, release_info, exp_value, mocker):
+    mocker.patch(
+        'upsies.utils.release.ReleaseName._tracks',
+        Mock(return_value={'Audio': audio_tracks}),
+    )
+    mocker.patch(
+        'upsies.utils.release.ReleaseInfo',
+        Mock(return_value=release_info),
+    )
+    mocker.patch(
+        'os.path.exists',
+        Mock(return_value=True if path_exists == 'path_exists' else False),
+    )
     rn = ReleaseName('path/to/something')
     assert rn.has_commentary is exp_value
-    assert rn._guess['has_commentary'] is exp_value
-
-def test_has_commentary_setter():
-    rn = ReleaseName('path/to/something')
+    rn.has_commentary = ''
     assert rn.has_commentary is False
-    assert rn._guess['has_commentary'] is False
-    rn.has_commentary = 'yes'
-    assert rn._guess['has_commentary'] is True
+    rn.has_commentary = 1
+    assert rn.has_commentary is True
+    rn.has_commentary = None
+    assert rn.has_commentary is exp_value
 
 
 @patch('upsies.utils.webdbs.imdb.ImdbApi')

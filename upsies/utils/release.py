@@ -337,19 +337,41 @@ class ReleaseName(collections.abc.Mapping):
 
     @property
     def has_commentary(self):
-        """Whether this release has a commentary audio track"""
-        if self._guess.get('has_commentary') is None:
+        """
+        Whether this release has a commentary audio track
+
+        If not set explicitly and the given `path` exists, this value is
+        auto-detected by looking for "commentary" case-insensitively in an audio
+        track title.
+
+        If not set explicitly and the given `path` does not exists, default to
+        :attr:`ReleaseInfo.has_commentary`.
+
+        Setting this value back to `None` turns on auto-detection as described
+        above.
+        """
+        # Use manually set value unless it is None
+        if hasattr(self, '_has_commentary') and self._has_commentary is not None:
+            return self._has_commentary
+
+        # Find "Commentary" in audio track titles
+        elif os.path.exists(self._path):
             tracks = self._tracks()
-            self._guess['has_commentary'] = False
             for track in tracks.get('Audio', {}):
                 if 'commentary' in track.get('Title', '').lower():
-                    self._guess['has_commentary'] = True
-                    break
-        return self._guess['has_commentary']
+                    return True
+            return False
+
+        # Default to ReleaseInfo.has_commentary
+        else:
+            return self._guess.get('has_commentary')
 
     @has_commentary.setter
     def has_commentary(self, value):
-        self._guess['has_commentary'] = bool(value)
+        if value is None:
+            self._has_commentary = value
+        else:
+            self._has_commentary = bool(value)
 
     async def fetch_info(self, id, callback=None):
         """
