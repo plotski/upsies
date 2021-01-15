@@ -95,7 +95,7 @@ def test_release_name_params(path, exp_params):
 def assert_info(release_name,
                 type=ReleaseType.unknown, title='', aka='', year='', season='', episode='',
                 edition=[], resolution='', service='', source='',
-                audio_codec='', audio_channels='', video_codec='', group='', has_commentary=None):
+                audio_codec='', audio_channels='', video_codec='', group='', has_commentary=False):
     # Test space- and dot-separated release name
     for rn in (release_name, release_name.replace(' ', '.')):
         # Test release name in file and in parent directory name
@@ -347,23 +347,24 @@ def test_group(release_name, group):
     assert_info(release_name, **expected)
 
 
-group_samples = (
-    ('The Foo 2000 1080p DTS x264-ASDF', 'ASDF'),
-    ('The Foo 2000 1080p DTS x264-AsdF', 'AsdF'),
-    ('The Foo 2000 1080p DTS x264-A-F', 'A-F'),
-)
 @pytest.mark.parametrize(
-    argnames='value, exp_value',
+    argnames='release_name, exp_value',
     argvalues=(
-        (True, True),
-        (False, False),
-        (None, None),
-        ('', False),
-        (1, True),
+        ('The Foo 2000 1080p Plus Comm DTS x264-ASDF', True),
+        ('The Foo 2000 1080p Comm DTS x264-ASDF', False),
+        ('The Foo 2000 1080p Commentary DTS x264-ASDF', True),
+        ('The Foo 2000 1080p DTS x264-ASDF', False),
     ),
 )
-def test_has_commentary(value, exp_value):
-    ri = release.ReleaseInfo('The Foo')
-    assert ri['has_commentary'] is None
-    ri['has_commentary'] = value
+def test_has_commentary(release_name, exp_value):
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
+                'resolution': '1080p', 'audio_codec': 'DTS', 'video_codec': 'x264',
+                'group': 'ASDF', 'has_commentary': exp_value}
+    assert_info(release_name, **expected)
+    ri = release.ReleaseInfo(release_name)
+    ri['has_commentary'] = ''
+    assert ri['has_commentary'] is False
+    ri['has_commentary'] = 1
+    assert ri['has_commentary'] is True
+    ri['has_commentary'] = None
     assert ri['has_commentary'] is exp_value
