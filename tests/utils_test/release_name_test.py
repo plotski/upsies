@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import Mock, PropertyMock, call, patch
+from unittest.mock import Mock, call, patch
 
 import pytest
 
@@ -645,7 +645,6 @@ def test_group_setter(ReleaseInfo_mock):
     assert rn.group == 'NOGROUP'
     rn.group = 123
     assert rn.group == '123'
-
 
 
 @pytest.mark.parametrize(
