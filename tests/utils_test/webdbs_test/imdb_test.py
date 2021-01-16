@@ -422,6 +422,7 @@ async def test_title_english_original(id, exp_title_english, exp_title_original,
         ('tt0471711', ReleaseType.movie),    # Bender's Big Score (Video)
         ('tt0097270', ReleaseType.movie),    # Elephant (TV Short)
         ('tt3472226', ReleaseType.movie),    # Kung Fury (Short)
+        ('tt0463986', ReleaseType.movie),    # The Feast (short)
         ('tt6560040', ReleaseType.season),   # The Forest (mini series)
         ('tt0348914', ReleaseType.season),   # Deadwood (series)
         ('tt0556307', ReleaseType.episode),  # Deadwood - S02E04 (episode)

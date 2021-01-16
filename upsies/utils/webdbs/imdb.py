@@ -197,6 +197,8 @@ class ImdbApi(WebDbApiBase):
         if subtext_tag:
             # reversed() because interesting info is on the right side
             subtexts = ''.join(subtext_tag.stripped_strings).lower().split('|')
+            genres = [genre.string.lower() for genre in subtext_tag.find_all(
+                'a', href=re.compile(r'/search/title\?genres='))]
             if 'episode' in subtexts[-1]:
                 return ReleaseType.episode
             elif 'tv series' in subtexts[-1]:
@@ -205,7 +207,7 @@ class ImdbApi(WebDbApiBase):
                 return ReleaseType.season
             elif 'tv short' in subtexts[-1]:
                 return ReleaseType.movie
-            elif 'short' in subtexts[2].split(','):
+            elif 'short' in genres:
                 return ReleaseType.movie
             elif 'video' in subtexts[-1].split(' '):
                 return ReleaseType.movie
