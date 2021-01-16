@@ -4,10 +4,8 @@ Entry point
 
 import sys
 
-from ... import __homepage__, __project_name__, defaults, errors
-from ...utils import configfiles
-from .args import parse as parse_args
-from .commands import CommandBase
+from ... import __homepage__, errors
+from . import subcommands
 from .ui import UI
 
 import logging  # isort:skip
@@ -19,34 +17,9 @@ def main(args=None):
 
 
 def _main(args=None):
-    # Read CLI arguments
-    # argparse has sys.exit(2) hardcoded for CLI errors.
-    try:
-        args = parse_args(args)
-    except SystemExit:
-        return 1
-
-    if args.debug:
-        logging.basicConfig(
-            format='%(asctime)s: %(name)s: %(message)s',
-            filename=args.debug,
-        )
-        logging.getLogger(__project_name__).setLevel(level=logging.DEBUG)
-
-    # Read config files
-    try:
-        cfg = configfiles.ConfigFiles(defaults=defaults.defaults)
-        cfg.read('trackers', filepath=args.trackers_file, ignore_missing=True)
-        cfg.read('clients', filepath=args.clients_file, ignore_missing=True)
-    except errors.ConfigError as e:
-        print(e, file=sys.stderr)
-        return 1
-
-    # Run UI
     try:
         ui = UI()
-        cmd = args.subcmd(args=args, config=cfg)
-        assert isinstance(cmd, CommandBase)
+        cmd = subcommands.run(args)
         exit_code = ui.run(cmd.jobs_active)
 
     # TUI was terminated by user prematurely
@@ -54,7 +27,7 @@ def _main(args=None):
         print(e, file=sys.stderr)
         return 1
 
-    except BaseException as e:
+    except Exception as e:
         # Unexpected exception; expected exceptions are handled by JobBase child
         # classes by calling their error() or exception() methods.
         import traceback
@@ -71,7 +44,7 @@ def _main(args=None):
         return 1
 
     else:
-        # Print last job's output to stdout
+        # Print last job's output to stdout for use in output redirection
         if exit_code == 0:
             final_job = cmd.jobs_active[-1]
             if final_job.output:
