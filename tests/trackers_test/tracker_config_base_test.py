@@ -10,7 +10,7 @@ def test_no_arguments():
             'bar': '',
             'baz': 'asdf',
         }
-    assert TestTrackerConfig(config={}) == {
+    assert TestTrackerConfig() == {
         'announce': '',
         'source': '',
         'exclude': [],

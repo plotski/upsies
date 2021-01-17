@@ -34,7 +34,15 @@ class TrackerConfigBase(dict):
         for k in config:
             if k not in combined_defaults:
                 raise TypeError(f'Unknown option: {k!r}')
-        return {**combined_defaults, **config}
+        obj = super().__new__(cls)
+        obj.update(combined_defaults)
+        obj.update(config)
+        return obj
+
+    # If the config is passed as config={...}, super().__init__() will interpret
+    # as a key-value pair that ends up in the config.
+    def __init__(cls, *args, **kwargs):
+        pass
 
 
 class TrackerJobsBase(abc.ABC):
