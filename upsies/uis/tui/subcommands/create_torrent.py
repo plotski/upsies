@@ -3,7 +3,6 @@ Create torrent file and optionally add or copy it
 """
 
 from .... import jobs, trackers, utils
-from .. import argtypes
 from .base import CommandBase
 
 
@@ -14,16 +13,16 @@ class create_torrent(CommandBase):
 
     arguments = {
         'TRACKER': {
-            'type': argtypes.TRACKER,
+            'type': utils.types.TRACKER,
             'help': ('Case-insensitive tracker name.\n'
-                     'Supported trackers: ' + ', '.join(argtypes.TRACKER_NAMES)),
+                     'Supported trackers: ' + ', '.join(utils.types.TRACKER_NAMES)),
         },
         'CONTENT': {'help': 'Path to release content'},
         ('--add-to', '-a'): {
-            'type': argtypes.CLIENT,
+            'type': utils.types.CLIENT,
             'metavar': 'CLIENT',
             'help': ('Case-insensitive BitTorrent client name\n'
-                     'Supported clients: ' + ', '.join(argtypes.BTCLIENT_NAMES)),
+                     'Supported clients: ' + ', '.join(utils.types.BTCLIENT_NAMES)),
         },
         ('--copy-to', '-c'): {
             'metavar': 'PATH',

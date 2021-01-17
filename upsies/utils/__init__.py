@@ -8,7 +8,7 @@ import importlib
 import inspect
 import itertools
 import os
-import types
+import types as _types
 
 
 def os_family():
@@ -68,7 +68,7 @@ class ReleaseType(enum.Enum):
 
 
 # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/util/lazy_loader.py
-class LazyModule(types.ModuleType):
+class LazyModule(_types.ModuleType):
     """
     Lazily import module to decrease execution time
 
@@ -227,4 +227,4 @@ def merge_dicts(a, b, path=()):
 
 from . import (browser, btclients, configfiles, country, daemon, fs, html,
                http, imghosts, release, screenshot, signal, subproc, timestamp,
-               torrent, video, webdbs)
+               torrent, types, video, webdbs)

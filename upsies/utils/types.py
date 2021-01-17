@@ -5,7 +5,7 @@ Argument type names should match the ``metavar`` argument given to
 :meth:`argparse.ArgumentParser.add_argument` and raise ValueError.
 """
 
-from ... import constants, trackers, utils
+from .. import constants, trackers, utils
 
 WEBDB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.webdbs.webdbs()]
 TRACKER_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in trackers.trackers()]
