@@ -207,11 +207,15 @@ class TrackerJobsBase(abc.ABC):
             **self.common_job_args,
         )
 
+    screenshots = 2
+    """Number many screenshots to make"""
+
     @cached_property
     def screenshots_job(self):
         """:class:`~.jobs.screenshots.ScreenshotsJob` instance"""
         return _jobs.screenshots.ScreenshotsJob(
             content_path=self.content_path,
+            number=self.screenshots,
             **self.common_job_args,
         )
 
