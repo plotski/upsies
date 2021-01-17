@@ -21,7 +21,6 @@ import functools
 
 from ....utils import subclasses, submodules
 from .base import CommandBase
-from .mediainfo import mediainfo
 
 
 @functools.lru_cache(maxsize=None)
