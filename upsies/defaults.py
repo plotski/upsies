@@ -2,8 +2,8 @@ from . import trackers
 
 defaults = {
     'trackers': {
-        'dummy': trackers.dummy.DummyTrackerConfig(),
-        'nbl': trackers.nbl.NblTrackerConfig(),
+        tracker.name: tracker.TrackerConfig()
+        for tracker in trackers.trackers()
     },
 
     'imghosts': {
