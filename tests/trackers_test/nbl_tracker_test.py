@@ -281,8 +281,16 @@ async def test_upload_without_being_logged_in(mocker):
     assert post_mock.call_args_list == []
 
 
+@pytest.mark.parametrize(
+    argnames='ignore_dupes, exp_additional_data',
+    argvalues=(
+        (False, {}),
+        (True, {'ignoredupes': '1'}),
+    ),
+    ids=lambda v: str(v),
+)
 @pytest.mark.asyncio
-async def test_upload_succeeds(tmp_path, mocker, httpserver):
+async def test_upload_succeeds(ignore_dupes, exp_additional_data, tmp_path, mocker, httpserver):
     translate_category_mock = mocker.patch(
         'upsies.trackers.nbl.NblTracker._translate_category',
         Mock(return_value=b'123'),
@@ -323,6 +331,9 @@ async def test_upload_succeeds(tmp_path, mocker, httpserver):
             'announce': 'http://nbl.local/announce',
             'exclude': 'some files',
         },
+        cli_args=Mock(
+            ignore_dupes=ignore_dupes,
+        ),
     )
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
@@ -334,26 +345,28 @@ async def test_upload_succeeds(tmp_path, mocker, httpserver):
     }
     torrent_page_url = await tracker.upload(metadata_mock)
     assert torrent_page_url == httpserver.url_for('/torrents.php?id=123')
+    exp_form_data = {
+        'MAX_FILE_SIZE': '1048576',
+        'auth': 'mocked auth key',
+        'category': '123',
+        'desc': 'mocked mediainfo',
+        'file_input': b'mocked torrent metainfo',
+        'fontfont': '-1',
+        'fontsize': '-1',
+        'genre_tags': '',
+        'image': '',
+        'media': 'mocked mediainfo',
+        'mediaclean': '[mediainfo]mocked mediainfo[/mediainfo]',
+        'submit': 'true',
+        'tags': '',
+        'title': '',
+        'tvmazeid': '12345',
+    }
+    exp_form_data.update(exp_additional_data)
     assert handler.requests_seen == [{
         'method': 'POST',
         'User-Agent': f'{__project_name__}/{__version__}',
-        'multipart/form-data': {
-            'MAX_FILE_SIZE': '1048576',
-            'auth': 'mocked auth key',
-            'category': '123',
-            'desc': 'mocked mediainfo',
-            'file_input': b'mocked torrent metainfo',
-            'fontfont': '-1',
-            'fontsize': '-1',
-            'genre_tags': '',
-            'image': '',
-            'media': 'mocked mediainfo',
-            'mediaclean': '[mediainfo]mocked mediainfo[/mediainfo]',
-            'submit': 'true',
-            'tags': '',
-            'title': '',
-            'tvmazeid': '12345',
-        },
+        'multipart/form-data': exp_form_data,
     }]
     assert translate_category_mock.call_args_list == [
         call(metadata_mock['category'][0]),

@@ -56,6 +56,13 @@ class NblTracker(base.TrackerBase):
     name = 'nbl'
     label = 'NBL'
 
+    argument_definitions = {
+        ('--ignore-dupes', '-D'): {
+            'help': 'Force submission even if the tracker reports duplicates',
+            'action': 'store_true',
+        },
+    }
+
     TrackerConfig = NblTrackerConfig
     TrackerJobs = NblTrackerJobs
 
@@ -158,27 +165,32 @@ class NblTracker(base.TrackerBase):
             self.config['base_url'],
             self._url_path['upload'],
         )
+
+        post_data = {
+            'auth': self._auth_key,
+            'title': '',
+            'tvmazeid': tvmaze_id,
+            'media': mediainfo,
+            'desc': mediainfo,
+            'mediaclean': f'[mediainfo]{mediainfo}[/mediainfo]',
+            'submit': 'true',
+            'MAX_FILE_SIZE': '1048576',
+            'category': self._translate_category(category),
+            'genre_tags': '',
+            'tags': '',
+            'image': '',
+            'fontfont': '-1',
+            'fontsize': '-1',
+        }
+        if getattr(self.cli_args, 'ignore_dupes', None):
+            post_data['ignoredupes'] = '1'
+
         response = await http.post(
             url=upload_url,
             user_agent=True,
             allow_redirects=False,
             files={'file_input': (torrent_filepath, 'application/x-bittorrent')},
-            data={
-                'auth': self._auth_key,
-                'title': '',
-                'tvmazeid': tvmaze_id,
-                'media': mediainfo,
-                'desc': mediainfo,
-                'mediaclean': f'[mediainfo]{mediainfo}[/mediainfo]',
-                'submit': 'true',
-                'MAX_FILE_SIZE': '1048576',
-                'category': self._translate_category(category),
-                'genre_tags': '',
-                'tags': '',
-                'image': '',
-                'fontfont': '-1',
-                'fontsize': '-1',
-            },
+            data=post_data,
         )
 
         # Upload response should redirect to torrent page via "Location" header
