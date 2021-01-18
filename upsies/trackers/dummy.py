@@ -27,6 +27,18 @@ class DummyTrackerConfig(base.TrackerConfigBase):
 
 
 class DummyTrackerJobs(base.TrackerJobsBase):
+    argument_definitions = {
+        ('--skip-category', '-C'): {
+            'help': 'Do not prompt for category',
+            'action': 'store_true',
+        },
+        ('--screenshots', '-s'): {
+            'help': 'How many screenshots to make',
+            'type': int,
+            'default': 3,
+        },
+    }
+
     @cached_property
     def jobs_before_upload(self):
         return (
@@ -42,15 +54,16 @@ class DummyTrackerJobs(base.TrackerJobsBase):
 
     @cached_property
     def category_job(self):
-        type = release.ReleaseInfo(self.content_path)['type']
-        category = self.type2category(type)
-        return jobs.prompt.ChoiceJob(
-            name='category',
-            label='Category',
-            choices=(str(t).capitalize() for t in ReleaseType if t),
-            focused=category,
-            **self.common_job_args,
-        )
+        if not self.cli_args.skip_category:
+            type = release.ReleaseInfo(self.content_path)['type']
+            category = self.type2category(type)
+            return jobs.prompt.ChoiceJob(
+                name='category',
+                label='Category',
+                choices=(str(t).capitalize() for t in ReleaseType if t),
+                focused=category,
+                **self.common_job_args,
+            )
 
     @staticmethod
     def type2category(type):
