@@ -150,7 +150,7 @@ class NblTracker(base.TrackerBase):
         tvmaze_id = metadata['tvmaze-id'][0]
         _log.debug('%s: TVmaze ID: %r', self.name, tvmaze_id)
         mediainfo = metadata['mediainfo'][0]
-        _log.debug('%s: TVmaze ID: %r', self.name, mediainfo[:100] + '...')
+        _log.debug('%s: Mediainfo: %r', self.name, mediainfo[:100] + '...')
         category = metadata['category'][0]
         _log.debug('%s: Category: %r', self.name, category)
 
