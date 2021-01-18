@@ -300,7 +300,7 @@ class TrackerBase(abc.ABC):
 
     @property
     def config(self):
-        """User configuration options from initialization argument"""
+        """:attr:`~.TrackerBase.TrackerConfig` object from initialization argument"""
         return self._config
 
     @abc.abstractmethod
