@@ -285,8 +285,8 @@ class TrackerBase(abc.ABC):
     def TrackerConfig(self):
         """Subclass of :class:`TrackerConfigBase`"""
 
-    def __init__(self, config={}):
-        self._config = config
+    def __init__(self, config=None):
+        self._config = config or {}
 
     @property
     @abc.abstractmethod
