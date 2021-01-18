@@ -252,8 +252,9 @@ class TrackerBase(abc.ABC):
     """
     Base class for tracker-specific operations, e.g. uploading
 
-    :param config: Any keyword arguments are used for user configuration,
-        e.g. authentication credentials
+    :param config: User configuration options for this tracker,
+        e.g. authentication details, announce URL, etc
+    :type config: :attr:`~.TrackerBase.TrackerConfig` instance
     """
 
     @property
@@ -281,7 +282,7 @@ class TrackerBase(abc.ABC):
 
     @property
     def config(self):
-        """User configuration from :meth:`__init__` keyword arguments as dictionary"""
+        """User configuration options from initialization argument"""
         return self._config
 
     @abc.abstractmethod
