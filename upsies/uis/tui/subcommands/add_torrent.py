@@ -11,7 +11,7 @@ class add_torrent(CommandBase):
 
     names = ('add-torrent', 'at')
 
-    arguments = {
+    argument_definitions = {
         'CLIENT': {
             'type': utils.types.CLIENT,
             'help': ('Case-insensitive BitTorrent client name\n'

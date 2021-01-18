@@ -11,7 +11,7 @@ class submit(CommandBase):
 
     names = ('submit',)
 
-    arguments = {
+    argument_definitions = {
         'TRACKER': {
             'type': utils.types.TRACKER,
             'help': ('Case-insensitive tracker name\n'
@@ -29,6 +29,7 @@ class submit(CommandBase):
             'help': 'Copy the created torrent to PATH (file or directory)',
         },
     }
+
 
     @utils.cached_property
     def jobs(self):

@@ -21,7 +21,7 @@ class release_name(CommandBase):
 
     names = ('release-name', 'rn')
 
-    arguments = {
+    argument_definitions = {
         'CONTENT': {'help': 'Path to release content'},
     }
 

@@ -98,7 +98,7 @@ class CommandBase(abc.ABC):
     The first name is the full name and the rest are short aliases.
     """
 
-    arguments = NotImplemented
+    argument_definitions = NotImplemented
     """
     CLI argument definitions for this command
 
@@ -138,7 +138,7 @@ class CommandBase(abc.ABC):
         )
         parser.set_defaults(subcommand=cls)
 
-        for argname, argopts in cls.arguments.items():
+        for argname, argopts in cls.argument_definitions.items():
             names = (argname,) if isinstance(argname, str) else argname
             group_name = argopts.pop('group', None)
             if group_name:

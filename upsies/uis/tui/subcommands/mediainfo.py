@@ -18,7 +18,7 @@ class mediainfo(CommandBase):
 
     names = ('mediainfo', 'mi')
 
-    arguments = {
+    argument_definitions = {
         'CONTENT': {'help': 'Path to release content'},
     }
 

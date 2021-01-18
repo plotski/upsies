@@ -11,7 +11,7 @@ class upload_images(CommandBase):
 
     names = ('upload-images', 'ui')
 
-    arguments = {
+    argument_definitions = {
         'IMAGEHOST': {
             'type': utils.types.IMAGEHOST,
             'help': ('Case-insensitive name of image hosting service\n'

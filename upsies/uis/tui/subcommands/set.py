@@ -24,7 +24,7 @@ class set(CommandBase):
 
     description = ('options:\n  ' + '\n  '.join(o for o in constants.OPTION_PATHS))
 
-    arguments = {
+    argument_definitions = {
         'OPTION': {
             'type': utils.types.OPTION,
             'nargs': '?',

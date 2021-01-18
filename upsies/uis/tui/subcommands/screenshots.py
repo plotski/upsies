@@ -11,7 +11,7 @@ class screenshots(CommandBase):
 
     names = ('screenshots', 'ss')
 
-    arguments = {
+    argument_definitions = {
         'CONTENT': {'help': 'Path to release content'},
         ('--timestamps', '-t'): {
             'nargs': '+',

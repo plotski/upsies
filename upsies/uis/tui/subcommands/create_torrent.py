@@ -11,7 +11,7 @@ class create_torrent(CommandBase):
 
     names = ('create-torrent', 'ct')
 
-    arguments = {
+    argument_definitions = {
         'TRACKER': {
             'type': utils.types.TRACKER,
             'help': ('Case-insensitive tracker name.\n'
