@@ -11,25 +11,29 @@ class submit(CommandBase):
 
     names = ('submit',)
 
-    argument_definitions = {
-        'TRACKER': {
-            'type': utils.types.TRACKER,
-            'help': ('Case-insensitive tracker name\n'
-                     'Supported trackers: ' + ', '.join(utils.types.TRACKER_NAMES)),
-        },
-        'CONTENT': {'help': 'Path to release content'},
-        ('--add-to', '-a'): {
-            'type': utils.types.CLIENT,
-            'metavar': 'CLIENT',
-            'help': ('Case-insensitive BitTorrent client name\n'
-                     'Supported clients: ' + ', '.join(utils.types.BTCLIENT_NAMES)),
-        },
-        ('--copy-to', '-c'): {
-            'metavar': 'PATH',
-            'help': 'Copy the created torrent to PATH (file or directory)',
-        },
-    }
+    argument_definitions = {}
 
+    subcommands = {
+        tracker.name: {
+            # Default arguments for all tackers
+            **{
+                'CONTENT': {'help': 'Path to release content'},
+                ('--add-to', '-a'): {
+                    'type': utils.types.CLIENT,
+                    'metavar': 'CLIENT',
+                    'help': ('Case-insensitive BitTorrent client name\n'
+                             'Supported clients: ' + ', '.join(utils.types.BTCLIENT_NAMES)),
+                },
+                ('--copy-to', '-c'): {
+                    'metavar': 'PATH',
+                    'help': 'Copy the created torrent to PATH (file or directory)',
+                },
+            },
+            # Custom arguments defined by tracker
+            **tracker.TrackerJobs.argument_definitions,
+        }
+        for tracker in trackers.trackers()
+    }
 
     @utils.cached_property
     def jobs(self):
@@ -48,7 +52,7 @@ class submit(CommandBase):
     @utils.cached_property
     def tracker_name(self):
         """Lower-case abbreviation of tracker name"""
-        return self.args.TRACKER.lower()
+        return self.args.subcommand.lower()
 
     @utils.cached_property
     def tracker_config(self):
@@ -82,6 +86,7 @@ class submit(CommandBase):
                 'home_directory': utils.fs.projectdir(self.args.CONTENT),
                 'ignore_cache': self.args.ignore_cache,
             },
+            cli_args=self.args,
         )
 
     def _get_imghost(self):
