@@ -225,10 +225,15 @@ class TrackerJobsBase(abc.ABC):
 
     @cached_property
     def screenshots_job(self):
-        """:class:`~.jobs.screenshots.ScreenshotsJob` instance"""
+        """
+        :class:`~.jobs.screenshots.ScreenshotsJob` instance
+
+        The number of screenshots to make is taken from the "--screenshots" CLI
+        argument, if present and non-falsy, and defaults to :attr:`screenshots`.
+        """
         return _jobs.screenshots.ScreenshotsJob(
             content_path=self.content_path,
-            number=self.screenshots,
+            number=getattr(self.cli_args, 'screenshots') or self.screenshots,
             **self.common_job_args,
         )
 
