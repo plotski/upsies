@@ -73,15 +73,12 @@ class TrackerJobsBase(abc.ABC):
         self._common_job_args = common_job_args
         self._cli_args = cli_args or argparse.Namespace()
 
-    argument_definitions = {}
-    """
-    CLI argument definitions for :class:`~.uis.tui.subcommands.submit.submit`
-    (see :attr:`.CommandBase.argument_definitions`)
-    """
-
     @property
     def cli_args(self):
-        """:class:`argparse.Namespace` object from initialization argument"""
+        """
+        Command line arguments as :class:`argparse.Namespace` object from
+        initialization
+        """
         return self._cli_args
 
     @property
@@ -285,8 +282,23 @@ class TrackerBase(abc.ABC):
     def TrackerConfig(self):
         """Subclass of :class:`TrackerConfigBase`"""
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, cli_args=None):
         self._config = config or {}
+        self._cli_args = cli_args or argparse.Namespace()
+
+    argument_definitions = {}
+    """
+    CLI argument definitions for :class:`~.uis.tui.subcommands.submit.submit`
+    (see :attr:`.CommandBase.argument_definitions`)
+    """
+
+    @property
+    def cli_args(self):
+        """
+        Command line arguments as :class:`argparse.Namespace` object from
+        initialization
+        """
+        return self._cli_args
 
     @property
     @abc.abstractmethod

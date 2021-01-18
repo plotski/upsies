@@ -27,18 +27,6 @@ class DummyTrackerConfig(base.TrackerConfigBase):
 
 
 class DummyTrackerJobs(base.TrackerJobsBase):
-    argument_definitions = {
-        ('--skip-category', '-C'): {
-            'help': 'Do not prompt for category',
-            'action': 'store_true',
-        },
-        ('--screenshots', '-s'): {
-            'help': 'How many screenshots to make',
-            'type': int,
-            'default': 3,
-        },
-    }
-
     @cached_property
     def jobs_before_upload(self):
         return (
@@ -77,16 +65,33 @@ class DummyTracker(base.TrackerBase):
     name = 'dummy'
     label = 'DuMmY'
 
+    argument_definitions = {
+        ('--skip-category', '-C'): {
+            'help': 'Do not prompt for category',
+            'action': 'store_true',
+        },
+        ('--screenshots', '-s'): {
+            'help': 'How many screenshots to make',
+            'type': int,
+            'default': 3,
+        },
+        ('--delay', '-d'): {
+            'help': 'Number of seconds login, upload and logout take',
+            'type': float,
+            'default': 1.0,
+        },
+    }
+
     TrackerJobs = DummyTrackerJobs
     TrackerConfig = DummyTrackerConfig
 
     async def login(self):
         _log.debug('%s: Logging in with %r', self.name, self.config)
-        await asyncio.sleep(1)
+        await asyncio.sleep(self.cli_args.delay)
 
     async def logout(self):
         _log.debug('%s: Logging out', self.name)
-        await asyncio.sleep(1)
+        await asyncio.sleep(self.cli_args.delay)
 
     async def upload(self, metadata):
         # Output from torrent job could be empty sequence (error) or None (not
@@ -97,5 +102,5 @@ class DummyTracker(base.TrackerBase):
         else:
             raise errors.RequestError('Torrent file was not created.')
         _log.debug('%s: Uploading %s', self.name, pprint.pformat(metadata))
-        await asyncio.sleep(1)
+        await asyncio.sleep(self.cli_args.delay)
         return f'http://localhost/{os.path.basename(torrent_file)}'

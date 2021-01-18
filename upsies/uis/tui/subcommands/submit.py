@@ -30,7 +30,7 @@ class submit(CommandBase):
                 },
             },
             # Custom arguments defined by tracker
-            **tracker.TrackerJobs.argument_definitions,
+            **tracker.argument_definitions,
         }
         for tracker in trackers.trackers()
     }
@@ -68,6 +68,7 @@ class submit(CommandBase):
         return trackers.tracker(
             name=self.tracker_name,
             config=self.tracker_config,
+            cli_args=self.args,
         )
 
     @utils.cached_property
