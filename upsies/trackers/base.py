@@ -230,7 +230,7 @@ class TrackerJobsBase(abc.ABC):
         """
         return _jobs.screenshots.ScreenshotsJob(
             content_path=self.content_path,
-            number=getattr(self.cli_args, 'screenshots') or self.screenshots,
+            number=getattr(self.cli_args, 'screenshots', None) or self.screenshots,
             **self.common_job_args,
         )
 

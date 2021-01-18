@@ -238,11 +238,20 @@ def test_tvmaze_job(mocker):
     assert webdb_mock.call_args_list == [call('tvmaze')]
 
 
-def test_screenshots_job(mocker):
+@pytest.mark.parametrize(
+    argnames='cli_args, exp_screenshots',
+    argvalues=(
+        (None, TrackerJobsBase.screenshots),
+        (Mock(screenshots=123), 123),
+    ),
+    ids=lambda v: str(v),
+)
+def test_screenshots_job(cli_args, exp_screenshots, mocker):
     ScreenshotsJob_mock = mocker.patch('upsies.jobs.screenshots.ScreenshotsJob', Mock())
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+        cli_args=cli_args,
     )
     # Return value must be singleton
     assert tracker_jobs.screenshots_job is ScreenshotsJob_mock.return_value
@@ -250,6 +259,7 @@ def test_screenshots_job(mocker):
     assert ScreenshotsJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
+            number=exp_screenshots,
             home_directory='path/to/home',
             ignore_cache='mock bool',
         ),

@@ -76,7 +76,7 @@ class DummyTracker(base.TrackerBase):
             'default': 3,
         },
         ('--delay', '-d'): {
-            'help': 'Number of seconds login, upload and logout take',
+            'help': 'Number of seconds login, upload and logout take each',
             'type': float,
             'default': 1.0,
         },
