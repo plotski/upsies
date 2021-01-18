@@ -278,12 +278,12 @@ class TrackerBase(abc.ABC):
     @property
     @abc.abstractmethod
     def TrackerJobs(self):
-        """Subclass of :class:.TrackerJobsBase`"""
+        """Subclass of :class:`TrackerJobsBase`"""
 
     @property
     @abc.abstractmethod
     def TrackerConfig(self):
-        """Subclass of :class:.TrackerConfigBase`"""
+        """Subclass of :class:`TrackerConfigBase`"""
 
     def __init__(self, config={}):
         self._config = config
