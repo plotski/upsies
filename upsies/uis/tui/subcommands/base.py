@@ -4,6 +4,7 @@ Abstract base class for commands
 
 import abc
 import argparse
+import collections
 import sys
 import textwrap
 
@@ -85,11 +86,11 @@ class CommandBase(abc.ABC):
                             help='Ignore results from previous calls',
                             action='store_true')
 
-    # Subcommands
+    # Commands
     _subparsers = _argparser.add_subparsers(title='commands')
 
     # Mutually exclusive arguments
-    _mutex_groups = {}
+    _mutex_groups = collections.defaultdict(lambda: {})
 
     names = NotImplemented
     """
@@ -107,6 +108,14 @@ class CommandBase(abc.ABC):
     with keyword arguments for :meth:`argparse.ArgumentParser.add_argument`.
     """
 
+    subcommands = {}
+    """
+    Subcommands of commands (or subsubcommands from a CLI point of view)
+
+    This is a :class:`dict` where keys are subcommand names and values are
+    :attr:`argument_definitions`.
+    """
+
     description = ''
     """
     Extended description
@@ -118,7 +127,7 @@ class CommandBase(abc.ABC):
     @classmethod
     def register(cls):
         """
-        Add the subcommand and its arguments to the internal
+        Add the command and its arguments to the internal
         :class:`argparse.ArgumentParser` instance
 
         This classmethod must be called on every subclass.
@@ -136,9 +145,22 @@ class CommandBase(abc.ABC):
             description=description,
             formatter_class=_MyHelpFormatter,
         )
-        parser.set_defaults(subcommand=cls)
+        parser.set_defaults(command=cls)
 
-        for argname, argopts in cls.argument_definitions.items():
+        # Add options and flags for this command
+        cls._add_args(parser, cls.argument_definitions, cls._mutex_groups[None])
+
+        # Add subcommands
+        if cls.subcommands:
+            subparsers = parser.add_subparsers()
+            for subcmd, args in cls.subcommands.items():
+                subparser = subparsers.add_parser(subcmd)
+                subparser.set_defaults(subcommand=subcmd)
+                cls._add_args(subparser, args, cls._mutex_groups[subcmd])
+
+    @staticmethod
+    def _add_args(parser, argument_definitions, mutex_groups):
+        for argname, argopts in argument_definitions.items():
             names = (argname,) if isinstance(argname, str) else argname
             group_name = argopts.pop('group', None)
             if group_name:
@@ -148,9 +170,9 @@ class CommandBase(abc.ABC):
                 if not names[0].startswith('-') and argopts.get('default') is None:
                     raise RuntimeError('Default values of mutually exclusive positional arguments '
                                        'must not be None. See: https://bugs.python.org/issue41854')
-                if group_name not in cls._mutex_groups:
-                    cls._mutex_groups[group_name] = parser.add_mutually_exclusive_group()
-                cls._mutex_groups[group_name].add_argument(*names, **argopts)
+                if group_name not in mutex_groups:
+                    mutex_groups[group_name] = parser.add_mutually_exclusive_group()
+                mutex_groups[group_name].add_argument(*names, **argopts)
             else:
                 parser.add_argument(*names, **argopts)
 
@@ -167,8 +189,8 @@ class CommandBase(abc.ABC):
         except SystemExit:
             raise SystemExit(1)
 
-        # Show help if no subcommand given
-        if not hasattr(main_args, 'subcommand'):
+        # Show help if no command given
+        if not hasattr(main_args, 'command'):
             cls._argparser.print_help()
             raise SystemExit(0)
 
@@ -189,7 +211,7 @@ class CommandBase(abc.ABC):
             print(e, file=sys.stderr)
             raise SystemExit(1)
 
-        return main_args.subcommand(args=args, config=config)
+        return main_args.command(args=args, config=config)
 
     def __init__(self, args, config):
         self._args = self._argparser.parse_args(args)
