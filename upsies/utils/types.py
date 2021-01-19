@@ -7,10 +7,10 @@ Argument type names should match the ``metavar`` argument given to
 
 from .. import constants, trackers, utils
 
-WEBDB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.webdbs.webdbs()]
-TRACKER_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in trackers.trackers()]
-IMGHOST_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.imghosts.imghosts()]
 BTCLIENT_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.btclients.clients()]
+IMGHOST_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.imghosts.imghosts()]
+TRACKER_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in trackers.trackers()]
+WEBDB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.webdbs.webdbs()]
 
 
 def NUMBER(string):
