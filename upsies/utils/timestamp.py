@@ -55,7 +55,7 @@ def parse(string):
         raise TypeError(f'Not a string or number: {string!r}')
 
     try:
-        parts = [int(part) for part in string.split(':')]
+        parts = [float(part) for part in string.split(':')]
     except ValueError:
         raise ValueError(f'Invalid timestamp: {string!r}')
 
