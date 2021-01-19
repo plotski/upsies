@@ -13,7 +13,7 @@ class upload_images(CommandBase):
 
     argument_definitions = {
         'IMAGEHOST': {
-            'type': utils.types.IMAGEHOST,
+            'type': utils.types.imghost,
             'help': ('Case-insensitive name of image hosting service\n'
                      'Supported services: ' + ', '.join(utils.types.IMGHOST_NAMES)),
         },

@@ -13,7 +13,7 @@ class add_torrent(CommandBase):
 
     argument_definitions = {
         'CLIENT': {
-            'type': utils.types.CLIENT,
+            'type': utils.types.client,
             'help': ('Case-insensitive BitTorrent client name\n'
                      'Supported clients: ' + ', '.join(utils.types.BTCLIENT_NAMES)),
         },

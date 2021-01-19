@@ -19,7 +19,7 @@ class submit(CommandBase):
             **{
                 'CONTENT': {'help': 'Path to release content'},
                 ('--add-to', '-a'): {
-                    'type': utils.types.CLIENT,
+                    'type': utils.types.client,
                     'metavar': 'CLIENT',
                     'help': ('Case-insensitive BitTorrent client name\n'
                              'Supported clients: ' + ', '.join(utils.types.BTCLIENT_NAMES)),

@@ -1,8 +1,7 @@
 """
 CLI argument types
 
-Argument type names should match the ``metavar`` argument given to
-:meth:`argparse.ArgumentParser.add_argument` and raise ValueError.
+All types return normalized values and raise ValueError for invalid values.
 """
 
 from .. import constants, trackers, utils
@@ -13,37 +12,37 @@ TRACKER_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in trackers.track
 WEBDB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.webdbs.webdbs()]
 
 
-def NUMBER(string):
+def integer(string):
     return int(string)
 
-def TIMESTAMP(string):
+def timestamp(string):
     return utils.timestamp.parse(string)
 
-def WEBDB(string):
+def webdb(string):
     if string in WEBDB_NAMES:
         return string.lower()
     else:
         raise ValueError(f'Unsupported online databasae: {string}')
 
-def TRACKER(string):
+def tracker(string):
     if string in TRACKER_NAMES:
         return string.lower()
     else:
         raise ValueError(f'Unsupported tracker: {string}')
 
-def CLIENT(string):
+def client(string):
     if string in BTCLIENT_NAMES:
         return string.lower()
     else:
         raise ValueError(f'Unsupported client: {string}')
 
-def IMAGEHOST(string):
+def imghost(string):
     if string in IMGHOST_NAMES:
         return string.lower()
     else:
         raise ValueError(f'Unsupported image hosting service: {string}')
 
-def OPTION(string):
+def option(string):
     if string in constants.OPTION_PATHS:
         return string.lower()
     else:

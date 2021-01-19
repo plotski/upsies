@@ -26,7 +26,7 @@ class set(CommandBase):
 
     argument_definitions = {
         'OPTION': {
-            'type': utils.types.OPTION,
+            'type': utils.types.option,
             'nargs': '?',
             'help': 'Option to change or show',
         },

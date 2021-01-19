@@ -16,17 +16,17 @@ class screenshots(CommandBase):
         ('--timestamps', '-t'): {
             'nargs': '+',
             'default': (),
-            'type': utils.types.TIMESTAMP,
+            'type': utils.types.timestamp,
             'metavar': 'TIMESTAMP',
             'help': 'Space-separated list of [[HH:]MM:]SS strings',
         },
         ('--number', '-n'): {
-            'type': utils.types.NUMBER,
+            'type': utils.types.integer,
             'help': 'How many screenshots to make in total',
             'default': 0,
         },
         ('--upload-to', '-u'): {
-            'type': utils.types.IMAGEHOST,
+            'type': utils.types.imghost,
             'metavar': 'IMAGEHOST',
             'help': ('Case-insensitive name of image hosting service\n'
                      'Supported services: ' + ', '.join(utils.types.IMGHOST_NAMES)),
