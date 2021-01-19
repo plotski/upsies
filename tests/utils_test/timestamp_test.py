@@ -1,12 +1,11 @@
-import re
-
 import pytest
 
 from upsies.utils import timestamp
 
 
-def test_pretty_timestamp_from_int():
-    testcases = (
+@pytest.mark.parametrize(
+    argnames='seconds, string',
+    argvalues=(
         (0, '0:00:00'),
         (1, '0:00:01'),
         (59, '0:00:59'),
@@ -16,38 +15,44 @@ def test_pretty_timestamp_from_int():
         (60 * 60, '1:00:00'),
         (10 * 60 * 60 + 1, '10:00:01'),
         (123 * 60 * 60 + 321, '123:05:21'),
-    )
-    for seconds, string in testcases:
-        print(f'{seconds} seconds should be formatted as {string}')
-        assert timestamp.pretty(seconds) == string
+    ),
+    ids=lambda v: repr(v),
+)
+def test_pretty_timestamp_from_int(seconds, string):
+    assert timestamp.pretty(seconds) == string
 
 
-def test_pretty_timestamp_from_str():
-    testcases = (
+@pytest.mark.parametrize(
+    argnames='instring, outstring',
+    argvalues=(
         ('0', '0:00:00'),
         ('1', '0:00:01'),
         ('123', '0:02:03'),
         ('1:2:3', '1:02:03'),
-    )
-    for instring, outstring in testcases:
-        print(f'{instring} seconds should be formatted as {outstring}')
-        assert timestamp.pretty(instring) == outstring
+    ),
+    ids=lambda v: repr(v),
+)
+def test_pretty_timestamp_from_str(instring, outstring):
+    assert timestamp.pretty(instring) == outstring
+
+@pytest.mark.parametrize(
+    argnames='value, exception, message',
+    argvalues=(
+        (-1, ValueError, r'^Timestamp must not be negative: -1$'),
+        ('-1', ValueError, r'^Timestamp must not be negative: -1$'),
+        ('hello', ValueError, r"^Invalid timestamp: 'hello'$"),
+        ([1, 2, 3], TypeError, r"^Not a string or number: \[1, 2, 3\]$"),
+    ),
+    ids=lambda v: repr(v),
+)
+def test_pretty_timestamp_from_invalid_value(value, exception, message):
+    with pytest.raises(exception, match=message):
+        timestamp.pretty(value)
 
 
-def test_pretty_timestamp_from_invalid_value():
-    for value in ('-1', -1):
-        with pytest.raises(ValueError, match=rf'^Timestamp must not be negative: {value}$'):
-            timestamp.pretty(value)
-    for value in ('hello',):
-        with pytest.raises(ValueError, match=rf'^Invalid timestamp: {value!r}$'):
-            timestamp.pretty(value)
-    for value in ([1, 2, 3],):
-        with pytest.raises(TypeError, match=rf'^Not a string or number: {re.escape(repr(value))}$'):
-            timestamp.pretty(value)
-
-
-def test_parse_timestamp_from_str():
-    testcases = (
+@pytest.mark.parametrize(
+    argnames='string, seconds',
+    argvalues=(
         ('0', 0),
         ('59', 59),
         ('60', 60),
@@ -58,32 +63,45 @@ def test_parse_timestamp_from_str():
         ('1:02:03.456', 3600 + (2 * 60) + 3 + 0.456),
         ('1:2:3', 3600 + (2 * 60) + 3),
         ('123:04:55', (123 * 3600) + (4 * 60) + 55),
-    )
-    for string, seconds in testcases:
-        print(f'{string} should be interpreted as {seconds} seconds')
-        assert timestamp.parse(string) == seconds
+    ),
+    ids=lambda v: repr(v),
+)
+def test_parse_timestamp_from_str(string, seconds):
+    assert timestamp.parse(string) == seconds
+
+@pytest.mark.parametrize(
+    argnames='value, exception, message',
+    argvalues=(
+        ('foo', ValueError, r"^Invalid timestamp: 'foo'$"),
+        ('1:00f', ValueError, r"^Invalid timestamp: '1:00f'$"),
+        ('-1', ValueError, r'^Timestamp must not be negative: -1$'),
+        ('-100', ValueError, r'^Timestamp must not be negative: -100$'),
+        ('1:-2:3', ValueError, r'^Timestamp must not be negative: 1:-2:3$'),
+    ),
+    ids=lambda v: repr(v),
+)
+def test_parse_timestamp_from_invalid_str(value, exception, message):
+    with pytest.raises(exception, match=message):
+        timestamp.parse(value)
 
 
-def test_parse_timestamp_from_invalid_str():
-    testcases = ('foo', '1:00f')
-    for string in testcases:
-        with pytest.raises(ValueError, match=rf'^Invalid timestamp: {string!r}$'):
-            timestamp.parse(string)
-
-    testcases = ('-1', '-100', '1:-2:3')
-    for string in testcases:
-        with pytest.raises(ValueError, match=rf'^Timestamp must not be negative: {string}$'):
-            timestamp.parse(string)
+@pytest.mark.parametrize(
+    argnames='value',
+    argvalues=(0, 1, 1.5, 59, 60, 61, 300),
+    ids=lambda v: repr(v),
+)
+def test_parse_timestamp_from_number(value):
+    assert timestamp.parse(value) == value
 
 
-def test_parse_timestamp_from_number():
-    testcases = (0, 1, 1.5, 59, 60, 61, 300)
-    for value in testcases:
-        assert timestamp.parse(value) == value
-
-
-def test_parse_timestamp_from_invalid_number():
-    testcases = (-3, -59)
-    for value in testcases:
-        with pytest.raises(ValueError, match=rf'^Invalid timestamp: {value!r}$'):
-            timestamp.parse(value)
+@pytest.mark.parametrize(
+    argnames='value, exception, message',
+    argvalues=(
+        (-3, ValueError, r'^Invalid timestamp: -3$'),
+        (-61, ValueError, r'^Invalid timestamp: -61$'),
+    ),
+    ids=lambda v: repr(v),
+)
+def test_parse_timestamp_from_invalid_number(value, exception, message):
+    with pytest.raises(exception, match=message):
+        timestamp.parse(value)
