@@ -128,6 +128,8 @@ class UI:
         # Block until all jobs are finished
         try:
             self._app.run(set_exception_handler=False)
+        except asyncio.CancelledError:
+            pass
         finally:
             self._finish_jobs()
             try:

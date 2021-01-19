@@ -150,6 +150,12 @@ def test_exception_is_raised_by_app(mocker):
     with pytest.raises(RuntimeError, match=r'^This is bad$'):
         ui.run(())
 
+def test_CancelledError_is_raised_by_app(mocker):
+    ui = UI()
+    mocker.patch.object(ui._app, 'run', Mock(side_effect=asyncio.CancelledError()))
+    mocker.patch.object(ui, '_wait_for_all_jobs', AsyncMock())
+    ui.run(())
+
 def test_exception_is_raised_by_wait_for_all_jobs(mocker):
     ui = UI()
     mocker.patch.object(ui, '_wait_for_all_jobs', AsyncMock(side_effect=RuntimeError('This is bad')))
