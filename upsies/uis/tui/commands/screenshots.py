@@ -40,7 +40,7 @@ class screenshots(CommandBase):
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
             timestamps=self.args.timestamps,
-            number=self.args.number,
+            count=self.args.number,
         )
 
     @utils.cached_property

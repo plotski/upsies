@@ -25,9 +25,9 @@ class ScreenshotsJob(JobBase):
         :func:`~.video.first_video`)
     :param timestamps: Positions in the video to make screenshots at
     :type timestamps: sequence of "[[H+:]M+:]S+" strings or seconds
-    :param number: How many screenshots to make
+    :param count: How many screenshots to make
 
-    If `timestamps` and `number` are not given, screenshot positions are picked
+    If `timestamps` and `count` are not given, screenshot positions are picked
     at even intervals.
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
@@ -47,7 +47,7 @@ class ScreenshotsJob(JobBase):
     name = 'screenshots'
     label = 'Screenshots'
 
-    def initialize(self, content_path, timestamps=(), number=0):
+    def initialize(self, content_path, timestamps=(), count=0):
         self._screenshots_created = 0
         self._screenshots_total = -1
         self._video_file = ''
@@ -60,7 +60,7 @@ class ScreenshotsJob(JobBase):
             kwargs={
                 'content_path' : content_path,
                 'timestamps'   : timestamps,
-                'number'       : number,
+                'count'        : count,
                 'output_dir'   : self.home_directory,
                 'overwrite'    : self.ignore_cache,
             },
@@ -154,13 +154,13 @@ class ScreenshotsJob(JobBase):
         return self._screenshots_created
 
 
-def _normalize_timestamps(video_file, timestamps, number):
+def _normalize_timestamps(video_file, timestamps, count):
     """
     Return list of human-readable time stamps
 
     :params video_file: Path to video file
     :parms timestamps: Sequence of arguments for :func:`~utils.timestamp.parse`
-    :parms int number: Desired number of timestamps
+    :parms int count: Desired number of timestamps
 
     :raise ValueError: if an item in `timestamps` is invalid
     :raise ContentError: if `video_file` is not a video file
@@ -172,11 +172,11 @@ def _normalize_timestamps(video_file, timestamps, number):
         ts = max(0, min(total_secs, timestamp.parse(ts)))
         timestamps_pretty.append(timestamp.pretty(ts))
 
-    if not timestamps and not number:
-        number = DEFAULT_NUMBER_OF_SCREENSHOTS
+    if not timestamps and not count:
+        count = DEFAULT_NUMBER_OF_SCREENSHOTS
 
     # Add more timestamps if the user didn't specify enough
-    if number > 0 and len(timestamps_pretty) < number:
+    if count > 0 and len(timestamps_pretty) < count:
         # Convert timestamp strings to seconds
         timestamps = sorted(timestamp.parse(ts) for ts in timestamps_pretty)
 
@@ -190,7 +190,7 @@ def _normalize_timestamps(video_file, timestamps, number):
             positions.append(1.0)
 
         # Insert timestamps between the two with the largest distance
-        while len(timestamps_pretty) < number:
+        while len(timestamps_pretty) < count:
             pairs = [(a, b) for a, b in zip(positions, positions[1:])]
             max_distance, pos1, pos2 = max((b - a, a, b) for a, b in pairs)
             position = ((pos2 - pos1) / 2) + pos1
@@ -202,7 +202,7 @@ def _normalize_timestamps(video_file, timestamps, number):
 
 
 def _screenshots_process(output_queue, input_queue,
-                         content_path, timestamps, number, output_dir, overwrite):
+                         content_path, timestamps, count, output_dir, overwrite):
     # Find appropriate video file if `content_path` is a directory
     try:
         video_file = video.first_video(content_path)
@@ -221,7 +221,7 @@ def _screenshots_process(output_queue, input_queue,
             timestamps = _normalize_timestamps(
                 video_file=video_file,
                 timestamps=timestamps,
-                number=number,
+                count=count,
             )
         except (ValueError, errors.ContentError) as e:
             output_queue.put((daemon.MsgType.error, str(e)))

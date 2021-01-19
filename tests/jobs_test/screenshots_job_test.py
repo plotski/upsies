@@ -23,7 +23,7 @@ def test_normalize_timestamps_with_defaults(duration_mock):
     assert timestamps == ['0:02:30', '0:03:45']
 
 @patch('upsies.utils.video.duration')
-def test_normalize_timestamps_with_number_argument(duration_mock):
+def test_normalize_timestamps_with_count_argument(duration_mock):
     duration_mock.return_value = 300
     timestamps = _normalize_timestamps('foo.mkv', (), 1)
     assert timestamps == ['0:02:30']
@@ -39,7 +39,7 @@ def test_normalize_timestamps_with_timestamps_argument(duration_mock):
     assert timestamps == ['0:02:00', '0:02:30', '0:02:59']
 
 @patch('upsies.utils.video.duration')
-def test_normalize_timestamps_with_number_and_timestamps_argument(duration_mock):
+def test_normalize_timestamps_with_count_and_timestamps_argument(duration_mock):
     duration_mock.return_value = 300
     timestamps = _normalize_timestamps('foo.mkv', ('0:02:31',), 2)
     assert timestamps == ['0:01:15', '0:02:31']
@@ -94,7 +94,7 @@ def test_screenshots_process_fails_to_find_first_video(tmp_path, screenshots_pro
         input_queue=screenshots_process_patches.input_queue,
         content_path='path/to/foo',
         timestamps=(10 * 60, '20:00'),
-        number=2,
+        count=2,
         output_dir='path/to/destination',
         overwrite=False,
     )
@@ -111,7 +111,7 @@ def test_screenshots_process_is_cancelled_after_finding_first_video(tmp_path, sc
         input_queue=screenshots_process_patches.input_queue,
         content_path='path/to/foo',
         timestamps=(10 * 60, '20:00'),
-        number=2,
+        count=2,
         output_dir='path/to/destination',
         overwrite=False,
     )
@@ -128,7 +128,7 @@ def test_screenshots_process_fails_to_normalize_timestamps(tmp_path, screenshots
         input_queue=screenshots_process_patches.input_queue,
         content_path='path/to/foo',
         timestamps=(10 * 60, '20:00'),
-        number=2,
+        count=2,
         output_dir='path/to/destination',
         overwrite=False,
     )
@@ -139,7 +139,7 @@ def test_screenshots_process_fails_to_normalize_timestamps(tmp_path, screenshots
         call.normalize_timestamps(
             video_file='path/to/foo/bar.mkv',
             timestamps=(10 * 60, '20:00'),
-            number=2,
+            count=2,
         ),
         call.output_queue.put((MsgType.error, 'Invalid timestamp')),
     ]
@@ -153,7 +153,7 @@ def test_screenshots_process_is_cancelled_after_normalizing_timestamps(tmp_path,
         input_queue=screenshots_process_patches.input_queue,
         content_path='path/to/foo',
         timestamps=(10 * 60, '20:00'),
-        number=2,
+        count=2,
         output_dir='path/to/destination',
         overwrite=False,
     )
@@ -164,7 +164,7 @@ def test_screenshots_process_is_cancelled_after_normalizing_timestamps(tmp_path,
         call.normalize_timestamps(
             video_file='path/to/foo/bar.mkv',
             timestamps=(10 * 60, '20:00'),
-            number=2,
+            count=2,
         ),
         call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
         call.shall_terminate(screenshots_process_patches.input_queue),
@@ -179,7 +179,7 @@ def test_screenshots_process_is_cancelled_after_first_screenshot(tmp_path, scree
         input_queue=screenshots_process_patches.input_queue,
         content_path='path/to/foo',
         timestamps=(10 * 60, '20:00'),
-        number=2,
+        count=2,
         output_dir='path/to/destination',
         overwrite=False,
     )
@@ -190,7 +190,7 @@ def test_screenshots_process_is_cancelled_after_first_screenshot(tmp_path, scree
         call.normalize_timestamps(
             video_file='path/to/foo/bar.mkv',
             timestamps=(10 * 60, '20:00'),
-            number=2,
+            count=2,
         ),
         call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
         call.shall_terminate(screenshots_process_patches.input_queue),
@@ -216,7 +216,7 @@ def test_screenshots_process_fails_to_create_second_screenshot(tmp_path, screens
         input_queue=screenshots_process_patches.input_queue,
         content_path='path/to/foo',
         timestamps=(10 * 60, '20:00'),
-        number=2,
+        count=2,
         output_dir='path/to/destination',
         overwrite=False,
     )
@@ -227,7 +227,7 @@ def test_screenshots_process_fails_to_create_second_screenshot(tmp_path, screens
         call.normalize_timestamps(
             video_file='path/to/foo/bar.mkv',
             timestamps=(10 * 60, '20:00'),
-            number=2,
+            count=2,
         ),
         call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
         call.shall_terminate(screenshots_process_patches.input_queue),
@@ -256,7 +256,7 @@ def test_screenshots_process_succeeds(tmp_path, screenshots_process_patches):
         input_queue=screenshots_process_patches.input_queue,
         content_path='path/to/foo',
         timestamps=(10 * 60, '20:00'),
-        number=2,
+        count=2,
         output_dir='path/to/destination',
         overwrite=False,
     )
@@ -267,7 +267,7 @@ def test_screenshots_process_succeeds(tmp_path, screenshots_process_patches):
         call.normalize_timestamps(
             video_file='path/to/foo/bar.mkv',
             timestamps=(10 * 60, '20:00'),
-            number=2,
+            count=2,
         ),
         call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
         call.shall_terminate(screenshots_process_patches.input_queue),
@@ -318,7 +318,7 @@ def job(tmp_path, mocker):
         ignore_cache=False,
         content_path='some/path',
         timestamps=(120,),
-        number=2,
+        count=2,
     )
 
 
@@ -329,7 +329,7 @@ def test_ScreenshotsJob_initialize(DaemonProcess_mock, tmp_path):
         ignore_cache=False,
         content_path='some/path',
         timestamps=(120,),
-        number=2,
+        count=2,
     )
     assert DaemonProcess_mock.call_args_list == [call(
         name=job.name,
@@ -337,7 +337,7 @@ def test_ScreenshotsJob_initialize(DaemonProcess_mock, tmp_path):
         kwargs={
             'content_path' : 'some/path',
             'timestamps'   : (120,),
-            'number'       : 2,
+            'count'        : 2,
             'output_dir'   : job.home_directory,
             'overwrite'    : job.ignore_cache,
         },

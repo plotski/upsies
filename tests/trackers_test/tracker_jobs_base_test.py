@@ -259,7 +259,7 @@ def test_screenshots_job(cli_args, exp_screenshots, mocker):
     assert ScreenshotsJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
-            number=exp_screenshots,
+            count=exp_screenshots,
             home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
