@@ -5,7 +5,7 @@ Entry point
 import sys
 
 from ... import __homepage__, errors
-from . import subcommands
+from . import commands
 from .ui import UI
 
 import logging  # isort:skip
@@ -19,7 +19,7 @@ def main(args=None):
 def _main(args=None):
     try:
         ui = UI()
-        cmd = subcommands.run(args)
+        cmd = commands.run(args)
         exit_code = ui.run(cmd.jobs_active)
 
     # TUI was terminated by user prematurely

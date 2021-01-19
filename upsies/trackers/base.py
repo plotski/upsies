@@ -287,10 +287,7 @@ class TrackerBase(abc.ABC):
         self._cli_args = cli_args or argparse.Namespace()
 
     argument_definitions = {}
-    """
-    CLI argument definitions for :class:`~.uis.tui.subcommands.submit.submit`
-    (see :attr:`.CommandBase.argument_definitions`)
-    """
+    """CLI argument definitions (see :attr:`.CommandBase.argument_definitions`)"""
 
     @property
     def cli_args(self):
