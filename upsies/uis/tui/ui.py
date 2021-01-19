@@ -142,7 +142,7 @@ class UI:
             for jobinfo in self._jobs.values():
                 _log.debug('Checking exit_code of %r: %r', jobinfo.job.name, jobinfo.job.exit_code)
                 if not isinstance(jobinfo.job.exit_code, int):
-                    raise TypeError('Job has invalid exit_code: {jobinfo.job.exit_code!r}')
+                    raise TypeError(f'Job has invalid exit_code: {jobinfo.job.exit_code!r}')
                 elif jobinfo.job.exit_code != 0:
                     return jobinfo.job.exit_code
             return 0
