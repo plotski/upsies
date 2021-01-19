@@ -162,6 +162,11 @@ def test_exception_is_raised_by_wait_for_all_jobs(mocker):
     with pytest.raises(RuntimeError, match=r'^This is bad$'):
         ui.run(())
 
+def test_CancelledError_is_raised_by_wait_for_all_jobs(mocker):
+    ui = UI()
+    mocker.patch.object(ui, '_wait_for_all_jobs', AsyncMock(side_effect=asyncio.CancelledError()))
+    ui.run(())
+
 def test_exception_is_raised_by_background_coroutine():
     def delayed_exception():
         async def raise_exception():
@@ -211,6 +216,19 @@ def test_exceptions_are_raised_by_job_wait():
         # In Python 3.6 asyncio.gather() raises exceptions randomly
         with pytest.raises(RuntimeError, match=r'^This is (?:also |)bad$'):
             ui.run(jobs)
+    for job in jobs:
+        assert job.wait.call_args_list == [call()]
+        assert job.finish.call_args_list == [call()]
+
+def test_CancelledError_is_raised_by_job_wait():
+    jobs = (
+        Mock(wait=AsyncMock(), exit_code=0),
+        Mock(wait=AsyncMock(side_effect=asyncio.CancelledError('a')), exit_code=0),
+        Mock(wait=AsyncMock(), exit_code=0),
+        Mock(wait=AsyncMock(side_effect=asyncio.CancelledError('b')), exit_code=0),
+    )
+    ui = UI()
+    ui.run(jobs)
     for job in jobs:
         assert job.wait.call_args_list == [call()]
         assert job.finish.call_args_list == [call()]

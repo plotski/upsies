@@ -186,6 +186,7 @@ class UI:
             if not self._exception:
                 _log.debug('Caught exception from %r: %r', fut, e)
                 self._exception = e
+        finally:
             self._exit()
 
     def _exit(self, *_, **__):
