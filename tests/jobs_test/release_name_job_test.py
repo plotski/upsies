@@ -77,16 +77,3 @@ def test_fetch_info_raises_exception(ReleaseName_mock, tmp_path):
     with pytest.raises(Exception, match='^No$'):
         asyncio.get_event_loop().run_until_complete(rnj.wait())
     assert cb.call_args_list == []
-
-
-@patch('upsies.utils.release.ReleaseName')
-def test_release_name_update_callback(ReleaseName_mock, tmp_path):
-    rnj = ReleaseNameJob(
-        home_directory=tmp_path,
-        ignore_cache=True,
-        content_path='mock/path',
-    )
-    cb = Mock()
-    rnj.signal.register('release_name_updated', cb)
-    rnj.handle_release_name_update()
-    assert cb.call_args_list == [call(rnj.release_name)]

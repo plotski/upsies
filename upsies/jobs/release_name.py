@@ -66,9 +66,6 @@ class ReleaseNameJob(JobBase):
             if exc:
                 self.exception(exc)
             else:
-                self.handle_release_name_update()
+                self.signal.emit('release_name_updated', self.release_name)
 
         task.add_done_callback(fetch_info_done)
-
-    def handle_release_name_update(self):
-        self.signal.emit('release_name_updated', self.release_name)
