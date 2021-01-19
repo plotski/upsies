@@ -62,3 +62,7 @@ def test_config():
     config = {'username': 'foo', 'password': 'bar'}
     tracker = make_TestTracker(config=config)
     assert tracker.config is config
+
+
+def test_argument_definitions():
+    assert TrackerBase.argument_definitions == {}
