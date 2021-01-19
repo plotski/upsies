@@ -12,38 +12,44 @@ TRACKER_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in trackers.track
 WEBDB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.webdbs.webdbs()]
 
 
-def integer(string):
-    return int(string)
+def integer(value):
+    try:
+        return int(float(value))
+    except (ValueError, TypeError):
+        raise ValueError(f'Not an integer: {value!r}')
 
-def timestamp(string):
-    return utils.timestamp.parse(string)
+def timestamp(value):
+    try:
+        return utils.timestamp.parse(value)
+    except TypeError as e:
+        raise ValueError(e)
 
-def webdb(string):
-    if string in WEBDB_NAMES:
-        return string.lower()
+def client(value):
+    if value in BTCLIENT_NAMES:
+        return value.lower()
     else:
-        raise ValueError(f'Unsupported online databasae: {string}')
+        raise ValueError(f'Unsupported client: {value}')
 
-def tracker(string):
-    if string in TRACKER_NAMES:
-        return string.lower()
+def imghost(value):
+    if value in IMGHOST_NAMES:
+        return value.lower()
     else:
-        raise ValueError(f'Unsupported tracker: {string}')
+        raise ValueError(f'Unsupported image hosting service: {value}')
 
-def client(string):
-    if string in BTCLIENT_NAMES:
-        return string.lower()
+def tracker(value):
+    if value in TRACKER_NAMES:
+        return value.lower()
     else:
-        raise ValueError(f'Unsupported client: {string}')
+        raise ValueError(f'Unsupported tracker: {value}')
 
-def imghost(string):
-    if string in IMGHOST_NAMES:
-        return string.lower()
+def webdb(value):
+    if value in WEBDB_NAMES:
+        return value.lower()
     else:
-        raise ValueError(f'Unsupported image hosting service: {string}')
+        raise ValueError(f'Unsupported database: {value}')
 
-def option(string):
-    if string in constants.OPTION_PATHS:
-        return string.lower()
+def option(value):
+    if value in constants.OPTION_PATHS:
+        return value.lower()
     else:
-        raise ValueError(f'Unknown option: {string}')
+        raise ValueError(f'Unknown option: {value}')
