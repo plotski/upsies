@@ -140,13 +140,13 @@ def subclasses(basecls, modules):
     :param modules: Modules to search
     :type modules: list of module objects
     """
-    subclses = []
+    subclses = set()
     for mod in modules:
         for name, member in inspect.getmembers(mod):
             if (member is not basecls and
                 isinstance(member, type) and
                 issubclass(member, basecls)):
-                subclses.append(member)
+                subclses.add(member)
     return subclses
 
 
