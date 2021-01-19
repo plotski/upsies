@@ -25,7 +25,8 @@ from .base import CommandBase
 
 @functools.lru_cache(maxsize=None)
 def _register_commands():
-    subcmdclss = subclasses(CommandBase, submodules(__package__))
+    subcmdclss = sorted(subclasses(CommandBase, submodules(__package__)),
+                        key=lambda subcmdcls: subcmdcls.names[0])
     for subcmdcls in subcmdclss:
         subcmdcls.register()
 
