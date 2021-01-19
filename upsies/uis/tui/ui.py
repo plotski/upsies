@@ -181,7 +181,7 @@ class UI:
         try:
             fut.result()
         except asyncio.CancelledError:
-             pass
+            pass
         except BaseException as e:
             if not self._exception:
                 _log.debug('Caught exception from %r: %r', fut, e)
