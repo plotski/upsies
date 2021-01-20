@@ -157,10 +157,10 @@ def test_CreateTorrentJob_initialize_creates_torrent_process(DaemonProcess_mock,
             'source'       : 'AsdF',
             'exclude'      : ('a', 'b'),
         },
-        init_callback=ctj.handle_file_tree,
-        info_callback=ctj.handle_progress_update,
+        init_callback=ctj._handle_file_tree,
+        info_callback=ctj._handle_progress_update,
         error_callback=ctj.error,
-        finished_callback=ctj.handle_torrent_created,
+        finished_callback=ctj._handle_torrent_created,
     )]
 
 
@@ -207,7 +207,7 @@ async def test_CreateTorrentJob_wait_can_be_called_multiple_times(job):
 @patch('upsies.utils.fs.file_tree')
 def test_handle_file_tree(file_tree_mock, job):
     assert job._file_tree == ''
-    job.handle_file_tree('beautiful tree')
+    job._handle_file_tree('beautiful tree')
     assert job._file_tree is file_tree_mock.return_value
     assert file_tree_mock.call_args_list == [call('beautiful tree')]
 
@@ -219,17 +219,17 @@ def test_info(job):
 def test_progress_update_handling(job):
     cb = Mock()
     job.signal.register('progress_update', cb)
-    job.handle_progress_update(10)
+    job._handle_progress_update(10)
     assert cb.call_args_list == [call(10)]
-    job.handle_progress_update(50)
+    job._handle_progress_update(50)
     assert cb.call_args_list == [call(10), call(50)]
-    job.handle_progress_update(100)
+    job._handle_progress_update(100)
     assert cb.call_args_list == [call(10), call(50), call(100)]
 
 
 def test_torrent_created_handling(job):
     assert job.output == ()
     assert not job.is_finished
-    job.handle_torrent_created('mock torrent')
+    job._handle_torrent_created('mock torrent')
     assert job.output == ('mock torrent',)
     assert job.is_finished

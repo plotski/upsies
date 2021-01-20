@@ -72,8 +72,8 @@ class SearchWebDbJob(JobBase):
 
         self._searcher = _Searcher(
             search_coro=self._db.search,
-            results_callback=self.handle_search_results,
-            searching_callback=self.handle_searching_status,
+            results_callback=self._handle_search_results,
+            searching_callback=self._handle_searching_status,
             error_callback=self.error,
         )
         self._info_updater = _InfoUpdater(
@@ -91,7 +91,10 @@ class SearchWebDbJob(JobBase):
         )
 
     def _make_update_info_func(self, key):
-        return lambda value: self.update_info(key, value)
+        return lambda value: self._update_info(key, value)
+
+    def _update_info(self, attr, value):
+        self.signal.emit('info_updated', attr, value)
 
     def execute(self):
         # Search for initial query. It is important NOT to do this in
@@ -117,7 +120,7 @@ class SearchWebDbJob(JobBase):
             self._searcher.search(self._query)
             self.clear_errors()
 
-    def handle_searching_status(self, is_searching):
+    def _handle_searching_status(self, is_searching):
         self._is_searching = bool(is_searching)
         self.signal.emit('searching_status', self._is_searching)
 
@@ -125,15 +128,12 @@ class SearchWebDbJob(JobBase):
     def is_searching(self):
         return self._is_searching
 
-    def handle_search_results(self, results):
+    def _handle_search_results(self, results):
         if results:
             self._info_updater.set_result(results[0])
         else:
             self._info_updater.set_result(None)
         self.signal.emit('search_results', results)
-
-    def update_info(self, attr, value):
-        self.signal.emit('info_updated', attr, value)
 
     def result_focused(self, result):
         self._info_updater.set_result(result)

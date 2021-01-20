@@ -341,8 +341,8 @@ def test_ScreenshotsJob_initialize(DaemonProcess_mock, tmp_path):
             'output_dir'   : job.home_directory,
             'overwrite'    : job.ignore_cache,
         },
-        info_callback=job.handle_info,
-        error_callback=job.handle_error,
+        info_callback=job._handle_info,
+        error_callback=job._handle_error,
         finished_callback=job.finish,
     )]
     assert job._video_file == ''
@@ -387,7 +387,7 @@ def test_ScreenshotsJob_handle_info_sets_video_file(job):
     cb = Mock()
     job.signal.register('video_file', cb)
     assert job.video_file == ''
-    job.handle_info(('video_file', 'foo.mkv'))
+    job._handle_info(('video_file', 'foo.mkv'))
     assert job.video_file == 'foo.mkv'
     assert cb.call_args_list == [call('foo.mkv')]
 
@@ -395,23 +395,23 @@ def test_ScreenshotsJob_handle_info_sets_timestamps(job):
     cb = Mock()
     job.signal.register('timestamps', cb)
     assert job.timestamps == ()
-    job.handle_info(('timestamps', ('1', '2', '3')))
+    job._handle_info(('timestamps', ('1', '2', '3')))
     assert job.timestamps == ('1', '2', '3')
     assert cb.call_args_list == [call(('1', '2', '3'))]
 
 def test_ScreenshotsJob_handle_info_sends_screenshot_paths(job):
     assert job.output == ()
-    job.handle_info(('screenshot', 'path/to/foo.png'))
+    job._handle_info(('screenshot', 'path/to/foo.png'))
     assert job.output == ('path/to/foo.png',)
-    job.handle_info(('screenshot', 'path/to/bar.png'))
+    job._handle_info(('screenshot', 'path/to/bar.png'))
     assert job.output == ('path/to/foo.png', 'path/to/bar.png')
-    job.handle_info(('screenshot', 'path/to/baz.png'))
+    job._handle_info(('screenshot', 'path/to/baz.png'))
     assert job.output == ('path/to/foo.png', 'path/to/bar.png', 'path/to/baz.png')
 
 
 def test_ScreenshotsJob_handle_error(job):
     assert job.errors == ()
-    job.handle_error('Foo!')
+    job._handle_error('Foo!')
     assert job.errors == ('Foo!',)
     assert job.is_finished
 

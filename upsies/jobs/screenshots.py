@@ -64,8 +64,8 @@ class ScreenshotsJob(JobBase):
                 'output_dir'   : self.home_directory,
                 'overwrite'    : self.ignore_cache,
             },
-            info_callback=self.handle_info,
-            error_callback=self.handle_error,
+            info_callback=self._handle_info,
+            error_callback=self._handle_error,
             finished_callback=self.finish,
         )
 
@@ -80,7 +80,7 @@ class ScreenshotsJob(JobBase):
         await self._screenshots_process.join()
         await super().wait()
 
-    def handle_info(self, info):
+    def _handle_info(self, info):
         if not self.is_finished:
             if info[0] == 'video_file':
                 self._video_file = info[1]
@@ -93,7 +93,7 @@ class ScreenshotsJob(JobBase):
                 self._screenshots_created += 1
                 self.send(info[1])
 
-    def handle_error(self, error):
+    def _handle_error(self, error):
         if not self.is_finished:
             self.error(error)
             self.finish()

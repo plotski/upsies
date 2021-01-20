@@ -34,9 +34,9 @@ class MediainfoJob(JobBase):
     def execute(self):
         loop = asyncio.get_event_loop()
         fut = loop.run_in_executor(None, lambda: video.mediainfo(self._content_path))
-        fut.add_done_callback(self.handle_output)
+        fut.add_done_callback(self._handle_output)
 
-    def handle_output(self, fut):
+    def _handle_output(self, fut):
         try:
             mi = fut.result()
         except errors.ContentError as e:

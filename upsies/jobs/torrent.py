@@ -57,10 +57,10 @@ class CreateTorrentJob(base.JobBase):
                 'source'       : tracker.config['source'],
                 'exclude'      : tracker.config['exclude'],
             },
-            init_callback=self.handle_file_tree,
-            info_callback=self.handle_progress_update,
+            init_callback=self._handle_file_tree,
+            info_callback=self._handle_progress_update,
             error_callback=self.error,
-            finished_callback=self.handle_torrent_created,
+            finished_callback=self._handle_torrent_created,
         )
 
     def execute(self):
@@ -74,17 +74,17 @@ class CreateTorrentJob(base.JobBase):
         await self._torrent_process.join()
         await super().wait()
 
-    def handle_file_tree(self, file_tree):
+    def _handle_file_tree(self, file_tree):
         self._file_tree = fs.file_tree(file_tree)
 
     @property
     def info(self):
         return self._file_tree
 
-    def handle_progress_update(self, percent_done):
+    def _handle_progress_update(self, percent_done):
         self.signal.emit('progress_update', percent_done)
 
-    def handle_torrent_created(self, torrent_path=None):
+    def _handle_torrent_created(self, torrent_path=None):
         _log.debug('Torrent created: %r', torrent_path)
         if torrent_path:
             self.send(torrent_path)

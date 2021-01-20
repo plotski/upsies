@@ -78,9 +78,9 @@ def test_SearchWebDbJob_initialize_creates_searcher(tmp_path, mocker, foodb):
     assert job._searcher is Searcher_mock.return_value
     assert Searcher_mock.call_args_list == [call(
         search_coro=foodb.search,
-        results_callback=job.handle_search_results,
+        results_callback=job._handle_search_results,
         error_callback=job.error,
-        searching_callback=job.handle_searching_status,
+        searching_callback=job._handle_searching_status,
     )]
 
 def test_SearchWebDbJob_initialize_creates_info_updater(tmp_path, mocker, foodb):
@@ -133,7 +133,7 @@ def test_SearchWebDbJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
 
 
 def test_SearchWebDbJob_make_update_info_func(tmp_path, mocker, foodb):
-    mocker.patch('upsies.jobs.webdb.SearchWebDbJob.update_info')
+    mocker.patch('upsies.jobs.webdb.SearchWebDbJob._update_info')
     job = webdb.SearchWebDbJob(
         home_directory=tmp_path,
         ignore_cache=False,
@@ -142,9 +142,9 @@ def test_SearchWebDbJob_make_update_info_func(tmp_path, mocker, foodb):
     )
     func = job._make_update_info_func('key')
     func('value 1')
-    assert job.update_info.call_args_list == [call('key', 'value 1')]
+    assert job._update_info.call_args_list == [call('key', 'value 1')]
     func('value 2')
-    assert job.update_info.call_args_list == [call('key', 'value 1'), call('key', 'value 2')]
+    assert job._update_info.call_args_list == [call('key', 'value 1'), call('key', 'value 2')]
 
 
 def test_SearchWebDbJob_execute_does_initial_search(job):
@@ -193,10 +193,10 @@ def test_SearchWebDbJob_searching_status(job):
     cb = Mock()
     job.signal.register('searching_status', cb)
     assert job.is_searching is False
-    job.handle_searching_status(True)
+    job._handle_searching_status(True)
     assert job.is_searching is True
     assert cb.call_args_list == [call(True)]
-    job.handle_searching_status(False)
+    job._handle_searching_status(False)
     assert job.is_searching is False
     assert cb.call_args_list == [call(True), call(False)]
 
@@ -205,7 +205,7 @@ def test_SearchWebDbJob_search_results(job):
     results = ('foo', 'bar', 'baz')
     cb = Mock()
     job.signal.register('search_results', cb)
-    job.handle_search_results(results)
+    job._handle_search_results(results)
     assert job._info_updater.set_result.call_args_list == [call(results[0])]
     assert cb.call_args_list == [call(results)]
 
@@ -213,7 +213,7 @@ def test_SearchWebDbJob_no_search_results(job):
     results = ()
     cb = Mock()
     job.signal.register('search_results', cb)
-    job.handle_search_results(results)
+    job._handle_search_results(results)
     assert job._info_updater.set_result.call_args_list == [call(None)]
     assert cb.call_args_list == [call(results)]
 
@@ -221,7 +221,7 @@ def test_SearchWebDbJob_no_search_results(job):
 def test_SearchWebDbJob_update_info(job):
     cb = Mock()
     job.signal.register('info_updated', cb)
-    job.update_info('The Key', 'The Info')
+    job._update_info('The Key', 'The Info')
     assert cb.call_args_list == [call('The Key', 'The Info')]
 
 
