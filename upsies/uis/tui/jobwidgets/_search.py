@@ -73,9 +73,9 @@ class SearchWebDbJobWidget(JobWidgetBase):
             # Select focused search result.
             selected = self._widgets['search_results'].focused_result
             if selected is not None:
-                self.job.id_selected(selected.id)
+                self.job.result_selected(selected)
             else:
-                self.job.id_selected()
+                self.job.result_selected(None)
         self.invalidate()
 
     def handle_searching_status(self, is_searching):

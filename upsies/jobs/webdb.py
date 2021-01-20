@@ -138,10 +138,10 @@ class SearchWebDbJob(JobBase):
     def result_focused(self, result):
         self._info_updater.set_result(result)
 
-    def id_selected(self, id=None):
+    def result_selected(self, result):
         if not self.is_searching:
-            if id is not None:
-                self.send(str(id))
+            if result is not None:
+                self.send(str(result.id))
             self.finish()
 
 

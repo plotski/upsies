@@ -230,16 +230,16 @@ def test_SearchWebDbJob_result_focused(job):
     assert job._info_updater.set_result.call_args_list == [call('The Result')]
 
 
-def test_SearchWebDbJob_id_selected(job):
+def test_SearchWebDbJob_result_selected(job):
     assert not job.is_finished
-    job.id_selected('The ID')
+    job.result_selected(Mock(id='mock id'))
     assert job.is_finished
-    assert job.output == ('The ID',)
+    assert job.output == ('mock id',)
 
-def test_SearchWebDbJob_id_selected_while_searching(job):
+def test_SearchWebDbJob_result_selected_while_searching(job):
     assert not job.is_finished
     job._is_searching = True
-    job.id_selected('The ID')
+    job.result_selected(Mock(id='mock id'))
     assert not job.is_finished
     assert job.output == ()
 
