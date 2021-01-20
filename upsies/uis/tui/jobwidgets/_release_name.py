@@ -15,13 +15,11 @@ class ReleaseNameJobWidget(JobWidgetBase):
             read_only=True,
         )
 
-        # The global Release instance can run a callback whenever the release
-        # name changes. This happens when a database entry (e.g. from IMDb) is
-        # selected.
         def release_name_changed_callback(release_name):
             self._release_name.read_only = False
             self._release_name.text = release_name.format()
             self.invalidate()
+
         self.job.signal.register('release_name_updated', release_name_changed_callback)
 
     def handle_release_name(self, buffer):
