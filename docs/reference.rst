@@ -47,8 +47,8 @@ they are finished.
 
 The UI also passes user input to jobs and displays output and errors from jobs.
 
-For example, a :class:`subcommand <upsies.uis.tui.commands.CommandBase>` in the
-default UI specifies a list of jobs and translates CLI arguments and
+For example, a :class:`subcommand <upsies.uis.tui.commands.base.CommandBase>` in
+the default UI specifies a list of jobs and translates CLI arguments and
 configuration file contents into arguments for those jobs.
 
 Trackers
