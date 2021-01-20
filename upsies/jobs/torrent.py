@@ -17,9 +17,6 @@ class CreateTorrentJob(base.JobBase):
     """
     Create torrent file
 
-    :param content_path: Path to torrent content
-    :param str tracker: :class:`~.trackers.base.TrackerBase` subclass
-
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
@@ -34,10 +31,16 @@ class CreateTorrentJob(base.JobBase):
 
     @property
     def cache_id(self):
-        """Use tracker name for cache ID"""
+        """:attr:`.TrackerBase.name`"""
         return self._tracker.name
 
     def initialize(self, *, tracker, content_path):
+        """
+        Set internal state
+
+        :param TrackerBase tracker: Return value of :func:`.trackers.tracker`
+        :param content_path: Path to file or directory
+        """
         self._tracker = tracker
         self._content_path = content_path
         self._torrent_path = os.path.join(
@@ -64,13 +67,16 @@ class CreateTorrentJob(base.JobBase):
         )
 
     def execute(self):
+        """Execute torrent creation subprocess"""
         self._torrent_process.start()
 
     def finish(self):
+        """Terminate torrent creation subprocess and finish"""
         self._torrent_process.stop()
         super().finish()
 
     async def wait(self):
+        """Join torrent creation subprocess"""
         await self._torrent_process.join()
         await super().wait()
 
@@ -79,6 +85,7 @@ class CreateTorrentJob(base.JobBase):
 
     @property
     def info(self):
+        """File tree as returned by :func:`.fs.file_tree`"""
         return self._file_tree
 
     def _handle_progress_update(self, percent_done):
@@ -122,14 +129,6 @@ class AddTorrentJob(base.QueueJobBase):
     """
     Add torrent(s) to a BitTorrent client
 
-    :param client: Return value of :func:`.utils.btclients.client`
-    :param download_path: Path to the torrent's content or `None` to use the
-        client's default path
-    :param enqueue: Sequence of torrent file paths to add
-
-    If `enqueue` is given and not empty, this job is finished as soon as its
-    last item is added.
-
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
@@ -149,6 +148,17 @@ class AddTorrentJob(base.QueueJobBase):
     cache_id = None  # Don't cache output
 
     def initialize(self, *, client, download_path=None, enqueue=()):
+        """
+        Set internal state
+
+        :param client: Return value of :func:`.btclients.client`
+        :param download_path: Path to the torrent's download location or `None`
+            to use the client's default path
+        :param enqueue: Sequence of torrent file paths to add
+
+        If `enqueue` is given and not empty, this job is finished as soon as its
+        last item is added.
+        """
         assert isinstance(client, btclients.ClientApiBase), f'Not a ClientApiBase: {client!r}'
         self._client = client
         self._download_path = download_path
@@ -161,6 +171,7 @@ class AddTorrentJob(base.QueueJobBase):
         self.signal.register('error', lambda _: setattr(self, '_info', ''))
 
     MAX_TORRENT_SIZE = 10 * 2**20  # 10 MiB
+    """Upper limit of acceptable size of `.torrent` files"""
 
     async def _handle_input(self, torrent_path):
         _log.debug('Adding %s to %s', torrent_path, self._client.name)
@@ -183,19 +194,13 @@ class AddTorrentJob(base.QueueJobBase):
 
     @property
     def info(self):
-        """Status message"""
+        """Current status as user-readable string"""
         return self._info
 
 
 class CopyTorrentJob(base.QueueJobBase):
     """
     Copy file(s)
-
-    :param destination: Where to put the file(s)
-    :param enqueue: Sequence of file paths to copy
-
-    If `enqueue` is given and not empty, this job is finished as soon as its
-    last item is copied.
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
@@ -215,6 +220,15 @@ class CopyTorrentJob(base.QueueJobBase):
     cache_id = None  # Don't cache output
 
     def initialize(self, *, destination, enqueue=()):
+        """
+        Set internal state
+
+        :param destination: Where to put the torrent(s)
+        :param enqueue: Sequence of file paths to copy
+
+        If `enqueue` is given and not empty, this job is finished as soon as its
+        last item is copied.
+        """
         self._destination = None if not destination else str(destination)
         self.signal.add('copying')
         self.signal.add('copied')
@@ -225,6 +239,7 @@ class CopyTorrentJob(base.QueueJobBase):
         self.signal.register('error', lambda _: setattr(self, '_info', ''))
 
     MAX_FILE_SIZE = 10 * 2**20  # 10 MiB
+    """Upper limit of acceptable file size"""
 
     async def _handle_input(self, filepath):
         _log.debug('Copying %s to %s', filepath, self._destination)
@@ -255,5 +270,5 @@ class CopyTorrentJob(base.QueueJobBase):
 
     @property
     def info(self):
-        """Status message"""
+        """Current status as user-readable string"""
         return self._info

@@ -16,9 +16,6 @@ class MediainfoJob(JobBase):
     """
     Get output from ``mediainfo`` command
 
-    :param content_path: Path to video file or directory that contains a video
-        file
-
     See :func:`.utils.video.mediainfo` for more information.
     """
 
@@ -28,10 +25,17 @@ class MediainfoJob(JobBase):
     # Don't show mediainfo output in UI
     hidden = True
 
-    def initialize(self, content_path):
+    def initialize(self, *, content_path):
+        """
+        Set internal state
+
+        :param content_path: Path to video file or directory that contains a
+            video file
+        """
         self._content_path = content_path
 
     def execute(self):
+        """Call ``mediainfo`` in an asynchronous thread"""
         loop = asyncio.get_event_loop()
         fut = loop.run_in_executor(None, lambda: video.mediainfo(self._content_path))
         fut.add_done_callback(self._handle_output)

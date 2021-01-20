@@ -10,15 +10,7 @@ _log = logging.getLogger(__name__)
 
 
 class SetJob(JobBase):
-    """
-    Change or show option in configuration file
-
-    :param config: :class:`~.configfiles.ConfigFiles` instance
-    :param str option: "."-delimited path to option or None to display all options
-    :param value: New value for `option` or any falsy value to display the
-        current value
-    :param bool reset: Whether to reset `option` to default value
-    """
+    """Change or show option in configuration file"""
 
     name = 'set'
     label = 'Set'
@@ -26,6 +18,23 @@ class SetJob(JobBase):
     cache_id = None  # Don't cache output
 
     def initialize(self, *, config, option=None, value='', reset=None):
+        """
+        Set and display option(s)
+
+        :param config: :class:`~.configfiles.ConfigFiles` instance
+        :param str option: "."-delimited path to option in `config` or `None`
+        :param value: New value for `option` or any falsy value to display the
+            current value
+        :param bool reset: Whether to reset `option` to default value and ignore
+            `value`
+
+        If only `config` is given, display all options and values.
+
+        If `option` is given, display only its value.
+
+        If `option` and `value` is given, set `option` to `value` display the
+        result.
+        """
         try:
             if reset:
                 self._reset_mode(config, option, value, reset)

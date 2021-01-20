@@ -19,16 +19,7 @@ natsort = LazyModule(module='natsort', namespace=globals())
 
 class ScreenshotsJob(JobBase):
     """
-    Create screenshots
-
-    :param str content_path: Path to file or directory (filtered through
-        :func:`~.video.first_video`)
-    :param timestamps: Positions in the video to make screenshots at
-    :type timestamps: sequence of "[[H+:]M+:]S+" strings or seconds
-    :param count: How many screenshots to make
-
-    If `timestamps` and `count` are not given, screenshot positions are picked
-    at even intervals.
+    Create screenshots from video file(s)
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
@@ -47,7 +38,20 @@ class ScreenshotsJob(JobBase):
     name = 'screenshots'
     label = 'Screenshots'
 
-    def initialize(self, content_path, timestamps=(), count=0):
+    def initialize(self, *, content_path, timestamps=(), count=0):
+        """
+        Set internal state
+
+        :param str content_path: Path to file or directory (filtered through
+            :func:`~.video.first_video`)
+        :param timestamps: Screenshot positions in the video
+        :type timestamps: sequence of "[[H+:]M+:]S+" strings or seconds
+        :param count: How many screenshots to make
+
+        If `timestamps` and `count` are not given, screenshot positions are
+        picked at even intervals. If `count` is larger than the length of
+        `timestamps`, more timestamps are added.
+        """
         self._screenshots_created = 0
         self._screenshots_total = -1
         self._video_file = ''
@@ -70,13 +74,21 @@ class ScreenshotsJob(JobBase):
         )
 
     def execute(self):
+        """
+        Execute screenshot creation subprocess
+
+        The subprocess also finds the first video and auto-picks and/or
+        validates timestamps.
+        """
         self._screenshots_process.start()
 
     def finish(self):
+        """Terminate screenshot creation subprocess and finish"""
         self._screenshots_process.stop()
         super().finish()
 
     async def wait(self):
+        """Join screenshot creation subprocess"""
         await self._screenshots_process.join()
         await super().wait()
 
@@ -100,6 +112,7 @@ class ScreenshotsJob(JobBase):
 
     @property
     def exit_code(self):
+        """`0` if all screenshots were made, `1` otherwise, `None` if unfinished"""
         if self.is_finished:
             if self.screenshots_total < 0:
                 # Job is finished but _screenshots_process() never sent us
@@ -107,9 +120,10 @@ class ScreenshotsJob(JobBase):
                 # output or the job was cancelled while _screenshots_process()
                 # was still initializing.
                 if self.output:
-                    # Assume the cached number of screenshots is what the user
-                    # wanted because the output of unsuccessful jobs is not
-                    # cached (see JobBase._write_output_cache()).
+                    # If we have cached output, assume the cached number of
+                    # screenshots is what the user wanted because the output of
+                    # unsuccessful jobs is not cached (see
+                    # JobBase._write_output_cache()).
                     return 0
                 else:
                     return 1
@@ -123,8 +137,8 @@ class ScreenshotsJob(JobBase):
         """
         Path to video file screenshots are taken from
 
-        .. note:: This is an empty string before the the ``video_file``
-                  :attr:`~.JobBase.signal` is emitted.
+        .. note:: This is an empty string until the subprocess is executed and
+                  the ``video_file`` :attr:`~.JobBase.signal` is emitted.
         """
         return self._video_file
 
@@ -133,8 +147,8 @@ class ScreenshotsJob(JobBase):
         """
         List of normalized and validated human-readable timestamps
 
-        .. note:: This is an empty sequence before the ``timestamps``
-                  :attr:`~.JobBase.signal` is emitted.
+        .. note:: This is an empty sequence until the subprocess is executed and
+                  the ``timestamps`` :attr:`~.JobBase.signal` is emitted.
         """
         return self._timestamps
 
@@ -143,8 +157,8 @@ class ScreenshotsJob(JobBase):
         """
         Total number of screenshots to make
 
-        .. note:: This is an empty sequence before the ``timestamps``
-                  :attr:`~.JobBase.signal` is emitted.
+        .. note:: This is an empty sequence until the subprocess is executed and
+                  the ``timestamps`` :attr:`~.JobBase.signal` is emitted.
         """
         return self._screenshots_total
 
@@ -156,7 +170,7 @@ class ScreenshotsJob(JobBase):
 
 def _normalize_timestamps(video_file, timestamps, count):
     """
-    Return list of human-readable time stamps
+    Return list of validated human-readable timestamps
 
     :params video_file: Path to video file
     :parms timestamps: Sequence of arguments for :func:`~utils.timestamp.parse`
@@ -180,7 +194,7 @@ def _normalize_timestamps(video_file, timestamps, count):
         # Convert timestamp strings to seconds
         timestamps = sorted(timestamp.parse(ts) for ts in timestamps_pretty)
 
-        # Fractions of total seconds
+        # Fractions of video duration
         positions = [ts / total_secs for ts in timestamps]
 
         # Include start and end of video
@@ -189,7 +203,7 @@ def _normalize_timestamps(video_file, timestamps, count):
         if 1.0 not in positions:
             positions.append(1.0)
 
-        # Insert timestamps between the two with the largest distance
+        # Insert timestamps between the two positions with the largest distance
         while len(timestamps_pretty) < count:
             pairs = [(a, b) for a, b in zip(positions, positions[1:])]
             max_distance, pos1, pos2 = max((b - a, a, b) for a, b in pairs)

@@ -18,9 +18,6 @@ class SearchWebDbJob(JobBase):
     """
     Prompt user to select a specific search result from an internet database
 
-    :param WebDbApiBase client: Return value of :func:`.utils.webdbs.webdb`
-    :param str content_path: Path or name of the release
-
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
@@ -53,6 +50,7 @@ class SearchWebDbJob(JobBase):
 
     @property
     def query(self):
+        """:class:`~.webdbs.common.Query` instance"""
         return self._query
 
     @cached_property
@@ -60,7 +58,14 @@ class SearchWebDbJob(JobBase):
         """Final segment of the `content_path` argument to :meth:`initialize`"""
         return fs.basename(self._content_path)
 
-    def initialize(self, db, content_path):
+    def initialize(self, *, db, content_path):
+        """
+        Set internal state
+
+        :param WebDbApiBase db: Return value of :func:`.utils.webdbs.webdb`
+        :param str content_path: Path or name of the release (doesn't have to
+            exist)
+        """
         assert isinstance(db, webdbs.WebDbApiBase), f'Not a WebDbApiBase: {db!r}'
         self._db = db
         self._content_path = content_path
@@ -98,16 +103,18 @@ class SearchWebDbJob(JobBase):
         self.signal.emit('info_updated', attr, value)
 
     def execute(self):
-        # Search for initial query. It is important NOT to do this in
-        # initialize() because the window between initialize() and execute() is
-        # used to register callbacks.
+        """Search for initial query"""
+        # It is important NOT to do this in initialize() because the window
+        # between initialize() and execute() is used to register callbacks.
         self._searcher.search(self._query)
 
     def finish(self):
+        """Cancel any running internal coroutines and finish"""
         self._info_updater.cancel()
         super().finish()
 
     async def wait(self):
+        """Wait for any running internal coroutines"""
         # Raise any exceptions and avoid warnings about unawaited tasks
         await asyncio.gather(
             self._searcher.wait(),
@@ -116,6 +123,7 @@ class SearchWebDbJob(JobBase):
         await super().wait()
 
     def search(self, query):
+        """Make a new search request after cancelling any currently ongoing request"""
         if not self.is_finished:
             self._query = webdbs.Query.from_string(query)
             self._searcher.search(self._query)
@@ -127,6 +135,7 @@ class SearchWebDbJob(JobBase):
 
     @property
     def is_searching(self):
+        """Whether a search request is currently being made"""
         return self._is_searching
 
     def _handle_search_results(self, results):
@@ -137,9 +146,21 @@ class SearchWebDbJob(JobBase):
         self.signal.emit('search_results', results)
 
     def result_focused(self, result):
+        """
+        Must be called by the UI when the user focuses a different search result
+
+        :param SearchResult result: Focused search result or `None` if there are
+            no results
+        """
         self._info_updater.set_result(result)
 
     def result_selected(self, result):
+        """
+        Must be called by the UI when the user accepts a search result
+
+        :param SearchResult result: Focused search result or `None` if there are
+            no results of if the user refused every result
+        """
         if not self.is_searching:
             if result is not None:
                 self.send(str(result.id))

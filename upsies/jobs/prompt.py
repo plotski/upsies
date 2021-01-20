@@ -9,17 +9,7 @@ _log = logging.getLogger(__name__)
 
 
 class ChoiceJob(JobBase):
-    """
-    Prompt the user to make a choice between a fixed set of values
-
-    :param str name: Job's internal name
-    :param str label: Job's displayed name
-    :param choices: Iterable of choices
-    :param focused: Initially focused choice
-
-    :raise ValueError: if `choices` is shorter than 2 or `focused` is not in
-        `choices`
-    """
+    """Prompt the user to choose from a set of values"""
 
     @property
     def name(self):
@@ -39,7 +29,19 @@ class ChoiceJob(JobBase):
         """Initially focused choice"""
         return self._focused
 
-    def initialize(self, name, label, choices, focused=None):
+    def initialize(self, *, name, label, choices, focused=None):
+        """
+        Set internal state
+
+        :param name: Name for internal use
+        :param label: Name for user-facing use
+        :param choices: Iterable of choices the user can make
+        :param focused: One of the items in `choices` or `None` to pick the
+            first one
+
+        :raise ValueError: if `choices` is shorter than 2 or `focused` is not in
+            `choices`
+        """
         self._name = str(name)
         self._label = str(label)
         self._choices = tuple(str(c) for c in choices)
