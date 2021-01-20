@@ -57,8 +57,8 @@ class TrackerJobsBase(abc.ABC):
     are created only once per session.
 
     This base class defines general-purpose jobs that can be used by subclasses
-    by returning them in their :attr:`.jobs_before_upload` or
-    :attr:`.jobs_after_upload` attributes.
+    by returning them in their :attr:`jobs_before_upload` or
+    :attr:`jobs_after_upload` attributes.
 
     For a description of the arguments see the corresponding properties.
     """
@@ -98,7 +98,7 @@ class TrackerJobsBase(abc.ABC):
 
     @property
     def bittorrent_client(self):
-        """:class:`~.utils.imghosts.base.ImageHostBase` instance or `None`"""
+        """:class:`~.utils.btclients.base.ClientApiBase` instance or `None`"""
         return self._bittorrent_client
 
     @property
@@ -125,14 +125,12 @@ class TrackerJobsBase(abc.ABC):
         Sequence of jobs that are started after :meth:`~.TrackerBase.upload`
         finished
 
-        .. note::
+        .. note:: Jobs returned by this class should have
+                  :attr:`~.JobBase.autostart` set to False or they will be
+                  started before submission is attempted.
 
-           Jobs returned by this class should have :attr:`~.JobBase.autostart`
-           set to False or they will be started along with
-           :attr:`.jobs_before_upload`.
-
-        By default, this returns :attr:`.add_torrent_job` and
-        :attr:`.copy_torrent_job`.
+        By default, this returns :attr:`add_torrent_job` and
+        :attr:`copy_torrent_job`.
         """
         return (
             self.add_torrent_job,
@@ -327,7 +325,7 @@ class TrackerBase(abc.ABC):
 
         :param dict metadata: Mapping of :attr:`.JobBase.name` to
             :attr:`.JobBase.output` attributes for each job in
-            :attr:`.jobs_before_upload`
+            :attr:`jobs_before_upload`
 
             .. note:: Job output is always an immutable sequence.
         """
