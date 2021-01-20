@@ -7,7 +7,7 @@ import collections
 from time import monotonic as time_monotonic
 
 from .. import errors
-from ..utils import cached_property, webdbs
+from ..utils import cached_property, webdbs, fs
 from . import JobBase
 
 import logging  # isort:skip
@@ -57,7 +57,8 @@ class SearchWebDbJob(JobBase):
 
     @cached_property
     def cache_id(self):
-        return self._content_path
+        """Final segment of the `content_path` argument to :meth:`initialize`"""
+        return fs.basename(self._content_path)
 
     def initialize(self, db, content_path):
         assert isinstance(db, webdbs.WebDbApiBase), f'Not a WebDbApiBase: {db!r}'
