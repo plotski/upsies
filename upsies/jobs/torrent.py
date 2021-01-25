@@ -138,9 +138,8 @@ class AddTorrentJob(base.QueueJobBase):
 
         ``added``
             Emitted when the torrent was added successfully. Registered
-            callbacks get the some kind of ID that uniquely identifies the added
-            torrent for the client. It depends on the `client` object what that
-            is exactly.
+            callbacks get the added torrent's info hash as a positional
+            argument.
     """
 
     name = 'add-torrent'
@@ -182,15 +181,15 @@ class AddTorrentJob(base.QueueJobBase):
             return
 
         try:
-            torrent_id = await self._client.add_torrent(
+            torrent_hash = await self._client.add_torrent(
                 torrent_path=torrent_path,
                 download_path=self._download_path,
             )
         except errors.TorrentError as e:
             self.error(f'Failed to add {torrent_path} to {self._client.name}: {e}')
         else:
-            self.send(torrent_id)
-            self.signal.emit('added', torrent_id)
+            self.send(torrent_hash)
+            self.signal.emit('added', torrent_hash)
 
     @property
     def info(self):

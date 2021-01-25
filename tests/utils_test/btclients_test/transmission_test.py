@@ -130,7 +130,7 @@ async def test_request_authentication_fails(httpserver):
 @pytest.mark.asyncio
 async def test_add_torrent_with_download_path_argument(torrent_added_field, mocker):
     response = {
-        'arguments': {torrent_added_field: {'id': 1234}},
+        'arguments': {torrent_added_field: {'hashString': 'DE4DB33F'}},
         'result': 'success',
     }
     api = transmission.TransmissionClientApi()
@@ -139,11 +139,11 @@ async def test_add_torrent_with_download_path_argument(torrent_added_field, mock
         _request=AsyncMock(return_value=response),
         read_torrent_file=Mock(return_value=b'torrent metainfo'),
     )
-    torrent_id = await api.add_torrent(
+    torrent_hash = await api.add_torrent(
         torrent_path='file.torrent',
         download_path='/path/to/file',
     )
-    assert torrent_id == 1234
+    assert torrent_hash == 'DE4DB33F'
     assert api.read_torrent_file.call_args_list == [call('file.torrent')]
     assert api._request.call_args_list == [call(
         json.dumps({
@@ -162,7 +162,7 @@ async def test_add_torrent_with_download_path_argument(torrent_added_field, mock
 @pytest.mark.asyncio
 async def test_add_torrent_without_download_path_argument(torrent_added_field, mocker):
     response = {
-        'arguments': {torrent_added_field: {'id': 1234}},
+        'arguments': {torrent_added_field: {'hashString': 'DE4DB33F'}},
         'result': 'success',
     }
     api = transmission.TransmissionClientApi()
@@ -171,10 +171,10 @@ async def test_add_torrent_without_download_path_argument(torrent_added_field, m
         _request=AsyncMock(return_value=response),
         read_torrent_file=Mock(return_value=b'torrent metainfo'),
     )
-    torrent_id = await api.add_torrent(
+    torrent_hash = await api.add_torrent(
         torrent_path='file.torrent',
     )
-    assert torrent_id == 1234
+    assert torrent_hash == 'DE4DB33F'
     assert api.read_torrent_file.call_args_list == [call('file.torrent')]
     assert api._request.call_args_list == [call(
         json.dumps({

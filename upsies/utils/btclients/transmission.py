@@ -84,9 +84,9 @@ class TransmissionClientApi(ClientApiBase):
         info = await self._request(json.dumps(request))
         arguments = info.get('arguments', {})
         if 'torrent-added' in arguments:
-            return arguments['torrent-added']['id']
+            return arguments['torrent-added']['hashString']
         elif 'torrent-duplicate' in arguments:
-            return arguments['torrent-duplicate']['id']
+            return arguments['torrent-duplicate']['hashString']
         elif 'result' in info:
             raise errors.TorrentError(str(info['result']).capitalize())
         else:
