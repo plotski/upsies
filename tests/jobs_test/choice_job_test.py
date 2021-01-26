@@ -5,7 +5,7 @@ import pytest
 from upsies.jobs import prompt
 
 
-def test_Choice_choices_argument_is_shorter_than_two(tmp_path):
+def test_choices_argument_is_shorter_than_two(tmp_path):
     choices = ('foo',)
     with pytest.raises(ValueError, match=(r'^choices must contain at least 2 items: '
                                           rf'{re.escape(str(choices))}$')):
@@ -17,7 +17,7 @@ def test_Choice_choices_argument_is_shorter_than_two(tmp_path):
             choices=choices,
         )
 
-def test_Choice_focused_argument_is_None(tmp_path):
+def test_focused_argument_is_None(tmp_path):
     choices = ('foo', 'bar', 'baz')
     job = prompt.ChoiceJob(
         home_directory=tmp_path,
@@ -28,7 +28,7 @@ def test_Choice_focused_argument_is_None(tmp_path):
     )
     assert job.focused == 'foo'
 
-def test_Choice_focused_argument_is_valid(tmp_path):
+def test_focused_argument_is_valid(tmp_path):
     choices = ('foo', 'bar', 'baz')
     job = prompt.ChoiceJob(
         home_directory=tmp_path,
@@ -40,7 +40,7 @@ def test_Choice_focused_argument_is_valid(tmp_path):
     )
     assert job.focused == 'bar'
 
-def test_Choice_focused_argument_is_invalid(tmp_path):
+def test_focused_argument_is_invalid(tmp_path):
     choices = ('foo', 'bar', 'baz')
     with pytest.raises(ValueError, match=(r'^Invalid choice: asdf$')):
         prompt.ChoiceJob(
@@ -53,7 +53,7 @@ def test_Choice_focused_argument_is_invalid(tmp_path):
         )
 
 
-def test_Choice_properties(tmp_path):
+def test_properties(tmp_path):
     job = prompt.ChoiceJob(
         home_directory=tmp_path,
         ignore_cache=True,
@@ -68,7 +68,7 @@ def test_Choice_properties(tmp_path):
     assert job.focused == '2'
 
 
-def test_Choice_choice_selected_value_is_valid(tmp_path):
+def test_choice_selected_value_is_valid(tmp_path):
     job = prompt.ChoiceJob(
         home_directory=tmp_path,
         ignore_cache=True,
@@ -85,7 +85,7 @@ def test_Choice_choice_selected_value_is_valid(tmp_path):
     assert job.exit_code == 0
 
 @pytest.mark.asyncio
-async def test_Choice_choice_selected_value_is_invalid(tmp_path):
+async def test_choice_selected_value_is_invalid(tmp_path):
     job = prompt.ChoiceJob(
         home_directory=tmp_path,
         ignore_cache=True,
@@ -103,7 +103,7 @@ async def test_Choice_choice_selected_value_is_invalid(tmp_path):
     with pytest.raises(ValueError, match=r'^Invalid value: 4$'):
         await job.wait()
 
-def test_Choice_choice_selected_index_is_valid(tmp_path):
+def test_choice_selected_index_is_valid(tmp_path):
     job = prompt.ChoiceJob(
         home_directory=tmp_path,
         ignore_cache=True,
@@ -120,7 +120,7 @@ def test_Choice_choice_selected_index_is_valid(tmp_path):
     assert job.exit_code == 0
 
 @pytest.mark.asyncio
-async def test_Choice_choice_selected_index_is_invalid(tmp_path):
+async def test_choice_selected_index_is_invalid(tmp_path):
     job = prompt.ChoiceJob(
         home_directory=tmp_path,
         ignore_cache=True,
