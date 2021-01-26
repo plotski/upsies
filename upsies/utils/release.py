@@ -345,7 +345,7 @@ class ReleaseName(collections.abc.Mapping):
         track title.
 
         If not set explicitly and the given `path` does not exists, default to
-        :attr:`ReleaseInfo.has_commentary`.
+        detection by :class:`ReleaseInfo`.
 
         Setting this value back to `None` turns on auto-detection as described
         above.
@@ -362,7 +362,7 @@ class ReleaseName(collections.abc.Mapping):
                     return True
             return False
 
-        # Default to ReleaseInfo.has_commentary
+        # Default to ReleaseInfo['has_commentary']
         else:
             return self._guess.get('has_commentary')
 
