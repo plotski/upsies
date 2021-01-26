@@ -15,7 +15,7 @@ import collections
 import os
 import re
 
-from .. import errors
+from .. import constants, errors
 from ..utils import webdbs
 from . import LazyModule, ReleaseType, cached_property, fs, video
 
@@ -525,26 +525,6 @@ class ReleaseInfo(collections.abc.MutableMapping):
         _log.debug('Original guess: %r', guess)
         return guess
 
-    @cached_property
-    def release_name_params(self):
-        """
-        Release name without the title and year or season/episode info
-
-        guessit doesn't support some tags like "Hybrid", but we can't just look
-        for "Hybrid" anywhere in the release name because it might be part of
-        the title.
-        """
-        regex = re.compile(r'[ \.](?:'
-                           r'\d{4}|'
-                           r'S\d{2,}(?:E\d{2,})*|'
-                           r'Season[ \.]*\d+(?:[ \.]Episode[ \.]*\d+)*'
-                           r')[ \.]+(.*)$')
-        for name in _file_and_parent(self._path):
-            match = regex.search(name)
-            if match:
-                return match.group(1)
-        return fs.basename(self._path)
-
     def __contains__(self, name):
         return hasattr(self, f'_get_{name}')
 
@@ -590,6 +570,44 @@ class ReleaseInfo(collections.abc.MutableMapping):
             return ReleaseType.episode
         else:
             return ReleaseType(self._guessit['type'])
+
+    _title_split_regex = re.compile(
+        r'[ \.]+(?:'
+        r'\d{4}|'
+        r'S\d{2,}(?:E\d{2,})*|'
+        r'Season[ \.]*\d+(?:[ \.]Episode[ \.]*\d+)*'
+        r')[ \.]+'
+    )
+
+    @cached_property
+    def release_name_params(self):
+        """
+        Release name without title and year or season/episode info
+
+        guessit doesn't support some tags like "Hybrid", but we can't just look
+        for "Hybrid" anywhere in the release name because it might be part of
+        the title or it might be part of the parent directory name.
+        """
+        def params(string):
+            params = fs.strip_extension(string, only=constants.VIDEO_FILE_EXTENSIONS)
+            return params
+
+        # Look for year/season/episode info in file and parent directory name
+        for name in _file_and_parent(self._path):
+            match = self._title_split_regex.search(name)
+            if match:
+                string = self._title_split_regex.split(name, maxsplit=1)[-1]
+                return params(string)
+
+        # Default to the file/parent that contains either " " or "." (without
+        # file extension)
+        for name in _file_and_parent(self._path):
+            name_no_ext = fs.strip_extension(name, only=constants.VIDEO_FILE_EXTENSIONS)
+            if ' 'in name_no_ext or '.' in name_no_ext:
+                return params(name_no_ext)
+
+        # Default to file name
+        return params(fs.basename(self._path))
 
     _title_aka_regex = re.compile(r' +AKA +')
 
@@ -815,7 +833,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
 def _file_and_parent(path):
     """Yield `basename` and `dirname` of `path`"""
     basename = fs.basename(path)
-    dirname = os.path.dirname(path)
+    dirname = fs.basename(os.path.dirname(path))
     yield basename
     if dirname and dirname != basename:
         yield dirname

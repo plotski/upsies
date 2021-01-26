@@ -70,26 +70,34 @@ def test_len(mocker):
 
 
 @pytest.mark.parametrize(
-    argnames=('path', 'exp_params'),
+    argnames=('release_name', 'exp_params'),
     argvalues=(
-        ('path/to/The Foo 1984 foo bar baz.mkv', 'foo bar baz.mkv'),
-        ('path/to/The Foo S01 foo bar baz.mkv', 'foo bar baz.mkv'),
-        ('path/to/The Foo S01E01 foo bar baz.mkv', 'foo bar baz.mkv'),
-        ('path/to/The Foo S01E01E02 foo bar baz.mkv', 'foo bar baz.mkv'),
-        ('path/to/The Foo S01E01E02E03 foo bar baz.mkv', 'foo bar baz.mkv'),
-        ('path/to/The Foo Season 1 foo bar baz.mkv', 'foo bar baz.mkv'),
-        ('path/to/The Foo Season1 foo bar baz.mkv', 'foo bar baz.mkv'),
-        ('path/to/The Foo Season 1 Episode 1 foo bar baz.mkv', 'foo bar baz.mkv'),
-        ('path/to/The Foo Season 1 Episode 1 Episode 2 foo bar baz.mkv', 'foo bar baz.mkv'),
-        ('path/to/The Foo Season1 Episode1 foo bar baz.mkv', 'foo bar baz.mkv'),
-        ('path/to/The Foo Season1 Episode1 Episode2 foo bar baz.mkv', 'foo bar baz.mkv'),
+        ('The Foo S01 foo bar baz', 'foo bar baz'),
+        ('The Foo S01E01 foo bar baz', 'foo bar baz'),
+        ('The Foo S01E01E02 foo bar baz', 'foo bar baz'),
+        ('The Foo S01E01E02E03 foo bar baz', 'foo bar baz'),
+        ('The Foo Season 1 foo bar baz', 'foo bar baz'),
+        ('The Foo Season1 foo bar baz', 'foo bar baz'),
+        ('The Foo Season 1 Episode 1 foo bar baz', 'foo bar baz'),
+        ('The Foo Season 1 Episode 1 Episode 2 foo bar baz', 'foo bar baz'),
+        ('The Foo Season1 Episode1 foo bar baz', 'foo bar baz'),
+        ('The Foo Season1 Episode1 Episode2 foo bar baz', 'foo bar baz'),
+        ('The Foo foo bar baz', 'The Foo foo bar baz'),
     ),
+    ids=lambda v: str(v),
 )
-def test_release_name_params(path, exp_params):
-    for p, exp in ((path, exp_params),
-                   (path.replace(' ', '.'), exp_params.replace(' ', '.'))):
-        info = release.ReleaseInfo(p)
-        assert info.release_name_params == exp
+def test_release_name_params(release_name, exp_params):
+    for name, exp in ((release_name, exp_params),
+                      (release_name.replace(' ', '.'), exp_params.replace(' ', '.'))):
+        for path in (f'path/to/{name}.mkv', f'path/to/{name}/asdf.mkv'):
+            print(repr(path), repr(exp))
+            info = release.ReleaseInfo(path)
+            assert info.release_name_params == exp
+
+def test_release_name_params_default():
+    assert release.ReleaseInfo('path/to/Foo.mkv').release_name_params == 'Foo'
+    assert release.ReleaseInfo('Foo.mkv').release_name_params == 'Foo'
+    assert release.ReleaseInfo('Foo').release_name_params == 'Foo'
 
 
 def assert_info(release_name,
