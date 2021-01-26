@@ -1,4 +1,4 @@
-from ....utils import cached_property
+from ....utils import cached_property, release
 from .. import widgets
 from . import JobWidgetBase
 
@@ -11,7 +11,7 @@ class ReleaseNameJobWidget(JobWidgetBase):
         self._release_name = widgets.InputField(
             text='Loading...',
             style='class:prompt.text',
-            on_accepted=self.handle_release_name,
+            on_accepted=self._handle_release_name,
             read_only=True,
         )
 
@@ -22,9 +22,10 @@ class ReleaseNameJobWidget(JobWidgetBase):
 
         self.job.signal.register('release_name_updated', release_name_changed_callback)
 
-    def handle_release_name(self, buffer):
-        _log.debug('Approved release name: %r', self._release_name.text)
-        self.job.release_name_selected(self._release_name.text)
+    def _handle_release_name(self, buffer):
+        _log.debug('Approved release name: %r', buffer.text)
+        release_name = release.ReleaseName(buffer.text)
+        self.job.release_name_selected(release_name)
 
     @cached_property
     def runtime_widget(self):
