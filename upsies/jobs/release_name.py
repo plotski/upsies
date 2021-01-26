@@ -20,8 +20,17 @@ class ReleaseNameJob(JobBase):
 
         ``release_name_updated``
             Emitted after :meth:`~.ReleaseName.fetch_info` updated the release
-            name from online sources. Registered callbacks get a
-            :class:`~.release.ReleaseName` instance as a positional argument.
+            name. Registered callbacks get a :class:`~.release.ReleaseName`
+            instance as a positional argument.
+
+        ``release_name``
+            Emitted after the user approved a release name. Registered callbacks
+            get a :class:`~.release.ReleaseName` instance as a positional
+            argument.
+
+            .. note:: This signal is handy because the ``output`` signal always
+                      emits a string so it can be cached in a user-readable text
+                      file.
     """
 
     name = 'release-name'
@@ -40,8 +49,9 @@ class ReleaseNameJob(JobBase):
         """
         self._release_name = release.ReleaseName(content_path)
         self.signal.add('release_name_updated')
+        self.signal.add('release_name')
 
-    def release_name_selected(self, name):
+    def release_name_selected(self, release_name):
         """
         :meth:`Send <upsies.jobs.base.JobBase.send>` release name and :meth:`finish
         <upsies.jobs.base.JobBase.finish>`
@@ -49,10 +59,12 @@ class ReleaseNameJob(JobBase):
         This method must be called by the UI when the user accepts the release
         name.
 
-        :param str name: Release name as accepted by the user
+        :param ReleaseName release_name: Release name as accepted by the user
         """
-        if name:
-            self.send(name)
+        assert isinstance(release_name, release.ReleaseName)
+        self._release_name = release_name
+        self.signal.emit('release_name', self.release_name)
+        self.send(str(self.release_name))
         self.finish()
 
     def fetch_info(self, *args, **kwargs):
