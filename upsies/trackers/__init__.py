@@ -7,8 +7,7 @@ subclasses have two main purposes:
 1. Specify jobs that generate metadata, e.g. torrent creation, ``mediainfo``
    output, IMDb ID, etc.
 
-2. Provide coroutine methods, e.g. for :meth:`~.base.TrackerBase.upload`\ ing
-   the generated metadata.
+2. Provide coroutine methods, e.g. for uploading the generated metadata.
 """
 
 from .. import utils
