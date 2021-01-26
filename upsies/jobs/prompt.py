@@ -9,7 +9,16 @@ _log = logging.getLogger(__name__)
 
 
 class ChoiceJob(JobBase):
-    """Prompt the user to choose from a set of values"""
+    """
+    Prompt the user to choose from a set of values
+
+    This job adds the following signals to the :attr:`~.JobBase.signal`
+    attribute:
+
+        ``prompt_updated``
+            Emitted when :attr:`choices` or :attr:`focused` is set. Registered
+            callbacks get no arguments.
+    """
 
     @property
     def name(self):
@@ -24,10 +33,38 @@ class ChoiceJob(JobBase):
         """Sequence of strings the user can choose from"""
         return self._choices
 
+    @choices.setter
+    def choices(self, choices):
+        choices = tuple(str(c) for c in choices)
+        if len(choices) < 2:
+            raise ValueError(f'Choices must have at least 2 items: {choices}')
+        else:
+            self._choices = choices
+        if getattr(self, '_focused', None) not in choices:
+            self._focused = self._choices[0]
+        self.signal.emit('prompt_updated')
+
     @property
     def focused(self):
-        """Initially focused choice"""
+        """
+        Currently focused choice
+
+        Setting this property to `None` focuses the first item in
+        :attr:`choices`.
+        """
         return self._focused
+
+    @focused.setter
+    def focused(self, focused):
+        if focused is None:
+            self._focused = self.choices[0]
+        else:
+            focused = str(focused)
+            if focused not in self.choices:
+                raise ValueError(f'Invalid choice: {focused}')
+            else:
+                self._focused = focused
+        self.signal.emit('prompt_updated')
 
     def initialize(self, *, name, label, choices, focused=None):
         """
@@ -44,16 +81,10 @@ class ChoiceJob(JobBase):
         """
         self._name = str(name)
         self._label = str(label)
-        self._choices = tuple(str(c) for c in choices)
-        if len(self._choices) < 2:
-            raise ValueError(f'choices must contain at least 2 items: {self._choices}')
-        if focused is not None:
-            if str(focused) not in self._choices:
-                raise ValueError(f'Invalid choice: {focused}')
-            else:
-                self._focused = str(focused)
-        else:
-            self._focused = self._choices[0]
+        self._choices = self._focused = None
+        self.signal.add('prompt_updated')
+        self.choices = choices
+        self.focused = focused
 
     def choice_selected(self, choice):
         """
@@ -63,11 +94,11 @@ class ChoiceJob(JobBase):
 
         :raise ValueError: if `choice` is not valid
         """
-        if str(choice) in self._choices:
+        if str(choice) in self.choices:
             self.send(str(choice))
         elif isinstance(choice, int):
-            if 0 <= choice < len(self._choices):
-                self.send(self._choices[choice])
+            if 0 <= choice < len(self.choices):
+                self.send(self.choices[choice])
             else:
                 self.exception(ValueError(f'Invalid index: {choice}'))
         else:
