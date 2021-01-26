@@ -1,9 +1,10 @@
 import asyncio
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call
 
 import pytest
 
 from upsies.jobs.release_name import ReleaseNameJob
+from upsies.utils.release import ReleaseName
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -18,62 +19,70 @@ class AsyncMock(Mock):
         return self().__await__()
 
 
-@patch('upsies.utils.release.ReleaseName')
-def test_release_name_property(ReleaseName_mock, tmp_path):
-    ReleaseName_mock.return_value = 'Mock Name'
-    rnj = ReleaseNameJob(
+def test_release_name_property(mocker, tmp_path):
+    ReleaseName_mock = mocker.patch('upsies.utils.release.ReleaseName')
+    job = ReleaseNameJob(
         home_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )
     assert ReleaseName_mock.call_args_list == [call('mock/path')]
-    assert rnj.release_name == 'Mock Name'
+    assert job.release_name is ReleaseName_mock.return_value
 
 
-@patch('upsies.utils.release.ReleaseName')
-def test_release_name_selected(ReleaseName_mock, tmp_path):
-    ReleaseName_mock.return_value = 'Mock Name'
-    rnj = ReleaseNameJob(
-        home_directory=tmp_path,
-        ignore_cache=True,
-        content_path='mock/path',
-    )
-    rnj.release_name_selected('Real Mock Name')
-    assert rnj.output == ('Real Mock Name',)
-    assert rnj.is_finished
-
-
-@patch('upsies.utils.release.ReleaseName')
-def test_fetch_info(ReleaseName_mock, tmp_path):
-    rnj = ReleaseNameJob(
+def test_release_name_selected(tmp_path):
+    release_name = Mock(spec=ReleaseName)
+    job = ReleaseNameJob(
         home_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )
     cb = Mock()
-    rnj.signal.register('release_name_updated', cb)
-    rn_mock = ReleaseName_mock.return_value
-    rn_mock.fetch_info = AsyncMock()
-    rnj.fetch_info('arg1', 'arg2', kw='arg3')
+    job.signal.register('release_name_updated', cb.release_name_updated)
+    job.signal.register('release_name', cb.release_name)
+    job.release_name_selected(release_name)
+    assert job.output == (str(release_name),)
+    assert job.is_finished
+    assert cb.release_name_updated.call_args_list == []
+    assert cb.release_name.call_args_list == [call(job.release_name)]
+
+
+def test_fetch_info(tmp_path, mocker):
+    job = ReleaseNameJob(
+        home_directory=tmp_path,
+        ignore_cache=True,
+        content_path='mock/path',
+    )
+    mocker.patch.object(job, '_release_name', Mock(
+        spec=ReleaseName,
+        fetch_info=AsyncMock(),
+    ))
+    cb = Mock()
+    job.signal.register('release_name_updated', cb.release_name_updated)
+    job.signal.register('release_name', cb.release_name)
+    job.fetch_info('arg1', 'arg2', kw='arg3')
     asyncio.get_event_loop().run_until_complete(asyncio.sleep(0))
-    assert rn_mock.fetch_info.call_args_list == [call(
+    assert job.release_name.fetch_info.call_args_list == [call(
         'arg1', 'arg2', kw='arg3',
     )]
-    assert cb.call_args_list == [call(rnj._release_name)]
+    assert cb.release_name_updated.call_args_list == [call(job.release_name)]
+    assert cb.release_name.call_args_list == []
 
-
-@patch('upsies.utils.release.ReleaseName')
-def test_fetch_info_raises_exception(ReleaseName_mock, tmp_path):
-    rnj = ReleaseNameJob(
+def test_fetch_info_raises_exception(tmp_path, mocker):
+    job = ReleaseNameJob(
         home_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )
+    mocker.patch.object(job, '_release_name', Mock(
+        spec=ReleaseName,
+        fetch_info=AsyncMock(side_effect=Exception('No')),
+    ))
     cb = Mock()
-    rnj.signal.register('release_name_updated', cb)
-    rn_mock = ReleaseName_mock.return_value
-    rn_mock.fetch_info = AsyncMock(side_effect=Exception('No'))
-    rnj.fetch_info('arg1', 'arg2', kw='arg3')
+    job.signal.register('release_name_updated', cb.release_name_updated)
+    job.signal.register('release_name', cb.release_name)
+    job.fetch_info('arg1', 'arg2', kw='arg3')
     with pytest.raises(Exception, match='^No$'):
-        asyncio.get_event_loop().run_until_complete(rnj.wait())
-    assert cb.call_args_list == []
+        asyncio.get_event_loop().run_until_complete(job.wait())
+    assert cb.release_name_updated.call_args_list == []
+    assert cb.release_name.call_args_list == []
