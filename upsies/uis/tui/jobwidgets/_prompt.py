@@ -11,10 +11,10 @@ class ChoiceJobWidget(JobWidgetBase):
         self._radiolist = widgets.RadioList(
             choices=self.job.choices,
             focused=self.job.focused,
-            on_accepted=self.handle_choice,
+            on_accepted=self._handle_choice,
         )
 
-    def handle_choice(self, choice):
+    def _handle_choice(self, choice):
         self.job.choice_selected(choice)
 
     @cached_property
