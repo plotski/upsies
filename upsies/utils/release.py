@@ -613,11 +613,25 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     @cached_property
     def _title_parts(self):
-        # Guess it splits AKA at " - ", we want to split at " AKA "
-        title_parts = [self._guessit.get('title', '')]
-        if self._guessit.get('alternative_title'):
-            title_parts.extend(_as_list(self._guessit, 'alternative_title'))
-        title = ' - '.join(title_parts)
+        # guessit is very lenient when parsing the title. Try to be more strict
+        # by declaring everything before the year or season/episode as title.
+        # Try this for the file name first and then the parent directory name.
+        title = ''
+        for name in _file_and_parent(self._path):
+            match = self._title_split_regex.search(name)
+            if match:
+                title = self._title_split_regex.split(name, maxsplit=1)[0].replace('.', ' ')
+                break
+
+        # Default to guessit if there is no year/season/episode info.
+        if not title:
+            # guessit splits AKA at " - ", we want to split at " AKA "
+            title_parts = [self._guessit.get('title', '')]
+            if self._guessit.get('alternative_title'):
+                title_parts.extend(_as_list(self._guessit, 'alternative_title'))
+            title = ' - '.join(title_parts)
+
+        # Detect alternative title
         title_parts = self._title_aka_regex.split(title, maxsplit=1)
         if len(title_parts) > 1:
             return {'title': title_parts[0], 'aka': title_parts[1]}

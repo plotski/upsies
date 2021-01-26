@@ -191,6 +191,10 @@ def test_title_and_year(release_name, expected):
      {'type': ReleaseType.movie, 'title': '1984 - Foo', 'aka': 'Nineteen Eighty-Four', 'year': '1984',
       'season': '', 'episode': '', 'resolution': '1080p', 'service': '',
       'source': 'BluRay', 'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
+    ('Foo - Bar AKA Baz 1080p BluRay DTS-ASDF',
+     {'type': ReleaseType.movie, 'title': 'Foo - Bar', 'aka': 'Baz', 'year': '',
+      'season': '', 'episode': '', 'resolution': '1080p', 'service': '',
+      'source': 'BluRay', 'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
 ))
 def test_title_and_alternative_title(release_name, expected):
     assert_info(release_name, **expected)
@@ -376,3 +380,13 @@ def test_has_commentary(release_name, exp_value):
     assert ri['has_commentary'] is True
     ri['has_commentary'] = None
     assert ri['has_commentary'] is exp_value
+
+
+@pytest.mark.parametrize('release_name, expected', (
+    ('The Collector 2009 1080p BluRay DTS-ASDF',
+     {'type': ReleaseType.movie, 'title': 'The Collector', 'year': '2009',
+      'resolution': '1080p', 'source': 'BluRay', 'audio_codec': 'DTS', 'group': 'ASDF',
+      'edition': ['Collector']}),
+))
+def test_special_case(release_name, expected):
+    assert_info(release_name, **expected)
