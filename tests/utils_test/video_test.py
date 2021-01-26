@@ -3,7 +3,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-from upsies import errors
+from upsies import constants, errors
 from upsies.utils import video
 
 
@@ -342,7 +342,7 @@ def test_first_video_finds_no_videos(tmp_path, mocker):
     with pytest.raises(errors.ContentError, match=rf'^{tmp_path}: No video file found$'):
         video.first_video(tmp_path)
     assert file_list_mock.call_args_list == [
-        call(tmp_path, extensions=video._video_file_extensions),
+        call(tmp_path, extensions=constants.VIDEO_FILE_EXTENSIONS),
     ]
     assert filter_similar_duration_mock.call_args_list == []
 
@@ -357,7 +357,7 @@ def test_first_video_gets_file(tmp_path, mocker):
     )
     assert video.first_video(tmp_path) == 'some/path/foo.mkv'
     assert file_list_mock.call_args_list == [
-        call(tmp_path, extensions=video._video_file_extensions),
+        call(tmp_path, extensions=constants.VIDEO_FILE_EXTENSIONS),
     ]
     assert filter_similar_duration_mock.call_args_list == [
         call(file_list_mock.return_value),
@@ -374,7 +374,7 @@ def test_first_video_gets_directory(tmp_path, mocker):
     )
     assert video.first_video(tmp_path) == 'some/path/foo.mkv'
     assert file_list_mock.call_args_list == [
-        call(tmp_path, extensions=video._video_file_extensions),
+        call(tmp_path, extensions=constants.VIDEO_FILE_EXTENSIONS),
     ]
     assert filter_similar_duration_mock.call_args_list == [
         call(file_list_mock.return_value),

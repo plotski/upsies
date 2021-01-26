@@ -22,3 +22,6 @@ def _get_option_paths(cfg, parents=()):
 
 OPTION_PATHS = _get_option_paths(defaults.defaults)
 """Tuple of configuration option paths (`<section>.<subsection>.<option>`)"""
+
+VIDEO_FILE_EXTENSIONS = ('mkv', 'mp4', 'ts', 'avi')
+"""Sequence of file extension to recognize video files"""

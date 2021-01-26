@@ -7,7 +7,7 @@ import json
 import os
 import re
 
-from .. import errors
+from .. import constants, errors
 from . import LazyModule, closest_number, fs, os_family, subproc
 
 import logging  # isort:skip
@@ -19,8 +19,6 @@ if os_family() == 'windows':
     _mediainfo_executable = 'mediainfo.exe'
 else:
     _mediainfo_executable = 'mediainfo'
-
-_video_file_extensions = ('mkv', 'mp4', 'ts', 'avi')
 
 
 def _run_mediainfo(video_file_path, *args):
@@ -347,7 +345,7 @@ def first_video(path):
         # DVD image; ffmpeg can't read that so we get a list of .VOBs
         files = fs.file_list(path, extensions=('VOB',))
     else:
-        files = fs.file_list(path, extensions=_video_file_extensions)
+        files = fs.file_list(path, extensions=constants.VIDEO_FILE_EXTENSIONS)
 
     if not files:
         raise errors.ContentError(f'{path}: No video file found')
