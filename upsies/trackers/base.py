@@ -216,7 +216,7 @@ class TrackerJobsBase(abc.ABC):
         )
 
     screenshots = 2
-    """Number many screenshots to make"""
+    """Number of screenshots to make"""
 
     @cached_property
     def screenshots_job(self):
