@@ -1,6 +1,6 @@
 __project_name__ = 'upsies'
 __description__ = 'Media metadata aggregator'
 __homepage__ = 'https://github.com/plotski/upsies'
-__version__ = '0.0.1'
+__version__ = '0.1.0'
 __author__ = 'plotski'
 __author_email__ = 'plotski@example.org'
