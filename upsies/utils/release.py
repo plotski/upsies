@@ -603,7 +603,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         # file extension)
         for name in _file_and_parent(self._path):
             name_no_ext = fs.strip_extension(name, only=constants.VIDEO_FILE_EXTENSIONS)
-            if ' 'in name_no_ext or '.' in name_no_ext:
+            if ' ' in name_no_ext or '.' in name_no_ext:
                 return params(name_no_ext)
 
         # Default to file name

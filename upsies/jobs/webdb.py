@@ -7,7 +7,7 @@ import collections
 from time import monotonic as time_monotonic
 
 from .. import errors
-from ..utils import cached_property, webdbs, fs
+from ..utils import cached_property, fs, webdbs
 from . import JobBase
 
 import logging  # isort:skip
