@@ -20,8 +20,8 @@ class ReleaseNameJob(JobBase):
 
         ``release_name_updated``
             Emitted after :meth:`~.ReleaseName.fetch_info` updated the release
-            name from online sources. Registered callbacks get the new release
-            name as a positional argument.
+            name from online sources. Registered callbacks get a
+            :class:`~.release.ReleaseName` instance as a positional argument.
     """
 
     name = 'release-name'
