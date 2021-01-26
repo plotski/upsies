@@ -180,10 +180,16 @@ def test_file_extension():
     assert fs.file_extension('Something.x264-GRP.mkv') == 'mkv'
     assert fs.file_extension('Something.x264-GRP.mp4') == 'mp4'
     assert fs.file_extension('Something') == ''
-
-
-def test_file_extension_gets_Path_object():
     assert fs.file_extension(Path('some/path') / 'to' / 'file.mkv') == 'mkv'
+
+def test_strip_extension():
+    assert fs.strip_extension('Something.x264-GRP.mkv') == 'Something.x264-GRP'
+    assert fs.strip_extension('Something x264-GRP.mp4') == 'Something x264-GRP'
+    assert fs.strip_extension('Something x264-GRP') == 'Something x264-GRP'
+    assert fs.strip_extension('Something.x264-GRP') == 'Something.x264-GRP'
+    assert fs.strip_extension(Path('some/path') / 'to' / 'file.mkv') == 'some/path/to/file'
+    assert fs.strip_extension('Something x264-GRP.mp4', only=('mkv', 'mp4')) == 'Something x264-GRP'
+    assert fs.strip_extension('Something x264-GRP.mp4', only=('mkv', 'mp3')) == 'Something x264-GRP.mp4'
 
 
 def test_file_list_recurses_into_subdirectories(tmp_path):

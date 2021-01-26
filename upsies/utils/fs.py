@@ -120,21 +120,50 @@ def sanitize_filename(filename):
 
 def file_extension(path):
     """
-    Extract file extension
+    Return file extension
 
     Unlike :func:`os.path.splitext`, this function expects the extension to be 1-3
     characters long and consist only of ascii characters or numbers.
 
-    :param str path: Path to file
+    :param str path: Path to file or directory
 
     :return: file extension
     :rtype: str
     """
     path = str(path)
     if '.' in path:
-        return re.sub(r'^.*?\.([a-zA-Z0-9]{1,3})$', r'\1', path).lower()
+        return re.sub(r'^.*\.([a-zA-Z0-9]{1,3})$', r'\1', path).lower()
     else:
         return ''
+
+def strip_extension(path, only=()):
+    """
+    Return `path` without file extension
+
+    If `path` doesn't have a file extension, return it as is.
+
+    A file extension is 1-3 characters long and consist only of ascii characters
+    or numbers.
+
+    :param str path: Path to file or directory
+    :param only: Only strip extension if it exists in this sequence
+    :type only: sequence of :class:`str`
+
+    :return: file extension
+    :rtype: str
+    """
+    path = str(path)
+    if '.' in path:
+        match = re.search(r'^(.*)\.([a-zA-Z0-9]{1,3})$', path)
+        if match:
+            name = match.group(1)
+            ext = match.group(2)
+            if only:
+                if ext in only:
+                    return name
+            else:
+                return name
+    return path
 
 
 def file_list(path, extensions=()):
