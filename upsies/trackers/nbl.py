@@ -39,7 +39,8 @@ class NblTrackerJobs(base.TrackerJobsBase):
     @cached_property
     def category_job(self):
         # Season or Episode
-        if str(release.ReleaseInfo(self.content_path).get('type')) == 'episode':
+        release_info = release.ReleaseInfo(self.content_path)
+        if release_info['type'] == release.ReleaseType.episode:
             guessed = 'Episode'
         else:
             guessed = 'Season'
@@ -212,9 +213,9 @@ class NblTracker(base.TrackerBase):
                 raise RuntimeError('Failed to find error message. See upload.html for more information.')
 
     def _translate_category(self, category):
-        if category.casefold() == 'episode':
+        if category.lower() == 'episode':
             return '1'
-        elif category.casefold() == 'season':
+        elif category.lower() == 'season':
             return '3'
         else:
             raise errors.RequestError(f'Unsupported type: {category}')

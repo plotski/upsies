@@ -34,11 +34,6 @@ def test_jobs_before_upload(tmp_path, mocker):
         (ReleaseType.season, 'Season'),
         (ReleaseType.movie, 'Season'),
         (ReleaseType.unknown, 'Season'),
-        ('episode', 'Episode'),
-        ('season', 'Season'),
-        ('movie', 'Season'),
-        ('', 'Season'),
-        (None, 'Season'),
     ),
 )
 def test_category_job(release_info, focused_choice, tmp_path, mocker):
