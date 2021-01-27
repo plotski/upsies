@@ -19,7 +19,7 @@ def webdb(name, **kwargs):
 
     :param str name: Name of the DB. A subclass of :class:`.WebDbApiBase` with
         the same :attr:`~.WebDbApiBase.name` must exist in one of this package's
-        submodules
+        submodules.
     :param kwargs: All keyword arguments are passed to the subclass specified by
         `name`
 
