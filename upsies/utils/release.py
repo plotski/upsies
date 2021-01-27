@@ -154,12 +154,15 @@ class ReleaseName(collections.abc.Mapping):
 
     @year.setter
     def year(self, value):
-        if not isinstance(value, (str, int)):
+        if not isinstance(value, (str, int)) and value is not None:
             raise TypeError(f'Not a number: {value!r}')
-        year = str(value)
-        if len(year) != 4 or not year.isdecimal() or not 1800 < int(year) < 2100:
-            raise ValueError(f'Invalid year: {value}')
-        self._guess['year'] = year
+        elif not value:
+            self._guess['year'] = ''
+        else:
+            year = str(value)
+            if len(year) != 4 or not year.isdecimal() or not 1800 < int(year) < 2100:
+                raise ValueError(f'Invalid year: {value}')
+            self._guess['year'] = year
 
     @property
     def year_required(self):

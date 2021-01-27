@@ -198,6 +198,9 @@ def test_year_setter(ReleaseInfo_mock):
     assert rn.year == ''
     rn.year = '1999'
     assert rn.year == '1999'
+    for value in ('', 0, None):
+        rn.year = value
+        assert rn.year == ''
     with pytest.raises(TypeError, match=r'^Not a number: \(2, 0, 2, 0\)$'):
         rn.year = (2, 0, 2, 0)
     with pytest.raises(ValueError, match=r'^Invalid year: 123$'):
