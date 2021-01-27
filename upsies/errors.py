@@ -20,14 +20,18 @@ class UpsiesError(Exception):
         else:
             return NotImplemented
 
+
 class CancelledError(UpsiesError):
     """User cancelled an operation"""
+
 
 class ConfigError(UpsiesError):
     """Error while reading/writing config file or setting config file option"""
 
+
 class DependencyError(UpsiesError):
     """Some external tool is missing (e.g. ``mediainfo``)"""
+
 
 class ContentError(UpsiesError):
     """
@@ -37,6 +41,7 @@ class ContentError(UpsiesError):
 
 class ProcessError(UpsiesError):
     """Executing subprocess failed"""
+
 
 class RequestError(UpsiesError):
     """Network request failed"""
@@ -64,8 +69,10 @@ class ScreenshotError(UpsiesError):
         else:
             super().__init__(f'{video_file}: Failed to create screenshot at {timestamp}: {msg}')
 
+
 class TorrentError(UpsiesError):
     """Torrent file creation failed"""
+
 
 def SubprocessError(exception, original_traceback):
     """Attach `original_traceback` to `exception`"""
