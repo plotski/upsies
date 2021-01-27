@@ -27,7 +27,7 @@ _default_headers = {
 _request_locks = collections.defaultdict(lambda: asyncio.Lock())
 
 _client = httpx.AsyncClient(
-    timeout=30,
+    timeout=60,
 )
 
 def _close_client():
