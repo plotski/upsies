@@ -1,3 +1,8 @@
+2021-??-?? 0.?.?
+  * release-name: Don't accept release name if any obligatory information is
+    unknown.
+
+
 2021-01-26 0.1.0
   * NBL: Added --ignore-dupes option
 
