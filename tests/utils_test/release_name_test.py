@@ -62,7 +62,7 @@ def test_str(ReleaseInfo_mock):
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
-    assert len(rn) == 17
+    assert len(rn) == 18
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -697,6 +697,35 @@ def test_has_commentary(path_exists, audio_tracks, release_info, exp_value, mock
     assert rn.has_commentary is True
     rn.has_commentary = None
     assert rn.has_commentary is exp_value
+
+
+@pytest.mark.parametrize('release_type', tuple(ReleaseType), ids=lambda v: repr(v))
+def test_is_complete_handles_all_ReleaseTypes(release_type):
+    rn = ReleaseName('path/to/something')
+    rn.type = release_type
+    assert rn.is_complete is False
+
+@pytest.mark.parametrize(
+    argnames='release_name, release_type, needed_attrs',
+    argvalues=(
+        ('The Foo 1998 1080p BluRay DTS x264-ASDF', ReleaseType.movie, ReleaseName._needed_attrs[ReleaseType.movie]),
+        ('The Foo S03 1080p BluRay DTS x264-ASDF', ReleaseType.season, ReleaseName._needed_attrs[ReleaseType.season]),
+        ('The Foo S03 1080p BluRay DTS x264-ASDF', ReleaseType.series, ReleaseName._needed_attrs[ReleaseType.series]),
+        ('The Foo S03E04 1080p BluRay DTS x264-ASDF', ReleaseType.episode, ReleaseName._needed_attrs[ReleaseType.episode]),
+    ),
+    ids=lambda v: str(v),
+)
+def test_is_complete(release_name, release_type, needed_attrs):
+    rn = ReleaseName(release_name)
+    rn.type = release_type
+    assert rn.is_complete is True
+    for attr in needed_attrs:
+        value = getattr(rn, attr)
+        setattr(rn, attr, '')
+        assert rn.type is release_type
+        assert rn.is_complete is False
+        setattr(rn, attr, value)
+        assert rn.is_complete is True
 
 
 @patch('upsies.utils.webdbs.imdb.ImdbApi')

@@ -377,6 +377,32 @@ class ReleaseName(collections.abc.Mapping):
         else:
             self._has_commentary = bool(value)
 
+    _needed_attrs = {
+        ReleaseType.movie: ('title', 'year', 'resolution', 'source',
+                            'audio_format', 'video_format'),
+        ReleaseType.season: ('title', 'season', 'resolution', 'source',
+                             'audio_format', 'video_format'),
+        ReleaseType.episode: ('title', 'season', 'episode', 'resolution', 'source',
+                              'audio_format', 'video_format'),
+    }
+    _needed_attrs[ReleaseType.series] = _needed_attrs[ReleaseType.season]
+
+    @property
+    def is_complete(self):
+        """
+        Whether all needed information is known and the string returned by
+        :meth:`format` will not contain "UNKNOWN_*"
+
+        This always returns `False` if :attr:`type` is
+        :attr:`~.ReleaseType.unknown`.
+        """
+        if self.type is ReleaseType.unknown:
+            return False
+        for attr in self._needed_attrs[self.type]:
+            if self[attr].startswith('UNKNOWN_'):
+                return False
+        return True
+
     async def fetch_info(self, id, callback=None):
         """
         Fill in information from IMDb
