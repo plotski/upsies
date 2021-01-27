@@ -7,7 +7,7 @@ import os
 import pprint
 
 from .. import errors, jobs
-from ..utils import ReleaseType, cached_property, release
+from ..utils import ReleaseType, cached_property
 from . import base
 
 import logging  # isort:skip
@@ -43,22 +43,18 @@ class DummyTrackerJobs(base.TrackerJobsBase):
     @cached_property
     def category_job(self):
         if not self.cli_args.skip_category:
-            type = release.ReleaseInfo(self.content_path)['type']
-            category = self.type2category(type)
+            self.release_name_job.signal.register('release_name', self._handle_release_name)
             return jobs.prompt.ChoiceJob(
                 name='category',
                 label='Category',
                 choices=(str(t).capitalize() for t in ReleaseType if t),
-                focused=category,
                 **self.common_job_args,
             )
 
-    @staticmethod
-    def type2category(type):
-        if type:
-            return str(type).capitalize()
-        else:
-            return str(ReleaseType.unknown).capitalize()
+    def _handle_release_name(self, release_name):
+        _log.debug('Setting type: %r', release_name.type)
+        if release_name.type:
+            self.category_job.focused = str(release_name.type).capitalize()
 
 
 class DummyTracker(base.TrackerBase):
