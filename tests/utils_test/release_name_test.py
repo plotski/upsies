@@ -319,7 +319,7 @@ def test_season_setter_with_invalid_value(ReleaseInfo_mock):
         (ReleaseType.season, '', ''),
         (ReleaseType.episode, '3', '3'),
         (ReleaseType.episode, ['1', '2'], ['1', '2']),
-        (ReleaseType.episode, '', ''),
+        (ReleaseType.episode, '', 'UNKNOWN_EPISODE'),
         (ReleaseType.unknown, '3', '3'),
         (ReleaseType.unknown, ['1', '2'], ['1', '2']),
         (ReleaseType.unknown, '', ''),
@@ -350,7 +350,7 @@ def test_episode_getter(ReleaseInfo_mock, type, episode, exp_episode):
         (ReleaseType.episode, '3', '3'),
         (ReleaseType.episode, 3, '3'),
         (ReleaseType.episode, [1, '2'], ['1', '2']),
-        (ReleaseType.episode, '', ''),
+        (ReleaseType.episode, '', 'UNKNOWN_EPISODE'),
         (ReleaseType.unknown, '3', '3'),
         (ReleaseType.unknown, 3, '3'),
         (ReleaseType.unknown, [1, '2'], ['1', '2']),
@@ -360,7 +360,10 @@ def test_episode_getter(ReleaseInfo_mock, type, episode, exp_episode):
 def test_episode_setter_with_valid_value(ReleaseInfo_mock, type, episode, exp_episode):
     rn = ReleaseName('path/to/something')
     rn.type = type
-    assert rn.episode == ''
+    if type is ReleaseType.episode:
+        assert rn.episode == 'UNKNOWN_EPISODE'
+    else:
+        assert rn.episode == ''
     rn.episode = episode
     assert rn.episode == exp_episode
 

@@ -206,8 +206,9 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def episode(self):
         """Episode number or empty string"""
-        if self.type in (ReleaseType.series, ReleaseType.season,
-                         ReleaseType.episode, ReleaseType.unknown):
+        if self.type is ReleaseType.episode:
+            return self._guess.get('episode') or 'UNKNOWN_EPISODE'
+        elif self.type in (ReleaseType.season, ReleaseType.series, ReleaseType.unknown):
             return self._guess.get('episode') or ''
         else:
             return ''
