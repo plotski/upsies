@@ -185,6 +185,8 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
                     headers=response.headers,
                     status_code=response.status_code,
                 )
+        except httpx.TimeoutException as e:
+            raise errors.RequestError(f'{url}: Timeout')
         except httpx.NetworkError:
             raise errors.RequestError(f'{url}: Failed to connect')
         except httpx.HTTPError as e:
