@@ -8,25 +8,31 @@ _log = logging.getLogger(__name__)
 
 class ReleaseNameJobWidget(JobWidgetBase):
     def setup(self):
-        self._release_name = widgets.InputField(
+        self._input = widgets.InputField(
             text='Loading...',
             style='class:prompt.text',
-            on_accepted=self._handle_release_name,
+            on_accepted=self._handle_approved_release_name,
             read_only=True,
         )
+        self.job.signal.register('release_name_updated', self._set_input)
 
-        def release_name_changed_callback(release_name):
-            self._release_name.read_only = False
-            self._release_name.text = release_name.format()
-            self.invalidate()
+    def _set_input(self, release_name):
+        self._input.read_only = False
+        self._input.text = self._get_release_name_string(release_name)
+        self.invalidate()
 
-        self.job.signal.register('release_name_updated', release_name_changed_callback)
+    def _get_release_name_string(self, release_name):
+        # TODO: Use custom format specified by some attribute on self.job.
+        return release_name.format()
 
-    def _handle_release_name(self, buffer):
-        _log.debug('Approved release name: %r', buffer.text)
-        release_name = release.ReleaseName(buffer.text)
-        self.job.release_name_selected(release_name)
+    def _handle_approved_release_name(self, _):
+        _log.debug('Approved release name: %r', self._input.text)
+        release_name = release.ReleaseName(self._input.text)
+        if release_name.is_complete:
+            self.job.release_name_selected(self._input.text)
+        else:
+            self._set_input(release_name)
 
     @cached_property
     def runtime_widget(self):
-        return self._release_name
+        return self._input

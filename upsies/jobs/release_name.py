@@ -59,12 +59,13 @@ class ReleaseNameJob(JobBase):
         This method must be called by the UI when the user accepts the release
         name.
 
-        :param ReleaseName release_name: Release name as accepted by the user
+        :param str release_name: Release name as accepted by the user
         """
-        assert isinstance(release_name, release.ReleaseName)
-        self._release_name = release_name
+        # Parse string to get ReleaseName instance for the "release_name" signal
+        self._release_name = release.ReleaseName(release_name)
         self.signal.emit('release_name', self.release_name)
-        self.send(str(self.release_name))
+        # Send original string as we received it
+        self.send(release_name)
         self.finish()
 
     def fetch_info(self, *args, **kwargs):
