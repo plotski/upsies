@@ -20,3 +20,9 @@ class SceneDbApiBase(abc.ABC):
 
         :return: :class:`list` of release names as :class:`str`
         """
+
+    def _normalize_query(self, query):
+        """Turn sequence of sequences of space-separated words into list of words"""
+        return [phrase
+                for search_phrases in query
+                for phrase in str(search_phrases).split()]

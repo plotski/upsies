@@ -15,9 +15,7 @@ class PreDb(base.SceneDbApiBase):
     _search_url = f'https://{_url_base}/api/v1/'
 
     async def search(self, *query, group=None, cache=True):
-        query = [phrase
-                 for search_phrases in query
-                 for phrase in str(search_phrases).split()]
+        query = self._normalize_query(query)
         if group:
             query.extend(('@team', str(group)))
 
