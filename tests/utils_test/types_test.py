@@ -17,6 +17,11 @@ def test_IMGHOST_NAMES():
     imghost_names = {imghost.name for imghost in imghosts.imghosts()}
     assert imghost_names == set(types.IMGHOST_NAMES)
 
+def test_SCENEDB_NAMES():
+    from upsies.utils import scene
+    scenedb_names = {scenedb.name for scenedb in scene.scenedbs()}
+    assert scenedb_names == set(types.SCENEDB_NAMES)
+
 def test_TRACKER_NAMES():
     from upsies import trackers
     tracker_names = {tracker.name for tracker in trackers.trackers()}
@@ -80,6 +85,17 @@ def test_imghost_valid_value(imghost):
 def test_imghost_invalid_value():
     with pytest.raises(ValueError, match=r'^Unsupported image hosting service: foo$'):
         types.imghost('foo')
+
+
+@pytest.mark.parametrize('scenedb', types.SCENEDB_NAMES)
+def test_scenedb_valid_value(scenedb):
+    assert types.scenedb(scenedb) == scenedb
+    assert types.scenedb(scenedb.upper()) == scenedb
+    assert types.scenedb(scenedb.capitalize()) == scenedb
+
+def test_scenedb_invalid_value():
+    with pytest.raises(ValueError, match=r'^Unsupported scene release database: foo$'):
+        types.scenedb('foo')
 
 
 @pytest.mark.parametrize('tracker', types.TRACKER_NAMES)

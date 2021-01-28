@@ -8,6 +8,7 @@ from .. import constants, trackers, utils
 
 BTCLIENT_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.btclients.clients()]
 IMGHOST_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.imghosts.imghosts()]
+SCENEDB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.scene.scenedbs()]
 TRACKER_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in trackers.trackers()]
 WEBDB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.webdbs.webdbs()]
 
@@ -35,6 +36,12 @@ def imghost(value):
         return value.lower()
     else:
         raise ValueError(f'Unsupported image hosting service: {value}')
+
+def scenedb(value):
+    if value in SCENEDB_NAMES:
+        return value.lower()
+    else:
+        raise ValueError(f'Unsupported scene release database: {value}')
 
 def tracker(value):
     if value in TRACKER_NAMES:
