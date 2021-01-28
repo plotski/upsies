@@ -29,4 +29,6 @@ class PreDbApi(base.SceneDbApiBase):
         if response['status'] != 'success':
             raise errors.SceneError(f'{self.label}: {response["message"]}')
         else:
-            return [result['name'] for result in response['data']['rows']]
+            return self._normalize_results(
+                (result['name'] for result in response['data']['rows'])
+            )

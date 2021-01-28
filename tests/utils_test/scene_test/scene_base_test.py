@@ -16,3 +16,6 @@ def testdb():
 
 def test_normalize_query(testdb):
     assert testdb._normalize_query(('foo  bar ', ' baz')) == ['foo', 'bar', 'baz']
+
+def test_normalize_results(testdb):
+    assert testdb._normalize_results(('Foo', 'bar', 'BAZ')) == ['bar', 'BAZ', 'Foo']

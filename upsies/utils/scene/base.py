@@ -26,3 +26,7 @@ class SceneDbApiBase(abc.ABC):
         return [phrase
                 for search_phrases in query
                 for phrase in str(search_phrases).split()]
+
+    def _normalize_results(self, results):
+        """Return sorted list of sequence of search results"""
+        return sorted(results, key=str.casefold)

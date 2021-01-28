@@ -23,4 +23,4 @@ class SrrDbApi(base.SceneDbApiBase):
         # Get search results
         response = await common.get_json(search_url, cache=cache)
         results = response.get('results', [])
-        return [r['release'] for r in results]
+        return self._normalize_results((r['release'] for r in results))
