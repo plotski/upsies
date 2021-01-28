@@ -21,7 +21,7 @@ def test_scenedbs(mocker):
     subclasses_mock = mocker.patch('upsies.utils.scene.subclasses', return_value=existing_scenedbs)
     assert scene.scenedbs() == existing_scenedbs
     assert submodules_mock.call_args_list == [call('upsies.utils.scene')]
-    assert subclasses_mock.call_args_list == [call(scene.SceneDbBase, submodules_mock.return_value)]
+    assert subclasses_mock.call_args_list == [call(scene.SceneDbApiBase, submodules_mock.return_value)]
 
 
 def test_scenedb_returns_ClientApiBase_instance(mocker):

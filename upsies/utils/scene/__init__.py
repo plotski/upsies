@@ -7,20 +7,20 @@ import asyncio
 from ... import errors
 from .. import subclasses, submodules
 from . import predb, srrdb
-from .base import SceneDbBase
+from .base import SceneDbApiBase
 
 
 def scenedbs():
-    """Return list of :class:`.SceneDbBase` subclasses"""
-    return subclasses(SceneDbBase, submodules(__package__))
+    """Return list of :class:`.SceneDbApiBase` subclasses"""
+    return subclasses(SceneDbApiBase, submodules(__package__))
 
 
 def scenedb(name, **kwargs):
     """
-    Create :class:`.SceneDbBase` instance
+    Create :class:`.SceneDbApiBase` instance
 
     :param str name: Name of the scene release database. A subclass of
-        :class:`.SceneDbBase` with the same :attr:`~.SceneDbBase.name` must
+        :class:`.SceneDbApiBase` with the same :attr:`~.SceneDbApiBase.name` must
         exist in one of this package's submodules.
     :param kwargs: All keyword arguments are passed to the subclass specified by
         `name`
@@ -37,13 +37,13 @@ def scenedb(name, **kwargs):
 
 async def search(*args, **kwargs):
     """
-    Concurrently search with all :class:`~.SceneDbBase` subclasses
+    Concurrently search with all :class:`~.SceneDbApiBase` subclasses
 
-    All arguments are passed on to each :meth:`~.SceneDbBase.search` method.
+    All arguments are passed on to each :meth:`~.SceneDbApiBase.search` method.
 
     :return: Deduplicated :class:`list` of release names as :class:`str`
     """
-    # TODO: Allow custom arguments for SceneDbBase subclasses (e.g. for user
+    # TODO: Allow custom arguments for SceneDbApiBase subclasses (e.g. for user
     #       authentication): Add "class_args" argument: dict that maps
     #       SceneDb.name values to (('posarg', ...), {'kw': 'arg', ...}) tuples
     #       which are passed to the corresponding subclass.

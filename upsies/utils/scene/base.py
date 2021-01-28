@@ -4,7 +4,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class SceneDbBase(abc.ABC):
+class SceneDbApiBase(abc.ABC):
     @property
     @abc.abstractmethod
     def name(self):
