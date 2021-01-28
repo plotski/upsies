@@ -7,7 +7,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class PreDb(base.SceneDbApiBase):
+class PreDbApi(base.SceneDbApiBase):
     name = 'predb'
     label = 'PreDB'
 

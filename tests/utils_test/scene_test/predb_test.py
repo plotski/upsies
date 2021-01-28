@@ -16,15 +16,15 @@ class AsyncMock(Mock):
 
 @pytest.fixture
 def api():
-    return predb.PreDb()
+    return predb.PreDbApi()
 
 
 def test_name():
-    assert predb.PreDb.name == 'predb'
+    assert predb.PreDbApi.name == 'predb'
 
 
 def test_label():
-    assert predb.PreDb.label == 'PreDB'
+    assert predb.PreDbApi.label == 'PreDB'
 
 
 @pytest.mark.asyncio
