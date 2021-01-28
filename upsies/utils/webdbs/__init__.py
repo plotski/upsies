@@ -30,4 +30,4 @@ def webdb(name, **kwargs):
     for cls in webdbs():
         if cls.name == name:
             return cls(**kwargs)
-    raise ValueError(f'Unsupported web DB: {name}')
+    raise ValueError(f'Unsupported web database: {name}')
