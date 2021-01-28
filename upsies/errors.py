@@ -78,3 +78,7 @@ def SubprocessError(exception, original_traceback):
     """Attach `original_traceback` to `exception`"""
     exception.original_traceback = f'Subprocess traceback:\n{original_traceback.strip()}'
     return exception
+
+
+class SceneError(UpsiesError):
+    """Failed scene search or validation"""
