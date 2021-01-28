@@ -63,5 +63,5 @@ async def test_search_with_error_status(api, mocker):
     }
     mocker.patch('upsies.utils.scene.common.get_json',
                  AsyncMock(return_value=response))
-    with pytest.raises(errors.SceneError, match=r'^Something bad$'):
+    with pytest.raises(errors.SceneError, match=rf'^{api.label}: Something bad$'):
         await api.search('foo', 'bar')
