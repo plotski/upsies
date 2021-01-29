@@ -1,7 +1,8 @@
 from base64 import b64decode
 
 from ... import errors
-from . import base, common
+from .. import http
+from . import base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ class PreDbApi(base.SceneDbApiBase):
         # Get search results
         params = {'q': ' '.join(query)}
         _log.debug('Scene search: %r, %r', self._search_url, params)
-        response = await common.get_json(self._search_url, params=params, cache=cache)
+        response = (await http.get(self._search_url, params=params, cache=cache)).json()
 
         # Report error or return list of release names
         if response['status'] != 'success':

@@ -1,6 +1,7 @@
 from base64 import b64decode
 
-from . import base, common
+from .. import http
+from . import base
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -21,6 +22,6 @@ class SrrDbApi(base.SceneDbApiBase):
         _log.debug('Scene search URL: %r', search_url)
 
         # Get search results
-        response = await common.get_json(search_url, cache=cache)
+        response = (await http.get(search_url, cache=cache)).json()
         results = response.get('results', [])
         return self._normalize_results((r['release'] for r in results))
