@@ -71,4 +71,5 @@ Index
    upsies.jobs
    upsies.uis
    upsies.trackers
+   upsies.constants
    upsies.errors
