@@ -41,7 +41,7 @@ async def test_search_handles_RequestError(testdb, mocker):
     mocker.patch.object(testdb, '_normalize_query', Mock(return_value='mock query'))
     mocker.patch.object(testdb, '_search', AsyncMock(side_effect=errors.RequestError('no')))
     mocker.patch.object(testdb, '_normalize_results')
-    with pytest.raises(errors.SceneError, match=rf'^no$'):
+    with pytest.raises(errors.SceneError, match=r'^no$'):
         await testdb.search('foo', group='bar', cache='baz')
     assert testdb._normalize_query.call_args_list == [call(('foo',))]
     assert testdb._search.call_args_list == [call(query='mock query', group='bar', cache='baz')]
