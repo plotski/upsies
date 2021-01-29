@@ -18,7 +18,7 @@ Features
 * Upload screenshots to an image hosting service
 * Create ``.torrent`` file and add it to supported BitTorrent client or copy it
   to a watch directory
-* Submit metadata to supported private tracker
+* Submit metadata to a supported tracker
 * Do everything simultaneously
 
 ``upsies`` is developed on `GitHub <https://github.com/plotski/upsies>`_.

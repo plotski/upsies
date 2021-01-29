@@ -1,4 +1,5 @@
 2021-??-?? 0.?.?
+  * New command: scene-search
   * release-name: Don't accept release name if any obligatory information is
     unknown.
 
