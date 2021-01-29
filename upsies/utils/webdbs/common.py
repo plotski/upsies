@@ -57,9 +57,8 @@ class Query:
 
     _types = {
         ReleaseType.movie: ('movie', 'film'),
-        ReleaseType.season: ('season',),
+        ReleaseType.season: ('season', 'series', 'tv', 'show', 'tvshow'),
         ReleaseType.episode: ('episode',),
-        ReleaseType.series: ('series', 'tv', 'show', 'tvshow'),
     }
     _known_types = tuple(v for types in _types.values() for v in types)
     _kw_regex = {

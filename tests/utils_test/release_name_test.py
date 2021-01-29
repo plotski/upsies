@@ -116,7 +116,7 @@ def test_type_getter(ReleaseInfo_mock):
     argnames='value, exp_value',
     argvalues=(
         ('movie', ReleaseType.movie),
-        ('series', ReleaseType.series),
+        ('season', ReleaseType.series),
         ('season', ReleaseType.season),
         ('episode', ReleaseType.episode),
         ('', ReleaseType.unknown),

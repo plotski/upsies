@@ -52,8 +52,8 @@ class ReleaseType(enum.Enum):
     '''
 
     movie = 'movie'
-    series = 'series'
     season = 'season'
+    series = 'season'
     episode = 'episode'
     unknown = 'unknown'
 

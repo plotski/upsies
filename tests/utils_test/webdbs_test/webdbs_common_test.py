@@ -69,7 +69,7 @@ def test_Query_inequality(a, b):
     argvalues=(
         (webdbs.Query('The Title'), 'The Title'),
         (webdbs.Query('The Title', type=ReleaseType.movie), 'The Title type:movie'),
-        (webdbs.Query('The Title', type=ReleaseType.series), 'The Title type:series'),
+        (webdbs.Query('The Title', type=ReleaseType.series), 'The Title type:season'),
         (webdbs.Query('The Title', type=ReleaseType.movie, year='2010'), 'The Title year:2010 type:movie'),
     ),
     ids=lambda value: str(value),
@@ -93,9 +93,8 @@ def test_Query_as_string(query, exp_string):
         ('The Title type:tv', webdbs.Query('The Title', type=ReleaseType.series)),
         ('The Title type:show', webdbs.Query('The Title', type=ReleaseType.series)),
         ('The Title type:tvshow', webdbs.Query('The Title', type=ReleaseType.series)),
-        ('The Title type:season', webdbs.Query('The Title', type=ReleaseType.season)),
-        ('The Title type:episode', webdbs.Query('The Title', type=ReleaseType.episode)),
     ),
+    ids=lambda v: str(v),
 )
 def test_Query_from_string(string, exp_query):
     assert webdbs.Query.from_string(string) == exp_query
@@ -134,8 +133,8 @@ def test_Query_from_path(path, exp_query):
          "Query(title='The Title', type=ReleaseType.movie)"),
         (webdbs.Query('The Title', year='1999'),
          "Query(title='The Title', year='1999')"),
-        (webdbs.Query('The Title', type=ReleaseType.series, year='1999'),
-         "Query(title='The Title', year='1999', type=ReleaseType.series)"),
+        (webdbs.Query('The Title', type=ReleaseType.season, year='1999'),
+         "Query(title='The Title', year='1999', type=ReleaseType.season)"),
     ),
     ids=lambda value: str(value),
 )
