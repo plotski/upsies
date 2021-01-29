@@ -20,7 +20,8 @@ class AsyncMock(Mock):
 def scenedb():
     class TestSceneDbApi(scene.SceneDbApiBase):
         name = 'mocksy'
-        search = AsyncMock()
+        label = 'Mocksy'
+        _search = AsyncMock(return_value=[])
 
     return TestSceneDbApi()
 
@@ -55,30 +56,32 @@ async def test_execute(make_SceneSearchJob, mocker):
 @pytest.mark.parametrize(
     argnames='release_name, exp_args, exp_kwargs',
     argvalues=(
-        ('Foo', ('Foo',), {'cache': True}),
-        ('Foo.1974', ('Foo', '1974'), {'cache': True}),
-        ('Foo 1974 1080p', ('Foo', '1974', '1080p'), {'cache': True}),
-        ('Foo.1974.1080p.BluRay', ('Foo', '1974', '1080p', 'BluRay'), {'cache': True}),
-        ('Foo 1080p BluRay x264', ('Foo', '1080p', 'BluRay', 'x264'), {'cache': True}),
-        ('Foo.1974.BluRay-ASDF', ('Foo', '1974', 'BluRay'), {'cache': True, 'group': 'ASDF'}),
-        ('Foo.S03.BluRay.x264', ('Foo', 'S03', 'BluRay', 'x264'), {'cache': True}),
-        ('Foo.S01E07.BluRay.x264', ('Foo', 'S01E07', 'BluRay', 'x264'), {'cache': True}),
-        ('Foo.S01E01E02.1080p.x264', ('Foo', 'S01E01E02', '1080p', 'x264'), {'cache': True}),
+        ('Foo', ('Foo',), {}),
+        ('Foo.1974', ('Foo', '1974'), {}),
+        ('Foo 1974 1080p', ('Foo', '1974', '1080p'), {}),
+        ('Foo.1974.1080p.BluRay', ('Foo', '1974', '1080p', 'BluRay'), {}),
+        ('Foo 1080p BluRay x264', ('Foo', '1080p', 'BluRay', 'x264'), {}),
+        ('Foo.1974.BluRay-ASDF', ('Foo', '1974', 'BluRay'), {'group': 'ASDF'}),
+        ('Foo.S03.BluRay.x264', ('Foo', 'S03', 'BluRay', 'x264'), {}),
+        ('Foo.S01E07.BluRay.x264', ('Foo', 'S01E07', 'BluRay', 'x264'), {}),
+        ('Foo.S01E01E02.1080p.x264', ('Foo', 'S01E01E02', '1080p', 'x264'), {}),
     ),
     ids=lambda v: str(v),
 )
 @pytest.mark.asyncio
-async def test_search_query(release_name, exp_args, exp_kwargs, make_SceneSearchJob):
+async def test_search_query(release_name, exp_args, exp_kwargs, make_SceneSearchJob, mocker):
     job = make_SceneSearchJob(content_path=release_name)
+    mocker.patch.object(job._scenedb, 'search', AsyncMock())
     await job._search()
     assert job._scenedb.search.call_args_list == [
-        call(*exp_args, **exp_kwargs),
+        call(*exp_args, **{**{'cache': True}, **exp_kwargs}),
     ]
 
 @pytest.mark.parametrize('ignore_cache, exp_cache', ((True, False), (False, True)))
 @pytest.mark.asyncio
-async def test_search_cache_argument(ignore_cache, exp_cache, make_SceneSearchJob):
+async def test_search_cache_argument(ignore_cache, exp_cache, make_SceneSearchJob, mocker):
     job = make_SceneSearchJob(ignore_cache=ignore_cache, content_path='Foo')
+    mocker.patch.object(job._scenedb, 'search', AsyncMock())
     await job._search()
     assert job._scenedb.search.call_args_list == [call('Foo', cache=exp_cache)]
 
