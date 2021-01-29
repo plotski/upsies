@@ -333,16 +333,20 @@ def test_audio_channels(audio, audio_codec, audio_channels):
 
 
 video_codec_samples = (
-    ('The Foo 2000 1080p DTS H.264-ASDF', 'H.264'),
-    ('The Foo 2000 1080p DTS x264-ASDF', 'x264'),
-    ('The Foo 2000 1080p DTS H.265-ASDF', 'H.265'),
-    ('The Foo 2000 1080p DTS x265-ASDF', 'x265'),
+    ('The Foo 2000 1080p DTS H.264-ASDF', {'video_codec': 'H.264', 'group': 'ASDF'}),
+    ('The Foo 2000 1080p DTS x264-ASDF', {'video_codec': 'x264', 'group': 'ASDF'}),
+    ('The Foo 2000 1080p DTS H.265-ASDF', {'video_codec': 'H.265', 'group': 'ASDF'}),
+    ('The Foo 2000 1080p DTS x265-ASDF', {'video_codec': 'x265', 'group': 'ASDF'}),
+    ('The Foo 2000 1080p DTS H.264', {'video_codec': 'H.264', 'group': ''}),
+    ('The Foo 2000 1080p DTS x264', {'video_codec': 'x264', 'group': ''}),
+    ('The Foo 2000 1080p DTS H.265', {'video_codec': 'H.265', 'group': ''}),
+    ('The Foo 2000 1080p DTS x265', {'video_codec': 'x265', 'group': ''}),
 )
-@pytest.mark.parametrize('release_name, video_codec', video_codec_samples)
-def test_video_codec(release_name, video_codec):
-    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
-                'resolution': '1080p',
-                'audio_codec': 'DTS', 'video_codec': video_codec, 'group': 'ASDF'}
+@pytest.mark.parametrize('release_name, exp_values', video_codec_samples)
+def test_video_codec(release_name, exp_values):
+    expected = {**{'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
+                   'resolution': '1080p', 'audio_codec': 'DTS'},
+                **exp_values}
     assert_info(release_name, **expected)
 
 

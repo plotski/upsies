@@ -841,8 +841,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
                 return match.group(1)
         return audio_channels
 
-    _x264_regex = re.compile(r'(?i:[\. ]+x264[\. -])')
-    _x265_regex = re.compile(r'(?i:[\. ]+x265[\. -])')
+    _x264_regex = re.compile(r'[\. ](?i:x264)(?:[\. -]|$)')
+    _x265_regex = re.compile(r'[\. ](?i:x265)(?:[\. -]|$)')
 
     def _get_video_codec(self):
         video_codec = self._guessit.get('video_codec', '')
