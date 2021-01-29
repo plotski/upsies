@@ -1,3 +1,7 @@
+"""
+Abstract base class for scene release databases
+"""
+
 import abc
 
 import logging  # isort:skip
