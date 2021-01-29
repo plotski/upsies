@@ -38,7 +38,7 @@ def mock_JobWidget(mocker):
         is_interactive=None,
         job=Mock(wait=AsyncMock()),
     )
-    mocker.patch('upsies.uis.tui.widgets.JobWidget', Mock(return_value=job_widget))
+    mocker.patch('upsies.uis.tui.jobwidgets.JobWidget', Mock(return_value=job_widget))
 
 
 def test_add_jobs_registers_signals(mocker):
@@ -54,7 +54,7 @@ def test_add_jobs_registers_signals(mocker):
         Mock(name='w.c', is_interactive=True, __pt_container__=Mock(return_value=(Window()))),
         Mock(name='w.d', is_interactive=False, __pt_container__=Mock(return_value=(Window()))),
     )
-    JobWidget_mock = mocker.patch('upsies.uis.tui.widgets.JobWidget', Mock(side_effect=job_widgets))
+    JobWidget_mock = mocker.patch('upsies.uis.tui.jobwidgets.JobWidget', Mock(side_effect=job_widgets))
     ui = UI()
     ui.run(jobs)
     assert JobWidget_mock.call_args_list == [

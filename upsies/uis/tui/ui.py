@@ -11,7 +11,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout import Layout
 from prompt_toolkit.layout.containers import HSplit, Window, to_container
 
-from . import style, widgets
+from . import jobwidgets, style
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class UI:
         for job in jobs:
             if job.name not in self._jobs:
                 self._jobs[job.name].job = job
-                self._jobs[job.name].widget = widgets.JobWidget(job)
+                self._jobs[job.name].widget = jobwidgets.JobWidget(job)
                 self._jobs[job.name].container = to_container(self._jobs[job.name].widget)
                 _log.debug('Created JobWidget %r: %r', job.name, self._jobs[job.name])
 

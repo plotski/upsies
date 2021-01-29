@@ -16,35 +16,12 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.dimension import Dimension
 from prompt_toolkit.utils import get_cwidth
 
-from . import jobwidgets
-
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
 hspacer = Window(FormattedTextControl(' '), dont_extend_width=True, dont_extend_height=True)
 vspacer = Window(FormattedTextControl(''), dont_extend_width=True, dont_extend_height=True)
-
-
-def JobWidget(job):
-    """
-    Factory that returns JobWidgetBase instances based on job type
-
-    The widget class name is created by adding "Widget" to `job`'s class name.
-    The widget class is imported from :mod:`.jobwidgets`.
-
-    :param job: Job instance
-    :type job: :class:`~.jobs.base.JobBase`
-
-    :raise RuntimeError: if `job`'s type is not supported
-    """
-    widget_cls_name = type(job).__name__ + 'Widget'
-    try:
-        widget_cls = getattr(jobwidgets, widget_cls_name)
-    except AttributeError:
-        raise RuntimeError(f'Unknown widget class: {widget_cls_name}')
-    else:
-        return widget_cls(job)
 
 
 class TextField:
