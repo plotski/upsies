@@ -26,23 +26,22 @@ def test_label():
     assert srrdb.SrrDbApi.label == 'srrDB'
 
 
+@pytest.mark.parametrize('cache', (True, False), ids=lambda v: str(v))
+@pytest.mark.parametrize('group', (None, '', 'ASDF'), ids=lambda v: str(v))
 @pytest.mark.asyncio
-async def test_search_without_group(api, mocker):
-    response = {'results': [{'release': 'Foo'}]}
-    get_json_mock = mocker.patch('upsies.utils.scene.common.get_json',
-                                 AsyncMock(return_value=response))
-    response = await api.search('foo', 'bar')
-    assert response == ['Foo']
-    assert get_json_mock.call_args_list == [
-        call(f'{api._search_url}/foo/bar', cache=True),
-    ]
+async def test_search_calls_http_get(group, cache, api, mocker):
+    response = Mock(json=Mock(return_value={
+        'results': [{'release': 'Foo'}],
+    }))
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(return_value=response))
 
-@pytest.mark.asyncio
-async def test_search_with_group(api, mocker):
-    response = {'results': [{'release': 'Foo'}]}
-    get_json_mock = mocker.patch('upsies.utils.scene.common.get_json',
-                                 AsyncMock(return_value=response))
-    await api.search('foo', 'bar', group='BAZ')
-    assert get_json_mock.call_args_list == [
-        call(f'{api._search_url}/foo/bar/group:BAZ', cache=True),
+    query = ['foo', 'bar']
+    path = '/'.join(query)
+    if group:
+        path += f'/group:{group}'
+
+    response = await api._search(query=query, group=group, cache=cache)
+    assert get_mock.call_args_list == [
+        call(f'{api._search_url}/{path}', cache=cache),
     ]
+    assert list(response) == ['Foo']

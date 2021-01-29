@@ -15,9 +15,8 @@ class PreDbApi(base.SceneDbApiBase):
     _url_base = b64decode('cHJlZGIub3Zo').decode('ascii')
     _search_url = f'https://{_url_base}/api/v1/'
 
-    async def search(self, *query, group=None, cache=True):
+    async def _search(self, *, query, group, cache):
         # Build query
-        query = self._normalize_query(query)
         if group:
             query.extend(('@team', str(group)))
 
@@ -30,6 +29,4 @@ class PreDbApi(base.SceneDbApiBase):
         if response['status'] != 'success':
             raise errors.SceneError(f'{self.label}: {response["message"]}')
         else:
-            return self._normalize_results(
-                (result['name'] for result in response['data']['rows'])
-            )
+            return (result['name'] for result in response['data']['rows'])
