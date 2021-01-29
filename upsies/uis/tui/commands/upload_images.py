@@ -2,7 +2,7 @@
 Upload images to image hosting service
 """
 
-from .... import jobs, utils
+from .... import constants, jobs, utils
 from .base import CommandBase
 
 
@@ -15,7 +15,7 @@ class upload_images(CommandBase):
         'IMAGEHOST': {
             'type': utils.types.imghost,
             'help': ('Case-insensitive name of image hosting service\n'
-                     'Supported services: ' + ', '.join(utils.types.IMGHOST_NAMES)),
+                     'Supported services: ' + ', '.join(constants.IMGHOST_NAMES)),
         },
         'IMAGE': {
             'nargs': '+',

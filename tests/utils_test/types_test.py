@@ -7,32 +7,6 @@ from upsies import constants
 from upsies.utils import types
 
 
-def test_BTCLIENT_NAMES():
-    from upsies.utils import btclients
-    client_names = {client.name for client in btclients.clients()}
-    assert client_names == set(types.BTCLIENT_NAMES)
-
-def test_IMGHOST_NAMES():
-    from upsies.utils import imghosts
-    imghost_names = {imghost.name for imghost in imghosts.imghosts()}
-    assert imghost_names == set(types.IMGHOST_NAMES)
-
-def test_SCENEDB_NAMES():
-    from upsies.utils import scene
-    scenedb_names = {scenedb.name for scenedb in scene.scenedbs()}
-    assert scenedb_names == set(types.SCENEDB_NAMES)
-
-def test_TRACKER_NAMES():
-    from upsies import trackers
-    tracker_names = {tracker.name for tracker in trackers.trackers()}
-    assert tracker_names == set(types.TRACKER_NAMES)
-
-def test_WEBDB_NAMES():
-    from upsies.utils import webdbs
-    webdb_names = {webdb.name for webdb in webdbs.webdbs()}
-    assert webdb_names == set(types.WEBDB_NAMES)
-
-
 @pytest.mark.parametrize(
     argnames='value, exp_value',
     argvalues=(
@@ -65,7 +39,7 @@ def test_timestamp_invalid_value(parse_mock, exception):
         types.timestamp('foo')
 
 
-@pytest.mark.parametrize('client', types.BTCLIENT_NAMES)
+@pytest.mark.parametrize('client', constants.BTCLIENT_NAMES)
 def test_client_valid_value(client):
     assert types.client(client) == client
     assert types.client(client.upper()) == client
@@ -76,7 +50,7 @@ def test_client_invalid_value():
         types.client('foo')
 
 
-@pytest.mark.parametrize('imghost', types.IMGHOST_NAMES)
+@pytest.mark.parametrize('imghost', constants.IMGHOST_NAMES)
 def test_imghost_valid_value(imghost):
     assert types.imghost(imghost) == imghost
     assert types.imghost(imghost.upper()) == imghost
@@ -87,7 +61,7 @@ def test_imghost_invalid_value():
         types.imghost('foo')
 
 
-@pytest.mark.parametrize('scenedb', types.SCENEDB_NAMES)
+@pytest.mark.parametrize('scenedb', constants.SCENEDB_NAMES)
 def test_scenedb_valid_value(scenedb):
     assert types.scenedb(scenedb) == scenedb
     assert types.scenedb(scenedb.upper()) == scenedb
@@ -98,7 +72,7 @@ def test_scenedb_invalid_value():
         types.scenedb('foo')
 
 
-@pytest.mark.parametrize('tracker', types.TRACKER_NAMES)
+@pytest.mark.parametrize('tracker', constants.TRACKER_NAMES)
 def test_tracker_valid_value(tracker):
     assert types.tracker(tracker) == tracker
     assert types.tracker(tracker.upper()) == tracker
@@ -109,7 +83,7 @@ def test_tracker_invalid_value():
         types.tracker('foo')
 
 
-@pytest.mark.parametrize('webdb', types.WEBDB_NAMES)
+@pytest.mark.parametrize('webdb', constants.WEBDB_NAMES)
 def test_webdb_valid_value(webdb):
     assert types.webdb(webdb) == webdb
     assert types.webdb(webdb.upper()) == webdb

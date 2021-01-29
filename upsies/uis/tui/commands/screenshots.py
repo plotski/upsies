@@ -2,7 +2,7 @@
 Create screenshots from video file and optionally upload them
 """
 
-from .... import jobs, utils
+from .... import constants, jobs, utils
 from .base import CommandBase
 
 
@@ -29,7 +29,7 @@ class screenshots(CommandBase):
             'type': utils.types.imghost,
             'metavar': 'IMAGEHOST',
             'help': ('Case-insensitive name of image hosting service\n'
-                     'Supported services: ' + ', '.join(utils.types.IMGHOST_NAMES)),
+                     'Supported services: ' + ', '.join(constants.IMGHOST_NAMES)),
         },
     }
 

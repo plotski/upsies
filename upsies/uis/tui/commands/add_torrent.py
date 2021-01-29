@@ -2,7 +2,7 @@
 Add torrent file to  BitTorrent client
 """
 
-from .... import jobs, utils
+from .... import constants, jobs, utils
 from .base import CommandBase
 
 
@@ -15,7 +15,7 @@ class add_torrent(CommandBase):
         'CLIENT': {
             'type': utils.types.client,
             'help': ('Case-insensitive BitTorrent client name\n'
-                     'Supported clients: ' + ', '.join(utils.types.BTCLIENT_NAMES)),
+                     'Supported clients: ' + ', '.join(constants.BTCLIENT_NAMES)),
         },
         'TORRENT': {
             'nargs': '+',

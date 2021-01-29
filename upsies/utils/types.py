@@ -4,13 +4,7 @@ CLI argument types
 All types return normalized values and raise ValueError for invalid values.
 """
 
-from .. import constants, trackers, utils
-
-BTCLIENT_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.btclients.clients()]
-IMGHOST_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.imghosts.imghosts()]
-SCENEDB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.scene.scenedbs()]
-TRACKER_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in trackers.trackers()]
-WEBDB_NAMES = [utils.CaseInsensitiveString(cls.name) for cls in utils.webdbs.webdbs()]
+from .. import constants, utils
 
 
 def integer(value):
@@ -26,31 +20,31 @@ def timestamp(value):
         raise ValueError(e)
 
 def client(value):
-    if value in BTCLIENT_NAMES:
+    if value in constants.BTCLIENT_NAMES:
         return value.lower()
     else:
         raise ValueError(f'Unsupported client: {value}')
 
 def imghost(value):
-    if value in IMGHOST_NAMES:
+    if value in constants.IMGHOST_NAMES:
         return value.lower()
     else:
         raise ValueError(f'Unsupported image hosting service: {value}')
 
 def scenedb(value):
-    if value in SCENEDB_NAMES:
+    if value in constants.SCENEDB_NAMES:
         return value.lower()
     else:
         raise ValueError(f'Unsupported scene release database: {value}')
 
 def tracker(value):
-    if value in TRACKER_NAMES:
+    if value in constants.TRACKER_NAMES:
         return value.lower()
     else:
         raise ValueError(f'Unsupported tracker: {value}')
 
 def webdb(value):
-    if value in WEBDB_NAMES:
+    if value in constants.WEBDB_NAMES:
         return value.lower()
     else:
         raise ValueError(f'Unsupported database: {value}')

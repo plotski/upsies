@@ -2,7 +2,7 @@
 Generate all required metadata and upload to tracker
 """
 
-from .... import jobs, trackers, utils
+from .... import constants, jobs, trackers, utils
 from .base import CommandBase
 
 
@@ -22,7 +22,7 @@ class submit(CommandBase):
                     'type': utils.types.client,
                     'metavar': 'CLIENT',
                     'help': ('Case-insensitive BitTorrent client name\n'
-                             'Supported clients: ' + ', '.join(utils.types.BTCLIENT_NAMES)),
+                             'Supported clients: ' + ', '.join(constants.BTCLIENT_NAMES)),
                 },
                 ('--copy-to', '-c'): {
                     'metavar': 'PATH',

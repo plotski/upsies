@@ -2,7 +2,7 @@
 Search for scene release
 """
 
-from .... import jobs, utils
+from .... import constants, jobs, utils
 from .base import CommandBase
 
 
@@ -17,7 +17,7 @@ class scene_search(CommandBase):
             'nargs': '?',
             'default': jobs.scene.SceneSearchJob.default_scenedb,
             'help': ('Case-insensitive scene release database name\n'
-                     'Supported databases: ' + ', '.join(utils.types.SCENEDB_NAMES) + '\n'
+                     'Supported databases: ' + ', '.join(constants.SCENEDB_NAMES) + '\n'
                      f'Default: {jobs.scene.SceneSearchJob.default_scenedb}'),
         },
         'CONTENT': {'help': 'Path to release content or release name'},
