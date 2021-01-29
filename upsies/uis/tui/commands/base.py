@@ -154,7 +154,7 @@ class CommandBase(abc.ABC):
         if cls.subcommands:
             subparsers = parser.add_subparsers()
             for subcmd, args in cls.subcommands.items():
-                subparser = subparsers.add_parser(subcmd)
+                subparser = subparsers.add_parser(subcmd, formatter_class=_MyHelpFormatter)
                 subparser.set_defaults(subcommand=subcmd)
                 cls._add_args(subparser, args, cls._mutex_groups[subcmd])
 
