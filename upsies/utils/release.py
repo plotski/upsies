@@ -592,16 +592,17 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return f'{type(self).__name__}({self._path!r})'
 
     def _get_type(self):
-        type = self._guessit.get('type')
-        if not type:
+        guessit_type = self._guessit.get('type')
+        if not guessit_type:
             return ReleaseType.unknown
-        # Detect season type
-        elif type == 'episode' and 'episode' not in self._guessit:
-            return ReleaseType.season
-        elif self._guessit['type'] == 'episode':
-            return ReleaseType.episode
+        elif guessit_type == 'episode':
+            # guessit doesn't detect season packs; check if episode is known
+            if self._guessit.get('episode'):
+                return ReleaseType.episode
+            else:
+                return ReleaseType.season
         else:
-            return ReleaseType(self._guessit['type'])
+            return ReleaseType.movie
 
     _title_split_regex = re.compile(
         r'[ \.]+(?:'
