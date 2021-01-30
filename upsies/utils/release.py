@@ -879,7 +879,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     @property
     def season_and_episode(self):
         """
-        Season and episode as formatted in release names e.g. ("S04", "S04E03")
+        Season and episode as formatted in release names (e.g. "S04", "S04E03")
 
         Empty string if ``season`` is not specified.
         """
