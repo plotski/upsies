@@ -92,8 +92,6 @@ class Query:
                     value = match.group(1)
                     if kw == 'type' and value in cls._types[ReleaseType.movie]:
                         return 'type', ReleaseType.movie
-                    elif kw == 'type' and value in cls._types[ReleaseType.series]:
-                        return 'type', ReleaseType.series
                     elif kw == 'type' and value in cls._types[ReleaseType.season]:
                         return 'type', ReleaseType.season
                     elif kw == 'type' and value in cls._types[ReleaseType.episode]:

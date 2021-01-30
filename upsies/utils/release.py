@@ -186,8 +186,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def season(self):
         """Season number, "UNKNOWN_SEASON" for series or empty string for movies"""
-        if self.type in (ReleaseType.series, ReleaseType.season,
-                         ReleaseType.episode, ReleaseType.unknown):
+        if self.type in (ReleaseType.season, ReleaseType.episode, ReleaseType.unknown):
             if self.type is ReleaseType.unknown:
                 return self._guess.get('season') or ''
             else:
@@ -209,7 +208,7 @@ class ReleaseName(collections.abc.Mapping):
         """Episode number or empty string"""
         if self.type is ReleaseType.episode:
             return self._guess.get('episode') or 'UNKNOWN_EPISODE'
-        elif self.type in (ReleaseType.season, ReleaseType.series, ReleaseType.unknown):
+        elif self.type in (ReleaseType.season, ReleaseType.unknown):
             return self._guess.get('episode') or ''
         else:
             return ''
@@ -386,7 +385,6 @@ class ReleaseName(collections.abc.Mapping):
         ReleaseType.episode: ('title', 'season', 'episode', 'resolution', 'source',
                               'audio_format', 'video_format'),
     }
-    _needed_attrs[ReleaseType.series] = _needed_attrs[ReleaseType.season]
 
     @property
     def is_complete(self):

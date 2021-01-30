@@ -41,7 +41,7 @@ def test_Query_invalid_type():
         (webdbs.Query('The Title', year='2000'), webdbs.Query('The Title', year='2000')),
         (webdbs.Query('The Title', type=ReleaseType.movie), webdbs.Query('The Title', type=ReleaseType.movie)),
         (webdbs.Query('The Title', type=ReleaseType.series), webdbs.Query('The Title', type=ReleaseType.series)),
-        (webdbs.Query('The Title', type=ReleaseType.series, year=2000), webdbs.Query('The Title', type=ReleaseType.series, year=2000)),
+        (webdbs.Query('The Title', type=ReleaseType.episode, year=2000), webdbs.Query('The Title', type=ReleaseType.episode, year=2000)),
     ),
     ids=lambda value: str(value),
 )

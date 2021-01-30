@@ -102,8 +102,6 @@ def test_usage_as_dictionary_in_str_format(ReleaseInfo_mock):
 def test_type_getter(ReleaseInfo_mock):
     ReleaseInfo_mock.return_value = {'type': ReleaseType.movie}
     assert ReleaseName('path/to/something').type is ReleaseType.movie
-    ReleaseInfo_mock.return_value = {'type': ReleaseType.series}
-    assert ReleaseName('path/to/something').type is ReleaseType.series
     ReleaseInfo_mock.return_value = {'type': ReleaseType.season}
     assert ReleaseName('path/to/something').type is ReleaseType.season
     ReleaseInfo_mock.return_value = {'type': ReleaseType.episode}
@@ -116,12 +114,10 @@ def test_type_getter(ReleaseInfo_mock):
     argnames='value, exp_value',
     argvalues=(
         ('movie', ReleaseType.movie),
-        ('season', ReleaseType.series),
         ('season', ReleaseType.season),
         ('episode', ReleaseType.episode),
         ('', ReleaseType.unknown),
         (ReleaseType.movie, ReleaseType.movie),
-        (ReleaseType.series, ReleaseType.series),
         (ReleaseType.season, ReleaseType.season),
         (ReleaseType.episode, ReleaseType.episode),
         (ReleaseType.unknown, ReleaseType.unknown),
@@ -183,7 +179,7 @@ def test_year_getter_with_movie(ReleaseInfo_mock):
     assert ReleaseName('path/to/something').year == 'UNKNOWN_YEAR'
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-@pytest.mark.parametrize('type', (ReleaseType.series, ReleaseType.season, ReleaseType.episode))
+@pytest.mark.parametrize('type', (ReleaseType.season, ReleaseType.episode))
 def test_year_getter_with_series(ReleaseInfo_mock, type):
     ReleaseInfo_mock.return_value = {'year': '2000', 'type': type}
     assert ReleaseName('path/to/something').year == '2000'
@@ -214,10 +210,6 @@ def test_year_setter(ReleaseInfo_mock):
         (ReleaseType.movie, False, '', 'UNKNOWN_YEAR'),
         (ReleaseType.movie, True, '1234', '1234'),
         (ReleaseType.movie, True, '', 'UNKNOWN_YEAR'),
-        (ReleaseType.series, False, '1234', '1234'),
-        (ReleaseType.series, False, '', ''),
-        (ReleaseType.series, True, '1234', '1234'),
-        (ReleaseType.series, True, '', 'UNKNOWN_YEAR'),
         (ReleaseType.season, False, '1234', '1234'),
         (ReleaseType.season, False, '', ''),
         (ReleaseType.season, True, '1234', '1234'),
@@ -246,8 +238,6 @@ def test_year_required(ReleaseInfo_mock, type, year_required, year, exp_year):
     argvalues=(
         (ReleaseType.movie, '3', ''),
         (ReleaseType.movie, '', ''),
-        (ReleaseType.series, '3', '3'),
-        (ReleaseType.series, '', 'UNKNOWN_SEASON'),
         (ReleaseType.season, '3', '3'),
         (ReleaseType.season, '', 'UNKNOWN_SEASON'),
         (ReleaseType.episode, '3', '3'),
@@ -267,9 +257,6 @@ def test_season_getter(ReleaseInfo_mock, type, season, exp_season):
         (ReleaseType.movie, '3', ''),
         (ReleaseType.movie, 3, ''),
         (ReleaseType.movie, '', ''),
-        (ReleaseType.series, '3', '3'),
-        (ReleaseType.series, 3, '3'),
-        (ReleaseType.series, '', 'UNKNOWN_SEASON'),
         (ReleaseType.season, '3', '3'),
         (ReleaseType.season, 3, '3'),
         (ReleaseType.season, '', 'UNKNOWN_SEASON'),
@@ -311,9 +298,6 @@ def test_season_setter_with_invalid_value(ReleaseInfo_mock):
         (ReleaseType.movie, '3', ''),
         (ReleaseType.movie, ['1', '2'], ''),
         (ReleaseType.movie, '', ''),
-        (ReleaseType.series, '3', '3'),
-        (ReleaseType.series, ['1', '2'], ['1', '2']),
-        (ReleaseType.series, '', ''),
         (ReleaseType.season, '3', '3'),
         (ReleaseType.season, ['1', '2'], ['1', '2']),
         (ReleaseType.season, '', ''),
@@ -339,10 +323,6 @@ def test_episode_getter(ReleaseInfo_mock, type, episode, exp_episode):
         (ReleaseType.movie, 3, ''),
         (ReleaseType.movie, [1, '2'], ''),
         (ReleaseType.movie, '', ''),
-        (ReleaseType.series, '3', '3'),
-        (ReleaseType.series, 3, '3'),
-        (ReleaseType.series, [1, '2'], ['1', '2']),
-        (ReleaseType.series, '', ''),
         (ReleaseType.season, '3', '3'),
         (ReleaseType.season, 3, '3'),
         (ReleaseType.season, [1, '2'], ['1', '2']),
@@ -388,8 +368,6 @@ def test_episode_setter_with_invalid_value(ReleaseInfo_mock):
     argvalues=(
         (ReleaseType.movie, 'Something', ''),
         (ReleaseType.movie, '', ''),
-        (ReleaseType.series, 'Something', ''),
-        (ReleaseType.series, '', ''),
         (ReleaseType.season, 'Something', ''),
         (ReleaseType.season, '', ''),
         (ReleaseType.episode, 'Something', 'Something'),
@@ -710,7 +688,6 @@ def test_is_complete_handles_all_ReleaseTypes(release_type):
     argvalues=(
         ('The Foo 1998 1080p BluRay DTS x264-ASDF', ReleaseType.movie, ReleaseName._needed_attrs[ReleaseType.movie]),
         ('The Foo S03 1080p BluRay DTS x264-ASDF', ReleaseType.season, ReleaseName._needed_attrs[ReleaseType.season]),
-        ('The Foo S03 1080p BluRay DTS x264-ASDF', ReleaseType.series, ReleaseName._needed_attrs[ReleaseType.series]),
         ('The Foo S03E04 1080p BluRay DTS x264-ASDF', ReleaseType.episode, ReleaseName._needed_attrs[ReleaseType.episode]),
     ),
     ids=lambda v: str(v),

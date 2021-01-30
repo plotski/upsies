@@ -32,7 +32,7 @@ class TmdbApi(WebDbApiBase):
             params['query'] += f' y:{query.year}'
         if query.type is ReleaseType.movie:
             url = f'{self._url_base}/search/movie'
-        elif query.type in (ReleaseType.series, ReleaseType.season, ReleaseType.episode):
+        elif query.type in (ReleaseType.season, ReleaseType.episode):
             url = f'{self._url_base}/search/tv'
         else:
             url = f'{self._url_base}/search'
