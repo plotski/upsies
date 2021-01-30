@@ -514,7 +514,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
        Consider using :class:`~.ReleaseName` instead for file content
        analyzation.
 
-    :param str path: Release name or path to release
+    :param str release: Release name or path to release content
 
     This is a simple dictionary with the following keys:
 

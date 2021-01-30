@@ -22,7 +22,7 @@ class release_name(CommandBase):
     names = ('release-name', 'rn')
 
     argument_definitions = {
-        'CONTENT': {'help': 'Path to release content or release name'},
+        'RELEASE': {'help': 'Release name or path to release content'},
     }
 
     @utils.cached_property

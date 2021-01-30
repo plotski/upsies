@@ -20,7 +20,7 @@ class scene_search(CommandBase):
                      'Supported databases: ' + ', '.join(constants.SCENEDB_NAMES) + '\n'
                      f'Default: {jobs.scene.SceneSearchJob.default_scenedb}'),
         },
-        'CONTENT': {'help': 'Path to release content or release name'},
+        'RELEASE': {'help': 'Release name or path to release content'},
     }
 
     @utils.cached_property

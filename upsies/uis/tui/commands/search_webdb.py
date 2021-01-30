@@ -25,7 +25,7 @@ class search_webdb(CommandBase):
             'help': ('Case-insensitive database name\n'
                      'Supported databases: ' + ', '.join(constants.WEBDB_NAMES)),
         },
-        'CONTENT': {'help': 'Path to release content or release name'},
+        'RELEASE': {'help': 'Release name or path to release content'},
     }
 
     @utils.cached_property
