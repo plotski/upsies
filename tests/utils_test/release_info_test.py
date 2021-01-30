@@ -392,16 +392,6 @@ def test_has_commentary(release_name, exp_value):
     assert ri['has_commentary'] is exp_value
 
 
-@pytest.mark.parametrize('release_name, expected', (
-    ('The Collector 2009 1080p BluRay DTS-ASDF',
-     {'type': ReleaseType.movie, 'title': 'The Collector', 'year': '2009',
-      'resolution': '1080p', 'source': 'BluRay', 'audio_codec': 'DTS', 'group': 'ASDF',
-      'edition': ['Collector']}),
-))
-def test_special_case(release_name, expected):
-    assert_info(release_name, **expected)
-
-
 @pytest.mark.parametrize('season, episode, exp_season_and_episode', (
     ('', '', ''),
     ('1', '', 'S01'),
@@ -414,3 +404,29 @@ def test_season_and_episode(season, episode, exp_season_and_episode):
     ri['season'] = season
     ri['episode'] = episode
     assert ri.season_and_episode == exp_season_and_episode
+
+
+@pytest.mark.parametrize('path, exp_release_name', (
+    ('Foo.2017.720p.BluRay.x264-ASDF/asdf-foo.2017.720p.bluray.x264.mkv',
+     'Foo 2017 720p BluRay x264-ASDF'),
+    ('Bar.Bar.2013.720p.BluRay.x264-ASDF/asdf-barbar.mkv',
+     'Bar Bar 2013 720p BluRay x264-ASDF'),
+    ('path/to/Baz.2009.720p.BluRay.x264-ASDF/asdf.720p-baz.mkv',
+     'Baz 2009 720p BluRay x264-ASDF'),
+    ('QuuX.2005.1080p.BluRay.x264-ASD/asd-q_u_u_x_x264_bluray.mkv',
+     'QuuX 2005 1080p BluRay x264-ASD'),
+))
+def test_short_scene_filename(path, exp_release_name):
+    ri = release.ReleaseInfo(path)
+    release_name = '{title} {year} {resolution} {source} {video_codec}-{group}'.format(**ri)
+    assert release_name == exp_release_name
+
+
+@pytest.mark.parametrize('release_name, expected', (
+    ('The Collector 2009 1080p BluRay DTS-ASDF',
+     {'type': ReleaseType.movie, 'title': 'The Collector', 'year': '2009',
+      'resolution': '1080p', 'source': 'BluRay', 'audio_codec': 'DTS', 'group': 'ASDF',
+      'edition': ['Collector']}),
+))
+def test_special_case(release_name, expected):
+    assert_info(release_name, **expected)

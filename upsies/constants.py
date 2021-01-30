@@ -3,6 +3,7 @@ Fixed values that do not change during runtime
 """
 
 import os
+import re
 
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 
@@ -45,3 +46,6 @@ TRACKER_NAMES = [CaseInsensitiveString(cls.name) for cls in trackers.trackers()]
 
 WEBDB_NAMES = [CaseInsensitiveString(cls.name) for cls in webdbs.webdbs()]
 """Valid `name` arguments for :func:`.webdbs.webdbs`"""
+
+SHORT_SCENE_FILENAME_REGEX = re.compile(r'^[a-z]+[-\.][a-z0-9]+[^A-Z]*$')
+"""Match file names like ``abd-mother.mkv`` or ``tl.1080p-foof.mkv``"""
