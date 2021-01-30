@@ -57,22 +57,9 @@ class SceneSearchJob(JobBase):
         self._search_task.add_done_callback(self._handle_results)
 
     async def _search(self):
-        info = dict(self._release_info)
-
-        # Format season and episode(s)
-        if info['season']:
-            info['season_episode'] = f'S{info["season"]:0>2}'
-            if info['episode']:
-                if isinstance(info['episode'], str):
-                    # Single episode
-                    info['season_episode'] += f'E{info["episode"]:0>2}'
-                else:
-                    # Multi-episode (e.g. "S01E01E02")
-                    info['season_episode'] += ''.join((
-                        f'E{episode:0>2}' for episode in info['episode']
-                    ))
-
         # Build positional arguments
+        info = dict(self._release_info)
+        info['season_episode'] = self._release_info.season_and_episode
         args = [info['title']]
         for key in ('year', 'season_episode', 'resolution', 'source', 'video_codec'):
             if info.get(key):

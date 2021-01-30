@@ -875,6 +875,28 @@ class ReleaseInfo(collections.abc.MutableMapping):
         else:
             self._guessit['has_commentary'] = bool(value)
 
+    @property
+    def season_and_episode(self):
+        """
+        Season and episode as formatted in release names e.g. ("S04", "S04E03")
+
+        Empty string if ``season`` is not specified.
+        """
+        season = self['season']
+        if season:
+            season_episode = f'S{season:0>2}'
+            episode = self['episode']
+            if episode:
+                if isinstance(episode, str):
+                    # Single episode
+                    season_episode += f'E{episode:0>2}'
+                else:
+                    # Multi-episode (e.g. "S01E01E02")
+                    season_episode += ''.join((f'E{e:0>2}' for e in episode))
+            return season_episode
+        else:
+            return ''
+
 
 def _file_and_parent(path):
     """Yield `basename` and `dirname` of `path`"""

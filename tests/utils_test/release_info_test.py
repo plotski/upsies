@@ -400,3 +400,17 @@ def test_has_commentary(release_name, exp_value):
 ))
 def test_special_case(release_name, expected):
     assert_info(release_name, **expected)
+
+
+@pytest.mark.parametrize('season, episode, exp_season_and_episode', (
+    ('', '', ''),
+    ('1', '', 'S01'),
+    ('1', '3', 'S01E03'),
+    ('123', '', 'S123'),
+    ('1', ('1', '2'), 'S01E01E02'),
+))
+def test_season_and_episode(season, episode, exp_season_and_episode):
+    ri = release.ReleaseInfo('Foo')
+    ri['season'] = season
+    ri['episode'] = episode
+    assert ri.season_and_episode == exp_season_and_episode
