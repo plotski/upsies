@@ -32,7 +32,10 @@ class SceneSearchJob(JobBase):
 
     @cached_property
     def cache_id(self):
-        """Final segment of the `content_path` argument to :meth:`initialize`"""
+        """
+        Scene database name and final segment of the `content_path` argument to
+        :meth:`initialize`
+        """
         return (self._scenedb.name, fs.basename(self._content_path))
 
     def initialize(self, *, scenedb, content_path):
