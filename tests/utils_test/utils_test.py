@@ -24,47 +24,6 @@ def test_cached_property_caches_return_value_of_decorated_function():
     assert foo.bar == 'asdf'
 
 
-@pytest.mark.parametrize(
-    argnames=('name', 'bool_value'),
-    argvalues=(
-        ('movie', True),
-        ('series', True),
-        ('season', True),
-        ('episode', True),
-        ('unknown', False),
-    ),
-)
-def test_ReleaseType_truthiness(name, bool_value):
-    assert bool(getattr(utils.ReleaseType, name)) is bool_value
-
-@pytest.mark.parametrize(
-    argnames=('name', 'exp_str'),
-    argvalues=(
-        ('movie', 'movie'),
-        ('season', 'season'),
-        ('series', 'season'),
-        ('episode', 'episode'),
-        ('unknown', 'unknown'),
-    ),
-)
-def test_ReleaseType_string(name, exp_str):
-    assert str(getattr(utils.ReleaseType, name)) == exp_str
-
-
-@pytest.mark.parametrize(
-    argnames=('name', 'exp_repr'),
-    argvalues=(
-        ('movie', 'ReleaseType.movie'),
-        ('season', 'ReleaseType.season'),
-        ('series', 'ReleaseType.season'),
-        ('episode', 'ReleaseType.episode'),
-        ('unknown', 'ReleaseType.unknown'),
-    ),
-)
-def test_ReleaseType_repr(name, exp_repr):
-    assert repr(getattr(utils.ReleaseType, name)) == exp_repr
-
-
 def test_submodules_finds_modules_and_packages():
     import importlib
     assert set(utils.submodules('upsies.utils')) == {

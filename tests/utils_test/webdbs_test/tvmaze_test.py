@@ -2,7 +2,7 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies.utils import ReleaseType
+from upsies.utils.types import ReleaseType
 from upsies.utils.webdbs import Query, SearchResult, tvmaze
 
 

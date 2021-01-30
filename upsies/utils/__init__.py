@@ -3,7 +3,6 @@ Swiss Army knife
 """
 
 import collections
-import enum
 import importlib
 import inspect
 import itertools
@@ -39,32 +38,6 @@ except ImportError:
                 value = self.fget(obj)
                 setattr(obj, self.fget.__name__, value)
                 return value
-
-
-class ReleaseType(enum.Enum):
-    '''
-    Enum with the values ``movie``, ``series``, ``season``, ``episode`` and
-    ``unknown``
-
-    Use ``season`` or ``episode`` if it matters, ``series`` otherwise.
-
-    All values are truthy except for ``unknown``.
-    '''
-
-    movie = 'movie'
-    season = 'season'
-    series = 'season'
-    episode = 'episode'
-    unknown = 'unknown'
-
-    def __bool__(self):
-        return self is not self.unknown
-
-    def __str__(self):
-        return str(self.value)
-
-    def __repr__(self):
-        return f'{type(self).__name__}.{self.value}'
 
 
 # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/util/lazy_loader.py

@@ -6,7 +6,8 @@ import functools
 import re
 import string
 
-from .. import ReleaseType, html, http
+from .. import html, http
+from ..types import ReleaseType
 from . import common
 from .base import WebDbApiBase
 
@@ -37,7 +38,6 @@ class ImdbApi(WebDbApiBase):
 
     _title_types = {
         ReleaseType.movie: 'feature,tv_movie,documentary,short,video,tv_short',
-        ReleaseType.series: 'tv_series,tv_miniseries',
         ReleaseType.season: 'tv_series,tv_miniseries',
         # Searching for single episodes is currently not supported
         ReleaseType.episode: 'tv_series,tv_miniseries',

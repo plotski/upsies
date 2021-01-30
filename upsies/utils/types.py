@@ -4,6 +4,8 @@ CLI argument types
 All types return normalized values and raise ValueError for invalid values.
 """
 
+import enum
+
 from .. import constants, utils
 
 
@@ -54,3 +56,29 @@ def option(value):
         return value.lower()
     else:
         raise ValueError(f'Unknown option: {value}')
+
+
+class ReleaseType(enum.Enum):
+    '''
+    Enum with the values ``movie``, ``season``, ``episode`` and
+    ``unknown``
+
+    ``series`` is an alias for ``season``.
+
+    All values are truthy except for ``unknown``.
+    '''
+
+    movie = 'movie'
+    season = 'season'
+    series = 'season'
+    episode = 'episode'
+    unknown = 'unknown'
+
+    def __bool__(self):
+        return self is not self.unknown
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return f'{type(self).__name__}.{self.value}'

@@ -2,7 +2,8 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies.utils import ReleaseType, release
+from upsies.utils import release
+from upsies.utils.types import ReleaseType
 
 
 def test_getting_known_key(mocker):

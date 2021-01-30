@@ -7,7 +7,8 @@ import os
 import pprint
 
 from .. import errors, jobs
-from ..utils import ReleaseType, cached_property
+from ..utils import cached_property
+from ..utils.types import ReleaseType
 from . import base
 
 import logging  # isort:skip

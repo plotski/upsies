@@ -3,7 +3,7 @@ from unittest.mock import Mock, call
 import pytest
 
 from upsies.trackers.nbl import NblTrackerJobs
-from upsies.utils import ReleaseType
+from upsies.utils.types import ReleaseType
 
 
 def test_jobs_before_upload(tmp_path, mocker):

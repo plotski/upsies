@@ -17,7 +17,8 @@ import re
 
 from .. import constants, errors
 from ..utils import webdbs
-from . import LazyModule, ReleaseType, cached_property, fs, video
+from . import LazyModule, cached_property, fs, video
+from .types import ReleaseType
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)

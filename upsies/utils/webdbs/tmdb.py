@@ -6,7 +6,8 @@ import functools
 import re
 
 from ... import errors
-from .. import ReleaseType, html, http
+from .. import html, http
+from ..types import ReleaseType
 from . import common
 from .base import WebDbApiBase
 

@@ -4,8 +4,8 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 from upsies import errors
-from upsies.utils import ReleaseType
 from upsies.utils.release import ReleaseName
+from upsies.utils.types import ReleaseType
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
