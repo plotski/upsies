@@ -70,6 +70,11 @@ def test_len(mocker):
     assert len(ri) == 16
 
 
+def test_repr():
+    ri = release.ReleaseInfo('path/to/foo.mkv')
+    assert repr(ri) == "ReleaseInfo('path/to/foo.mkv')"
+
+
 @pytest.mark.parametrize(
     argnames=('release_name', 'exp_params'),
     argvalues=(

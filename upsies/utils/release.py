@@ -588,6 +588,9 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return len(tuple(name[5:] for name in dir(type(self))
                          if name.startswith('_get_')))
 
+    def __repr__(self):
+        return f'{type(self).__name__}({self._path!r})'
+
     def _get_type(self):
         type = self._guessit.get('type')
         if not type:
