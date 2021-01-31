@@ -632,24 +632,22 @@ class ReleaseInfo(collections.abc.MutableMapping):
         for "Hybrid" anywhere in the release name because it might be part of
         the title or it might be part of the parent directory name.
         """
-        def params(string):
-            params = fs.strip_extension(string, only=constants.VIDEO_FILE_EXTENSIONS)
-            return params
+        path_no_ext = fs.strip_extension(self._abspath, only=constants.VIDEO_FILE_EXTENSIONS)
 
-        # Look for year/season/episode info in file or parent directory name
-        match = self._title_split_regex.search(self._name)
-        if match:
-            string = self._title_split_regex.split(self._name, maxsplit=1)[-1]
-            return params(string)
+        # Look for year/season/episode info in file and parent directory name
+        for name in _file_and_dir(path_no_ext):
+            match = self._title_split_regex.search(name)
+            if match:
+                return self._title_split_regex.split(name, maxsplit=1)[-1]
 
         # Default to the file/parent that contains either " " or "." (without
         # file extension)
-        name_no_ext = fs.strip_extension(self._name, only=constants.VIDEO_FILE_EXTENSIONS)
-        if ' ' in name_no_ext or '.' in name_no_ext:
-            return params(name_no_ext)
+        for name in _file_and_dir(path_no_ext):
+            if ' ' in name or '.' in name:
+                return name
 
         # Default to file name
-        return params(fs.basename(self._path))
+        return fs.basename(path_no_ext)
 
     _title_aka_regex = re.compile(r' +AKA +')
 
@@ -906,22 +904,19 @@ class ReleaseInfo(collections.abc.MutableMapping):
             return ''
 
 
-def _filename_or_dirname(path):
-    """
-    If file name in `path` looks like a short scene release name
-    (e.g. "abd-mother.mkv"), return the parent directory's name, otherwise
-    return the file name.
-    """
+def _file_and_dir(path):
+    """Return `path`'s filename and parent directoy name"""
     filename = fs.basename(path)
-    if constants.SHORT_SCENE_FILENAME_REGEX.search(filename):
-        if os.sep in path:
-            # Return parent directory name
-            return fs.basename(fs.dirname(path))
-        else:
-            # If `path` has no parent directory, dirname() returns an empty string
-            return path
-    else:
-        return filename
+    dirname = fs.basename(os.path.dirname(path))
+    names = []
+    if not scene.is_abbreviated_filename(filename):
+        names.append(filename)
+    if dirname and dirname != filename:
+        names.append(dirname)
+    if not names:
+        # Default to garbled filename
+        names.append(filename)
+    return names
 
 
 def _as_list(guess, key):
