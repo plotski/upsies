@@ -16,7 +16,7 @@ import os
 import re
 
 from .. import constants, errors
-from ..utils import webdbs
+from ..utils import scene, webdbs
 from . import LazyModule, cached_property, fs, video
 from .types import ReleaseType
 
@@ -544,16 +544,24 @@ class ReleaseInfo(collections.abc.MutableMapping):
     """
 
     def __init__(self, path):
-        self._path = path
-        self._name = _filename_or_dirname(self._path)
+        self._path = str(path)
+        self._abspath = os.path.abspath(self._path)
         self._dict = {}
 
     @cached_property
     def _guessit(self):
+        if scene.is_abbreviated_filename(self._path):
+            _log.debug('Avoiding abbreviated file name: %r', os.path.basename(self._path))
+            path = os.path.dirname(self._abspath)
+        else:
+            path = self._abspath
+
         # guessit doesn't detect AC3 if it's called "AC-3"
-        self._name = re.sub(r'([ \.])(?i:AC-?3)([ \.])', r'\1AC3\2', self._name)
-        self._name = re.sub(r'([ \.])(?i:E-?AC-?3)([ \.])', r'\1EAC3\2', self._name)
-        guess = dict(_guessit.guessit(self._name))
+        path = re.sub(r'([ \.])(?i:AC-?3)([ \.])', r'\1AC3\2', path)
+        path = re.sub(r'([ \.])(?i:E-?AC-?3)([ \.])', r'\1EAC3\2', path)
+
+        _log.debug('Running guessit on %r', path)
+        guess = dict(_guessit.guessit(path))
         _log.debug('Original guess: %r', guess)
         return guess
 
