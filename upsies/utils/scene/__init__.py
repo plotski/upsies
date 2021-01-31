@@ -3,6 +3,8 @@ Scene release search and validation
 """
 
 import asyncio
+import os
+import re
 
 from ... import errors
 from .. import subclasses, submodules
@@ -63,3 +65,14 @@ async def search(*args, **kwargs):
             combined_results.update(results)
 
     return sorted(combined_results, key=str.casefold) + exceptions
+
+
+_abbreviated_scene_filename_regex = re.compile(r'^[a-z]+[-\.][a-z0-9]+[^A-Z]*\.[a-z]{3}$')
+
+def is_abbreviated_filename(filepath):
+    """
+    Whether `filepath` is an abbreviated scene release name like
+    ``abd-mother.mkv``
+    """
+    filename = os.path.basename(filepath)
+    return bool(_abbreviated_scene_filename_regex.search(filename))

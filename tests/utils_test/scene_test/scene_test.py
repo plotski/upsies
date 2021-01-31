@@ -74,3 +74,18 @@ async def test_search_raises_unexpected_exceptions(mocker):
     for scenedb_cls in existing_scenedbs:
         assert scenedb_cls.call_args_list == [call()]
         assert scenedb_cls.return_value.search.call_args_list == [call('a', b='c')]
+
+
+@pytest.mark.parametrize(
+    argnames='filename, exp_return_value',
+    argvalues=(
+        ('asdf-foo.2017.720p.bluray.x264.mkv', True),
+        ('asdf-barbar.mkv', True),
+        ('asdf.720p-baz.mkv', True),
+        ('asdf-q_u_u_x_x264_bluray.mkv', True),
+        ('asdf.mkv', False),
+    ),
+)
+def test_is_abbreviated_filename(filename, exp_return_value):
+    assert scene.is_abbreviated_filename(filename) is exp_return_value
+    assert scene.is_abbreviated_filename(f'path/to/{filename}') is exp_return_value
