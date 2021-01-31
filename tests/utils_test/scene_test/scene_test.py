@@ -84,6 +84,8 @@ async def test_search_raises_unexpected_exceptions(mocker):
         ('asdf.720p-baz.mkv', True),
         ('asdf-q_u_u_x_x264_bluray.mkv', True),
         ('asdf.mkv', False),
+        ('asdf1080p-foo.mkv', True),
+        ('7foo-bar-s01e9-baz.mkv', True),
     ),
 )
 def test_is_abbreviated_filename(filename, exp_return_value):
