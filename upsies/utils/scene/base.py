@@ -38,7 +38,7 @@ class SceneDbApiBase(abc.ABC):
         return self._normalize_results(results)
 
     @abc.abstractmethod
-    async def _search(self, query, group=None):
+    async def _search(self, query, group=None, cache=True):
         pass
 
     def _normalize_query(self, query):
