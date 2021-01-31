@@ -5,6 +5,7 @@ Abstract base class for scene release databases
 import abc
 
 from ... import errors
+from .. import release as _release
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -50,3 +51,11 @@ class SceneDbApiBase(abc.ABC):
     def _normalize_results(self, results):
         """Return sorted list of sequence of search results"""
         return sorted(results, key=str.casefold)
+
+    async def is_scene_group(self, release):
+        """Whether release group in `release` is a scene group"""
+        info = _release.ReleaseInfo(release)
+        if info['group']:
+            return bool(await self.search(group=info['group']))
+        else:
+            return False

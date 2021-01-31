@@ -3,7 +3,7 @@ from unittest.mock import Mock, call
 import pytest
 
 from upsies import errors
-from upsies.utils.scene import base
+from upsies.utils.scene import base, predb
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -54,3 +54,19 @@ def test_normalize_query(testdb):
 
 def test_normalize_results(testdb):
     assert testdb._normalize_results(('Foo', 'bar', 'BAZ')) == ['bar', 'BAZ', 'Foo']
+
+
+@pytest.mark.parametrize(
+    argnames='release, exp_return_value',
+    argvalues=(
+        ('Foo.1994.1080p.BluRay.x264-LiViDiTY', True),
+        ('Foo.1994.1080p.BluRay.x264-LiViDiTY.mkv', True),
+        ('Foo..1994.1080p.Blu-ray.x264-LiViDiTY/ly-foo.mkv', True),
+        ('path/to/Foo.1994.1080p.Blu-ray.x264-LiViDiTY/ly-foo.mkv', True),
+        ('Bar.1994.1080p.Blu-ray.x264-TayTo.mkv', False),
+        ('path/to/Foo.1994.1080p.Blu-ray.x264-LiViDiTY/Bar.1994.1080p.Blu-ray.x264-TayTo.mkv', False),
+    ),
+)
+@pytest.mark.asyncio
+async def test_is_scene_group(release, exp_return_value, store_response):
+    assert await predb.PreDbApi().is_scene_group(release) is exp_return_value
