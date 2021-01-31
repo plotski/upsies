@@ -657,13 +657,15 @@ class ReleaseInfo(collections.abc.MutableMapping):
         # by declaring everything before the year or season/episode as title.
         # Try this for the file name first and then the parent directory name.
         title = ''
-        match = self._title_split_regex.search(self._name)
-        if match:
-            title = self._title_split_regex.split(self._name, maxsplit=1)[0].replace('.', ' ')
+        for name in _file_and_dir(self._abspath):
+            match = self._title_split_regex.search(name)
+            if match:
+                title = self._title_split_regex.split(name, maxsplit=1)[0].replace('.', ' ')
+                break
 
         # Default to guessit if there is no year/season/episode info.
         if not title:
-            # guessit splits AKA at " - ", we want to split at " AKA "
+            # guessit splits the title at " - "
             title_parts = [self._guessit.get('title', '')]
             if self._guessit.get('alternative_title'):
                 title_parts.extend(_as_list(self._guessit, 'alternative_title'))
