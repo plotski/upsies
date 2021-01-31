@@ -111,7 +111,7 @@ async def test_search_result_cast(query, exp_cast, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_countries'),
     argvalues=(
-        (Query('Star Wars', type=ReleaseType.movie, year=1977), ['USA'],),
+        (Query('Star Wars', type=ReleaseType.movie, year=1977), ['USA', 'UK'],),
         (Query('Bron Broen', type=ReleaseType.series, year=2011), ['Sweden', 'Denmark', 'Germany']),
         (Query('The Forest', type=ReleaseType.series, year=2017), ['France']),
         (Query('Karppi', type=ReleaseType.series, year=2018), ['Finland', 'Germany']),
@@ -334,7 +334,7 @@ async def test_countries(id, exp_countries, api, store_response):
         ('tt0080455', ['action', 'adventure', 'comedy']),   # Blues Brothers (movie)
         ('tt0192802', ['animation', 'family']),             # Wind in the Willows (TV movie)
         ('tt0471711', ['animation', 'comedy', 'romance']),  # Bender's Big Score (Video)
-        ('tt0097270', ['short', 'crime', 'drama']),         # Elephant (TV Short)
+        ('tt0097270', ['crime', 'drama']),                  # Elephant (TV movie)
         ('tt3472226', ['short', 'action', 'comedy']),       # Kung Fury (Short)
         ('tt6560040', ['crime', 'drama']),                  # The Forest (mini series)
         ('tt0348914', ['crime', 'drama', 'history']),       # Deadwood (series)
