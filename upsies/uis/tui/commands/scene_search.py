@@ -29,6 +29,6 @@ class scene_search(CommandBase):
             jobs.scene.SceneSearchJob(
                 ignore_cache=self.args.ignore_cache,
                 scenedb=utils.scene.scenedb(self.args.SCENEDB),
-                content_path=self.args.CONTENT,
+                content_path=self.args.RELEASE,
             ),
         )

@@ -32,9 +32,9 @@ class release_name(CommandBase):
     @utils.cached_property
     def release_name_job(self):
         return jobs.release_name.ReleaseNameJob(
-            home_directory=utils.fs.projectdir(self.args.CONTENT),
+            home_directory=utils.fs.projectdir(self.args.RELEASE),
             ignore_cache=self.args.ignore_cache,
-            content_path=self.args.CONTENT,
+            content_path=self.args.RELEASE,
         )
 
     @utils.cached_property
@@ -42,9 +42,9 @@ class release_name(CommandBase):
         # To be able to fetch the original title, year, etc, we need to prompt
         # for an ID first. IMDb seems to be best.
         imdb_job = jobs.webdb.SearchWebDbJob(
-            home_directory=utils.fs.projectdir(self.args.CONTENT),
+            home_directory=utils.fs.projectdir(self.args.RELEASE),
             ignore_cache=self.args.ignore_cache,
-            content_path=self.args.CONTENT,
+            content_path=self.args.RELEASE,
             db=utils.webdbs.webdb('imdb'),
         )
         imdb_job.signal.register('output', self.release_name_job.fetch_info)
