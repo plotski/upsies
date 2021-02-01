@@ -67,7 +67,8 @@ async def search(*args, **kwargs):
     return sorted(combined_results, key=str.casefold) + exceptions
 
 
-_abbreviated_scene_filename_regex = re.compile(r'^[a-z0-9]+[-\.][a-z0-9]+[^A-Z]*\.[a-z]{3}$')
+# See tests for examples of what this should/shouldn't match
+_abbreviated_scene_filename_regex = re.compile(r'^[a-z0-9]+-[a-z0-9_\.-]+?(?!-[a-z]{2,})\.[a-z]{3}$')
 
 def is_abbreviated_filename(filepath):
     """

@@ -79,13 +79,21 @@ async def test_search_raises_unexpected_exceptions(mocker):
 @pytest.mark.parametrize(
     argnames='filename, exp_return_value',
     argvalues=(
-        ('asdf-foo.2017.720p.bluray.x264.mkv', True),
-        ('asdf-barbar.mkv', True),
-        ('asdf.720p-baz.mkv', True),
-        ('asdf-q_u_u_x_x264_bluray.mkv', True),
+        ('group-thetitle.1080p.bluray.x264.mkv', True),
+        ('group-the.title.2016.720p.bluray.x264.mkv', True),
+        ('group-thetitle720.mkv', True),
+        ('group-the-title-720p.mkv', True),
+        ('group-thetitle-720p.mkv', True),
+        ('group-titl-s02e01-720p.mkv', True),
+        ('group-the.title.1984.720p.mkv', True),
+        ('group-the.title.720p.mkv', True),
+        ('group-titl.720p.mkv', True),
+        ('group-title.mkv', True),
+        ('title-1080p-group.mkv', True),
+        ('group-the_title_x264_bluray.mkv', True),
+        # TODO: ('abetlife.720p-husync.mkv', True),
+        ('title.2017.720p.bluray.x264-group.mkv', False),
         ('asdf.mkv', False),
-        ('asdf1080p-foo.mkv', True),
-        ('7foo-bar-s01e9-baz.mkv', True),
     ),
 )
 def test_is_abbreviated_filename(filename, exp_return_value):
