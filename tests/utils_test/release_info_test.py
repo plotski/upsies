@@ -285,7 +285,7 @@ service_samples = (
     ('HBO', 'HBO'),
     ('HMAX', 'HMAX'),
     ('HULU', 'HULU'), ('Hulu', 'HULU'),
-    ('IT', 'IT'), ('iTunes', 'IT'),
+    ('iT', 'iT'), ('iTunes', 'iT'),
     ('VUDU', 'VUDU'),
     ('CRKL', 'CRKL'),
 )
