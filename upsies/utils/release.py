@@ -686,14 +686,17 @@ class ReleaseInfo(collections.abc.MutableMapping):
     def _get_episode_title(self):
         return str(self._guess.get('episode_title', ''))
 
-    _unrated_regex = re.compile(r'[ \.]unrated[ \.]', flags=re.IGNORECASE)
+    _edition_translation = {
+        re.compile(r'(?i:director\'s cut)') : 'DC',
+    }
 
     def _get_edition(self):
-        editions = _as_list(self._guess, 'edition')
-        # guessit doesn't always detect "Unrated", e.g. when it comes after "Hybrid"
-        if self._unrated_regex.search(self.release_name_params):
-            editions.append('Unrated')
-        return editions
+        edition = _as_list(self._guess, 'edition')
+        for regex, edition_fixed in self._edition_translation.items():
+            for i in range(len(edition)):
+                if regex.search(edition[i]):
+                    edition[i] = edition_fixed
+        return edition
 
     def _get_resolution(self):
         return self._guess.get('screen_size', '')
