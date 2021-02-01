@@ -410,6 +410,10 @@ def test_season_and_episode(season, episode, exp_season_and_episode):
     assert ri.season_and_episode == exp_season_and_episode
 
 
+def test_path():
+    assert release.ReleaseInfo('path/to/foo').path == 'path/to/foo'
+
+
 @pytest.mark.parametrize('path, exp_release_name', (
     ('Foo.2017.720p.BluRay.x264-ASDF/asdf-foo.2017.720p.bluray.x264.mkv',
      'Foo 2017 720p BluRay x264-ASDF'),

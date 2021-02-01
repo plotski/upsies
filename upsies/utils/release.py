@@ -548,6 +548,11 @@ class ReleaseInfo(collections.abc.MutableMapping):
         self._abspath = os.path.abspath(self._path)
         self._dict = {}
 
+    @property
+    def path(self):
+        """`path` argument as :class:`str`"""
+        return self._path
+
     @cached_property
     def _guess(self):
         # Use parent directory in case of abbreviated scene file name
