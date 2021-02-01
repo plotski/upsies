@@ -282,7 +282,6 @@ service_samples = (
     ('AMZN', 'AMZN'), ('Amazon', 'AMZN'),
     ('APTV', 'APTV'),
     ('BBC', 'BBC'),
-    ('DSNP', 'DSNP'), ('DNSP', 'DSNP'), ('Disney', 'DSNP'),
     ('HBO', 'HBO'),
     ('HMAX', 'HMAX'),
     ('HULU', 'HULU'), ('Hulu', 'HULU'),
@@ -424,6 +423,10 @@ def test_short_scene_filename(path, exp_release_name):
 
 @pytest.mark.parametrize('release_name, expected', (
     ('The Collector 2009 1080p BluRay DTS-ASDF',
+     {'type': ReleaseType.movie, 'title': 'The Collector', 'year': '2009',
+      'resolution': '1080p', 'source': 'BluRay', 'audio_codec': 'DTS', 'group': 'ASDF',
+      'edition': []}),
+    ('The Collector Collector 2009 1080p BluRay DTS-ASDF',
      {'type': ReleaseType.movie, 'title': 'The Collector', 'year': '2009',
       'resolution': '1080p', 'source': 'BluRay', 'audio_codec': 'DTS', 'group': 'ASDF',
       'edition': ['Collector']}),

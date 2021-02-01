@@ -45,3 +45,15 @@ TRACKER_NAMES = [CaseInsensitiveString(cls.name) for cls in trackers.trackers()]
 
 WEBDB_NAMES = [CaseInsensitiveString(cls.name) for cls in webdbs.webdbs()]
 """Valid `name` arguments for :func:`.webdbs.webdbs`"""
+
+GUESSIT_OPTIONS = {
+    'expected_title': [
+        'The Collector',
+    ],
+    "advanced_config": {
+        "streaming_service": {
+            'iTunes': ['IT', 'iTunes'],
+        },
+    },
+}
+"""`options` argument for :meth:`.GuessItApi.guessit`"""

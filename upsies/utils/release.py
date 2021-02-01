@@ -26,7 +26,7 @@ _log = logging.getLogger(__name__)
 # Disable debugging messages from rebulk
 logging.getLogger('rebulk').setLevel(logging.WARNING)
 
-_guessit = LazyModule(module='guessit', name='_guessit', namespace=globals())
+_guessit = LazyModule(module='guessit.api', name='_guessit', namespace=globals())
 
 
 class ReleaseName(collections.abc.Mapping):
@@ -549,7 +549,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         self._dict = {}
 
     @cached_property
-    def _guessit(self):
+    def _guess(self):
         if scene.is_abbreviated_filename(self._path):
             _log.debug('Avoiding abbreviated file name: %r', os.path.basename(self._path))
             path = os.path.dirname(self._abspath)
@@ -560,10 +560,14 @@ class ReleaseInfo(collections.abc.MutableMapping):
         path = re.sub(r'([ \.])(?i:AC-?3)([ \.])', r'\1AC3\2', path)
         path = re.sub(r'([ \.])(?i:E-?AC-?3)([ \.])', r'\1EAC3\2', path)
 
-        _log.debug('Running guessit on %r', path)
-        guess = dict(_guessit.guessit(path))
+        _log.debug('Running guessit on %r with %r', path, constants.GUESSIT_OPTIONS)
+        guess = dict(_guessit.default_api.guessit(path, options=constants.GUESSIT_OPTIONS))
         _log.debug('Original guess: %r', guess)
         return guess
+
+    @property
+    def _guessit_options(self):
+        return _guessit.default_api.advanced_config
 
     def __contains__(self, name):
         return hasattr(self, f'_get_{name}')
@@ -603,12 +607,12 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return f'{type(self).__name__}({self._path!r})'
 
     def _get_type(self):
-        guessit_type = self._guessit.get('type')
+        guessit_type = self._guess.get('type')
         if not guessit_type:
             return ReleaseType.unknown
         elif guessit_type == 'episode':
             # guessit doesn't detect season packs; check if episode is known
-            if self._guessit.get('episode'):
+            if self._guess.get('episode'):
                 return ReleaseType.episode
             else:
                 return ReleaseType.season
@@ -649,29 +653,15 @@ class ReleaseInfo(collections.abc.MutableMapping):
         # Default to file name
         return fs.basename(path_no_ext)
 
-    _title_aka_regex = re.compile(r' +AKA +')
+    _title_aka_regex = re.compile(r'[ \.]+AKA[ \.]+')
 
     @cached_property
     def _title_parts(self):
-        # guessit is very lenient when parsing the title. Try to be more strict
-        # by declaring everything before the year or season/episode as title.
-        # Try this for the file name first and then the parent directory name.
-        title = ''
-        for name in _file_and_dir(self._abspath):
-            match = self._title_split_regex.search(name)
-            if match:
-                title = self._title_split_regex.split(name, maxsplit=1)[0].replace('.', ' ')
-                break
-
-        # Default to guessit if there is no year/season/episode info.
-        if not title:
-            # guessit splits the title at " - "
-            title_parts = [self._guessit.get('title', '')]
-            if self._guessit.get('alternative_title'):
-                title_parts.extend(_as_list(self._guessit, 'alternative_title'))
-            title = ' - '.join(title_parts)
-
-        # Detect alternative title
+        # Guess it splits AKA at " - ", we want to split at " AKA "
+        title_parts = [self._guess.get('title', '')]
+        if self._guess.get('alternative_title'):
+            title_parts.extend(_as_list(self._guess, 'alternative_title'))
+        title = ' - '.join(title_parts)
         title_parts = self._title_aka_regex.split(title, maxsplit=1)
         if len(title_parts) > 1:
             return {'title': title_parts[0], 'aka': title_parts[1]}
@@ -685,64 +675,50 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return self._title_parts['aka']
 
     def _get_year(self):
-        return _as_str(self._guessit, 'year')
+        return _as_str(self._guess, 'year')
 
     def _get_season(self):
-        return _as_str(self._guessit, 'season')
+        return _as_str(self._guess, 'season')
 
     def _get_episode(self):
-        return _as_str_or_list_of_str(self._guessit, 'episode')
+        return _as_str_or_list_of_str(self._guess, 'episode')
 
     def _get_episode_title(self):
-        return str(self._guessit.get('episode_title', ''))
+        return str(self._guess.get('episode_title', ''))
 
     _unrated_regex = re.compile(r'[ \.]unrated[ \.]', flags=re.IGNORECASE)
 
     def _get_edition(self):
-        editions = _as_list(self._guessit, 'edition')
+        editions = _as_list(self._guess, 'edition')
         # guessit doesn't always detect "Unrated", e.g. when it comes after "Hybrid"
         if self._unrated_regex.search(self.release_name_params):
             editions.append('Unrated')
         return editions
 
     def _get_resolution(self):
-        return self._guessit.get('screen_size', '')
+        return self._guess.get('screen_size', '')
 
-    _streaming_service_translation = {
-        re.compile(r'(?i:Amazon)')               : 'AMZN',
-        re.compile(r'(?i:Adult Swim)')           : 'AS',
-        re.compile(r'(?i:Apple)')                : 'APTV',
-        re.compile(r'(?i:BBC)')                  : 'BBC',
-        re.compile(r'(?i:Cartoon Network)')      : 'CN',
-        re.compile(r'(?i:Comedy Central)')       : 'CC',
-        re.compile(r'(?i:DC Universe)')          : 'DCU',
-        re.compile(r'(?i:Disney)')               : 'DSNP',
-        re.compile(r'(?i:DNSP)')                 : 'DSNP',
-        re.compile(r'(?i:HBO)')                  : 'HBO',
-        re.compile(r'(?i:Hulu)')                 : 'HULU',
-        re.compile(r'(?i:iTunes)')               : 'IT',
-        re.compile(r'(?i:Netflix)')              : 'NF',
-        re.compile(r'(?i:Nickelodeon)')          : 'NICK',
-        re.compile(r'(?i:Playstation Network)')  : 'PSN',
-        re.compile(r'(?i:Vudu)')                 : 'VUDU',
-        re.compile(r'(?i:YouTube Red)')          : 'RED',
-        re.compile(r'(?i:Crackle)')              : 'CRKL',
-    }
     _streaming_service_regex = re.compile(r'[ \.]([A-Z]+)[ \.](?i:WEB-?(?:DL|Rip))(?:[ \.]|$)')
 
     def _get_service(self):
-        service = self._guessit.get('streaming_service', '')
-        if not service:
-            match = self._streaming_service_regex.search(self.release_name_params)
-            if match:
-                service = match.group(1)
+        service = self._guess.get('streaming_service', '')
+        if service:
+            # guessit translates abbreviations to full names (NF -> Netflix),
+            # but we want abbreviations. Use the same dictionary as guessit.
+            translation = self._guessit_options['streaming_service']
+            for full_name, abbreviation in translation.items():
+                if service.casefold().strip() == full_name.casefold().strip():
+                    if isinstance(abbreviation, str):
+                        return abbreviation
+                    else:
+                        return abbreviation[0]
 
-        for regex,abbrev in self._streaming_service_translation.items():
-            if regex.search(service):
-                service = abbrev
-                break
+        # Default to manual detection
+        match = self._streaming_service_regex.search(self.release_name_params)
+        if match:
+            return match.group(1)
 
-        return service
+        return ''
 
     _source_translation = {
         re.compile(r'(?i:blu-?ray)') : 'BluRay',
@@ -756,7 +732,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     _web_source_regex = re.compile(r'[ \.](WEB-?(?:DL|Rip))(?:[ \.]|$)', flags=re.IGNORECASE)
 
     def _get_source(self):
-        source = self._guessit.get('source', '')
+        source = self._guess.get('source', '')
         if source.lower() == 'web':
             # guessit doesn't distinguish between WEB-DL and WEBRip
             match = self._web_source_regex.search(self.release_name_params)
@@ -773,7 +749,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
         elif source == 'DVD':
             # Detect DVDRip
-            if 'Rip' in self._guessit.get('other', ()):
+            if 'Rip' in self._guess.get('other', ()):
                 source = 'DVDRip'
             # Detect DVD images
             else:
@@ -794,7 +770,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
             source = ('Hybrid ' + source).strip()
 
         # Detect Remux
-        if 'Remux' in self._guessit.get('other', ()):
+        if 'Remux' in self._guess.get('other', ()):
             if not any(s in source for s in ('WEBRip', 'WEB-DL')):
                 source += ' Remux'
 
@@ -816,7 +792,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     }
 
     def _get_audio_codec(self):
-        audio_codec = self._guessit.get('audio_codec')
+        audio_codec = self._guess.get('audio_codec')
         if not audio_codec:
             return ''
         else:
@@ -844,7 +820,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     _audio_channels_regex = re.compile(r'[ \.](\d\.\d)[ \.]')
 
     def _get_audio_channels(self):
-        audio_channels = self._guessit.get('audio_channels', '')
+        audio_channels = self._guess.get('audio_channels', '')
         if not audio_channels:
             match = self._audio_channels_regex.search(self.release_name_params)
             if match:
@@ -855,7 +831,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     _x265_regex = re.compile(r'[\. ](?i:x265)(?:[\. -]|$)')
 
     def _get_video_codec(self):
-        video_codec = self._guessit.get('video_codec', '')
+        video_codec = self._guess.get('video_codec', '')
         if video_codec == 'H.264':
             if self._x264_regex.search(self.release_name_params):
                 return 'x264'
@@ -867,21 +843,21 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return video_codec
 
     def _get_group(self):
-        return self._guessit.get('release_group', '')
+        return self._guess.get('release_group', '')
 
     _has_commentary_regex = re.compile(r'[\. ](?i:plus[\. -]+comm|commentary)[\. -]')
 
     def _get_has_commentary(self):
-        if self._guessit.get('has_commentary', None) is None:
-            self._guessit['has_commentary'] = \
+        if self._guess.get('has_commentary', None) is None:
+            self._guess['has_commentary'] = \
                 bool(self._has_commentary_regex.search(self.release_name_params))
-        return self._guessit['has_commentary']
+        return self._guess['has_commentary']
 
     def _set_has_commentary(self, value):
         if value is None:
-            self._guessit['has_commentary'] = None
+            self._guess['has_commentary'] = None
         else:
-            self._guessit['has_commentary'] = bool(value)
+            self._guess['has_commentary'] = bool(value)
 
     @property
     def season_and_episode(self):
