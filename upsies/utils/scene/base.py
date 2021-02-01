@@ -52,10 +52,6 @@ class SceneDbApiBase(abc.ABC):
         """Return sorted list of sequence of search results"""
         return sorted(results, key=str.casefold)
 
-    async def is_scene_group(self, release):
-        """Whether release group in `release` is a scene group"""
-        info = _release.ReleaseInfo(release)
-        if info['group']:
-            return bool(await self.search(group=info['group']))
-        else:
-            return False
+    async def is_scene_group(self, group):
+        """Whether `group` is a scene group"""
+        return bool(await self.search(group=str(group)))
