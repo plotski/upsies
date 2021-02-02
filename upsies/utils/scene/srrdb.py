@@ -19,8 +19,6 @@ class SrrDbApi(base.SceneDbApiBase):
             query.append(f'group:{group}')
         search_url = f"{self._search_url}/{'/'.join(query)}"
         _log.debug('Scene search URL: %r', search_url)
-
-        # Get search results
         response = (await http.get(search_url, cache=cache)).json()
         results = response.get('results', [])
         return (r['release'] for r in results)

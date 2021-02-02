@@ -16,16 +16,13 @@ class PreDbApi(base.SceneDbApiBase):
     _search_url = f'https://{_url_base}/api/v1/'
 
     async def _search(self, *, query, group, cache):
-        # Build query
         if group:
             query.extend(('@team', str(group)))
-
-        # Get search results
         params = {'q': ' '.join(query)}
         _log.debug('Scene search: %r, %r', self._search_url, params)
         response = (await http.get(self._search_url, params=params, cache=cache)).json()
 
-        # Report error or return list of release names
+        # Report API error or return list of release names
         if response['status'] != 'success':
             raise errors.SceneError(f'{self.label}: {response["message"]}')
         else:
