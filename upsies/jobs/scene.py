@@ -5,7 +5,7 @@ Scene release search and check
 import asyncio
 
 from .. import errors
-from ..utils import cached_property, fs, release
+from ..utils import cached_property, fs, release, scene
 from . import JobBase
 
 import logging  # isort:skip
@@ -53,26 +53,13 @@ class SceneSearchJob(JobBase):
 
     def execute(self):
         """Send search query"""
-        self._search_task = asyncio.ensure_future(self._search())
+        self._search_task = asyncio.ensure_future(
+            self._scenedb.search(
+                query=scene.SceneQuery.from_release(self._release_info),
+                cache=not self.ignore_cache,
+            )
+        )
         self._search_task.add_done_callback(self._handle_results)
-
-    async def _search(self):
-        # Build positional arguments
-        info = dict(self._release_info)
-        info['season_episode'] = self._release_info.season_and_episode
-        args = [info['title']]
-        for key in ('year', 'season_episode', 'resolution', 'source', 'video_codec'):
-            if info.get(key):
-                args.append(info[key])
-
-        # Build keyword arguments
-        kwargs = {'cache': not self.ignore_cache}
-        if self._release_info['group']:
-            kwargs['group'] = self._release_info['group']
-
-        # Perform search
-        results = await self._scenedb.search(*args, **kwargs)
-        return results
 
     def _handle_results(self, task):
         try:

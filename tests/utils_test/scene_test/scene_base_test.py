@@ -27,34 +27,29 @@ def testdb():
 
 
 @pytest.mark.asyncio
-async def test_search_delegates_arguments(testdb, mocker):
-    mocker.patch.object(testdb, '_normalize_query', Mock(return_value='mock query'))
-    mocker.patch.object(testdb, '_search', AsyncMock(return_value='mock results'))
-    mocker.patch.object(testdb, '_normalize_results', Mock(return_value='mock normalized results'))
-    results = await testdb.search('foo', group='bar', cache='baz')
-    assert testdb._normalize_query.call_args_list == [call(('foo',))]
-    assert testdb._search.call_args_list == [call(query='mock query', group='bar', cache='baz')]
-    assert testdb._normalize_results.call_args_list == [call('mock results')]
-    assert results == 'mock normalized results'
+async def test_search_delegates_query(testdb, mocker):
+    mocker.patch.object(testdb, '_search', AsyncMock(return_value=('b', 'c', 'a')))
+    query_mock = Mock()
+    cache_mock = Mock()
+    results = await testdb.search(query=query_mock, cache=cache_mock)
+    assert testdb._search.call_args_list == [call(
+        query=query_mock.keywords,
+        group=query_mock.group,
+        cache=cache_mock,
+    )]
+    assert results == ['a', 'b', 'c']
 
 @pytest.mark.asyncio
 async def test_search_handles_RequestError(testdb, mocker):
-    mocker.patch.object(testdb, '_normalize_query', Mock(return_value='mock query'))
     mocker.patch.object(testdb, '_search', AsyncMock(side_effect=errors.RequestError('no')))
-    mocker.patch.object(testdb, '_normalize_results')
+    mock_query = Mock()
     with pytest.raises(errors.SceneError, match=r'^no$'):
-        await testdb.search('foo', group='bar', cache='baz')
-    assert testdb._normalize_query.call_args_list == [call(('foo',))]
-    assert testdb._search.call_args_list == [call(query='mock query', group='bar', cache='baz')]
-    assert testdb._normalize_results.call_args_list == []
-
-
-def test_normalize_query(testdb):
-    assert testdb._normalize_query(('foo  bar ', ' baz')) == ['foo', 'bar', 'baz']
-
-
-def test_normalize_results(testdb):
-    assert testdb._normalize_results(('Foo', 'bar', 'BAZ')) == ['bar', 'BAZ', 'Foo']
+        await testdb.search(mock_query)
+    assert testdb._search.call_args_list == [call(
+        query=mock_query.keywords,
+        group=mock_query.group,
+        cache=True,
+    )]
 
 
 @pytest.mark.parametrize(

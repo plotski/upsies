@@ -3,7 +3,7 @@ from unittest.mock import Mock, call
 import pytest
 
 from upsies import errors
-from upsies.utils.scene import predb
+from upsies.utils.scene import SceneQuery, predb
 
 
 # FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
@@ -59,4 +59,4 @@ async def test_search_handles_error_status(api, mocker):
     }))
     mocker.patch('upsies.utils.http.get', AsyncMock(return_value=response))
     with pytest.raises(errors.SceneError, match=rf'^{api.label}: Something bad$'):
-        await api.search('foo', 'bar')
+        await api.search(SceneQuery('foo', 'bar'))

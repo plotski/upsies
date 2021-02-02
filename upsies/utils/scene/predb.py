@@ -17,7 +17,7 @@ class PreDbApi(base.SceneDbApiBase):
 
     async def _search(self, *, query, group, cache):
         if group:
-            query.extend(('@team', str(group)))
+            query += ('@team', str(group))
         params = {'q': ' '.join(query)}
         _log.debug('Scene search: %r, %r', self._search_url, params)
         response = (await http.get(self._search_url, params=params, cache=cache)).json()

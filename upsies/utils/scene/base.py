@@ -6,6 +6,7 @@ import abc
 
 from ... import errors
 from .. import release as _release
+from .common import SceneQuery
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -22,35 +23,28 @@ class SceneDbApiBase(abc.ABC):
     def label(self):
         """User-facing name of the scene release database"""
 
-    async def search(self, *query, group=None, cache=True):
+    async def search(self, query, cache=True):
         """
         Search for scene release
 
-        :param query: Search keywords
-        :param group: Release group name or `None`
+        :param SceneQuery query: Search query
+        :param bool cache: Whether to use cached request response
 
         :return: :class:`list` of release names as :class:`str`
         """
-        query = self._normalize_query(query)
         try:
-            results = await self._search(query=query, group=group, cache=cache)
+            results = await self._search(
+                query=query.keywords,
+                group=query.group,
+                cache=cache,
+            )
         except errors.RequestError as e:
             raise errors.SceneError(e)
-        return self._normalize_results(results)
+        return sorted(results, key=str.casefold)
 
     @abc.abstractmethod
     async def _search(self, query, group=None, cache=True):
         pass
-
-    def _normalize_query(self, query):
-        """Turn sequence of sequences of space-separated words into list of words"""
-        return [phrase
-                for search_phrases in query
-                for phrase in str(search_phrases).split()]
-
-    def _normalize_results(self, results):
-        """Return sorted list of sequence of search results"""
-        return sorted(results, key=str.casefold)
 
     async def is_scene_release(self, release):
         """
