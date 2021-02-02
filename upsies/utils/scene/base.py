@@ -50,9 +50,11 @@ class SceneDbApiBase(abc.ABC):
         """
         Check if `release` is a scene release or not
 
-        :param release: Release name or path to release content
+        :param release: :class:`~.release.ReleaseName` or
+            :class:`~.release.ReleaseInfo` instance or any :class:`dict`-like
+            object with the expected keys.
 
-        :return: `True`, `False` or `None` (unknown)
+        :return: :class:`~.types.SceneCheckResult`
         """
         # IMPORTANT: Simply searching for the group does not work because some
         #            scene groups make non-scene releases and vice versa.
@@ -62,7 +64,7 @@ class SceneDbApiBase(abc.ABC):
         results = await self._search_with_series_info(release)
         if results:
             if self._release_is_in_results(release, results):
-                return True
+                return SceneCheckResult.true
 
         # If we search for season pack but single episodes were released,
         # search without "S[0-9]+" to find the episode releases.
@@ -70,16 +72,16 @@ class SceneDbApiBase(abc.ABC):
             results = await self._search_without_series_info(release)
             if results:
                 if self._release_is_in_results(release, results):
-                    return True
+                    return SceneCheckResult.true
 
         # If this is a file like "abd-mother.mkv" without a properly named
         # parent directory, it's probably a scene release, but we can't say for
         # sure.
         from . import is_abbreviated_filename
         if is_abbreviated_filename(release.path):
-            return None
+            return SceneCheckResult.unknown
 
-        return False
+        return SceneCheckResult.false
 
     def _release_is_in_results(self, release, results):
         results = [_release.ReleaseInfo(r) for r in results]
@@ -117,20 +119,28 @@ class SceneDbApiBase(abc.ABC):
         return False
 
     async def _search_with_series_info(self, release):
-        query = [x for x in (release['title'],
-                             release['year'],
-                             release.season_and_episode,
-                             release['resolution'],
-                             release['source'],
-                             release['video_codec'])
-                 if x]
-        return await self.search(*query, group=release['group'])
+        query = SceneQuery(
+            *(x for x in (release['title'],
+                          release['year'],
+                          release['season_and_episode'],
+                          release['resolution'],
+                          release['source'],
+                          release['video_codec'])
+              if x),
+            group=release['group'],
+        )
+        _log.debug('Scene query: %r', query)
+        return await self.search(query)
 
     async def _search_without_series_info(self, release):
-        query = [x for x in (release['title'],
-                             release['year'],
-                             release['resolution'],
-                             release['source'],
-                             release['video_codec'])
-                 if x]
-        return await self.search(*query, group=release['group'])
+        query = SceneQuery(
+            *(x for x in (release['title'],
+                          release['year'],
+                          release['resolution'],
+                          release['source'],
+                          release['video_codec'])
+              if x),
+            group=release['group'],
+        )
+        _log.debug('Scene query: %r', query)
+        return await self.search(query)
