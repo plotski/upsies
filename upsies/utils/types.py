@@ -59,14 +59,14 @@ def option(value):
 
 
 class ReleaseType(enum.Enum):
-    '''
+    """
     Enum with the values ``movie``, ``season``, ``episode`` and
     ``unknown``
 
     ``series`` is an alias for ``season``.
 
     All values are truthy except for ``unknown``.
-    '''
+    """
 
     movie = 'movie'
     season = 'season'
