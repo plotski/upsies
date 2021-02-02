@@ -82,3 +82,26 @@ class ReleaseType(enum.Enum):
 
     def __repr__(self):
         return f'{type(self).__name__}.{self.value}'
+
+
+class SceneCheckResult(enum.Enum):
+    """
+    Enum with the values ``true``, ``false``, ``modified`` and
+    ``unknown``
+
+    All values are falsy except for ``true``.
+    """
+
+    true = 'true'
+    false = 'false'
+    modified = 'modified'
+    unknown = 'unknown'
+
+    def __bool__(self):
+        return self is self.true
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return f'{type(self).__name__}.{self.value}'
