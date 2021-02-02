@@ -528,6 +528,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
       - ``season``
       - ``episode`` (:class:`str` or :class:`list` for multi-episodes,
         e.g. "S01E01E02" -> ["1", "2"])
+      - ``season_and_episode`` ("S01" or "S01E01" or "S01E01E02" or "")
       - ``episode_title``
       - ``edition`` (:class:`list` of "Extended", "Uncut", etc)
       - ``resolution``
@@ -691,6 +692,21 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     def _get_episode(self):
         return _as_str_or_list_of_str(self._guess, 'episode')
+
+    def _get_season_and_episode(self):
+        season = self['season']
+        if season:
+            season_episode = f'S{season:0>2}'
+            episode = self['episode']
+            if episode:
+                if isinstance(episode, str):
+                    # Single episode
+                    season_episode += f'E{episode:0>2}'
+                else:
+                    # Multi-episode (e.g. "S01E01E02")
+                    season_episode += ''.join((f'E{e:0>2}' for e in episode))
+            return season_episode
+        return ''
 
     def _get_episode_title(self):
         return str(self._guess.get('episode_title', ''))
@@ -870,28 +886,6 @@ class ReleaseInfo(collections.abc.MutableMapping):
             self._guess['has_commentary'] = None
         else:
             self._guess['has_commentary'] = bool(value)
-
-    @property
-    def season_and_episode(self):
-        """
-        Season and episode as formatted in release names (e.g. "S04", "S04E03")
-
-        Empty string if ``season`` is not specified.
-        """
-        season = self['season']
-        if season:
-            season_episode = f'S{season:0>2}'
-            episode = self['episode']
-            if episode:
-                if isinstance(episode, str):
-                    # Single episode
-                    season_episode += f'E{episode:0>2}'
-                else:
-                    # Multi-episode (e.g. "S01E01E02")
-                    season_episode += ''.join((f'E{e:0>2}' for e in episode))
-            return season_episode
-        else:
-            return ''
 
 
 def _file_and_dir(path):

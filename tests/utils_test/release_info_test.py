@@ -52,6 +52,7 @@ def test_iter(mocker):
         'aka',
         'year',
         'season',
+        'season_and_episode',
         'episode',
         'episode_title',
         'edition',
@@ -67,7 +68,7 @@ def test_iter(mocker):
 
 def test_len(mocker):
     ri = release.ReleaseInfo('foo.mkv')
-    assert len(ri) == 16
+    assert len(ri) == 17
 
 
 def test_repr():
@@ -407,7 +408,7 @@ def test_season_and_episode(season, episode, exp_season_and_episode):
     ri = release.ReleaseInfo('Foo')
     ri['season'] = season
     ri['episode'] = episode
-    assert ri.season_and_episode == exp_season_and_episode
+    assert ri['season_and_episode'] == exp_season_and_episode
 
 
 def test_path():
