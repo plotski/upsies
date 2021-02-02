@@ -10,6 +10,7 @@ from ... import errors
 from .. import subclasses, submodules
 from . import predb, srrdb
 from .base import SceneDbApiBase
+from .common import SceneQuery
 
 
 def scenedbs():
