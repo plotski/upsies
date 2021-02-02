@@ -52,10 +52,6 @@ class SceneDbApiBase(abc.ABC):
         """Return sorted list of sequence of search results"""
         return sorted(results, key=str.casefold)
 
-    async def is_scene_group(self, group):
-        """Whether `group` is a scene group"""
-        return bool(await self.search(group=str(group)))
-
     async def is_scene_release(self, release):
         """
         Check if `release` is a scene release or not
@@ -64,6 +60,11 @@ class SceneDbApiBase(abc.ABC):
 
         :return: `True`, `False` or `None` (unknown)
         """
+        # IMPORTANT: Simply searching for the group does not work because some
+        #            scene groups make non-scene releases and vice versa.
+        #            Examples:
+        #            - Prospect.2018.720p.BluRay.DD5.1.x264-LoRD
+        #            - How.The.Grinch.Stole.Christmas.2000.720p.BluRay.DTS.x264-EbP
         results = await self._search_with_series_info(release)
         if results:
             if self._release_is_in_results(release, results):

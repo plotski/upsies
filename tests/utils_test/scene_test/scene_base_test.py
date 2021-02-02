@@ -57,12 +57,6 @@ def test_normalize_results(testdb):
     assert testdb._normalize_results(('Foo', 'bar', 'BAZ')) == ['bar', 'BAZ', 'Foo']
 
 
-@pytest.mark.parametrize('group, exp_return_value', (('LiViDiTY', True), ('TayTo', False)))
-@pytest.mark.asyncio
-async def test_is_scene_group(group, exp_return_value, store_response):
-    assert await predb.PreDbApi().is_scene_group(group) is exp_return_value
-
-
 @pytest.mark.parametrize(
     argnames='release_name, exp_return_value',
     argvalues=(
