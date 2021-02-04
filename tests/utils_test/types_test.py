@@ -129,7 +129,6 @@ def test_ReleaseType_truthiness(name, bool_value):
 def test_ReleaseType_string(name, exp_str):
     assert str(getattr(types.ReleaseType, name)) == exp_str
 
-
 @pytest.mark.parametrize(
     argnames=('name', 'exp_repr'),
     argvalues=(
@@ -167,7 +166,6 @@ def test_SceneCheckResult_truthiness(name, bool_value):
 )
 def test_SceneCheckResult_string(name, exp_str):
     assert str(getattr(types.SceneCheckResult, name)) == exp_str
-
 
 @pytest.mark.parametrize(
     argnames=('name', 'exp_repr'),
