@@ -8,12 +8,11 @@ import os
 import re
 
 from .. import constants, errors
-from . import LazyModule, closest_number, fs, os_family, subproc
+from . import closest_number, fs, os_family, subproc
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-natsort = LazyModule(module='natsort', namespace=globals())
 
 if os_family() == 'windows':
     _mediainfo_executable = 'mediainfo.exe'
