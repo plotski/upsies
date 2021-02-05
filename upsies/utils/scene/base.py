@@ -32,18 +32,10 @@ class SceneDbApiBase(abc.ABC):
 
         :return: :class:`list` of release names as :class:`str`
         """
-        try:
-            results = await self._search(
-                query=query.keywords,
-                group=query.group,
-                cache=cache,
-            )
-        except errors.RequestError as e:
-            raise errors.SceneError(e)
-        return sorted(results, key=str.casefold)
+        return await query.search(self._search, cache=cache)
 
     @abc.abstractmethod
-    async def _search(self, query, group=None, cache=True):
+    async def _search(self, keywords, group=None, cache=True):
         pass
 
     async def is_scene_release(self, release):

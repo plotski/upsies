@@ -3,7 +3,15 @@ Classes and functions that are used by all :class:`~.base.SceneDbApiBase`
 subclasses
 """
 
-from .. import release
+import re
+
+from ... import errors
+from .. import LazyModule, release
+
+import logging  # isort:skip
+_log = logging.getLogger(__name__)
+
+natsort = LazyModule(module='natsort', namespace=globals())
 
 
 class SceneQuery:
@@ -12,14 +20,26 @@ class SceneQuery:
 
     :param keywords: Search keywords
     :param group: Release group name
+    :param episodes: :class:`~.release.Episodes`-like mapping
     """
+
+    def __init__(self, *keywords, group='', episodes={}):
+        # Split each keyword
+        self._keywords = tuple(k.strip() for kw in keywords
+                               for k in str(kw).split()
+                               if k.strip() and k.strip() != '-')
+        self._group = str(group)
+        self._episodes = episodes
 
     @classmethod
     def from_string(cls, string):
         """
-        Create query from :class:`str`
+        Create query from `string`
 
         :param string: Release name or path to release content
+
+        `string` is passed to :class:`~.release.ReleaseInfo` to get the
+        relevant `keywords`.
         """
         return cls.from_release(release.ReleaseInfo(string))
 
@@ -30,22 +50,74 @@ class SceneQuery:
 
         :param release: :class:`~.release.ReleaseName` or
             :class:`~.release.ReleaseInfo` instance or any :class:`dict`-like
-            object with the keys ``title``, ``year``, ``resolution``,
-            ``source``, ``video_codec`` and ``group``.
+            object with the keys ``title``, ``year``, ``episodes``,
+            ``resolution``, ``source``, ``video_codec`` and ``group``.
         """
         info = dict(release)
         keywords = [info['title']]
-        for key in ('year', 'resolution', 'source', 'video_codec'):
+        for key in ('year', 'episodes', 'resolution', 'source', 'video_codec'):
             if info.get(key):
                 keywords.append(info[key])
-        return cls(*keywords, group=release['group'])
+        query = cls(
+            *keywords,
+            group=release.get('group', ''),
+            episodes=info.get('episodes', {}),
+        )
+        _log.debug('SceneQuery from %r: %r', info, query)
+        return query
 
-    def __init__(self, *keywords, group=''):
-        # Split each keyword
-        self._keywords = tuple(k.strip() for kw in keywords
-                               for k in str(kw).split()
-                               if k.strip())
-        self._group = str(group)
+    async def search(self, search_coro_func, cache=True):
+        """
+        Pre-process query and post-process results from `search_coro_func`
+
+        :param search_coro_func: Coroutine function with the call signature
+            `(keywords, group, cache)` that returns a sequence of release names
+        :param bool cache: Whether to return cached results
+
+        This is a wrapper function that exists to work around scene release
+        databases not handling season/episode information inuitively.
+
+        Any `keywords` that look like "S01", "S02E03", etc are removed in the
+        search request.
+
+        The search results are then filtered for the specific `episodes` given
+        during instantiation and returned in natural sort order.
+        """
+        keywords = tuple(kw for kw in self.keywords
+                         if not re.match(r'^(?i:[SE]\d+|)+$', kw))
+        _log.debug('Searching for scene release: %r', keywords)
+        try:
+            results = await search_coro_func(keywords, group=self.group, cache=cache)
+        except errors.RequestError as e:
+            raise errors.SceneError(e)
+        else:
+            return self._handle_results(results)
+
+    def _handle_results(self, results):
+        results = natsort.natsorted(results, key=str.casefold)
+        if not self.episodes:
+            _log.debug('No episodes info: %r', self.episodes)
+            return results
+        else:
+            _log.debug('Looking for episodes: %r', self.episodes)
+
+            def match(result, wanted_seasons=tuple(self.episodes.items())):
+                existing_seasons = release.ReleaseInfo(result)['episodes']
+                for wanted_season, wanted_episodes in wanted_seasons:
+                    for existing_season, existing_episodes in existing_seasons.items():
+                        if wanted_episodes:
+                            # Episode matches if any wanted episode is in the release
+                            episode_match = any(e in existing_episodes for e in wanted_episodes)
+                        else:
+                            # Season pack wanted, so all episodes match
+                            episode_match = True
+                        # Season matches if seasons are equal or season is not specified
+                        season_match = (wanted_season == existing_season or not wanted_season)
+                        # Return if this result is a match (no other matches needed)
+                        if season_match and episode_match:
+                            return True
+
+            return [r for r in results if match(r)]
 
     @property
     def keywords(self):
@@ -57,11 +129,18 @@ class SceneQuery:
         """Release group name"""
         return self._group
 
+    @property
+    def episodes(self):
+        """:class:`~.release.Episodes`-like mapping"""
+        return self._episodes
+
     def __repr__(self):
         args = []
         if self.keywords:
             args.append(', '.join((repr(kw) for kw in self.keywords)))
         if self.group:
             args.append(f'group={self.group!r}')
+        if self.episodes:
+            args.append(f'episodes={self.episodes!r}')
         args_str = ', '.join(args)
         return f'{type(self).__name__}({args_str})'
