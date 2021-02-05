@@ -51,9 +51,7 @@ def test_iter(mocker):
         'title',
         'aka',
         'year',
-        'season',
-        'season_and_episode',
-        'episode',
+        'episodes',
         'episode_title',
         'edition',
         'resolution',
@@ -68,7 +66,7 @@ def test_iter(mocker):
 
 def test_len(mocker):
     ri = release.ReleaseInfo('foo.mkv')
-    assert len(ri) == 17
+    assert len(ri) == 15
 
 
 def test_repr():
@@ -108,7 +106,7 @@ def test_release_name_params_default():
 
 
 def assert_info(release_name,
-                type=ReleaseType.unknown, title='', aka='', year='', season='', episode='',
+                type=ReleaseType.unknown, title='', aka='', year='', episodes={},
                 edition=[], resolution='', service='', source='',
                 audio_codec='', audio_channels='', video_codec='', group='', has_commentary=False):
     # Test space- and dot-separated release name
@@ -120,8 +118,7 @@ def assert_info(release_name,
             assert info['title'] == title
             assert info['aka'] == aka
             assert info['year'] == year
-            assert info['season'] == season
-            assert info['episode'] == episode
+            assert info['episodes'] == episodes
             assert info['edition'] == edition
             assert info['resolution'] == resolution
             assert info['service'] == service
@@ -135,27 +132,27 @@ def assert_info(release_name,
 
 @pytest.mark.parametrize('release_name, expected', (
     ('The Foo 2000 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000', 'season': '', 'episode': '',
+     {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo S01E04 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': ReleaseType.episode, 'title': 'The Foo', 'year': '', 'season': '1', 'episode': '4',
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'year': '', 'episodes': {'1': ('4',)},
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo S01 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': ReleaseType.season, 'title': 'The Foo', 'year': '', 'season': '1', 'episode': '',
+     {'type': ReleaseType.season, 'title': 'The Foo', 'year': '', 'episodes': {'1': ()},
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo 2000 S01 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': ReleaseType.season, 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': '',
+     {'type': ReleaseType.season, 'title': 'The Foo', 'year': '2000', 'episodes': {'1': ()},
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo 2000 S01E02 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': ReleaseType.episode, 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': '2',
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'year': '2000', 'episodes': {'1': ('2',)},
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo 2000 S01E01E02 1080p NF WEB-DL AAC2.0 H.264-ASDF',
-     {'type': ReleaseType.episode, 'title': 'The Foo', 'year': '2000', 'season': '1', 'episode': ['1', '2'],
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'year': '2000', 'episodes': {'1': ('1', '2')},
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
 ))
@@ -165,15 +162,15 @@ def test_type_and_year_season_and_episode(release_name, expected):
 
 @pytest.mark.parametrize('release_name, expected', (
     ('The Foo 1984 1080p BluRay DTS-ASDF',
-     {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984', 'season': '', 'episode': '',
+     {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984',
       'resolution': '1080p', 'service': '', 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
     ('1984 1984 1080p BluRay DTS-ASDF',
-     {'type': ReleaseType.movie, 'title': '1984', 'year': '1984', 'season': '', 'episode': '',
+     {'type': ReleaseType.movie, 'title': '1984', 'year': '1984',
       'resolution': '1080p', 'service': '', 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
     ('1984 2000 1080p BluRay DTS-ASDF',
-     {'type': ReleaseType.movie, 'title': '1984', 'year': '2000', 'season': '', 'episode': '',
+     {'type': ReleaseType.movie, 'title': '1984', 'year': '2000',
       'resolution': '1080p', 'service': '', 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
 ))
@@ -183,24 +180,24 @@ def test_title_and_year(release_name, expected):
 
 @pytest.mark.parametrize('release_name, expected', (
     ('The Foo - The Bar 1984 1080p BluRay DTS-ASDF',
-     {'type': ReleaseType.movie, 'title': 'The Foo - The Bar', 'year': '1984', 'season': '', 'episode': '',
+     {'type': ReleaseType.movie, 'title': 'The Foo - The Bar', 'year': '1984',
       'resolution': '1080p', 'service': '', 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
     ('The Foo - The Bar - The Baz 1984 1080p BluRay DTS-ASDF',
-     {'type': ReleaseType.movie, 'title': 'The Foo - The Bar - The Baz', 'year': '1984', 'season': '', 'episode': '',
+     {'type': ReleaseType.movie, 'title': 'The Foo - The Bar - The Baz', 'year': '1984',
       'resolution': '1080p', 'service': '', 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
     ('1984 AKA Nineteen Eighty-Four 1984 1080p BluRay DTS-ASDF',
      {'type': ReleaseType.movie, 'title': '1984', 'aka': 'Nineteen Eighty-Four', 'year': '1984',
-      'season': '', 'episode': '', 'resolution': '1080p', 'service': '',
+      'resolution': '1080p', 'service': '',
       'source': 'BluRay', 'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
     ('1984 - Foo AKA Nineteen Eighty-Four 1984 1080p BluRay DTS-ASDF',
      {'type': ReleaseType.movie, 'title': '1984 - Foo', 'aka': 'Nineteen Eighty-Four', 'year': '1984',
-      'season': '', 'episode': '', 'resolution': '1080p', 'service': '',
+      'resolution': '1080p', 'service': '',
       'source': 'BluRay', 'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
     ('Foo - Bar AKA Baz 1080p BluRay DTS-ASDF',
      {'type': ReleaseType.movie, 'title': 'Foo - Bar', 'aka': 'Baz', 'year': '',
-      'season': '', 'episode': '', 'resolution': '1080p', 'service': '',
+      'resolution': '1080p', 'service': '',
       'source': 'BluRay', 'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
 ))
 def test_title_and_alternative_title(release_name, expected):
@@ -241,7 +238,7 @@ source_samples = (
 @pytest.mark.parametrize('source, exp_source', source_samples)
 def test_source(source, exp_source):
     release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
-    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984', 'season': '', 'episode': '',
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984',
                 'resolution': '1080p', 'service': '', 'source': exp_source,
                 'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}
     assert_info(release_name, **expected)
@@ -258,7 +255,7 @@ source_from_encoder_samples = (
 def test_source_from_encoder(source, video_format, exp_source, mocker):
     mocker.patch('upsies.utils.video.video_format', Mock(return_value=video_format))
     release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
-    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984', 'season': '', 'episode': '',
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984',
                 'resolution': '1080p', 'service': '', 'source': exp_source,
                 'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}
     assert_info(release_name, **expected)
@@ -277,7 +274,7 @@ extended_source_samples = (
 @pytest.mark.parametrize('source, exp_source', extended_source_samples)
 def test_extended_source(source, exp_source):
     release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
-    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984', 'season': '', 'episode': '',
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984',
                 'resolution': '1080p', 'service': '', 'source': exp_source,
                 'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}
     assert_info(release_name, **expected)
@@ -298,7 +295,7 @@ service_samples = (
 @pytest.mark.parametrize('service, service_abbrev', service_samples)
 def test_service_is_abbreviated(service, service_abbrev):
     release_name = f'The Foo S10 1080p {service} WEB-DL AAC H.264-ASDF'
-    expected = {'type': ReleaseType.season, 'title': 'The Foo', 'year': '', 'season': '10', 'episode': '',
+    expected = {'type': ReleaseType.season, 'title': 'The Foo', 'year': '', 'episodes': {'10': ()},
                 'resolution': '1080p', 'service': service_abbrev, 'source': 'WEB-DL',
                 'audio_codec': 'AAC', 'audio_channels': '', 'video_codec': 'H.264', 'group': 'ASDF'}
     assert_info(release_name, **expected)
@@ -318,10 +315,11 @@ audio_codec_samples = (
 )
 @pytest.mark.parametrize('audio_codec, audio_codec_abbrev', audio_codec_samples)
 def test_audio_codec_is_abbreviated(audio_codec, audio_codec_abbrev):
-    release_name = f'The Foo S10 1080p WEB-DL {audio_codec} H.264-ASDF'
-    expected = {'type': ReleaseType.season, 'title': 'The Foo', 'year': '', 'season': '10', 'episode': '',
+    release_name = f'The Foo S04 1080p WEB-DL {audio_codec} H.264-ASDF'
+    expected = {'type': ReleaseType.season, 'title': 'The Foo', 'year': '', 'episodes': {'4': ()},
                 'resolution': '1080p', 'source': 'WEB-DL',
-                'audio_codec': audio_codec_abbrev, 'audio_channels': '', 'video_codec': 'H.264', 'group': 'ASDF'}
+                'audio_codec': audio_codec_abbrev, 'audio_channels': '',
+                'video_codec': 'H.264', 'group': 'ASDF'}
     assert_info(release_name, **expected)
 
 
@@ -336,10 +334,11 @@ audio_channels_samples = (
 )
 @pytest.mark.parametrize('audio, audio_codec, audio_channels', audio_channels_samples)
 def test_audio_channels(audio, audio_codec, audio_channels):
-    release_name = f'The Foo S10 1080p WEB-DL {audio} H.264-ASDF'
-    expected = {'type': ReleaseType.season, 'title': 'The Foo', 'year': '', 'season': '10', 'episode': '',
+    release_name = f'The Foo 2000 1080p WEB-DL {audio} H.264-ASDF'
+    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
                 'resolution': '1080p', 'source': 'WEB-DL',
-                'audio_codec': audio_codec, 'audio_channels': audio_channels, 'video_codec': 'H.264', 'group': 'ASDF'}
+                'audio_codec': audio_codec, 'audio_channels': audio_channels,
+                'video_codec': 'H.264', 'group': 'ASDF'}
     assert_info(release_name, **expected)
 
 
@@ -395,20 +394,6 @@ def test_has_commentary(release_name, exp_value):
     assert ri['has_commentary'] is True
     ri['has_commentary'] = None
     assert ri['has_commentary'] is exp_value
-
-
-@pytest.mark.parametrize('season, episode, exp_season_and_episode', (
-    ('', '', ''),
-    ('1', '', 'S01'),
-    ('1', '3', 'S01E03'),
-    ('123', '', 'S123'),
-    ('1', ('1', '2'), 'S01E01E02'),
-))
-def test_season_and_episode(season, episode, exp_season_and_episode):
-    ri = release.ReleaseInfo('Foo')
-    ri['season'] = season
-    ri['episode'] = episode
-    assert ri['season_and_episode'] == exp_season_and_episode
 
 
 def test_path():

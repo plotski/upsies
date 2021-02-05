@@ -4,7 +4,7 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 from upsies import errors
-from upsies.utils.release import ReleaseName
+from upsies.utils.release import Episodes, ReleaseName
 from upsies.utils.types import ReleaseType
 
 
@@ -62,7 +62,7 @@ def test_str(ReleaseInfo_mock):
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
-    assert len(rn) == 18
+    assert len(rn) == 17
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -234,132 +234,76 @@ def test_year_required(ReleaseInfo_mock, type, year_required, year, exp_year):
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
-    argnames='type, season, exp_season',
+    argnames='type, episodes, exp_string',
     argvalues=(
-        (ReleaseType.movie, '3', ''),
-        (ReleaseType.movie, '', ''),
-        (ReleaseType.season, '3', '3'),
-        (ReleaseType.season, '', 'UNKNOWN_SEASON'),
-        (ReleaseType.episode, '3', '3'),
-        (ReleaseType.episode, '', 'UNKNOWN_SEASON'),
-        (ReleaseType.unknown, '3', '3'),
-        (ReleaseType.unknown, '', ''),
+        (ReleaseType.movie, Episodes({}), ''),
+        (ReleaseType.movie, Episodes({3: ()}), ''),
+        (ReleaseType.movie, Episodes({3: (1, 2), 4: ()}), ''),
+        (ReleaseType.movie, Episodes({3: (1, 2), 4: (3, 4)}), ''),
+
+        (ReleaseType.season, Episodes({}), 'UNKNOWN_SEASON'),
+        (ReleaseType.season, Episodes({3: ()}), 'S03'),
+        (ReleaseType.season, Episodes({3: (), 4: ()}), 'S03S04'),
+        (ReleaseType.season, Episodes({3: (1, 2), 4: ()}), 'S03E01E02S04'),
+        (ReleaseType.season, Episodes({3: (1, 2), 4: (3, 4)}), 'S03E01E02S04E03E04'),
+
+        (ReleaseType.episode, Episodes({}), 'UNKNOWN_EPISODE'),
+        (ReleaseType.episode, Episodes({3: ()}), 'UNKNOWN_EPISODE'),
+        (ReleaseType.episode, Episodes({3: (), 4: ()}), 'UNKNOWN_EPISODE'),
+        (ReleaseType.episode, Episodes({3: (1, 2), 4: ()}), 'S03E01E02S04'),
+        (ReleaseType.episode, Episodes({3: (1, 2), 4: (3, 4)}), 'S03E01E02S04E03E04'),
+
+        (ReleaseType.unknown, Episodes({}), ''),
+        (ReleaseType.unknown, Episodes({3: ()}), 'S03'),
+        (ReleaseType.unknown, Episodes({3: (), 4: ()}), 'S03S04'),
+        (ReleaseType.unknown, Episodes({3: (1, 2), 4: ()}), 'S03E01E02S04'),
+        (ReleaseType.unknown, Episodes({3: (1, 2), 4: (3, 4)}), 'S03E01E02S04E03E04'),
     ),
 )
-def test_season_getter(ReleaseInfo_mock, type, season, exp_season):
-    ReleaseInfo_mock.return_value = {'season': season, 'type': type}
-    assert ReleaseName('path/to/something').season == exp_season
+def test_episodes_getter(ReleaseInfo_mock, type, episodes, exp_string):
+    ReleaseInfo_mock.return_value = {'episodes': episodes, 'type': type}
+    assert ReleaseName('path/to/something').episodes == exp_string
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
-    argnames='type, season, exp_season',
+    argnames='type, value, exp_episodes',
     argvalues=(
+        (ReleaseType.movie, 'foo.S03S04.bar', ''),
         (ReleaseType.movie, '3', ''),
         (ReleaseType.movie, 3, ''),
+        (ReleaseType.movie, (3, '4'), ''),
+        (ReleaseType.movie, {3: (1, 2), '4': ()}, ''),
         (ReleaseType.movie, '', ''),
-        (ReleaseType.season, '3', '3'),
-        (ReleaseType.season, 3, '3'),
+        (ReleaseType.season, 'foo.S03S04.bar', 'S03S04'),
+        (ReleaseType.season, 'foo.S03E10.bar', 'S03E10'),
+        (ReleaseType.season, '3', 'S03'),
+        (ReleaseType.season, 3, 'S03'),
+        (ReleaseType.season, (3, '4'), 'S03S04'),
+        (ReleaseType.season, {3: (1, 2), '4': ()}, 'S03E01E02S04'),
         (ReleaseType.season, '', 'UNKNOWN_SEASON'),
-        (ReleaseType.episode, '3', '3'),
-        (ReleaseType.episode, 3, '3'),
-        (ReleaseType.episode, '', 'UNKNOWN_SEASON'),
-        (ReleaseType.unknown, '3', '3'),
-        (ReleaseType.unknown, 3, '3'),
+        (ReleaseType.episode, 'foo.S03S04.bar', 'UNKNOWN_EPISODE'),
+        (ReleaseType.episode, 'foo.S03E10.bar', 'S03E10'),
+        (ReleaseType.episode, 'foo.S03E10E11.bar', 'S03E10E11'),
+        (ReleaseType.episode, '3', 'UNKNOWN_EPISODE'),
+        (ReleaseType.episode, 3, 'UNKNOWN_EPISODE'),
+        (ReleaseType.episode, (3, '4'), 'UNKNOWN_EPISODE'),
+        (ReleaseType.episode, {3: (1, 2), '4': ()}, 'S03E01E02S04'),
+        (ReleaseType.episode, '', 'UNKNOWN_EPISODE'),
+        (ReleaseType.unknown, 'foo.S03S04.bar', 'S03S04'),
+        (ReleaseType.unknown, 'foo.S03E10.bar', 'S03E10'),
+        (ReleaseType.unknown, 'foo.S03E10E11.bar', 'S03E10E11'),
+        (ReleaseType.unknown, '3', 'S03'),
+        (ReleaseType.unknown, 3, 'S03'),
+        (ReleaseType.unknown, (3, '4'), 'S03S04'),
+        (ReleaseType.unknown, {3: (1, 2), '4': ()}, 'S03E01E02S04'),
         (ReleaseType.unknown, '', ''),
     ),
 )
-def test_season_setter_with_valid_value(ReleaseInfo_mock, type, season, exp_season):
+def test_episodes_setter_with_valid_value(ReleaseInfo_mock, type, value, exp_episodes):
     rn = ReleaseName('path/to/something')
     rn.type = type
-    rn.season = season
-    assert rn.season == exp_season
-
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_season_setter_with_invalid_type(ReleaseInfo_mock):
-    rn = ReleaseName('path/to/something')
-    with pytest.raises(TypeError, match=r'^Invalid season: \(1, 2, 3\)$'):
-        rn.season = (1, 2, 3)
-    with pytest.raises(TypeError, match=r"^Invalid season: 1.3$"):
-        rn.season = 1.3
-
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_season_setter_with_invalid_value(ReleaseInfo_mock):
-    rn = ReleaseName('path/to/something')
-    with pytest.raises(ValueError, match=r"^Invalid season: 'foo'$"):
-        rn.season = 'foo'
-    with pytest.raises(ValueError, match=r"^Invalid season: -1$"):
-        rn.season = -1
-
-
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-@pytest.mark.parametrize(
-    argnames='type, episode, exp_episode',
-    argvalues=(
-        (ReleaseType.movie, '3', ''),
-        (ReleaseType.movie, ['1', '2'], ''),
-        (ReleaseType.movie, '', ''),
-        (ReleaseType.season, '3', '3'),
-        (ReleaseType.season, ['1', '2'], ['1', '2']),
-        (ReleaseType.season, '', ''),
-        (ReleaseType.episode, '3', '3'),
-        (ReleaseType.episode, ['1', '2'], ['1', '2']),
-        (ReleaseType.episode, '', 'UNKNOWN_EPISODE'),
-        (ReleaseType.unknown, '3', '3'),
-        (ReleaseType.unknown, ['1', '2'], ['1', '2']),
-        (ReleaseType.unknown, '', ''),
-    ),
-)
-def test_episode_getter(ReleaseInfo_mock, type, episode, exp_episode):
-    ReleaseInfo_mock.return_value = {'episode': episode, 'type': type}
-    assert ReleaseName('path/to/something').episode == exp_episode
-    ReleaseInfo_mock.return_value = {'episode': episode, 'type': type, 'season': '1'}
-    assert ReleaseName('path/to/something').episode == exp_episode
-
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-@pytest.mark.parametrize(
-    argnames='type, episode, exp_episode',
-    argvalues=(
-        (ReleaseType.movie, '3', ''),
-        (ReleaseType.movie, 3, ''),
-        (ReleaseType.movie, [1, '2'], ''),
-        (ReleaseType.movie, '', ''),
-        (ReleaseType.season, '3', '3'),
-        (ReleaseType.season, 3, '3'),
-        (ReleaseType.season, [1, '2'], ['1', '2']),
-        (ReleaseType.season, '', ''),
-        (ReleaseType.episode, '3', '3'),
-        (ReleaseType.episode, 3, '3'),
-        (ReleaseType.episode, [1, '2'], ['1', '2']),
-        (ReleaseType.episode, '', 'UNKNOWN_EPISODE'),
-        (ReleaseType.unknown, '3', '3'),
-        (ReleaseType.unknown, 3, '3'),
-        (ReleaseType.unknown, [1, '2'], ['1', '2']),
-        (ReleaseType.unknown, '', ''),
-    ),
-)
-def test_episode_setter_with_valid_value(ReleaseInfo_mock, type, episode, exp_episode):
-    rn = ReleaseName('path/to/something')
-    rn.type = type
-    if type is ReleaseType.episode:
-        assert rn.episode == 'UNKNOWN_EPISODE'
-    else:
-        assert rn.episode == ''
-    rn.episode = episode
-    assert rn.episode == exp_episode
-
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_episode_setter_with_invalid_type(ReleaseInfo_mock):
-    rn = ReleaseName('path/to/something')
-    with pytest.raises(TypeError, match=r"^Invalid episode: 1.3$"):
-        rn.episode = 1.3
-
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_episode_setter_with_invalid_value(ReleaseInfo_mock):
-    rn = ReleaseName('path/to/something')
-    with pytest.raises(ValueError, match=r"^Invalid episode: 'foo'$"):
-        rn.episode = 'foo'
-    with pytest.raises(ValueError, match=r"^Invalid episode: -1$"):
-        rn.episode = -1
+    rn.episodes = value
+    assert rn.episodes == exp_episodes
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))

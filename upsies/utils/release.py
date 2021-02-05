@@ -53,7 +53,7 @@ class ReleaseName(collections.abc.Mapping):
 
     def __init__(self, path):
         self._path = str(path)
-        self._guess = ReleaseInfo(self._path)
+        self._info = ReleaseInfo(self._path)
         self._imdb = webdbs.imdb.ImdbApi()
         # FIXME: Getting metainfo (e.g. resolution) can block for several
         #        seconds because utils.videos gets the length of every video
@@ -100,14 +100,14 @@ class ReleaseName(collections.abc.Mapping):
 
         See also :meth:`fetch_info`.
         """
-        return self._guess.get('type', ReleaseType.unknown)
+        return self._info.get('type', ReleaseType.unknown)
 
     @type.setter
     def type(self, value):
         if not value:
-            self._guess['type'] = ReleaseType.unknown
+            self._info['type'] = ReleaseType.unknown
         else:
-            self._guess['type'] = ReleaseType(value)
+            self._info['type'] = ReleaseType(value)
 
     @property
     def title(self):
@@ -116,11 +116,11 @@ class ReleaseName(collections.abc.Mapping):
 
         See also :meth:`fetch_info`.
         """
-        return self._guess.get('title') or 'UNKNOWN_TITLE'
+        return self._info.get('title') or 'UNKNOWN_TITLE'
 
     @title.setter
     def title(self, value):
-        self._guess['title'] = str(value)
+        self._info['title'] = str(value)
 
     @property
     def title_aka(self):
@@ -132,7 +132,7 @@ class ReleaseName(collections.abc.Mapping):
 
         See also :meth:`fetch_info`.
         """
-        aka = self._guess.get('aka') or ''
+        aka = self._info.get('aka') or ''
         if aka and aka != self.title:
             return aka
         else:
@@ -140,7 +140,7 @@ class ReleaseName(collections.abc.Mapping):
 
     @title_aka.setter
     def title_aka(self, value):
-        self._guess['aka'] = str(value)
+        self._info['aka'] = str(value)
 
     @property
     def year(self):
@@ -151,21 +151,21 @@ class ReleaseName(collections.abc.Mapping):
         See also :meth:`fetch_info`.
         """
         if self.type is ReleaseType.movie or self.year_required:
-            return self._guess.get('year') or 'UNKNOWN_YEAR'
+            return self._info.get('year') or 'UNKNOWN_YEAR'
         else:
-            return self._guess.get('year') or ''
+            return self._info.get('year') or ''
 
     @year.setter
     def year(self, value):
         if not isinstance(value, (str, int)) and value is not None:
             raise TypeError(f'Not a number: {value!r}')
         elif not value:
-            self._guess['year'] = ''
+            self._info['year'] = ''
         else:
             year = str(value)
             if len(year) != 4 or not year.isdecimal() or not 1800 < int(year) < 2100:
                 raise ValueError(f'Invalid year: {value}')
-            self._guess['year'] = year
+            self._info['year'] = year
 
     @property
     def year_required(self):
@@ -186,160 +186,138 @@ class ReleaseName(collections.abc.Mapping):
         self._year_required = bool(value)
 
     @property
-    def season(self):
-        """Season number, "UNKNOWN_SEASON" for series or empty string for movies"""
-        if self.type in (ReleaseType.season, ReleaseType.episode, ReleaseType.unknown):
-            if self.type is ReleaseType.unknown:
-                return self._guess.get('season') or ''
+    def episodes(self):
+        """
+        Season and episodes in "S01E02"-style format or "UNKNOWN_SEASON" for season
+        packs, "UNKNOWN_EPISODE" for episodes, empty string for other types
+
+        This property can be set to one or more season numbers (:class:`str`,
+        :class:`int` or sequence of those), a "S01E02"-style string (see
+        :meth:`Episodes.from_string`) or any falsy value.
+        """
+        if self.type is ReleaseType.season:
+            return str(self._info.get('episodes') or 'UNKNOWN_SEASON')
+        elif self.type is ReleaseType.episode:
+            episodes = self._info.get('episodes', Episodes())
+            if not any(season for season in episodes.values()):
+                return 'UNKNOWN_EPISODE'
             else:
-                return self._guess.get('season') or 'UNKNOWN_SEASON'
+                return str(episodes)
+        elif self.type is ReleaseType.unknown:
+            return str(self._info.get('episodes') or '')
         else:
             return ''
 
-    @season.setter
-    def season(self, value):
-        try:
-            self._guess['season'] = self._season_or_episode_number(value)
-        except ValueError:
-            raise ValueError(f'Invalid season: {value!r}')
-        except TypeError:
-            raise TypeError(f'Invalid season: {value!r}')
-
-    @property
-    def episode(self):
-        """Episode number or empty string"""
-        if self.type is ReleaseType.episode:
-            return self._guess.get('episode') or 'UNKNOWN_EPISODE'
-        elif self.type in (ReleaseType.season, ReleaseType.unknown):
-            return self._guess.get('episode') or ''
+    @episodes.setter
+    def episodes(self, value):
+        if isinstance(value, str) and Episodes.has_episodes_info(value):
+            self._info['episodes'] = Episodes.from_string(value)
+        elif not isinstance(value, str) and isinstance(value, collections.abc.Mapping):
+            self._info['episodes'] = Episodes(value)
+        elif not isinstance(value, str) and isinstance(value, collections.abc.Iterable):
+            self._info['episodes'] = Episodes({v: () for v in value})
+        elif value:
+            self._info['episodes'] = Episodes({value: ()})
         else:
-            return ''
-
-    @episode.setter
-    def episode(self, value):
-        try:
-            if isinstance(value, collections.abc.Sequence) and not isinstance(value, str):
-                self._guess['episode'] = [self._season_or_episode_number(e)
-                                          for e in value]
-            else:
-                self._guess['episode'] = self._season_or_episode_number(value)
-        except ValueError:
-            raise ValueError(f'Invalid episode: {value!r}')
-        except TypeError:
-            raise TypeError(f'Invalid episode: {value!r}')
-
-    @staticmethod
-    def _season_or_episode_number(value):
-        if isinstance(value, int):
-            if value >= 0:
-                return str(value)
-            else:
-                raise ValueError(f'Invalid value: {value!r}')
-        elif isinstance(value, str):
-            if (value == '' or value.isdigit()):
-                return str(value)
-            else:
-                raise ValueError(f'Invalid value: {value!r}')
-        else:
-            raise TypeError(f'Invalid value: {value!r}')
+            self._info['episodes'] = Episodes()
 
     @property
     def episode_title(self):
         """Episode title if :attr:`type` is "episode" or empty string"""
         if self.type is ReleaseType.episode:
-            return self._guess.get('episode_title') or ''
+            return self._info.get('episode_title') or ''
         else:
             return ''
 
     @episode_title.setter
     def episode_title(self, value):
-        self._guess['episode_title'] = str(value)
+        self._info['episode_title'] = str(value)
 
     @property
     def service(self):
         """Streaming service abbreviation (e.g. "AMZN", "NF") or empty string"""
-        return self._guess.get('service') or ''
+        return self._info.get('service') or ''
 
     @service.setter
     def service(self, value):
-        self._guess['service'] = str(value)
+        self._info['service'] = str(value)
 
     @property
     def edition(self):
         """List of "DC", "Uncut", "Unrated", etc"""
-        if 'edition' not in self._guess:
-            self._guess['edition'] = []
-        return self._guess['edition']
+        if 'edition' not in self._info:
+            self._info['edition'] = []
+        return self._info['edition']
 
     @edition.setter
     def edition(self, value):
-        self._guess['edition'] = [str(v) for v in value]
+        self._info['edition'] = [str(v) for v in value]
 
     @property
     def source(self):
         '''Original source (e.g. "BluRay", "WEB-DL") or "UNKNOWN_SOURCE"'''
-        return self._guess.get('source') or 'UNKNOWN_SOURCE'
+        return self._info.get('source') or 'UNKNOWN_SOURCE'
 
     @source.setter
     def source(self, value):
-        self._guess['source'] = str(value)
+        self._info['source'] = str(value)
 
     @property
     def resolution(self):
         '''Resolution (e.g. "1080p") or "UNKNOWN_RESOLUTION"'''
         res = video.resolution(self._path)
         if res is None:
-            res = self._guess.get('resolution') or 'UNKNOWN_RESOLUTION'
+            res = self._info.get('resolution') or 'UNKNOWN_RESOLUTION'
         return res
 
     @resolution.setter
     def resolution(self, value):
-        self._guess['resolution'] = str(value)
+        self._info['resolution'] = str(value)
 
     @property
     def audio_format(self):
         '''Audio format or "UNKNOWN_AUDIO_FORMAT"'''
         af = video.audio_format(self._path)
         if af is None:
-            af = self._guess.get('audio_codec') or 'UNKNOWN_AUDIO_FORMAT'
+            af = self._info.get('audio_codec') or 'UNKNOWN_AUDIO_FORMAT'
         return af
 
     @audio_format.setter
     def audio_format(self, value):
-        self._guess['audio_codec'] = str(value)
+        self._info['audio_codec'] = str(value)
 
     @property
     def audio_channels(self):
         """Audio channels (e.g. "5.1") or empty string"""
         ac = video.audio_channels(self._path)
         if ac is None:
-            ac = self._guess.get('audio_channels') or ''
+            ac = self._info.get('audio_channels') or ''
         return ac
 
     @audio_channels.setter
     def audio_channels(self, value):
-        self._guess['audio_channels'] = str(value)
+        self._info['audio_channels'] = str(value)
 
     @property
     def video_format(self):
         '''Video format (or encoder in case of x264/x265/XviD) or "UNKNOWN_VIDEO_FORMAT"'''
         vf = video.video_format(self._path)
         if vf is None:
-            vf = self._guess.get('video_codec') or 'UNKNOWN_VIDEO_FORMAT'
+            vf = self._info.get('video_codec') or 'UNKNOWN_VIDEO_FORMAT'
         return vf
 
     @video_format.setter
     def video_format(self, value):
-        self._guess['video_codec'] = str(value)
+        self._info['video_codec'] = str(value)
 
     @property
     def group(self):
         '''Name of release group or "NOGROUP"'''
-        return self._guess.get('group') or 'NOGROUP'
+        return self._info.get('group') or 'NOGROUP'
 
     @group.setter
     def group(self, value):
-        self._guess['group'] = str(value)
+        self._info['group'] = str(value)
 
     @property
     def has_commentary(self):
@@ -370,7 +348,7 @@ class ReleaseName(collections.abc.Mapping):
 
         # Default to ReleaseInfo['has_commentary']
         else:
-            return self._guess.get('has_commentary')
+            return self._info.get('has_commentary')
 
     @has_commentary.setter
     def has_commentary(self, value):
@@ -382,9 +360,9 @@ class ReleaseName(collections.abc.Mapping):
     _needed_attrs = {
         ReleaseType.movie: ('title', 'year', 'resolution', 'source',
                             'audio_format', 'video_format'),
-        ReleaseType.season: ('title', 'season', 'resolution', 'source',
+        ReleaseType.season: ('title', 'episodes', 'resolution', 'source',
                              'audio_format', 'video_format'),
-        ReleaseType.episode: ('title', 'season', 'episode', 'resolution', 'source',
+        ReleaseType.episode: ('title', 'episodes', 'resolution', 'source',
                               'audio_format', 'video_format'),
     }
 
@@ -480,15 +458,7 @@ class ReleaseName(collections.abc.Mapping):
         elif self.type in (ReleaseType.season, ReleaseType.episode):
             if self.year_required:
                 parts.append(self.year)
-            if self.type is ReleaseType.season:
-                parts.append(f'S{self.season.rjust(2, "0")}')
-            elif self.type is ReleaseType.episode:
-                # Episode may be multiple numbers, e.g. for double-long pilots
-                if not isinstance(self.episode, str):
-                    episode_string = ''.join(f'E{e.rjust(2, "0")}' for e in self.episode)
-                else:
-                    episode_string = ''.join(f'E{self.episode.rjust(2, "0")}')
-                parts.append(f'S{self.season.rjust(2, "0")}{episode_string}')
+            parts.append(str(self.episodes))
 
         if self.edition:
             parts.append(' '.join(self.edition))
@@ -527,10 +497,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
       - ``title``
       - ``aka`` (Also Known As; anything after "AKA" in the title)
       - ``year``
-      - ``season``
-      - ``episode`` (:class:`str` or :class:`list` for multi-episodes,
-        e.g. "S01E01E02" -> ["1", "2"])
-      - ``season_and_episode`` ("S01" or "S01E01" or "S01E01E02" or "")
+      - ``episodes`` (:class:`~.types.Episodes` instance)
       - ``episode_title``
       - ``edition`` (:class:`list` of "Extended", "Uncut", etc)
       - ``resolution``
@@ -572,9 +539,18 @@ class ReleaseInfo(collections.abc.MutableMapping):
         path = re.sub(r'([ \.])(?i:AC-?3)([ \.])', r'\1AC3\2', path)
         path = re.sub(r'([ \.])(?i:E-?AC-?3)([ \.])', r'\1EAC3\2', path)
 
-        _log.debug('Running guessit on %r with %r', path, constants.GUESSIT_OPTIONS)
+        # _log.debug('Running guessit on %r with %r', path, constants.GUESSIT_OPTIONS)
         guess = dict(_guessit.default_api.guessit(path, options=constants.GUESSIT_OPTIONS))
-        _log.debug('Original guess: %r', guess)
+        # _log.debug('Original guess: %r', guess)
+
+        # We do our own episode parsing to preserve order
+        for name in _file_and_dir(path):
+            if Episodes.has_episodes_info(name):
+                guess['episodes'] = Episodes.from_string(name)
+                break
+        if 'episodes' not in guess:
+            guess['episodes'] = Episodes()
+
         return guess
 
     @property
@@ -623,8 +599,9 @@ class ReleaseInfo(collections.abc.MutableMapping):
         if not guessit_type:
             return ReleaseType.unknown
         elif guessit_type == 'episode':
-            # guessit doesn't detect season packs; check if episode is known
-            if self._guess.get('episode'):
+            # guessit doesn't detect season packs; check if at least one episode
+            # is specified
+            if any(episodes for episodes in self['episodes'].values()):
                 return ReleaseType.episode
             else:
                 return ReleaseType.season
@@ -689,26 +666,11 @@ class ReleaseInfo(collections.abc.MutableMapping):
     def _get_year(self):
         return _as_str(self._guess, 'year')
 
-    def _get_season(self):
-        return _as_str(self._guess, 'season')
+    def _get_episodes(self):
+        return self._guess.get('episodes', Episodes())
 
-    def _get_episode(self):
-        return _as_str_or_list_of_str(self._guess, 'episode')
-
-    def _get_season_and_episode(self):
-        season = self['season']
-        if season:
-            season_episode = f'S{season:0>2}'
-            episode = self['episode']
-            if episode:
-                if isinstance(episode, str):
-                    # Single episode
-                    season_episode += f'E{episode:0>2}'
-                else:
-                    # Multi-episode (e.g. "S01E01E02")
-                    season_episode += ''.join((f'E{e:0>2}' for e in episode))
-            return season_episode
-        return ''
+    def _set_episodes(self, value):
+        self._guess['episodes'] = Episodes(value)
 
     def _get_episode_title(self):
         return str(self._guess.get('episode_title', ''))
