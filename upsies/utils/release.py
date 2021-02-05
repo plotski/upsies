@@ -664,7 +664,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return self._title_parts['aka']
 
     def _get_year(self):
-        return _as_str(self._guess, 'year')
+        return str(self._guess.get('year') or '')
 
     def _get_episodes(self):
         return self._guess.get('episodes', Episodes())
@@ -969,14 +969,3 @@ def _as_list(guess, key):
         return [value]
     elif isinstance(value, list):
         return list(value)
-
-
-def _as_str(guess, key):
-    return str(guess.get(key, ''))
-
-
-def _as_str_or_list_of_str(guess, key):
-    value = guess.get(key, '')
-    if not isinstance(value, str) and isinstance(value, list):
-        return [str(v) for v in value]
-    return str(value)
