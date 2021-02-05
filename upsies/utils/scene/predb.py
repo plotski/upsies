@@ -15,11 +15,13 @@ class PreDbApi(base.SceneDbApiBase):
     _url_base = b64decode('cHJlZGIub3Zo').decode('ascii')
     _search_url = f'https://{_url_base}/api/v1/'
 
-    async def _search(self, *, query, group, cache):
+    async def _search(self, keywords, group, cache):
         if group:
-            query += ('@team', str(group))
-        params = {'q': ' '.join(query)}
+            keywords = list(keywords)
+            keywords.extend(('@team', str(group)))
+        params = {'q': ' '.join(keywords), 'count': 100}
         _log.debug('Scene search: %r, %r', self._search_url, params)
+
         response = (await http.get(self._search_url, params=params, cache=cache)).json()
 
         # Report API error or return list of release names

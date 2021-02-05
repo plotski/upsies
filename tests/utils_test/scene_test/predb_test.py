@@ -37,14 +37,15 @@ async def test_search_calls_http_get(group, cache, api, mocker):
     }))
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(return_value=response))
 
-    query = ['foo', 'bar']
-    query_string = ' '.join(query)
+    keywords = ['foo', 'bar']
+    query_string = ' '.join(keywords)
+    exp_params = {'count': 100}
     if group:
-        exp_params = {'q': f'{query_string} @team {group}'}
+        exp_params['q'] = f'{query_string} @team {group}'
     else:
-        exp_params = {'q': f'{query_string}'}
+        exp_params['q'] = f'{query_string}'
 
-    response = await api._search(query=query, group=group, cache=cache)
+    response = await api._search(keywords=keywords, group=group, cache=cache)
     assert get_mock.call_args_list == [
         call(api._search_url, params=exp_params, cache=cache),
     ]
