@@ -15,6 +15,8 @@ import collections
 import os
 import re
 
+import natsort
+
 from .. import constants, errors
 from ..utils import scene, webdbs
 from . import LazyModule, cached_property, fs, video
@@ -886,6 +888,100 @@ class ReleaseInfo(collections.abc.MutableMapping):
             self._guess['has_commentary'] = None
         else:
             self._guess['has_commentary'] = bool(value)
+
+
+class Episodes(dict):
+    """
+    :class:`dict` subclass that maps season numbers to sequences of episode
+    numbers
+
+    All keys and values are :class:`str` objects. All episodes from a season are
+    indicated by an empty sequence. For episodes from any sason, the key is an
+    empty string.
+    """
+
+    _contains_info_regex = re.compile(r'(?:^|[\. ])(?:[SE]\d+)+(?:[\. ]|$)')
+
+    @classmethod
+    def has_episodes_info(cls, string):
+        """Whether `string` contains "S01E02"-like episode information"""
+        return cls._contains_info_regex.search(string)
+
+    @classmethod
+    def from_string(cls, value):
+        """
+        Create instance from release name or string that contains "Sxx" and "Exx"
+
+        Examples:
+
+            >>> Episodes.from_string('foo.E01 bar')
+            {'': ('1',)}
+            >>> Episodes.from_string('foo E01E2.bar')
+            {'': ('1', '2')}
+            >>> Episodes.from_string('foo.bar.E01E2S03')
+            {'': ('1', '2'), '3': ()}
+            >>> Episodes.from_string('E01E2S03E04E05.baz')
+            {'': ('1', '2'), '3': ('4', '5')}
+            >>> Episodes.from_string('S09E08S03E06S9E1')
+            {'9': ('1', '8',), '3': ('6',)}
+            >>> Episodes.from_string('E01S03E06.bar.E02')
+            {'': ('1', '2',), '3': ('6',)}
+        """
+        seasons = collections.defaultdict(lambda: set())
+
+        def split_episodes(string):
+            return {str(int(e)) for e in string.split('E') if e.strip()}
+
+        for word in re.split(r'[ \.]', str(value)):
+            word = word.upper()
+            if cls.has_episodes_info(word):
+                for part in (k for k in word.split('S') if k):
+                    season = re.sub(r'E.*$', '', part)
+                    season = str(int(season)) if season else ''
+                    episodes = re.sub(r'^\d+', '', part)
+                    episodes = split_episodes(episodes) if episodes else ()
+                    seasons[season].update(episodes)
+        args = {season: tuple(natsort.natsorted(episodes))
+                for season, episodes in natsort.natsorted(seasons.items())}
+        return cls(args)
+
+    def __init__(self, *args, **kwargs):
+        def number(name, value):
+            if isinstance(value, int):
+                if value >= 0:
+                    return str(value)
+                else:
+                    raise ValueError(f'Invalid {name}: {value!r}')
+            elif isinstance(value, str):
+                if value == '' or value.isdigit():
+                    return str(value)
+                else:
+                    raise ValueError(f'Invalid {name}: {value!r}')
+            else:
+                raise TypeError(f'Invalid {name}: {value!r}')
+
+        arg = {}
+        for season, episodes in dict(*args, **kwargs).items():
+            season = number('season', season)
+            if not isinstance(episodes, collections.abc.Iterable):
+                raise TypeError(f'Invalid episodes: {episodes!r}')
+            else:
+                episodes = tuple(number('episode', e) for e in episodes)
+            arg[season] = episodes
+
+        return super().__init__(arg)
+
+    def __repr__(self):
+        return f'{type(self).__name__}({dict(self)!r})'
+
+    def __str__(self):
+        parts = []
+        for season, episodes in sorted(self.items()):
+            if season:
+                parts.append(f'S{season:0>2}')
+            for episode in episodes:
+                parts.append(f'E{episode:0>2}')
+        return ''.join(parts)
 
 
 def _file_and_dir(path):
