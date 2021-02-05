@@ -691,19 +691,32 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return self._guess.get('screen_size', '')
 
     _streaming_service_regex = re.compile(r'[ \.]([A-Z]+)[ \.](?i:WEB-?(?:DL|Rip))(?:[ \.]|$)')
+    _streaming_service_translation = {
+        re.compile(r'(?i:IT)') : 'iT',
+    }
 
     def _get_service(self):
+        def translate(service):
+            for regex, abbrev in self._streaming_service_translation.items():
+                if regex.search(service):
+                    return abbrev
+            return service
+
         service = self._guess.get('streaming_service', '')
         if service:
             # guessit translates abbreviations to full names (NF -> Netflix),
             # but we want abbreviations. Use the same dictionary as guessit.
             translation = self._guessit_options['streaming_service']
-            for full_name, abbreviation in translation.items():
+            for full_name, aliases in translation.items():
                 if service.casefold().strip() == full_name.casefold().strip():
-                    if isinstance(abbreviation, str):
-                        return abbreviation
+                    # `aliases` is either a string or a list of strings and
+                    # other objects.
+                    if isinstance(aliases, str):
+                        return translate(aliases)
                     else:
-                        return abbreviation[0]
+                        # Find shortest string
+                        aliases = (a for a in aliases if isinstance(a, str))
+                        return translate(sorted(aliases, key=len)[0])
 
         # Default to manual detection
         match = self._streaming_service_regex.search(self.release_name_params)
