@@ -621,9 +621,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
         """
         Release name without title and year or season/episode info
 
-        guessit doesn't support some tags like "Hybrid", but we can't just look
-        for "Hybrid" anywhere in the release name because it might be part of
-        the title or it might be part of the parent directory name.
+        This allows us to find stuff in the release name that guessit doesn't
+        support without accidentally finding it in the title.
         """
         path_no_ext = fs.strip_extension(self._abspath, only=constants.VIDEO_FILE_EXTENSIONS)
 
@@ -770,14 +769,12 @@ class ReleaseInfo(collections.abc.MutableMapping):
                     source = source_fixed
                     break
 
-        # guessit ignores "Hybrid"
-        if self._hybrid_regex.search(self.release_name_params):
-            source = ('Hybrid ' + source).strip()
-
-        # Detect Remux
-        if 'Remux' in self._guess.get('other', ()):
-            if not any(s in source for s in ('WEBRip', 'WEB-DL')):
-                source += ' Remux'
+        # Detect Remux and Hybrid
+        other = self._guess.get('other', ())
+        if 'Remux' in other and 'WEB' not in source and 'Rip' not in source:
+            source += ' Remux'
+        if 'Hybrid' in other:
+            source = 'Hybrid ' + source
 
         return source
 

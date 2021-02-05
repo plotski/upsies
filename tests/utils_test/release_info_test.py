@@ -264,6 +264,8 @@ def test_source_from_encoder(source, video_format, exp_source, mocker):
 extended_source_samples = (
     ('BluRay REMUX', 'BluRay Remux'),
     ('remux BluRay', 'BluRay Remux'),
+    ('DVD Remux', 'DVD Remux'),
+    ('DVDRip Remux', 'DVDRip'),
     ('Hybrid BluRay', 'Hybrid BluRay'),
     ('BluRay hybrid', 'Hybrid BluRay'),
     ('HYBRID BluRay REMUX', 'Hybrid BluRay Remux'),
