@@ -610,9 +610,9 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     _title_split_regex = re.compile(
         r'[ \.]+(?:'
-        r'\d{4}|'
-        r'S\d{2,}(?:E\d{2,})*|'
-        r'Season[ \.]*\d+(?:[ \.]Episode[ \.]*\d+)*'
+        r'\d{4}|'  # Year
+        r'(?i:[SE]\d+)+|'
+        r'((?i:Season|Episode)[ \.]*\d+[ \.]*)+|'
         r')[ \.]+'
     )
 
