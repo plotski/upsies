@@ -410,11 +410,13 @@ def test_path():
     ('Bar.Bar.2013.720p.BluRay.x264-ASDF/asdf-barbar.mkv',
      'Bar Bar 2013 720p BluRay x264-ASDF'),
     ('path/to/Baz.2009.720p.BluRay.x264-ASDF/asdf-720p-baz.mkv',
-     'Baz 2009 720p BluRay x264-ASDF'),
+     'Baz 2009 720p BluRay x264-asdf'),
     ('QuuX.2005.1080p.BluRay.x264-ASD/asd-q_u_u_x_x264_bluray.mkv',
      'QuuX 2005 1080p BluRay x264-ASD'),
     ('foo/foo.bar.1994.1080p.blu-ray.x264-baz.mkv',
      'foo bar 1994 1080p BluRay x264-baz'),
+    ('foo/asdf-barbar.mkv',
+     'asdf-barbar    -'),
 ))
 def test_abbreviated_scene_filename(path, exp_release_name):
     ri = release.ReleaseInfo(path)

@@ -562,15 +562,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     @cached_property
     def _guess(self):
-        # Use parent directory in case of abbreviated scene file name
-        # (e.g. "tl-foof.mkv") because guessit will use it to parse the group,
-        # which is lower-case, but we want the group from the parent directory,
-        # which is hopefully properly named.
-        if scene.is_abbreviated_filename(self._path):
-            _log.debug('Avoiding abbreviated scene file name: %r', os.path.basename(self._path))
-            path = os.path.dirname(self._abspath)
-        else:
-            path = self._abspath
+        path = self._abspath
 
         # guessit doesn't detect AC3 if it's called "AC-3"
         path = re.sub(r'([ \.])(?i:AC-?3)([ \.])', r'\1AC3\2', path)
