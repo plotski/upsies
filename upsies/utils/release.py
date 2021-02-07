@@ -518,6 +518,43 @@ class ReleaseInfo(collections.abc.MutableMapping):
         self._abspath = os.path.abspath(self._path)
         self._dict = {}
 
+    def __contains__(self, name):
+        return hasattr(self, f'_get_{name}')
+
+    def __getitem__(self, name):
+        if name not in self:
+            raise KeyError(name)
+        else:
+            value = self._dict.get(name, None)
+            if value is None:
+                value = self[name] = getattr(self, f'_get_{name}')()
+            return value
+
+    def __setitem__(self, name, value):
+        if not hasattr(self, f'_get_{name}'):
+            raise KeyError(name)
+        elif hasattr(self, f'_set_{name}'):
+            self._dict[name] = getattr(self, f'_set_{name}')(value)
+        else:
+            self._dict[name] = value
+
+    def __delitem__(self, name):
+        if not hasattr(self, f'_get_{name}'):
+            raise KeyError(name)
+        elif name in self._dict:
+            del self._dict[name]
+
+    def __iter__(self):
+        return iter(name[5:] for name in dir(type(self))
+                    if name.startswith('_get_'))
+
+    def __len__(self):
+        return len(tuple(name[5:] for name in dir(type(self))
+                         if name.startswith('_get_')))
+
+    def __repr__(self):
+        return f'{type(self).__name__}({self._path!r})'
+
     @property
     def path(self):
         """`path` argument as :class:`str`"""
@@ -556,43 +593,6 @@ class ReleaseInfo(collections.abc.MutableMapping):
     @property
     def _guessit_options(self):
         return _guessit.default_api.advanced_config
-
-    def __contains__(self, name):
-        return hasattr(self, f'_get_{name}')
-
-    def __getitem__(self, name):
-        if name not in self:
-            raise KeyError(name)
-        else:
-            value = self._dict.get(name, None)
-            if value is None:
-                value = self[name] = getattr(self, f'_get_{name}')()
-            return value
-
-    def __setitem__(self, name, value):
-        if not hasattr(self, f'_get_{name}'):
-            raise KeyError(name)
-        elif hasattr(self, f'_set_{name}'):
-            self._dict[name] = getattr(self, f'_set_{name}')(value)
-        else:
-            self._dict[name] = value
-
-    def __delitem__(self, name):
-        if not hasattr(self, f'_get_{name}'):
-            raise KeyError(name)
-        elif name in self._dict:
-            del self._dict[name]
-
-    def __iter__(self):
-        return iter(name[5:] for name in dir(type(self))
-                    if name.startswith('_get_'))
-
-    def __len__(self):
-        return len(tuple(name[5:] for name in dir(type(self))
-                         if name.startswith('_get_')))
-
-    def __repr__(self):
-        return f'{type(self).__name__}({self._path!r})'
 
     def _get_type(self):
         guessit_type = self._guess.get('type')
