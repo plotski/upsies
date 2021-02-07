@@ -4,8 +4,7 @@ Abstract base class for scene release databases
 
 import abc
 
-from ... import errors
-from .. import release as _release
+from ..types import SceneCheckResult
 from .common import SceneQuery
 
 import logging  # isort:skip
@@ -53,86 +52,15 @@ class SceneDbApiBase(abc.ABC):
         #            Examples:
         #            - Prospect.2018.720p.BluRay.DD5.1.x264-LoRD
         #            - How.The.Grinch.Stole.Christmas.2000.720p.BluRay.DTS.x264-EbP
-        results = await self._search_with_series_info(release)
+        results = await self.search(SceneQuery.from_release(release))
         if results:
-            if self._release_is_in_results(release, results):
-                return SceneCheckResult.true
-
-        # If we search for season pack but single episodes were released,
-        # search without "S[0-9]+" to find the episode releases.
-        elif release['type'] is _release.ReleaseType.season:
-            results = await self._search_without_series_info(release)
-            if results:
-                if self._release_is_in_results(release, results):
-                    return SceneCheckResult.true
+            return SceneCheckResult.true
 
         # If this is a file like "abd-mother.mkv" without a properly named
-        # parent directory, it's probably a scene release, but we can't say for
-        # sure.
+        # parent directory and we didn't find it above, it's possibly a scene
+        # release, but we can't be sure.
         from . import is_abbreviated_filename
         if is_abbreviated_filename(release.path):
             return SceneCheckResult.unknown
 
         return SceneCheckResult.false
-
-    def _release_is_in_results(self, release, results):
-        results = [_release.ReleaseInfo(r) for r in results]
-
-        def releases_equal(r1, r2, cmp_episodes=True):
-            # Compare only some information in case `release` comes from a
-            # renamed release. We don't validate the release name here, only
-            # check if the typical scene release information matches our input.
-            if cmp_episodes:
-                keys = ('title', 'year', 'season', 'episode', 'resolution',
-                        'source', 'video_codec', 'group')
-            else:
-                keys = ('title', 'year', 'season', 'resolution',
-                        'source', 'video_codec', 'group')
-            for key in keys:
-                if r1[key].casefold() != r2[key].casefold():
-                    _log.debug('%s: Not a scene release because %r != %r',
-                               release.path, r1[key], r2[key])
-                    return False
-            return True
-
-        # Try to find the exact release
-        for result in results:
-            if releases_equal(release, result, cmp_episodes=True):
-                return True
-
-        # If we can't find the exact release, we might be looking at a season
-        # pack that was originally released as individual episodes. Searching
-        # for "S04" doesn't yield any results for "S04E01/2/3/..." releases.
-        if release['season'] and not release['episode']:
-            for result in results:
-                if releases_equal(release, result, cmp_episodes=False):
-                    return True
-
-        return False
-
-    async def _search_with_series_info(self, release):
-        query = SceneQuery(
-            *(x for x in (release['title'],
-                          release['year'],
-                          release['season_and_episode'],
-                          release['resolution'],
-                          release['source'],
-                          release['video_codec'])
-              if x),
-            group=release['group'],
-        )
-        _log.debug('Scene query: %r', query)
-        return await self.search(query)
-
-    async def _search_without_series_info(self, release):
-        query = SceneQuery(
-            *(x for x in (release['title'],
-                          release['year'],
-                          release['resolution'],
-                          release['source'],
-                          release['video_codec'])
-              if x),
-            group=release['group'],
-        )
-        _log.debug('Scene query: %r', query)
-        return await self.search(query)
