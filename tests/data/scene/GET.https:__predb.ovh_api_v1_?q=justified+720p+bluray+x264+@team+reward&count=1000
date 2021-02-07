@@ -2,7 +2,7 @@
     "status": "success",
     "message": "",
     "data": {
-        "rowCount": 20,
+        "rowCount": 27,
         "rows": [
             {
                 "id": 6045045,
@@ -243,11 +243,95 @@
                 "files": 47,
                 "preAt": 1294694792,
                 "nuke": null
+            },
+            {
+                "id": 4787472,
+                "name": "Justified.S01E07.720p.BluRay.X264-REWARD",
+                "team": "REWARD",
+                "cat": "HDTV",
+                "genre": "Drama",
+                "url": "",
+                "size": 2236.88,
+                "files": 47,
+                "preAt": 1294657458,
+                "nuke": null
+            },
+            {
+                "id": 4787465,
+                "name": "Justified.S01E06.720p.BluRay.X264-REWARD",
+                "team": "REWARD",
+                "cat": "HDTV",
+                "genre": "Drama",
+                "url": "",
+                "size": 2237,
+                "files": 47,
+                "preAt": 1294657219,
+                "nuke": null
+            },
+            {
+                "id": 4787455,
+                "name": "Justified.S01E05.720p.BluRay.X264-REWARD",
+                "team": "REWARD",
+                "cat": "HDTV",
+                "genre": "Drama",
+                "url": "",
+                "size": 2237,
+                "files": 47,
+                "preAt": 1294656881,
+                "nuke": null
+            },
+            {
+                "id": 4787443,
+                "name": "Justified.S01E04.720p.BluRay.X264-REWARD",
+                "team": "REWARD",
+                "cat": "HDTV",
+                "genre": "Drama",
+                "url": "",
+                "size": 2237.97,
+                "files": 47,
+                "preAt": 1294656586,
+                "nuke": null
+            },
+            {
+                "id": 4787440,
+                "name": "Justified.S01E03.720p.BluRay.X264-REWARD",
+                "team": "REWARD",
+                "cat": "HDTV",
+                "genre": "Drama",
+                "url": "",
+                "size": 2237.48,
+                "files": 47,
+                "preAt": 1294656263,
+                "nuke": null
+            },
+            {
+                "id": 4787439,
+                "name": "Justified.S01E02.720p.BluRay.X264-REWARD",
+                "team": "REWARD",
+                "cat": "HDTV",
+                "genre": "Drama",
+                "url": "",
+                "size": 2235.84,
+                "files": 47,
+                "preAt": 1294655984,
+                "nuke": null
+            },
+            {
+                "id": 4787424,
+                "name": "Justified.S01E01.720p.BluRay.X264-REWARD",
+                "team": "REWARD",
+                "cat": "HDTV",
+                "genre": "Drama",
+                "url": "",
+                "size": 2237.51,
+                "files": 47,
+                "preAt": 1294655738,
+                "nuke": null
             }
         ],
         "offset": 0,
-        "reqCount": 20,
+        "reqCount": 100,
         "total": 27,
-        "time": 0.023132957
+        "time": 0.016272566
     }
 }

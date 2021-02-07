@@ -18,8 +18,8 @@
             }
         ],
         "offset": 0,
-        "reqCount": 20,
+        "reqCount": 100,
         "total": 1,
-        "time": 0.006131202
+        "time": 0.006245926
     }
 }

@@ -36,9 +36,9 @@ async def test_search_calls_http_get(group, cache, api, mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(return_value=response))
 
     keywords = ['foo', 'bar']
-    path = '/'.join(keywords)
+    path = '/'.join(keywords).lower()
     if group:
-        path += f'/group:{group}'
+        path += f'/group:{group.lower()}'
 
     response = await api._search(keywords=keywords, group=group, cache=cache)
     assert get_mock.call_args_list == [

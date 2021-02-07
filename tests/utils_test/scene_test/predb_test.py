@@ -41,9 +41,9 @@ async def test_search_calls_http_get(group, cache, api, mocker):
     query_string = ' '.join(keywords)
     exp_params = {'count': 1000}
     if group:
-        exp_params['q'] = f'{query_string} @team {group}'
+        exp_params['q'] = f'{query_string.lower()} @team {group.lower()}'
     else:
-        exp_params['q'] = f'{query_string}'
+        exp_params['q'] = f'{query_string.lower()}'
 
     response = await api._search(keywords=keywords, group=group, cache=cache)
     assert get_mock.call_args_list == [
