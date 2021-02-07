@@ -19,7 +19,7 @@ class PreDbApi(base.SceneDbApiBase):
         if group:
             keywords = list(keywords)
             keywords.extend(('@team', str(group)))
-        params = {'q': ' '.join(keywords), 'count': 100}
+        params = {'q': ' '.join(keywords), 'count': 1000}
         _log.debug('Scene search: %r, %r', self._search_url, params)
 
         response = (await http.get(self._search_url, params=params, cache=cache)).json()

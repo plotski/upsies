@@ -39,7 +39,7 @@ async def test_search_calls_http_get(group, cache, api, mocker):
 
     keywords = ['foo', 'bar']
     query_string = ' '.join(keywords)
-    exp_params = {'count': 100}
+    exp_params = {'count': 1000}
     if group:
         exp_params['q'] = f'{query_string} @team {group}'
     else:
