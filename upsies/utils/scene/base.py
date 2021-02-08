@@ -4,8 +4,10 @@ Abstract base class for scene release databases
 
 import abc
 
+from ... import errors
 from ..types import SceneCheckResult
-from .common import SceneQuery
+from .common import SceneQuery, assert_not_abbreviated_filename
+
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -59,8 +61,9 @@ class SceneDbApiBase(abc.ABC):
         # If this is a file like "abd-mother.mkv" without a properly named
         # parent directory and we didn't find it above, it's possibly a scene
         # release, but we can't be sure.
-        from . import is_abbreviated_filename
-        if is_abbreviated_filename(release.path):
+        try:
+            assert_not_abbreviated_filename(release.path)
+        except errors.SceneError:
             return SceneCheckResult.unknown
 
         return SceneCheckResult.false
