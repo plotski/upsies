@@ -48,14 +48,13 @@ class SceneSearchJob(JobBase):
         """
         self._scenedb = scenedb
         self._content_path = content_path
-        self._release_info = release.ReleaseInfo(content_path)
         self.signal.add('search_results')
 
     def execute(self):
         """Send search query"""
         self._search_task = asyncio.ensure_future(
             self._scenedb.search(
-                query=scene.SceneQuery.from_release(self._release_info),
+                query=scene.SceneQuery.from_string(self._content_path),
                 cache=not self.ignore_cache,
             )
         )
