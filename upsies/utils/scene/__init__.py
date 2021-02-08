@@ -3,14 +3,13 @@ Scene release search and validation
 """
 
 import asyncio
-import os
 import re
 
 from ... import errors
 from .. import fs, subclasses, submodules
 from . import predb, srrdb
 from .base import SceneDbApiBase
-from .common import SceneQuery
+from .common import SceneQuery, assert_not_abbreviated_filename
 
 
 def scenedbs():
@@ -66,24 +65,3 @@ async def search(*args, **kwargs):
             combined_results.update(results)
 
     return sorted(combined_results, key=str.casefold) + exceptions
-
-
-_abbreviated_scene_filename_regexs = (
-    # Match names with group in front
-    re.compile(r'^[a-z0-9]+-[a-z0-9_\.-]+?(?!-[a-z]{2,})\.(?:mkv|avi)$'),
-    # Match "ttl.720p-group.mkv"
-    re.compile(r'^[a-z0-9]+[\.-]\d{3,4}p-[a-z]{2,}\.(?:mkv|avi)$'),
-)
-
-def assert_not_abbreviated_filename(filepath):
-    """
-    Raise :class:`~.errors.SceneError` if `filepath` points to an abbreviated
-    scene release file name like ``abd-mother.mkv``
-    """
-    filename = os.path.basename(filepath)
-    for regex in _abbreviated_scene_filename_regexs:
-        if regex.search(filename):
-            example_path = os.path.join('Title.2015.1080p.BluRay.x264-GROUP', filename)
-            raise errors.SceneError(
-                f'File must be in a properly named directory, e.g. "{example_path}"'
-            )

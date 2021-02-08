@@ -1,3 +1,4 @@
+import re
 from unittest.mock import Mock, call
 
 import pytest
@@ -168,3 +169,37 @@ def test_SceneQuery_repr(keywords, group, episodes, exp_repr):
     if episodes:
         kwargs['episodes'] = episodes
     assert repr(common.SceneQuery(*keywords, **kwargs)) == exp_repr
+
+
+@pytest.mark.parametrize(
+    argnames='filename, should_raise',
+    argvalues=(
+        ('group-thetitle.1080p.bluray.x264.mkv', True),
+        ('group-the.title.2016.720p.bluray.x264.mkv', True),
+        ('group-thetitle720.mkv', True),
+        ('group-the-title-720p.mkv', True),
+        ('group-thetitle-720p.mkv', True),
+        ('group-ttl-s02e01-720p.mkv', True),
+        ('group-the.title.1984.720p.mkv', True),
+        ('group-the.title.720p.mkv', True),
+        ('group-ttl.720p.mkv', True),
+        ('group-title.mkv', True),
+        ('title-1080p-group.mkv', True),
+        ('group-the_title_x264_bluray.mkv', True),
+        ('ttl.720p-group.mkv', True),
+        ('title.2017.720p.bluray.x264-group.mkv', False),
+        ('asdf.mkv', False),
+    ),
+)
+def test_assert_not_abbreviated_filename(filename, should_raise):
+    exp_msg = re.escape(
+        f'Provide parent directory of abbreviated scene file: {filename}'
+    )
+    if should_raise:
+        with pytest.raises(errors.SceneError, match=rf'^{exp_msg}$'):
+            common.assert_not_abbreviated_filename(filename)
+        with pytest.raises(errors.SceneError, match=rf'^{exp_msg}$'):
+            common.assert_not_abbreviated_filename(f'path/to/{filename}')
+    else:
+        common.assert_not_abbreviated_filename(filename)
+        common.assert_not_abbreviated_filename(f'path/to/{filename}')
