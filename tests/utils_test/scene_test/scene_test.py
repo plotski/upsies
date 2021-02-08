@@ -1,3 +1,4 @@
+import re
 from unittest.mock import Mock, call
 
 import pytest
@@ -77,7 +78,7 @@ async def test_search_raises_unexpected_exceptions(mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='filename, exp_return_value',
+    argnames='filename, should_raise',
     argvalues=(
         ('group-thetitle.1080p.bluray.x264.mkv', True),
         ('group-the.title.2016.720p.bluray.x264.mkv', True),
@@ -96,6 +97,14 @@ async def test_search_raises_unexpected_exceptions(mocker):
         ('asdf.mkv', False),
     ),
 )
-def test_is_abbreviated_filename(filename, exp_return_value):
-    assert scene.is_abbreviated_filename(filename) is exp_return_value
-    assert scene.is_abbreviated_filename(f'path/to/{filename}') is exp_return_value
+def test_assert_not_abbreviated_filename(filename, should_raise):
+    exp_msg = re.escape('File must be in a properly named directory, '
+                        f'e.g. "Title.2015.1080p.BluRay.x264-GROUP/{filename}"')
+    if should_raise:
+        with pytest.raises(errors.SceneError, match=rf'^{exp_msg}$'):
+            assert scene.assert_not_abbreviated_filename(filename) is exp_return_value
+        with pytest.raises(errors.SceneError, match=rf'^{exp_msg}$'):
+            assert scene.assert_not_abbreviated_filename(f'path/to/{filename}') is exp_return_value
+    else:
+        scene.assert_not_abbreviated_filename(filename)
+        scene.assert_not_abbreviated_filename(f'path/to/{filename}')

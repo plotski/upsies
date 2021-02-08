@@ -7,7 +7,7 @@ import os
 import re
 
 from ... import errors
-from .. import subclasses, submodules
+from .. import fs, subclasses, submodules
 from . import predb, srrdb
 from .base import SceneDbApiBase
 from .common import SceneQuery
@@ -75,13 +75,15 @@ _abbreviated_scene_filename_regexs = (
     re.compile(r'^[a-z0-9]+[\.-]\d{3,4}p-[a-z]{2,}\.(?:mkv|avi)$'),
 )
 
-def is_abbreviated_filename(filepath):
+def assert_not_abbreviated_filename(filepath):
     """
-    Whether `filepath` is an abbreviated scene release name like
-    ``abd-mother.mkv``
+    Raise :class:`~.errors.SceneError` if `filepath` points to an abbreviated
+    scene release file name like ``abd-mother.mkv``
     """
     filename = os.path.basename(filepath)
     for regex in _abbreviated_scene_filename_regexs:
         if regex.search(filename):
-            return True
-    return False
+            example_path = os.path.join('Title.2015.1080p.BluRay.x264-GROUP', filename)
+            raise errors.SceneError(
+                f'File must be in a properly named directory, e.g. "{example_path}"'
+            )
