@@ -120,12 +120,12 @@ class Query:
         `path` is passed to :class:`~.release.ReleaseInfo` to get the
         arguments for instantiation.
         """
-        guess = release.ReleaseInfo(path)
-        kwargs = {'title': guess['title']}
-        if guess.get('year'):
-            kwargs['year'] = guess['year']
-        if guess.get('type'):
-            kwargs['type'] = guess['type']
+        info = release.ReleaseInfo(path)
+        kwargs = {'title': info['title']}
+        if info.get('year'):
+            kwargs['year'] = info['year']
+        if info.get('type'):
+            kwargs['type'] = info['type']
         return cls(**kwargs)
 
     def __eq__(self, other):
