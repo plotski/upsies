@@ -42,19 +42,35 @@ def test_cache_id(make_SceneSearchJob):
     assert job.cache_id == (job._scenedb.name, 'Foo')
 
 
+@pytest.mark.parametrize('ignore_cache, exp_cache', ((True, False), (False, True)))
 @pytest.mark.asyncio
-async def test_execute(make_SceneSearchJob, mocker):
-    job = make_SceneSearchJob()
+async def test_execute_cache_argument(ignore_cache, exp_cache, make_SceneSearchJob, mocker):
+    job = make_SceneSearchJob(ignore_cache=ignore_cache)
     SceneQuery_mock = mocker.patch('upsies.utils.scene.SceneQuery')
     mocker.patch.object(job._scenedb, 'search', AsyncMock())
     mocker.patch.object(job, '_handle_results')
     job.execute()
     await job._search_task
     assert job._scenedb.search.call_args_list == [call(
-        query=SceneQuery_mock.from_release.return_value,
-        cache=True,
+        query=SceneQuery_mock.from_string.return_value,
+        cache=exp_cache,
     )]
     assert job._handle_results.call_args_list == [call(job._search_task)]
+    assert not job.is_finished
+
+@pytest.mark.asyncio
+async def test_execute_handles_SceneError(make_SceneSearchJob, mocker):
+    job = make_SceneSearchJob()
+    SceneQuery_mock = mocker.patch('upsies.utils.scene.SceneQuery.from_string',
+                                   side_effect=errors.SceneError('no!'))
+    mocker.patch.object(job._scenedb, 'search', AsyncMock())
+    mocker.patch.object(job, '_handle_results')
+    job.execute()
+    assert not hasattr(job, '_search_task')
+    assert job.errors == (errors.SceneError('no!'),)
+    assert job.is_finished
+    assert job._scenedb.search.call_args_list == []
+    assert job._handle_results.call_args_list == []
 
 
 @pytest.mark.parametrize('ignore_cache, exp_cache', ((True, False), (False, True)))
@@ -66,7 +82,7 @@ async def test_search_cache_argument(ignore_cache, exp_cache, make_SceneSearchJo
     job.execute()
     await job._search_task
     assert job._scenedb.search.call_args_list == [call(
-        query=SceneQuery_mock.from_release.return_value,
+        query=SceneQuery_mock.from_string.return_value,
         cache=exp_cache,
     )]
 

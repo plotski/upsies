@@ -52,13 +52,16 @@ class SceneSearchJob(JobBase):
 
     def execute(self):
         """Send search query"""
-        self._search_task = asyncio.ensure_future(
-            self._scenedb.search(
-                query=scene.SceneQuery.from_string(self._content_path),
-                cache=not self.ignore_cache,
+        try:
+            query = scene.SceneQuery.from_string(self._content_path)
+        except errors.SceneError as e:
+            self.error(e)
+            self.finish()
+        else:
+            self._search_task = asyncio.ensure_future(
+                self._scenedb.search(query=query, cache=not self.ignore_cache)
             )
-        )
-        self._search_task.add_done_callback(self._handle_results)
+            self._search_task.add_done_callback(self._handle_results)
 
     def _handle_results(self, task):
         try:
