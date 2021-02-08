@@ -488,6 +488,10 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     :param str release: Release name or path to release content
 
+    :param bool strict: Whether to raise :class:`~.errors.ContentError` if
+        `release` looks bad, e.g. an abbreviated scene release file name like
+        "tf-foof.mkv"
+
     If `release` looks like an abbreviated scene file name (e.g.
     "abd-mother.mkv"), the parent directory's name is used if possible.
 
@@ -513,7 +517,12 @@ class ReleaseInfo(collections.abc.MutableMapping):
     are empty strings.
     """
 
-    def __init__(self, path):
+    def __init__(self, path, strict=False):
+        if strict:
+            try:
+                scene.assert_not_abbreviated_filename(path)
+            except errors.SceneError as e:
+                raise errors.ContentError(e)
         self._path = str(path)
         self._abspath = os.path.abspath(self._path)
         self._dict = {}

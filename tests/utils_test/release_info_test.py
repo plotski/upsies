@@ -1,9 +1,32 @@
+import re
 from unittest.mock import Mock, call
 
 import pytest
 
+from upsies import errors
 from upsies.utils import release
 from upsies.utils.types import ReleaseType
+
+
+@pytest.mark.parametrize(
+    argnames='strict, exception, exp_exception',
+    argvalues=(
+        (False, None, None),
+        (False, errors.ContentError('Error!'), None),
+        (True, errors.ContentError('Error!'), errors.ContentError('Error!')),
+        (True, None, None),
+    ),
+    ids=lambda v: str(v),
+)
+def test_strict_argument(strict, exception, exp_exception, mocker):
+    mocker.patch('upsies.utils.scene.assert_not_abbreviated_filename', side_effect=exception)
+    if exp_exception:
+        exp_msg = re.escape(str(exp_exception))
+        with pytest.raises(type(exp_exception), match=rf'^{exp_msg}$'):
+            release.ReleaseInfo('foo.mkv', strict=strict)
+    else:
+        ri = release.ReleaseInfo('foo.mkv', strict=strict)
+        assert ri['title'] == 'foo'
 
 
 def test_getting_known_key(mocker):
