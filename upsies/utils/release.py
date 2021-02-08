@@ -952,15 +952,7 @@ def _file_and_dir(path):
     """Return `path`'s filename and parent directoy name"""
     filename = fs.basename(path)
     dirname = fs.basename(os.path.dirname(path))
-    names = []
-    if not scene.is_abbreviated_filename(filename):
-        names.append(filename)
-    if dirname and dirname != filename:
-        names.append(dirname)
-    if not names:
-        # Default to garbled filename
-        names.append(filename)
-    return names
+    yield from (filename, dirname)
 
 
 def _as_list(guess, key):
