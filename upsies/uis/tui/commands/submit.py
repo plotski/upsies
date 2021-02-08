@@ -3,6 +3,7 @@ Generate all required metadata and upload to tracker
 """
 
 from .... import constants, jobs, trackers, utils
+from . import argtypes
 from .base import CommandBase
 
 
@@ -17,7 +18,10 @@ class submit(CommandBase):
         tracker.name: {
             # Default arguments for all tackers
             **{
-                'CONTENT': {'help': 'Path to release content'},
+                'CONTENT': {
+                    'type': argtypes.content,
+                    'help': 'Path to release content',
+                },
                 ('--add-to', '-a'): {
                     'type': utils.types.client,
                     'metavar': 'CLIENT',

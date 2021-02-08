@@ -3,6 +3,7 @@ Search for scene release
 """
 
 from .... import constants, jobs, utils
+from . import argtypes
 from .base import CommandBase
 
 
@@ -20,7 +21,10 @@ class scene_search(CommandBase):
                      'Supported databases: ' + ', '.join(constants.SCENEDB_NAMES) + '\n'
                      f'Default: {jobs.scene.SceneSearchJob.default_scenedb}'),
         },
-        'RELEASE': {'help': 'Release name or path to release content'},
+        'RELEASE': {
+            'type': argtypes.release,
+            'help': 'Release name or path to release content',
+        },
     }
 
     @utils.cached_property
