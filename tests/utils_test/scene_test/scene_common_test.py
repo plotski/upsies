@@ -17,6 +17,17 @@ class AsyncMock(Mock):
         return coro()
 
 
+def test_SceneQuery_from_string(mocker):
+    ReleaseInfo_mock = mocker.patch('upsies.utils.release.ReleaseInfo')
+    from_release_mock = mocker.patch('upsies.utils.scene.common.SceneQuery.from_release')
+    query = common.SceneQuery.from_string('foo')
+    assert ReleaseInfo_mock.call_args_list == [call('foo', strict=True)]
+    assert from_release_mock.call_args_list == [call(ReleaseInfo_mock.return_value)]
+    assert query.keywords == from_release_mock.return_value.keywords
+    assert query.group == from_release_mock.return_value.group
+    assert query.episodes == from_release_mock.return_value.episodes
+
+
 @pytest.mark.parametrize(
     argnames='release, exp_keywords, exp_group, exp_episodes',
     argvalues=(
@@ -53,31 +64,6 @@ class AsyncMock(Mock):
 )
 def test_SceneQuery_from_release(release, exp_keywords, exp_group, exp_episodes):
     query = common.SceneQuery.from_release(release)
-    assert query.keywords == exp_keywords
-    assert query.group == exp_group
-    assert query.episodes == exp_episodes
-
-
-@pytest.mark.parametrize(
-    argnames='string, exp_keywords, exp_group, exp_episodes',
-    argvalues=(
-        (
-            'The.Foo.2004.720p.BluRay.x264-ASDF',
-            ('The', 'Foo', '2004', '720p', 'BluRay', 'x264'),
-            'ASDF',
-            {},
-        ),
-        (
-            'The.Foo.S01E01E02.720p.BluRay.x264-ASDF',
-            ('The', 'Foo', 'S01E01E02', '720p', 'BluRay', 'x264'),
-            'ASDF',
-            {'1': ('1', '2')},
-        ),
-    ),
-    ids=lambda v: str(v),
-)
-def test_SceneQuery_from_string(string, exp_keywords, exp_group, exp_episodes):
-    query = common.SceneQuery.from_string(string)
     assert query.keywords == exp_keywords
     assert query.group == exp_group
     assert query.episodes == exp_episodes

@@ -39,10 +39,16 @@ class SceneQuery:
 
         :param string: Release name or path to release content
 
-        `string` is passed to :class:`~.release.ReleaseInfo` to get the
-        relevant `keywords`.
+        `string` is passed to :class:`~.release.ReleaseInfo` and the result is
+        passed to :meth:`from_release`.
+
+        :raise SceneError: if :class:`~.release.ReleaseInfo` raises
+            :class:`~.errors.ContentError`
         """
-        return cls.from_release(release.ReleaseInfo(string))
+        try:
+            return cls.from_release(release.ReleaseInfo(string, strict=True))
+        except errors.ContentError as e:
+            raise errors.SceneError(e)
 
     @classmethod
     def from_release(cls, release):
