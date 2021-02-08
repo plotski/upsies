@@ -68,8 +68,12 @@ async def search(*args, **kwargs):
     return sorted(combined_results, key=str.casefold) + exceptions
 
 
-# See tests for examples of what this should/shouldn't match
-_abbreviated_scene_filename_regex = re.compile(r'^[a-z0-9]+-[a-z0-9_\.-]+?(?!-[a-z]{2,})\.[a-z]{3}$')
+_abbreviated_scene_filename_regexs = (
+    # Match names with group in front
+    re.compile(r'^[a-z0-9]+-[a-z0-9_\.-]+?(?!-[a-z]{2,})\.(?:mkv|avi)$'),
+    # Match "ttl.720p-group.mkv"
+    re.compile(r'^[a-z0-9]+[\.-]\d{3,4}p-[a-z]{2,}\.(?:mkv|avi)$'),
+)
 
 def is_abbreviated_filename(filepath):
     """
@@ -77,4 +81,7 @@ def is_abbreviated_filename(filepath):
     ``abd-mother.mkv``
     """
     filename = os.path.basename(filepath)
-    return bool(_abbreviated_scene_filename_regex.search(filename))
+    for regex in _abbreviated_scene_filename_regexs:
+        if regex.search(filename):
+            return True
+    return False
