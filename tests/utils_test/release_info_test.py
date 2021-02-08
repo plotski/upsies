@@ -13,38 +13,38 @@ def test_getting_known_key(mocker):
         assert ri['title'] == 'Mocked Title'
     assert ri._get_title.call_args_list == [call()]
 
-def test_getting_unknown_key(mocker):
+def test_getting_unknown_key():
     ri = release.ReleaseInfo('foo.mkv')
     with pytest.raises(KeyError, match=r"^'foo'$"):
         ri['foo']
 
 
-def test_setting_known_key(mocker):
+def test_setting_known_key():
     ri = release.ReleaseInfo('foo.mkv')
     assert ri['title'] == 'foo'
     ri['title'] = ''
     assert ri['title'] == ''
 
-def test_setting_unknown_key(mocker):
+def test_setting_unknown_key():
     ri = release.ReleaseInfo('foo.mkv')
     with pytest.raises(KeyError, match=r"^'foo'$"):
         ri['foo'] = 'bar'
     assert 'foo' not in ri
 
 
-def test_deleting_unknown_key(mocker):
+def test_deleting_unknown_key():
     ri = release.ReleaseInfo('foo.mkv')
     with pytest.raises(KeyError, match=r"^'foo'$"):
         del ri['foo']
 
-def test_deleting_known_key(mocker):
+def test_deleting_known_key():
     ri = release.ReleaseInfo('foo.mkv')
     assert ri['title'] == 'foo'
     del ri['title']
     assert ri['title'] == 'foo'
 
 
-def test_iter(mocker):
+def test_iter():
     ri = release.ReleaseInfo('foo.mkv')
     assert set(ri) == {
         'type',
@@ -64,7 +64,7 @@ def test_iter(mocker):
         'has_commentary',
     }
 
-def test_len(mocker):
+def test_len():
     ri = release.ReleaseInfo('foo.mkv')
     assert len(ri) == 15
 
