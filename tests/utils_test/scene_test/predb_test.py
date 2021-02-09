@@ -59,5 +59,5 @@ async def test_search_handles_error_status(api, mocker):
         'data': None,
     }))
     mocker.patch('upsies.utils.http.get', AsyncMock(return_value=response))
-    with pytest.raises(errors.SceneError, match=rf'^{api.label}: Something bad$'):
+    with pytest.raises(errors.RequestError, match=rf'^{api.label}: Something bad$'):
         await api.search(SceneQuery('foo', 'bar'))

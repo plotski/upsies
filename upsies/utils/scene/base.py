@@ -32,6 +32,8 @@ class SceneDbApiBase(abc.ABC):
         :param bool cache: Whether to use cached request response
 
         :return: :class:`list` of release names as :class:`str`
+
+        :raise RequestError: if the search request fails
         """
         return await query.search(self._search, cache=cache)
 

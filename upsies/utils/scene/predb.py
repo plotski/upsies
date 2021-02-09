@@ -26,6 +26,6 @@ class PreDbApi(base.SceneDbApiBase):
 
         # Report API error or return list of release names
         if response['status'] != 'success':
-            raise errors.SceneError(f'{self.label}: {response["message"]}')
+            raise errors.RequestError(f'{self.label}: {response["message"]}')
         else:
             return (result['name'] for result in response['data']['rows'])
