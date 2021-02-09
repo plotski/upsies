@@ -47,7 +47,7 @@ async def test_search_calls_http_get(group, cache, api, mocker):
 
     response = await api._search(keywords=keywords, group=group, cache=cache)
     assert get_mock.call_args_list == [
-        call(api._search_url, params=exp_params, cache=cache),
+        call(api._search_url, params=exp_params, cache=True),
     ]
     assert list(response) == ['Foo']
 

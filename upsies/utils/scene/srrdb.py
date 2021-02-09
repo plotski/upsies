@@ -21,6 +21,6 @@ class SrrDbApi(base.SceneDbApiBase):
         keywords_path = '/'.join((kw.lower() for kw in keywords))
         search_url = f'{self._search_url}/{keywords_path}'
         _log.debug('Scene search URL: %r', search_url)
-        response = (await http.get(search_url, cache=cache)).json()
+        response = (await http.get(search_url, cache=True)).json()
         results = response.get('results', [])
         return (r['release'] for r in results)

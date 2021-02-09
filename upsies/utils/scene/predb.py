@@ -22,7 +22,7 @@ class PreDbApi(base.SceneDbApiBase):
         params = {'q': ' '.join((kw.lower() for kw in keywords)), 'count': 1000}
         _log.debug('Scene search: %r, %r', self._search_url, params)
 
-        response = (await http.get(self._search_url, params=params, cache=cache)).json()
+        response = (await http.get(self._search_url, params=params, cache=True)).json()
 
         # Report API error or return list of release names
         if response['status'] != 'success':
