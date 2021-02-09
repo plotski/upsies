@@ -94,15 +94,14 @@ class ReleaseType(enum.Enum):
 
 class SceneCheckResult(enum.Enum):
     """
-    Enum with the values ``true``, ``false``, ``modified`` and
-    ``unknown``
+    Enum with the values ``true``, ``false``, ``altered`` and ``unknown``
 
     All values are falsy except for ``true``.
     """
 
     true = 'true'
     false = 'false'
-    modified = 'modified'
+    altered = 'altered'
     unknown = 'unknown'
 
     def __bool__(self):
