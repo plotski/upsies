@@ -148,6 +148,7 @@ def test_ReleaseType_repr(name, exp_repr):
     argvalues=(
         ('true', True),
         ('false', False),
+        ('renamed', False),
         ('altered', False),
         ('unknown', False),
     ),
@@ -160,6 +161,7 @@ def test_SceneCheckResult_truthiness(name, bool_value):
     argvalues=(
         ('true', 'true'),
         ('false', 'false'),
+        ('renamed', 'renamed'),
         ('altered', 'altered'),
         ('unknown', 'unknown'),
     ),
@@ -172,6 +174,7 @@ def test_SceneCheckResult_string(name, exp_str):
     argvalues=(
         ('true', 'SceneCheckResult.true'),
         ('false', 'SceneCheckResult.false'),
+        ('renamed', 'SceneCheckResult.renamed'),
         ('altered', 'SceneCheckResult.altered'),
         ('unknown', 'SceneCheckResult.unknown'),
     ),

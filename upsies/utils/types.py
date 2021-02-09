@@ -94,13 +94,15 @@ class ReleaseType(enum.Enum):
 
 class SceneCheckResult(enum.Enum):
     """
-    Enum with the values ``true``, ``false``, ``altered`` and ``unknown``
+    Enum with the values ``true``, ``false``, ``renamed``, ``altered`` and
+    ``unknown``
 
     All values are falsy except for ``true``.
     """
 
     true = 'true'
     false = 'false'
+    renamed = 'renamed'
     altered = 'altered'
     unknown = 'unknown'
 
