@@ -88,10 +88,10 @@ async def test_SceneQuery_search_calls_given_coroutine_function(keywords, exp_ke
     assert search.call_args_list == [call(exp_keywords, group='baz', cache=exp_cache)]
 
 @pytest.mark.asyncio
-async def test_SceneQuery_search_handles_RequestError():
+async def test_SceneQuery_search_raises_RequestError():
     query = common.SceneQuery('foo', 'bar', group='baz')
     search = AsyncMock(side_effect=errors.RequestError('no'))
-    with pytest.raises(errors.SceneError, match=r'^no$'):
+    with pytest.raises(errors.RequestError, match=r'^no$'):
         await query.search(search)
 
 

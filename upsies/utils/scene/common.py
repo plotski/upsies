@@ -93,12 +93,8 @@ class SceneQuery:
         keywords = tuple(kw for kw in self.keywords
                          if not re.match(r'^(?i:[SE]\d+|)+$', kw))
         _log.debug('Searching for scene release: %r', keywords)
-        try:
-            results = await search_coro_func(keywords, group=self.group, cache=cache)
-        except errors.RequestError as e:
-            raise errors.SceneError(e)
-        else:
-            return self._handle_results(results)
+        results = await search_coro_func(keywords, group=self.group, cache=cache)
+        return self._handle_results(results)
 
     def _handle_results(self, results):
         results = natsort.natsorted(results, key=str.casefold)
