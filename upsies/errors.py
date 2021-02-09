@@ -81,4 +81,4 @@ def SubprocessError(exception, original_traceback):
 
 
 class SceneError(UpsiesError):
-    """Failed scene search or validation"""
+    """Failed scene search, verification, etc"""

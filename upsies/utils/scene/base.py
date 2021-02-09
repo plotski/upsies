@@ -14,6 +14,8 @@ _log = logging.getLogger(__name__)
 
 
 class SceneDbApiBase(abc.ABC):
+    """Base class for scene release database APIs"""
+
     @property
     @abc.abstractmethod
     def name(self):

@@ -1,5 +1,5 @@
 """
-Scene release search and validation
+Scene release search and verification
 """
 
 import asyncio

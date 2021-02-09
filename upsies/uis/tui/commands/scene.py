@@ -1,5 +1,5 @@
 """
-Search for scene release
+Searching for and verifying scene release
 """
 
 from .... import constants, jobs, utils
@@ -8,7 +8,7 @@ from .base import CommandBase
 
 
 class scene_search(CommandBase):
-    """Search for scene release"""
+    """Search for scene release name"""
 
     names = ('scene-search', 'scs')
 
