@@ -128,10 +128,20 @@ class InputField:
 
 
 class RadioList:
-    """List of choices the user can select from"""
+    """
+    List of choices the user can select from
+
+    :param choices: Sequence of choices the user can make
+    :param focused: Focused index or `None` to focus the first choice
+    :param on_accepted: Callback that gets the user-picked choice
+
+    Each choice item must be a :class:`str` or a sequence with one or more
+    items. The first item is presented to the user. `on_accept` gets the
+    complete choice item.
+    """
 
     def __init__(self, choices, focused=None, on_accepted=None):
-        assert len(choices) >= 2
+        assert len(choices) >= 2, f'Too few choices: {choices!r}'
         self.choices = choices
         self.choice = None
         if focused:
@@ -174,8 +184,18 @@ class RadioList:
 
     def _get_text_fragments(self):
         result = []
-        width = max(len(value) for value in self.choices)
-        for i, value in enumerate(self.choices):
+
+        def choice_as_string(choice):
+            if isinstance(choice, str):
+                return choice
+            elif isinstance(choice, collections.abc.Sequence):
+                return str(choice[0])
+            else:
+                raise RuntimeError(f'Invalid choice value: {choice!r}')
+
+        width = max(len(choice_as_string(choice)) for choice in self.choices)
+        for i, choice in enumerate(self.choices):
+            choice_string = choice_as_string(choice)
             if i == self.focused_index:
                 style = 'class:prompt.choice.focused'
                 result.append(('[SetCursorPosition]', ''))
@@ -184,7 +204,7 @@ class RadioList:
                 style = 'class:prompt.choice'
                 result.append((style, ' '))
             result.append((style, ' '))
-            result.extend(to_formatted_text(value.ljust(width), style=style))
+            result.extend(to_formatted_text(choice_string.ljust(width), style=style))
             result.append(('', '\n'))
 
         result.pop()  # Remove last newline

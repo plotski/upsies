@@ -15,9 +15,9 @@ class ChoiceJobWidget(JobWidgetBase):
         )
         self.job.signal.register('prompt_updated', self._handle_update)
 
-    def _handle_update(self):
-        self._radiolist.choices = self.job.choices
-        self._radiolist.focused_index = self.job.choices.index(self.job.focused)
+    def _handle_update(self, choices, focused_index):
+        self._radiolist.choices = choices
+        self._radiolist.focused_index = focused_index
         self.invalidate()
 
     def _handle_choice(self, choice):

@@ -1,4 +1,4 @@
-import re
+import asyncio
 from unittest.mock import Mock, call
 
 import pytest
@@ -6,115 +6,270 @@ import pytest
 from upsies.jobs import prompt
 
 
-def test_choices_is_shorter_than_two(tmp_path):
-    choices = ('foo',)
-    with pytest.raises(ValueError, match=(r'^Choices must have at least 2 items: '
-                                          rf'{re.escape(str(choices))}$')):
-        prompt.ChoiceJob(name='foo', label='Foo', choices=choices)
-
-
-def test_focused_argument_is_not_given(tmp_path):
-    choices = ('foo', 'bar', 'baz')
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=choices)
-    assert job.focused == 'foo'
-
-@pytest.mark.parametrize('focused', ('foo', 'bar', 'baz'))
-def test_focused_argument_is_valid(focused, tmp_path):
-    choices = ('foo', 'bar', 'baz')
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=choices, focused=focused)
-    assert job.focused == focused
-
-def test_focused_argument_is_invalid(tmp_path):
-    choices = ('foo', 'bar', 'baz')
-    with pytest.raises(ValueError, match=(r'^Invalid choice: asdf$')):
-        prompt.ChoiceJob(name='foo', label='Foo', choices=choices, focused='asdf')
-
-
-def test_name_property(tmp_path):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(1, 2, 3))
+def test_name_property():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     assert job.name == 'foo'
 
 
-def test_label_property(tmp_path):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(1, 2, 3))
+def test_label_property():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     assert job.label == 'Foo'
 
 
-def test_choices_property(tmp_path):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(1, 2, 3))
+def test_choices_are_strings():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     cb = Mock()
+    assert job.choices == (('1', '1'), ('2', '2'), ('3', '3'))
+    assert job.focused == ('1', '1')
     job.signal.register('prompt_updated', cb)
-    assert job.choices == ('1', '2', '3')
+
     job.focused = '3'
-    assert cb.call_args_list == [call()]
+    assert job.choices == (('1', '1'), ('2', '2'), ('3', '3'))
+    assert job.focused == ('3', '3')
+    assert cb.call_args_list == [call((('1', '1'), ('2', '2'), ('3', '3')), 2)]
+    cb.reset_mock()
+
     job.choices = ('a', 'b', 'c')
-    assert cb.call_args_list == [call(), call()]
-    assert job.choices == ('a', 'b', 'c')
-    assert job.focused == 'a'
-    job.choices = ('foo', 'a', 'bar')
-    assert cb.call_args_list == [call(), call(), call()]
-    assert job.focused == 'a'
+    assert job.choices == (('a', 'a'), ('b', 'b'), ('c', 'c'))
+    assert job.focused == ('a', 'a')
+    assert cb.call_args_list == [call((('a', 'a'), ('b', 'b'), ('c', 'c')), 0)]
+    cb.reset_mock()
+
+    job.choices = ['foo', 'a', 'bar']
+    assert job.choices == (('foo', 'foo'), ('a', 'a'), ('bar', 'bar'))
+    assert job.focused == ('a', 'a')
+    assert cb.call_args_list == [call((('foo', 'foo'), ('a', 'a'), ('bar', 'bar')), 1)]
+    cb.reset_mock()
+
+    job.choices = ['bar', 'baz']
+    assert job.choices == (('bar', 'bar'), ('baz', 'baz'))
+    assert job.focused == ('bar', 'bar')
+    assert cb.call_args_list == [call((('bar', 'bar'), ('baz', 'baz')), 0)]
+    cb.reset_mock()
+
     with pytest.raises(ValueError, match=r"^Choices must have at least 2 items: \('x',\)$"):
         job.choices = ('x',)
-    assert job.choices == ('foo', 'a', 'bar')
-    assert cb.call_args_list == [call(), call(), call()]
+    assert job.choices == (('bar', 'bar'), ('baz', 'baz'))
+    assert job.focused == ('bar', 'bar')
 
+def test_choices_are_sequences():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3)))
+    cb = Mock()
+    assert job.choices == (('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3))
+    assert job.focused == ('a', 1, -3)
+    job.signal.register('prompt_updated', cb)
 
-def test_focused_property(tmp_path):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(1, 2, 3))
+    job.focused = ('c', 3, -1, -2, -3)
+    assert job.choices == (('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3))
+    assert job.focused == ('c', 3, -1, -2, -3)
+    assert cb.call_args_list == [call((('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3)), 2)]
+    cb.reset_mock()
+
+    job.choices = (('d', 4, 'f'), ('e', 5, 'o'), ('f', 6, 'o'))
+    assert job.choices == (('d', 4, 'f'), ('e', 5, 'o'), ('f', 6, 'o'))
+    assert job.focused == ('d', 4, 'f')
+    assert cb.call_args_list == [call((('d', 4, 'f'), ('e', 5, 'o'), ('f', 6, 'o')), 0)]
+    cb.reset_mock()
+
+    job.choices = [('x', 100), ('y', 200), ('d', 4, 'f')]
+    assert job.choices == (('x', 100), ('y', 200), ('d', 4, 'f'))
+    assert job.focused == ('d', 4, 'f')
+    assert cb.call_args_list == [call((('x', 100), ('y', 200), ('d', 4, 'f')), 2)]
+    cb.reset_mock()
+
+    job.choices = [('hello', 99), ('world', 33)]
+    assert job.choices == (('hello', 99), ('world', 33))
+    assert job.focused == ('hello', 99)
+    assert cb.call_args_list == [call((('hello', 99), ('world', 33)), 0)]
+    cb.reset_mock()
+
+    with pytest.raises(ValueError, match=r"^Choices must have at least 2 items: \(\('x', -1\),\)$"):
+        job.choices = (('x', -1),)
+    assert job.choices == (('hello', 99), ('world', 33))
+    assert job.focused == ('hello', 99)
+    assert cb.call_args_list == []
+
+    with pytest.raises(ValueError, match=r"^Choice must be a 2-tuple, not \('x',\)$"):
+        job.choices = (('x',),)
+    assert job.choices == (('hello', 99), ('world', 33))
+    assert job.focused == ('hello', 99)
+    assert cb.call_args_list == []
+
+def test_choices_are_invalid():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('a', 'b',))
     cb = Mock()
     job.signal.register('prompt_updated', cb)
-    assert job.focused == '1'
-    job.focused = '2'
-    assert cb.call_args_list == [call()]
-    assert job.focused == '2'
+    with pytest.raises(ValueError, match=r"^Choice must be a 2-tuple, not 123$"):
+        job.choices = ('x', ('y', 'why'), 123, ('z', 'see'))
+    assert job.choices == (('a', 'a'), ('b', 'b'))
+    assert job.focused == ('a', 'a')
+    assert cb.call_args_list == []
+
+
+@pytest.mark.parametrize('current', ('a', 'b', 'c'))
+def test_focused_set_to_None(current):
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('a', 'b', 'c'), focused=current)
+    cb = Mock()
+    job.signal.register('prompt_updated', cb)
+    assert job.focused == (current, current)
     job.focused = None
-    assert cb.call_args_list == [call(), call()]
-    assert job.focused == '1'
-    with pytest.raises(ValueError, match=r"^Invalid choice: 4$"):
-        job.focused = '4'
-    assert job.focused == '1'
-    assert cb.call_args_list == [call(), call()]
+    assert job.focused == ('a', 'a')
+    assert cb.call_args_list == [call((('a', 'a'), ('b', 'b'), ('c', 'c')), 0)]
+
+@pytest.mark.parametrize('focus', (0, 1, 2))
+def test_focused_set_to_int(focus):
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('a', 'b', 'c'))
+    cb = Mock()
+    job.signal.register('prompt_updated', cb)
+    assert job.focused == ('a', 'a')
+    job.focused = focus
+    assert job.focused == job.choices[focus]
+    assert cb.call_args_list == [call((('a', 'a'), ('b', 'b'), ('c', 'c')), focus)]
+
+@pytest.mark.parametrize('focus, exp_focused', (
+    ('a', ('a', 'foo')),
+    ('b', ('b', 'bar')),
+    ('c', ('c', 'baz')),
+    ('foo', ('a', 'foo')),
+    ('bar', ('b', 'bar')),
+    ('baz', ('c', 'baz')),
+))
+def test_focused_set_to_valid_value(focus, exp_focused):
+    choices = (('a', 'foo'), ('b', 'bar'), ('c', 'baz'))
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=choices)
+    cb = Mock()
+    job.signal.register('prompt_updated', cb)
+    assert job.focused == ('a', 'foo')
+    job.focused = focus
+    assert job.focused == exp_focused
+    assert cb.call_args_list == [call((('a', 'foo'), ('b', 'bar'), ('c', 'baz')), choices.index(exp_focused))]
+
+def test_focused_set_to_invalid_value():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
+    cb = Mock()
+    job.signal.register('prompt_updated', cb)
+    assert job.focused == ('a', 1)
+    with pytest.raises(ValueError, match=r"^Invalid choice: 'x'$"):
+        job.focused = 'x'
+    assert job.focused == ('a', 1)
+    assert cb.call_args_list == []
+
+@pytest.mark.parametrize('choice', (('a', 1), ('b', 2), ('c', 3)))
+def test_focused_set_to_valid_choice(choice):
+    choices = (('a', 1), ('b', 2), ('c', 3))
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=choices)
+    cb = Mock()
+    job.signal.register('prompt_updated', cb)
+    assert job.focused == ('a', 1)
+    job.focused = choice
+    assert job.focused == choice
+    assert cb.call_args_list == [call((('a', 1), ('b', 2), ('c', 3)), choices.index(choice))]
+
+def test_focused_set_to_invalid_choice():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
+    cb = Mock()
+    job.signal.register('prompt_updated', cb)
+    assert job.focused == ('a', 1)
+    with pytest.raises(ValueError, match=r"^Invalid choice: \('d', 4\)$"):
+        job.focused = ('d', 4)
+    assert job.focused == ('a', 1)
+    assert cb.call_args_list == []
 
 
-def test_choice_selected_value_is_valid(tmp_path):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(1, 2, 3), focused=2)
-    assert not job.is_finished
-    job.choice_selected('3')
-    assert job.is_finished
-    assert job.output == ('3',)
+@pytest.mark.parametrize('choice', (('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+def test_choice_selected_with_valid_choice(choice):
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    cb = Mock()
+    job.signal.register('chosen', cb.chosen)
+    job.signal.register('output', cb.output)
+    job.choice_selected(choice)
+    assert cb.mock_calls == [call.chosen(choice), call.output(choice[0])]
+    assert job.output == (choice[0],)
     assert job.errors == ()
-    assert job.exit_code == 0
-
-@pytest.mark.asyncio
-async def test_choice_selected_value_is_invalid(tmp_path):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(1, 2, 3), focused=2)
-    assert not job.is_finished
-    job.choice_selected('4')
+    asyncio.get_event_loop().run_until_complete(job.wait())
     assert job.is_finished
+
+def test_choice_selected_with_invalid_choice():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
+    cb = Mock()
+    job.signal.register('chosen', cb)
+    assert job.focused == ('a', 1)
+    job.choice_selected(('d', 4))
+    assert job.focused == ('a', 1)
+    assert cb.call_args_list == []
     assert job.output == ()
     assert job.errors == ()
-    assert job.exit_code > 0
-    with pytest.raises(ValueError, match=r'^Invalid value: 4$'):
-        await job.wait()
-
-def test_choice_selected_index_is_valid(tmp_path):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('a', 'b', 'c'), focused='a')
-    assert not job.is_finished
-    job.choice_selected(1)
+    with pytest.raises(ValueError, match=r"^Invalid choice: \('d', 4\)$"):
+        asyncio.get_event_loop().run_until_complete(job.wait())
     assert job.is_finished
-    assert job.output == ('b',)
-    assert job.errors == ()
-    assert job.exit_code == 0
 
-@pytest.mark.asyncio
-async def test_choice_selected_index_is_invalid(tmp_path):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('a', 'b', 'c'), focused='b')
-    assert not job.is_finished
+@pytest.mark.parametrize('index, exp_choice', ((0, ('a', 'foo')), (1, ('b', 'bar')), (2, ('c', 'baz'))))
+def test_choice_selected_with_valid_index(index, exp_choice):
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    cb = Mock()
+    job.signal.register('chosen', cb.chosen)
+    job.signal.register('output', cb.output)
+    job.choice_selected(index)
+    assert cb.mock_calls == [call.chosen(exp_choice), call.output(exp_choice[0])]
+    assert job.output == (exp_choice[0],)
+    assert job.errors == ()
+    asyncio.get_event_loop().run_until_complete(job.wait())
+    assert job.is_finished
+
+def test_choice_selected_with_invalid_index():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    cb = Mock()
+    job.signal.register('chosen', cb.chosen)
+    job.signal.register('output', cb.output)
     job.choice_selected(3)
-    assert job.is_finished
+    assert cb.mock_calls == []
     assert job.output == ()
     assert job.errors == ()
-    assert job.exit_code > 0
-    with pytest.raises(ValueError, match=r'^Invalid index: 3$'):
-        await job.wait()
+    with pytest.raises(ValueError, match=r"^Invalid choice: 3$"):
+        asyncio.get_event_loop().run_until_complete(job.wait())
+    assert job.is_finished
+
+@pytest.mark.parametrize('value, exp_choice', (
+    ('a', ('a', 'foo')),
+    ('b', ('b', 'bar')),
+    ('c', ('c', 'baz')),
+    ('foo', ('a', 'foo')),
+    ('bar', ('b', 'bar')),
+    ('baz', ('c', 'baz')),
+))
+def test_choice_selected_with_valid_value(value, exp_choice):
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    cb = Mock()
+    job.signal.register('chosen', cb.chosen)
+    job.signal.register('output', cb.output)
+    job.choice_selected(value)
+    assert cb.mock_calls == [call.chosen(exp_choice), call.output(exp_choice[0])]
+    assert job.output == (exp_choice[0],)
+    assert job.errors == ()
+    asyncio.get_event_loop().run_until_complete(job.wait())
+    assert job.is_finished
+
+def test_choice_selected_with_invalid_value():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    cb = Mock()
+    job.signal.register('chosen', cb.chosen)
+    job.signal.register('output', cb.output)
+    job.choice_selected('arf')
+    assert cb.mock_calls == []
+    assert job.output == ()
+    assert job.errors == ()
+    with pytest.raises(ValueError, match=r"^Invalid choice: 'arf'$"):
+        asyncio.get_event_loop().run_until_complete(job.wait())
+    assert job.is_finished
+
+def test_choice_selected_with_None():
+    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    cb = Mock()
+    job.signal.register('chosen', cb.chosen)
+    job.signal.register('output', cb.output)
+    job.choice_selected(None)
+    assert cb.mock_calls == []
+    assert job.output == ()
+    assert job.errors == ()
+    asyncio.get_event_loop().run_until_complete(job.wait())
+    assert job.is_finished
