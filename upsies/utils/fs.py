@@ -166,6 +166,16 @@ def strip_extension(path, only=()):
     return path
 
 
+def file_size(path):
+    """Return file size in bytes or `None`"""
+    if not os.path.isdir(path):
+        try:
+            return os.path.getsize(path)
+        except OSError:
+            pass
+    return None
+
+
 def file_list(path, extensions=()):
     """
     List naturally sorted files in `path` and any subdirectories

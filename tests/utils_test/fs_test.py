@@ -192,6 +192,27 @@ def test_strip_extension():
     assert fs.strip_extension('Something x264-GRP.mp4', only=('mkv', 'mp3')) == 'Something x264-GRP.mp4'
 
 
+def test_file_size_of_file(tmp_path):
+    filepath = tmp_path / 'file'
+    filepath.write_bytes(b'foo')
+    assert fs.file_size(filepath) == 3
+
+def test_file_size_of_directory(tmp_path):
+    assert fs.file_size(tmp_path) is None
+
+def test_file_size_of_unaccessible_file(tmp_path):
+    filepath = tmp_path / 'file'
+    filepath.write_bytes(b'foo')
+    os.chmod(tmp_path, 0o000)
+    try:
+        assert fs.file_size(filepath) is None
+    finally:
+        os.chmod(tmp_path, 0o700)
+
+def test_file_size_of_nonexisting_file():
+    assert fs.file_size('path/to/nothing') is None
+
+
 def test_file_list_recurses_into_subdirectories(tmp_path):
     (tmp_path / 'a.txt').write_bytes(b'foo')
     (tmp_path / 'a').mkdir()
