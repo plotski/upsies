@@ -873,12 +873,12 @@ class Episodes(dict):
     empty string.
     """
 
-    _contains_info_regex = re.compile(r'(?:^|[\. ])(?:[SE]\d+)+(?:[\. ]|$)')
+    _contains_info_regex = re.compile(r'(?:^|[\. ])(?i:[SE]\d+)+(?:[\. ]|$)')
 
     @classmethod
     def has_episodes_info(cls, string):
         """Whether `string` contains "S01E02"-like episode information"""
-        return cls._contains_info_regex.search(string)
+        return bool(cls._contains_info_regex.search(string))
 
     @classmethod
     def from_string(cls, value):

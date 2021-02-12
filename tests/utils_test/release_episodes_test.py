@@ -62,3 +62,22 @@ def test_Episodes_str(mapping, string):
 def test_Episodes_repr():
     x = release.Episodes({5: (3, 6), '': (1, 2), 6: ()})
     assert repr(x) == "Episodes({'5': ('3', '6'), '': ('1', '2'), '6': ()})"
+
+
+@pytest.mark.parametrize(
+    argnames=('release_name', 'exp_value'),
+    argvalues=(
+        ('Foo.S01.720p.BluRay.x264-ASDF', True),
+        ('Foo.S01E02.720p.BluRay.x264-ASDF', True),
+        ('Foo.S01S02.720p.BluRay.x264-ASDF', True),
+        ('Foo.S01E01E02.720p.BluRay.x264-ASDF', True),
+        ('Foo.2015.S01.720p.BluRay.x264-ASDF', True),
+        ('Foo.2015.S01E02.720p.BluRay.x264-ASDF', True),
+        ('Foo.2015.S01S02.720p.BluRay.x264-ASDF', True),
+        ('Foo.2015.S01E01E02.720p.BluRay.x264-ASDF', True),
+    ),
+    ids=lambda v: str(v),
+)
+def test_has_episodes_info(release_name, exp_value):
+    assert release.Episodes.has_episodes_info(release_name) == exp_value
+    assert release.Episodes.has_episodes_info(release_name.lower()) == exp_value
