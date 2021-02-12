@@ -66,7 +66,7 @@ async def test_search_delegates_query(testdb, mocker):
         ('Justified.S04E99.720p.BluRay.x264-REWARD', SceneCheckResult.false),
         ('Justified.S04.720p.BluRay.x264-REWARD', SceneCheckResult.true),
         ('Justified.S02.720p.BluRay.x264-REWARD', SceneCheckResult.false),  # REWARD only released S01 + S04
-        ('Justified.720p.BluRay.x264-REWARD', SceneCheckResult.true),
+        ('Justified.720p.BluRay.x264-REWARD', SceneCheckResult.unknown),
 
         # Non-scene release
         ('Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv', SceneCheckResult.false),
