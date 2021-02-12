@@ -97,6 +97,13 @@ def test_repr():
     assert repr(ri) == "ReleaseInfo('path/to/foo.mkv')"
 
 
+def test_episodes_is_singleton():
+    ri = release.ReleaseInfo('foo.mkv')
+    episodes_id = id(ri['episodes'])
+    ri['episodes'] = {1: (2, 3)}
+    assert id(ri['episodes']) == episodes_id
+
+
 @pytest.mark.parametrize(
     argnames=('release_name', 'exp_params'),
     argvalues=(

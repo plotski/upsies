@@ -667,10 +667,18 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return str(self._guess.get('year') or '')
 
     def _get_episodes(self):
-        return self._guess.get('episodes', Episodes())
+        if 'episodes' not in self._guess:
+            self._guess['episodes'] = Episodes()
+        return self._guess['episodes']
 
     def _set_episodes(self, value):
-        self._guess['episodes'] = Episodes(value)
+        # Keep Episodes() object ID. Ensure `value` is not the object in
+        # self._guess['episodes'] so we can clear() without losing items in
+        # `value`.
+        value = dict(value)
+        episodes = self._get_episodes()
+        episodes.clear()
+        episodes.update(value)
 
     def _get_episode_title(self):
         return str(self._guess.get('episode_title', ''))
