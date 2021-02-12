@@ -42,6 +42,7 @@ def test_Episodes_validation(args, exp, exc, msg):
 )
 def test_Episodes_from_string(string, exp):
     assert release.Episodes.from_string(string) == exp
+    assert release.Episodes.from_string(string.lower()) == exp
 
 
 @pytest.mark.parametrize(
