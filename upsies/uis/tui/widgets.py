@@ -140,8 +140,7 @@ class RadioList:
     complete choice item.
     """
 
-    def __init__(self, choices, focused=None, on_accepted=None):
-        assert len(choices) >= 2, f'Too few choices: {choices!r}'
+    def __init__(self, choices=(), focused=None, on_accepted=None):
         self.choices = choices
         self.choice = None
         if focused:
