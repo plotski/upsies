@@ -37,3 +37,15 @@ class SceneDbApiBase(abc.ABC):
     @abc.abstractmethod
     async def _search(self, keywords, group=None, cache=True):
         pass
+
+    @abc.abstractmethod
+    async def release_files(self, release_name):
+        """
+        Map file names to file objects
+
+        What a file object is depends on the subclass implementation.
+
+        :param str release_name: Exact name of the release
+
+        :raise RequestError: if request fails
+        """

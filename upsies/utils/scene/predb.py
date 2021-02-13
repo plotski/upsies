@@ -29,3 +29,7 @@ class PreDbApi(base.SceneDbApiBase):
             raise errors.RequestError(f'{self.label}: {response["message"]}')
         else:
             return (result['name'] for result in response['data']['rows'])
+
+    async def release_files(self, release_name):
+        """Always return an empty :class:`dict`"""
+        return {}
