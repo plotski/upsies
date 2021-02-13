@@ -52,30 +52,48 @@ async def search(*args, **kwargs):
     return await _PREDB.search(*args, **kwargs)
 
 
+async def is_scene_release(release):
     """
-    Concurrently search with all :class:`~.SceneDbApiBase` subclasses
+    Check if `release` is a scene release or not
 
-    All arguments are passed on to each :meth:`~.SceneDbApiBase.search` method.
+    :param release: Release name, path to release,
+        :class:`~.release.ReleaseName` or :class:`~.release.ReleaseInfo`
+        instance or any :class:`dict`-like object with the same keys
 
-    :return: Deduplicated :class:`list` of release names as :class:`str`
+    :return: :class:`~.types.SceneCheckResult`
     """
-    # TODO: Allow custom arguments for SceneDbApiBase subclasses (e.g. for user
-    #       authentication): Add "class_args" argument: dict that maps
-    #       SceneDb.name values to (('posarg', ...), {'kw': 'arg', ...}) tuples
-    #       which are passed to the corresponding subclass.
-    searches = [asyncio.ensure_future(SceneDb().search(*args, **kwargs))
-                for SceneDb in scenedbs()]
-    done, pending = await asyncio.wait(searches, return_when=asyncio.ALL_COMPLETED)
-    assert not pending, pending
+    if isinstance(release, str):
+        release = utils.release.ReleaseInfo(release)
 
-    combined_results = set()
-    exceptions = []
-    for task in done:
-        try:
-            results = task.result()
-        except errors.SceneError as e:
-            exceptions.append(e)
+    # NOTE: Simply searching for the group does not work because some scene
+    #       groups make non-scene releases and vice versa.
+    #       Examples:
+    #         - Prospect.2018.720p.BluRay.DD5.1.x264-LoRD
+    #         - How.The.Grinch.Stole.Christmas.2000.720p.BluRay.DTS.x264-EbP
+    query = SceneQuery.from_release(release)
+    results = await _PREDB.search(query)
+    if results:
+        # Do we have enough information to find a single release?
+        if release['type'] is ReleaseType.movie:
+            needed_keys = _NEEDED_MOVIE_KEYS
+        elif release['type'] in (ReleaseType.season, ReleaseType.episode):
+            needed_keys = _NEEDED_SERIES_KEYS
         else:
-            combined_results.update(results)
+            # If we don't even know the type, we certainly don't have enough
+            # information to pin down a release.
+            return SceneCheckResult.unknown
 
-    return sorted(combined_results, key=str.casefold) + exceptions
+        if not all(release[k] for k in needed_keys):
+            return SceneCheckResult.unknown
+        else:
+            return SceneCheckResult.true
+
+    # If this is a file like "abd-mother.mkv" without a properly named parent
+    # directory and we didn't find it above, it's possibly a scene release, but
+    # we can't be sure.
+    try:
+        assert_not_abbreviated_filename(release.path)
+    except errors.SceneError:
+        return SceneCheckResult.unknown
+
+    return SceneCheckResult.false
