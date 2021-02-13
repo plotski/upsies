@@ -152,3 +152,40 @@ async def release_files(release_name):
             break
 
     return files
+
+
+async def verify_release_name(content_path, release_name):
+    """
+    Check if release was renamed
+
+    :param content_path: Path to release file or directory
+    :param release_name: Known exact release name, e.g. from :func:`search`
+        results
+
+    `content_path` is ok if its last segment is equal to `release_name` (file
+    extension is ignored) or equal to one of the files from the release
+    specified by `release_name`.
+
+    :raise SceneRenamedError: if release was renamed
+    :raise SceneError: if release name is not a scene release or if
+        `content_path` points to an abbreviated file name
+        (e.g. "abd-mother.mkv")
+    """
+    assert_not_abbreviated_filename(content_path)
+    if not await is_scene_release(release_name):
+        raise errors.SceneError(f'Not a scene release: {release_name}')
+
+    content_filename = utils.fs.basename(content_path)
+    content_release_name = utils.fs.strip_extension(content_filename)
+
+    if content_release_name == release_name:
+        return
+
+    files = await release_files(release_name)
+    if content_filename in files:
+        return
+
+    raise errors.SceneRenamedError(
+        original_name=release_name,
+        existing_name=content_release_name,
+    )

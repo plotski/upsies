@@ -1,5 +1,6 @@
 from unittest.mock import Mock, call
 
+import re
 import pytest
 
 from upsies import errors
@@ -185,3 +186,74 @@ async def test_is_scene_release(release_name, exp_return_value, store_response):
 @pytest.mark.asyncio
 async def test_release_files(release_name, exp_return_value, store_response):
     assert await scene.release_files(release_name) == exp_return_value
+
+
+@pytest.mark.parametrize(
+    argnames='content_path, release_name, exp_exception',
+    argvalues=(
+        # Abbreviated file in properly named directory
+        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv',
+         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+         errors.SceneError('Provide parent directory of abbreviated scene file: ly-dellmdm1080p.mkv')),
+
+        # Abbreviated file in non-release directory
+        ('path/to/ly-dellmdm1080p.mkv',
+         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+         errors.SceneError('Provide parent directory of abbreviated scene file: ly-dellmdm1080p.mkv')),
+
+        # Non-scene release
+        ('path/to/Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv',
+         'Rampart.2011.1080p.Bluray.DD5.1.x264-DON',
+         errors.SceneError('Not a scene release: Rampart.2011.1080p.Bluray.DD5.1.x264-DON')),
+
+        # Properly named directory
+        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/',
+         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+         None),
+
+        # Properly named file
+        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
+         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+         None),
+
+        # Renamed
+        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.X264-LiViDiTY',
+         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+         errors.SceneRenamedError(original_name='Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+                                  existing_name='Dellamorte.Dellamore.1994.1080p.BluRay.X264-LiViDiTY')),
+
+        # File from release
+        ('path/to/side.effects.2013.720p.bluray.x264-sparks.mkv',
+         'Side.Effects.2013.720p.BluRay.x264-SPARKS',
+         None),
+
+        # Renamed file from release
+        ('path/to/side.effects.2013.720p.bluray.x264-SPARKS.mkv',
+         'Side.Effects.2013.720p.BluRay.x264-SPARKS',
+         errors.SceneRenamedError(original_name='Side.Effects.2013.720p.BluRay.x264-SPARKS',
+                                  existing_name='side.effects.2013.720p.bluray.x264-SPARKS.mkv')),
+
+        # Multi-file release
+        ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+         'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+         (),),
+
+        # Renamed multi-file release
+        ('path/to/Bored.to.Death.S01.Extras.720p.BluRay.x264-iNGOT',
+         'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+         errors.SceneRenamedError(original_name='Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+                                  existing_name='Bored.to.Death.S01.Extras.720p.BluRay.x264-iNGOT')),
+
+        # Single file from multi-file release
+        ('path/to/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
+         'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+         None),
+    ),
+)
+@pytest.mark.asyncio
+async def test_verify_release_name(content_path, release_name, exp_exception, store_response):
+    if exp_exception:
+        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+            await scene.verify_release_name(content_path, release_name)
+    else:
+        await scene.verify_release_name(content_path, release_name)
