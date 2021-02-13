@@ -926,6 +926,14 @@ class Episodes(dict):
                 for season, episodes in natsort.natsorted(seasons.items())}
         return cls(args)
 
+    def remove_specific_episodes(self):
+        """Remove episodes from each season, leaving only complete season"""
+        for season in tuple(self):
+            if season:
+                self[season] = ()
+            else:
+                del self[season]
+
     def __init__(self, *args, **kwargs):
         def number(name, value):
             if isinstance(value, int):

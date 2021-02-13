@@ -82,3 +82,18 @@ def test_Episodes_repr():
 def test_has_episodes_info(release_name, exp_value):
     assert release.Episodes.has_episodes_info(release_name) == exp_value
     assert release.Episodes.has_episodes_info(release_name.lower()) == exp_value
+
+
+@pytest.mark.parametrize(
+    argnames=('episodes', 'exp_episodes'),
+    argvalues=(
+        ({}, {}),
+        ({'': ('1',)}, {}),
+        ({'1': (), '2': ('3',)}, {'1': (), '2': ()}),
+    ),
+    ids=lambda v: str(v),
+)
+def test_remove_specific_episodes(episodes, exp_episodes):
+    e = release.Episodes(episodes)
+    e.remove_specific_episodes()
+    assert e == exp_episodes
