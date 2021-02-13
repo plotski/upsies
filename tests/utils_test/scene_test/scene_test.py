@@ -43,34 +43,3 @@ def test_scenedb_fails_to_find_scenedb(mocker):
         scene.scenedb('bam', x=123)
     for c in existing_scenedbs:
         assert c.call_args_list == []
-
-
-@pytest.mark.asyncio
-async def test_search_combines_results_and_expected_exceptions(mocker):
-    existing_scenedbs = (
-        Mock(return_value=Mock(search=AsyncMock(return_value=['foo', 'bar']))),
-        Mock(return_value=Mock(search=AsyncMock(side_effect=errors.SceneError('Service unavailable')))),
-        Mock(return_value=Mock(search=AsyncMock(return_value=['foo', 'baz', 'kaplowie']))),
-    )
-    mocker.patch('upsies.utils.scene.scenedbs', return_value=existing_scenedbs)
-    results = await scene.search('a', b='c')
-    assert results == ['bar', 'baz', 'foo', 'kaplowie',
-                       errors.SceneError('Service unavailable')]
-    for scenedb_cls in existing_scenedbs:
-        print(scenedb_cls)
-        assert scenedb_cls.call_args_list == [call()]
-        assert scenedb_cls.return_value.search.call_args_list == [call('a', b='c')]
-
-@pytest.mark.asyncio
-async def test_search_raises_unexpected_exceptions(mocker):
-    existing_scenedbs = (
-        Mock(return_value=Mock(search=AsyncMock(return_value=['foo', 'bar']))),
-        Mock(return_value=Mock(search=AsyncMock(side_effect=ValueError('Bad value')))),
-        Mock(return_value=Mock(search=AsyncMock(return_value=['foo', 'baz', 'kaplowie']))),
-    )
-    mocker.patch('upsies.utils.scene.scenedbs', return_value=existing_scenedbs)
-    with pytest.raises(ValueError, match=r'^Bad value$'):
-        await scene.search('a', b='c')
-    for scenedb_cls in existing_scenedbs:
-        assert scenedb_cls.call_args_list == [call()]
-        assert scenedb_cls.return_value.search.call_args_list == [call('a', b='c')]

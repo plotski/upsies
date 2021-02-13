@@ -5,11 +5,21 @@ Scene release search and verification
 import asyncio
 import re
 
-from ... import errors
+from ... import errors, utils
 from .. import fs, subclasses, submodules
+from ..types import ReleaseType, SceneCheckResult
 from . import predb, srrdb
 from .base import SceneDbApiBase
 from .common import SceneQuery, assert_not_abbreviated_filename
+
+import logging  # isort:skip
+_log = logging.getLogger(__name__)
+
+_PREDB = predb.PreDbApi()
+_SRRDB = srrdb.SrrDbApi()
+
+_NEEDED_MOVIE_KEYS = ('title', 'year', 'resolution', 'source', 'video_codec', 'group')
+_NEEDED_SERIES_KEYS = ('title', 'episodes', 'resolution', 'source', 'video_codec', 'group')
 
 
 def scenedbs():
@@ -38,6 +48,10 @@ def scenedb(name, **kwargs):
 
 
 async def search(*args, **kwargs):
+    """Search with the recommended :class:`~.SceneDbApiBase` subclass"""
+    return await _PREDB.search(*args, **kwargs)
+
+
     """
     Concurrently search with all :class:`~.SceneDbApiBase` subclasses
 
