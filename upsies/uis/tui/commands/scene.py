@@ -13,14 +13,6 @@ class scene_search(CommandBase):
     names = ('scene-search', 'scs')
 
     argument_definitions = {
-        'SCENEDB': {
-            'type': utils.types.scenedb,
-            'nargs': '?',
-            'default': jobs.scene.SceneSearchJob.default_scenedb,
-            'help': ('Case-insensitive scene release database name\n'
-                     'Supported databases: ' + ', '.join(constants.SCENEDB_NAMES) + '\n'
-                     f'Default: {jobs.scene.SceneSearchJob.default_scenedb}'),
-        },
         'RELEASE': {
             'type': argtypes.release,
             'help': 'Release name or path to release content',
@@ -32,7 +24,6 @@ class scene_search(CommandBase):
         return (
             jobs.scene.SceneSearchJob(
                 ignore_cache=self.args.ignore_cache,
-                scenedb=utils.scene.scenedb(self.args.SCENEDB),
                 content_path=self.args.RELEASE,
             ),
         )
