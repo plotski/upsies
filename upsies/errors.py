@@ -81,4 +81,21 @@ def SubprocessError(exception, original_traceback):
 
 
 class SceneError(UpsiesError):
-    """Failed scene search, verification, etc"""
+    """Base class for scene-related errors"""
+
+class SceneRenamedError(SceneError):
+    """Renamed scene release"""
+    def __init__(self, original_name, existing_name):
+        super().__init__(f'Release name should be: {original_name}')
+        self._original_name = original_name
+        self._existing_name = existing_name
+
+    @property
+    def original_name(self):
+        """What the release name should be"""
+        return self._original_name
+
+    @property
+    def existing_name(self):
+        """What the release name is"""
+        return self._existing_name
