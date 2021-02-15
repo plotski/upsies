@@ -5,8 +5,6 @@ import pytest
 from upsies.utils.scene import srrdb
 
 
-# FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
-# not a subclass of typing.Awaitable.
 class AsyncMock(Mock):
     def __call__(self, *args, **kwargs):
         async def coro(_sup=super()):

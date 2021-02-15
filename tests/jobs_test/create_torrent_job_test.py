@@ -11,16 +11,11 @@ from upsies.jobs.torrent import CreateTorrentJob, _torrent_process
 from upsies.utils.daemon import MsgType
 
 
-# FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
-# not a subclass of typing.Awaitable.
 class AsyncMock(Mock):
     def __call__(self, *args, **kwargs):
         async def coro(_sup=super()):
             return _sup.__call__(*args, **kwargs)
         return coro()
-
-    def __await__(self):
-        return self().__await__()
 
 
 class Callable:

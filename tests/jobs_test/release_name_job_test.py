@@ -7,16 +7,11 @@ from upsies.jobs.release_name import ReleaseNameJob
 from upsies.utils.release import ReleaseName
 
 
-# FIXME: The AsyncMock class from Python 3.8 is missing __await__(), making it
-# not a subclass of typing.Awaitable.
 class AsyncMock(Mock):
     def __call__(self, *args, **kwargs):
         async def coro(_sup=super()):
             return _sup.__call__(*args, **kwargs)
         return coro()
-
-    def __await__(self):
-        return self().__await__()
 
 
 def test_release_name_property(mocker, tmp_path):
