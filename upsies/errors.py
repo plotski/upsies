@@ -110,14 +110,17 @@ class SceneFileSizeError(SceneError):
 
     @property
     def filename(self):
+        """Name of the file in the scene release"""
         return self._filename
 
     @property
     def original_size(self):
+        """Size of the file in the scene release"""
         return self._original_size
 
     @property
     def existing_size(self):
+        """Size of the file in the local file system"""
         return self._existing_size
 
 class SceneMissingFileError(UpsiesError):
