@@ -4,7 +4,6 @@ import pytest
 
 from upsies import errors
 from upsies.jobs.scene import SceneSearchJob
-from upsies.utils import scene
 
 
 class AsyncMock(Mock):
@@ -49,8 +48,8 @@ async def test_execute_cache_argument(ignore_cache, make_SceneSearchJob, mocker)
 @pytest.mark.asyncio
 async def test_execute_handles_SceneError(make_SceneSearchJob, mocker):
     job = make_SceneSearchJob()
-    SceneQuery_mock = mocker.patch('upsies.utils.scene.SceneQuery.from_string',
-                                   side_effect=errors.SceneError('no!'))
+    mocker.patch('upsies.utils.scene.SceneQuery.from_string',
+                 side_effect=errors.SceneError('no!'))
     search_mock = mocker.patch('upsies.utils.scene.search', AsyncMock())
     mocker.patch.object(job, '_handle_results')
     job.execute()

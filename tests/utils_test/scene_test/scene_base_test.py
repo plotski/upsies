@@ -2,9 +2,7 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies.utils.release import ReleaseInfo
-from upsies.utils.scene import base, predb
-from upsies.utils.types import SceneCheckResult
+from upsies.utils.scene import base
 
 
 class AsyncMock(Mock):
