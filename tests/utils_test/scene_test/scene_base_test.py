@@ -22,6 +22,7 @@ def testdb():
         name = 'scn'
         label = 'SCN'
         _search = AsyncMock()
+        release_files = AsyncMock()
 
     return TestDb()
 
