@@ -379,3 +379,107 @@ async def test_verify_release_files(content_path, release_name, file_sizes, exp_
 
     exceptions = await scene.verify_release_files(str(tmp_path / content_path), release_name)
     assert exceptions == exp_exceptions
+
+
+@pytest.mark.asyncio
+async def test_verify_release_gets_abbreviated_scene_file_name(mocker):
+    assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.assert_not_abbreviated_filename', Mock(
+        side_effect=errors.SceneError('nope'),
+    ))
+    is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock())
+    verify_release_name_mock = mocker.patch('upsies.utils.scene.verify_release_name', AsyncMock())
+    verify_release_files_mock = mocker.patch('upsies.utils.scene.verify_release_files', AsyncMock())
+    is_scene, exceptions = await scene.verify_release('mock/path', 'Mock.Release')
+    assert is_scene is SceneCheckResult.unknown
+    assert exceptions == (errors.SceneError('nope'),)
+    assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
+    assert is_scene_release_mock.call_args_list == []
+    assert verify_release_name_mock.call_args_list == []
+    assert verify_release_files_mock.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_verify_release_gets_nonscene_release_name(mocker):
+    assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.assert_not_abbreviated_filename')
+    is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock(
+        return_value=SceneCheckResult.false,
+    ))
+    verify_release_name_mock = mocker.patch('upsies.utils.scene.verify_release_name', AsyncMock())
+    verify_release_files_mock = mocker.patch('upsies.utils.scene.verify_release_files', AsyncMock())
+    is_scene, exceptions = await scene.verify_release('mock/path', 'Mock.Release')
+    assert is_scene is SceneCheckResult.false
+    assert exceptions == ()
+    assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
+    assert is_scene_release_mock.call_args_list == [call('Mock.Release')]
+    assert verify_release_name_mock.call_args_list == []
+    assert verify_release_files_mock.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_verify_release_gets_wrong_release_name(mocker):
+    assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.assert_not_abbreviated_filename')
+    is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock(
+        return_value=SceneCheckResult.true,
+    ))
+    verify_release_name_mock = mocker.patch('upsies.utils.scene.verify_release_name', AsyncMock(
+        side_effect=errors.SceneRenamedError(original_name='foo', existing_name='bar'),
+    ))
+    verify_release_files_mock = mocker.patch('upsies.utils.scene.verify_release_files', AsyncMock(
+        return_value=(),
+    ))
+    is_scene, exceptions = await scene.verify_release('mock/path', 'Mock.Release')
+    assert is_scene is SceneCheckResult.true
+    assert exceptions == (errors.SceneRenamedError(original_name='foo', existing_name='bar'),)
+    assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
+    assert is_scene_release_mock.call_args_list == [call('Mock.Release')]
+    assert verify_release_name_mock.call_args_list == [call('mock/path', 'Mock.Release')]
+    assert verify_release_files_mock.call_args_list == [call('mock/path', 'Mock.Release')]
+
+@pytest.mark.asyncio
+async def test_verify_release_gets_wrong_release_files(mocker):
+    assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.assert_not_abbreviated_filename')
+    is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock(
+        return_value=SceneCheckResult.true,
+    ))
+    verify_release_name_mock = mocker.patch('upsies.utils.scene.verify_release_name', AsyncMock())
+    verify_release_files_mock = mocker.patch('upsies.utils.scene.verify_release_files', AsyncMock(
+        return_value=(
+            errors.SceneFileSizeError('foo', 123, 456),
+            errors.SceneFileSizeError('bar', 100, 200),
+        ),
+    ))
+    is_scene, exceptions = await scene.verify_release('mock/path', 'Mock.Release')
+    assert is_scene is SceneCheckResult.true
+    assert exceptions == (
+        errors.SceneFileSizeError('foo', 123, 456),
+        errors.SceneFileSizeError('bar', 100, 200),
+    )
+    assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
+    assert is_scene_release_mock.call_args_list == [call('Mock.Release')]
+    assert verify_release_name_mock.call_args_list == [call('mock/path', 'Mock.Release')]
+    assert verify_release_files_mock.call_args_list == [call('mock/path', 'Mock.Release')]
+
+@pytest.mark.asyncio
+async def test_verify_release_gets_wrong_release_name_and_files(mocker):
+    assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.assert_not_abbreviated_filename')
+    is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock(
+        return_value=SceneCheckResult.true,
+    ))
+    verify_release_name_mock = mocker.patch('upsies.utils.scene.verify_release_name', AsyncMock(
+        side_effect=errors.SceneRenamedError(original_name='foo', existing_name='bar'),
+    ))
+    verify_release_files_mock = mocker.patch('upsies.utils.scene.verify_release_files', AsyncMock(
+        return_value=(
+            errors.SceneFileSizeError('foo', 123, 456),
+            errors.SceneFileSizeError('bar', 100, 200),
+        ),
+    ))
+    is_scene, exceptions = await scene.verify_release('mock/path', 'Mock.Release')
+    assert is_scene is SceneCheckResult.true
+    assert exceptions == (
+        errors.SceneRenamedError(original_name='foo', existing_name='bar'),
+        errors.SceneFileSizeError('foo', 123, 456),
+        errors.SceneFileSizeError('bar', 100, 200),
+    )
+    assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
+    assert is_scene_release_mock.call_args_list == [call('Mock.Release')]
+    assert verify_release_name_mock.call_args_list == [call('mock/path', 'Mock.Release')]
+    assert verify_release_files_mock.call_args_list == [call('mock/path', 'Mock.Release')]

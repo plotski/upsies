@@ -268,3 +268,42 @@ async def verify_release_files(content_path, release_name):
             _log.debug('No such file: %s', filename)
 
     return tuple(e for e in exceptions if e)
+
+
+async def verify_release(content_path, release_name):
+    """
+    Combine :func:`is_scene_release`, :func:`verify_release_name` and
+    :func:`verify_release_files`
+
+    It is safe to pass non-scene releases and will result in the return value
+    `(SceneCheckResult.false, ())`.
+
+    :param content_path: Path to release file or directory
+    :param release_name: Known exact release name, e.g. from :func:`search`
+        results
+
+    :return: :class:`~.types.SceneCheckResult` enum from
+        :func:`is_scene_release` and sequence of :class:`~.errors.SceneError`
+        exceptions from :func:`verify_release_name` and
+        :func:`verify_release_files`
+    """
+    # Don't allow abbreviated scene release files, e.g. "abd-mother.mkv"
+    try:
+        assert_not_abbreviated_filename(content_path)
+    except errors.SceneError as e:
+        return SceneCheckResult.unknown, (e,)
+
+    # Stop other checks if this is not a scene release
+    is_scene = await is_scene_release(release_name)
+    if not is_scene:
+        return is_scene, ()
+
+    # Combine exceptions from verify_release_name() and verify_release_files()
+    exceptions = []
+    try:
+        await verify_release_name(content_path, release_name)
+    except errors.SceneError as e:
+        exceptions.append(e)
+    finally:
+        exceptions.extend(await verify_release_files(content_path, release_name))
+        return is_scene, tuple(exceptions)
