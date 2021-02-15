@@ -1,11 +1,10 @@
-import re
 from unittest.mock import Mock, call
 
 import pytest
 
 from upsies import errors
 from upsies.utils.release import Episodes
-from upsies.utils.scene import common
+from upsies.utils.scene import find
 
 
 class AsyncMock(Mock):
@@ -17,8 +16,8 @@ class AsyncMock(Mock):
 
 def test_SceneQuery_from_string(mocker):
     ReleaseInfo_mock = mocker.patch('upsies.utils.release.ReleaseInfo')
-    from_release_mock = mocker.patch('upsies.utils.scene.common.SceneQuery.from_release')
-    query = common.SceneQuery.from_string('foo')
+    from_release_mock = mocker.patch('upsies.utils.scene.find.SceneQuery.from_release')
+    query = find.SceneQuery.from_string('foo')
     assert ReleaseInfo_mock.call_args_list == [call('foo', strict=True)]
     assert from_release_mock.call_args_list == [call(ReleaseInfo_mock.return_value)]
     assert query.keywords == from_release_mock.return_value.keywords
@@ -61,7 +60,7 @@ def test_SceneQuery_from_string(mocker):
     ids=lambda v: str(v),
 )
 def test_SceneQuery_from_release(release, exp_keywords, exp_group, exp_episodes):
-    query = common.SceneQuery.from_release(release)
+    query = find.SceneQuery.from_release(release)
     assert query.keywords == exp_keywords
     assert query.group == exp_group
     assert query.episodes == exp_episodes
@@ -79,7 +78,7 @@ def test_SceneQuery_from_release(release, exp_keywords, exp_group, exp_episodes)
 )
 @pytest.mark.asyncio
 async def test_SceneQuery_search_calls_given_coroutine_function(keywords, exp_keywords, cache, exp_cache):
-    query = common.SceneQuery(*keywords, group='baz')
+    query = find.SceneQuery(*keywords, group='baz')
     search = AsyncMock(return_value=('20', 'C', '1', 'b'))
     results = await query.search(search, cache=cache)
     assert results == ['1', '20', 'b', 'C']
@@ -87,7 +86,7 @@ async def test_SceneQuery_search_calls_given_coroutine_function(keywords, exp_ke
 
 @pytest.mark.asyncio
 async def test_SceneQuery_search_raises_RequestError():
-    query = common.SceneQuery('foo', 'bar', group='baz')
+    query = find.SceneQuery('foo', 'bar', group='baz')
     search = AsyncMock(side_effect=errors.RequestError('no'))
     with pytest.raises(errors.RequestError, match=r'^no$'):
         await query.search(search)
@@ -106,7 +105,7 @@ async def test_SceneQuery_search_raises_RequestError():
 )
 @pytest.mark.asyncio
 async def test_SceneQuery_handle_results(episodes, exp_matches):
-    query = common.SceneQuery(episodes=episodes)
+    query = find.SceneQuery(episodes=episodes)
     search = AsyncMock(return_value=[
         'X.2015.x264-ASDF',
         'X.S01E01.x264-ASDF',
@@ -124,17 +123,17 @@ async def test_SceneQuery_handle_results(episodes, exp_matches):
 
 
 def test_SceneQuery_keywords():
-    query = common.SceneQuery('foo bar', ' - ', 'baz', '', '  ', 21)
+    query = find.SceneQuery('foo bar', ' - ', 'baz', '', '  ', 21)
     assert query.keywords == ('foo', 'bar', 'baz', '21')
 
 
 def test_SceneQuery_group():
-    query = common.SceneQuery(group='ASDF')
+    query = find.SceneQuery(group='ASDF')
     assert query.group == 'ASDF'
 
 
 def test_SceneQuery_episodes():
-    query = common.SceneQuery(episodes={'5': ('10',)})
+    query = find.SceneQuery(episodes={'5': ('10',)})
     assert query.episodes == {'5': ('10',)}
 
 
@@ -152,38 +151,4 @@ def test_SceneQuery_repr(keywords, group, episodes, exp_repr):
         kwargs['group'] = group
     if episodes:
         kwargs['episodes'] = episodes
-    assert repr(common.SceneQuery(*keywords, **kwargs)) == exp_repr
-
-
-@pytest.mark.parametrize(
-    argnames='filename, should_raise',
-    argvalues=(
-        ('group-thetitle.1080p.bluray.x264.mkv', True),
-        ('group-the.title.2016.720p.bluray.x264.mkv', True),
-        ('group-thetitle720.mkv', True),
-        ('group-the-title-720p.mkv', True),
-        ('group-thetitle-720p.mkv', True),
-        ('group-ttl-s02e01-720p.mkv', True),
-        ('group-the.title.1984.720p.mkv', True),
-        ('group-the.title.720p.mkv', True),
-        ('group-ttl.720p.mkv', True),
-        ('group-title.mkv', True),
-        ('title-1080p-group.mkv', True),
-        ('group-the_title_x264_bluray.mkv', True),
-        ('ttl.720p-group.mkv', True),
-        ('title.2017.720p.bluray.x264-group.mkv', False),
-        ('asdf.mkv', False),
-    ),
-)
-def test_assert_not_abbreviated_filename(filename, should_raise):
-    exp_msg = re.escape(
-        f'Provide parent directory of abbreviated scene file: {filename}'
-    )
-    if should_raise:
-        with pytest.raises(errors.SceneError, match=rf'^{exp_msg}$'):
-            common.assert_not_abbreviated_filename(filename)
-        with pytest.raises(errors.SceneError, match=rf'^{exp_msg}$'):
-            common.assert_not_abbreviated_filename(f'path/to/{filename}')
-    else:
-        common.assert_not_abbreviated_filename(filename)
-        common.assert_not_abbreviated_filename(f'path/to/{filename}')
+    assert repr(find.SceneQuery(*keywords, **kwargs)) == exp_repr

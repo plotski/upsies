@@ -1,18 +1,25 @@
 """
-Classes and functions that are used by all :class:`~.base.SceneDbApiBase`
-subclasses
+Search for scene release
 """
 
-import os
 import re
 
 from ... import errors
 from .. import LazyModule, release
+from . import predb, srrdb
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 natsort = LazyModule(module='natsort', namespace=globals())
+
+_PREDB = predb.PreDbApi()
+_SRRDB = srrdb.SrrDbApi()
+
+
+async def search(*args, **kwargs):
+    """Search with the recommended :class:`~.SceneDbApiBase` subclass"""
+    return await _PREDB.search(*args, **kwargs)
 
 
 class SceneQuery:
@@ -147,23 +154,3 @@ class SceneQuery:
             args.append(f'episodes={self.episodes!r}')
         args_str = ', '.join(args)
         return f'{type(self).__name__}({args_str})'
-
-
-_abbreviated_scene_filename_regexs = (
-    # Match names with group in front
-    re.compile(r'^[a-z0-9]+-[a-z0-9_\.-]+?(?!-[a-z]{2,})\.(?:mkv|avi)$'),
-    # Match "ttl.720p-group.mkv"
-    re.compile(r'^[a-z0-9]+[\.-]\d{3,4}p-[a-z]{2,}\.(?:mkv|avi)$'),
-)
-
-def assert_not_abbreviated_filename(filepath):
-    """
-    Raise :class:`~.errors.SceneError` if `filepath` points to an abbreviated
-    scene release file name like ``abd-mother.mkv``
-    """
-    filename = os.path.basename(filepath)
-    for regex in _abbreviated_scene_filename_regexs:
-        if regex.search(filename):
-            raise errors.SceneError(
-                f'Provide parent directory of abbreviated scene file: {filename}'
-            )

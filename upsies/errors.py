@@ -120,6 +120,11 @@ class SceneFileSizeError(SceneError):
     def existing_size(self):
         return self._existing_size
 
+class SceneMissingFileError(UpsiesError):
+    """File from scene release doesn't exist"""
+    def __init__(self, file_name):
+        super().__init__(f'Missing file: {file_name}')
+
 class SceneMissingInfoError(UpsiesError):
     """Missing information about a file from a scene release"""
     def __init__(self, file_name):

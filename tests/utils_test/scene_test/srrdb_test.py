@@ -11,6 +11,7 @@ class AsyncMock(Mock):
             return _sup.__call__(*args, **kwargs)
         return coro()
 
+
 @pytest.fixture
 def api():
     return srrdb.SrrDbApi()
