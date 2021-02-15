@@ -40,7 +40,7 @@ def scenedb(name, **kwargs):
 
     :raise ValueError: if no matching subclass can be found
 
-    :return: :class:`.ClientApiBase` instance
+    :return: :class:`.SceneDbApiBase` instance
     """
     for scenedb in scenedbs():
         if scenedb.name == name:
@@ -104,7 +104,7 @@ async def release_files(release_name):
     """
     Map release file names to file information
 
-    This function uses :class:`~predb.PredDb` for searching and
+    This function uses :class:`~.predb.PreDbApi` for searching and
     :class:`~.srrdb.SrrDbApi` to get the file information.
 
     :param str release_name: Exact name of the release

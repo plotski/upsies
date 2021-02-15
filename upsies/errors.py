@@ -101,7 +101,7 @@ class SceneRenamedError(SceneError):
         return self._existing_name
 
 class SceneFileSizeError(SceneError):
-    """Scene release file size has changed"""
+    """Scene release file size differs from original release"""
     def __init__(self, filename, original_size, existing_size):
         super().__init__(f'{filename} should be {original_size} bytes, not {existing_size}')
         self._filename = filename
