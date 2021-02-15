@@ -99,3 +99,28 @@ class SceneRenamedError(SceneError):
     def existing_name(self):
         """What the release name is"""
         return self._existing_name
+
+class SceneFileSizeError(SceneError):
+    """Scene release file size has changed"""
+    def __init__(self, filename, original_size, existing_size):
+        super().__init__(f'{filename} should be {original_size} bytes, not {existing_size}')
+        self._filename = filename
+        self._original_size = original_size
+        self._existing_size = existing_size
+
+    @property
+    def filename(self):
+        return self._filename
+
+    @property
+    def original_size(self):
+        return self._original_size
+
+    @property
+    def existing_size(self):
+        return self._existing_size
+
+class SceneMissingInfoError(UpsiesError):
+    """Missing information about a file from a scene release"""
+    def __init__(self, file_name):
+        super().__init__(f'Missing information: {file_name}')
