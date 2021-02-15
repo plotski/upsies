@@ -21,8 +21,8 @@ class AsyncMock(Mock):
 
 def test_scenedbs(mocker):
     existing_scenedbs = (Mock(), Mock(), Mock())
-    submodules_mock = mocker.patch('upsies.utils.scene.submodules')
-    subclasses_mock = mocker.patch('upsies.utils.scene.subclasses', return_value=existing_scenedbs)
+    submodules_mock = mocker.patch('upsies.utils.submodules')
+    subclasses_mock = mocker.patch('upsies.utils.subclasses', return_value=existing_scenedbs)
     assert scene.scenedbs() == existing_scenedbs
     assert submodules_mock.call_args_list == [call('upsies.utils.scene')]
     assert subclasses_mock.call_args_list == [call(scene.SceneDbApiBase, submodules_mock.return_value)]

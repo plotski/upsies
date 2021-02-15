@@ -7,7 +7,6 @@ import os
 import re
 
 from ... import errors, utils
-from .. import fs, subclasses, submodules
 from ..types import ReleaseType, SceneCheckResult
 from . import predb, srrdb
 from .base import SceneDbApiBase
@@ -25,7 +24,7 @@ _NEEDED_SERIES_KEYS = ('title', 'episodes', 'resolution', 'source', 'video_codec
 
 def scenedbs():
     """Return list of :class:`.SceneDbApiBase` subclasses"""
-    return subclasses(SceneDbApiBase, submodules(__package__))
+    return utils.subclasses(SceneDbApiBase, utils.submodules(__package__))
 
 
 def scenedb(name, **kwargs):
@@ -57,34 +56,35 @@ async def is_scene_release(release):
     """
     Check if `release` is a scene release or not
 
-    :param release: Release name, path to release,
-        :class:`~.release.ReleaseName` or :class:`~.release.ReleaseInfo`
-        instance or any :class:`dict`-like object with the same keys
+    :param release: Release name, path to release or
+        :class:`~.release.ReleaseInfo` instance
 
     :return: :class:`~.types.SceneCheckResult`
     """
     if isinstance(release, str):
-        release = utils.release.ReleaseInfo(release)
+        release_info = utils.release.ReleaseInfo(release)
+    else:
+        release_info = release
 
     # NOTE: Simply searching for the group does not work because some scene
     #       groups make non-scene releases and vice versa.
     #       Examples:
     #         - Prospect.2018.720p.BluRay.DD5.1.x264-LoRD
     #         - How.The.Grinch.Stole.Christmas.2000.720p.BluRay.DTS.x264-EbP
-    query = SceneQuery.from_release(release)
+    query = SceneQuery.from_release(release_info)
     results = await _PREDB.search(query)
     if results:
         # Do we have enough information to find a single release?
-        if release['type'] is ReleaseType.movie:
+        if release_info['type'] is ReleaseType.movie:
             needed_keys = _NEEDED_MOVIE_KEYS
-        elif release['type'] in (ReleaseType.season, ReleaseType.episode):
+        elif release_info['type'] in (ReleaseType.season, ReleaseType.episode):
             needed_keys = _NEEDED_SERIES_KEYS
         else:
             # If we don't even know the type, we certainly don't have enough
             # information to pin down a release.
             return SceneCheckResult.unknown
 
-        if not all(release[k] for k in needed_keys):
+        if not all(release_info[k] for k in needed_keys):
             return SceneCheckResult.unknown
         else:
             return SceneCheckResult.true
@@ -93,7 +93,7 @@ async def is_scene_release(release):
     # directory and we didn't find it above, it's possibly a scene release, but
     # we can't be sure.
     try:
-        assert_not_abbreviated_filename(release.path)
+        assert_not_abbreviated_filename(release_info.path)
     except errors.SceneError:
         return SceneCheckResult.unknown
 
@@ -120,9 +120,9 @@ async def release_files(release_name):
     # searching for "Foo.S01.720p.BluRay-BAR", we might not get any results. But
     # we can get release names of individual episodes by searching for the
     # season pack, and then we can call release_files() for each episode.
-    release = utils.release.ReleaseInfo(release_name)
-    if release['type'] is ReleaseType.season:
-        query = SceneQuery.from_release(release)
+    release_info = utils.release.ReleaseInfo(release_name)
+    if release_info['type'] is ReleaseType.season:
+        query = SceneQuery.from_release(release_info)
         results = await _PREDB.search(query)
         if results:
             files = await asyncio.gather(
@@ -135,10 +135,10 @@ async def release_files(release_name):
     # If scene released season pack (or any other multi-file thing) and we're
     # searching for a single episode, we might not get any results. Search for
     # the season pack to get all files.
-    elif release['type'] is ReleaseType.episode:
+    elif release_info['type'] is ReleaseType.episode:
         # Remove single episodes from seasons
-        release['episodes'].remove_specific_episodes()
-        results = await _PREDB.search(SceneQuery.from_release(release))
+        release_info['episodes'].remove_specific_episodes()
+        results = await _PREDB.search(SceneQuery.from_release(release_info))
         if len(results) == 1:
             _log.debug('Getting files from single result: %r', results[0])
             files = await _SRRDB.release_files(results[0])
@@ -203,7 +203,8 @@ async def verify_release_files(content_path, release_name):
     The return value is a sequence of :class:`~.errors.SceneError` exceptions.
     For every file that is part of the scene release specified by
     `release_name`, include:
-        * :class:`~.errors.SceneSizeError` if it has the wrong size
+
+        * :class:`~.errors.SceneFileSizeError` if it has the wrong size
         * :class:`~.errors.SceneMissingInfoError` if file information is missing
         * :class:`~.errors.SceneError` if release name is not a scene release or
           if `content_path` points to an abbreviated file name
