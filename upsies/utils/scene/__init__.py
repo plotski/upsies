@@ -3,6 +3,7 @@ Scene release search and verification
 """
 
 import asyncio
+import os
 import re
 
 from ... import errors, utils
@@ -189,3 +190,80 @@ async def verify_release_name(content_path, release_name):
         original_name=release_name,
         existing_name=content_release_name,
     )
+
+
+async def verify_release_files(content_path, release_name):
+    """
+    Check if files released by scene have the correct size
+
+    :param content_path: Path to release file or directory
+    :param release_name: Known exact release name, e.g. from :func:`search`
+        results
+
+    The return value is a sequence of :class:`~.errors.SceneError` exceptions.
+    For every file that is part of the scene release specified by
+    `release_name`, include:
+        * :class:`~.errors.SceneSizeError` if it has the wrong size
+        * :class:`~.errors.SceneMissingInfoError` if file information is missing
+        * :class:`~.errors.SceneError` if release name is not a scene release or
+          if `content_path` points to an abbreviated file name
+          (e.g. "abd-mother.mkv")
+    """
+    exceptions = []
+    try:
+        assert_not_abbreviated_filename(content_path)
+    except errors.SceneError as e:
+        exceptions.append(e)
+    if not await is_scene_release(release_name):
+        exceptions.append(errors.SceneError(f'Not a scene release: {release_name}'))
+    if exceptions:
+        return tuple(exceptions)
+
+    fileinfos = await release_files(release_name)
+
+    def get_release_filesize(filename):
+        return fileinfos.get(filename, {}).get('size', None)
+
+    # Map file paths to expected file sizes
+    if os.path.isdir(content_path):
+        exp_filesizes = {filepath: get_release_filesize(utils.fs.basename(filepath))
+                         for filepath in utils.fs.file_list(content_path)}
+    else:
+        if len(fileinfos) == 1:
+            filename = tuple(fileinfos)[0]
+            exp_filesize = get_release_filesize(filename)
+            exp_filesizes = {
+                # Title.2015.720p.BluRay.x264-FOO.mkv
+                content_path: exp_filesize,
+                # Title.2015.720p.BluRay.x264-FOO/foo-title.mkv
+                os.path.join(utils.fs.strip_extension(content_path), filename): exp_filesize,
+            }
+        else:
+            filename = utils.fs.basename(content_path)
+            exp_filesizes = {content_path: get_release_filesize(filename)}
+
+    # Compare expected file sizes to actual file sizes
+    _log.debug('file sizes: %r', exp_filesizes)
+    for filepath, exp_size in exp_filesizes.items():
+        filename = utils.fs.basename(filepath)
+        actual_size = utils.fs.file_size(filepath)
+        _log.debug('Checking file size: %s: %r ?= %r', filename, actual_size, exp_size)
+        if exp_size is None:
+            _log.debug('No info: %s', filename)
+            exceptions.append(errors.SceneMissingInfoError(filename))
+        elif actual_size is not None:
+            if actual_size != exp_size:
+                _log.debug('Wrong size: %s', filename)
+                exceptions.append(
+                    errors.SceneFileSizeError(
+                        filename=filename,
+                        original_size=exp_size,
+                        existing_size=actual_size,
+                    )
+                )
+            else:
+                _log.debug('Correct size: %s', filename)
+        else:
+            _log.debug('No such file: %s', filename)
+
+    return tuple(e for e in exceptions if e)
