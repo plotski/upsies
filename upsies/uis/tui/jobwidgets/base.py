@@ -21,8 +21,9 @@ class JobWidgetBase(abc.ABC):
         style='class:info',
     )
 
-    def __init__(self, job):
+    def __init__(self, job, app):
         self._job = job
+        self._app = app
         self.setup()
         main_widget = HSplit(
             children=[

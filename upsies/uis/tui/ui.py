@@ -70,7 +70,7 @@ class UI:
         for job in jobs:
             if job.name not in self._jobs:
                 self._jobs[job.name].job = job
-                self._jobs[job.name].widget = jobwidgets.JobWidget(job)
+                self._jobs[job.name].widget = jobwidgets.JobWidget(job, self._app)
                 self._jobs[job.name].container = to_container(self._jobs[job.name].widget)
                 _log.debug('Created JobWidget %r: %r', job.name, self._jobs[job.name])
 
