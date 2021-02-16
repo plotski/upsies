@@ -166,7 +166,10 @@ class RadioList:
         @kb.add(' ')
         def _(event):
             if on_accepted is not None:
-                on_accepted(self.choices[self.focused_index])
+                try:
+                    on_accepted(self.choices[self.focused_index])
+                except IndexError:
+                    raise RuntimeError(f'No choice at index {self.focused_index}: {self.choices}')
 
         self.control = FormattedTextControl(
             self._get_text_fragments,
