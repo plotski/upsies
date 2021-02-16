@@ -1,6 +1,5 @@
 import abc
 
-from prompt_toolkit.application import get_app
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.layout.containers import (ConditionalContainer, HSplit,
                                               Window, to_container)
@@ -138,7 +137,11 @@ class JobWidgetBase(abc.ABC):
 
     def invalidate(self):
         """Schedule redrawing of the TUI"""
-        get_app().invalidate()
+        if self.is_interactive:
+            for c in walk(to_container(self.runtime_widget), skip_hidden=True):
+                if isinstance(c, Window) and c.content.is_focusable():
+                    self._app.layout.focus(c)
+        self._app.invalidate()
 
     def __pt_container__(self):
         return self._container
