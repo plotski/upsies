@@ -154,3 +154,13 @@ class SceneQuery:
             args.append(f'episodes={self.episodes!r}')
         args_str = ', '.join(args)
         return f'{type(self).__name__}({args_str})'
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return (
+                self.keywords == other.keywords
+                and self.group == other.group
+                and self.episodes == other.episodes
+            )
+        else:
+            return NotImplemented

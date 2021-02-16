@@ -152,3 +152,21 @@ def test_SceneQuery_repr(keywords, group, episodes, exp_repr):
     if episodes:
         kwargs['episodes'] = episodes
     assert repr(find.SceneQuery(*keywords, **kwargs)) == exp_repr
+
+
+@pytest.mark.parametrize(
+    argnames='keywords1, keywords2, group1, group2, episodes1, episodes2, exp_equality',
+    argvalues=(
+        (('foo', 'bar',), ('foo', 'bar',), 'GRP', 'GRP', {1: ()}, {1: ()}, True),
+        (('foo', 'bar',), ('foo', 'baz',), 'GRP', 'GRP', {1: ()}, {1: ()}, False),
+        (('foo', 'bar',), ('foo', 'bar',), 'GP', 'GRP', {1: ()}, {1: ()}, False),
+        (('foo', 'bar',), ('foo', 'bar',), 'GRP', 'GRP', {1: (3,)}, {1: (4,)}, False),
+        (('foo', 'bar',), ('foo', 'bar',), 'GRP', 'GRP', {}, {}, True),
+        (('foo', 'bar',), ('foo', 'bar',), '', '', {}, {}, True),
+        ((), (), '', '', {}, {}, True),
+    )
+)
+def test_equality(keywords1, keywords2, group1, group2, episodes1, episodes2, exp_equality):
+    a = find.SceneQuery(keywords1, group=group1, episodes=episodes1)
+    b = find.SceneQuery(keywords2, group=group2, episodes=episodes2)
+    assert (a == b) is exp_equality
