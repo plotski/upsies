@@ -2,6 +2,7 @@
 Create torrent file
 """
 
+import time
 from os.path import exists as _path_exists
 
 from .. import __project_name__, __version__, errors
@@ -77,6 +78,7 @@ def create(*, content_path, announce, torrent_path,
                 private=True,
                 source=source,
                 created_by=f'{__project_name__} {__version__}',
+                creation_date=time.time(),
             )
             init_callback(_make_file_tree(torrent.filetree))
             success = torrent.generate(callback=cb, interval=0.5)

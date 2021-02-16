@@ -2,6 +2,7 @@
   * New command: scene-search
   * release-name: Don't accept release name if any obligatory information is
     unknown.
+  * create-torrent: Store creation date in .torrent file
 
 
 2021-01-26 0.1.0

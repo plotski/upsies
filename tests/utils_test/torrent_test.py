@@ -57,10 +57,11 @@ def test_create_handles_existing_torrent_file(Torrent_mock, file_tree_mock, path
     assert init_cb.call_args_list == []
     assert progress_cb.call_args_list == []
 
+@patch('time.time')
 @patch('upsies.utils.torrent._path_exists')
 @patch('upsies.utils.torrent._make_file_tree')
 @patch('torf.Torrent')
-def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, path_exists_mock):
+def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, path_exists_mock, time_mock):
     path_exists_mock.return_value = True
     init_cb = Mock()
     progress_cb = Mock()
@@ -80,10 +81,12 @@ def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, p
         exclude_regexs=(),
         private=True,
         created_by=f'{__project_name__} {__version__}',
+        creation_date=time_mock.return_value,
     )]
     assert init_cb.call_args_list == [call(file_tree_mock.return_value)]
     assert Torrent_mock.return_value.write.call_args_list == [call('path/to/torrent', overwrite=True)]
 
+@patch('time.time')
 @patch('upsies.utils.torrent._path_exists')
 @patch('upsies.utils.torrent._make_file_tree')
 @patch('torf.Torrent')
@@ -91,7 +94,7 @@ def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, p
                                              ('asdf', None),
                                              (None, ('a.*', '.*b')),
                                              ('foo', ('a.*', '.*b'))))
-def test_create_passes_arguments_to_Torrent_class(Torrent_mock, file_tree_mock, path_exists_mock, source, exclude):
+def test_create_passes_arguments_to_Torrent_class(Torrent_mock, file_tree_mock, path_exists_mock, time_mock, source, exclude):
     path_exists_mock.side_effect = (False, True)
     create_kwargs = {
         'content_path' : 'path/to/content',
@@ -113,6 +116,7 @@ def test_create_passes_arguments_to_Torrent_class(Torrent_mock, file_tree_mock, 
         exclude_regexs=exclude or (),
         private=True,
         created_by=f'{__project_name__} {__version__}',
+        creation_date=time_mock.return_value,
     )]
 
 @patch('upsies.utils.torrent._path_exists')
