@@ -142,7 +142,6 @@ class RadioList:
 
     def __init__(self, choices=(), focused=None, on_accepted=None):
         self.choices = choices
-        self.choice = None
         if focused:
             self.focused_index = choices.index(focused)
         else:
