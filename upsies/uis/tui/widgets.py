@@ -183,6 +183,18 @@ class RadioList:
             always_hide_cursor=True,
         )
 
+    @property
+    def focused_choice(self):
+        """Currently focused item in :attr:`choices`"""
+        return self.choices[self.focused_index]
+
+    @focused_choice.setter
+    def focused_choice(self, choice):
+        if choice not in self.choices:
+            raise ValueError(f'No such choice: {choice!r}')
+        else:
+            self.focused_index = self.choices.index(choice)
+
     def _get_text_fragments(self):
         result = []
 
