@@ -27,3 +27,25 @@ class scene_search(CommandBase):
                 content_path=self.args.RELEASE,
             ),
         )
+
+
+class scene_check(CommandBase):
+    """Verify scene release name and integrity"""
+
+    names = ('scene-check', 'scc')
+
+    argument_definitions = {
+        'RELEASE': {
+            'type': argtypes.release,
+            'help': 'Release name or path to release content',
+        },
+    }
+
+    @utils.cached_property
+    def jobs(self):
+        return (
+            jobs.scene.SceneCheckJob(
+                ignore_cache=self.args.ignore_cache,
+                content_path=self.args.RELEASE,
+            ),
+        )
