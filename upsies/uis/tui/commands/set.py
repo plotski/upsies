@@ -3,6 +3,7 @@ Change or show configuration file options
 """
 
 from .... import constants, jobs, utils
+from . import argtypes
 from .base import CommandBase
 
 
@@ -26,7 +27,7 @@ class set(CommandBase):
 
     argument_definitions = {
         'OPTION': {
-            'type': utils.types.option,
+            'type': argtypes.option,
             'nargs': '?',
             'help': 'Option to change or show',
         },

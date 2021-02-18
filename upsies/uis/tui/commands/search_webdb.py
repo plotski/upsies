@@ -22,7 +22,7 @@ class search_webdb(CommandBase):
 
     argument_definitions = {
         'DB': {
-            'type': utils.types.webdb,
+            'type': argtypes.webdb,
             'help': ('Case-insensitive database name\n'
                      'Supported databases: ' + ', '.join(constants.WEBDB_NAMES)),
         },

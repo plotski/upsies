@@ -14,7 +14,7 @@ class create_torrent(CommandBase):
 
     argument_definitions = {
         'TRACKER': {
-            'type': utils.types.tracker,
+            'type': argtypes.tracker,
             'help': ('Case-insensitive tracker name.\n'
                      'Supported trackers: ' + ', '.join(constants.TRACKER_NAMES)),
         },
@@ -23,7 +23,7 @@ class create_torrent(CommandBase):
             'help': 'Path to release content',
         },
         ('--add-to', '-a'): {
-            'type': utils.types.client,
+            'type': argtypes.client,
             'metavar': 'CLIENT',
             'help': ('Case-insensitive BitTorrent client name\n'
                      'Supported clients: ' + ', '.join(constants.BTCLIENT_NAMES)),

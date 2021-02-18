@@ -23,7 +23,7 @@ class submit(CommandBase):
                     'help': 'Path to release content',
                 },
                 ('--add-to', '-a'): {
-                    'type': utils.types.client,
+                    'type': argtypes.client,
                     'metavar': 'CLIENT',
                     'help': ('Case-insensitive BitTorrent client name\n'
                              'Supported clients: ' + ', '.join(constants.BTCLIENT_NAMES)),

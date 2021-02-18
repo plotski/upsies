@@ -3,6 +3,7 @@ Create screenshots from video file and optionally upload them
 """
 
 from .... import constants, jobs, utils
+from . import argtypes
 from .base import CommandBase
 
 
@@ -16,17 +17,17 @@ class screenshots(CommandBase):
         ('--timestamps', '-t'): {
             'nargs': '+',
             'default': (),
-            'type': utils.types.timestamp,
+            'type': argtypes.timestamp,
             'metavar': 'TIMESTAMP',
             'help': 'Space-separated list of [[HH:]MM:]SS strings',
         },
         ('--number', '-n'): {
-            'type': utils.types.integer,
+            'type': argtypes.integer,
             'help': 'How many screenshots to make in total',
             'default': 0,
         },
         ('--upload-to', '-u'): {
-            'type': utils.types.imghost,
+            'type': argtypes.imghost,
             'metavar': 'IMAGEHOST',
             'help': ('Case-insensitive name of image hosting service\n'
                      'Supported services: ' + ', '.join(constants.IMGHOST_NAMES)),

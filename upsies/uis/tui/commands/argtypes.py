@@ -8,12 +8,54 @@ A custom error message can be provided by raising
 """
 
 import argparse
+import os
 
-from .... import errors, utils
+from .... import constants, errors, utils
+
+
+def client(value):
+    """Name of a BitTorrent client from :mod:`~.utils.btclients`"""
+    if value in constants.BTCLIENT_NAMES:
+        return value.lower()
+    else:
+        raise ValueError(f'Unsupported client: {value}')
 
 
 def content(value):
     """Existing path to release file(s)"""
+    path = release(value)
+    if not os.path.exists(path):
+        raise argparse.ArgumentTypeError(f'No such file or directory: {value}')
+    else:
+        return path
+
+
+def imghost(value):
+    """Name of a image hosting service from :mod:`~.utils.imghosts`"""
+    if value in constants.IMGHOST_NAMES:
+        return value.lower()
+    else:
+        raise ValueError(f'Unsupported image hosting service: {value}')
+
+
+def integer(value):
+    """Natural number (:class:`float` is rounded)"""
+    try:
+        return int(float(value))
+    except (ValueError, TypeError):
+        raise ValueError(f'Not an integer: {value!r}')
+
+
+def option(value):
+    """Name of a configuration option"""
+    if value in constants.OPTION_PATHS:
+        return value.lower()
+    else:
+        raise ValueError(f'Unknown option: {value}')
+
+
+def release(value):
+    """Same as :func:`content`, but doesn't have to exist"""
     path = str(value)
     try:
         utils.scene.assert_not_abbreviated_filename(path)
@@ -22,6 +64,34 @@ def content(value):
     else:
         return path
 
-def release(value):
-    """Same as :func:`content`, but doesn't have to exist"""
-    return content(value)
+
+def scenedb(value):
+    """Name of a scene release database from :mod:`~.utils.scene`"""
+    if value in constants.SCENEDB_NAMES:
+        return value.lower()
+    else:
+        raise ValueError(f'Unsupported scene release database: {value}')
+
+
+def timestamp(value):
+    """See :func:`.timestamp.parse`"""
+    try:
+        return utils.timestamp.parse(value)
+    except TypeError as e:
+        raise ValueError(e)
+
+
+def tracker(value):
+    """Name of a tracker from :mod:`~.trackers`"""
+    if value in constants.TRACKER_NAMES:
+        return value.lower()
+    else:
+        raise ValueError(f'Unsupported tracker: {value}')
+
+
+def webdb(value):
+    """Name of a movie/series database from :mod:`~.webdbs`"""
+    if value in constants.WEBDB_NAMES:
+        return value.lower()
+    else:
+        raise ValueError(f'Unsupported database: {value}')
