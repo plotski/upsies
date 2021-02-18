@@ -51,9 +51,6 @@ GUESSIT_OPTIONS = {
         'The Collector',
     ],
     "advanced_config": {
-        "streaming_service": {
-            'iTunes': ['IT', 'iTunes'],
-        },
     },
 }
 """`options` argument for :meth:`.GuessItApi.guessit`"""
