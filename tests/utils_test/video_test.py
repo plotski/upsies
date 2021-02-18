@@ -254,6 +254,7 @@ def test_resolution_uses_display_aspect_ratio(data_dir):
     argnames='exp_audio_format, audio_dict',
     argvalues=(
         (None, {}),
+        ('DTS', {'Format': 'DTS'}),
         ('DTS:X', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL X'}),
         ('DTS-HD MA', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL'}),
         ('DTS-ES', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-ES Matrix'}),
