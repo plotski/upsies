@@ -4,7 +4,7 @@ from unittest.mock import call, patch
 
 import pytest
 
-from upsies import constants, errors, trackers, utils
+from upsies import defaults, errors, trackers, utils
 from upsies.uis.tui.commands import argtypes
 
 
@@ -69,7 +69,7 @@ def test_integer_invalid_value(value):
         argtypes.integer(value)
 
 
-@pytest.mark.parametrize('option', constants.OPTION_PATHS)
+@pytest.mark.parametrize('option', defaults.option_paths())
 def test_option_valid_value(option):
     assert argtypes.option(option) == option
 

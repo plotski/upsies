@@ -10,7 +10,7 @@ A custom error message can be provided by raising
 import argparse
 import os
 
-from .... import constants, errors, trackers, utils
+from .... import defaults, errors, trackers, utils
 
 
 def client(value):
@@ -48,7 +48,7 @@ def integer(value):
 
 def option(value):
     """Name of a configuration option"""
-    if value in constants.OPTION_PATHS:
+    if value in defaults.option_paths():
         return value.lower()
     else:
         raise ValueError(f'Unknown option: {value}')

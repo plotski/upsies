@@ -2,7 +2,7 @@
 Change or show configuration file options
 """
 
-from .... import constants, jobs, utils
+from .... import defaults, jobs, utils
 from . import argtypes
 from .base import CommandBase
 
@@ -23,7 +23,7 @@ class set(CommandBase):
 
     names = ('set',)
 
-    description = ('options:\n  ' + '\n  '.join(o for o in constants.OPTION_PATHS))
+    description = ('options:\n  ' + '\n  '.join(o for o in defaults.option_paths()))
 
     argument_definitions = {
         'OPTION': {
