@@ -26,7 +26,7 @@ class submit(CommandBase):
                     'type': argtypes.client,
                     'metavar': 'CLIENT',
                     'help': ('Case-insensitive BitTorrent client name\n'
-                             'Supported clients: ' + ', '.join(constants.BTCLIENT_NAMES)),
+                             'Supported clients: ' + ', '.join(utils.btclients.client_names())),
                 },
                 ('--copy-to', '-c'): {
                     'metavar': 'PATH',

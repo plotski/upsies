@@ -38,3 +38,9 @@ def scenedb(name, **kwargs):
         if scenedb.name == name:
             return scenedb(**kwargs)
     raise ValueError(f'Unsupported scene release database: {name}')
+
+
+def scenedb_names():
+    """Return sequence of valid `name` arguments for :func:`.scenedb`"""
+    return tuple(utils.CaseInsensitiveString(cls.name) for cls in scenedbs())
+

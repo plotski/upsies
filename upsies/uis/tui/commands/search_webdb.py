@@ -24,7 +24,7 @@ class search_webdb(CommandBase):
         'DB': {
             'type': argtypes.webdb,
             'help': ('Case-insensitive database name\n'
-                     'Supported databases: ' + ', '.join(constants.WEBDB_NAMES)),
+                     'Supported databases: ' + ', '.join(utils.webdbs.webdb_names())),
         },
         'RELEASE': {
             'type': argtypes.release,

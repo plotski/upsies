@@ -10,12 +10,12 @@ A custom error message can be provided by raising
 import argparse
 import os
 
-from .... import constants, errors, utils
+from .... import constants, errors, trackers, utils
 
 
 def client(value):
     """Name of a BitTorrent client from :mod:`~.utils.btclients`"""
-    if value in constants.BTCLIENT_NAMES:
+    if value in utils.btclients.client_names():
         return value.lower()
     else:
         raise ValueError(f'Unsupported client: {value}')
@@ -32,7 +32,7 @@ def content(value):
 
 def imghost(value):
     """Name of a image hosting service from :mod:`~.utils.imghosts`"""
-    if value in constants.IMGHOST_NAMES:
+    if value in utils.imghosts.imghost_names():
         return value.lower()
     else:
         raise ValueError(f'Unsupported image hosting service: {value}')
@@ -67,7 +67,7 @@ def release(value):
 
 def scenedb(value):
     """Name of a scene release database from :mod:`~.utils.scene`"""
-    if value in constants.SCENEDB_NAMES:
+    if value in utils.scene.scenedb_names():
         return value.lower()
     else:
         raise ValueError(f'Unsupported scene release database: {value}')
@@ -83,7 +83,7 @@ def timestamp(value):
 
 def tracker(value):
     """Name of a tracker from :mod:`~.trackers`"""
-    if value in constants.TRACKER_NAMES:
+    if value in trackers.tracker_names():
         return value.lower()
     else:
         raise ValueError(f'Unsupported tracker: {value}')
@@ -91,7 +91,7 @@ def tracker(value):
 
 def webdb(value):
     """Name of a movie/series database from :mod:`~.webdbs`"""
-    if value in constants.WEBDB_NAMES:
+    if value in utils.webdbs.webdb_names():
         return value.lower()
     else:
         raise ValueError(f'Unsupported database: {value}')

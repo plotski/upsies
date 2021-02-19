@@ -2,7 +2,7 @@
 API for querying services like IMDb
 """
 
-from .. import subclasses, submodules
+from .. import CaseInsensitiveString, subclasses, submodules
 from . import imdb, tmdb, tvmaze
 from .base import WebDbApiBase
 from .common import Query, SearchResult
@@ -31,3 +31,8 @@ def webdb(name, **kwargs):
         if cls.name == name:
             return cls(**kwargs)
     raise ValueError(f'Unsupported web database: {name}')
+
+
+def webdb_names():
+    """Return sequence of valid `name` arguments for :func:`.webdb`"""
+    return tuple(CaseInsensitiveString(cls.name) for cls in webdbs())

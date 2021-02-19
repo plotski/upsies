@@ -38,3 +38,8 @@ def tracker(name, **kwargs):
         if cls.name == name:
             return cls(**kwargs)
     raise ValueError(f'Unsupported tracker: {name}')
+
+
+def tracker_names():
+    """Return sequence of valid `name` arguments for :func:`.tracker`"""
+    return tuple(utils.CaseInsensitiveString(cls.name) for cls in trackers())

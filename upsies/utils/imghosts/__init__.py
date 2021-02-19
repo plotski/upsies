@@ -2,7 +2,7 @@
 API for image hosting services
 """
 
-from .. import subclasses, submodules
+from .. import CaseInsensitiveString, subclasses, submodules
 from .base import ImageHostBase
 from .common import UploadedImage
 
@@ -30,3 +30,8 @@ def imghost(name, **kwargs):
         if imghost.name == name:
             return imghost(**kwargs)
     raise ValueError(f'Unsupported image hosting service: {name}')
+
+
+def imghost_names():
+    """Return sequence of valid `name` arguments for :func:`.imghost`"""
+    return tuple(CaseInsensitiveString(cls.name) for cls in imghosts())

@@ -2,7 +2,7 @@
 API for BitTorrent clients
 """
 
-from .. import subclasses, submodules
+from .. import CaseInsensitiveString, subclasses, submodules
 from .base import ClientApiBase
 
 
@@ -29,3 +29,8 @@ def client(name, **kwargs):
         if client.name == name:
             return client(**kwargs)
     raise ValueError(f'Unsupported client: {name}')
+
+
+def client_names():
+    """Return sequence of valid `name` arguments for :func:`.client`"""
+    return tuple(CaseInsensitiveString(cls.name) for cls in clients())

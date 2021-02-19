@@ -6,8 +6,8 @@ import os
 
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 
-from . import defaults, trackers
-from .utils import CaseInsensitiveString, btclients, imghosts, scene, webdbs
+from . import defaults
+
 
 TRACKERS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'trackers.ini')
 """Path to trackers configuration file"""
@@ -30,21 +30,6 @@ OPTION_PATHS = _get_option_paths(defaults.defaults)
 
 VIDEO_FILE_EXTENSIONS = ('mkv', 'mp4', 'ts', 'avi')
 """Sequence of file extensions to recognize video files"""
-
-BTCLIENT_NAMES = [CaseInsensitiveString(cls.name) for cls in btclients.clients()]
-"""Valid `name` arguments for :func:`.btclients.client`"""
-
-IMGHOST_NAMES = [CaseInsensitiveString(cls.name) for cls in imghosts.imghosts()]
-"""Valid `name` arguments for :func:`.imghosts.imghost`"""
-
-SCENEDB_NAMES = [CaseInsensitiveString(cls.name) for cls in scene.scenedbs()]
-"""Valid `name` arguments for :func:`.scene.scenedb`"""
-
-TRACKER_NAMES = [CaseInsensitiveString(cls.name) for cls in trackers.trackers()]
-"""Valid `name` arguments for :func:`.trackers.tracker`"""
-
-WEBDB_NAMES = [CaseInsensitiveString(cls.name) for cls in webdbs.webdbs()]
-"""Valid `name` arguments for :func:`.webdbs.webdbs`"""
 
 GUESSIT_OPTIONS = {
     'expected_title': [

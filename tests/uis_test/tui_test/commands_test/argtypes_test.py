@@ -4,11 +4,11 @@ from unittest.mock import call, patch
 
 import pytest
 
-from upsies import constants, errors
+from upsies import constants, errors, trackers, utils
 from upsies.uis.tui.commands import argtypes
 
 
-@pytest.mark.parametrize('client', constants.BTCLIENT_NAMES)
+@pytest.mark.parametrize('client', utils.btclients.client_names())
 def test_client_valid_value(client):
     assert argtypes.client(client) == client
     assert argtypes.client(client.upper()) == client
@@ -39,7 +39,7 @@ def test_content(path, path_exists, exp_exc, mocker):
     assert release_mock.call_args_list == [call(path)]
     assert exists_mock.call_args_list == [call(release_mock.return_value)]
 
-@pytest.mark.parametrize('imghost', constants.IMGHOST_NAMES)
+@pytest.mark.parametrize('imghost', utils.imghosts.imghost_names())
 def test_imghost_valid_value(imghost):
     assert argtypes.imghost(imghost) == imghost
     assert argtypes.imghost(imghost.upper()) == imghost
@@ -98,7 +98,7 @@ def test_release(path, exp_path, exc, exp_exc, mocker):
         assert argtypes.release(path) == exp_path
 
 
-@pytest.mark.parametrize('scenedb', constants.SCENEDB_NAMES)
+@pytest.mark.parametrize('scenedb', utils.scene.scenedb_names())
 def test_scenedb_valid_value(scenedb):
     assert argtypes.scenedb(scenedb) == scenedb
     assert argtypes.scenedb(scenedb.upper()) == scenedb
@@ -122,7 +122,7 @@ def test_timestamp_invalid_value(parse_mock, exception):
         argtypes.timestamp('foo')
 
 
-@pytest.mark.parametrize('tracker', constants.TRACKER_NAMES)
+@pytest.mark.parametrize('tracker', trackers.tracker_names())
 def test_tracker_valid_value(tracker):
     assert argtypes.tracker(tracker) == tracker
     assert argtypes.tracker(tracker.upper()) == tracker
@@ -133,7 +133,7 @@ def test_tracker_invalid_value():
         argtypes.tracker('foo')
 
 
-@pytest.mark.parametrize('webdb', constants.WEBDB_NAMES)
+@pytest.mark.parametrize('webdb', utils.webdbs.webdb_names())
 def test_webdb_valid_value(webdb):
     assert argtypes.webdb(webdb) == webdb
     assert argtypes.webdb(webdb.upper()) == webdb
