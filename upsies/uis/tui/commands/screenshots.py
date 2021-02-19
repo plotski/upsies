@@ -2,7 +2,7 @@
 Create screenshots from video file and optionally upload them
 """
 
-from .... import constants, jobs, utils
+from .... import jobs, utils
 from . import argtypes
 from .base import CommandBase
 

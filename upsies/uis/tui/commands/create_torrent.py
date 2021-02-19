@@ -2,7 +2,7 @@
 Create torrent file and optionally add or copy it
 """
 
-from .... import constants, jobs, trackers, utils
+from .... import jobs, trackers, utils
 from . import argtypes
 from .base import CommandBase
 

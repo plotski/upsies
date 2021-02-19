@@ -2,7 +2,7 @@
 Upload images to image hosting service
 """
 
-from .... import constants, jobs, utils
+from .... import jobs, utils
 from . import argtypes
 from .base import CommandBase
 

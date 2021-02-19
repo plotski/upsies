@@ -2,7 +2,7 @@
 Add torrent file to  BitTorrent client
 """
 
-from .... import constants, jobs, utils
+from .... import jobs, utils
 from . import argtypes
 from .base import CommandBase
 

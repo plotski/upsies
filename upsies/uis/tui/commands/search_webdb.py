@@ -2,7 +2,7 @@
 Search online database like IMDb to get an ID
 """
 
-from .... import constants, jobs, utils
+from .... import jobs, utils
 from . import argtypes
 from .base import CommandBase
 

@@ -2,7 +2,7 @@
 Generate all required metadata and upload to tracker
 """
 
-from .... import constants, jobs, trackers, utils
+from .... import jobs, trackers, utils
 from . import argtypes
 from .base import CommandBase
 
