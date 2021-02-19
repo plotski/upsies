@@ -17,7 +17,7 @@ class Query:
     Search query for databases like IMDb
 
     :param str title: Name of the movie or TV series
-    :param str type: :class:`~.utils.ReleaseType` enum or one of its value names
+    :param str type: :class:`~.types.ReleaseType` enum or one of its value names
     :param year: Year of release
     :type year: str or int
 
@@ -38,7 +38,7 @@ class Query:
 
     @property
     def type(self):
-        """:class:`~.utils.ReleaseType` value"""
+        """:class:`~.types.ReleaseType` value"""
         return self._type
 
     @property
@@ -177,7 +177,7 @@ class SearchResult:
     :param str title: Title of the movie or series
     :param str title_english: English title of the movie or series
     :param str title_original: Original title of the movie or series
-    :param str type: :class:`~.utils.ReleaseType` value
+    :param str type: :class:`~.types.ReleaseType` value
     :param str url: Web page of the search result
     :param str year: Release year; for series this should be the year of the
         first airing of the first episode of the first season

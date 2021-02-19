@@ -60,7 +60,7 @@ class WebDbApiBase(abc.ABC):
 
     @abc.abstractmethod
     async def type(self, id):
-        """Return :class:`~.utils.ReleaseType`"""
+        """Return :class:`~.types.ReleaseType`"""
 
     @abc.abstractmethod
     async def year(self, id):

@@ -96,7 +96,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def type(self):
         """
-        :class:`~.utils.ReleaseType` enum or one of its value names
+        :class:`~.types.ReleaseType` enum or one of its value names
 
         See also :meth:`fetch_info`.
         """
@@ -497,11 +497,11 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     Gathered information is provided as a dictionary with the following keys:
 
-      - ``type`` (:class:`~.utils.ReleaseType` enum)
+      - ``type`` (:class:`~.types.ReleaseType` enum)
       - ``title``
       - ``aka`` (Also Known As; anything after "AKA" in the title)
       - ``year``
-      - ``episodes`` (:class:`~.types.Episodes` instance)
+      - ``episodes`` (:class:`~.Episodes` instance)
       - ``episode_title``
       - ``edition`` (:class:`list` of "Extended", "Uncut", etc)
       - ``resolution``
