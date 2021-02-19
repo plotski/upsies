@@ -97,7 +97,10 @@ class UI:
                 # Focus the first unfinished job and stop adding more
                 if not jobinfo.job.is_finished:
                     _log.debug('Active job: %r', jobinfo.job.name)
-                    self._layout.focus(jobinfo.container)
+                    try:
+                        self._layout.focus(jobinfo.container)
+                    except ValueError as e:
+                        pass
                     break
 
         # Add non-interactive jobs below interactive jobs so the interactive
