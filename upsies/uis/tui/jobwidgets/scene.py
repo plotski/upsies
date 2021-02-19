@@ -22,6 +22,11 @@ class SceneSearchJobWidget(JobWidgetBase):
 
 
 class SceneCheckJobWidget(JobWidgetBase):
+
+    # Force this job to be interactive. Auto-detection doesn't work because
+    # dialogs only pop up after scenedb a scenedb query.
+    is_interactive = True
+
     def setup(self):
         self._release_name_dialog = widgets.RadioList(
             on_accepted=self._handle_dialog_release_name,
