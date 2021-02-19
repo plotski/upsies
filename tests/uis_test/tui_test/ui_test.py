@@ -56,10 +56,10 @@ def test_add_jobs_registers_signals(mocker):
     ui = UI()
     ui.run(jobs)
     assert JobWidget_mock.call_args_list == [
-        call(jobs[0]),
-        call(jobs[1]),
-        call(jobs[2]),
-        call(jobs[3]),
+        call(jobs[0], ui._make_app.return_value),
+        call(jobs[1], ui._make_app.return_value),
+        call(jobs[2], ui._make_app.return_value),
+        call(jobs[3], ui._make_app.return_value),
     ]
     for job, jobw in zip(jobs, job_widgets):
         if jobw.is_interactive:
