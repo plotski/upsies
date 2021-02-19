@@ -99,7 +99,7 @@ class UI:
                     _log.debug('Active job: %r', jobinfo.job.name)
                     try:
                         self._layout.focus(jobinfo.container)
-                    except ValueError as e:
+                    except ValueError:
                         pass
                     break
 
