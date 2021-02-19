@@ -45,7 +45,7 @@ class DummyTrackerJobs(base.TrackerJobsBase):
     def category_job(self):
         if not self.cli_args.skip_category:
             self.release_name_job.signal.register('release_name', self._handle_release_name)
-            return jobs.prompt.ChoiceJob(
+            return jobs.dialog.ChoiceJob(
                 name='category',
                 label='Category',
                 choices=(str(t).capitalize() for t in ReleaseType if t),
@@ -64,7 +64,7 @@ class DummyTracker(base.TrackerBase):
 
     argument_definitions = {
         ('--skip-category', '-C'): {
-            'help': 'Do not prompt for category',
+            'help': 'Do not ask for category',
             'action': 'store_true',
         },
         ('--screenshots', '-s'): {

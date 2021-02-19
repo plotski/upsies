@@ -16,7 +16,7 @@ _log = logging.getLogger(__name__)
 
 class SearchWebDbJob(JobBase):
     """
-    Prompt user to select a specific search result from an internet database
+    Ask user to select a specific search result from an internet database
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:

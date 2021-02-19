@@ -16,45 +16,45 @@ class SearchWebDbJobWidget(JobWidgetBase):
     def setup(self):
         right_column_width = 40
         self._widgets = {
-            'id' : widgets.TextField(width=15, style='class:prompt.search.info'),
+            'id' : widgets.TextField(width=15, style='class:dialog.search.info'),
             'query' : widgets.InputField(
-                style='class:prompt.search.query',
+                style='class:dialog.search.query',
                 text=str(self.job.query),
                 on_accepted=self.handle_query,
             ),
             'search_results' : _SearchResults(width=40),
             'summary' : widgets.TextField(
-                style='class:prompt.search.info',
+                style='class:dialog.search.info',
                 width=right_column_width,
                 height=8,
             ),
             'title_original' : widgets.TextField(
-                style='class:prompt.search.info',
+                style='class:dialog.search.info',
                 width=right_column_width,
                 height=1,
             ),
             'title_english' : widgets.TextField(
-                style='class:prompt.search.info',
+                style='class:dialog.search.info',
                 width=right_column_width,
                 height=1,
             ),
             'keywords' : widgets.TextField(
-                style='class:prompt.search.info',
+                style='class:dialog.search.info',
                 width=right_column_width,
                 height=2,
             ),
             'director' : widgets.TextField(
-                style='class:prompt.search.info',
+                style='class:dialog.search.info',
                 width=right_column_width,
                 height=1,
             ),
             'cast' : widgets.TextField(
-                style='class:prompt.search.info',
+                style='class:dialog.search.info',
                 width=right_column_width,
                 height=2,
             ),
             'countries' : widgets.TextField(
-                style='class:prompt.search.info',
+                style='class:dialog.search.info',
                 width=right_column_width,
                 height=1,
             ),
@@ -99,23 +99,23 @@ class SearchWebDbJobWidget(JobWidgetBase):
                 widgets.HLabel(
                     text='ID',
                     content=w['id'],
-                    style='class:prompt.search.label',
+                    style='class:dialog.search.label',
                 ),
             ]),
             widgets.vspacer,
             VSplit([
                 HSplit([
-                    widgets.VLabel('Results', w['search_results'], style='class:prompt.search.label'),
-                    widgets.VLabel('Original Title', w['title_original'], style='class:prompt.search.label'),
-                    widgets.VLabel('Also Known As', w['title_english'], style='class:prompt.search.label'),
+                    widgets.VLabel('Results', w['search_results'], style='class:dialog.search.label'),
+                    widgets.VLabel('Original Title', w['title_original'], style='class:dialog.search.label'),
+                    widgets.VLabel('Also Known As', w['title_english'], style='class:dialog.search.label'),
                 ]),
                 widgets.hspacer,
                 HSplit([
-                    widgets.VLabel('Summary', w['summary'], style='class:prompt.search.label'),
-                    widgets.VLabel('Keywords', w['keywords'], style='class:prompt.search.label'),
-                    widgets.VLabel('Director', w['director'], style='class:prompt.search.label'),
-                    widgets.VLabel('Cast', w['cast'], style='class:prompt.search.label'),
-                    widgets.VLabel('Country', w['countries'], style='class:prompt.search.label'),
+                    widgets.VLabel('Summary', w['summary'], style='class:dialog.search.label'),
+                    widgets.VLabel('Keywords', w['keywords'], style='class:dialog.search.label'),
+                    widgets.VLabel('Director', w['director'], style='class:dialog.search.label'),
+                    widgets.VLabel('Cast', w['cast'], style='class:dialog.search.label'),
+                    widgets.VLabel('Country', w['countries'], style='class:dialog.search.label'),
                 ]),
             ]),
             widgets.vspacer,
@@ -130,7 +130,7 @@ class SearchWebDbJobWidget(JobWidgetBase):
                 HSplit(
                     children=layout,
                     key_bindings=self._make_keybindings(),
-                    style='class:prompt.search',
+                    style='class:dialog.search',
                 ),
             ],
         )
@@ -177,7 +177,7 @@ class _SearchResults(DynamicContainer):
                 content=FormattedTextControl(self._get_text_fragments, focusable=False),
                 width=width,
                 height=14,
-                style='class:prompt.search.results',
+                style='class:dialog.search.results',
             )
         )
 
@@ -221,18 +221,18 @@ class _SearchResults(DynamicContainer):
 
     def _get_text_fragments(self):
         if self._is_searching:
-            return [('class:prompt.search.results', 'Searching...')]
+            return [('class:dialog.search.results', 'Searching...')]
         elif not self._results:
             return 'No results'
 
         frags = []
         for i, result in enumerate(self._results):
             if i == self._focused_index:
-                title_style = 'class:prompt.search.results.focused'
+                title_style = 'class:dialog.search.results.focused'
                 frags.append(('[SetCursorPosition]', ''))
                 self._focused_result = result
             else:
-                title_style = 'class:prompt.search.results'
+                title_style = 'class:dialog.search.results'
 
             if get_cwidth(result.title) > self._title_width:
                 title = result.title[:self._title_width - 1] + '…'

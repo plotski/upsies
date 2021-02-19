@@ -44,7 +44,7 @@ class NblTrackerJobs(base.TrackerJobsBase):
             guessed = 'Episode'
         else:
             guessed = 'Season'
-        return jobs.prompt.ChoiceJob(
+        return jobs.dialog.ChoiceJob(
             name='category',
             label='Category',
             choices=('Season', 'Episode'),

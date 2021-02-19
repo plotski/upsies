@@ -80,12 +80,12 @@ async def test_find_release_name_gets_nonscene_release(make_SceneCheckJob, mocke
     ))
     mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
-    prompt_release_name = Mock()
+    ask_release_name = Mock()
     job = make_SceneCheckJob(content_path='path/to/foo')
-    job.signal.register('prompt_release_name', prompt_release_name)
+    job.signal.register('ask_release_name', ask_release_name)
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
-    assert prompt_release_name.call_args_list == []
+    assert ask_release_name.call_args_list == []
     assert job._finalize.call_args_list == [
         call(SceneCheckResult.false, exceptions=()),
     ]
@@ -102,13 +102,13 @@ async def test_find_release_name_finds_no_results(is_scene_release, make_SceneCh
     ))
     mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
-    prompt_release_name = Mock()
+    ask_release_name = Mock()
     job = make_SceneCheckJob(content_path='path/to/foo')
-    job.signal.register('prompt_release_name', prompt_release_name)
+    job.signal.register('ask_release_name', ask_release_name)
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert search_mock.call_args_list == [call(SceneQuery('foo'))]
-    assert prompt_release_name.call_args_list == []
+    assert ask_release_name.call_args_list == []
     assert job._finalize.call_args_list == [
         call(SceneCheckResult.unknown, exceptions=()),
     ]
@@ -125,13 +125,13 @@ async def test_find_release_name_finds_single_result(is_scene_release, make_Scen
     ))
     mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
-    prompt_release_name = Mock()
+    ask_release_name = Mock()
     job = make_SceneCheckJob(content_path='path/to/foo')
-    job.signal.register('prompt_release_name', prompt_release_name)
+    job.signal.register('ask_release_name', ask_release_name)
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert search_mock.call_args_list == [call(SceneQuery('foo'))]
-    assert prompt_release_name.call_args_list == []
+    assert ask_release_name.call_args_list == []
     assert job._finalize.call_args_list == []
     assert job._verify_release.call_args_list == [
         call('Mock.Release.Foo-BAR'),
@@ -148,13 +148,13 @@ async def test_find_release_name_finds_parsed_release_name_in_result(is_scene_re
     ))
     mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
-    prompt_release_name = Mock()
+    ask_release_name = Mock()
     job = make_SceneCheckJob(content_path='path/to/foo')
-    job.signal.register('prompt_release_name', prompt_release_name)
+    job.signal.register('ask_release_name', ask_release_name)
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert search_mock.call_args_list == [call(SceneQuery('foo'))]
-    assert prompt_release_name.call_args_list == []
+    assert ask_release_name.call_args_list == []
     assert job._finalize.call_args_list == []
     assert job._verify_release.call_args_list == [
         call('foo'),
@@ -171,13 +171,13 @@ async def test_find_release_name_finds_multiple_results(is_scene_release, make_S
     ))
     mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
-    prompt_release_name = Mock()
+    ask_release_name = Mock()
     job = make_SceneCheckJob(content_path='path/to/foo')
-    job.signal.register('prompt_release_name', prompt_release_name)
+    job.signal.register('ask_release_name', ask_release_name)
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert search_mock.call_args_list == [call(SceneQuery('foo'))]
-    assert prompt_release_name.call_args_list == [
+    assert ask_release_name.call_args_list == [
         call(('Mock.Release.Foo-BAR', 'Mick.Release.Foo-BAR')),
     ]
     assert job._finalize.call_args_list == []
@@ -211,9 +211,9 @@ async def test_verify_release(make_SceneCheckJob, mocker):
 
 
 def test_finalize_ignores_SceneMissingFileError(make_SceneCheckJob, mocker):
-    prompt_is_scene_release = Mock()
+    ask_is_scene_release = Mock()
     job = make_SceneCheckJob()
-    job.signal.register('prompt_is_scene_release', prompt_is_scene_release)
+    job.signal.register('ask_is_scene_release', ask_is_scene_release)
     job._finalize(
         'mock scene check result',
         (
@@ -227,16 +227,16 @@ def test_finalize_ignores_SceneMissingFileError(make_SceneCheckJob, mocker):
         errors.SceneError('foo'),
         errors.SceneFileSizeError('baz', 123, 456),
     )
-    assert prompt_is_scene_release.call_args_list == []
+    assert ask_is_scene_release.call_args_list == []
     assert job.is_finished
 
-def test_finalize_triggers_prompt_without_errors(make_SceneCheckJob, mocker):
-    prompt_is_scene_release = Mock()
+def test_finalize_triggers_dialog_if_no_errors(make_SceneCheckJob, mocker):
+    ask_is_scene_release = Mock()
     job = make_SceneCheckJob()
-    job.signal.register('prompt_is_scene_release', prompt_is_scene_release)
+    job.signal.register('ask_is_scene_release', ask_is_scene_release)
     job._finalize('mock scene check result', ())
     assert job.errors == ()
-    assert prompt_is_scene_release.call_args_list == [
+    assert ask_is_scene_release.call_args_list == [
         call('mock scene check result'),
     ]
     assert not job.is_finished

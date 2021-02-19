@@ -10,7 +10,7 @@ class ReleaseNameJobWidget(JobWidgetBase):
     def setup(self):
         self._input = widgets.InputField(
             text='Loading...',
-            style='class:prompt.text',
+            style='class:dialog.text',
             on_accepted=self._handle_approved_release_name,
             read_only=True,
         )

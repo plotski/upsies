@@ -13,7 +13,7 @@ class ChoiceJobWidget(JobWidgetBase):
             focused=self.job.focused,
             on_accepted=self._handle_choice,
         )
-        self.job.signal.register('prompt_updated', self._handle_update)
+        self.job.signal.register('dialog_updated', self._handle_update)
 
     def _handle_update(self, choices, focused_index):
         self._radiolist.choices = choices

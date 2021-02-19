@@ -143,7 +143,7 @@ class JobBase(abc.ABC):
 
     def execute(self):
         """
-        Do the job, e.g. prompt for user input or start background worker
+        Do the job, e.g. ask for user input or start background worker
 
         This method must not block.
         """

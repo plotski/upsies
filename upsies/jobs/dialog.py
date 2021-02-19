@@ -12,12 +12,12 @@ _log = logging.getLogger(__name__)
 
 class ChoiceJob(JobBase):
     """
-    Prompt the user to choose from a set of values
+    Ask the user to choose from a set of values
 
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
-        ``prompt_updated``
+        ``dialog_updated``
             Emitted when :attr:`choices` or :attr:`focused` is set. Registered
             callbacks get the sequence of choices and the index of the focused
             choice as positional arguments.
@@ -70,7 +70,7 @@ class ChoiceJob(JobBase):
         else:
             self._focused_index = 0
 
-        self.signal.emit('prompt_updated', self._choices, self._focused_index)
+        self.signal.emit('dialog_updated', self._choices, self._focused_index)
 
     @property
     def focused(self):
@@ -115,7 +115,7 @@ class ChoiceJob(JobBase):
             else:
                 raise ValueError(f'Invalid choice: {focused!r}')
 
-        self.signal.emit('prompt_updated', self.choices, self._focused_index)
+        self.signal.emit('dialog_updated', self.choices, self._focused_index)
 
     def initialize(self, *, name, label, choices, focused=None):
         """
@@ -131,7 +131,7 @@ class ChoiceJob(JobBase):
         """
         self._name = str(name)
         self._label = str(label)
-        self.signal.add('prompt_updated')
+        self.signal.add('dialog_updated')
         self.signal.add('chosen')
         self.choices = choices
         self.focused = focused

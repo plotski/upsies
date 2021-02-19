@@ -84,12 +84,12 @@ class SceneCheckJob(JobBase):
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
-        ``prompt_release_name``
+        ``ask_release_name``
             Emitted if the user must pick a release name from multiple search
             results. Registered callbacks get a sequence of release names as
             positional argument.
 
-        ``prompt_is_scene_release``
+        ``ask_is_scene_release``
             Emitted after we made our best guess and the user must approve or
             override it. Registered callbacks get a
             :class:`~.types.SceneCheckResult` enum as a positional argument.
@@ -118,8 +118,8 @@ class SceneCheckJob(JobBase):
         """
         self._content_path = content_path
         self._release_name = fs.strip_extension(fs.basename(content_path))
-        self.signal.add('prompt_release_name')
-        self.signal.add('prompt_is_scene_release')
+        self.signal.add('ask_release_name')
+        self.signal.add('ask_is_scene_release')
         self.signal.add('checked')
 
     async def _catch_errors(self, coro):
@@ -161,8 +161,8 @@ class SceneCheckJob(JobBase):
                 _log.debug('Auto-picking from search results: %r', self._release_name)
                 await self._verify_release(self._release_name)
             else:
-                _log.debug('Prompting for release name: %r', results)
-                self.signal.emit('prompt_release_name', results)
+                _log.debug('Asking for release name: %r', results)
+                self.signal.emit('ask_release_name', results)
 
     def user_selected_release_name(self, release_name):
         """
@@ -188,7 +188,7 @@ class SceneCheckJob(JobBase):
                 self.error(e)
 
         if not exceptions:
-            self.signal.emit('prompt_is_scene_release', is_scene_release)
+            self.signal.emit('ask_is_scene_release', is_scene_release)
         else:
             self.finish()
 

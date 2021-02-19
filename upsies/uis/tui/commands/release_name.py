@@ -43,8 +43,8 @@ class release_name(CommandBase):
 
     @utils.cached_property
     def imdb_job(self):
-        # To be able to fetch the original title, year, etc, we need to prompt
-        # for an ID first. IMDb seems to be best.
+        # To be able to fetch the original title, year, etc, we need to ask for
+        # an ID first. IMDb seems to be best.
         imdb_job = jobs.webdb.SearchWebDbJob(
             home_directory=utils.fs.projectdir(self.args.RELEASE),
             ignore_cache=self.args.ignore_cache,

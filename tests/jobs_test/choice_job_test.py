@@ -3,25 +3,25 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies.jobs import prompt
+from upsies.jobs import dialog
 
 
 def test_name_property():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     assert job.name == 'foo'
 
 
 def test_label_property():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     assert job.label == 'Foo'
 
 
 def test_choices_are_strings():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     cb = Mock()
     assert job.choices == (('1', '1'), ('2', '2'), ('3', '3'))
     assert job.focused == ('1', '1')
-    job.signal.register('prompt_updated', cb)
+    job.signal.register('dialog_updated', cb)
 
     job.focused = '3'
     assert job.choices == (('1', '1'), ('2', '2'), ('3', '3'))
@@ -53,11 +53,11 @@ def test_choices_are_strings():
     assert job.focused == ('bar', 'bar')
 
 def test_choices_are_sequences():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3)))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3)))
     cb = Mock()
     assert job.choices == (('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3))
     assert job.focused == ('a', 1, -3)
-    job.signal.register('prompt_updated', cb)
+    job.signal.register('dialog_updated', cb)
 
     job.focused = ('c', 3, -1, -2, -3)
     assert job.choices == (('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3))
@@ -96,9 +96,9 @@ def test_choices_are_sequences():
     assert cb.call_args_list == []
 
 def test_choices_are_invalid():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('a', 'b',))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=('a', 'b',))
     cb = Mock()
-    job.signal.register('prompt_updated', cb)
+    job.signal.register('dialog_updated', cb)
     with pytest.raises(ValueError, match=r"^Choice must be a 2-tuple, not 123$"):
         job.choices = ('x', ('y', 'why'), 123, ('z', 'see'))
     assert job.choices == (('a', 'a'), ('b', 'b'))
@@ -108,9 +108,9 @@ def test_choices_are_invalid():
 
 @pytest.mark.parametrize('current', ('a', 'b', 'c'))
 def test_focused_set_to_None(current):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('a', 'b', 'c'), focused=current)
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=('a', 'b', 'c'), focused=current)
     cb = Mock()
-    job.signal.register('prompt_updated', cb)
+    job.signal.register('dialog_updated', cb)
     assert job.focused == (current, current)
     job.focused = None
     assert job.focused == ('a', 'a')
@@ -118,9 +118,9 @@ def test_focused_set_to_None(current):
 
 @pytest.mark.parametrize('focus', (0, 1, 2))
 def test_focused_set_to_int(focus):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=('a', 'b', 'c'))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=('a', 'b', 'c'))
     cb = Mock()
-    job.signal.register('prompt_updated', cb)
+    job.signal.register('dialog_updated', cb)
     assert job.focused == ('a', 'a')
     job.focused = focus
     assert job.focused == job.choices[focus]
@@ -136,18 +136,18 @@ def test_focused_set_to_int(focus):
 ))
 def test_focused_set_to_valid_value(focus, exp_focused):
     choices = (('a', 'foo'), ('b', 'bar'), ('c', 'baz'))
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=choices)
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=choices)
     cb = Mock()
-    job.signal.register('prompt_updated', cb)
+    job.signal.register('dialog_updated', cb)
     assert job.focused == ('a', 'foo')
     job.focused = focus
     assert job.focused == exp_focused
     assert cb.call_args_list == [call((('a', 'foo'), ('b', 'bar'), ('c', 'baz')), choices.index(exp_focused))]
 
 def test_focused_set_to_invalid_value():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
     cb = Mock()
-    job.signal.register('prompt_updated', cb)
+    job.signal.register('dialog_updated', cb)
     assert job.focused == ('a', 1)
     with pytest.raises(ValueError, match=r"^Invalid choice: 'x'$"):
         job.focused = 'x'
@@ -157,18 +157,18 @@ def test_focused_set_to_invalid_value():
 @pytest.mark.parametrize('choice', (('a', 1), ('b', 2), ('c', 3)))
 def test_focused_set_to_valid_choice(choice):
     choices = (('a', 1), ('b', 2), ('c', 3))
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=choices)
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=choices)
     cb = Mock()
-    job.signal.register('prompt_updated', cb)
+    job.signal.register('dialog_updated', cb)
     assert job.focused == ('a', 1)
     job.focused = choice
     assert job.focused == choice
     assert cb.call_args_list == [call((('a', 1), ('b', 2), ('c', 3)), choices.index(choice))]
 
 def test_focused_set_to_invalid_choice():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
     cb = Mock()
-    job.signal.register('prompt_updated', cb)
+    job.signal.register('dialog_updated', cb)
     assert job.focused == ('a', 1)
     with pytest.raises(ValueError, match=r"^Invalid choice: \('d', 4\)$"):
         job.focused = ('d', 4)
@@ -178,7 +178,7 @@ def test_focused_set_to_invalid_choice():
 
 @pytest.mark.parametrize('choice', (('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
 def test_choice_selected_with_valid_choice(choice):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
@@ -190,7 +190,7 @@ def test_choice_selected_with_valid_choice(choice):
     assert job.is_finished
 
 def test_choice_selected_with_invalid_choice():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
     cb = Mock()
     job.signal.register('chosen', cb)
     assert job.focused == ('a', 1)
@@ -205,7 +205,7 @@ def test_choice_selected_with_invalid_choice():
 
 @pytest.mark.parametrize('index, exp_choice', ((0, ('a', 'foo')), (1, ('b', 'bar')), (2, ('c', 'baz'))))
 def test_choice_selected_with_valid_index(index, exp_choice):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
@@ -217,7 +217,7 @@ def test_choice_selected_with_valid_index(index, exp_choice):
     assert job.is_finished
 
 def test_choice_selected_with_invalid_index():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
@@ -238,7 +238,7 @@ def test_choice_selected_with_invalid_index():
     ('baz', ('c', 'baz')),
 ))
 def test_choice_selected_with_valid_value(value, exp_choice):
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
@@ -250,7 +250,7 @@ def test_choice_selected_with_valid_value(value, exp_choice):
     assert job.is_finished
 
 def test_choice_selected_with_invalid_value():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
@@ -263,7 +263,7 @@ def test_choice_selected_with_invalid_value():
     assert job.is_finished
 
 def test_choice_selected_with_None():
-    job = prompt.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)

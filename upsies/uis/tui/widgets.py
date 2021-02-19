@@ -178,7 +178,7 @@ class RadioList:
         )
         self.window = Window(
             content=self.control,
-            style='class:prompt.choice',
+            style='class:dialog.choice',
             dont_extend_height=True,
             always_hide_cursor=True,
         )
@@ -210,11 +210,11 @@ class RadioList:
         for i, choice in enumerate(self.choices):
             choice_string = choice_as_string(choice)
             if i == self.focused_index:
-                style = 'class:prompt.choice.focused'
+                style = 'class:dialog.choice.focused'
                 result.append(('[SetCursorPosition]', ''))
                 result.append((style, '*'))
             else:
-                style = 'class:prompt.choice'
+                style = 'class:dialog.choice'
                 result.append((style, ' '))
             result.append((style, ' '))
             result.extend(to_formatted_text(choice_string.ljust(width), style=style))

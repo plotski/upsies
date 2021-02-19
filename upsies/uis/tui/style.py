@@ -23,17 +23,17 @@ style = styles.Style([
     ('info.progressbar',              ''),
     ('info.progressbar.progress',     'reverse'),
 
-    ('prompt',                        'bg:#222 fg:#5dd'),
+    ('dialog',                        'bg:#222 fg:#5dd'),
 
-    ('prompt.text',                   ''),
+    ('dialog.text',                   ''),
 
-    ('prompt.choice',                 ''),
-    ('prompt.choice.focused',         'reverse'),
+    ('dialog.choice',                 ''),
+    ('dialog.choice.focused',         'reverse'),
 
-    ('prompt.search',                 'bg:default'),
-    ('prompt.search.label',           'bold underline'),
-    ('prompt.search.query',           'bg:#222'),
-    ('prompt.search.info',            'bg:#222'),
-    ('prompt.search.results',         'bg:#222'),
-    ('prompt.search.results.focused', 'reverse'),
+    ('dialog.search',                 'bg:default'),
+    ('dialog.search.label',           'bold underline'),
+    ('dialog.search.query',           'bg:#222'),
+    ('dialog.search.info',            'bg:#222'),
+    ('dialog.search.results',         'bg:#222'),
+    ('dialog.search.results.focused', 'reverse'),
 ])
