@@ -44,6 +44,7 @@ class SceneCheckJobWidget(JobWidgetBase):
         self._release_name_dialog.choices = choices
         self._current_dialog = self._release_name_dialog
         self.invalidate()
+        self.autofocus()
 
     def _handle_dialog_release_name(self, choice):
         _log.debug('Got release name: %r', choice)
@@ -70,6 +71,7 @@ class SceneCheckJobWidget(JobWidgetBase):
         self._confirm_guess_dialog.focused_choice = make_choice(is_scene_release)
         self._current_dialog = self._confirm_guess_dialog
         self.invalidate()
+        self.autofocus()
 
     def _handle_dialog_confirm_guess(self, is_scene_release):
         _log.debug('Got confirmed guess: %r', is_scene_release)
