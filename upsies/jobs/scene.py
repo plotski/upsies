@@ -56,7 +56,7 @@ class SceneSearchJob(JobBase):
             self.finish()
         else:
             self._search_task = asyncio.ensure_future(
-                scene.search(query=query, cache=True),
+                scene.search(query=query),
             )
             self._search_task.add_done_callback(self._handle_results)
 

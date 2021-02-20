@@ -66,7 +66,6 @@ def test_SceneQuery_from_release(release, exp_keywords, exp_group, exp_episodes)
     assert query.episodes == exp_episodes
 
 
-@pytest.mark.parametrize('cache, exp_cache', ((True, True), (False, False)))
 @pytest.mark.parametrize(
     argnames='keywords, exp_keywords',
     argvalues=(
@@ -77,12 +76,12 @@ def test_SceneQuery_from_release(release, exp_keywords, exp_group, exp_episodes)
     ),
 )
 @pytest.mark.asyncio
-async def test_SceneQuery_search_calls_given_coroutine_function(keywords, exp_keywords, cache, exp_cache):
+async def test_SceneQuery_search_calls_given_coroutine_function(keywords, exp_keywords):
     query = find.SceneQuery(*keywords, group='baz')
     search = AsyncMock(return_value=('20', 'C', '1', 'b'))
-    results = await query.search(search, cache=cache)
+    results = await query.search(search)
     assert results == ['1', '20', 'b', 'C']
-    assert search.call_args_list == [call(exp_keywords, group='baz', cache=exp_cache)]
+    assert search.call_args_list == [call(exp_keywords, group='baz')]
 
 @pytest.mark.asyncio
 async def test_SceneQuery_search_raises_RequestError():

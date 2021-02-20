@@ -26,10 +26,9 @@ def test_label():
     assert predb.PreDbApi.label == 'PreDB'
 
 
-@pytest.mark.parametrize('cache', (True, False), ids=lambda v: str(v))
 @pytest.mark.parametrize('group', (None, '', 'ASDF'), ids=lambda v: str(v))
 @pytest.mark.asyncio
-async def test_search_calls_http_get(group, cache, api, mocker):
+async def test_search_calls_http_get(group, api, mocker):
     response = Mock(json=Mock(return_value={
         'status': 'success',
         'data': {'rows': [{'name': 'Foo'}]},
@@ -44,7 +43,7 @@ async def test_search_calls_http_get(group, cache, api, mocker):
     else:
         exp_params['q'] = f'{query_string.lower()}'
 
-    response = await api._search(keywords=keywords, group=group, cache=cache)
+    response = await api._search(keywords=keywords, group=group)
     assert get_mock.call_args_list == [
         call(api._search_url, params=exp_params, cache=True),
     ]

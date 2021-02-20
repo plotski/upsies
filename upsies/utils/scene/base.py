@@ -21,14 +21,13 @@ class SceneDbApiBase(abc.ABC):
     def label(self):
         """User-facing name of the scene release database"""
 
-    async def search(self, query, only_existing_releases=True, cache=True):
+    async def search(self, query, only_existing_releases=True):
         """
         Search for scene release
 
         :param SceneQuery query: Search query
         :param bool only_existing_releases: See
             :meth:`~.scene.find.SceneQuery.search`
-        :param bool cache: Whether to use cached request response
 
         :return: :class:`list` of release names as :class:`str`
 
@@ -37,11 +36,10 @@ class SceneDbApiBase(abc.ABC):
         return await query.search(
             self._search,
             only_existing_releases=only_existing_releases,
-            cache=cache,
         )
 
     @abc.abstractmethod
-    async def _search(self, keywords, group=None, cache=True):
+    async def _search(self, keywords, group=None):
         pass
 
     @abc.abstractmethod

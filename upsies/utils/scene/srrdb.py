@@ -15,7 +15,7 @@ class SrrDbApi(base.SceneDbApiBase):
     _search_url = f'https://{_url_base}/api/search'
     _details_url = f'https://{_url_base}/api/details'
 
-    async def _search(self, keywords, group, cache):
+    async def _search(self, keywords, group):
         if group:
             keywords = list(keywords)
             keywords.append(f'group:{group}')

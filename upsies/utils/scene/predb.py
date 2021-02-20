@@ -15,7 +15,7 @@ class PreDbApi(base.SceneDbApiBase):
     _url_base = b64decode('cHJlZGIub3Zo').decode('ascii')
     _search_url = f'https://{_url_base}/api/v1/'
 
-    async def _search(self, keywords, group, cache):
+    async def _search(self, keywords, group):
         if group:
             keywords = list(keywords)
             keywords.extend(('@team', str(group)))

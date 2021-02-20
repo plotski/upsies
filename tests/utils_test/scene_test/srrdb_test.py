@@ -25,10 +25,9 @@ def test_label():
     assert srrdb.SrrDbApi.label == 'srrDB'
 
 
-@pytest.mark.parametrize('cache', (True, False), ids=lambda v: str(v))
 @pytest.mark.parametrize('group', (None, '', 'ASDF'), ids=lambda v: str(v))
 @pytest.mark.asyncio
-async def test_search_calls_http_get(group, cache, api, mocker):
+async def test_search_calls_http_get(group, api, mocker):
     response = Mock(json=Mock(return_value={
         'results': [{'release': 'Foo'}],
     }))
@@ -39,7 +38,7 @@ async def test_search_calls_http_get(group, cache, api, mocker):
     if group:
         path += f'/group:{group.lower()}'
 
-    response = await api._search(keywords=keywords, group=group, cache=cache)
+    response = await api._search(keywords=keywords, group=group)
     assert get_mock.call_args_list == [
         call(f'{api._search_url}/{path}', cache=True),
     ]
