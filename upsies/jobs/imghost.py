@@ -41,13 +41,11 @@ class ImageHostJob(QueueJobBase):
         """
         if enqueue and images_total:
             raise RuntimeError('You must not give both arguments "enqueue" and "images_total".')
-        assert isinstance(imghost, ImageHostBase), f'Not an ImageHostBase: {imghost!r}'
-        imghost.cache_directory = self.cache_directory
-        self._imghost = imghost
-        self._images_uploaded = 0
-        if enqueue and images_total:
-            raise RuntimeError('You must not give both arguments "enqueue" and "images_total".')
         else:
+            assert isinstance(imghost, ImageHostBase), f'Not an ImageHostBase: {imghost!r}'
+            imghost.cache_directory = self.cache_directory
+            self._imghost = imghost
+            self._images_uploaded = 0
             if images_total > 0:
                 self.images_total = images_total
             else:
