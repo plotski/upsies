@@ -26,7 +26,16 @@ def testdb():
 @pytest.mark.asyncio
 async def test_search_delegates_query(testdb, mocker):
     query_mock = Mock(search=AsyncMock(return_value=['foo', 'bar', 'baz']))
-    cache_mock = 'mock cache value'
-    results = await testdb.search(query=query_mock, cache=cache_mock)
-    assert query_mock.search.call_args_list == [call(testdb._search, cache=cache_mock)]
+    cache_mock = 'cache value'
+    only_existing_releases_mock = 'only_existing_releases value'
+    results = await testdb.search(
+        query=query_mock,
+        only_existing_releases=only_existing_releases_mock,
+        cache=cache_mock,
+    )
+    assert query_mock.search.call_args_list == [call(
+        testdb._search,
+        only_existing_releases=only_existing_releases_mock,
+        cache=cache_mock,
+    )]
     assert results == ['foo', 'bar', 'baz']
