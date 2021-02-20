@@ -184,8 +184,7 @@ class SceneCheckJob(JobBase):
     def _finalize(self, is_scene_release, exceptions=()):
         _log.debug('Handling result: %r: %r', is_scene_release, exceptions)
         for e in exceptions:
-            if not isinstance(e, errors.SceneMissingFileError):
-                self.error(e)
+            self.error(e)
 
         if not exceptions:
             self.signal.emit('ask_is_scene_release', is_scene_release)

@@ -241,10 +241,7 @@ async def verify_release_files(content_path, release_name):
         if exp_size is None:
             _log.debug('No info: %s', filename)
             exceptions.append(errors.SceneMissingInfoError(filename))
-        elif actual_size is None:
-            _log.debug('No such file: %s', filename)
-            # exceptions.append(errors.SceneMissingFileError(filename))
-        else:
+        elif actual_size is not None:
             if actual_size != exp_size:
                 _log.debug('Wrong size: %s', filename)
                 exceptions.append(
@@ -256,6 +253,8 @@ async def verify_release_files(content_path, release_name):
                 )
             else:
                 _log.debug('Correct size: %s', filename)
+        else:
+            _log.debug('No such file: %s', filename)
 
     return tuple(e for e in exceptions if e)
 
