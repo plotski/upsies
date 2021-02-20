@@ -96,17 +96,24 @@ async def test_SceneQuery_search_raises_RequestError():
     argnames='episodes, exp_matches',
     argvalues=(
         ({}, 'ALL'),
-        ({'1': ()}, ['X.S01E01.x264-ASDF', 'X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF']),
-        ({'2': ()}, ['X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'1': ()}, ['X.S01.x264-ASDF']),
+        ({'2': ()}, ['X.S02.x264-ASDF']),
+        ({'1': (), '2': ()}, ['X.S01.x264-ASDF', 'X.S02.x264-ASDF']),
+        ({'': ('2', '3')}, ['X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'': ('2',), '2': ('1',)}, ['X.S01E02.x264-ASDF', 'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF']),
         ({'1': ('2',)}, ['X.S01E02.x264-ASDF']),
         ({'2': ('1', '3')}, ['X.S02E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
         ({'1': ('1',), '2': ('3',)}, ['X.S01E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'1': (), '2': ('2',)}, ['X.S01.x264-ASDF', 'X.S02E02.x264-ASDF']),
+        ({'1': ('2',), '2': ()}, ['X.S01E02.x264-ASDF', 'X.S02.x264-ASDF']),
+        ({'3': ()}, []),
+        ({'': ('4',)}, []),
     ),
+    ids=lambda v: str(v),
 )
-@pytest.mark.asyncio
-async def test_SceneQuery_handle_results(episodes, exp_matches):
+def test_SceneQuery_handle_results_without_only_existing_releases(episodes, exp_matches):
     query = find.SceneQuery(episodes=episodes)
-    search = AsyncMock(return_value=[
+    results = [
         'X.2015.x264-ASDF',
         'X.S01E01.x264-ASDF',
         'X.S01E02.x264-ASDF',
@@ -114,12 +121,50 @@ async def test_SceneQuery_handle_results(episodes, exp_matches):
         'X.S02E01.x264-ASDF',
         'X.S02E02.x264-ASDF',
         'X.S02E03.x264-ASDF',
-    ])
-    results = await query.search(search)
+    ]
+    handled_results = query._handle_results(results, only_existing_releases=False)
     if exp_matches == 'ALL':
-        assert results == search.return_value
+        assert handled_results == results
     else:
-        assert results == exp_matches
+        assert handled_results == exp_matches
+
+@pytest.mark.parametrize(
+    argnames='episodes, exp_matches',
+    argvalues=(
+        ({}, 'ALL'),
+        ({'1': ()}, ['X.S01E01.x264-ASDF', 'X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF']),
+        ({'2': ()}, ['X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'1': (), '2': ()}, ['X.S01E01.x264-ASDF', 'X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF',
+                              'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'': ('2', '3')}, ['X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'': ('2',), '2': ('1',)}, ['X.S01E02.x264-ASDF', 'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF']),
+        ({'1': ('2',)}, ['X.S01E02.x264-ASDF']),
+        ({'2': ('1', '3')}, ['X.S02E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'1': ('1',), '2': ('3',)}, ['X.S01E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'1': (), '2': ('2',)}, ['X.S01E01.x264-ASDF', 'X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF', 'X.S02E02.x264-ASDF']),
+        ({'1': ('2',), '2': ()}, ['X.S01E02.x264-ASDF', 'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'3': ()}, []),
+        ({'': ('4',)}, []),
+    ),
+    ids=lambda v: str(v),
+)
+@pytest.mark.asyncio
+async def test_SceneQuery_handle_results_with_only_existing_releases(episodes, exp_matches):
+    query = find.SceneQuery(episodes=episodes)
+    results = [
+        'X.2015.x264-ASDF',
+        'X.S01E01.x264-ASDF',
+        'X.S01E02.x264-ASDF',
+        'X.S01E03.x264-ASDF',
+        'X.S02E01.x264-ASDF',
+        'X.S02E02.x264-ASDF',
+        'X.S02E03.x264-ASDF',
+    ]
+    handled_results = query._handle_results(results, only_existing_releases=True)
+    if exp_matches == 'ALL':
+        assert handled_results == results
+    else:
+        assert handled_results == exp_matches
 
 
 def test_SceneQuery_keywords():

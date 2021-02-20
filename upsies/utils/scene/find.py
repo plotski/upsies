@@ -80,54 +80,73 @@ class SceneQuery:
         _log.debug('SceneQuery from %r: %r', info, query)
         return query
 
-    async def search(self, search_coro_func, cache=True):
+    async def search(self, search_coro_func, only_existing_releases=True, cache=True):
         """
         Pre-process query and post-process results from `search_coro_func`
 
+        This is a wrapper function that tries to handle season/episode
+        information more intuitively.
+
         :param search_coro_func: Coroutine function with the call signature
             `(keywords, group, cache)` that returns a sequence of release names
+        :param bool only_existing_releases: If this is truthy, the results
+            contain all episodes for every season pack in :attr:`keywords`.
+            Otherwise, fake season pack release names are included in the
+            returned results.
         :param bool cache: Whether to return cached results
 
-        This is a wrapper function that exists to work around scene release
-        databases not handling season/episode information inuitively.
-
         Any `keywords` that look like "S01", "S02E03", etc are removed in the
-        search request.
-
-        The search results are then filtered for the specific `episodes` given
-        during instantiation and returned in natural sort order.
+        search request. The search results are then filtered for the specific
+        :attr:`episodes` given and returned in natural sort order.
         """
         keywords = tuple(kw for kw in self.keywords
                          if not re.match(r'^(?i:[SE]\d+|)+$', kw))
         _log.debug('Searching for scene release: %r', keywords)
         results = await search_coro_func(keywords, group=self.group, cache=cache)
-        return self._handle_results(results)
+        return self._handle_results(results, only_existing_releases)
 
-    def _handle_results(self, results):
-        results = natsort.natsorted(results, key=str.casefold)
+    def _handle_results(self, results, only_existing_releases=True):
+        def sorted_and_deduped(results):
+            return natsort.natsorted(set(results), key=str.casefold)
+
         if not self.episodes:
             _log.debug('No episodes info: %r', self.episodes)
-            return results
+            return sorted_and_deduped(results)
         else:
-            _log.debug('Looking for episodes: %r', self.episodes)
+            _log.debug('Looking for existing episodes: %r', self.episodes)
 
-            def match(result, wanted_seasons=tuple(self.episodes.items())):
-                existing_seasons = release.ReleaseInfo(result)['episodes']
-                for wanted_season, wanted_episodes in wanted_seasons:
-                    for existing_season, existing_episodes in existing_seasons.items():
-                        if wanted_episodes:
-                            # Episode matches if any wanted episode is in the release
-                            episode_match = any(e in existing_episodes for e in wanted_episodes)
+            def get_wanted_episodes(season):
+                # Combine episodes from any season ('') with episodes from given season
+                eps = None
+                if '' in self.episodes:
+                    eps = self.episodes['']
+                if season in self.episodes:
+                    eps = (eps or ()) + self.episodes[season]
+                return eps
+
+            # Translate single episodes into season packs.
+            matches = []
+            for result in results:
+                for result_season, result_eps in release.Episodes.from_string(result).items():
+                    wanted_episodes = get_wanted_episodes(result_season)
+                    # () means season pack
+                    if wanted_episodes == ():
+                        if only_existing_releases:
+                            # Add episode from wanted season pack
+                            _log.debug('Adding episode from season pack: %r', result)
+                            matches.append(result)
                         else:
-                            # Season pack wanted, so all episodes match
-                            episode_match = True
-                        # Season matches if seasons are equal or season is not specified
-                        season_match = (wanted_season == existing_season or not wanted_season)
-                        # Return if this result is a match (no other matches needed)
-                        if season_match and episode_match:
-                            return True
+                            # Remove episode from release name to create season pack name
+                            season_pack = re.sub(r'\b(S\d{2,})E\d{2,}\b', r'\1', result)
+                            _log.debug('Adding season pack: %r', season_pack)
+                            matches.append(season_pack)
+                    elif wanted_episodes is not None:
+                        for ep in result_eps:
+                            if ep in wanted_episodes:
+                                matches.append(result)
+                                break
 
-            return [r for r in results if match(r)]
+            return sorted_and_deduped(matches)
 
     @property
     def keywords(self):
