@@ -210,7 +210,7 @@ async def test_verify_release(make_SceneCheckJob, mocker):
     ]
 
 
-def test_finalize_ignores_SceneMissingFileError(make_SceneCheckJob, mocker):
+def test_finalize_handles_SceneErrors_as_errors(make_SceneCheckJob, mocker):
     ask_is_scene_release = Mock()
     job = make_SceneCheckJob()
     job.signal.register('ask_is_scene_release', ask_is_scene_release)
@@ -218,9 +218,7 @@ def test_finalize_ignores_SceneMissingFileError(make_SceneCheckJob, mocker):
         'mock scene check result',
         (
             errors.SceneError('foo'),
-            errors.SceneMissingFileError('bar'),
             errors.SceneFileSizeError('baz', 123, 456),
-            errors.SceneMissingFileError('bam'),
         ),
     )
     assert job.errors == (
