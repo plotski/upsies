@@ -230,6 +230,12 @@ class JobBase(abc.ABC):
             else:
                 return 0
 
+    def send(self, output):
+        """Append `output` to :attr:`output` and emit ``output`` signal"""
+        if not self.is_finished:
+            if output:
+                self.signal.emit('output', str(output))
+
     @property
     def output(self):
         """Result of this job as an immutable sequence of strings"""
@@ -243,22 +249,6 @@ class JobBase(abc.ABC):
         """
         return ''
 
-    def send(self, output):
-        """Append `output` to :attr:`output` and emit ``output`` signal"""
-        if not self.is_finished:
-            if output:
-                self.signal.emit('output', str(output))
-
-    @property
-    def errors(self):
-        """Sequence of reported errors (strings or exceptions)"""
-        return tuple(self._errors)
-
-    def clear_errors(self):
-        """Empty :attr:`errors`"""
-        if not self.is_finished:
-            self._errors.clear()
-
     def error(self, error, finish=False):
         """
         Append `error` to :attr:`errors` and emit ``error`` signal
@@ -270,6 +260,16 @@ class JobBase(abc.ABC):
             if finish:
                 self.finish()
             self.signal.emit('error', error)
+
+    @property
+    def errors(self):
+        """Sequence of reported errors (strings or exceptions)"""
+        return tuple(self._errors)
+
+    def clear_errors(self):
+        """Empty :attr:`errors`"""
+        if not self.is_finished:
+            self._errors.clear()
 
     def exception(self, exception):
         """
