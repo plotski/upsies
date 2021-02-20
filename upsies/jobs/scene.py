@@ -149,7 +149,7 @@ class SceneCheckJob(JobBase):
             # Find specific release name. If there are multiple search results,
             # ask the user to pick one.
             query = scene.SceneQuery.from_string(self._content_path)
-            results = await scene.search(query)
+            results = await scene.search(query, only_existing_releases=False)
             if not results:
                 _log.debug('No search results: %r', self._content_path)
                 self._finalize(types.SceneCheckResult.unknown, exceptions=())

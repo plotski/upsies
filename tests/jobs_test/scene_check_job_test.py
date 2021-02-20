@@ -107,7 +107,7 @@ async def test_find_release_name_finds_no_results(is_scene_release, make_SceneCh
     job.signal.register('ask_release_name', ask_release_name)
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
-    assert search_mock.call_args_list == [call(SceneQuery('foo'))]
+    assert search_mock.call_args_list == [call(SceneQuery('foo'), only_existing_releases=False)]
     assert ask_release_name.call_args_list == []
     assert job._finalize.call_args_list == [
         call(SceneCheckResult.unknown, exceptions=()),
@@ -130,7 +130,7 @@ async def test_find_release_name_finds_single_result(is_scene_release, make_Scen
     job.signal.register('ask_release_name', ask_release_name)
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
-    assert search_mock.call_args_list == [call(SceneQuery('foo'))]
+    assert search_mock.call_args_list == [call(SceneQuery('foo'), only_existing_releases=False)]
     assert ask_release_name.call_args_list == []
     assert job._finalize.call_args_list == []
     assert job._verify_release.call_args_list == [
@@ -153,7 +153,7 @@ async def test_find_release_name_finds_parsed_release_name_in_result(is_scene_re
     job.signal.register('ask_release_name', ask_release_name)
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
-    assert search_mock.call_args_list == [call(SceneQuery('foo'))]
+    assert search_mock.call_args_list == [call(SceneQuery('foo'), only_existing_releases=False)]
     assert ask_release_name.call_args_list == []
     assert job._finalize.call_args_list == []
     assert job._verify_release.call_args_list == [
@@ -176,7 +176,7 @@ async def test_find_release_name_finds_multiple_results(is_scene_release, make_S
     job.signal.register('ask_release_name', ask_release_name)
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
-    assert search_mock.call_args_list == [call(SceneQuery('foo'))]
+    assert search_mock.call_args_list == [call(SceneQuery('foo'), only_existing_releases=False)]
     assert ask_release_name.call_args_list == [
         call(('Mock.Release.Foo-BAR', 'Mick.Release.Foo-BAR')),
     ]
