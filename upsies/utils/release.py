@@ -926,13 +926,27 @@ class Episodes(dict):
                 for season, episodes in natsort.natsorted(seasons.items())}
         return cls(args)
 
-    def remove_specific_episodes(self):
-        """Remove episodes from each season, leaving only complete season"""
-        for season in tuple(self):
-            if season:
-                self[season] = ()
-            else:
-                del self[season]
+    @classmethod
+    def from_sequence(cls, sequence):
+        """
+        Combine episode information from multiple strings
+
+        Examples:
+
+            >>> Episodes.from_sequence(['foo.S01E01.bar', 'hello'])
+            {'1': ('1',)}
+            >>> Episodes.from_sequence(['foo.S01E01.bar', 'bar.S01E02.baz'])
+            {'1': ('1', '2')}
+        """
+        episodes = Episodes()
+        for string in sequence:
+            eps = cls.from_string(string)
+            for season in eps:
+                if season in episodes:
+                    episodes[season] += eps[season]
+                else:
+                    episodes[season] = eps[season]
+        return episodes
 
     def __init__(self, *args, **kwargs):
         def number(name, value):
@@ -959,6 +973,14 @@ class Episodes(dict):
             arg[season] = episodes
 
         return super().__init__(arg)
+
+    def remove_specific_episodes(self):
+        """Remove episodes from each season, leaving only complete season"""
+        for season in tuple(self):
+            if season:
+                self[season] = ()
+            else:
+                del self[season]
 
     def __repr__(self):
         return f'{type(self).__name__}({dict(self)!r})'

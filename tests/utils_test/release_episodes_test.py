@@ -46,6 +46,18 @@ def test_Episodes_from_string(string, exp):
 
 
 @pytest.mark.parametrize(
+    argnames=('sequence', 'exp'),
+    argvalues=(
+        (('foo.S01E01.bar', 'foo.S01E02.baz'), {'1': ('1', '2')}),
+        (('foo.S02E02E01.bar', 'foo.S01E01.bar', 'foo.S02E03.baz'), {'1': ('1',), '2': ('1', '2', '3')}),
+    ),
+    ids=lambda v: str(v),
+)
+def test_Episodes_from_sequence(sequence, exp):
+    assert release.Episodes.from_sequence(sequence) == exp
+
+
+@pytest.mark.parametrize(
     argnames=('mapping', 'string'),
     argvalues=(
         ({'': (1,)}, 'E01'),
