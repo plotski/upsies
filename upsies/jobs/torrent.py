@@ -172,7 +172,7 @@ class AddTorrentJob(base.QueueJobBase):
     MAX_TORRENT_SIZE = 10 * 2**20  # 10 MiB
     """Upper limit of acceptable size of `.torrent` files"""
 
-    async def _handle_input(self, torrent_path):
+    async def handle_input(self, torrent_path):
         _log.debug('Adding %s to %s', torrent_path, self._client.name)
         self.signal.emit('adding', torrent_path)
 
@@ -240,7 +240,7 @@ class CopyTorrentJob(base.QueueJobBase):
     MAX_FILE_SIZE = 10 * 2**20  # 10 MiB
     """Upper limit of acceptable file size"""
 
-    async def _handle_input(self, filepath):
+    async def handle_input(self, filepath):
         _log.debug('Copying %s to %s', filepath, self._destination)
 
         if not os.path.exists(filepath):

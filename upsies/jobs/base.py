@@ -468,11 +468,11 @@ class QueueJobBase(JobBase):
             elif value is None:
                 break
             else:
-                await self._handle_input(value)
+                await self.handle_input(value)
         self.finish()
 
     @abc.abstractmethod
-    async def _handle_input(self, value):
+    async def handle_input(self, value):
         """Handle `value` from queue"""
 
     def enqueue(self, value):

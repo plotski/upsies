@@ -21,7 +21,7 @@ class FooJob(QueueJobBase):
     def initialize(self, foo=None, bar=None, enqueue=()):
         self.handled_inputs = []
 
-    async def _handle_input(self, value):
+    async def handle_input(self, value):
         self.handled_inputs.append(value)
 
 
@@ -92,13 +92,13 @@ def test_execute_without_enqueue_argument(mocker, tmp_path):
 
 @pytest.mark.asyncio
 async def test_read_queue_reads_queue(qjob, mocker):
-    mocker.patch.object(qjob, '_handle_input', AsyncMock())
+    mocker.patch.object(qjob, 'handle_input', AsyncMock())
     qjob._queue.put_nowait('a')
     qjob._queue.put_nowait('b')
     qjob._queue.put_nowait(None)
     await qjob._read_queue()
     assert qjob._queue.empty()
-    assert qjob._handle_input.call_args_list == [
+    assert qjob.handle_input.call_args_list == [
         call('a'),
         call('b'),
     ]
@@ -109,7 +109,7 @@ async def test_read_queue_complains_if_job_is_finished(mocker, tmp_path):
         side_effect=(False, True, True, True),
     ))
     qjob = FooJob(home_directory=tmp_path, ignore_cache=False)
-    mocker.patch.object(qjob, '_handle_input', AsyncMock())
+    mocker.patch.object(qjob, 'handle_input', AsyncMock())
     qjob._queue.put_nowait('a')
     qjob._queue.put_nowait('b')
     qjob._queue.put_nowait('c')
@@ -117,7 +117,7 @@ async def test_read_queue_complains_if_job_is_finished(mocker, tmp_path):
     with pytest.raises(RuntimeError, match=r'^FooJob is already finished$'):
         await qjob._read_queue()
     assert not qjob._queue.empty()
-    assert qjob._handle_input.call_args_list == [call('a')]
+    assert qjob.handle_input.call_args_list == [call('a')]
 
 
 @pytest.mark.asyncio

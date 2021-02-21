@@ -85,7 +85,7 @@ async def test_handle_input_sends_image_url(make_ImageHostJob):
     job._imghost.upload.side_effect = ('http://foo', 'http://bar')
     assert job.images_uploaded == 0
 
-    await job._handle_input('foo.jpg')
+    await job.handle_input('foo.jpg')
     assert job._imghost.upload.call_args_list == [
         call('foo.jpg', cache=not job.ignore_cache),
     ]
@@ -93,7 +93,7 @@ async def test_handle_input_sends_image_url(make_ImageHostJob):
     assert job.errors == ()
     assert job.images_uploaded == 1
 
-    await job._handle_input('bar.jpg')
+    await job.handle_input('bar.jpg')
     assert job._imghost.upload.call_args_list == [
         call('foo.jpg', cache=not job.ignore_cache),
         call('bar.jpg', cache=not job.ignore_cache),
@@ -106,7 +106,7 @@ async def test_handle_input_sends_image_url(make_ImageHostJob):
 async def test_handle_input_handles_RequestError(make_ImageHostJob):
     job = make_ImageHostJob(images_total=3)
     job._imghost.upload.side_effect = errors.RequestError('ugly image')
-    await job._handle_input('foo.jpg')
+    await job.handle_input('foo.jpg')
     assert job._imghost.upload.call_args_list == [
         call('foo.jpg', cache=not job.ignore_cache),
     ]

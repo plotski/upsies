@@ -51,7 +51,7 @@ async def test_handle_input_call_order(make_AddTorrentJob):
     job.signal.register('added', mocks.added)
     mocks.add_torrent = AsyncMock(return_value=123)
     job._client.add_torrent = mocks.add_torrent
-    await job._handle_input('foo.torrent')
+    await job.handle_input('foo.torrent')
     assert mocks.mock_calls == [
         call.adding('foo.torrent'),
         call.add_torrent(torrent_path='foo.torrent', download_path=job._download_path),
@@ -65,7 +65,7 @@ async def test_handle_input_complains_about_large_torrent_file(make_AddTorrentJo
     f.truncate(AddTorrentJob.MAX_TORRENT_SIZE + 1)  # Sparse file
     f.close()
     job = make_AddTorrentJob()
-    await job._handle_input(torrent_file)
+    await job.handle_input(torrent_file)
     assert job.errors == (f'{torrent_file}: File is too large',)
     assert job.output == ()
 
@@ -73,7 +73,7 @@ async def test_handle_input_complains_about_large_torrent_file(make_AddTorrentJo
 async def test_handle_input_catches_TorrentError(make_AddTorrentJob):
     job = make_AddTorrentJob()
     job._client.add_torrent.side_effect = errors.TorrentError('No such file or whatever')
-    await job._handle_input('foo.torrent')
+    await job.handle_input('foo.torrent')
     assert job.errors == (
         'Failed to add foo.torrent to mocksy: No such file or whatever',
     )
@@ -83,7 +83,7 @@ async def test_handle_input_catches_TorrentError(make_AddTorrentJob):
 async def test_handle_input_sends_torrent_id(make_AddTorrentJob):
     job = make_AddTorrentJob()
     job._client.add_torrent.return_value = '12345'
-    await job._handle_input('foo.torrent')
+    await job.handle_input('foo.torrent')
     assert job.output == ('12345',)
     assert job.errors == ()
 
@@ -102,7 +102,7 @@ async def test_handle_input_sets_info_property_on_success(make_AddTorrentJob):
     job.signal.register('added', info_cb)
     job.signal.register('error', info_cb)
     job.signal.register('finished', info_cb)
-    await job._handle_input('path/to/foo.torrent')
+    await job.handle_input('path/to/foo.torrent')
     assert infos == []
 
 @pytest.mark.asyncio
@@ -121,5 +121,5 @@ async def test_handle_input_sets_info_property_on_failure(make_AddTorrentJob):
     job.signal.register('added', info_cb)
     job.signal.register('error', info_cb)
     job.signal.register('finished', info_cb)
-    await job._handle_input('path/to/foo.torrent')
+    await job.handle_input('path/to/foo.torrent')
     assert infos == []

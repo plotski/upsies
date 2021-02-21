@@ -35,7 +35,7 @@ async def test_handle_input_call_order(make_CopyTorrentJob, mocker, tmp_path):
     copy2_mock = mocker.patch('shutil.copy2', return_value=str(tmp_path / filepath.name))
     mocks.attach_mock(copy2_mock, 'copy2')
 
-    await job._handle_input(str(filepath))
+    await job.handle_input(str(filepath))
     assert mocks.mock_calls == [
         call.copying(str(filepath)),
         call.copy2(str(filepath), str(tmp_path)),
@@ -52,7 +52,7 @@ async def test_handle_input_reports_nonexisting_file(make_CopyTorrentJob, mocker
     copy2_mock = mocker.patch('shutil.copy2')
     mocks.attach_mock(copy2_mock, 'copy2')
 
-    await job._handle_input('foo')
+    await job.handle_input('foo')
     assert job.output == ()
     assert job.errors == ('foo: No such file',)
     assert mocks.mock_calls == []
@@ -72,7 +72,7 @@ async def test_copy_too_large_file(make_CopyTorrentJob, mocker, tmp_path):
     copy2_mock = mocker.patch('shutil.copy2')
     mocks.attach_mock(copy2_mock, 'copy2')
 
-    await job._handle_input(filepath)
+    await job.handle_input(filepath)
     assert job.output == ()
     assert job.errors == (f'{filepath}: File is too large',)
     assert mocks.mock_calls == []
@@ -86,7 +86,7 @@ async def test_handle_input_sends_destination_path_on_success(make_CopyTorrentJo
 
     mocker.patch('shutil.copy2', return_value='destination/path')
 
-    await job._handle_input(filepath)
+    await job.handle_input(filepath)
     assert job.output == ('destination/path',)
     assert job.errors == ()
 
@@ -99,7 +99,7 @@ async def test_handle_input_sends_source_path_on_failure(make_CopyTorrentJob, mo
 
     mocker.patch('shutil.copy2', side_effect=PermissionError('Permission denied'))
 
-    await job._handle_input(filepath)
+    await job.handle_input(filepath)
     assert job.output == (str(filepath),)
     assert job.errors == (f'Failed to copy {filepath} to {job._destination}: Permission denied',)
 
@@ -124,7 +124,7 @@ async def test_handle_input_sets_info_property_on_success(make_CopyTorrentJob, m
     job.signal.register('copied', info_cb)
     job.signal.register('error', info_cb)
     job.signal.register('finished', info_cb)
-    await job._handle_input(filepath)
+    await job.handle_input(filepath)
     assert infos == []
 
 
@@ -149,5 +149,5 @@ async def test_handle_input_sets_info_property_on_failure(make_CopyTorrentJob, m
     job.signal.register('copied', info_cb)
     job.signal.register('error', info_cb)
     job.signal.register('finished', info_cb)
-    await job._handle_input(filepath)
+    await job.handle_input(filepath)
     assert infos == []
