@@ -77,7 +77,7 @@ def test_SearchWebDbJob_initialize_creates_searcher(tmp_path, mocker, foodb):
     assert Searcher_mock.call_args_list == [call(
         search_coro=foodb.search,
         results_callback=job._handle_search_results,
-        error_callback=job.error,
+        error_callback=job.warn,
         searching_callback=job._handle_searching_status,
     )]
 
@@ -106,7 +106,7 @@ def test_SearchWebDbJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
     )
     assert job._info_updater is InfoUpdater_mock.return_value
     assert InfoUpdater_mock.call_args_list == [call(
-        error_callback=job.error,
+        error_callback=job.warn,
         targets={
             'id': 'id func',
             'summary': 'summary func',

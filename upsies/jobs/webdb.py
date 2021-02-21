@@ -80,10 +80,10 @@ class SearchWebDbJob(JobBase):
             search_coro=self._db.search,
             results_callback=self._handle_search_results,
             searching_callback=self._handle_searching_status,
-            error_callback=self.error,
+            error_callback=self.warn,
         )
         self._info_updater = _InfoUpdater(
-            error_callback=self.error,
+            error_callback=self.warn,
             targets={
                 'id': self._make_update_info_func('id'),
                 'summary': self._make_update_info_func('summary'),
@@ -127,7 +127,7 @@ class SearchWebDbJob(JobBase):
         if not self.is_finished:
             self._query = webdbs.Query.from_string(query)
             self._searcher.search(self._query)
-            self.clear_errors()
+            self.clear_warnings()
 
     def _handle_searching_status(self, is_searching):
         self._is_searching = bool(is_searching)
