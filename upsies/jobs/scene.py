@@ -52,8 +52,7 @@ class SceneSearchJob(JobBase):
         try:
             query = scene.SceneQuery.from_string(self._content_path)
         except errors.SceneError as e:
-            self.error(e)
-            self.finish()
+            self.error(e, finish=True)
         else:
             self._search_task = asyncio.ensure_future(
                 scene.search(query=query),

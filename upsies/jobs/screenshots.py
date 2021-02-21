@@ -107,8 +107,7 @@ class ScreenshotsJob(JobBase):
 
     def _handle_error(self, error):
         if not self.is_finished:
-            self.error(error)
-            self.finish()
+            self.error(error, finish=True)
 
     @property
     def exit_code(self):
