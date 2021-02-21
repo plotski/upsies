@@ -124,10 +124,12 @@ class JobBase(abc.ABC):
         self._autostart = bool(autostart)
         self._is_started = False
         self._exception = None
-        self._errors = []
         self._output = []
-        self._signal = signal.Signal('output', 'error', 'finished')
+        self._warnings = []
+        self._errors = []
+        self._signal = signal.Signal('output', 'warning', 'error', 'finished')
         self._signal.register('output', lambda output: self._output.append(str(output)))
+        self._signal.register('warning', lambda warning: self._warnings.append(warning))
         self._signal.register('error', lambda error: self._errors.append(error))
         self._signal.record('output')
         self._finished_event = asyncio.Event()
@@ -249,6 +251,25 @@ class JobBase(abc.ABC):
         """
         return ''
 
+    def warn(self, warning):
+        """Append `warning` to :attr:`warnings` and emit ``warning`` signal"""
+        if not self.is_finished:
+            self.signal.emit('warning', warning)
+
+    @property
+    def warnings(self):
+        """
+        Sequence of non-critical error messages the user can override or resolve
+
+        Unlike :attr:`errors`, warnings do not imply failure by default.
+        """
+        return tuple(self._warnings)
+
+    def clear_warnings(self):
+        """Empty :attr:`warnings`"""
+        if not self.is_finished:
+            self._warnings.clear()
+
     def error(self, error, finish=False):
         """
         Append `error` to :attr:`errors` and emit ``error`` signal
@@ -263,7 +284,11 @@ class JobBase(abc.ABC):
 
     @property
     def errors(self):
-        """Sequence of reported errors (strings or exceptions)"""
+        """
+        Sequence of critical errors (strings or exceptions)
+
+        By default, :attr:`exit_code` is non-zero if any errors were reported.
+        """
         return tuple(self._errors)
 
     def clear_errors(self):

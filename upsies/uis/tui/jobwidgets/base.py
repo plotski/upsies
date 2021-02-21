@@ -43,6 +43,11 @@ class JobWidgetBase(abc.ABC):
                     filter=Condition(lambda: not self.job.is_finished and bool(self.job.info)),
                     content=self.info_widget,
                 ),
+                # Warnings
+                ConditionalContainer(
+                    filter=Condition(lambda: bool(self.job.warnings)),
+                    content=self.warnings_widget,
+                ),
                 # Errors
                 ConditionalContainer(
                     filter=Condition(lambda: bool(self.job.errors)),
@@ -85,23 +90,9 @@ class JobWidgetBase(abc.ABC):
         """
 
     @property
-    def info_widget(self):
-        """
-        Optional :attr:`~.JobBase.info` that is displayed while this job is running
-
-        :return: :class:`~.prompt_toolkit.layout.containers.Window` object
-        """
-        return Window(
-            style='class:info',
-            content=FormattedTextControl(lambda: str(self.job.info)),
-            dont_extend_height=True,
-            wrap_lines=True,
-        )
-
-    @property
     def output_widget(self):
         """
-        Final result of :attr:`job` that is displayed when it finished
+        Job :attr:`~.JobBase.output`
 
         :return: :class:`~.prompt_toolkit.layout.containers.Window` object
         """
@@ -113,9 +104,37 @@ class JobWidgetBase(abc.ABC):
         )
 
     @property
+    def info_widget(self):
+        """
+        :attr:`~.JobBase.info` that is only displayed while this job is running
+
+        :return: :class:`~.prompt_toolkit.layout.containers.Window` object
+        """
+        return Window(
+            style='class:info',
+            content=FormattedTextControl(lambda: str(self.job.info)),
+            dont_extend_height=True,
+            wrap_lines=True,
+        )
+
+    @property
+    def warnings_widget(self):
+        """
+        Any :attr:`~.JobBase.warnings`
+
+        :return: :class:`~.prompt_toolkit.layout.containers.Window` object
+        """
+        return Window(
+            style='class:warning',
+            content=FormattedTextControl(lambda: '\n'.join(str(e) for e in self.job.warnings)),
+            dont_extend_height=True,
+            wrap_lines=True,
+        )
+
+    @property
     def errors_widget(self):
         """
-        Any errors from :attr:`job`
+        Any :attr:`~.JobBase.errors`
 
         :return: :class:`~.prompt_toolkit.layout.containers.Window` object
         """

@@ -67,7 +67,7 @@ def test_kwargs_property(tmp_path):
 
 def test_signal_property(job):
     assert isinstance(job.signal, signal.Signal)
-    assert set(job.signal.signals) == {'output', 'error', 'finished'}
+    assert set(job.signal.signals) == {'output', 'warning', 'error', 'finished'}
     assert set(job.signal.recording) == {'output'}
 
 
@@ -191,16 +191,6 @@ def test_exit_code_is_1_if_errors_were_sent(job):
     assert job.exit_code == 1
 
 
-def test_output(job):
-    assert job.output == ()
-    job._output = ['foo', 'bar', 'baz']
-    assert job.output == ('foo', 'bar', 'baz')
-
-
-def test_info(job):
-    assert job.info == ''
-
-
 def test_send_emits_output_signal(job, mocker):
     mocker.patch.object(job.signal, 'emit')
     job.start()
@@ -236,27 +226,51 @@ def test_send_fills_output_property(job, mocker):
     assert job.output == ('foo', '[1, 2]')
 
 
+def test_output(job):
+    assert job.output == ()
+    job._output = ['foo', 'bar', 'baz']
+    assert job.output == ('foo', 'bar', 'baz')
+
+
+def test_info(job):
+    assert job.info == ''
+
+
+def test_warn(job):
+    assert job.warnings == ()
+    job.warn('foo')
+    assert job.warnings == ('foo',)
+    job.warn('bar')
+    assert job.warnings == ('foo', 'bar')
+    job.finish()
+    job.warn('baz')
+    assert job.warnings == ('foo', 'bar')
+
+def test_warnings(job):
+    assert job.warnings == ()
+    job._warnings = ['a', 'b', 'c']
+    assert job.warnings == ('a', 'b', 'c')
+
+def test_clear_warnings_on_unfinished_job(job):
+    job.clear_warnings()
+    assert job.warnings == ()
+    job.warn('foo')
+    assert job.warnings == ('foo',)
+    job.clear_warnings()
+    assert job.warnings == ()
+
+def test_clear_warnings_on_finished_job(job):
+    job.warn('foo')
+    assert job.warnings == ('foo',)
+    job.finish()
+    job.clear_warnings()
+    assert job.warnings == ('foo',)
+
+
 def test_errors(job):
     assert job.errors == ()
     job._errors = ['foo', 'bar', 'baz']
     assert job.errors == ('foo', 'bar', 'baz')
-
-
-def test_clear_errors(job):
-    job.clear_errors()
-    assert job.errors == ()
-    job.error('foo')
-    assert job.errors == ('foo',)
-    job.clear_errors()
-    assert job.errors == ()
-
-def test_clear_errors_on_finished_job(job):
-    job.error('foo')
-    assert job.errors == ('foo',)
-    job.finish()
-    job.clear_errors()
-    assert job.errors == ('foo',)
-
 
 def test_error_emits_error_signal(job, mocker):
     mocker.patch.object(job.signal, 'emit')

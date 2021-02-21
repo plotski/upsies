@@ -17,6 +17,7 @@ style = styles.Style([
     ('label',                         'bold'),
 
     ('output',                        ''),
+    ('warning',                       'fg:#d75'),
     ('error',                         'fg:#f60'),
 
     ('info',                          'bg:#222 fg:#dd5'),
