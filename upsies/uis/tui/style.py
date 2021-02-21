@@ -17,8 +17,8 @@ style = styles.Style([
     ('label',                         'bold'),
 
     ('output',                        ''),
-    ('warning',                       'fg:#d75'),
-    ('error',                         'fg:#f60'),
+    ('warning',                       'fg:#fe0 bold'),
+    ('error',                         'fg:#f60 bold'),
 
     ('info',                          'bg:#222 fg:#dd5'),
     ('info.progressbar',              ''),
