@@ -291,11 +291,6 @@ class JobBase(abc.ABC):
         """
         return tuple(self._errors)
 
-    def clear_errors(self):
-        """Empty :attr:`errors`"""
-        if not self.is_finished:
-            self._errors.clear()
-
     def exception(self, exception):
         """
         Set exception to raise in :meth:`wait` and call :meth:`finish`
