@@ -195,6 +195,7 @@ class UI:
 
     def _exit(self, *_, **__):
         if self._app.is_running and not self._app.is_done:
+            self._finish_jobs()
             self._app.exit()
 
     def _finish_jobs(self):

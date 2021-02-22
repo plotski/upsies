@@ -183,7 +183,7 @@ def test_exception_is_raised_by_background_coroutine():
     assert jobs[0].wait.call_args_list == [call()]
     assert jobs[2].wait.call_args_list == [call()]
     for job in jobs:
-        assert job.finish.call_args_list == [call()]
+        assert job.finish.call_args_list
 
 def test_exceptions_are_raised_by_job_start():
     jobs = (
@@ -197,7 +197,7 @@ def test_exceptions_are_raised_by_job_start():
         ui.run(jobs)
     for job in jobs:
         assert job.wait.call_args_list == []
-        assert job.finish.call_args_list == [call()]
+        assert job.finish.call_args_list
 
 def test_exceptions_are_raised_by_job_wait():
     jobs = (
@@ -216,7 +216,8 @@ def test_exceptions_are_raised_by_job_wait():
             ui.run(jobs)
     for job in jobs:
         assert job.wait.call_args_list == [call()]
-        assert job.finish.call_args_list == [call()]
+        assert job.finish.call_args_list
+
 
 def test_CancelledError_is_raised_by_job_wait():
     jobs = (
@@ -229,7 +230,8 @@ def test_CancelledError_is_raised_by_job_wait():
     ui.run(jobs)
     for job in jobs:
         assert job.wait.call_args_list == [call()]
-        assert job.finish.call_args_list == [call()]
+        assert job.finish.call_args_list
+
 
 def test_jobs_return_with_nonzero_exit_code():
     jobs = (
@@ -242,4 +244,4 @@ def test_jobs_return_with_nonzero_exit_code():
     assert ui.run(jobs) == 123
     for job in jobs:
         assert job.wait.call_args_list == [call()]
-        assert job.finish.call_args_list == [call()]
+        assert job.finish.call_args_list
