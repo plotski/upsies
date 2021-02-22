@@ -586,8 +586,16 @@ class ReleaseInfo(collections.abc.MutableMapping):
             if Episodes.has_episodes_info(name):
                 guess['episodes'] = Episodes.from_string(name)
                 break
-        if 'episodes' not in guess:
-            guess['episodes'] = Episodes()
+        else:
+            # Guessit can parse multiple seasons/episodes to some degree
+            seasons = _as_list(guess, 'season')
+            episodes = _as_list(guess, 'episode')
+            string = []
+            if seasons:
+                string.append(f'S{seasons[0]:02d}')
+            for e in episodes:
+                string.append(f'E{e:02d}')
+            guess['episodes'] = Episodes.from_string(''.join(string))
 
         return guess
 

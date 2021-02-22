@@ -143,8 +143,15 @@ def assert_info(release_name,
                 audio_codec='', audio_channels='', video_codec='', group='', has_commentary=False):
     # Test space- and dot-separated release name
     for rn in (release_name, release_name.replace(' ', '.')):
-        # Test release name in file and in parent directory name
-        for path in (f'foo/{rn}.mkv', f'{rn}/foo.mkv'):
+        if '/' not in rn:
+            # Test release name in file name and in parent directory name
+            paths = (f'foo/{rn}.mkv', f'{rn}/foo.mkv')
+        else:
+            # Release name is already coming as path and grandparent directory
+            # is not used for parsing
+            paths = (f'foo/{rn}.mkv',)
+
+        for path in paths:
             info = release.ReleaseInfo(path)
             assert info['type'] == type
             assert info['title'] == title
@@ -467,6 +474,13 @@ def test_abbreviated_scene_filename(path, exp_release_name):
      {'type': ReleaseType.movie, 'title': 'The Collector', 'year': '2009',
       'resolution': '1080p', 'source': 'BluRay', 'audio_codec': 'DTS', 'group': 'ASDF',
       'edition': ['Collector']}),
+    ('path/to/The Foo - Season 01 - DVDRip.x264',
+     {'type': ReleaseType.season, 'title': 'The Foo', 'episodes': {'1': ()},
+      'source': 'DVDRip', 'video_codec': 'x264'}),
+    ('The Foo - Season 02 - DVDRip.x264/Episode 3 - Something.mkv',
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'episodes': {'2': ('3',)},
+      'source': 'DVDRip', 'video_codec': 'x264'}),
+
 ))
 def test_special_case(release_name, expected):
     assert_info(release_name, **expected)
