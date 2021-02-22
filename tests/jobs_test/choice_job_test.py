@@ -53,28 +53,28 @@ def test_choices_are_strings():
     assert job.focused == ('bar', 'bar')
 
 def test_choices_are_sequences():
-    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3)))
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
     cb = Mock()
-    assert job.choices == (('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3))
-    assert job.focused == ('a', 1, -3)
+    assert job.choices == (('a', 1), ('b', 2), ('c', 3))
+    assert job.focused == ('a', 1)
     job.signal.register('dialog_updated', cb)
 
-    job.focused = ('c', 3, -1, -2, -3)
-    assert job.choices == (('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3))
-    assert job.focused == ('c', 3, -1, -2, -3)
-    assert cb.call_args_list == [call((('a', 1, -3), ('b', 2, -2, -3), ('c', 3, -1, -2, -3)), 2)]
+    job.focused = ('c', 3)
+    assert job.choices == (('a', 1), ('b', 2), ('c', 3))
+    assert job.focused == ('c', 3)
+    assert cb.call_args_list == [call((('a', 1), ('b', 2), ('c', 3)), 2)]
     cb.reset_mock()
 
-    job.choices = (('d', 4, 'f'), ('e', 5, 'o'), ('f', 6, 'o'))
-    assert job.choices == (('d', 4, 'f'), ('e', 5, 'o'), ('f', 6, 'o'))
-    assert job.focused == ('d', 4, 'f')
-    assert cb.call_args_list == [call((('d', 4, 'f'), ('e', 5, 'o'), ('f', 6, 'o')), 0)]
+    job.choices = (('d', 4), ('e', 5), ('f', 6))
+    assert job.choices == (('d', 4), ('e', 5), ('f', 6))
+    assert job.focused == ('d', 4)
+    assert cb.call_args_list == [call((('d', 4), ('e', 5), ('f', 6)), 0)]
     cb.reset_mock()
 
-    job.choices = [('x', 100), ('y', 200), ('d', 4, 'f')]
-    assert job.choices == (('x', 100), ('y', 200), ('d', 4, 'f'))
-    assert job.focused == ('d', 4, 'f')
-    assert cb.call_args_list == [call((('x', 100), ('y', 200), ('d', 4, 'f')), 2)]
+    job.choices = [('x', 100), ('y', 200), ('d', 4)]
+    assert job.choices == (('x', 100), ('y', 200), ('d', 4))
+    assert job.focused == ('d', 4)
+    assert cb.call_args_list == [call((('x', 100), ('y', 200), ('d', 4)), 2)]
     cb.reset_mock()
 
     job.choices = [('hello', 99), ('world', 33)]
@@ -91,6 +91,8 @@ def test_choices_are_sequences():
 
     with pytest.raises(ValueError, match=r"^Choice must be a 2-tuple, not \('x',\)$"):
         job.choices = (('x',),)
+    with pytest.raises(ValueError, match=r"^Choice must be a 2-tuple, not \('x', 'y', 'z'\)$"):
+        job.choices = (('x', 'y', 'z'),)
     assert job.choices == (('hello', 99), ('world', 33))
     assert job.focused == ('hello', 99)
     assert cb.call_args_list == []
@@ -183,7 +185,7 @@ def test_choice_selected_with_valid_choice(choice):
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
     job.choice_selected(choice)
-    assert cb.mock_calls == [call.chosen(choice), call.output(choice[0])]
+    assert cb.mock_calls == [call.chosen(choice[1]), call.output(choice[0])]
     assert job.output == (choice[0],)
     assert job.errors == ()
     asyncio.get_event_loop().run_until_complete(job.wait())
@@ -210,7 +212,7 @@ def test_choice_selected_with_valid_index(index, exp_choice):
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
     job.choice_selected(index)
-    assert cb.mock_calls == [call.chosen(exp_choice), call.output(exp_choice[0])]
+    assert cb.mock_calls == [call.chosen(exp_choice[1]), call.output(exp_choice[0])]
     assert job.output == (exp_choice[0],)
     assert job.errors == ()
     asyncio.get_event_loop().run_until_complete(job.wait())
@@ -243,7 +245,7 @@ def test_choice_selected_with_valid_value(value, exp_choice):
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
     job.choice_selected(value)
-    assert cb.mock_calls == [call.chosen(exp_choice), call.output(exp_choice[0])]
+    assert cb.mock_calls == [call.chosen(exp_choice[1]), call.output(exp_choice[0])]
     assert job.output == (exp_choice[0],)
     assert job.errors == ()
     asyncio.get_event_loop().run_until_complete(job.wait())

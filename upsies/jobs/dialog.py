@@ -24,7 +24,7 @@ class ChoiceJob(JobBase):
 
         ``chosen``
             Emitted when the user made a choice. Registered callbacks get the
-            chosen item from :attr:`choices` as a positional argument.
+            second item from the selected choice as a positional argument.
     """
 
     @property
@@ -40,9 +40,16 @@ class ChoiceJob(JobBase):
         """
         Sequence of choices the user can make
 
-        A choice is a :class:`tuple` with 2 or more items. The first item is a
-        human-readable :class:`str` and the second item is any object. Any
-        further items are preserved.
+        A choice is a :class:`tuple` with 2 items. The first item is a
+        human-readable :class:`str` and the second item is any object that is
+        emitted via the ``chosen`` signal.
+
+        Choices may also be passed as a flat iterable of :class:`str`, in which
+        case both items in the choice tuple are identical.
+
+        If the previously focused choice is still present in, it focus is
+        preserved when setting this property. Otherwise, the first choice is
+        focused.
         """
         return getattr(self, '_choices', ())
 
@@ -53,10 +60,10 @@ class ChoiceJob(JobBase):
             if isinstance(choice, str):
                 valid_choices.append((choice, choice))
             elif isinstance(choice, collections.abc.Sequence):
-                if len(choice) < 2:
+                if len(choice) != 2:
                     raise ValueError(f'Choice must be a 2-tuple, not {choice!r}')
                 else:
-                    valid_choices.append((str(choice[0]),) + tuple(choice[1:]))
+                    valid_choices.append((str(choice[0]), choice[1]))
             else:
                 raise ValueError(f'Choice must be a 2-tuple, not {choice!r}')
 
@@ -80,14 +87,14 @@ class ChoiceJob(JobBase):
         Setting this property to `None` focuses the first choice in
         :attr:`choices`.
 
-        Setting this property to an :class:`in` focuses the choice at that index
-        in :attr:`choices`.
+        Setting this property to an :class:`int` focuses the choice at that
+        index in :attr:`choices`.
 
         Setting this property to a :class:`str` focuses the first choice in
         :attr:`choices` for which its first item is equal to it. If no such
         choice exists, :class:`ValueError` is raised.
 
-        Setting this property to any other value assumes that value is a choice
+        Setting this property to any other value assumes that value is an item
         in :attr:`choices` and it is focused. If that value does not exist,
         :class:`ValueError` is raised.
         """
@@ -146,7 +153,7 @@ class ChoiceJob(JobBase):
         """
         def choose(choice):
             # Machine-readable choice
-            self.signal.emit('chosen', choice)
+            self.signal.emit('chosen', choice[1])
             # User-readable string
             self.send(choice[0])
 
