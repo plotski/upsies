@@ -142,6 +142,7 @@ class RadioList:
 
     def __init__(self, choices=(), focused=None, on_accepted=None):
         self.choices = choices
+        self.on_accepted = on_accepted
         if focused:
             self.focused_index = choices.index(focused)
         else:
@@ -165,9 +166,9 @@ class RadioList:
         @kb.add('c-j')
         @kb.add(' ')
         def _(event):
-            if on_accepted is not None:
+            if self.on_accepted is not None:
                 try:
-                    on_accepted(self.choices[self.focused_index])
+                    self.on_accepted(self.choices[self.focused_index])
                 except IndexError:
                     raise RuntimeError(f'No choice at index {self.focused_index}: {self.choices}')
 
