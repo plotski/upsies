@@ -24,33 +24,32 @@ class SceneSearchJobWidget(JobWidgetBase):
 class SceneCheckJobWidget(JobWidgetBase):
 
     # Force this job to be interactive. Auto-detection doesn't work because
-    # dialogs only pop up after scenedb a scenedb query.
+    # potential dialogs pop up when we get a reply to a scenedb query.
     is_interactive = True
 
     def setup(self):
-        self._release_name_dialog = widgets.RadioList(
-            on_accepted=self._handle_dialog_release_name,
-        )
-        self._confirm_guess_dialog = widgets.RadioList(
-            on_accepted=self._handle_dialog_confirm_guess,
-        )
-        self._current_dialog = None
+        self._question = FormattedTextControl('')
+        self._radiolist = widgets.RadioList()
+        self._dialog_enabled = False
         self.job.signal.register('ask_release_name', self._ask_release_name)
         self.job.signal.register('ask_is_scene_release', self._ask_is_scene_release)
 
     def _ask_release_name(self, release_names):
         _log.debug('Asking for release name: %r', release_names)
-        choices = list(release_names)
-        self._release_name_dialog.choices = choices
-        self._current_dialog = self._release_name_dialog
-        self.invalidate()
-        self.autofocus()
 
-    def _handle_dialog_release_name(self, choice):
-        _log.debug('Got release name: %r', choice)
-        self._current_dialog = None
+        def handle_release_name(choice):
+            _log.debug('Got release name: %r', choice)
+            self._dialog_enabled = False
+            self.invalidate()
+            self.job.user_selected_release_name(choice[1])
+
+        self._radiolist.on_accepted = handle_release_name
+        self._radiolist.choices = [(release_name, release_name) for release_name in release_names]
+        self._radiolist.choices.append(('This is not a scene release', None))
+
+        self._question.text = 'Pick the correct release name:'
+        self._dialog_enabled = True
         self.invalidate()
-        self.job.user_selected_release_name(choice)
 
     def _ask_is_scene_release(self, is_scene_release):
         _log.debug('Confirming guess: %r', is_scene_release)
@@ -67,37 +66,30 @@ class SceneCheckJobWidget(JobWidgetBase):
                     string += ' (auto-detected)'
                 return (string, SceneCheckResult.false)
 
-        self._confirm_guess_dialog.choices = (make_choice(True), make_choice(False))
-        self._confirm_guess_dialog.focused_choice = make_choice(is_scene_release)
-        self._current_dialog = self._confirm_guess_dialog
-        self.invalidate()
-        self.autofocus()
+        def handle_is_scene_release(choice):
+            _log.debug('Got decision from user: %r', choice)
+            self._dialog_enabled = False
+            self.invalidate()
+            self.job.finalize(choice[1])
 
-    def _handle_dialog_confirm_guess(self, is_scene_release):
-        _log.debug('Got confirmed guess: %r', is_scene_release)
-        self._current_dialog = None
+        self._radiolist.choices = (make_choice(True), make_choice(False))
+        self._radiolist.focused_choice = make_choice(is_scene_release)
+        self._radiolist.on_accepted = handle_is_scene_release
+
+        self._question.text = 'Is this a scene release?'
+        self._dialog_enabled = True
         self.invalidate()
-        self.job.user_decided(is_scene_release[1])
 
     @cached_property
     def runtime_widget(self):
         return HSplit(
             children=[
                 ConditionalContainer(
-                    filter=Condition(lambda: self._current_dialog is self._release_name_dialog),
+                    filter=Condition(lambda: self._dialog_enabled),
                     content=HSplit(
                         children=[
-                            Window(FormattedTextControl('Pick the correct release name:')),
-                            self._release_name_dialog,
-                        ],
-                    ),
-                ),
-                ConditionalContainer(
-                    filter=Condition(lambda: self._current_dialog is self._confirm_guess_dialog),
-                    content=HSplit(
-                        children=[
-                            Window(FormattedTextControl('Is this a scene release?')),
-                            self._confirm_guess_dialog,
+                            Window(self._question),
+                            self._radiolist,
                         ],
                     ),
                 ),
