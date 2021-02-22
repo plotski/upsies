@@ -90,13 +90,9 @@ class ChoiceJob(JobBase):
         Setting this property to an :class:`int` focuses the choice at that
         index in :attr:`choices`.
 
-        Setting this property to a :class:`str` focuses the first choice in
-        :attr:`choices` for which its first item is equal to it. If no such
-        choice exists, :class:`ValueError` is raised.
-
-        Setting this property to any other value assumes that value is an item
-        in :attr:`choices` and it is focused. If that value does not exist,
-        :class:`ValueError` is raised.
+        Setting this property to any other value assumes that value is a choice
+        in :attr:`choices` or one of the values of one of the :attr:`choices`.
+        If that fails, :class:`ValueError` is raised.
         """
         focused_index = getattr(self, '_focused_index', None)
         if focused_index is not None:
@@ -109,16 +105,15 @@ class ChoiceJob(JobBase):
         elif isinstance(focused, int):
             index = max(0, min(focused, len(self.choices) - 1))
             self._focused_index = index
-        elif isinstance(focused, str):
+        elif focused in self.choices:
+            self._focused_index = self.choices.index(focused)
+        else:
             for i, choice in enumerate(self.choices):
                 if focused == choice[0] or focused == choice[1]:
                     self._focused_index = i
                     break
-            else:
-                raise ValueError(f'Invalid choice: {focused!r}')
-        else:
-            if focused in self.choices:
-                self._focused_index = self.choices.index(focused)
+            # The else clause is evaluated if the for loop ends without reaching
+            # `break`.
             else:
                 raise ValueError(f'Invalid choice: {focused!r}')
 
