@@ -260,6 +260,14 @@ class TrackerJobsBase(abc.ABC):
             **self.common_job_args,
         )
 
+    @cached_property
+    def scene_check_job(self):
+        """:class:`~.jobs.scene.SceneCheckJob` instance"""
+        return _jobs.scene.SceneCheckJob(
+            content_path=self.content_path,
+            **self.common_job_args,
+        )
+
 
 class TrackerBase(abc.ABC):
     """

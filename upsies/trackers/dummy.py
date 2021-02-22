@@ -39,6 +39,7 @@ class DummyTrackerJobs(base.TrackerJobsBase):
             self.tmdb_job,
             self.release_name_job,
             self.category_job,
+            self.scene_check_job,
         )
 
     @cached_property
