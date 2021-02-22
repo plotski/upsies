@@ -158,13 +158,5 @@ class JobWidgetBase(abc.ABC):
         """Schedule redrawing of the TUI"""
         self._app.invalidate()
 
-    def autofocus(self):
-        """Try to focus the first focusable in :attr:`runtime_widget`"""
-        # Try to focus something from this job, fail silently
-        try:
-            self._app.layout.focus(self.runtime_widget)
-        except ValueError as e:
-            _log.debug(f'Ignoring focus error: {e!r}')
-
     def __pt_container__(self):
         return self._container
