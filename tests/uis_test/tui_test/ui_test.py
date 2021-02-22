@@ -197,7 +197,7 @@ def test_exceptions_are_raised_by_job_start():
         ui.run(jobs)
     for job in jobs:
         assert job.wait.call_args_list == []
-        assert job.finish.call_args_list == []
+        assert job.finish.call_args_list == [call()]
 
 def test_exceptions_are_raised_by_job_wait():
     jobs = (

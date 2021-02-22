@@ -82,7 +82,7 @@ class UI:
                     job.signal.register('finished', self._update_jobs_container)
 
                 if job.autostart:
-                    job.start()
+                    asyncio.get_event_loop().call_soon(job.start)
 
         self._update_jobs_container()
 
