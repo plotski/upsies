@@ -1010,3 +1010,5 @@ def _as_list(guess, key):
         return [value]
     elif isinstance(value, list):
         return list(value)
+    else:
+        return [value]
