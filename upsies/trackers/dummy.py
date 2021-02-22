@@ -44,18 +44,21 @@ class DummyTrackerJobs(base.TrackerJobsBase):
     @cached_property
     def category_job(self):
         if not self.cli_args.skip_category:
-            self.release_name_job.signal.register('release_name', self._handle_release_name)
+
+            def select_release_category(release_name):
+                _log.debug('Setting type: %r', release_name.type)
+                if release_name.type:
+                    self.category_job.focused = release_name.type
+
+            self.release_name_job.signal.register('release_name', select_release_category)
+
+            choices = [(str(t).capitalize(), t) for t in ReleaseType if t]
             return jobs.dialog.ChoiceJob(
                 name='category',
                 label='Category',
-                choices=(str(t).capitalize() for t in ReleaseType if t),
+                choices=choices,
                 **self.common_job_args,
             )
-
-    def _handle_release_name(self, release_name):
-        _log.debug('Setting type: %r', release_name.type)
-        if release_name.type:
-            self.category_job.focused = str(release_name.type).capitalize()
 
 
 class DummyTracker(base.TrackerBase):
