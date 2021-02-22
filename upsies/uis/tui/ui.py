@@ -121,7 +121,8 @@ class UI:
 
         :raise: Any exception that occured while running jobs
 
-        :return: Application exit code: 0 for success, anything else for failure
+        :return: :attr:`~.JobBase.exit_code` from the first failed job or 0 for
+            success
         """
         self.add_jobs(*jobs)
 
