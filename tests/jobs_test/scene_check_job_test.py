@@ -78,7 +78,7 @@ async def test_find_release_name_gets_nonscene_release(make_SceneCheckJob, mocke
     is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock(
         return_value=SceneCheckResult.false,
     ))
-    mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
     ask_release_name = Mock()
     job = make_SceneCheckJob(content_path='path/to/foo')
@@ -86,7 +86,7 @@ async def test_find_release_name_gets_nonscene_release(make_SceneCheckJob, mocke
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert ask_release_name.call_args_list == []
-    assert job._finalize.call_args_list == [
+    assert job._handle_scene_check_result.call_args_list == [
         call(SceneCheckResult.false, exceptions=()),
     ]
     assert job._verify_release.call_args_list == []
@@ -100,7 +100,7 @@ async def test_find_release_name_finds_no_results(is_scene_release, make_SceneCh
     search_mock = mocker.patch('upsies.utils.scene.search', AsyncMock(
         return_value=(),
     ))
-    mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
     ask_release_name = Mock()
     job = make_SceneCheckJob(content_path='path/to/foo')
@@ -109,7 +109,7 @@ async def test_find_release_name_finds_no_results(is_scene_release, make_SceneCh
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert search_mock.call_args_list == [call(SceneQuery('foo'), only_existing_releases=False)]
     assert ask_release_name.call_args_list == []
-    assert job._finalize.call_args_list == [
+    assert job._handle_scene_check_result.call_args_list == [
         call(SceneCheckResult.unknown, exceptions=()),
     ]
     assert job._verify_release.call_args_list == []
@@ -123,7 +123,7 @@ async def test_find_release_name_finds_single_result(is_scene_release, make_Scen
     search_mock = mocker.patch('upsies.utils.scene.search', AsyncMock(
         return_value=('Mock.Release.Foo-BAR',),
     ))
-    mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
     ask_release_name = Mock()
     job = make_SceneCheckJob(content_path='path/to/foo')
@@ -132,7 +132,7 @@ async def test_find_release_name_finds_single_result(is_scene_release, make_Scen
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert search_mock.call_args_list == [call(SceneQuery('foo'), only_existing_releases=False)]
     assert ask_release_name.call_args_list == []
-    assert job._finalize.call_args_list == []
+    assert job._handle_scene_check_result.call_args_list == []
     assert job._verify_release.call_args_list == [
         call('Mock.Release.Foo-BAR'),
     ]
@@ -146,7 +146,7 @@ async def test_find_release_name_finds_parsed_release_name_in_result(is_scene_re
     search_mock = mocker.patch('upsies.utils.scene.search', AsyncMock(
         return_value=('foo', 'bar', 'baz'),
     ))
-    mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
     ask_release_name = Mock()
     job = make_SceneCheckJob(content_path='path/to/foo')
@@ -155,7 +155,7 @@ async def test_find_release_name_finds_parsed_release_name_in_result(is_scene_re
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert search_mock.call_args_list == [call(SceneQuery('foo'), only_existing_releases=False)]
     assert ask_release_name.call_args_list == []
-    assert job._finalize.call_args_list == []
+    assert job._handle_scene_check_result.call_args_list == []
     assert job._verify_release.call_args_list == [
         call('foo'),
     ]
@@ -169,7 +169,7 @@ async def test_find_release_name_finds_multiple_results(is_scene_release, make_S
     search_mock = mocker.patch('upsies.utils.scene.search', AsyncMock(
         return_value=('Mock.Release.Foo-BAR', 'Mick.Release.Foo-BAR'),
     ))
-    mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
     ask_release_name = Mock()
     job = make_SceneCheckJob(content_path='path/to/foo')
@@ -180,23 +180,38 @@ async def test_find_release_name_finds_multiple_results(is_scene_release, make_S
     assert ask_release_name.call_args_list == [
         call(('Mock.Release.Foo-BAR', 'Mick.Release.Foo-BAR')),
     ]
-    assert job._finalize.call_args_list == []
+    assert job._handle_scene_check_result.call_args_list == []
     assert job._verify_release.call_args_list == []
 
 
 @pytest.mark.asyncio
-async def test_user_selected_release_name(make_SceneCheckJob, mocker):
+async def test_user_selected_release_name_with_release_name(make_SceneCheckJob, mocker):
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result', Mock())
     job = make_SceneCheckJob()
     job.user_selected_release_name('mock.release.name')
     asyncio.get_event_loop().call_soon(job.finish)
     await job.wait()
     assert job._verify_release.call_args_list == [call('mock.release.name')]
+    assert job._handle_scene_check_result.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_user_selected_release_name_without_release_name(make_SceneCheckJob, mocker):
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result', Mock())
+    job = make_SceneCheckJob()
+    job.user_selected_release_name(None)
+    asyncio.get_event_loop().call_soon(job.finish)
+    await job.wait()
+    assert job._verify_release.call_args_list == []
+    assert job._handle_scene_check_result.call_args_list == [
+        call(SceneCheckResult.false, exceptions=()),
+    ]
 
 
 @pytest.mark.asyncio
 async def test_verify_release(make_SceneCheckJob, mocker):
-    mocker.patch('upsies.jobs.scene.SceneCheckJob._finalize')
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result')
     verify_release_mock = mocker.patch('upsies.utils.scene.verify_release', AsyncMock(
         return_value=(SceneCheckResult.true, ('error1', 'error2')),
     ))
@@ -205,38 +220,63 @@ async def test_verify_release(make_SceneCheckJob, mocker):
     assert verify_release_mock.call_args_list == [
         call(job._content_path, 'mock.release.name'),
     ]
-    assert job._finalize.call_args_list == [
+    assert job._handle_scene_check_result.call_args_list == [
         call(SceneCheckResult.true, ('error1', 'error2')),
     ]
 
 
-def test_finalize_handles_SceneErrors_as_errors(make_SceneCheckJob, mocker):
+def test_handle_scene_check_result_handles_SceneErrors(make_SceneCheckJob, mocker):
+    mocker.patch('upsies.jobs.scene.SceneCheckJob.finalize')
     ask_is_scene_release = Mock()
     job = make_SceneCheckJob()
     job.signal.register('ask_is_scene_release', ask_is_scene_release)
-    job._finalize(
+    job._handle_scene_check_result(
         'mock scene check result',
-        (
+        exceptions=(
             errors.SceneError('foo'),
+            errors.SceneRenamedError('bar', 'Bar'),
+            errors.SceneMissingInfoError('burr'),
             errors.SceneFileSizeError('baz', 123, 456),
         ),
     )
     assert job.warnings == (
+        errors.SceneMissingInfoError('burr'),
+    )
+    assert job.errors == (
         errors.SceneError('foo'),
+        errors.SceneRenamedError('bar', 'Bar'),
         errors.SceneFileSizeError('baz', 123, 456),
     )
     assert ask_is_scene_release.call_args_list == []
+    assert job.finalize.call_args_list == []
     assert job.is_finished
 
-def test_finalize_triggers_dialog_if_no_errors(make_SceneCheckJob, mocker):
+@pytest.mark.parametrize('is_scene_release', (SceneCheckResult.true, SceneCheckResult.false))
+def test_handle_scene_check_result_handles_definite_scene_check_result(is_scene_release, make_SceneCheckJob, mocker):
+    mocker.patch('upsies.jobs.scene.SceneCheckJob.finalize')
     ask_is_scene_release = Mock()
     job = make_SceneCheckJob()
     job.signal.register('ask_is_scene_release', ask_is_scene_release)
-    job._finalize('mock scene check result', ())
+    job._handle_scene_check_result(is_scene_release, exceptions=())
+    assert job.errors == ()
+    assert job.warnings == ()
+    assert ask_is_scene_release.call_args_list == []
+    assert job.finalize.call_args_list == [call(is_scene_release)]
+    assert not job.is_finished
+
+@pytest.mark.parametrize('is_scene_release', (SceneCheckResult.unknown,))
+def test_handle_scene_check_result_triggers_dialog_if_no_errors(is_scene_release, make_SceneCheckJob, mocker):
+    mocker.patch('upsies.jobs.scene.SceneCheckJob.finalize')
+    ask_is_scene_release = Mock()
+    job = make_SceneCheckJob()
+    job.signal.register('ask_is_scene_release', ask_is_scene_release)
+    job._handle_scene_check_result('mock scene check result', ())
+    assert job.errors == ()
     assert job.warnings == ()
     assert ask_is_scene_release.call_args_list == [
         call('mock scene check result'),
     ]
+    assert job.finalize.call_args_list == []
     assert not job.is_finished
 
 @pytest.mark.parametrize(
@@ -248,8 +288,8 @@ def test_finalize_triggers_dialog_if_no_errors(make_SceneCheckJob, mocker):
     ),
     ids=lambda v: str(v),
 )
-def test_user_decided(is_scene_release, exp_msg, make_SceneCheckJob, mocker):
+def test_finalize(is_scene_release, exp_msg, make_SceneCheckJob, mocker):
     job = make_SceneCheckJob()
-    job.user_decided(is_scene_release)
+    job.finalize(is_scene_release)
     assert job.output == (exp_msg,)
     assert job.is_finished
