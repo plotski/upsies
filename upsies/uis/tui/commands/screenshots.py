@@ -13,7 +13,10 @@ class screenshots(CommandBase):
     names = ('screenshots', 'ss')
 
     argument_definitions = {
-        'CONTENT': {'help': 'Path to release content'},
+        'CONTENT': {
+            'type': argtypes.content,
+            'help': 'Path to release content',
+        },
         ('--timestamps', '-t'): {
             'nargs': '+',
             'default': (),

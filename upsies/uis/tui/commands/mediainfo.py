@@ -3,6 +3,7 @@ Print ``mediainfo`` output
 """
 
 from .... import jobs, utils
+from . import argtypes
 from .base import CommandBase
 
 
@@ -19,7 +20,10 @@ class mediainfo(CommandBase):
     names = ('mediainfo', 'mi')
 
     argument_definitions = {
-        'CONTENT': {'help': 'Path to release content'},
+        'CONTENT': {
+            'type': argtypes.content,
+            'help': 'Path to release content',
+        },
     }
 
     @utils.cached_property
