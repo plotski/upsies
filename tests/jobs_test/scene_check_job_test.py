@@ -221,7 +221,7 @@ def test_finalize_handles_SceneErrors_as_errors(make_SceneCheckJob, mocker):
             errors.SceneFileSizeError('baz', 123, 456),
         ),
     )
-    assert job.errors == (
+    assert job.warnings == (
         errors.SceneError('foo'),
         errors.SceneFileSizeError('baz', 123, 456),
     )
@@ -233,7 +233,7 @@ def test_finalize_triggers_dialog_if_no_errors(make_SceneCheckJob, mocker):
     job = make_SceneCheckJob()
     job.signal.register('ask_is_scene_release', ask_is_scene_release)
     job._finalize('mock scene check result', ())
-    assert job.errors == ()
+    assert job.warnings == ()
     assert ask_is_scene_release.call_args_list == [
         call('mock scene check result'),
     ]

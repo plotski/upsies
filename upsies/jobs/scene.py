@@ -183,7 +183,7 @@ class SceneCheckJob(JobBase):
     def _finalize(self, is_scene_release, exceptions=()):
         _log.debug('Handling result: %r: %r', is_scene_release, exceptions)
         for e in exceptions:
-            self.error(e)
+            self.warn(e)
 
         if not exceptions:
             self.signal.emit('ask_is_scene_release', is_scene_release)
