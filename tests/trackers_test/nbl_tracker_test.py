@@ -154,7 +154,7 @@ async def test_login_dumps_html_if_handling_response_fails(method_name, mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='error, exp_message',
+    argnames='page, exp_message',
     argvalues=(
         pytest.param(
             'login.auth-failed',
@@ -169,15 +169,7 @@ async def test_login_dumps_html_if_handling_response_fails(method_name, mocker):
         ),
     ),
 )
-def test_report_login_error(error, exp_message):
-    def get_stored_response(name):
-        filepath = os.path.join(
-            os.path.dirname(__file__),
-            'html',
-            f'nbl.{name}.html',
-        )
-        return open(filepath, 'r').read()
-
+def test_report_login_error(page, exp_message, get_html_page):
     tracker = NblTracker(
         config={
             'username': 'bunny',
@@ -188,7 +180,7 @@ def test_report_login_error(error, exp_message):
         },
     )
     html = bs4.BeautifulSoup(
-        markup=get_stored_response(error),
+        markup=get_html_page('nbl', page),
         features='html.parser',
     )
     with pytest.raises(errors.RequestError, match=rf'^Login failed: {exp_message}$'):
