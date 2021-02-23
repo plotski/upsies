@@ -662,16 +662,24 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     @cached_property
     def _title_parts(self):
-        # Guess it splits AKA at " - ", we want to split at " AKA "
+        # guessit splits AKA at " - ", so we re-join it
         title_parts = [self._guess.get('title', '')]
         if self._guess.get('alternative_title'):
             title_parts.extend(_as_list(self._guess, 'alternative_title'))
         title = ' - '.join(title_parts)
         title_parts = self._title_aka_regex.split(title, maxsplit=1)
+
+        # guessit recognizes mixed seasons and episodes (e.g. "S02E10S03E05") as
+        # part of the title.
+        def remove_episodes(string):
+            return Episodes.regex.sub('', string)
+
         if len(title_parts) > 1:
-            return {'title': title_parts[0], 'aka': title_parts[1]}
+            return {'title': remove_episodes(title_parts[0]),
+                    'aka': remove_episodes(title_parts[1])}
         else:
-            return {'title': title_parts[0], 'aka': ''}
+            return {'title': remove_episodes(title_parts[0]),
+                    'aka': ''}
 
     def _get_title(self):
         return self._title_parts['title']
