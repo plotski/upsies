@@ -59,9 +59,9 @@ async def test_login_does_nothing_if_already_logged_in(mocker):
     )
     tracker._logout_url = 'anything'
     tracker._auth_key = 'something'
-    assert tracker.logged_in
+    assert tracker.is_logged_in
     await tracker.login()
-    assert tracker.logged_in
+    assert tracker.is_logged_in
     assert get_mock.call_args_list == []
     assert post_mock.call_args_list == []
     assert tracker._logout_url == 'anything'
@@ -99,7 +99,7 @@ async def test_login_succeeds(mocker):
             'login': 'Login',
         },
     )]
-    assert tracker.logged_in
+    assert tracker.is_logged_in
     assert tracker._logout_url == 'http://nbl.local/logout.php?asdfasdf'
     assert tracker._auth_key == '12345'
 
@@ -135,7 +135,7 @@ async def test_login_dumps_html_if_handling_response_fails(method_name, mocker):
         method_mock.side_effect = Exception('Oooph!')
         with pytest.raises(Exception, match=r'^Oooph!$'):
             await tracker.login()
-    assert not tracker.logged_in
+    assert not tracker.is_logged_in
     assert get_mock.call_args_list == []
     assert post_mock.call_args_list == [call(
         url='http://nbl.local' + tracker._url_path['login'],
@@ -147,7 +147,7 @@ async def test_login_dumps_html_if_handling_response_fails(method_name, mocker):
             'login': 'Login',
         }
     )]
-    assert not tracker.logged_in
+    assert not tracker.is_logged_in
     assert html_dump_mock.call_args_list == [
         call(response, 'login.html'),
     ]
@@ -187,7 +187,7 @@ def test_report_login_error(page, exp_message, get_html_page):
         tracker._report_login_error(html)
 
 
-def test_logged_in():
+def test_is_logged_in():
     tracker = NblTracker(
         config={
             'username': 'bunny',
@@ -198,17 +198,17 @@ def test_logged_in():
         },
     )
     # tracker.logged_in must be True if "_logout_url" and "_auth_key" are set
-    assert tracker.logged_in is False
+    assert tracker.is_logged_in is False
     tracker._logout_url = 'asdf'
-    assert tracker.logged_in is False
+    assert tracker.is_logged_in is False
     tracker._auth_key = 'asdf'
-    assert tracker.logged_in is True
+    assert tracker.is_logged_in is True
     delattr(tracker, '_logout_url')
-    assert tracker.logged_in is False
+    assert tracker.is_logged_in is False
     tracker._logout_url = 'asdf'
-    assert tracker.logged_in is True
+    assert tracker.is_logged_in is True
     delattr(tracker, '_auth_key')
-    assert tracker.logged_in is False
+    assert tracker.is_logged_in is False
 
 @pytest.mark.parametrize(
     argnames=('logout_url', 'auth_key'),

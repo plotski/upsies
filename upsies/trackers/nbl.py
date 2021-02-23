@@ -74,7 +74,7 @@ class NblTracker(base.TrackerBase):
     }
 
     async def login(self):
-        if not self.logged_in:
+        if not self.is_logged_in:
             _log.debug('%s: Logging in as %r', self.name, self.config['username'])
             login_url = urllib.parse.urljoin(
                 self.config['base_url'],
@@ -135,7 +135,7 @@ class NblTracker(base.TrackerBase):
             _log.debug('%s: Logout URL: %s', self.name, self._logout_url)
 
     @property
-    def logged_in(self):
+    def is_logged_in(self):
         return all(hasattr(self, attr)
                    for attr in ('_logout_url', '_auth_key'))
 
@@ -150,7 +150,7 @@ class NblTracker(base.TrackerBase):
 
     async def upload(self, metadata):
         _log.debug('Uploading: %r', metadata)
-        if not self.logged_in:
+        if not self.is_logged_in:
             raise RuntimeError('upload() called before login()')
 
         torrent_filepath = metadata['torrent'][0]
