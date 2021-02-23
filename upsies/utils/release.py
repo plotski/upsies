@@ -604,6 +604,14 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return _guessit.default_api.advanced_config
 
     def _get_type(self):
+        for name in _file_and_dir(self._path):
+            if Episodes.has_episodes_info(name):
+                episodes = Episodes.from_string(name)
+                if any(episodes.values()):
+                    return ReleaseType.episode
+                else:
+                    return ReleaseType.season
+
         guessit_type = self._guess.get('type')
         if not guessit_type:
             return ReleaseType.unknown
