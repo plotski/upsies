@@ -33,3 +33,12 @@ def test_webdb_fails_to_find_webdb(mocker):
         webdbs.webdb('bam', x=123)
     for c in existing_webdbs:
         assert c.call_args_list == []
+
+
+def test_webdb_names(mocker):
+    existing_webdbs = (Mock(), Mock(), Mock())
+    existing_webdbs[0].configure_mock(name='FOO')
+    existing_webdbs[1].configure_mock(name='bar')
+    existing_webdbs[2].configure_mock(name='Baz')
+    mocker.patch('upsies.utils.webdbs.webdbs', return_value=existing_webdbs)
+    webdbs.webdb_names() == ['bar', 'Baz', 'FOO']

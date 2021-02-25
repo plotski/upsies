@@ -35,4 +35,4 @@ def webdb(name, **kwargs):
 
 def webdb_names():
     """Return sequence of valid `name` arguments for :func:`.webdb`"""
-    return tuple(CaseInsensitiveString(cls.name) for cls in webdbs())
+    return sorted(CaseInsensitiveString(cls.name) for cls in webdbs())
