@@ -33,4 +33,4 @@ def client(name, **kwargs):
 
 def client_names():
     """Return sequence of valid `name` arguments for :func:`.client`"""
-    return tuple(CaseInsensitiveString(cls.name) for cls in clients())
+    return sorted(CaseInsensitiveString(cls.name) for cls in clients())

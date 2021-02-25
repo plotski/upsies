@@ -33,3 +33,12 @@ def test_client_fails_to_find_client(mocker):
         btclients.client('bam', x=123)
     for c in existing_clients:
         assert c.call_args_list == []
+
+
+def test_client_names(mocker):
+    existing_clients = (Mock(), Mock(), Mock())
+    existing_clients[0].configure_mock(name='FOO')
+    existing_clients[1].configure_mock(name='bar')
+    existing_clients[2].configure_mock(name='Baz')
+    mocker.patch('upsies.utils.btclients.clients', return_value=existing_clients)
+    btclients.client_names() == ['bar', 'Baz', 'FOO']
