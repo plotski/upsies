@@ -33,3 +33,12 @@ def test_scenedb_fails_to_find_scenedb(mocker):
         scene.scenedb('bam', x=123)
     for c in existing_scenedbs:
         assert c.call_args_list == []
+
+
+def test_scenedb_names(mocker):
+    existing_scenedbs = (Mock(), Mock(), Mock())
+    existing_scenedbs[0].configure_mock(name='FOO')
+    existing_scenedbs[1].configure_mock(name='bar')
+    existing_scenedbs[2].configure_mock(name='Baz')
+    mocker.patch('upsies.utils.scene.scenedbs', return_value=existing_scenedbs)
+    scene.scenedb_names() == ['bar', 'Baz', 'FOO']
