@@ -1,4 +1,3 @@
-import os
 from unittest.mock import Mock, call, patch
 
 import bs4
