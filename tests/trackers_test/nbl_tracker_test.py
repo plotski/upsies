@@ -248,6 +248,54 @@ async def test_logout(logout_url, auth_key, mocker):
 
 
 @pytest.mark.asyncio
+async def test_get_announce_url_succeeds(mocker):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(
+        return_value='''
+        <html>
+            <input type="text" value="https://nbl.local:123/l33tb34f/announce">
+        </html>
+    ''',
+    ))
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
+    tracker = NblTracker(
+        config={
+            'username': 'bunny',
+            'password': 'hunter2',
+            'base_url': 'http://nbl.local',
+            'announce': 'http://nbl.local/announce',
+            'exclude': 'some files',
+        },
+    )
+    announce_url = await tracker.get_announce_url()
+    assert announce_url == 'https://nbl.local:123/l33tb34f/announce'
+    assert get_mock.call_args_list == [
+        call('http://nbl.local' + NblTracker._url_path['upload'], cache=False, user_agent=True),
+    ]
+    assert post_mock.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_get_announce_url_fails(mocker):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(
+        return_value='<html>foo</html> ',
+    ))
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
+    tracker = NblTracker(
+        config={
+            'username': 'bunny',
+            'password': 'hunter2',
+            'base_url': 'http://nbl.local',
+            'announce': 'http://nbl.local/announce',
+            'exclude': 'some files',
+        },
+    )
+    assert await tracker.get_announce_url() is None
+    assert get_mock.call_args_list == [
+        call('http://nbl.local' + NblTracker._url_path['upload'], cache=False, user_agent=True),
+    ]
+    assert post_mock.call_args_list == []
+
+
+@pytest.mark.asyncio
 async def test_upload_without_being_logged_in(mocker):
     tracker = NblTracker(
         config={

@@ -94,6 +94,10 @@ class DummyTracker(base.TrackerBase):
         _log.debug('%s: Logging out', self.name)
         await asyncio.sleep(self.cli_args.delay)
 
+    async def get_announce_url(self):
+        await asyncio.sleep(self.cli_args.delay)
+        return 'http://localhost:123/f1dd15718/announce'
+
     async def upload(self, metadata):
         # Output from torrent job could be empty sequence (error) or None (not
         # finished)

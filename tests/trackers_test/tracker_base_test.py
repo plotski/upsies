@@ -18,6 +18,7 @@ def make_TestTracker(**kwargs):
         TrackerConfig = PropertyMock()
         login = AsyncMock()
         logout = AsyncMock()
+        get_announce_url = AsyncMock()
         upload = AsyncMock()
 
     return TestTracker(**kwargs)

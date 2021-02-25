@@ -34,6 +34,7 @@ def tracker():
         TrackerJobs = 'tracker jobs class'
         login = AsyncMock()
         logout = AsyncMock()
+        get_announce_url = AsyncMock()
         upload = AsyncMock()
 
     return TestTracker()

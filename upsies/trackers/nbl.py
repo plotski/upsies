@@ -148,6 +148,19 @@ class NblTracker(base.TrackerBase):
             _log.debug('%s: Logging out: %r', self.name, logout_url)
             await http.get(logout_url, user_agent=True)
 
+    async def get_announce_url(self):
+        url = urllib.parse.urljoin(
+            self.config['base_url'],
+            self._url_path['upload'],
+        )
+        _log.debug('%s: Getting announce URL from %s', self.name, url)
+        response = await http.get(url, cache=False, user_agent=True)
+        doc = html.parse(response)
+        announce_url_tag = doc.find('input', value=re.compile(r'^https?://.*/announce$'))
+        if announce_url_tag:
+            _log.debug('%s: Announce URL: %s', self.name, announce_url_tag['value'])
+            return announce_url_tag['value']
+
     async def upload(self, metadata):
         _log.debug('Uploading: %r', metadata)
         if not self.is_logged_in:

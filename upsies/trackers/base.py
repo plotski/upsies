@@ -327,6 +327,10 @@ class TrackerBase(abc.ABC):
         """End user session"""
 
     @abc.abstractmethod
+    async def get_announce_url(self):
+        """Get announce URL from tracker website"""
+
+    @abc.abstractmethod
     async def upload(self, metadata):
         """
         Upload torrent and other metadata
