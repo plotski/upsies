@@ -42,4 +42,4 @@ def tracker(name, **kwargs):
 
 def tracker_names():
     """Return sequence of valid `name` arguments for :func:`.tracker`"""
-    return tuple(utils.CaseInsensitiveString(cls.name) for cls in trackers())
+    return sorted(utils.CaseInsensitiveString(cls.name) for cls in trackers())

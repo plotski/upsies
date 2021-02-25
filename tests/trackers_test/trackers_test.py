@@ -33,3 +33,12 @@ def test_tracker_fails_to_find_class(mocker):
         trackers.tracker('bam', x=123)
     for t in existing_trackers:
         assert t.call_args_list == []
+
+
+def test_tracker_names(mocker):
+    existing_trackers = (Mock(), Mock(), Mock())
+    existing_trackers[0].configure_mock(name='FOO')
+    existing_trackers[1].configure_mock(name='bar')
+    existing_trackers[2].configure_mock(name='Baz')
+    mocker.patch('upsies.trackers.trackers', return_value=existing_trackers)
+    trackers.tracker_names() == ['bar', 'Baz', 'FOO']
