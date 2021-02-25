@@ -322,3 +322,21 @@ def test_mediainfo_job(mocker):
             ignore_cache='mock bool',
         ),
     ]
+
+
+def test_scene_check_job(mocker):
+    SceneCheckJob_mock = mocker.patch('upsies.jobs.scene.SceneCheckJob', Mock())
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+    )
+    # Return value must be singleton
+    assert tracker_jobs.scene_check_job is SceneCheckJob_mock.return_value
+    assert tracker_jobs.scene_check_job is SceneCheckJob_mock.return_value
+    assert SceneCheckJob_mock.call_args_list == [
+        call(
+            content_path='path/to/content',
+            home_directory='path/to/home',
+            ignore_cache='mock bool',
+        ),
+    ]
