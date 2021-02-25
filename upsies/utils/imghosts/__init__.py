@@ -34,4 +34,4 @@ def imghost(name, **kwargs):
 
 def imghost_names():
     """Return sequence of valid `name` arguments for :func:`.imghost`"""
-    return tuple(CaseInsensitiveString(cls.name) for cls in imghosts())
+    return sorted(CaseInsensitiveString(cls.name) for cls in imghosts())

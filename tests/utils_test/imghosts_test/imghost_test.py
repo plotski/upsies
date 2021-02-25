@@ -33,3 +33,12 @@ def test_imghost_fails_to_find_imghost(mocker):
         imghosts.imghost('bam', x=123)
     for ih in existing_imghosts:
         assert ih.call_args_list == []
+
+
+def test_imghost_names(mocker):
+    existing_imghosts = (Mock(), Mock(), Mock())
+    existing_imghosts[0].configure_mock(name='FOO')
+    existing_imghosts[1].configure_mock(name='bar')
+    existing_imghosts[2].configure_mock(name='Baz')
+    mocker.patch('upsies.utils.imghosts.imghosts', return_value=existing_imghosts)
+    imghosts.imghost_names() == ['bar', 'Baz', 'FOO']
