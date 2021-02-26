@@ -31,5 +31,10 @@ def test_config():
     assert tracker.config is config
 
 
+def test_cli_args():
+    tracker = make_TestTracker(cli_args='mock args')
+    assert tracker.cli_args == 'mock args'
+
+
 def test_argument_definitions():
     assert TrackerBase.argument_definitions == {}
