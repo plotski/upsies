@@ -18,6 +18,7 @@ Features
 * Upload screenshots to an image hosting service
 * Create ``.torrent`` file and add it to supported BitTorrent client or copy it
   to a watch directory
+* Identify scene releases and check if they were altered
 * Submit metadata to a supported tracker
 * Do everything simultaneously
 

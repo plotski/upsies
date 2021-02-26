@@ -1,7 +1,10 @@
 2021-??-?? 0.?.?
-  * New command: scene-search
+  * New command: scene-search: List scene release names
+  * New command: scene-check: Identify release as scene and check if it was
+    altered
   * release-name: Don't accept release name if any obligatory information is
     unknown.
+  * Look up announce URLs on the tracker instead of the config file
   * create-torrent: Store creation date in .torrent file
 
 
