@@ -89,10 +89,16 @@ class DummyTracker(base.TrackerBase):
     async def login(self):
         _log.debug('%s: Logging in with %r', self.name, self.config)
         await asyncio.sleep(self.cli_args.delay)
+        self._is_logged_in = True
 
     async def logout(self):
         _log.debug('%s: Logging out', self.name)
         await asyncio.sleep(self.cli_args.delay)
+        self._is_logged_in = False
+
+    @property
+    def is_logged_in(self):
+        return self._is_logged_in
 
     async def get_announce_url(self):
         await asyncio.sleep(self.cli_args.delay)
