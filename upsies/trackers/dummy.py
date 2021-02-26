@@ -97,7 +97,7 @@ class DummyTracker(base.TrackerBase):
 
     @property
     def is_logged_in(self):
-        return self._is_logged_in
+        return getattr(self, '_is_logged_in', False)
 
     async def get_announce_url(self):
         await asyncio.sleep(self.cli_args.delay)
