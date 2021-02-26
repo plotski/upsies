@@ -331,6 +331,23 @@ class TrackerBase(abc.ABC):
     def is_logged_in(self):
         """Whether a user session is active"""
 
+    async def with_login(self, *coros, logout=False):
+        """
+        Call :meth:`login` if not :attr:`is_logged_in` before calling `coro`
+
+        :param coros: One or more coroutines to call after logging in
+        :param bool logout: Whether to :meth:`logout` after calling `coro`
+
+        :return: Return value of the last coroutine in `coros`
+        """
+        if not self.is_logged_in:
+            await self.login()
+        for coro in coros:
+            return_value = await coro
+        if logout:
+            await self.logout()
+        return return_value
+
     @abc.abstractmethod
     async def get_announce_url(self):
         """Get announce URL from tracker website"""
