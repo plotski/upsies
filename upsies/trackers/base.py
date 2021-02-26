@@ -326,6 +326,11 @@ class TrackerBase(abc.ABC):
     async def logout(self):
         """End user session"""
 
+    @property
+    @abc.abstractmethod
+    def is_logged_in(self):
+        """Whether a user session is active"""
+
     @abc.abstractmethod
     async def get_announce_url(self):
         """Get announce URL from tracker website"""
