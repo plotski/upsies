@@ -20,7 +20,6 @@ class DummyTrackerConfig(base.TrackerConfigBase):
         'base_url'   : 'http://localhost',
         'username'   : '',
         'password'   : '',
-        'announce'   : 'http://localhost:12345/dummy/announce',
         'exclude'    : [],
         'source'     : 'DMY',
         'image_host' : 'dummy',
