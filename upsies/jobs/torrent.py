@@ -57,7 +57,6 @@ class CreateTorrentJob(base.JobBase):
         """Get announce URL from `tracker`, then execute torrent creation subprocess"""
 
         def create_torrent_process_wrapper(task):
-            print('task done:', repr(task))
             try:
                 self._create_torrent_process(task.result())
             except errors.RequestError as e:
