@@ -179,6 +179,9 @@ class CommandBase(abc.ABC):
     @classmethod
     def run(cls, args):
         """
+        Execute command
+
+        :param args: Sequence of CLI arguments or `None` to use `sys.argv`
         """
         # argparse has sys.exit(2) hardcoded for CLI errors.
         try:
