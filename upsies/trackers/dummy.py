@@ -100,6 +100,7 @@ class DummyTracker(base.TrackerBase):
         return getattr(self, '_is_logged_in', False)
 
     async def get_announce_url(self):
+        _log.debug('%s: Getting announce URL', self.name)
         await asyncio.sleep(self.cli_args.delay)
         return 'http://localhost:123/f1dd15718/announce'
 
