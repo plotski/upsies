@@ -25,6 +25,8 @@ class JobBase(abc.ABC):
         should not be re-used
     :param bool hidden: Whether to hide the job's output in the UI
     :param bool autostart: Whether this job is started automatically
+    :param callbacks: Mapping of :attr:`signal` names to callable or sequence of
+        callables to :meth:`~.signal.Signal.register` for that signal
 
     Any additional keyword arguments are passed on to :meth:`initialize`.
 
@@ -108,15 +110,15 @@ class JobBase(abc.ABC):
         return self._signal
 
     def __init__(self, *, home_directory=None, ignore_cache=False, hidden=False,
-                 autostart=True, **kwargs):
+                 autostart=True, callbacks={}, **kwargs):
         if home_directory:
             # Custome home specific to some content. Store cache in hidden
             # directory in there.
             self._home_directory = str(home_directory)
             self._cache_directory = os.path.join(self._home_directory, '.cache')
         else:
-            # Default home, something like /tmp/upsies. We want to store files
-            # and cache in the same directory.
+            # Default home, something like /tmp/upsies. We want to store output
+            # files and cache in the same directory.
             self._home_directory = fs.tmpdir()
             self._cache_directory = self.home_directory
         self._ignore_cache = bool(ignore_cache)
@@ -127,14 +129,25 @@ class JobBase(abc.ABC):
         self._output = []
         self._warnings = []
         self._errors = []
+        self._finished_event = asyncio.Event()
+
         self._signal = signal.Signal('output', 'warning', 'error', 'finished')
         self._signal.register('output', lambda output: self._output.append(str(output)))
         self._signal.register('warning', lambda warning: self._warnings.append(warning))
         self._signal.register('error', lambda error: self._errors.append(error))
         self._signal.record('output')
-        self._finished_event = asyncio.Event()
+
         self._kwargs = kwargs
         self.initialize(**kwargs)
+
+        # Add signal callbacks after `initialize` had the chance to add custom
+        # signals.
+        for signal_name, callback in callbacks.items():
+            if callable(callback):
+                self._signal.register(signal_name, callback)
+            else:
+                for cb in callback:
+                    self._signal.register(signal_name, cb)
 
     def initialize(self):
         """

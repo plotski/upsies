@@ -75,6 +75,23 @@ def test_initialize_is_called_after_object_creation(job):
     assert job.initialize_was_called
 
 
+def test_callbacks_argument(job):
+    class BarJob(FooJob):
+        def initialize(self):
+            self.signal.add('greeted')
+
+    cb = Mock()
+    job = BarJob(callbacks={
+        'output': cb.output,
+        'finished': cb.finished,
+        'greeted': (cb.hello, cb.hey),
+    })
+    assert cb.output in job.signal.signals['output']
+    assert cb.finished in job.signal.signals['finished']
+    assert cb.hello in job.signal.signals['greeted']
+    assert cb.hey in job.signal.signals['greeted']
+
+
 def test_start_is_called_multiple_times(job):
     job.start()
     with pytest.raises(RuntimeError, match=r'^start\(\) was already called$'):
