@@ -12,27 +12,36 @@ class create_torrent(CommandBase):
 
     names = ('create-torrent', 'ct')
 
-    argument_definitions = {
-        'TRACKER': {
-            'type': argtypes.tracker,
-            'help': ('Case-insensitive tracker name.\n'
-                     'Supported trackers: ' + ', '.join(trackers.tracker_names())),
-        },
-        'CONTENT': {
-            'type': argtypes.content,
-            'help': 'Path to release content',
-        },
-        ('--add-to', '-a'): {
-            'type': argtypes.client,
-            'metavar': 'CLIENT',
-            'help': ('Case-insensitive BitTorrent client name\n'
-                     'Supported clients: ' + ', '.join(utils.btclients.client_names())),
-        },
-        ('--copy-to', '-c'): {
-            'metavar': 'PATH',
-            'help': 'Copy the created torrent to PATH (file or directory)',
-        },
+    argument_definitions = {}
+
+    subcommands = {
+        tracker.name: {
+            # Default arguments for all tackers
+            **{
+                'CONTENT': {
+                    'type': argtypes.content,
+                    'help': 'Path to release content',
+                },
+                ('--add-to', '-a'): {
+                    'type': argtypes.client,
+                    'metavar': 'CLIENT',
+                    'help': ('Case-insensitive BitTorrent client name\n'
+                             'Supported clients: ' + ', '.join(utils.btclients.client_names())),
+                },
+                ('--copy-to', '-c'): {
+                    'metavar': 'PATH',
+                    'help': 'Copy the created torrent to PATH (file or directory)',
+                },
+            },
+            # Custom arguments defined by tracker
+            **tracker.argument_definitions,
+        }
+        for tracker in trackers.trackers()
     }
+
+    @utils.cached_property
+    def tracker_name(self):
+        return self.args.subcommand.lower()
 
     @utils.cached_property
     def create_torrent_job(self):
@@ -41,8 +50,9 @@ class create_torrent(CommandBase):
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
             tracker=trackers.tracker(
-                name=self.args.TRACKER.lower(),
-                config=self.config['trackers'][self.args.TRACKER.lower()],
+                name=self.tracker_name,
+                config=self.config['trackers'][self.tracker_name],
+                cli_args=self.args,
             ),
         )
 
