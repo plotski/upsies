@@ -476,9 +476,7 @@ class QueueJobBase(JobBase):
     async def _read_queue(self):
         while True:
             value = await self._queue.get()
-            if self.is_finished:
-                raise RuntimeError(f'{type(self).__name__} is already finished')
-            elif value is None:
+            if value is None or self.is_finished:
                 break
             else:
                 try:

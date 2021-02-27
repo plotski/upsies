@@ -104,7 +104,7 @@ async def test_read_queue_reads_queue(qjob, mocker):
     ]
 
 @pytest.mark.asyncio
-async def test_read_queue_complains_if_job_is_finished(mocker, tmp_path):
+async def test_read_queue_breaks_if_job_is_finished(mocker, tmp_path):
     mocker.patch('upsies.jobs.base.QueueJobBase.is_finished', PropertyMock(
         side_effect=(False, True, True, True),
     ))
@@ -114,8 +114,8 @@ async def test_read_queue_complains_if_job_is_finished(mocker, tmp_path):
     qjob._queue.put_nowait('b')
     qjob._queue.put_nowait('c')
     qjob._queue.put_nowait(None)
-    with pytest.raises(RuntimeError, match=r'^FooJob is already finished$'):
-        await qjob._read_queue()
+    await qjob._read_queue()
+    assert qjob.is_finished
     assert not qjob._queue.empty()
     assert qjob.handle_input.call_args_list == [call('a')]
 
