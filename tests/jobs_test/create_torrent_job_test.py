@@ -131,7 +131,7 @@ def test_CreateTorrentJob_initialize(tracker, tmp_path):
     )
     assert job._content_path == 'path/to/foo'
     assert job._torrent_path == f'{tmp_path / "foo"}.asdf.torrent'
-    assert job._file_tree == ''
+    assert job.info == ''
     assert job._announce_url_task is None
     assert job._torrent_process is None
 
@@ -163,7 +163,9 @@ async def test_CreateTorrentJob_execute(raised_exception, exp_errors, exp_exc, j
         mocker.patch.object(job._tracker, 'with_login', AsyncMock(return_value='http://announce'))
     mocker.patch.object(job._tracker, 'get_announce_url', Mock(return_value='coroutine mock'))
     mocker.patch.object(job, '_create_torrent_process', Mock())
+    assert job.info == ''
     job.execute()
+    assert job.info == 'Getting announce URL...'
     asyncio.get_event_loop().call_later(0.5, job.finish)
     if exp_exc:
         with pytest.raises(type(exp_exc), match=rf'^{re.escape(str(exp_exc))}$'):
@@ -252,14 +254,10 @@ async def test_CreateTorrentJob_wait_can_be_called_multiple_times(job):
 
 @patch('upsies.utils.fs.file_tree')
 def test_handle_file_tree(file_tree_mock, job):
-    assert job._file_tree == ''
+    assert job.info == ''
     job._handle_file_tree('beautiful tree')
-    assert job._file_tree is file_tree_mock.return_value
+    assert job.info is file_tree_mock.return_value
     assert file_tree_mock.call_args_list == [call('beautiful tree')]
-
-
-def test_info(job):
-    assert job.info is job._file_tree
 
 
 def test_progress_update_handling(job):

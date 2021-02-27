@@ -49,12 +49,14 @@ class CreateTorrentJob(base.JobBase):
             f'{fs.basename(content_path)}.{tracker.name.lower()}.torrent',
         )
         self.signal.add('progress_update')
-        self._file_tree = ''
+        self._info = ''
         self._announce_url_task = None
         self._torrent_process = None
 
     def execute(self):
         """Get announce URL from `tracker`, then execute torrent creation subprocess"""
+        self._info = 'Getting announce URL...'
+        self.signal.emit('progress_update', 0.0)
 
         def create_torrent_process_wrapper(task):
             try:
@@ -105,12 +107,12 @@ class CreateTorrentJob(base.JobBase):
         await super().wait()
 
     def _handle_file_tree(self, file_tree):
-        self._file_tree = fs.file_tree(file_tree)
+        self._info = fs.file_tree(file_tree)
 
     @property
     def info(self):
-        """File tree as returned by :func:`.fs.file_tree`"""
-        return self._file_tree
+        """Status information, e.g. file tree"""
+        return self._info
 
     def _handle_progress_update(self, percent_done):
         self.signal.emit('progress_update', percent_done)
