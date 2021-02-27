@@ -119,6 +119,20 @@ async def test_read_queue_complains_if_job_is_finished(mocker, tmp_path):
     assert not qjob._queue.empty()
     assert qjob.handle_input.call_args_list == [call('a')]
 
+@pytest.mark.asyncio
+async def test_read_queue_handles_exception_from_handle_input(qjob, mocker):
+    mocker.patch.object(qjob, 'handle_input', AsyncMock(
+        side_effect=TypeError('argh'),
+    ))
+    qjob._queue.put_nowait('a')
+    await qjob._read_queue()
+    assert qjob._queue.empty()
+    assert qjob.handle_input.call_args_list == [
+        call('a'),
+    ]
+    with pytest.raises(TypeError, match='^argh$'):
+        await qjob.wait()
+
 
 @pytest.mark.asyncio
 async def test_enqueue(qjob):

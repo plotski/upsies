@@ -481,7 +481,11 @@ class QueueJobBase(JobBase):
             elif value is None:
                 break
             else:
-                await self.handle_input(value)
+                try:
+                    await self.handle_input(value)
+                except BaseException as e:
+                    self.exception(e)
+                    break
         self.finish()
 
     @abc.abstractmethod
