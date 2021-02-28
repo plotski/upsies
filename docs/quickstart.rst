@@ -35,6 +35,8 @@ Submission
 
 .. code-block:: sh
 
+   $ upsies submit -h
+   $ upsies submit <tracker> -h
    $ upsies submit <tracker> <path/to/content> \
      [--add-to <client>] \
      [--copy-to <path/to/watch/directory>]
