@@ -275,7 +275,10 @@ class TrackerBase(abc.ABC):
 
     :param config: User configuration options for this tracker,
         e.g. authentication details, announce URL, etc
-    :type config: :attr:`~.TrackerBase.TrackerConfig` instance
+    :type config: :attr:`TrackerConfig`
+    :param cli_args: Command line arguments as defined by
+        :attr:`argument_defintions`
+    :type cli_args: :class:`argparse.Namespace`
     """
 
     @property
