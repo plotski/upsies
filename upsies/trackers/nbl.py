@@ -160,35 +160,26 @@ class NblTracker(base.TrackerBase):
             _log.debug('%s: Announce URL: %s', self.name, announce_url_tag['value'])
             return announce_url_tag['value']
 
-    async def upload(self, metadata):
-        _log.debug('Uploading: %r', metadata)
+    async def upload(self, tracker_jobs):
         if not self.is_logged_in:
             raise RuntimeError('upload() called before login()')
 
-        torrent_filepath = metadata['torrent'][0]
-        _log.debug('%s: Torrent: %r', self.name, torrent_filepath)
-        tvmaze_id = metadata['tvmaze-id'][0]
-        _log.debug('%s: TVmaze ID: %r', self.name, tvmaze_id)
-        mediainfo = metadata['mediainfo'][0]
-        _log.debug('%s: Mediainfo: %r', self.name, mediainfo[:100] + '...')
-        category = metadata['category'][0]
-        _log.debug('%s: Category: %r', self.name, category)
-
-        upload_url = urllib.parse.urljoin(
-            self.config['base_url'],
-            self._url_path['upload'],
-        )
+        metadata = self._get_metadata_from_jobs(tracker_jobs)
+        _log.debug('%s: Torrent: %r', self.name, metadata['torrent_filepath'])
+        _log.debug('%s: TVmaze ID: %r', self.name, metadata['tvmaze_id'])
+        _log.debug('%s: Mediainfo: %r', self.name, metadata['mediainfo'][:100] + '...')
+        _log.debug('%s: Category: %r', self.name, metadata['category'])
 
         post_data = {
             'auth': self._auth_key,
             'title': '',
-            'tvmazeid': tvmaze_id,
-            'media': mediainfo,
-            'desc': mediainfo,
-            'mediaclean': f'[mediainfo]{mediainfo}[/mediainfo]',
+            'tvmazeid': metadata['tvmaze_id'],
+            'media': metadata['mediainfo'],
+            'desc': metadata['mediainfo'],
+            'mediaclean': f'[mediainfo]{metadata["mediainfo"]}[/mediainfo]',
             'submit': 'true',
             'MAX_FILE_SIZE': '1048576',
-            'category': self._translate_category(category),
+            'category': metadata['category'],
             'genre_tags': '',
             'tags': '',
             'image': '',
@@ -198,11 +189,16 @@ class NblTracker(base.TrackerBase):
         if getattr(self.cli_args, 'ignore_dupes', None):
             post_data['ignoredupes'] = '1'
 
+        upload_url = urllib.parse.urljoin(
+            self.config['base_url'],
+            self._url_path['upload'],
+        )
+
         response = await http.post(
             url=upload_url,
             user_agent=True,
             allow_redirects=False,
-            files={'file_input': (torrent_filepath, 'application/x-bittorrent')},
+            files={'file_input': (metadata['torrent_filepath'], 'application/x-bittorrent')},
             data=post_data,
         )
 
@@ -224,10 +220,19 @@ class NblTracker(base.TrackerBase):
                 html.dump(str(response), 'upload.html')
                 raise RuntimeError('Failed to find error message. See upload.html for more information.')
 
-    def _translate_category(self, category):
-        if category.lower() == 'episode':
-            return '1'
-        elif category.lower() == 'season':
-            return '3'
-        else:
-            raise errors.RequestError(f'Unsupported type: {category}')
+    def _get_metadata_from_jobs(self, tracker_jobs):
+
+        def translate_category(category):
+            if category.lower() == 'episode':
+                return '1'
+            elif category.lower() == 'season':
+                return '3'
+            else:
+                raise errors.RequestError(f'Unsupported type: {category}')
+
+        return {
+            'torrent_filepath': tracker_jobs.create_torrent_job.output[0],
+            'tvmaze_id': tracker_jobs.tvmaze_job.output[0],
+            'mediainfo': tracker_jobs.mediainfo_job.output[0],
+            'category': translate_category(tracker_jobs.category_job.output[0]),
+        }

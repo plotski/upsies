@@ -124,24 +124,21 @@ class SubmitJob(JobBase):
     async def _run_jobs(self):
         _log.debug('Waiting for jobs before upload: %r', self.jobs_before_upload)
         await asyncio.gather(*(job.wait() for job in self.jobs_before_upload))
-        names = [job.name for job in self.jobs_before_upload]
-        outputs = [job.output for job in self.jobs_before_upload]
-        metadata = dict(zip(names, outputs))
 
-        # Ensure metadata was generated successfully
+        # Ensure all jobs were successful
         if all(job.exit_code == 0 for job in self.jobs_before_upload):
-            _log.debug('Submitting metadata')
-            await self._submit(metadata)
+            _log.debug('All jobs_before_upload were successul')
+            await self._submit()
 
-    async def _submit(self, metadata):
-        _log.debug('%s: Submitting %s', self._tracker.name, metadata.get('torrent'))
+    async def _submit(self):
+        _log.debug('%s: Submitting', self._tracker.name)
         try:
             self.signal.emit('logging_in')
             await self._tracker.login()
             self.signal.emit('logged_in')
             try:
                 self.signal.emit('uploading')
-                torrent_page_url = await self._tracker.upload(metadata)
+                torrent_page_url = await self._tracker.upload(self._tracker_jobs)
                 self.send(torrent_page_url)
                 self.signal.emit('uploaded')
             finally:

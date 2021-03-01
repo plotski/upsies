@@ -316,20 +316,20 @@ async def test_upload_without_being_logged_in(mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='ignore_dupes, exp_additional_data',
+    argnames='ignore_dupes, exp_data',
     argvalues=(
         (False, {}),
         (True, {'ignoredupes': '1'}),
     ),
     ids=lambda v: str(v),
 )
+@pytest.mark.parametrize(
+    argnames='category, exp_category_code',
+    argvalues=(('Season', '3'), ('Episode', '1')),
+    ids=lambda v: str(v),
+)
 @pytest.mark.asyncio
-async def test_upload_succeeds(ignore_dupes, exp_additional_data, tmp_path, mocker, httpserver):
-    translate_category_mock = mocker.patch(
-        'upsies.trackers.nbl.NblTracker._translate_category',
-        Mock(return_value=b'123'),
-    )
-
+async def test_upload_succeeds(category, exp_category_code, ignore_dupes, exp_data, tmp_path, mocker, httpserver):
     class Handler(RequestHandler):
         def handle(self, request):
             request_seen = {
@@ -371,18 +371,18 @@ async def test_upload_succeeds(ignore_dupes, exp_additional_data, tmp_path, mock
     )
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
-    metadata_mock = {
-        'torrent': (str(torrent_file),),
-        'mediainfo': ('mocked mediainfo',),
-        'tvmaze-id': ('12345',),
-        'category': ('season',),
-    }
-    torrent_page_url = await tracker.upload(metadata_mock)
+    tracker_jobs_mock = Mock(
+        create_torrent_job=Mock(output=(str(torrent_file),)),
+        mediainfo_job=Mock(output=('mocked mediainfo',)),
+        tvmaze_job=Mock(output=('12345',)),
+        category_job=Mock(output=(category,)),
+    )
+    torrent_page_url = await tracker.upload(tracker_jobs_mock)
     assert torrent_page_url == httpserver.url_for('/torrents.php?id=123')
     exp_form_data = {
         'MAX_FILE_SIZE': '1048576',
         'auth': 'mocked auth key',
-        'category': '123',
+        'category': exp_category_code,
         'desc': 'mocked mediainfo',
         'file_input': b'mocked torrent metainfo',
         'fontfont': '-1',
@@ -396,22 +396,15 @@ async def test_upload_succeeds(ignore_dupes, exp_additional_data, tmp_path, mock
         'title': '',
         'tvmazeid': '12345',
     }
-    exp_form_data.update(exp_additional_data)
+    exp_form_data.update(exp_data)
     assert handler.requests_seen == [{
         'method': 'POST',
         'User-Agent': f'{__project_name__}/{__version__}',
         'multipart/form-data': exp_form_data,
     }]
-    assert translate_category_mock.call_args_list == [
-        call(metadata_mock['category'][0]),
-    ]
 
 @pytest.mark.asyncio
 async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
-    mocker.patch(
-        'upsies.trackers.nbl.NblTracker._translate_category',
-        Mock(return_value=b'123'),
-    )
     html_dump_mock = mocker.patch('upsies.utils.html.dump')
 
     httpserver.expect_request(
@@ -436,23 +429,18 @@ async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
     )
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
-    metadata_mock = {
-        'torrent': (str(torrent_file),),
-        'mediainfo': ('mocked mediainfo',),
-        'tvmaze-id': ('12345',),
-        'category': ('season',),
-    }
+    tracker_jobs_mock = Mock(
+        create_torrent_job=Mock(output=(str(torrent_file),)),
+        mediainfo_job=Mock(output=('mocked mediainfo',)),
+        tvmaze_job=Mock(output=('12345',)),
+        category_job=Mock(output=('Season',)),
+    )
     with pytest.raises(errors.RequestError, match=r'^Upload failed: Something went wrong$'):
-        await tracker.upload(metadata_mock)
+        await tracker.upload(tracker_jobs_mock)
     assert html_dump_mock.call_args_list == []
-
 
 @pytest.mark.asyncio
 async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
-    mocker.patch(
-        'upsies.trackers.nbl.NblTracker._translate_category',
-        Mock(return_value=b'123'),
-    )
     html_dump_mock = mocker.patch('upsies.utils.html.dump')
     response = 'unexpected html'
     httpserver.expect_request(
@@ -474,52 +462,13 @@ async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
     )
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
-    metadata_mock = {
-        'torrent': (str(torrent_file),),
-        'mediainfo': ('mocked mediainfo',),
-        'tvmaze-id': ('12345',),
-        'category': ('season',),
-    }
+    tracker_jobs_mock = Mock(
+        create_torrent_job=Mock(output=(str(torrent_file),)),
+        mediainfo_job=Mock(output=('mocked mediainfo',)),
+        tvmaze_job=Mock(output=('12345',)),
+        category_job=Mock(output=('Season',)),
+    )
     with pytest.raises(RuntimeError, match=(r'^Failed to find error message. '
                                             r'See upload.html for more information.$')):
-        await tracker.upload(metadata_mock)
-    assert html_dump_mock.call_args_list == [
-        call(response, 'upload.html'),
-    ]
-
-
-@pytest.mark.parametrize(
-    argnames=('category', 'exp_category'),
-    argvalues=(
-        ('episode', '1'),
-        ('Episode', '1'),
-        ('EPISODE', '1'),
-        ('season', '3'),
-        ('Season', '3'),
-        ('SEASON', '3'),
-    ),
-)
-def test_valid_request_category(category, exp_category):
-    tracker = NblTracker(
-        config={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-    assert tracker._translate_category(category) == exp_category
-
-def test_invalid_request_category():
-    tracker = NblTracker(
-        config={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-    with pytest.raises(errors.RequestError, match=r'^Unsupported type: movie$'):
-        tracker._translate_category('movie')
+        await tracker.upload(tracker_jobs_mock)
+    assert html_dump_mock.call_args_list == [call(response, 'upload.html')]

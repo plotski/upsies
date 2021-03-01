@@ -104,14 +104,11 @@ class DummyTracker(base.TrackerBase):
         await asyncio.sleep(self.cli_args.delay)
         return 'http://localhost:123/f1dd15718/announce'
 
-    async def upload(self, metadata):
-        # Output from torrent job could be empty sequence (error) or None (not
-        # finished)
-        output = metadata.get('torrent')
-        if output:
-            torrent_file = output[0]
+    async def upload(self, tracker_jobs):
+        if tracker_jobs.create_torrent_job.output:
+            torrent_file = tracker_jobs.create_torrent_job.output[0]
         else:
             raise errors.RequestError('Torrent file was not created.')
-        _log.debug('%s: Uploading %s', self.name, pprint.pformat(metadata))
+        _log.debug('%s: Uploading %s', self.name, torrent_file)
         await asyncio.sleep(self.cli_args.delay)
         return f'http://localhost/{os.path.basename(torrent_file)}'

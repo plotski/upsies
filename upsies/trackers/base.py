@@ -356,13 +356,9 @@ class TrackerBase(abc.ABC):
         """Get announce URL from tracker website"""
 
     @abc.abstractmethod
-    async def upload(self, metadata):
+    async def upload(self, tracker_jobs):
         """
-        Upload torrent and other metadata
+        Upload torrent and other metadata from jobs
 
-        :param dict metadata: Mapping of :attr:`.JobBase.name` to
-            :attr:`.JobBase.output` attributes for each job in
-            :attr:`jobs_before_upload`
-
-            .. note:: Job output is always an immutable sequence.
+        :param TrackerJobsBase tracker_jobs: :attr:`TrackerJobs` instance
         """

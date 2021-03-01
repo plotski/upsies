@@ -179,11 +179,7 @@ async def test_wait_does_everything_in_correct_order(job, mocker):
         str(call.before2.wait()),
         str(call.before3.wait()),
     }
-    assert mocks.mock_calls[3] == call._submit({
-        'before1': 'before1 output',
-        'before2': 'before2 output',
-        'before3': 'before3 output',
-    })
+    assert mocks.mock_calls[3] == call._submit()
     assert set((str(call) for call in mocks.mock_calls[4:6])) == {
         str(call.after1.start()),
         str(call.after2.start()),
@@ -227,7 +223,7 @@ async def test_wait_does_not_call_jobs_after_upload_if_submit_fails(job, mocker)
     assert job.is_finished
     for j in job.jobs_after_upload:
         j.finish.call_args_list == [call()]
-    assert mocks.mock_calls == [call._submit({})]
+    assert mocks.mock_calls == [call._submit()]
 
 
 @pytest.mark.parametrize('method', ('login', 'logout', 'upload'))
@@ -240,7 +236,7 @@ async def test_submit_handles_RequestError_from_tracker_coro(method, job):
     )
     assert job.output == ()
     assert job.errors == ()
-    await job._submit({})
+    await job._submit()
     if method == 'logout':
         assert job.output == (str(job._tracker.upload.return_value),)
     else:
@@ -263,14 +259,14 @@ async def test_submit_calls_methods_and_callbacks_in_correct_order(job, mocker):
     job.signal.register('uploaded', mocks.uploaded_cb)
     job.signal.register('logging_out', mocks.logging_out_cb)
     job.signal.register('logged_out', mocks.logged_out_cb)
-    await job._submit({})
+    await job._submit()
     assert mocks.method_calls == [
         call.logging_in_cb(),
         call.login(),
         call.logged_in_cb(),
 
         call.uploading_cb(),
-        call.upload({}),
+        call.upload(job._tracker_jobs),
         call.uploaded_cb(),
 
         call.logging_out_cb(),
@@ -281,7 +277,7 @@ async def test_submit_calls_methods_and_callbacks_in_correct_order(job, mocker):
 @pytest.mark.asyncio
 async def test_submit_sends_upload_return_value_as_output(job):
     job._tracker.upload.return_value = 'http://torrent.url/'
-    await job._submit({})
+    await job._submit()
     assert job.output == ('http://torrent.url/',)
 
 @pytest.mark.asyncio
@@ -304,7 +300,7 @@ async def test_submit_sets_info_property_to_current_status(job):
     job.signal.register('uploaded', info_cb)
     job.signal.register('logging_out', info_cb)
     job.signal.register('logged_out', info_cb)
-    await job._submit({})
+    await job._submit()
     assert infos == []
 
 
