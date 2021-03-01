@@ -266,6 +266,8 @@ def test_resolution_uses_display_aspect_ratio(data_dir):
         ('DD+ Atmos', {'Format': 'E-AC-3', 'Format_Commercial_IfAny': 'Dolby Digital Plus with Dolby Atmos'}),
         ('FLAC', {'Format': 'FLAC'}),
         ('MP3', {'Format': 'MPEG Audio'}),
+        ('Vorbis', {'Format': 'Vorbis'}),
+        ('Vorbis', {'Format': 'Ogg'}),
     ),
     ids=lambda v: str(v),
 )
