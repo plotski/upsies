@@ -161,7 +161,7 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
 
     # Block when requesting the same URL simultaneously
     request_lock_key = (request.url, await request.aread())
-    _log.debug('Request lock key: %r', request_lock_key)
+    # _log.debug('Request lock key: %r', request_lock_key)
     request_lock = _request_locks[request_lock_key]
     async with request_lock:
         if cache:
