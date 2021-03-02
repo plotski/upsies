@@ -251,6 +251,28 @@ def test_resolution_uses_display_aspect_ratio(data_dir):
 
 
 @pytest.mark.parametrize(
+    argnames='exp_bit_depth, video_dict',
+    argvalues=(
+        (None, {}),
+        ('8', {'BitDepth': '8'}),
+        ('10', {'BitDepth': '10'}),
+    ),
+    ids=lambda v: str(v),
+)
+@patch('upsies.utils.video.default_track')
+def test_bit_depth(default_track_mock, exp_bit_depth, video_dict):
+    default_track_mock.return_value = video_dict
+    video.bit_depth.cache_clear()
+    assert video.bit_depth('foo.mkv') == exp_bit_depth
+
+@patch('upsies.utils.video.default_track')
+def test_bit_depth_catches_ContentError(default_track_mock):
+    default_track_mock.side_effect = errors.ContentError('Something went wrong')
+    video.bit_depth.cache_clear()
+    assert video.bit_depth('foo.mkv') is None
+
+
+@pytest.mark.parametrize(
     argnames='exp_audio_format, audio_dict',
     argvalues=(
         (None, {}),
