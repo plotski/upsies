@@ -717,6 +717,13 @@ class ReleaseInfo(collections.abc.MutableMapping):
             for i in range(len(edition)):
                 if regex.search(edition[i]):
                     edition[i] = edition_fixed
+
+        others = _as_list(self._guess, 'other')
+        if 'Proper' in others:
+            edition.append('Proper')
+        if 'Dual Audio' in others:
+            edition.append('Dual Audio')
+
         return edition
 
     def _get_resolution(self):
