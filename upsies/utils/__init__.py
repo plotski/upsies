@@ -198,6 +198,6 @@ def merge_dicts(a, b, path=()):
     return merged
 
 
-from . import (browser, btclients, configfiles, country, daemon, fs, html,
-               http, imghosts, release, scene, screenshot, signal, subproc,
+from . import (browser, btclients, configfiles, daemon, fs, html, http,
+               imghosts, iso, release, scene, screenshot, signal, subproc,
                timestamp, torrent, types, video, webdbs)
