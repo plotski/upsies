@@ -186,6 +186,23 @@ def bit_depth(path):
         return video_track.get('BitDepth', None)
 
 
+@functools.lru_cache(maxsize=None)
+def has_hdr10(path):
+    """
+    Return `True` if `path` is HDR10 video, `False` otherwise, `None` if it
+    can't be determined
+    """
+    try:
+        video_track = default_track('video', path)
+    except errors.ContentError:
+        return None
+    else:
+        if 'BT.2020' in video_track.get('colour_primaries', ''):
+            return True
+        else:
+            return False
+
+
 _audio_translations = {
     'formats': (
         ('AAC', {'Format': re.compile(r'AAC')}),

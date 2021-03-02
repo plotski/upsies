@@ -273,6 +273,29 @@ def test_bit_depth_catches_ContentError(default_track_mock):
 
 
 @pytest.mark.parametrize(
+    argnames='exp_return_value, video_dict',
+    argvalues=(
+        (False, {}),
+        (False, {'colour_primaries': 'BT.601 NTSC'}),
+        (True, {'colour_primaries': 'BT.2020 foo'}),
+        (True, {'colour_primaries': 'bar BT.2020'}),
+    ),
+    ids=lambda v: str(v),
+)
+@patch('upsies.utils.video.default_track')
+def test_has_hdr10(default_track_mock, exp_return_value, video_dict):
+    default_track_mock.return_value = video_dict
+    video.has_hdr10.cache_clear()
+    assert video.has_hdr10('foo.mkv') == exp_return_value
+
+@patch('upsies.utils.video.default_track')
+def test_has_hdr10_catches_ContentError(default_track_mock):
+    default_track_mock.side_effect = errors.ContentError('Something went wrong')
+    video.has_hdr10.cache_clear()
+    assert video.has_hdr10('foo.mkv') is None
+
+
+@pytest.mark.parametrize(
     argnames='exp_audio_format, audio_dict',
     argvalues=(
         (None, {}),
