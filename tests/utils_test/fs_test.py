@@ -167,6 +167,12 @@ def test_dirname():
     assert fs.dirname(pathlib.Path('a/b/c//d/')) == 'a/b/c'
 
 
+def test_file_and_parent():
+    assert fs.file_and_parent('a/b/c//d') == ('d', 'c')
+    assert fs.file_and_parent('a/b/c//d/') == ('d', 'c')
+    assert fs.file_and_parent('d') == ('d',)
+
+
 def test_sanitize_path_on_unix(mocker):
     mocker.patch('upsies.utils.fs.os_family', return_value='unix')
     assert fs.sanitize_filename('foo/bar/baz') == 'foo_bar_baz'

@@ -582,7 +582,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         # _log.debug('Original guess: %r', guess)
 
         # We do our own episode parsing to preserve order
-        for name in _file_and_dir(path):
+        for name in fs.file_and_parent(path):
             if Episodes.has_episodes_info(name):
                 guess['episodes'] = Episodes.from_string(name)
                 break
@@ -604,7 +604,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return _guessit.default_api.advanced_config
 
     def _get_type(self):
-        for name in _file_and_dir(self._path):
+        for name in fs.file_and_parent(self._path):
             if Episodes.has_episodes_info(name):
                 episodes = Episodes.from_string(name)
                 if any(episodes.values()):
@@ -644,14 +644,14 @@ class ReleaseInfo(collections.abc.MutableMapping):
         path_no_ext = fs.strip_extension(self._abspath, only=constants.VIDEO_FILE_EXTENSIONS)
 
         # Look for year/season/episode info in file and parent directory name
-        for name in _file_and_dir(path_no_ext):
+        for name in fs.file_and_parent(path_no_ext):
             match = self._title_split_regex.search(name)
             if match:
                 return self._title_split_regex.split(name, maxsplit=1)[-1]
 
         # Default to the file/parent that contains either " " or "." (without
         # file extension)
-        for name in _file_and_dir(path_no_ext):
+        for name in fs.file_and_parent(path_no_ext):
             if ' ' in name or '.' in name:
                 return name
 
@@ -1018,13 +1018,6 @@ class Episodes(dict):
             for episode in episodes:
                 parts.append(f'E{episode:0>2}')
         return ''.join(parts)
-
-
-def _file_and_dir(path):
-    """Return `path`'s filename and parent directoy name"""
-    filename = fs.basename(path)
-    dirname = fs.basename(os.path.dirname(path))
-    yield from (filename, dirname)
 
 
 def _as_list(guess, key):

@@ -106,6 +106,17 @@ def dirname(path):
     return os.path.dirname(str(path).rstrip(os.sep))
 
 
+def file_and_parent(path):
+    """Return `path`'s filename and parent directoy name if there is one"""
+    if os.sep in path:
+        return (
+            basename(path),
+            basename(dirname(path)),
+        )
+    else:
+        return (path,)
+
+
 def sanitize_filename(filename):
     """
     Replace illegal characters in `filename` with "_"
