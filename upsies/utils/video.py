@@ -143,12 +143,12 @@ def resolution(path):
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
     """
-    # Expect non-wide (1392x1080), narrow (1920x800) and weird (1918x1040)
     try:
         video_track = default_track('video', path)
     except errors.ContentError:
         return None
 
+    # Expect non-wide (1392x1080), narrow (1920x800) and weird (1918x1040)
     height = int(video_track.get('Height', 0))
     width = int(video_track.get('Width', 0))
     if height and width:
