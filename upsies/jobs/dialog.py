@@ -45,10 +45,10 @@ class ChoiceJob(JobBase):
         emitted via the ``chosen`` signal.
 
         Choices may also be passed as a flat iterable of :class:`str`, in which
-        case both items in the choice tuple are identical.
+        case both items in the tuple are identical.
 
-        If the previously focused choice is still present in, it focus is
-        preserved when setting this property. Otherwise, the first choice is
+        When setting this property, focus is preserved if the focused choice
+        exists in the new sequence of choices. Otherwise, the first choice is
         focused.
         """
         return getattr(self, '_choices', ())
