@@ -42,7 +42,8 @@ class ChoiceJob(JobBase):
 
         A choice is a :class:`tuple` with 2 items. The first item is a
         human-readable :class:`str` and the second item is any object that is
-        emitted via the ``chosen`` signal.
+        emitted via the ``chosen`` signal and made available as :attr:`choice`
+        when the job is finished.
 
         Choices may also be passed as a flat iterable of :class:`str`, in which
         case both items in the tuple are identical.
@@ -119,6 +120,17 @@ class ChoiceJob(JobBase):
 
         self.signal.emit('dialog_updated', self.choices, self._focused_index)
 
+    @property
+    def choice(self):
+        """
+        User-chosen value if job is finished, `None` otherwise
+
+        While :attr:`output` contains the user-readable string (first item of
+        the choice in :attr:`choices`), this is the object attached to it
+        (second item).
+        """
+        return self._choice
+
     def initialize(self, *, name, label, choices, focused=None):
         """
         Set internal state
@@ -133,6 +145,7 @@ class ChoiceJob(JobBase):
         """
         self._name = str(name)
         self._label = str(label)
+        self._choice = None
         self.signal.add('dialog_updated')
         self.signal.add('chosen')
         self.choices = choices
@@ -148,6 +161,7 @@ class ChoiceJob(JobBase):
         """
         def choose(choice):
             # Machine-readable choice
+            self._choice = choice[1]
             self.signal.emit('chosen', choice[1])
             # User-readable string
             self.send(choice[0])

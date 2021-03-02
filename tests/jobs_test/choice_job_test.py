@@ -184,8 +184,10 @@ def test_choice_selected_with_valid_choice(choice):
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
+    assert job.choice is None
     job.choice_selected(choice)
     assert cb.mock_calls == [call.chosen(choice[1]), call.output(choice[0])]
+    assert job.choice == choice[1]
     assert job.output == (choice[0],)
     assert job.errors == ()
     asyncio.get_event_loop().run_until_complete(job.wait())
@@ -196,8 +198,10 @@ def test_choice_selected_with_invalid_choice():
     cb = Mock()
     job.signal.register('chosen', cb)
     assert job.focused == ('a', 1)
+    assert job.choice is None
     job.choice_selected(('d', 4))
     assert job.focused == ('a', 1)
+    assert job.choice is None
     assert cb.call_args_list == []
     assert job.output == ()
     assert job.errors == ()
@@ -211,7 +215,9 @@ def test_choice_selected_with_valid_index(index, exp_choice):
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
+    assert job.choice is None
     job.choice_selected(index)
+    assert job.choice is exp_choice[1]
     assert cb.mock_calls == [call.chosen(exp_choice[1]), call.output(exp_choice[0])]
     assert job.output == (exp_choice[0],)
     assert job.errors == ()
@@ -223,7 +229,9 @@ def test_choice_selected_with_invalid_index():
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
+    assert job.choice is None
     job.choice_selected(3)
+    assert job.choice is None
     assert cb.mock_calls == []
     assert job.output == ()
     assert job.errors == ()
@@ -244,7 +252,9 @@ def test_choice_selected_with_valid_value(value, exp_choice):
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
+    assert job.choice is None
     job.choice_selected(value)
+    assert job.choice is exp_choice[1]
     assert cb.mock_calls == [call.chosen(exp_choice[1]), call.output(exp_choice[0])]
     assert job.output == (exp_choice[0],)
     assert job.errors == ()
@@ -256,7 +266,9 @@ def test_choice_selected_with_invalid_value():
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
+    assert job.choice is None
     job.choice_selected('arf')
+    assert job.choice is None
     assert cb.mock_calls == []
     assert job.output == ()
     assert job.errors == ()
@@ -269,7 +281,9 @@ def test_choice_selected_with_None():
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
+    assert job.choice is None
     job.choice_selected(None)
+    assert job.choice is None
     assert cb.mock_calls == []
     assert job.output == ()
     assert job.errors == ()
