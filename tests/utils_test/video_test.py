@@ -296,6 +296,33 @@ def test_has_hdr10_catches_ContentError(default_track_mock):
 
 
 @pytest.mark.parametrize(
+    argnames='exp_return_value, audio_dicts',
+    argvalues=(
+        (False, []),
+        (False, [{}, {}]),
+        (False, [{'Language': 'en'}]),
+        (False, [{'Language': 'fr'}]),
+        (True, [{'Language': 'fr'}, {'Language': 'en'}]),
+        (True, [{'Language': 'en'}, {'Language': 'fr'}]),
+        (True, [{'Language': 'en'}, {'Language': 'fr'}, {'Language': 'fr', 'Title': 'Commentary with Foo'}]),
+        (False, [{'Language': 'fr'}, {'Language': 'en', 'Title': 'Commentary with Foo'}]),
+    ),
+    ids=lambda v: str(v),
+)
+@patch('upsies.utils.video.tracks')
+def test_has_dual_audio(tracks_mock, exp_return_value, audio_dicts):
+    tracks_mock.return_value = {'Audio': audio_dicts}
+    video.has_dual_audio.cache_clear()
+    assert video.has_dual_audio('foo.mkv') == exp_return_value
+
+@patch('upsies.utils.video.default_track')
+def test_has_dual_audio_catches_ContentError(default_track_mock):
+    default_track_mock.side_effect = errors.ContentError('Something went wrong')
+    video.has_dual_audio.cache_clear()
+    assert video.has_dual_audio('foo.mkv') is None
+
+
+@pytest.mark.parametrize(
     argnames='exp_audio_format, audio_dict',
     argvalues=(
         (None, {}),

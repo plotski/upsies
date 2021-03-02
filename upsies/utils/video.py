@@ -203,6 +203,30 @@ def has_hdr10(path):
             return False
 
 
+@functools.lru_cache(maxsize=None)
+def has_dual_audio(path):
+    """
+    Return `True` if `path` contains multiple audio tracks with different
+    languages and one of them is English, `False` otherwise, `None` if it can't
+    be determined
+    """
+    try:
+        audio_tracks = tracks(path).get('Audio', ())
+    except errors.ContentError:
+        return None
+    else:
+        languages = set()
+        for track in audio_tracks:
+            if 'commentary' not in track.get('Title', '').lower():
+                language = track.get('Language', '')
+                if language:
+                    languages.add(language.casefold())
+        if len(languages) > 1 and 'en' in languages:
+            return True
+        else:
+            return False
+
+
 _audio_translations = {
     'formats': (
         ('AAC', {'Format': re.compile(r'AAC')}),
