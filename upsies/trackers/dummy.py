@@ -4,7 +4,6 @@ Dummy tracker for testing and debugging
 
 import asyncio
 import os
-import pprint
 
 from .. import errors, jobs
 from ..utils import cached_property
