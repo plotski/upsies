@@ -103,6 +103,10 @@ class JobBase(abc.ABC):
             cache. Registered callbacks get the value passed to :meth:`send` as
             a positional argument.
 
+        ``warning``
+            is emitted when :meth:`warn` is called. Registered callbacks get the
+            value passed to :meth:`warn` as a positional argument.
+
         ``error``
             is emitted when :meth:`error` is called. Registered callbacks get
             the value passed to :meth:`error` as a positional argument.
