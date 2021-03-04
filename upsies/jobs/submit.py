@@ -62,6 +62,9 @@ class SubmitJob(JobBase):
         """
         assert isinstance(tracker, TrackerBase), f'Not a TrackerBase: {tracker!r}'
         assert isinstance(tracker_jobs, TrackerJobsBase), f'Not a TrackerJobsBase: {tracker_jobs!r}'
+        tracker_jobs.signal.register('exception', self.exception)
+        tracker_jobs.signal.register('error', self.error)
+        tracker_jobs.signal.register('warning', self.warn)
         self._tracker = tracker
         self._tracker_jobs = tracker_jobs
         self._submit_lock = asyncio.Lock()
