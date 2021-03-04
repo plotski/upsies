@@ -11,7 +11,7 @@ class ChoiceJobWidget(JobWidgetBase):
         self._radiolist = widgets.RadioList(
             choices=self.job.choices,
             focused=self.job.focused,
-            on_accepted=self._handle_choice,
+            on_accepted=self._handle_accepted,
         )
         self.job.signal.register('dialog_updated', self._handle_dialog_updated)
 
@@ -20,7 +20,7 @@ class ChoiceJobWidget(JobWidgetBase):
         self._radiolist.focused_index = job.focused_index
         self.invalidate()
 
-    def _handle_choice(self, choice):
+    def _handle_accepted(self, choice):
         self.job.choice_selected(choice)
 
     @cached_property
