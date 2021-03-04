@@ -48,6 +48,28 @@ def test_arguments():
         assert getattr(tracker_jobs, k) is v
 
 
+def test_signals(mocker):
+    Signal_mock = mocker.patch('upsies.utils.signal.Signal')
+    tracker_jobs = make_TestTrackerJobs()
+    assert tracker_jobs.signal is Signal_mock.return_value
+    assert Signal_mock.call_args_list == [call('warning', 'error', 'exception')]
+    tracker_jobs.warn('foo')
+    assert Signal_mock.return_value.emit.call_args_list == [
+        call('warning', 'foo'),
+    ]
+    tracker_jobs.error('bar')
+    assert Signal_mock.return_value.emit.call_args_list == [
+        call('warning', 'foo'),
+        call('error', 'bar'),
+    ]
+    tracker_jobs.exception('baz')
+    assert Signal_mock.return_value.emit.call_args_list == [
+        call('warning', 'foo'),
+        call('error', 'bar'),
+        call('exception', 'baz'),
+    ]
+
+
 def test_jobs_after_upload(mocker):
     add_torrent_job_mock = mocker.patch('upsies.trackers.base.TrackerJobsBase.add_torrent_job', Mock())
     copy_torrent_job_mock = mocker.patch('upsies.trackers.base.TrackerJobsBase.copy_torrent_job', Mock())

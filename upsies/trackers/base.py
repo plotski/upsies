@@ -6,7 +6,7 @@ import abc
 import argparse
 
 from .. import jobs as _jobs
-from ..utils import cached_property, fs, webdbs
+from ..utils import cached_property, fs, signal, webdbs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -56,6 +56,11 @@ class TrackerJobsBase(abc.ABC):
     Job instances are provided as :func:`~functools.cached_property`, i.e. jobs
     are created only once per session.
 
+    Subclasses that need to run background tasks (e.g. with
+    :func:`asyncio.ensure_future`) should attach a callback to them with
+    :meth:`~.asyncio.Task.add_done_callback` that catches expected exceptions
+    and pass them to :meth:`warn`, :meth:`error` or :meth:`exception.
+
     This base class defines general-purpose jobs that can be used by subclasses
     by returning them in their :attr:`jobs_before_upload` or
     :attr:`jobs_after_upload` attributes.
@@ -72,6 +77,7 @@ class TrackerJobsBase(abc.ABC):
         self._torrent_destination = torrent_destination
         self._common_job_args = common_job_args
         self._cli_args = cli_args or argparse.Namespace()
+        self._signal = signal.Signal('warning', 'error', 'exception')
 
     @property
     def cli_args(self):
@@ -90,6 +96,41 @@ class TrackerJobsBase(abc.ABC):
     def tracker(self):
         """:class:`~.trackers.base.TrackerBase` subclass"""
         return self._tracker
+
+    @property
+    def signal(self):
+        """
+        :class:`~.signal.Signal` instance with the signals ``warning``, ``error``
+        and ``exception``
+        """
+        return self._signal
+
+    def warn(self, warning):
+        """
+        Emit ``warning`` signal (see :attr:`signal`)
+
+        Emit a warning for any non-critical issue that the user can choose to
+        ignore or fix.
+        """
+        self.signal.emit('warning', warning)
+
+    def error(self, error):
+        """
+        Emit ``error`` signal (see :attr:`signal`)
+
+        Emit an error for any critical but expected issue that can't be
+        recovered from (e.g. I/O error).
+        """
+        self.signal.emit('error', error)
+
+    def exception(self, exception):
+        """
+        Emit ``exception`` signal (see :attr:`signal`)
+
+        Emit an exception for any critical and unexpected issue that should be
+        reported as a bug.
+        """
+        self.signal.emit('exception', exception)
 
     @property
     def image_host(self):
