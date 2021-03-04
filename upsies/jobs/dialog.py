@@ -19,8 +19,7 @@ class ChoiceJob(JobBase):
 
         ``dialog_updated``
             Emitted when :attr:`choices` or :attr:`focused` is set. Registered
-            callbacks get the sequence of choices and the index of the focused
-            choice as positional arguments.
+            callbacks get the job instance as a positional argument.
 
         ``chosen``
             Emitted when the user made a choice. Registered callbacks get the
@@ -78,7 +77,7 @@ class ChoiceJob(JobBase):
         else:
             self._focused_index = 0
 
-        self.signal.emit('dialog_updated', self._choices, self._focused_index)
+        self.signal.emit('dialog_updated', self)
 
     @property
     def focused(self):
@@ -118,7 +117,7 @@ class ChoiceJob(JobBase):
             else:
                 raise ValueError(f'Invalid choice: {focused!r}')
 
-        self.signal.emit('dialog_updated', self.choices, self._focused_index)
+        self.signal.emit('dialog_updated', self)
 
     @property
     def choice(self):

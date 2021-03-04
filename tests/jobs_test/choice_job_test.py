@@ -26,25 +26,25 @@ def test_choices_are_strings():
     job.focused = '3'
     assert job.choices == (('1', '1'), ('2', '2'), ('3', '3'))
     assert job.focused == ('3', '3')
-    assert cb.call_args_list == [call((('1', '1'), ('2', '2'), ('3', '3')), 2)]
+    assert cb.call_args_list == [call(job)]
     cb.reset_mock()
 
     job.choices = ('a', 'b', 'c')
     assert job.choices == (('a', 'a'), ('b', 'b'), ('c', 'c'))
     assert job.focused == ('a', 'a')
-    assert cb.call_args_list == [call((('a', 'a'), ('b', 'b'), ('c', 'c')), 0)]
+    assert cb.call_args_list == [call(job)]
     cb.reset_mock()
 
     job.choices = ['foo', 'a', 'bar']
     assert job.choices == (('foo', 'foo'), ('a', 'a'), ('bar', 'bar'))
     assert job.focused == ('a', 'a')
-    assert cb.call_args_list == [call((('foo', 'foo'), ('a', 'a'), ('bar', 'bar')), 1)]
+    assert cb.call_args_list == [call(job)]
     cb.reset_mock()
 
     job.choices = ['bar', 'baz']
     assert job.choices == (('bar', 'bar'), ('baz', 'baz'))
     assert job.focused == ('bar', 'bar')
-    assert cb.call_args_list == [call((('bar', 'bar'), ('baz', 'baz')), 0)]
+    assert cb.call_args_list == [call(job)]
     cb.reset_mock()
 
     with pytest.raises(ValueError, match=r"^Choices must have at least 2 items: \('x',\)$"):
@@ -62,25 +62,25 @@ def test_choices_are_sequences():
     job.focused = ('c', 3)
     assert job.choices == (('a', 1), ('b', 2), ('c', 3))
     assert job.focused == ('c', 3)
-    assert cb.call_args_list == [call((('a', 1), ('b', 2), ('c', 3)), 2)]
+    assert cb.call_args_list == [call(job)]
     cb.reset_mock()
 
     job.choices = (('d', 4), ('e', 5), ('f', 6))
     assert job.choices == (('d', 4), ('e', 5), ('f', 6))
     assert job.focused == ('d', 4)
-    assert cb.call_args_list == [call((('d', 4), ('e', 5), ('f', 6)), 0)]
+    assert cb.call_args_list == [call(job)]
     cb.reset_mock()
 
     job.choices = [('x', 100), ('y', 200), ('d', 4)]
     assert job.choices == (('x', 100), ('y', 200), ('d', 4))
     assert job.focused == ('d', 4)
-    assert cb.call_args_list == [call((('x', 100), ('y', 200), ('d', 4)), 2)]
+    assert cb.call_args_list == [call(job)]
     cb.reset_mock()
 
     job.choices = [('hello', 99), ('world', 33)]
     assert job.choices == (('hello', 99), ('world', 33))
     assert job.focused == ('hello', 99)
-    assert cb.call_args_list == [call((('hello', 99), ('world', 33)), 0)]
+    assert cb.call_args_list == [call(job)]
     cb.reset_mock()
 
     with pytest.raises(ValueError, match=r"^Choices must have at least 2 items: \(\('x', -1\),\)$"):
@@ -116,7 +116,7 @@ def test_focused_set_to_None(current):
     assert job.focused == (current, current)
     job.focused = None
     assert job.focused == ('a', 'a')
-    assert cb.call_args_list == [call((('a', 'a'), ('b', 'b'), ('c', 'c')), 0)]
+    assert cb.call_args_list == [call(job)]
 
 @pytest.mark.parametrize('focus', (0, 1, 2))
 def test_focused_set_to_int(focus):
@@ -126,7 +126,7 @@ def test_focused_set_to_int(focus):
     assert job.focused == ('a', 'a')
     job.focused = focus
     assert job.focused == job.choices[focus]
-    assert cb.call_args_list == [call((('a', 'a'), ('b', 'b'), ('c', 'c')), focus)]
+    assert cb.call_args_list == [call(job)]
 
 @pytest.mark.parametrize('focus, exp_focused', (
     ('a', ('a', 'foo')),
@@ -144,7 +144,7 @@ def test_focused_set_to_valid_value(focus, exp_focused):
     assert job.focused == ('a', 'foo')
     job.focused = focus
     assert job.focused == exp_focused
-    assert cb.call_args_list == [call((('a', 'foo'), ('b', 'bar'), ('c', 'baz')), choices.index(exp_focused))]
+    assert cb.call_args_list == [call(job)]
 
 def test_focused_set_to_invalid_value():
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
@@ -165,7 +165,7 @@ def test_focused_set_to_valid_choice(choice):
     assert job.focused == ('a', 1)
     job.focused = choice
     assert job.focused == choice
-    assert cb.call_args_list == [call((('a', 1), ('b', 2), ('c', 3)), choices.index(choice))]
+    assert cb.call_args_list == [call(job)]
 
 def test_focused_set_to_invalid_choice():
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
