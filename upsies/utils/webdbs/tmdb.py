@@ -5,7 +5,6 @@ API for themoviedb.org
 import functools
 import re
 
-from ... import errors
 from .. import html, http
 from ..types import ReleaseType
 from . import common
