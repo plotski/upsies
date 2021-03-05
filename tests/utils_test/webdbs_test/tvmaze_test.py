@@ -45,6 +45,7 @@ async def test_search_for_year(query, exp_titles, api, store_response):
     titles = {r.title for r in results}
     assert titles == set(exp_titles)
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
     argvalues=(
@@ -58,6 +59,7 @@ async def test_search_for_series(query, exp_titles, api, store_response):
     results = await api.search(query)
     titles = {r.title for r in results}
     assert titles == set(exp_titles)
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
@@ -89,6 +91,7 @@ async def test_search_result_cast(title, exp_cast, api, store_response):
     for member in exp_cast:
         assert member in cast
 
+
 @pytest.mark.parametrize(
     argnames=('title', 'exp_countries'),
     argvalues=(
@@ -105,6 +108,7 @@ async def test_search_result_countries(title, exp_countries, api, store_response
     print(results_dict)
     assert results_dict[title].countries == exp_countries
 
+
 @pytest.mark.parametrize(
     argnames=('title', 'exp_id'),
     argvalues=(
@@ -119,11 +123,13 @@ async def test_search_result_id(title, exp_id, api, store_response):
     results_dict = {r.title: r for r in results}
     assert results_dict[title].id == exp_id
 
+
 @pytest.mark.asyncio
 async def test_search_result_director(api, store_response):
     results = await api.search(Query('Star Wars'))
     for result in results:
         assert result.director == ''
+
 
 @pytest.mark.parametrize(
     argnames=('title', 'exp_keywords'),
@@ -140,6 +146,7 @@ async def test_search_result_keywords(title, exp_keywords, api, store_response):
     for kw in exp_keywords:
         assert kw in results_dict[title].keywords
 
+
 @pytest.mark.parametrize(
     argnames=('title', 'summary'),
     argvalues=(
@@ -154,6 +161,7 @@ async def test_search_result_summary(title, summary, api, store_response):
     results_dict = {r.title: r for r in results}
     assert summary in results_dict[title].summary
 
+
 @pytest.mark.asyncio
 async def test_search_result_title_english(api, store_response, mocker):
     mock_title_english = mocker.patch.object(
@@ -166,6 +174,7 @@ async def test_search_result_title_english(api, store_response, mocker):
         call(result.id) for result in sorted(results, key=lambda r: r.id)
     ]
 
+
 @pytest.mark.asyncio
 async def test_search_result_title_original(api, store_response, mocker):
     mock_title_original = mocker.patch.object(
@@ -177,6 +186,7 @@ async def test_search_result_title_original(api, store_response, mocker):
     assert sorted(mock_title_original.call_args_list) == [
         call(result.id) for result in sorted(results, key=lambda r: r.id)
     ]
+
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_title'),
@@ -192,11 +202,13 @@ async def test_search_result_title(id, exp_title, api, store_response):
     results_dict = {r.id: r for r in results}
     assert results_dict[id].title == exp_title
 
+
 @pytest.mark.asyncio
 async def test_search_result_type(api, store_response):
     results = await api.search(Query('Star Wars'))
     for result in results:
         assert result.type is ReleaseType.series
+
 
 @pytest.mark.parametrize(
     argnames=('title', 'exp_url'),
@@ -211,6 +223,7 @@ async def test_search_result_url(title, exp_url, api, store_response):
     results = await api.search(Query('Star Wars'))
     results_dict = {r.title: r for r in results}
     assert results_dict[title].url == exp_url
+
 
 @pytest.mark.parametrize(
     argnames=('title', 'exp_year'),
@@ -284,6 +297,7 @@ async def test_creators(id, exp_creators, api, store_response):
 async def test_countries(id, exp_countries, api, store_response):
     assert await api.countries(id) == exp_countries
 
+
 @pytest.mark.parametrize(
     argnames=('id', 'exp_keywords'),
     argvalues=(
@@ -297,6 +311,7 @@ async def test_keywords(id, exp_keywords, api, store_response):
     keywords = await api.keywords(id)
     for kw in exp_keywords:
         assert kw in keywords
+
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
@@ -323,6 +338,7 @@ async def test_summary(id, exp_summary, api, store_response):
 async def test_title_english(id, exp_title_english, api, store_response):
     assert await api.title_english(id) == exp_title_english
 
+
 @pytest.mark.parametrize(
     argnames=('id', 'exp_title_original'),
     argvalues=(
@@ -335,11 +351,13 @@ async def test_title_english(id, exp_title_english, api, store_response):
 async def test_title_original(id, exp_title_original, api, store_response):
     assert await api.title_original(id) == exp_title_original
 
+
 @pytest.mark.parametrize('id', (1259, 35256, 36072))
 @pytest.mark.asyncio
 async def test_type(id, api, store_response):
     with pytest.raises(NotImplementedError, match=r'^Type lookup is not implemented for TVmaze$'):
         await api.type(id)
+
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_year'),

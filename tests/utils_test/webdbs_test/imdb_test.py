@@ -49,6 +49,7 @@ async def test_search_for_year(query, exp_top_title, api, store_response):
     else:
         assert not results
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
     argvalues=(
@@ -68,6 +69,7 @@ async def test_search_for_series(query, exp_titles, api, store_response):
             assert exp_title in titles
     else:
         assert not titles
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
@@ -154,6 +156,7 @@ async def test_search_result_director(query, exp_director, api, store_response):
     results = await api.search(query)
     assert results[0].director == exp_director
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_keywords'),
     argvalues=(
@@ -168,6 +171,7 @@ async def test_search_result_director(query, exp_director, api, store_response):
 async def test_search_result_keywords(query, exp_keywords, api, store_response):
     results = await api.search(query)
     assert results[0].keywords == exp_keywords
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_summary'),
@@ -189,6 +193,7 @@ async def test_search_result_summary(query, exp_summary, api, store_response):
     else:
         assert results[0].summary == ''
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_top_title'),
     argvalues=(
@@ -203,6 +208,7 @@ async def test_search_result_summary(query, exp_summary, api, store_response):
 async def test_search_result_title(query, exp_top_title, api, store_response):
     results = await api.search(query)
     assert results[0].title == exp_top_title
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_title_english', 'exp_title_original'),
@@ -234,6 +240,7 @@ async def test_search_result_title_english_original(query, exp_title_english, ex
     assert title_english == exp_title_english
     assert title_original == exp_title_original
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_top_type'),
     argvalues=(
@@ -250,6 +257,7 @@ async def test_search_result_type(query, exp_top_type, api, store_response):
     results = await api.search(query)
     assert results[0].type == exp_top_type
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_url'),
     argvalues=(
@@ -262,6 +270,7 @@ async def test_search_result_type(query, exp_top_type, api, store_response):
 async def test_search_result_url(query, exp_url, api, store_response):
     results = await api.search(query)
     assert results[0].url == exp_url
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_year'),

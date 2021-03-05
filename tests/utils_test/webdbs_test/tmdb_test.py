@@ -44,6 +44,7 @@ async def test_search_for_year(query, exp_top_result, api, store_response):
     for k, v in exp_top_result.items():
         assert getattr(results[0], k) == v
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
     argvalues=(
@@ -81,11 +82,13 @@ async def test_search_result_cast(query, exp_cast, api, store_response):
     for member in exp_cast:
         assert member in cast
 
+
 @pytest.mark.asyncio
 async def test_search_result_countries(api, store_response):
     results = await api.search(Query('Star Wars'))
     for result in results:
         assert result.countries == []
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_id'),
@@ -101,11 +104,13 @@ async def test_search_result_id(query, exp_id, api, store_response):
     results = await api.search(query)
     assert results[0].id == exp_id
 
+
 @pytest.mark.asyncio
 async def test_search_result_director(api, store_response):
     results = await api.search(Query('Star Wars'))
     for result in results:
         assert result.director == ''
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_keywords'),
@@ -127,6 +132,7 @@ async def test_search_result_keywords(query, exp_keywords, api, store_response):
     else:
         assert not keywords
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_summary'),
     argvalues=(
@@ -147,6 +153,7 @@ async def test_search_result_summary(query, exp_summary, api, store_response):
     else:
         assert summary == ''
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_title'),
     argvalues=(
@@ -161,17 +168,20 @@ async def test_search_result_title(query, exp_title, api, store_response):
     titles = [r.title for r in results]
     assert exp_title in titles
 
+
 @pytest.mark.asyncio
 async def test_search_result_title_english(api, store_response):
     results = await api.search(Query('Karppi'))
     for result in results:
         assert result.title_english == ''
 
+
 @pytest.mark.asyncio
 async def test_search_result_title_original(api, store_response):
     results = await api.search(Query('Karppi'))
     for result in results:
         assert result.title_original == ''
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_type'),
@@ -188,6 +198,7 @@ async def test_search_result_type(query, exp_type, api, store_response):
     results_dict = {r.title: r for r in results}
     assert results_dict[query.title].type == exp_type
 
+
 @pytest.mark.parametrize(
     argnames=('query', 'exp_url'),
     argvalues=(
@@ -201,6 +212,7 @@ async def test_search_result_type(query, exp_type, api, store_response):
 async def test_search_result_url(query, exp_url, api, store_response):
     results = await api.search(query)
     assert results[0].url == exp_url
+
 
 @pytest.mark.parametrize(
     argnames=('query', 'exp_title', 'exp_year'),
@@ -266,11 +278,13 @@ async def test_cast(id, exp_cast, api, store_response):
     for member in exp_cast:
         assert member in cast
 
+
 @pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))
 @pytest.mark.asyncio
 async def test_countries(id, api, store_response):
     with pytest.raises(NotImplementedError, match=r'^Country lookup is not implemented for TMDb$'):
         await api.countries(id)
+
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_keywords'),
@@ -293,6 +307,7 @@ async def test_keywords(id, exp_keywords, api, store_response):
     else:
         assert not keywords
 
+
 @pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
@@ -310,11 +325,13 @@ async def test_summary(id, exp_summary, api, store_response):
     summary = await api.summary(id)
     assert exp_summary in summary
 
+
 @pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))
 @pytest.mark.asyncio
 async def test_title_english(id, api, store_response):
     with pytest.raises(NotImplementedError, match=r'^English title lookup is not implemented for TMDb$'):
         await api.title_english(id)
+
 
 @pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))
 @pytest.mark.asyncio
@@ -322,11 +339,13 @@ async def test_title_original(id, api, store_response):
     with pytest.raises(NotImplementedError, match=r'^Original title lookup is not implemented for TMDb$'):
         await api.title_original(id)
 
+
 @pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))
 @pytest.mark.asyncio
 async def test_type(id, api, store_response):
     with pytest.raises(NotImplementedError, match=r'^Type lookup is not implemented for TMDb$'):
         await api.type(id)
+
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_year'),
