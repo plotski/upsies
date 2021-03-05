@@ -71,6 +71,17 @@ class TmdbApi(WebDbApiBase):
                     directors.append(link.text)
         return directors
 
+    async def creators(self, id):
+        soup = await self._get_soup(id)
+        profiles = soup.select('.people > .profile')
+        creators = []
+        for profile in profiles:
+            if profile.find('p', text=re.compile(r'(?i:Creator)')):
+                link = profile.find('a')
+                if link:
+                    creators.append(link.text)
+        return creators
+
     async def cast(self, id):
         soup = await self._get_soup(id)
         cards = soup.select('.people > .card')

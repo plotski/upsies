@@ -298,6 +298,26 @@ async def test_directors(id, exp_directors, api, store_response):
 
 
 @pytest.mark.parametrize(
+    argnames=('id', 'exp_creators'),
+    argvalues=(
+        ('tt3286052', []),  # February (movie)
+        ('tt0192802', []),  # Wind in the Willows (TV movie)
+        ('tt0471711', []),  # Bender's Big Score (Video)
+        ('tt0097270', []),  # Elephant (TV Short)
+        ('tt3472226', []),  # Kung Fury (Short)
+        ('tt6560040', ['Delinda Jacobs']),  # The Forest (TV mini-series)
+        ('tt2372162', ['Jenji Kohan']),  # Orange Is the New Black (series)
+        ('tt5440238', []),  # Orange Is the New Black - S07E01 (episode)
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_creators(id, exp_creators, api, store_response):
+    creators = await api.creators(id)
+    assert creators == exp_creators
+
+
+@pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),
     argvalues=(
         ('tt0080455', ['Tom Erhart', 'Gerald Walling', 'John Belushi',

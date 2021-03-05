@@ -71,6 +71,16 @@ class ImdbApi(WebDbApiBase):
                     directors.append(link.text)
         return directors
 
+    async def creators(self, id):
+        soup = await self._get_soup(f'title/{id}')
+        creators = []
+        for tag in soup.find_all(class_='credit_summary_item'):
+            strings = tuple(tag.stripped_strings)
+            if 'Creator:' in strings or 'Creators:' in strings:
+                for link in tag.find_all('a'):
+                    creators.append(link.text)
+        return creators
+
     async def cast(self, id):
         soup = await self._get_soup(f'title/{id}')
         cast_tag = soup.find(class_='cast_list')

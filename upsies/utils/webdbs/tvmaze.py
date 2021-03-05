@@ -54,9 +54,8 @@ class TvmazeApi(WebDbApiBase):
             return results
 
     async def _get_show(self, id):
-        url = f'{self._url_base}/shows/{id}'
-        params = {'embed': 'cast'}
-        response = await http.get(url, params=params, cache=True)
+        url = f'{self._url_base}/shows/{id}?embed[]=cast&embed[]=crew'
+        response = await http.get(url, cache=True)
         try:
             show = json.loads(response)
             assert isinstance(show, dict)
@@ -67,6 +66,15 @@ class TvmazeApi(WebDbApiBase):
 
     async def directors(self, id):
         return []
+
+    async def creators(self, id):
+        show = await self._get_show(id)
+        crew = show.get('_embedded', {}).get('crew', ())
+        creators = []
+        for item in crew:
+            if item.get('type') == 'Creator' and item.get('person', {}).get('name'):
+                creators.append(item['person']['name'])
+        return creators
 
     async def cast(self, id):
         show = await self._get_show(id)

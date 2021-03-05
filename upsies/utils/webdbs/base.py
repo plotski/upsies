@@ -39,6 +39,10 @@ class WebDbApiBase(abc.ABC):
         """Return list of director names (usually empty for series)"""
 
     @abc.abstractmethod
+    async def creators(self, id):
+        """Return list of creator names (usually empty for movies and episodes)"""
+
+    @abc.abstractmethod
     async def cast(self, id):
         """Return list of cast names"""
 

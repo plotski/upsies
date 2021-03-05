@@ -259,6 +259,19 @@ async def test_directors(id, exp_directors, api, store_response):
 
 
 @pytest.mark.parametrize(
+    argnames=('id', 'exp_creators'),
+    argvalues=(
+        (170, ['Jenji Kohan']),
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_creators(id, exp_creators, api, store_response):
+    creators = await api.creators(id)
+    assert creators == exp_creators
+
+
+@pytest.mark.parametrize(
     argnames=('id', 'exp_countries'),
     argvalues=(
         (1259, ['United States']),
