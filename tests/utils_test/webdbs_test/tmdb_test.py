@@ -136,7 +136,7 @@ async def test_search_result_keywords(query, exp_keywords, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_summary'),
     argvalues=(
-        (Query('The Blues Brothers', year=1980), 'mission from God'),
+        (Query('The Blues Brothers', year=1980), 'released from prison'),
         (Query('February', year='2017'), 'spending winter break at their prestigious prep school'),
         (Query('Deadwood', year=2004), 'woven around actual historic events'),
         (Query('Lost & Found Music Studios', year=2015), ''),
@@ -311,7 +311,7 @@ async def test_keywords(id, exp_keywords, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
-        ('movie/525', 'mission from God'),
+        ('movie/525', 'released from prison'),
         ('movie/334536', 'spending winter break at their prestigious prep school'),
         ('tv/1406', 'woven around actual historic events'),
         ('tv/74802', 'the body of a young woman on a construction site'),
