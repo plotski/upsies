@@ -243,7 +243,8 @@ async def test_search_result_year(query, exp_title, exp_year, api, store_respons
 @pytest.mark.asyncio
 async def test_directors(id, exp_directors, api, store_response):
     directors = await api.directors(id)
-    assert directors == exp_directors
+    for member in exp_directors:
+        assert member in directors
 
 
 @pytest.mark.parametrize(
@@ -259,7 +260,8 @@ async def test_directors(id, exp_directors, api, store_response):
 @pytest.mark.asyncio
 async def test_creators(id, exp_creators, api, store_response):
     creators = await api.creators(id)
-    assert creators == exp_creators
+    for member in exp_creators:
+        assert member in creators
 
 
 @pytest.mark.parametrize(
