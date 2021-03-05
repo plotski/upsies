@@ -30,13 +30,13 @@
     <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen">
-    <link rel="stylesheet" href="/assets/2/application-a294576d87517e34efab9ccc38ef849872a6c3a7520061e74675fde872222802.css" media="screen">
+    <link rel="stylesheet" href="/assets/2/application-3619bce98ff2736e0f0ecf793917e42178112bd7db629cc0be689b26e9ac4742.css" media="screen">
     
     
-      <link rel="stylesheet" href="/assets/2/v4/media-13e11edeb59636d078c8f8a5658961aa257a06483d97df7a8f96e9032bffd844.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/media-7b01183c64a6819c82ef4f23a3087f1ff79f8de786653d6ffb10a07d2a5b70ef.css" media="screen">
       
     
-      <link rel="stylesheet" href="/assets/2/v4/account-42a198e695401c9420e5cf0f4d569277e5310b13ef74fcc2ddf29d7f16867b88.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/account-3a7e7607340c2ba9de9204b09ee40d73a687e5df2b2f7f6194e034fa8fd869c7.css" media="screen">
       
     
     
@@ -194,18 +194,15 @@
       $(function() {
         jQuery.event.special.touchstart = {
           setup: function( _, ns, handle ) {
-            this.addEventListener("touchstart", handle, { passive: true });
+            this.addEventListener("touchstart", handle, { passive: !ns.includes("noPreventDefault") });
+          }
+        };
+        jQuery.event.special.touchmove = {
+          setup: function( _, ns, handle ) {
+            this.addEventListener("touchmove", handle, { passive: !ns.includes("noPreventDefault") });
           }
         };
       });
-    </script>
-    <script src="/assets/2/kendo-fae9a5643b2ce630515830333c2ce1c86cecafc7ebe7837c4ae31e170c21a171.js"></script>
-    <script src="/assets/2/application-8b439329775a36098a2cbd50c366be017846961294003d640f99dbd7b416c181.js"></script>
-    
-      <script src="/assets/2/application.desktop-fc642e932de23c6d7bd19995577faae48e55c0c22f1b7cf5f9a60845689e5d3c.js"></script>
-    
-
-    <script>
       detected_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
         timezone = detected_timezone;
@@ -216,17 +213,22 @@
       'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
       })(window,document,'script','dataLayer','GTM-5QWVXV');
     </script>
+    <script src="/assets/2/kendo-59bc8069669538cda019bccf140d9a7598fd5e3392322771187961e4fef87b99.js"></script>
+    <script src="/assets/2/application-e59348eacf3926a7720c9af9abf03f0e89eeca294d61773cbe3f041ab8fc8111.js"></script>
+    
+      <script src="/assets/2/application.desktop-ea69249141a43ef7c6a59a19ee40eface5e171cf03eefffddb488574a66dea02.js"></script>
+    
+    
   </head>
 <body class="en v4">
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5QWVXV" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   
   
   
+    <script src="/assets/2/kendo-2021.1.204/messages/kendo.messages.en-US.min-79da68ae0221b4fd7978805d0c79cc7f682fddace5f2137aa0dae8fe1c5ddacd.js"></script>
   
-    <script src="/assets/2/kendo-2020.2.617/messages/kendo.messages.en-US.min-bca5bee854a9d1e5546abb31e5b16ae45e672d5c8739a9969483e769620830f8.js"></script>
   
-  
-    <script src="/assets/2/kendo-2020.2.617/cultures/kendo.culture.en-US.min-d7f7bc0e7130adf476f5d1d19bb64d908a43d3104ddc1d4264218803fb4d8264.js"></script>
+    <script src="/assets/2/kendo-2021.1.204/cultures/kendo.culture.en-US.min-61ce5636474a35333ecff74fe30c528d459bcee29b3b32fc0c58ac77de788b34.js"></script>
     <script>kendo.culture("en-US");</script>
   
 
@@ -328,7 +330,7 @@
   
 
   <script>
-  $(document).ready(function() {
+  $(function() {
     initializeScroller(false, '#search_menu_scroller');
     active_nav_item = 'movie';
 
@@ -378,14 +380,14 @@
           <div id="search_menu_scroller" class="">
             <ul class="settings panel with_counts scroller">
               
-                <li class="">
-                  <a id="tv" href="/search/tv?query=deadwood" class="search_tab " title="TV Shows" alt="TV Shows">TV Shows</a>
-                    <span>1</span>
-                </li>
-              
                 <li class="selected">
                   <a id="movie" href="/search/movie?query=deadwood" class="search_tab active" title="Movies" alt="Movies">Movies</a>
                     <span>15</span>
+                </li>
+              
+                <li class="">
+                  <a id="tv" href="/search/tv?query=deadwood" class="search_tab " title="TV Shows" alt="TV Shows">TV Shows</a>
+                    <span>1</span>
                 </li>
               
                 <li class="">
@@ -444,7 +446,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5b5a2d70c3a3686c0200290a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/538225"><h2>Deadwood: The Movie</h2></a>
+          <div>
+            <a data-id="5b5a2d70c3a3686c0200290a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/538225"><h2>Deadwood: The Movie</h2></a>
+          </div>
 
           
             <span class="release_date">May 31, 2019</span>
@@ -479,7 +483,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="57754b359251416d03000631" data-media-type="movie" data-media-adult="false" class="result" href="/movie/404357"><h2>Deadwood Falls</h2></a>
+          <div>
+            <a data-id="57754b359251416d03000631" data-media-type="movie" data-media-adult="false" class="result" href="/movie/404357"><h2>Deadwood Falls</h2></a>
+          </div>
 
           
             <span class="release_date">October 31, 2017</span>
@@ -489,41 +495,6 @@
 
       <div class="overview">
         <p>The town of Deadwood Falls is no more. On Christmas Eve 2003, all 479 men, women and children simply disappeared overnight. There were no footprints into or out of the snowbound town. Leaving behind all of their belongings, the townspeople vanished without a trace. Only one person was found-a man whose body was burned from head to toe and who has remained in a coma all these years. Until tonight that is-on the 7th anniversary of the town's disappearance, the mysterious survivor has awakened...</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_5d71020a9c97bd0010e4f06a" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5d71020a9c97bd0010e4f06a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/628784">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/meiO1ubAPBcHouNSSBisTThd27p.jpg" srcset="/t/p/w94_and_h141_bestv2/meiO1ubAPBcHouNSSBisTThd27p.jpg 1x, /t/p/w188_and_h282_bestv2/meiO1ubAPBcHouNSSBisTThd27p.jpg 2x" alt="Once Upon a Time in Deadwood">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5d71020a9c97bd0010e4f06a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/628784"><h2>Once Upon a Time in Deadwood</h2></a>
-
-          
-            <span class="release_date">October  1, 2019</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>A notorious gunslinger is slipped a slow-acting poison by an heiress and told he has three days to track down and rescue her sister, who has been kidnapped by a gang of hoodlums and holds the antidote.</p>
       </div>
     </div>
   </div>
@@ -549,7 +520,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="53834bd3c3a36805a8008583" data-media-type="movie" data-media-adult="false" class="result" href="/movie/272047"><h2>Deadwood &#39;76</h2></a>
+          <div>
+            <a data-id="53834bd3c3a36805a8008583" data-media-type="movie" data-media-adult="false" class="result" href="/movie/272047"><h2>Deadwood &#39;76</h2></a>
+          </div>
 
           
             <span class="release_date">June 30, 1965</span>
@@ -559,6 +532,78 @@
 
       <div class="overview">
         <p>A young drifter is mistaken for Billy the Kid. The concequences prove deadly.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_5d71020a9c97bd0010e4f06a" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5d71020a9c97bd0010e4f06a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/628784">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/meiO1ubAPBcHouNSSBisTThd27p.jpg" srcset="/t/p/w94_and_h141_bestv2/meiO1ubAPBcHouNSSBisTThd27p.jpg 1x, /t/p/w188_and_h282_bestv2/meiO1ubAPBcHouNSSBisTThd27p.jpg 2x" alt="Once Upon a Time in Deadwood">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="5d71020a9c97bd0010e4f06a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/628784"><h2>Once Upon a Time in Deadwood</h2></a>
+          </div>
+
+          
+            <span class="release_date">October  1, 2019</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>A notorious gunslinger is slipped a slow-acting poison by an heiress and told he has three days to track down and rescue her sister, who has been kidnapped by a gang of hoodlums and holds the antidote.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_57447533c3a36807660003e4" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="57447533c3a36807660003e4" data-media-type="movie" data-media-adult="false" class="result" href="/movie/399051">
+            
+    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="57447533c3a36807660003e4" data-media-type="movie" data-media-adult="false" class="result" href="/movie/399051"><h2>Deadwood Dick</h2></a>
+          </div>
+
+          
+            <span class="release_date">July 19, 1940</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Columbia's 11th serial and the first western serial that James W. Horne solo-directed.</p>
       </div>
     </div>
   </div>
@@ -584,7 +629,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4f328f37760ee307e8000fa7" data-media-type="movie" data-media-adult="false" class="result" href="/movie/87877"><h2>Deadwood Park</h2></a>
+          <div>
+            <a data-id="4f328f37760ee307e8000fa7" data-media-type="movie" data-media-adult="false" class="result" href="/movie/87877"><h2>Deadwood Park</h2></a>
+          </div>
 
           
             <span class="release_date">January  1, 2007</span>
@@ -617,7 +664,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5593c39ac3a368774100365a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/347056"><h2>Overland to Deadwood</h2></a>
+          <div>
+            <a data-id="5593c39ac3a368774100365a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/347056"><h2>Overland to Deadwood</h2></a>
+          </div>
 
           
             <span class="release_date">September 25, 1942</span>
@@ -627,39 +676,6 @@
 
       <div class="overview">
         <p>Cash Quinlan, owner of the Hauling Company, is the leader behind a gang of raiders who have been robbing stagecoaches between Mesquite and Deadwood. He hopes by doing so to drive his competitors out of business so that he can get the railroad franchise for himself.....</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_57447533c3a36807660003e4" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="57447533c3a36807660003e4" data-media-type="movie" data-media-adult="false" class="result" href="/movie/399051">
-            
-    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="57447533c3a36807660003e4" data-media-type="movie" data-media-adult="false" class="result" href="/movie/399051"><h2>Deadwood Dick</h2></a>
-
-          
-            <span class="release_date">July 19, 1940</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Columbia's 11th serial and the first western serial that James W. Horne solo-directed.</p>
       </div>
     </div>
   </div>
@@ -683,7 +699,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="52c5522319c295196902c1d6" data-media-type="movie" data-media-adult="false" class="result" href="/movie/247203"><h2>Deadwood Pass</h2></a>
+          <div>
+            <a data-id="52c5522319c295196902c1d6" data-media-type="movie" data-media-adult="false" class="result" href="/movie/247203"><h2>Deadwood Pass</h2></a>
+          </div>
 
           
             <span class="release_date">May  5, 1933</span>
@@ -693,169 +711,6 @@
 
       <div class="overview">
         <p>The Hawk has broken out of prison and the Sheriff and Sorrenson have a plan to have Whitlock pose as the Hawk, infiltrate the gang, and recover the stolen bonds. All goes well until The Chief who knows the real Hawk arrives.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_53ccf79ec3a3687761002854" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="53ccf79ec3a3687761002854" data-media-type="movie" data-media-adult="false" class="result" href="/movie/283027">
-            
-    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="53ccf79ec3a3687761002854" data-media-type="movie" data-media-adult="false" class="result" href="/movie/283027"><h2>Deadwood Dick&#39;s Vengeance</h2></a>
-
-          
-            <span class="release_date">October  1, 1915</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Directed by L.C. MacBean and Fred Paul.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_55b4f62c925141788b006cc3" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="55b4f62c925141788b006cc3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/351700">
-            
-    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="55b4f62c925141788b006cc3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/351700"><h2>The Deadwood Coach</h2></a>
-
-          
-            <span class="release_date">December  7, 1924</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Silent western film...</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_51a337c9760ee328bc08ba30" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="51a337c9760ee328bc08ba30" data-media-type="movie" data-media-adult="false" class="result" href="/movie/197358">
-            
-    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="51a337c9760ee328bc08ba30" data-media-type="movie" data-media-adult="false" class="result" href="/movie/197358"><h2>From Hollywood to Deadwood</h2></a>
-
-          
-            <span class="release_date">October 13, 1989</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>When actress Lana Dark (Barbara Schock) disappears in the middle of a film shoot, putting an expensive stop to production, the studio hires gumshoes Raymond Savage (Scott Paulin) and Jack Haines (Jim Haynie) to track down the fleeing femme fatale in this thriller. The trail leads to Deadwood, S.D., where Haines and a smitten Savage find Lana restlessly lying low. But knowledge proves dangerous when Savage discovers the scam behind Lana's walkout.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_56a3d872925141720b00388c" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="56a3d872925141720b00388c" data-media-type="movie" data-media-adult="false" class="result" href="/movie/378975">
-            
-    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="56a3d872925141720b00388c" data-media-type="movie" data-media-adult="false" class="result" href="/movie/378975"><h2>The Deadwood Thunderball</h2></a>
-
-          
-            <span class="release_date">June  6, 1969</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>A stagecoach owner is going out of business if the train (rode by Roland) makes it to the other side, so they hire Rattfink to stop the train, but doesn't work.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_540069b30e0a2658de00220b" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="540069b30e0a2658de00220b" data-media-type="movie" data-media-adult="false" class="result" href="/movie/289289">
-            
-    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="540069b30e0a2658de00220b" data-media-type="movie" data-media-adult="false" class="result" href="/movie/289289"><h2>The Old Deadwood Stage Coach</h2></a>
-
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Silent footage from Buffalo Bill's Wild West Show: a stagecoach runs throughout the scene.</p>
       </div>
     </div>
   </div>
@@ -881,7 +736,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4c06b1c1017a3c7e8600054f" data-media-type="movie" data-media-adult="false" class="result" href="/movie/38758"><h2>Bad Man of Deadwood</h2></a>
+          <div>
+            <a data-id="4c06b1c1017a3c7e8600054f" data-media-type="movie" data-media-adult="false" class="result" href="/movie/38758"><h2>Bad Man of Deadwood</h2></a>
+          </div>
 
           
             <span class="release_date">September  5, 1941</span>
@@ -891,6 +748,179 @@
 
       <div class="overview">
         <p>Roy and Gabby fight bad guys to save the town of Deadwood.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_51a337c9760ee328bc08ba30" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="51a337c9760ee328bc08ba30" data-media-type="movie" data-media-adult="false" class="result" href="/movie/197358">
+            
+    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="51a337c9760ee328bc08ba30" data-media-type="movie" data-media-adult="false" class="result" href="/movie/197358"><h2>From Hollywood to Deadwood</h2></a>
+          </div>
+
+          
+            <span class="release_date">October 13, 1989</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>When actress Lana Dark (Barbara Schock) disappears in the middle of a film shoot, putting an expensive stop to production, the studio hires gumshoes Raymond Savage (Scott Paulin) and Jack Haines (Jim Haynie) to track down the fleeing femme fatale in this thriller. The trail leads to Deadwood, S.D., where Haines and a smitten Savage find Lana restlessly lying low. But knowledge proves dangerous when Savage discovers the scam behind Lana's walkout.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_53ccf79ec3a3687761002854" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="53ccf79ec3a3687761002854" data-media-type="movie" data-media-adult="false" class="result" href="/movie/283027">
+            
+    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="53ccf79ec3a3687761002854" data-media-type="movie" data-media-adult="false" class="result" href="/movie/283027"><h2>Deadwood Dick&#39;s Vengeance</h2></a>
+          </div>
+
+          
+            <span class="release_date">October  1, 1915</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Directed by L.C. MacBean and Fred Paul.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_540069b30e0a2658de00220b" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="540069b30e0a2658de00220b" data-media-type="movie" data-media-adult="false" class="result" href="/movie/289289">
+            
+    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="540069b30e0a2658de00220b" data-media-type="movie" data-media-adult="false" class="result" href="/movie/289289"><h2>The Old Deadwood Stage Coach</h2></a>
+          </div>
+
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Silent footage from Buffalo Bill's Wild West Show: a stagecoach runs throughout the scene.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_55b4f62c925141788b006cc3" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="55b4f62c925141788b006cc3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/351700">
+            
+    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="55b4f62c925141788b006cc3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/351700"><h2>The Deadwood Coach</h2></a>
+          </div>
+
+          
+            <span class="release_date">December  7, 1924</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Silent western film...</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_56a3d872925141720b00388c" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="56a3d872925141720b00388c" data-media-type="movie" data-media-adult="false" class="result" href="/movie/378975">
+            
+    <div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="56a3d872925141720b00388c" data-media-type="movie" data-media-adult="false" class="result" href="/movie/378975"><h2>The Deadwood Thunderball</h2></a>
+          </div>
+
+          
+            <span class="release_date">June  6, 1969</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>A stagecoach owner is going out of business if the train (rode by Roland) makes it to the other side, so they hire Rattfink to stop the train, but doesn't work.</p>
       </div>
     </div>
   </div>
@@ -914,7 +944,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5a87144bc3a36862a703959d" data-media-type="movie" data-media-adult="false" class="result" href="/movie/505582"><h2>The Driver Of The Deadwood Coach</h2></a>
+          <div>
+            <a data-id="5a87144bc3a36862a703959d" data-media-type="movie" data-media-adult="false" class="result" href="/movie/505582"><h2>The Driver Of The Deadwood Coach</h2></a>
+          </div>
 
           
             <span class="release_date">December  7, 1912</span>
@@ -996,7 +1028,7 @@
         </div>
       </nav>
 
-      <section>Build c8e5215 (732)</section>
+      <section>Build 7e18b8e (974)</section>
     </footer>
 
     
@@ -1095,7 +1127,7 @@
 
     
 
-    <script src="/assets/2/footer-88d8069a2b64f6a5751f9ec90b06b9d13a6f59e2caa683d857b36a4b1455a764.js"></script>
+    <script src="/assets/2/footer-ec8fd260239bf7b85be386d03eb1bcb6a8ed5062578ef49351e9984ffee6bb86.js"></script>
     
       <script src="/assets/2/timeago/locales/jquery.timeago.en-US-f9d144e55407ca11f35de7a0d44b0d54ec1ffc6c4039dffd5a11c0a12e6a9482.js"></script>
     
@@ -1141,7 +1173,7 @@
         }
       }
 
-      $(document).ready(function() {
+      $(function() {
         jQuery.timeago.settings.allowFuture = true;
         $("time.timeago").timeago();
 
@@ -1393,7 +1425,6 @@
 
         $("#search_v4").kendoAutoComplete({
           highlightFirst: false,
-          animation: false,
           minLength: 1,
           dataTextField: "title",
           template: kendo.template($("#slim_multi_search_template").html()),
@@ -1416,9 +1447,9 @@
           },
           filtering: function(e) {
             var filter = e.filter != undefined ? e.filter.value : "";
-            if (filter.value == '') {
-              if( ($('#search_v4-list #trending_search_header_template').length) == 0 ) {
-                $('#search_v4_listbox').empty();
+            if (filter == '') {
+              if ( ($('#search_v4-list #trending_search_header_template').length) == 0 ) {
+                // $('#search_v4_listbox').empty();
                 $('#search_v4-list').prepend($("#search_v4_headerTemplate").html());
               }
             } else {
@@ -1428,6 +1459,10 @@
           select: function(e) {
             processing_selected_item = true;
             processSelectedItem(e);
+          },
+          close: function(e) {
+            // e.preventDefault();
+            // handle the event
           }
         }).data("kendoAutoComplete");
 
@@ -1512,7 +1547,7 @@
         });
 
         $(document).on('keydown', null, 'esc', function() {
-          if ( $('div.custom_bg.keyboard_s').length ) {
+          if ( $('div.custom_bg.keyboard_s').length && $('#ott_offers_window a.close').length ) {
             $('#ott_offers_window a.close')[0].click();
           }
         });
@@ -1567,7 +1602,6 @@
             <p class="sub">No known credits.</p>
           # } #
         </div>
-        <div class="clear"></div>
       </div>
     </script>
 
@@ -1696,7 +1730,7 @@
     <script id="search_v4_headerTemplate" type="text/x-kendo-template">
       <div id="trending_search_header_template" class="slim_search_results_header">
         <div class="wrapper">
-          <h2>Trending</h2>
+          <h2><span class="glyphicons_v2 trending"></span> Trending</h2>
         </div>
       </div>
     </script>

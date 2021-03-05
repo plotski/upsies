@@ -30,10 +30,10 @@
     <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen">
-    <link rel="stylesheet" href="/assets/2/application-a294576d87517e34efab9ccc38ef849872a6c3a7520061e74675fde872222802.css" media="screen">
+    <link rel="stylesheet" href="/assets/2/application-3619bce98ff2736e0f0ecf793917e42178112bd7db629cc0be689b26e9ac4742.css" media="screen">
     
     
-      <link rel="stylesheet" href="/assets/2/v4/media-13e11edeb59636d078c8f8a5658961aa257a06483d97df7a8f96e9032bffd844.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/media-7b01183c64a6819c82ef4f23a3087f1ff79f8de786653d6ffb10a07d2a5b70ef.css" media="screen">
       
     
       <link rel="stylesheet" href="/assets/2/v4/ott-7b5a41663086623adc0e366cb966c8f26a417078d5966ab31b0dd15592d8abde.css" media="screen">
@@ -53,7 +53,7 @@
   
 
 <meta property="og:type" content="movie">
-<meta property="og:url" content="https://www.themoviedb.org/movie/3405-le-dolce-signore?language=en-US">
+<meta property="og:url" content="https://www.themoviedb.org/movie/3405-le-dolce-signore">
 <meta property="og:site_name" content="The Movie Database">
 <meta property="fb:app_id" content="141280979243998">
         <meta name="twitter:card" content="photo">
@@ -66,7 +66,7 @@
   
 
 <meta name="twitter:site" content="@themoviedb">
-<meta name="twitter:url" content="https://www.themoviedb.org/movie/3405-le-dolce-signore?language=en-US">
+<meta name="twitter:url" content="https://www.themoviedb.org/movie/3405-le-dolce-signore">
       
         <meta name="description" content="No overview found.">
       
@@ -93,18 +93,15 @@
       $(function() {
         jQuery.event.special.touchstart = {
           setup: function( _, ns, handle ) {
-            this.addEventListener("touchstart", handle, { passive: true });
+            this.addEventListener("touchstart", handle, { passive: !ns.includes("noPreventDefault") });
+          }
+        };
+        jQuery.event.special.touchmove = {
+          setup: function( _, ns, handle ) {
+            this.addEventListener("touchmove", handle, { passive: !ns.includes("noPreventDefault") });
           }
         };
       });
-    </script>
-    <script src="/assets/2/kendo-fae9a5643b2ce630515830333c2ce1c86cecafc7ebe7837c4ae31e170c21a171.js"></script>
-    <script src="/assets/2/application-8b439329775a36098a2cbd50c366be017846961294003d640f99dbd7b416c181.js"></script>
-    
-      <script src="/assets/2/application.desktop-fc642e932de23c6d7bd19995577faae48e55c0c22f1b7cf5f9a60845689e5d3c.js"></script>
-    
-
-    <script>
       detected_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
         timezone = detected_timezone;
@@ -115,17 +112,22 @@
       'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
       })(window,document,'script','dataLayer','GTM-5QWVXV');
     </script>
+    <script src="/assets/2/kendo-59bc8069669538cda019bccf140d9a7598fd5e3392322771187961e4fef87b99.js"></script>
+    <script src="/assets/2/application-e59348eacf3926a7720c9af9abf03f0e89eeca294d61773cbe3f041ab8fc8111.js"></script>
+    
+      <script src="/assets/2/application.desktop-ea69249141a43ef7c6a59a19ee40eface5e171cf03eefffddb488574a66dea02.js"></script>
+    
+    
   </head>
 <body class="en v4">
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5QWVXV" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   
   
   
+    <script src="/assets/2/kendo-2021.1.204/messages/kendo.messages.en-US.min-79da68ae0221b4fd7978805d0c79cc7f682fddace5f2137aa0dae8fe1c5ddacd.js"></script>
   
-    <script src="/assets/2/kendo-2020.2.617/messages/kendo.messages.en-US.min-bca5bee854a9d1e5546abb31e5b16ae45e672d5c8739a9969483e769620830f8.js"></script>
   
-  
-    <script src="/assets/2/kendo-2020.2.617/cultures/kendo.culture.en-US.min-d7f7bc0e7130adf476f5d1d19bb64d908a43d3104ddc1d4264218803fb4d8264.js"></script>
+    <script src="/assets/2/kendo-2021.1.204/cultures/kendo.culture.en-US.min-61ce5636474a35333ecff74fe30c528d459bcee29b3b32fc0c58ac77de788b34.js"></script>
     <script>kendo.culture("en-US");</script>
   
 
@@ -249,7 +251,7 @@
     }
 
     section.inner_content a:hover {
-      color: rgba(0,0,0,0.8);
+      color: rgba(0,0,0,0.5);
     }
 
     section.media_panel div.menu ul li.active {
@@ -274,7 +276,7 @@
         color: rgba(255,255,255,0.6);
       }
 
-      section.inner_content section.header ul.actions li.video span, div.column_wrapper div.settings_panel h3 span.glyphicons_v2, section.inner_content section.header div.trailer a span {
+      p.new_button.rounded a span, section.inner_content section.header ul.actions li.video span, div.column_wrapper div.settings_panel h3 span.glyphicons_v2, section.inner_content section.header div.trailer a span {
         filter: invert(1);
       }
     
@@ -375,11 +377,10 @@
 </div>
 
 <script>
-  $(document).ready(function() {
+  $(function() {
     initializeScroller(false, '#shortcut_bar_scroller');
 
     $("#new_shortcut_bar").kendoMenu({
-      animation: false,
       hoverDelay: 0,
       activate: function(e) {
         
@@ -594,7 +595,6 @@
 
     var watch_url_template = "/movie/3405-le-dolce-signore/watch?translate=false&locale={0}";
     $("#ott_country_filter").kendoDropDownList({
-      animation: false,
       filter: "contains",
       height: 250,
       autoWidth: true,
@@ -631,7 +631,7 @@
 
   var offersHasLoaded = false;
 
-  $(document).ready(function() {
+  $(function() {
     if ( offersHasLoaded ) {
       loadDropDown();
     }
@@ -1204,7 +1204,7 @@
     }
   }
 
-  $(document).ready(function() {
+  $(function() {
     initializeScroller(false, '#cast_scroller');
     initializeScroller(false, '#media_scroller');
 
@@ -1370,7 +1370,7 @@
 </section>
 
 <script type="text/javascript" charset="utf-8">
-  $(document).ready(function(){
+  $(function() {
 
     // $('#service_select').on('change', function(e){
     //   selected_item = $(this).val();
@@ -1428,7 +1428,7 @@
   </div>
 
 <script>
-  $(document).ready(function() {
+  $(function() {
     var w = window.innerWidth;
     var h = window.innerHeight;
     attachVideoPlayer(w, h);
@@ -1490,7 +1490,7 @@
       position: 'bottom',
       showOn: "mouseenter",
       show: function() {
-        this.popup.element.addClass("custom_theme");
+        this.popup.element.addClass("tmdb_theme custom_theme");
         if (this.content.text() != this.target().data("title") ) {
           this.refresh();
         }
@@ -1668,7 +1668,7 @@
         </div>
       </nav>
 
-      <section>Build c8e5215 (732)</section>
+      <section>Build 7e18b8e (974)</section>
     </footer>
 
     
@@ -1766,20 +1766,20 @@
     </div>
 
     
-      <script src="/assets/2/kendo-2020.2.617/kendo.color.min-3d5a8a6d88c76e837e3eb17b637b43273aa6a70c550f26fcd7efaadcffc440bc.js"></script>
+      <script src="/assets/2/kendo-2021.1.204/kendo.color.min-bce2f35513b05f0d434878f3a4aec0dcae6d4f910835fe4944ca4e902cefae05.js"></script>
     
-      <script src="/assets/2/kendo-2020.2.617/kendo.drawing.min-525f956d1ce4fce4d653e2380017b4cc9f3378e6f149bca3fd48c29b6d6549bf.js"></script>
+      <script src="/assets/2/kendo-2021.1.204/kendo.drawing.min-5b2dec46ab9c7b4cdfa274b382c9912344f9d845e4bb6dc4e6582044234530a1.js"></script>
     
-      <script src="/assets/2/kendo-2020.2.617/kendo.dataviz.core.min-c5d7ab98bb5034331178920231441556eb552cfdd93cdd6eb051b1dc8343d739.js"></script>
+      <script src="/assets/2/kendo-2021.1.204/kendo.dataviz.core.min-ad7b8882ab069eb816298221b66d62722f1055411dfcac961eec7a00f1130f37.js"></script>
     
-      <script src="/assets/2/kendo-2020.2.617/kendo.dataviz.themes.min-0abbe7cc6bbc68ec5828df6289fd0f42f80781aacd422c4d856f22ada8eb9c16.js"></script>
+      <script src="/assets/2/kendo-2021.1.204/kendo.dataviz.themes.min-85b71c1596ecabfc2bb2dbf4ea4cbc7ed3992bbefb1ec798677e233ec4c7c45c.js"></script>
     
-      <script src="/assets/2/kendo-2020.2.617/kendo.dataviz.chart.min-36109b2b6945c687174e9971f696a5cafc64d41f7c2e110924d6abfe17fcb234.js"></script>
+      <script src="/assets/2/kendo-2021.1.204/kendo.dataviz.chart.min-b733e411c72cd21f7a4e7d736b0bb51bea15cb0e07a2bd2bcbf641e244734071.js"></script>
     
-      <script src="/assets/2/kendo-2020.2.617/kendo.dataviz.sparkline.min-ab3273ae6d1bf82635f28857ad77524c237f04087e7e98962f2e295e894fdaf0.js"></script>
+      <script src="/assets/2/kendo-2021.1.204/kendo.dataviz.sparkline.min-b79dab2b6bafb43ce21461c46a5dbd5d7b5189de8cfa59c8c07b4117f2346bd0.js"></script>
     
 
-    <script src="/assets/2/footer-88d8069a2b64f6a5751f9ec90b06b9d13a6f59e2caa683d857b36a4b1455a764.js"></script>
+    <script src="/assets/2/footer-ec8fd260239bf7b85be386d03eb1bcb6a8ed5062578ef49351e9984ffee6bb86.js"></script>
     
       <script src="/assets/2/timeago/locales/jquery.timeago.en-US-f9d144e55407ca11f35de7a0d44b0d54ec1ffc6c4039dffd5a11c0a12e6a9482.js"></script>
     
@@ -1825,7 +1825,7 @@
         }
       }
 
-      $(document).ready(function() {
+      $(function() {
         jQuery.timeago.settings.allowFuture = true;
         $("time.timeago").timeago();
 
@@ -2077,7 +2077,6 @@
 
         $("#search_v4").kendoAutoComplete({
           highlightFirst: false,
-          animation: false,
           minLength: 1,
           dataTextField: "title",
           template: kendo.template($("#slim_multi_search_template").html()),
@@ -2100,9 +2099,9 @@
           },
           filtering: function(e) {
             var filter = e.filter != undefined ? e.filter.value : "";
-            if (filter.value == '') {
-              if( ($('#search_v4-list #trending_search_header_template').length) == 0 ) {
-                $('#search_v4_listbox').empty();
+            if (filter == '') {
+              if ( ($('#search_v4-list #trending_search_header_template').length) == 0 ) {
+                // $('#search_v4_listbox').empty();
                 $('#search_v4-list').prepend($("#search_v4_headerTemplate").html());
               }
             } else {
@@ -2112,6 +2111,10 @@
           select: function(e) {
             processing_selected_item = true;
             processSelectedItem(e);
+          },
+          close: function(e) {
+            // e.preventDefault();
+            // handle the event
           }
         }).data("kendoAutoComplete");
 
@@ -2196,7 +2199,7 @@
         });
 
         $(document).on('keydown', null, 'esc', function() {
-          if ( $('div.custom_bg.keyboard_s').length ) {
+          if ( $('div.custom_bg.keyboard_s').length && $('#ott_offers_window a.close').length ) {
             $('#ott_offers_window a.close')[0].click();
           }
         });
@@ -2251,7 +2254,6 @@
             <p class="sub">No known credits.</p>
           # } #
         </div>
-        <div class="clear"></div>
       </div>
     </script>
 
@@ -2380,7 +2382,7 @@
     <script id="search_v4_headerTemplate" type="text/x-kendo-template">
       <div id="trending_search_header_template" class="slim_search_results_header">
         <div class="wrapper">
-          <h2>Trending</h2>
+          <h2><span class="glyphicons_v2 trending"></span> Trending</h2>
         </div>
       </div>
     </script>

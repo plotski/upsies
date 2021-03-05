@@ -30,13 +30,13 @@
     <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen">
-    <link rel="stylesheet" href="/assets/2/application-a294576d87517e34efab9ccc38ef849872a6c3a7520061e74675fde872222802.css" media="screen">
+    <link rel="stylesheet" href="/assets/2/application-3619bce98ff2736e0f0ecf793917e42178112bd7db629cc0be689b26e9ac4742.css" media="screen">
     
     
-      <link rel="stylesheet" href="/assets/2/v4/media-13e11edeb59636d078c8f8a5658961aa257a06483d97df7a8f96e9032bffd844.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/media-7b01183c64a6819c82ef4f23a3087f1ff79f8de786653d6ffb10a07d2a5b70ef.css" media="screen">
       
     
-      <link rel="stylesheet" href="/assets/2/v4/account-42a198e695401c9420e5cf0f4d569277e5310b13ef74fcc2ddf29d7f16867b88.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/account-3a7e7607340c2ba9de9204b09ee40d73a687e5df2b2f7f6194e034fa8fd869c7.css" media="screen">
       
     
     
@@ -194,18 +194,15 @@
       $(function() {
         jQuery.event.special.touchstart = {
           setup: function( _, ns, handle ) {
-            this.addEventListener("touchstart", handle, { passive: true });
+            this.addEventListener("touchstart", handle, { passive: !ns.includes("noPreventDefault") });
+          }
+        };
+        jQuery.event.special.touchmove = {
+          setup: function( _, ns, handle ) {
+            this.addEventListener("touchmove", handle, { passive: !ns.includes("noPreventDefault") });
           }
         };
       });
-    </script>
-    <script src="/assets/2/kendo-fae9a5643b2ce630515830333c2ce1c86cecafc7ebe7837c4ae31e170c21a171.js"></script>
-    <script src="/assets/2/application-8b439329775a36098a2cbd50c366be017846961294003d640f99dbd7b416c181.js"></script>
-    
-      <script src="/assets/2/application.desktop-fc642e932de23c6d7bd19995577faae48e55c0c22f1b7cf5f9a60845689e5d3c.js"></script>
-    
-
-    <script>
       detected_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
         timezone = detected_timezone;
@@ -216,17 +213,22 @@
       'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
       })(window,document,'script','dataLayer','GTM-5QWVXV');
     </script>
+    <script src="/assets/2/kendo-59bc8069669538cda019bccf140d9a7598fd5e3392322771187961e4fef87b99.js"></script>
+    <script src="/assets/2/application-e59348eacf3926a7720c9af9abf03f0e89eeca294d61773cbe3f041ab8fc8111.js"></script>
+    
+      <script src="/assets/2/application.desktop-ea69249141a43ef7c6a59a19ee40eface5e171cf03eefffddb488574a66dea02.js"></script>
+    
+    
   </head>
 <body class="en v4">
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5QWVXV" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   
   
   
+    <script src="/assets/2/kendo-2021.1.204/messages/kendo.messages.en-US.min-79da68ae0221b4fd7978805d0c79cc7f682fddace5f2137aa0dae8fe1c5ddacd.js"></script>
   
-    <script src="/assets/2/kendo-2020.2.617/messages/kendo.messages.en-US.min-bca5bee854a9d1e5546abb31e5b16ae45e672d5c8739a9969483e769620830f8.js"></script>
   
-  
-    <script src="/assets/2/kendo-2020.2.617/cultures/kendo.culture.en-US.min-d7f7bc0e7130adf476f5d1d19bb64d908a43d3104ddc1d4264218803fb4d8264.js"></script>
+    <script src="/assets/2/kendo-2021.1.204/cultures/kendo.culture.en-US.min-61ce5636474a35333ecff74fe30c528d459bcee29b3b32fc0c58ac77de788b34.js"></script>
     <script>kendo.culture("en-US");</script>
   
 
@@ -328,7 +330,7 @@
   
 
   <script>
-  $(document).ready(function() {
+  $(function() {
     initializeScroller(false, '#search_menu_scroller');
     active_nav_item = 'movie';
 
@@ -402,12 +404,12 @@
               
                 <li class="selected">
                   <a id="movie" href="/search/movie?query=star wars" class="search_tab active" title="Movies" alt="Movies">Movies</a>
-                    <span>154</span>
+                    <span>173</span>
                 </li>
               
                 <li class="">
                   <a id="tv" href="/search/tv?query=star wars" class="search_tab " title="TV Shows" alt="TV Shows">TV Shows</a>
-                    <span>31</span>
+                    <span>32</span>
                 </li>
               
                 <li class="">
@@ -422,12 +424,12 @@
               
                 <li class="">
                   <a id="company" href="/search/company?query=star wars" class="search_tab " title="Companies" alt="Companies">Companies</a>
-                    <span>2</span>
+                    <span>3</span>
                 </li>
               
                 <li class="">
                   <a id="keyword" href="/search/keyword?query=star wars" class="search_tab " title="Keywords" alt="Keywords">Keywords</a>
-                    <span>1</span>
+                    <span>3</span>
                 </li>
               
                 <li class="">
@@ -466,7 +468,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4bc88ac9017a3c122d000402" data-media-type="movie" data-media-adult="false" class="result" href="/movie/11"><h2>Star Wars</h2></a>
+          <div>
+            <a data-id="4bc88ac9017a3c122d000402" data-media-type="movie" data-media-adult="false" class="result" href="/movie/11"><h2>Star Wars</h2></a>
+          </div>
 
           
             <span class="release_date">May 25, 1977</span>
@@ -476,6 +480,117 @@
 
       <div class="overview">
         <p>Princess Leia is captured and held hostage by the evil Imperial forces in their effort to take over the galactic Empire. Venturesome Luke Skywalker and dashing captain Han Solo team together with the loveable robot duo R2-D2 and C-3PO to rescue the beautiful princess and restore peace and justice in the Empire.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_51589e8819c2956e650e45e3" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="51589e8819c2956e650e45e3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181812">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/db32LaOibwEliAmSL2jjDF6oDdj.jpg" srcset="/t/p/w94_and_h141_bestv2/db32LaOibwEliAmSL2jjDF6oDdj.jpg 1x, /t/p/w188_and_h282_bestv2/db32LaOibwEliAmSL2jjDF6oDdj.jpg 2x" alt="Star Wars: The Rise of Skywalker">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="51589e8819c2956e650e45e3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181812"><h2>Star Wars: The Rise of Skywalker</h2></a>
+          </div>
+
+          
+            <span class="release_date">December 18, 2019</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>The surviving Resistance faces the First Order once again as the journey of Rey, Finn and Poe Dameron continues. With the power and knowledge of generations behind them, the final battle begins.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_51589cc619c2956e650dca36" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="51589cc619c2956e650dca36" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181808">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg" srcset="/t/p/w94_and_h141_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg 1x, /t/p/w188_and_h282_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg 2x" alt="Star Wars: The Last Jedi">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="51589cc619c2956e650dca36" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181808"><h2>Star Wars: The Last Jedi</h2></a>
+          </div>
+
+          
+            <span class="release_date">December 13, 2017</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Rey develops her newly discovered abilities with the guidance of Luke Skywalker, who is unsettled by the strength of her powers. Meanwhile, the Resistance prepares to do battle with the First Order.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_55a1af3b925141296b001f92" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="55a1af3b925141296b001f92" data-media-type="movie" data-media-adult="false" class="result" href="/movie/348350">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/3IGbjc5ZC5yxim5W0sFING2kdcz.jpg" srcset="/t/p/w94_and_h141_bestv2/3IGbjc5ZC5yxim5W0sFING2kdcz.jpg 1x, /t/p/w188_and_h282_bestv2/3IGbjc5ZC5yxim5W0sFING2kdcz.jpg 2x" alt="Solo: A Star Wars Story">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="55a1af3b925141296b001f92" data-media-type="movie" data-media-adult="false" class="result" href="/movie/348350"><h2>Solo: A Star Wars Story</h2></a>
+          </div>
+
+          
+            <span class="release_date">May 15, 2018</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Through a series of daring escapades deep within a dark and dangerous criminal underworld, Han Solo meets his mighty future copilot Chewbacca and encounters the notorious gambler Lando Calrissian.</p>
       </div>
     </div>
   </div>
@@ -501,7 +616,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="50903a5c760ee36eda000805" data-media-type="movie" data-media-adult="false" class="result" href="/movie/140607"><h2>Star Wars: The Force Awakens</h2></a>
+          <div>
+            <a data-id="50903a5c760ee36eda000805" data-media-type="movie" data-media-adult="false" class="result" href="/movie/140607"><h2>Star Wars: The Force Awakens</h2></a>
+          </div>
 
           
             <span class="release_date">December 15, 2015</span>
@@ -536,7 +653,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5f3562122faf4d0035ba1b9a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/732670"><h2>The Lego Star Wars Holiday Special</h2></a>
+          <div>
+            <a data-id="5f3562122faf4d0035ba1b9a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/732670"><h2>The Lego Star Wars Holiday Special</h2></a>
+          </div>
 
           
             <span class="release_date">November 17, 2020</span>
@@ -546,111 +665,6 @@
 
       <div class="overview">
         <p>Rey leaves her friends to prepare for Life Day as she sets off on an adventure to gain a deeper knowledge of the Force. At a mysterious temple, she is hurled into a cross-timeline adventure. Will she make it back in time for Life Day?</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_51589cc619c2956e650dca36" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="51589cc619c2956e650dca36" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181808">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg" srcset="/t/p/w94_and_h141_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg 1x, /t/p/w188_and_h282_bestv2/kOVEVeg59E0wsnXmF9nrh6OmWII.jpg 2x" alt="Star Wars: The Last Jedi">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="51589cc619c2956e650dca36" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181808"><h2>Star Wars: The Last Jedi</h2></a>
-
-          
-            <span class="release_date">December 13, 2017</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Rey develops her newly discovered abilities with the guidance of Luke Skywalker, who is unsettled by the strength of her powers. Meanwhile, the Resistance prepares to do battle with the First Order.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_51589e8819c2956e650e45e3" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="51589e8819c2956e650e45e3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181812">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/db32LaOibwEliAmSL2jjDF6oDdj.jpg" srcset="/t/p/w94_and_h141_bestv2/db32LaOibwEliAmSL2jjDF6oDdj.jpg 1x, /t/p/w188_and_h282_bestv2/db32LaOibwEliAmSL2jjDF6oDdj.jpg 2x" alt="Star Wars: The Rise of Skywalker">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="51589e8819c2956e650e45e3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/181812"><h2>Star Wars: The Rise of Skywalker</h2></a>
-
-          
-            <span class="release_date">December 18, 2019</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>The surviving Resistance faces the First Order once again as the journey of Rey, Finn and Poe Dameron continues. With the power and knowledge of generations behind them, the final battle begins.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_55a1af3b925141296b001f92" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="55a1af3b925141296b001f92" data-media-type="movie" data-media-adult="false" class="result" href="/movie/348350">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/4oD6VEccFkorEBTEDXtpLAaz0Rl.jpg" srcset="/t/p/w94_and_h141_bestv2/4oD6VEccFkorEBTEDXtpLAaz0Rl.jpg 1x, /t/p/w188_and_h282_bestv2/4oD6VEccFkorEBTEDXtpLAaz0Rl.jpg 2x" alt="Solo: A Star Wars Story">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="55a1af3b925141296b001f92" data-media-type="movie" data-media-adult="false" class="result" href="/movie/348350"><h2>Solo: A Star Wars Story</h2></a>
-
-          
-            <span class="release_date">May 15, 2018</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Through a series of daring escapades deep within a dark and dangerous criminal underworld, Han Solo meets his mighty future copilot Chewbacca and encounters the notorious gambler Lando Calrissian.</p>
       </div>
     </div>
   </div>
@@ -676,7 +690,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4bc8b4d4017a3c122d05f169" data-media-type="movie" data-media-adult="false" class="result" href="/movie/12180"><h2>Star Wars: The Clone Wars</h2></a>
+          <div>
+            <a data-id="4bc8b4d4017a3c122d05f169" data-media-type="movie" data-media-adult="false" class="result" href="/movie/12180"><h2>Star Wars: The Clone Wars</h2></a>
+          </div>
 
           
             <span class="release_date">August  5, 2008</span>
@@ -686,41 +702,6 @@
 
       <div class="overview">
         <p>Set between Episode II and III, The Clone Wars is the first computer animated Star Wars film. Anakin and Obi Wan must find out who kidnapped Jabba the Hutt's son and return him safely. The Seperatists will try anything to stop them and ruin any chance of a diplomatic agreement between the Hutts and the Republic.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_4bc8975c017a3c122d0180e5" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="4bc8975c017a3c122d0180e5" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1893">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg" srcset="/t/p/w94_and_h141_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg 1x, /t/p/w188_and_h282_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg 2x" alt="Star Wars: Episode I - The Phantom Menace">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="4bc8975c017a3c122d0180e5" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1893"><h2>Star Wars: Episode I - The Phantom Menace</h2></a>
-
-          
-            <span class="release_date">May 19, 1999</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Anakin Skywalker, a young slave strong with the Force, is discovered on Tatooine. Meanwhile, the evil Sith have returned, enacting their plot for revenge against the Jedi.</p>
       </div>
     </div>
   </div>
@@ -746,7 +727,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="550310c8925141282f003dca" data-media-type="movie" data-media-adult="false" class="result" href="/movie/330459"><h2>Rogue One: A Star Wars Story</h2></a>
+          <div>
+            <a data-id="550310c8925141282f003dca" data-media-type="movie" data-media-adult="false" class="result" href="/movie/330459"><h2>Rogue One: A Star Wars Story</h2></a>
+          </div>
 
           
             <span class="release_date">December 14, 2016</span>
@@ -756,111 +739,6 @@
 
       <div class="overview">
         <p>A rogue band of resistance fighters unite for a mission to steal the Death Star plans and bring a new hope to the galaxy.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_5e8dcfe89f0e190016f4218d" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5e8dcfe89f0e190016f4218d" data-media-type="movie" data-media-adult="false" class="result" href="/movie/691016">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/chXLpA8cG0EVebggNFFJqzugKOo.jpg" srcset="/t/p/w94_and_h141_bestv2/chXLpA8cG0EVebggNFFJqzugKOo.jpg 1x, /t/p/w188_and_h282_bestv2/chXLpA8cG0EVebggNFFJqzugKOo.jpg 2x" alt="Star Wars: Origins">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5e8dcfe89f0e190016f4218d" data-media-type="movie" data-media-adult="false" class="result" href="/movie/691016"><h2>Star Wars: Origins</h2></a>
-
-          
-            <span class="release_date">December 12, 2019</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Two archaeologists make an amazing discovery that has the power to unite the World during a critical moment in history - if they're not silenced first.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_5e2fc83efd140b00196cb48a" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5e2fc83efd140b00196cb48a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/667574">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg" srcset="/t/p/w94_and_h141_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg 1x, /t/p/w188_and_h282_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg 2x" alt="Battle Star Wars">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5e2fc83efd140b00196cb48a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/667574"><h2>Battle Star Wars</h2></a>
-
-          
-            <span class="release_date">January 28, 2020</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>When the leader of the evil Coalition threatens to destroy a Rebel planet for its resources, his daughter will have no choice but to join the Rebel side and fight for what is right.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_4bc8975f017a3c122d018142" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="4bc8975f017a3c122d018142" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1894">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg" srcset="/t/p/w94_and_h141_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg 1x, /t/p/w188_and_h282_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg 2x" alt="Star Wars: Episode II - Attack of the Clones">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="4bc8975f017a3c122d018142" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1894"><h2>Star Wars: Episode II - Attack of the Clones</h2></a>
-
-          
-            <span class="release_date">May 15, 2002</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Following an assassination attempt on Senator Padmé Amidala, Jedi Knights Anakin Skywalker and Obi-Wan Kenobi investigate a mysterious plot that could change the galaxy forever.</p>
       </div>
     </div>
   </div>
@@ -886,7 +764,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="570a1efbc3a3687796003add" data-media-type="movie" data-media-adult="false" class="result" href="/movie/392216"><h2>Phineas and Ferb: Star Wars</h2></a>
+          <div>
+            <a data-id="570a1efbc3a3687796003add" data-media-type="movie" data-media-adult="false" class="result" href="/movie/392216"><h2>Phineas and Ferb: Star Wars</h2></a>
+          </div>
 
           
             <span class="release_date">July 26, 2014</span>
@@ -903,14 +783,14 @@
   
 </div>
     
-      <div id="card_movie_4bc89762017a3c122d0181b0" class="card v4 tight">
+      <div id="card_movie_4bc8975c017a3c122d0180e5" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="4bc89762017a3c122d0181b0" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1895">
+        <a data-id="4bc8975c017a3c122d0180e5" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1893">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg" srcset="/t/p/w94_and_h141_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg 1x, /t/p/w188_and_h282_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg 2x" alt="Star Wars: Episode III - Revenge of the Sith">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg" srcset="/t/p/w94_and_h141_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg 1x, /t/p/w188_and_h282_bestv2/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg 2x" alt="Star Wars: Episode I - The Phantom Menace">
     
   
 
@@ -921,51 +801,18 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4bc89762017a3c122d0181b0" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1895"><h2>Star Wars: Episode III - Revenge of the Sith</h2></a>
+          <div>
+            <a data-id="4bc8975c017a3c122d0180e5" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1893"><h2>Star Wars: Episode I - The Phantom Menace</h2></a>
+          </div>
 
           
-            <span class="release_date">May 17, 2005</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>The evil Darth Sidious enacts his final plan for unlimited power -- and the heroic Jedi Anakin Skywalker must choose a side.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_4c6762e07b9aa172d9000c03" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="4c6762e07b9aa172d9000c03" data-media-type="movie" data-media-adult="false" class="result" href="/movie/42979">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/h44WN4mVJ6wEpJgLaaNoFjv0NAo.jpg" srcset="/t/p/w94_and_h141_bestv2/h44WN4mVJ6wEpJgLaaNoFjv0NAo.jpg 1x, /t/p/w188_and_h282_bestv2/h44WN4mVJ6wEpJgLaaNoFjv0NAo.jpg 2x" alt="Robot Chicken: Star Wars">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="4c6762e07b9aa172d9000c03" data-media-type="movie" data-media-adult="false" class="result" href="/movie/42979"><h2>Robot Chicken: Star Wars</h2></a>
-
-          
-            <span class="release_date">July 17, 2007</span>
+            <span class="release_date">May 19, 1999</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Fans of Adult Swim's "Robot Chicken" and the Star Wars movie franchise won't want to miss this collection of 30 sketches. This hilarious compilation features an array of skits -- such as "Darth Vader's Collect Call" and "Inside the AT-AT" -- as well as the incredible voice talents of Hulk Hogan, Malcolm McDowell, Conan O'Brien and even the original Luke Skywalker himself, Mark Hamill.</p>
+        <p>Anakin Skywalker, a young slave strong with the Force, is discovered on Tatooine. Meanwhile, the evil Sith have returned, enacting their plot for revenge against the Jedi.</p>
       </div>
     </div>
   </div>
@@ -991,7 +838,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="587cbfa0c3a36847e801a919" data-media-type="movie" data-media-adult="false" class="result" href="/movie/435365"><h2>The Story of Star Wars</h2></a>
+          <div>
+            <a data-id="587cbfa0c3a36847e801a919" data-media-type="movie" data-media-adult="false" class="result" href="/movie/435365"><h2>The Story of Star Wars</h2></a>
+          </div>
 
           
             <span class="release_date">August 18, 2004</span>
@@ -1008,14 +857,14 @@
   
 </div>
     
-      <div id="card_movie_4e79cae77b9aa11825000106" class="card v4 tight">
+      <div id="card_movie_4bc89762017a3c122d0181b0" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="4e79cae77b9aa11825000106" data-media-type="movie" data-media-adult="false" class="result" href="/movie/74849">
+        <a data-id="4bc89762017a3c122d0181b0" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1895">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/eLIKCGIiYVaplbhKFGcPzmiywF2.jpg" srcset="/t/p/w94_and_h141_bestv2/eLIKCGIiYVaplbhKFGcPzmiywF2.jpg 1x, /t/p/w188_and_h282_bestv2/eLIKCGIiYVaplbhKFGcPzmiywF2.jpg 2x" alt="The Star Wars Holiday Special">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg" srcset="/t/p/w94_and_h141_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg 1x, /t/p/w188_and_h282_bestv2/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg 2x" alt="Star Wars: Episode III - Revenge of the Sith">
     
   
 
@@ -1026,16 +875,18 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4e79cae77b9aa11825000106" data-media-type="movie" data-media-adult="false" class="result" href="/movie/74849"><h2>The Star Wars Holiday Special</h2></a>
+          <div>
+            <a data-id="4bc89762017a3c122d0181b0" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1895"><h2>Star Wars: Episode III - Revenge of the Sith</h2></a>
+          </div>
 
           
-            <span class="release_date">December  1, 1978</span>
+            <span class="release_date">May 17, 2005</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Luke Skywalker and Han Solo battle evil Imperial forces to help Chewbacca reach his imperiled family on the Wookiee planet - in time for Life Day, their most important day of the year!</p>
+        <p>The evil Darth Sidious enacts his final plan for unlimited power -- and the heroic Jedi Anakin Skywalker must choose a side.</p>
       </div>
     </div>
   </div>
@@ -1043,14 +894,14 @@
   
 </div>
     
-      <div id="card_movie_5884aec99251413edb019207" class="card v4 tight">
+      <div id="card_movie_4bc8975f017a3c122d018142" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5884aec99251413edb019207" data-media-type="movie" data-media-adult="false" class="result" href="/movie/436621">
+        <a data-id="4bc8975f017a3c122d018142" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1894">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/nsZIPT5pyvXHftO8bH4o7LU8Vch.jpg" srcset="/t/p/w94_and_h141_bestv2/nsZIPT5pyvXHftO8bH4o7LU8Vch.jpg 1x, /t/p/w188_and_h282_bestv2/nsZIPT5pyvXHftO8bH4o7LU8Vch.jpg 2x" alt="Star Wars : L&#39;incroyable Légende">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg" srcset="/t/p/w94_and_h141_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg 1x, /t/p/w188_and_h282_bestv2/oZNPzxqM2s5DyVWab09NTQScDQt.jpg 2x" alt="Star Wars: Episode II - Attack of the Clones">
     
   
 
@@ -1061,16 +912,18 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5884aec99251413edb019207" data-media-type="movie" data-media-adult="false" class="result" href="/movie/436621"><h2>Star Wars : L&#39;incroyable Légende</h2></a>
+          <div>
+            <a data-id="4bc8975f017a3c122d018142" data-media-type="movie" data-media-adult="false" class="result" href="/movie/1894"><h2>Star Wars: Episode II - Attack of the Clones</h2></a>
+          </div>
 
           
-            <span class="release_date">November 25, 2015</span>
+            <span class="release_date">May 15, 2002</span>
           
         </div>
       </div>
 
       <div class="overview">
-        
+        <p>Following an assassination attempt on Senator Padmé Amidala, Jedi Knights Anakin Skywalker and Obi-Wan Kenobi investigate a mysterious plot that could change the galaxy forever.</p>
       </div>
     </div>
   </div>
@@ -1078,14 +931,14 @@
   
 </div>
     
-      <div id="card_movie_4e4ceb667b9aa10cb20002c3" class="card v4 tight">
+      <div id="card_movie_4c6762e07b9aa172d9000c03" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="4e4ceb667b9aa10cb20002c3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/72448">
+        <a data-id="4c6762e07b9aa172d9000c03" data-media-type="movie" data-media-adult="false" class="result" href="/movie/42979">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/iLR4myu0RED1JYQGEcJpOM7CWAN.jpg" srcset="/t/p/w94_and_h141_bestv2/iLR4myu0RED1JYQGEcJpOM7CWAN.jpg 1x, /t/p/w188_and_h282_bestv2/iLR4myu0RED1JYQGEcJpOM7CWAN.jpg 2x" alt="Star Wars: A Musical Journey">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/h44WN4mVJ6wEpJgLaaNoFjv0NAo.jpg" srcset="/t/p/w94_and_h141_bestv2/h44WN4mVJ6wEpJgLaaNoFjv0NAo.jpg 1x, /t/p/w188_and_h282_bestv2/h44WN4mVJ6wEpJgLaaNoFjv0NAo.jpg 2x" alt="Robot Chicken: Star Wars">
     
   
 
@@ -1096,16 +949,18 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4e4ceb667b9aa10cb20002c3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/72448"><h2>Star Wars: A Musical Journey</h2></a>
+          <div>
+            <a data-id="4c6762e07b9aa172d9000c03" data-media-type="movie" data-media-adult="false" class="result" href="/movie/42979"><h2>Robot Chicken: Star Wars</h2></a>
+          </div>
 
           
-            <span class="release_date">May  3, 2005</span>
+            <span class="release_date">July 17, 2007</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Actor Ian McDiarmid introduces several music videos scored by the infamous Star Wars scores composed by John Williams. There are sixteen chapters in all, and are all perfectly created to show us the great music from the six films.</p>
+        <p>Fans of Adult Swim's "Robot Chicken" and the Star Wars movie franchise won't want to miss this collection of 30 sketches. This hilarious compilation features an array of skits -- such as "Darth Vader's Collect Call" and "Inside the AT-AT" -- as well as the incredible voice talents of Hulk Hogan, Malcolm McDowell, Conan O'Brien and even the original Luke Skywalker himself, Mark Hamill.</p>
       </div>
     </div>
   </div>
@@ -1131,7 +986,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="569f62c2c3a36858c300923a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/378386"><h2>Star Wars: Greatest Moments</h2></a>
+          <div>
+            <a data-id="569f62c2c3a36858c300923a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/378386"><h2>Star Wars: Greatest Moments</h2></a>
+          </div>
 
           
             <span class="release_date">December 26, 2015</span>
@@ -1148,9 +1005,194 @@
   
 </div>
     
+      <div id="card_movie_4e4ceb667b9aa10cb20002c3" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="4e4ceb667b9aa10cb20002c3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/72448">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/iLR4myu0RED1JYQGEcJpOM7CWAN.jpg" srcset="/t/p/w94_and_h141_bestv2/iLR4myu0RED1JYQGEcJpOM7CWAN.jpg 1x, /t/p/w188_and_h282_bestv2/iLR4myu0RED1JYQGEcJpOM7CWAN.jpg 2x" alt="Star Wars: A Musical Journey">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="4e4ceb667b9aa10cb20002c3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/72448"><h2>Star Wars: A Musical Journey</h2></a>
+          </div>
+
+          
+            <span class="release_date">May  3, 2005</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Actor Ian McDiarmid introduces several music videos scored by the infamous Star Wars scores composed by John Williams. There are sixteen chapters in all, and are all perfectly created to show us the great music from the six films.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_5e2fc83efd140b00196cb48a" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5e2fc83efd140b00196cb48a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/667574">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg" srcset="/t/p/w94_and_h141_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg 1x, /t/p/w188_and_h282_bestv2/ocA0ECiFoB4d1HITyEDQlLk7x84.jpg 2x" alt="Battle Star Wars">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="5e2fc83efd140b00196cb48a" data-media-type="movie" data-media-adult="false" class="result" href="/movie/667574"><h2>Battle Star Wars</h2></a>
+          </div>
+
+          
+            <span class="release_date">January 28, 2020</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>When the leader of the evil Coalition threatens to destroy a Rebel planet for its resources, his daughter will have no choice but to join the Rebel side and fight for what is right.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_4ef4e6fd760ee304a1000229" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="4ef4e6fd760ee304a1000229" data-media-type="movie" data-media-adult="false" class="result" href="/movie/81418">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/dhTb1CYXdfxMT2RAPCeFAvfmWiT.jpg" srcset="/t/p/w94_and_h141_bestv2/dhTb1CYXdfxMT2RAPCeFAvfmWiT.jpg 1x, /t/p/w188_and_h282_bestv2/dhTb1CYXdfxMT2RAPCeFAvfmWiT.jpg 2x" alt="Star Wars: Deleted Magic">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="4ef4e6fd760ee304a1000229" data-media-type="movie" data-media-adult="false" class="result" href="/movie/81418"><h2>Star Wars: Deleted Magic</h2></a>
+          </div>
+
+          
+            <span class="release_date">March  1, 2005</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>This is a very interesting Star Wars documentary about the making of the first Star Wars film (and to a lesser extent Empire and Jedi) including a look at some of the deleted scenes, behind the scenes footage, and notes on subtle things that you might have never seen or noticed before.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_5ac2dc159251412720029f06" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5ac2dc159251412720029f06" data-media-type="movie" data-media-adult="false" class="result" href="/movie/515773">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/ApEnrioR2GrkyWVXCrIzDMtgk9b.jpg" srcset="/t/p/w94_and_h141_bestv2/ApEnrioR2GrkyWVXCrIzDMtgk9b.jpg 1x, /t/p/w188_and_h282_bestv2/ApEnrioR2GrkyWVXCrIzDMtgk9b.jpg 2x" alt="Star Wars Spoofs">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="5ac2dc159251412720029f06" data-media-type="movie" data-media-adult="false" class="result" href="/movie/515773"><h2>Star Wars Spoofs</h2></a>
+          </div>
+
+          
+            <span class="release_date">January  1, 2011</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>The farce is strong with this one! Enjoy a hilarious collection of Star Wars movie scene spoofs and parodies that have been created over the years, including outrageous clips from Family Guy, The Simpsons, How I Met Your Mother, and more - and don't miss "Weird Al" Yankovic's one-of-a-kind music video tribute to The Phantom Menace!</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_5039bd62760ee35fb5007d2d" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5039bd62760ee35fb5007d2d" data-media-type="movie" data-media-adult="false" class="result" href="/movie/128295">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/dFvudLgvS0Upn2X6wPBRnntXCBy.jpg" srcset="/t/p/w94_and_h141_bestv2/dFvudLgvS0Upn2X6wPBRnntXCBy.jpg 1x, /t/p/w188_and_h282_bestv2/dFvudLgvS0Upn2X6wPBRnntXCBy.jpg 2x" alt="Star Wars: The Legacy Revealed">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="5039bd62760ee35fb5007d2d" data-media-type="movie" data-media-adult="false" class="result" href="/movie/128295"><h2>Star Wars: The Legacy Revealed</h2></a>
+          </div>
+
+          
+            <span class="release_date">May 28, 2007</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Film-makers and academics discuss the use of mythology in Star Wars and the impact of the films on society</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
 
     <div class="pagination_wrapper">
-  <div role="navigation" aria-label="Pagination" class="pagination" custom_path_info="&#47;search&#47;movie"><span class="previous_page disabled">← Previous</span> <em class="current" aria-label="Page 1" aria-current="page">1</em> <a rel="next" aria-label="Page 2" href="&#47;search&#47;movie?page=2&amp;query=star+wars">2</a> <a aria-label="Page 3" href="&#47;search&#47;movie?page=3&amp;query=star+wars">3</a> <a aria-label="Page 4" href="&#47;search&#47;movie?page=4&amp;query=star+wars">4</a> <a aria-label="Page 5" href="&#47;search&#47;movie?page=5&amp;query=star+wars">5</a> <a aria-label="Page 6" href="&#47;search&#47;movie?page=6&amp;query=star+wars">6</a> <a aria-label="Page 7" href="&#47;search&#47;movie?page=7&amp;query=star+wars">7</a> <a aria-label="Page 8" href="&#47;search&#47;movie?page=8&amp;query=star+wars">8</a> <a class="next_page" rel="next" href="&#47;search&#47;movie?page=2&amp;query=star+wars">Next →</a></div>
+  <div role="navigation" aria-label="Pagination" class="pagination" custom_path_info="&#47;search&#47;movie"><span class="previous_page disabled">← Previous</span> <em class="current" aria-label="Page 1" aria-current="page">1</em> <a rel="next" aria-label="Page 2" href="&#47;search&#47;movie?page=2&amp;query=star+wars">2</a> <a aria-label="Page 3" href="&#47;search&#47;movie?page=3&amp;query=star+wars">3</a> <a aria-label="Page 4" href="&#47;search&#47;movie?page=4&amp;query=star+wars">4</a> <a aria-label="Page 5" href="&#47;search&#47;movie?page=5&amp;query=star+wars">5</a> <a aria-label="Page 6" href="&#47;search&#47;movie?page=6&amp;query=star+wars">6</a> <a aria-label="Page 7" href="&#47;search&#47;movie?page=7&amp;query=star+wars">7</a> <a aria-label="Page 8" href="&#47;search&#47;movie?page=8&amp;query=star+wars">8</a> <a aria-label="Page 9" href="&#47;search&#47;movie?page=9&amp;query=star+wars">9</a> <a class="next_page" rel="next" href="&#47;search&#47;movie?page=2&amp;query=star+wars">Next →</a></div>
 </div>
   
 </div>
@@ -1167,7 +1209,7 @@
         <a data-id="52e3ee44760ee323cf056b40" data-media-type="tv" data-media-adult="false" class="result" href="/tv/60554">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/jmgR8330sKEJehr27rQ3bODnrlP.jpg" srcset="/t/p/w94_and_h141_bestv2/jmgR8330sKEJehr27rQ3bODnrlP.jpg 1x, /t/p/w188_and_h282_bestv2/jmgR8330sKEJehr27rQ3bODnrlP.jpg 2x" alt="Star Wars Rebels">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/vOUxo5sfXyQPIoF8rtYK1OVVBPi.jpg" srcset="/t/p/w94_and_h141_bestv2/vOUxo5sfXyQPIoF8rtYK1OVVBPi.jpg 1x, /t/p/w188_and_h282_bestv2/vOUxo5sfXyQPIoF8rtYK1OVVBPi.jpg 2x" alt="Star Wars Rebels">
     
   
 
@@ -1178,7 +1220,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="52e3ee44760ee323cf056b40" data-media-type="tv" data-media-adult="false" class="result" href="/tv/60554"><h2>Star Wars Rebels</h2></a>
+          <div>
+            <a data-id="52e3ee44760ee323cf056b40" data-media-type="tv" data-media-adult="false" class="result" href="/tv/60554"><h2>Star Wars Rebels</h2></a>
+          </div>
 
           
             <span class="release_date">October 13, 2014</span>
@@ -1195,14 +1239,14 @@
   
 </div>
     
-      <div id="card_tv_52575d9719c29531db1a9b9f" class="card v4 tight">
+      <div id="card_tv_52532fb319c2957940007605" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194">
+        <a data-id="52532fb319c2957940007605" data-media-type="tv" data-media-adult="false" class="result" href="/tv/25">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg" srcset="/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 1x, /t/p/w188_and_h282_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 2x" alt="Star Wars: The Clone Wars">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/b3gsZSTauRBJDJvWCbD9oVAsFe1.jpg" srcset="/t/p/w94_and_h141_bestv2/b3gsZSTauRBJDJvWCbD9oVAsFe1.jpg 1x, /t/p/w188_and_h282_bestv2/b3gsZSTauRBJDJvWCbD9oVAsFe1.jpg 2x" alt="Star Wars: Droids">
     
   
 
@@ -1213,86 +1257,18 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194"><h2>Star Wars: The Clone Wars</h2></a>
+          <div>
+            <a data-id="52532fb319c2957940007605" data-media-type="tv" data-media-adult="false" class="result" href="/tv/25"><h2>Star Wars: Droids</h2></a>
+          </div>
 
           
-            <span class="release_date">October  3, 2008</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Yoda, Obi-Wan Kenobi, Anakin Skywalker, Mace Windu and other Jedi Knights lead the Grand Army of the Republic against the droid army of the Separatists.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_5e972de85907de0019de4285" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5e972de85907de0019de4285" data-media-type="tv" data-media-adult="false" class="result" href="/tv/101978">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/6Hc2eHp59iTyMqkhcumNovq2l6y.jpg" srcset="/t/p/w94_and_h141_bestv2/6Hc2eHp59iTyMqkhcumNovq2l6y.jpg 1x, /t/p/w188_and_h282_bestv2/6Hc2eHp59iTyMqkhcumNovq2l6y.jpg 2x" alt="Disney Gallery &#47; Star Wars: The Mandalorian">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5e972de85907de0019de4285" data-media-type="tv" data-media-adult="false" class="result" href="/tv/101978"><h2>Disney Gallery &#47; Star Wars: The Mandalorian</h2></a>
-
-          
-            <span class="release_date">May  4, 2020</span>
+            <span class="release_date">September  7, 1985</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Executive producer Jon Favreau invites the cast and crew of The Mandalorian to share an unprecedented look at the making of the series. Each chapter explores a different facet of the first live-action Star Wars television show through interviews, never-before-seen footage, and roundtable conversations hosted by Favreau himself.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_52574c88760ee36aaa156298" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="52574c88760ee36aaa156298" data-media-type="tv" data-media-adult="false" class="result" href="/tv/3122">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/2lsuke69bRdyB1sxtKmavtwkc35.jpg" srcset="/t/p/w94_and_h141_bestv2/2lsuke69bRdyB1sxtKmavtwkc35.jpg 1x, /t/p/w188_and_h282_bestv2/2lsuke69bRdyB1sxtKmavtwkc35.jpg 2x" alt="Star Wars: Clone Wars">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="52574c88760ee36aaa156298" data-media-type="tv" data-media-adult="false" class="result" href="/tv/3122"><h2>Star Wars: Clone Wars</h2></a>
-
-          
-            <span class="release_date">November  7, 2003</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Star Wars: Clone Wars is an Emmy Award- and Annie Award-winning American animated micro-series set in the Star Wars universe.</p><p></p><p>Chronologically, the series takes place during the three-year time period between the prequel films Attack of the Clones and Revenge of the Sith. The show depicted the actions of various characters in the Star Wars prequel trilogy, including Anakin Skywalker, Obi-Wan Kenobi, Mace Windu, and other Knights of the Jedi Order during the conflict, leading the clone trooper forces of the Galactic Republic against the battle droid armies of the Confederacy of Independent Systems and the Sith.</p>
+        <p>Star Wars: Droids, also known as Droids: The Adventures of R2-D2 and C-3PO, and 2004 re-released on DVD as Star Wars Animated Adventures: Droids, is an animated television series that features the exploits of R2-D2 and C-3PO, the droids who have appeared in all six Star Wars films. The series takes place between the events depicted in Star Wars Episode III: Revenge of the Sith and Star Wars Episode IV: A New Hope.</p><p></p><p>Over the course of the series, the droids team up with four different sets of masters. The series is divided up into three cycles: at the beginning of each, the droids usually run into their new masters in an accidental way, and at the end of each cycle, they usually are forced to leave their masters for one reason or another. The Great Heep, a television special following the series, served as a prequel to the third Mungo Baobab cycle.</p><p></p><p>The series' opening theme, "Trouble Again," was performed by Stewart Copeland of the Police and written by Copeland and Derek Holt.</p>
       </div>
     </div>
   </div>
@@ -1318,7 +1294,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5ae209c692514124c4012592" data-media-type="tv" data-media-adult="false" class="result" href="/tv/79093"><h2>Star Wars Resistance</h2></a>
+          <div>
+            <a data-id="5ae209c692514124c4012592" data-media-type="tv" data-media-adult="false" class="result" href="/tv/79093"><h2>Star Wars Resistance</h2></a>
+          </div>
 
           
             <span class="release_date">October  7, 2018</span>
@@ -1353,7 +1331,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="525751c2760ee36aaa1cc498" data-media-type="tv" data-media-adult="false" class="result" href="/tv/3478"><h2>Star Wars: Ewoks</h2></a>
+          <div>
+            <a data-id="525751c2760ee36aaa1cc498" data-media-type="tv" data-media-adult="false" class="result" href="/tv/3478"><h2>Star Wars: Ewoks</h2></a>
+          </div>
 
           
             <span class="release_date">September  7, 1985</span>
@@ -1363,76 +1343,6 @@
 
       <div class="overview">
         <p>Star Wars: Ewoks is an American/Canadian animated television series featuring the Ewok characters introduced in Star Wars Episode VI: Return of the Jedi. It aired for two seasons between 1985 and 1986.</p><p></p><p>The series was produced by Nelvana on behalf of Lucasfilm and broadcast on ABC, both by itself and later, as part of The Ewoks and Droids Adventure Hour. The first season was advertised as simply Ewoks, but the second season was advertised as The All New Ewoks. The series lasted 35 episodes.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_52532fb319c2957940007605" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="52532fb319c2957940007605" data-media-type="tv" data-media-adult="false" class="result" href="/tv/25">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/b3gsZSTauRBJDJvWCbD9oVAsFe1.jpg" srcset="/t/p/w94_and_h141_bestv2/b3gsZSTauRBJDJvWCbD9oVAsFe1.jpg 1x, /t/p/w188_and_h282_bestv2/b3gsZSTauRBJDJvWCbD9oVAsFe1.jpg 2x" alt="Star Wars: Droids">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="52532fb319c2957940007605" data-media-type="tv" data-media-adult="false" class="result" href="/tv/25"><h2>Star Wars: Droids</h2></a>
-
-          
-            <span class="release_date">September  7, 1985</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Star Wars: Droids, also known as Droids: The Adventures of R2-D2 and C-3PO, and 2004 re-released on DVD as Star Wars Animated Adventures: Droids, is an animated television series that features the exploits of R2-D2 and C-3PO, the droids who have appeared in all six Star Wars films. The series takes place between the events depicted in Star Wars Episode III: Revenge of the Sith and Star Wars Episode IV: A New Hope.</p><p></p><p>Over the course of the series, the droids team up with four different sets of masters. The series is divided up into three cycles: at the beginning of each, the droids usually run into their new masters in an accidental way, and at the end of each cycle, they usually are forced to leave their masters for one reason or another. The Great Heep, a television special following the series, served as a prequel to the third Mungo Baobab cycle.</p><p></p><p>The series' opening theme, "Trouble Again," was performed by Stewart Copeland of the Police and written by Copeland and Derek Holt.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_58fd9413925141640b02bf07" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg" srcset="/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 1x, /t/p/w188_and_h282_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 2x" alt="Star Wars: Forces of Destiny">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412"><h2>Star Wars: Forces of Destiny</h2></a>
-
-          
-            <span class="release_date">July  3, 2017</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>An animated micro-series starring Rey, Jyn Erso, Princess Leia, Ahsoka Tano, and more. Small moments and everyday decisions shape a larger heroic saga.</p>
       </div>
     </div>
   </div>
@@ -1458,7 +1368,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5fd2f30b028f14003dfb6f44" data-media-type="tv" data-media-adult="false" class="result" href="/tv/114478"><h2>Star Wars: Visions</h2></a>
+          <div>
+            <a data-id="5fd2f30b028f14003dfb6f44" data-media-type="tv" data-media-adult="false" class="result" href="/tv/114478"><h2>Star Wars: Visions</h2></a>
+          </div>
 
           
         </div>
@@ -1466,6 +1378,80 @@
 
       <div class="overview">
         <p>An anthology series of animated short films celebrating Star Wars through the lens of the world’s best anime creators.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_52574c88760ee36aaa156298" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="52574c88760ee36aaa156298" data-media-type="tv" data-media-adult="false" class="result" href="/tv/3122">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/2lsuke69bRdyB1sxtKmavtwkc35.jpg" srcset="/t/p/w94_and_h141_bestv2/2lsuke69bRdyB1sxtKmavtwkc35.jpg 1x, /t/p/w188_and_h282_bestv2/2lsuke69bRdyB1sxtKmavtwkc35.jpg 2x" alt="Star Wars: Clone Wars">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="52574c88760ee36aaa156298" data-media-type="tv" data-media-adult="false" class="result" href="/tv/3122"><h2>Star Wars: Clone Wars</h2></a>
+          </div>
+
+          
+            <span class="release_date">November  7, 2003</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Star Wars: Clone Wars is an Emmy Award- and Annie Award-winning American animated micro-series set in the Star Wars universe.</p><p></p><p>Chronologically, the series takes place during the three-year time period between the prequel films Attack of the Clones and Revenge of the Sith. The show depicted the actions of various characters in the Star Wars prequel trilogy, including Anakin Skywalker, Obi-Wan Kenobi, Mace Windu, and other Knights of the Jedi Order during the conflict, leading the clone trooper forces of the Galactic Republic against the battle droid armies of the Confederacy of Independent Systems and the Sith.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5bd737c90e0a2622c3045a73" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg" srcset="/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 1x, /t/p/w188_and_h282_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 2x" alt="LEGO Star Wars: All-Stars">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558"><h2>LEGO Star Wars: All-Stars</h2></a>
+          </div>
+
+          
+            <span class="release_date">November 10, 2018</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>An adventure series that spans all Star Wars eras featuring LEGO versions of the fresh faces of the Star Wars galaxy alongside iconic heroes including Kylo Ren, R2-D2, Young Han, Chewie, Young Lando, BB-8 and General Leia.</p>
       </div>
     </div>
   </div>
@@ -1491,7 +1477,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="59a17a70c3a368480e0289e1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/73518"><h2>Star Wars Rebels Recon</h2></a>
+          <div>
+            <a data-id="59a17a70c3a368480e0289e1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/73518"><h2>Star Wars Rebels Recon</h2></a>
+          </div>
 
           
             <span class="release_date">October  3, 2014</span>
@@ -1501,41 +1489,6 @@
 
       <div class="overview">
         <p>Webseries giving an inside look into the Star Wars Rebels TV Show</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_5769cef1c3a368291f0002eb" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/1uI5ZG2eGEV25n3klN4M1SrJCl0.jpg" srcset="/t/p/w94_and_h141_bestv2/1uI5ZG2eGEV25n3klN4M1SrJCl0.jpg 1x, /t/p/w188_and_h282_bestv2/1uI5ZG2eGEV25n3klN4M1SrJCl0.jpg 2x" alt="LEGO Star Wars: The Freemaker Adventures">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837"><h2>LEGO Star Wars: The Freemaker Adventures</h2></a>
-
-          
-            <span class="release_date">June 20, 2016</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>Set between The Empire Strikes Back and Return of the Jedi, The Freemaker Adventures centers on a family of three young siblings—young boy Rowan, his sister Kordi, and their brother Zander—known as the Freemakers, who salvage parts from destroyed or damaged ships which they use to build new ones, which they sell in order to make their living. They are accompanied by their salvaged battle droid Roger.</p>
       </div>
     </div>
   </div>
@@ -1561,7 +1514,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5c3246bfc3a36879cfa6edcf" data-media-type="tv" data-media-adult="false" class="result" href="/tv/85536"><h2>Star Wars Galaxy of Adventures</h2></a>
+          <div>
+            <a data-id="5c3246bfc3a36879cfa6edcf" data-media-type="tv" data-media-adult="false" class="result" href="/tv/85536"><h2>Star Wars Galaxy of Adventures</h2></a>
+          </div>
 
           
             <span class="release_date">November 30, 2018</span>
@@ -1596,7 +1551,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="55d91d1d92514143de00379e" data-media-type="tv" data-media-adult="false" class="result" href="/tv/63722"><h2>LEGO Star Wars: Droid Tales</h2></a>
+          <div>
+            <a data-id="55d91d1d92514143de00379e" data-media-type="tv" data-media-adult="false" class="result" href="/tv/63722"><h2>LEGO Star Wars: Droid Tales</h2></a>
+          </div>
 
           
             <span class="release_date">October  5, 2015</span>
@@ -1613,14 +1570,14 @@
   
 </div>
     
-      <div id="card_tv_544267f8c3a3683e08001e30" class="card v4 tight">
+      <div id="card_tv_58fd9413925141640b02bf07" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="544267f8c3a3683e08001e30" data-media-type="tv" data-media-adult="false" class="result" href="/tv/61513">
+        <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg" srcset="/t/p/w94_and_h141_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg 1x, /t/p/w188_and_h282_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg 2x" alt="Lego Star Wars: The Yoda Chronicles">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg" srcset="/t/p/w94_and_h141_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 1x, /t/p/w188_and_h282_bestv2/a5d2y264VgYUvpKUNNT6EbL1Cwb.jpg 2x" alt="Star Wars: Forces of Destiny">
     
   
 
@@ -1631,16 +1588,18 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="544267f8c3a3683e08001e30" data-media-type="tv" data-media-adult="false" class="result" href="/tv/61513"><h2>Lego Star Wars: The Yoda Chronicles</h2></a>
+          <div>
+            <a data-id="58fd9413925141640b02bf07" data-media-type="tv" data-media-adult="false" class="result" href="/tv/71412"><h2>Star Wars: Forces of Destiny</h2></a>
+          </div>
 
           
-            <span class="release_date">May 29, 2013</span>
+            <span class="release_date">July  3, 2017</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Yoda begins by training Padawans at the Jedi Temple Academy, but then he feels a disturbance in the Force and rushes off to fight the Dark Side.</p>
+        <p>An animated micro-series starring Rey, Jyn Erso, Princess Leia, Ahsoka Tano, and more. Small moments and everyday decisions shape a larger heroic saga.</p>
       </div>
     </div>
   </div>
@@ -1666,16 +1625,92 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971"><h2>Star Wars: The Bad Batch</h2></a>
+          <div>
+            <a data-id="5f0c92f55e12000035e6d244" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105971"><h2>Star Wars: The Bad Batch</h2></a>
+          </div>
 
           
-            <span class="release_date">December  1, 2021</span>
+            <span class="release_date">May  4, 2021</span>
           
         </div>
       </div>
 
       <div class="overview">
         <p>Follow the elite and experimental Clones of the Bad Batch as they find their way in a rapidly changing galaxy in the aftermath of the Clone Wars.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_52575d9719c29531db1a9b9f" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg" srcset="/t/p/w94_and_h141_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 1x, /t/p/w188_and_h282_bestv2/e1nWfnnCVqxS2LeTO3dwGyAsG2V.jpg 2x" alt="Star Wars: The Clone Wars">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="52575d9719c29531db1a9b9f" data-media-type="tv" data-media-adult="false" class="result" href="/tv/4194"><h2>Star Wars: The Clone Wars</h2></a>
+          </div>
+
+          
+            <span class="release_date">October  3, 2008</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Yoda, Obi-Wan Kenobi, Anakin Skywalker, Mace Windu and other Jedi Knights lead the Grand Army of the Republic against the droid army of the Separatists.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5769cef1c3a368291f0002eb" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/1uI5ZG2eGEV25n3klN4M1SrJCl0.jpg" srcset="/t/p/w94_and_h141_bestv2/1uI5ZG2eGEV25n3klN4M1SrJCl0.jpg 1x, /t/p/w188_and_h282_bestv2/1uI5ZG2eGEV25n3klN4M1SrJCl0.jpg 2x" alt="LEGO Star Wars: The Freemaker Adventures">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="5769cef1c3a368291f0002eb" data-media-type="tv" data-media-adult="false" class="result" href="/tv/66837"><h2>LEGO Star Wars: The Freemaker Adventures</h2></a>
+          </div>
+
+          
+            <span class="release_date">June 20, 2016</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Set between The Empire Strikes Back and Return of the Jedi, The Freemaker Adventures centers on a family of three young siblings—young boy Rowan, his sister Kordi, and their brother Zander—known as the Freemakers, who salvage parts from destroyed or damaged ships which they use to build new ones, which they sell in order to make their living. They are accompanied by their salvaged battle droid Roger.</p>
       </div>
     </div>
   </div>
@@ -1701,7 +1736,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5de6ef4c3faba00019127b92" data-media-type="tv" data-media-adult="false" class="result" href="/tv/96101"><h2>Star Wars: Jedi Temple Challenge</h2></a>
+          <div>
+            <a data-id="5de6ef4c3faba00019127b92" data-media-type="tv" data-media-adult="false" class="result" href="/tv/96101"><h2>Star Wars: Jedi Temple Challenge</h2></a>
+          </div>
 
           
             <span class="release_date">June 10, 2020</span>
@@ -1711,6 +1748,80 @@
 
       <div class="overview">
         <p>A game show set in a galaxy far, far away, which tests young contestants’ abilities in the core Jedi principles of strength, knowledge, and bravery as they face thrilling and fun obstacles in an attempt to achieve the rank of Jedi Knight</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_5e972de85907de0019de4285" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5e972de85907de0019de4285" data-media-type="tv" data-media-adult="false" class="result" href="/tv/101978">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/6Hc2eHp59iTyMqkhcumNovq2l6y.jpg" srcset="/t/p/w94_and_h141_bestv2/6Hc2eHp59iTyMqkhcumNovq2l6y.jpg 1x, /t/p/w188_and_h282_bestv2/6Hc2eHp59iTyMqkhcumNovq2l6y.jpg 2x" alt="Disney Gallery &#47; Star Wars: The Mandalorian">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="5e972de85907de0019de4285" data-media-type="tv" data-media-adult="false" class="result" href="/tv/101978"><h2>Disney Gallery &#47; Star Wars: The Mandalorian</h2></a>
+          </div>
+
+          
+            <span class="release_date">May  4, 2020</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Executive producer Jon Favreau invites the cast and crew of The Mandalorian to share an unprecedented look at the making of the series. Each chapter explores a different facet of the first live-action Star Wars television show through interviews, never-before-seen footage, and roundtable conversations hosted by Favreau himself.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_tv_544267f8c3a3683e08001e30" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="544267f8c3a3683e08001e30" data-media-type="tv" data-media-adult="false" class="result" href="/tv/61513">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg" srcset="/t/p/w94_and_h141_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg 1x, /t/p/w188_and_h282_bestv2/1S1j1QxwLNPNiUrq8GSg05KkAmY.jpg 2x" alt="Lego Star Wars: The Yoda Chronicles">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="544267f8c3a3683e08001e30" data-media-type="tv" data-media-adult="false" class="result" href="/tv/61513"><h2>Lego Star Wars: The Yoda Chronicles</h2></a>
+          </div>
+
+          
+            <span class="release_date">May 29, 2013</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Yoda begins by training Padawans at the Jedi Temple Academy, but then he feels a disturbance in the Force and rushes off to fight the Dark Side.</p>
       </div>
     </div>
   </div>
@@ -1736,7 +1847,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5eeefca610dad60032be11b1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105106"><h2>Star Wars Blips</h2></a>
+          <div>
+            <a data-id="5eeefca610dad60032be11b1" data-media-type="tv" data-media-adult="false" class="result" href="/tv/105106"><h2>Star Wars Blips</h2></a>
+          </div>
 
           
             <span class="release_date">May  3, 2017</span>
@@ -1746,41 +1859,6 @@
 
       <div class="overview">
         <p>What does a curious little droid do when he's not hurtling through space on a daring mission to save the galaxy? Star Wars Blips stars BB-8 in his very own series of animated shorts, featuring heroes of the Star Wars universe like Chewbacca, C-3PO and of course, R2-D2.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_tv_5bd737c90e0a2622c3045a73" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg" srcset="/t/p/w94_and_h141_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 1x, /t/p/w188_and_h282_bestv2/97dmYYI7TACdGvXWQd2sIyMq16n.jpg 2x" alt="LEGO Star Wars: All-Stars">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5bd737c90e0a2622c3045a73" data-media-type="tv" data-media-adult="false" class="result" href="/tv/83558"><h2>LEGO Star Wars: All-Stars</h2></a>
-
-          
-            <span class="release_date">November 10, 2018</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>An adventure series that spans all Star Wars eras featuring LEGO versions of the fresh faces of the Star Wars galaxy alongside iconic heroes including Kylo Ren, R2-D2, Young Han, Chewie, Young Lando, BB-8 and General Leia.</p>
       </div>
     </div>
   </div>
@@ -1806,7 +1884,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5fdf79584a4bfc003e7666bc" data-media-type="tv" data-media-adult="false" class="result" href="/tv/114969"><h2>Star Wars Detours</h2></a>
+          <div>
+            <a data-id="5fdf79584a4bfc003e7666bc" data-media-type="tv" data-media-adult="false" class="result" href="/tv/114969"><h2>Star Wars Detours</h2></a>
+          </div>
 
           
             <span class="release_date">November 29, 2020</span>
@@ -1841,7 +1921,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5b676b8b92514168b6032255" data-media-type="tv" data-media-adult="false" class="result" href="/tv/81401"><h2>Science of Star Wars</h2></a>
+          <div>
+            <a data-id="5b676b8b92514168b6032255" data-media-type="tv" data-media-adult="false" class="result" href="/tv/81401"><h2>Science of Star Wars</h2></a>
+          </div>
 
           
             <span class="release_date">May 16, 2005</span>
@@ -1907,7 +1989,7 @@
         <a data-id="4bc88aba017a3c122d00001a" data-media-type="collection" data-media-adult="false" class="result" href="/collection/10">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/iTQHKziZy9pAAY4hHEDCGPaOvFC.jpg" srcset="/t/p/w94_and_h141_bestv2/iTQHKziZy9pAAY4hHEDCGPaOvFC.jpg 1x, /t/p/w188_and_h282_bestv2/iTQHKziZy9pAAY4hHEDCGPaOvFC.jpg 2x" alt="Star Wars Collection">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/r8Ph5MYXL04Qzu4QBbq2KjqwtkQ.jpg" srcset="/t/p/w94_and_h141_bestv2/r8Ph5MYXL04Qzu4QBbq2KjqwtkQ.jpg 1x, /t/p/w188_and_h282_bestv2/r8Ph5MYXL04Qzu4QBbq2KjqwtkQ.jpg 2x" alt="Star Wars Collection">
     
   
 
@@ -1918,7 +2000,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4bc88aba017a3c122d00001a" data-media-type="collection" data-media-adult="false" class="result" href="/collection/10"><h2>Star Wars Collection</h2></a>
+          <div>
+            <a data-id="4bc88aba017a3c122d00001a" data-media-type="collection" data-media-adult="false" class="result" href="/collection/10"><h2>Star Wars Collection</h2></a>
+          </div>
 
           
         </div>
@@ -1949,7 +2033,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5818c40b9251414937007c23" data-media-type="collection" data-media-adult="false" class="result" href="/collection/423877"><h2>Turkish Star Wars</h2></a>
+          <div>
+            <a data-id="5818c40b9251414937007c23" data-media-type="collection" data-media-adult="false" class="result" href="/collection/423877"><h2>Turkish Star Wars</h2></a>
+          </div>
 
           
         </div>
@@ -1971,7 +2057,7 @@
         <a data-id="5461c174c3a3686f4c0019e0" data-media-type="collection" data-media-adult="false" class="result" href="/collection/302331">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/sHlgKW5hlQvwJseJkmnkSmL3YDI.jpg" srcset="/t/p/w94_and_h141_bestv2/sHlgKW5hlQvwJseJkmnkSmL3YDI.jpg 1x, /t/p/w188_and_h282_bestv2/sHlgKW5hlQvwJseJkmnkSmL3YDI.jpg 2x" alt="Lego Star Wars Collection">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/sHlgKW5hlQvwJseJkmnkSmL3YDI.jpg" srcset="/t/p/w94_and_h141_bestv2/sHlgKW5hlQvwJseJkmnkSmL3YDI.jpg 1x, /t/p/w188_and_h282_bestv2/sHlgKW5hlQvwJseJkmnkSmL3YDI.jpg 2x" alt="LEGO Star Wars Collection">
     
   
 
@@ -1982,7 +2068,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5461c174c3a3686f4c0019e0" data-media-type="collection" data-media-adult="false" class="result" href="/collection/302331"><h2>Lego Star Wars Collection</h2></a>
+          <div>
+            <a data-id="5461c174c3a3686f4c0019e0" data-media-type="collection" data-media-adult="false" class="result" href="/collection/302331"><h2>LEGO Star Wars Collection</h2></a>
+          </div>
 
           
         </div>
@@ -2004,7 +2092,7 @@
         <a data-id="50983ea9760ee3356e000235" data-media-type="collection" data-media-adult="false" class="result" href="/collection/141748">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/p3Zc72CqZJveY3psC7aCuaMUI9W.jpg" srcset="/t/p/w94_and_h141_bestv2/p3Zc72CqZJveY3psC7aCuaMUI9W.jpg 1x, /t/p/w188_and_h282_bestv2/p3Zc72CqZJveY3psC7aCuaMUI9W.jpg 2x" alt="Robot Chicken: Star Wars Collection">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/p3Zc72CqZJveY3psC7aCuaMUI9W.jpg" srcset="/t/p/w94_and_h141_bestv2/p3Zc72CqZJveY3psC7aCuaMUI9W.jpg 1x, /t/p/w188_and_h282_bestv2/p3Zc72CqZJveY3psC7aCuaMUI9W.jpg 2x" alt="Robot Chicken - Star Wars Collection">
     
   
 
@@ -2015,7 +2103,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="50983ea9760ee3356e000235" data-media-type="collection" data-media-adult="false" class="result" href="/collection/141748"><h2>Robot Chicken: Star Wars Collection</h2></a>
+          <div>
+            <a data-id="50983ea9760ee3356e000235" data-media-type="collection" data-media-adult="false" class="result" href="/collection/141748"><h2>Robot Chicken - Star Wars Collection</h2></a>
+          </div>
 
           
         </div>
@@ -2048,7 +2138,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="505dce69760ee3463a000830" data-media-type="collection" data-media-adult="false" class="result" href="/collection/133830"><h2>Star Wars: The Ewok Adventures Collection</h2></a>
+          <div>
+            <a data-id="505dce69760ee3463a000830" data-media-type="collection" data-media-adult="false" class="result" href="/collection/133830"><h2>Star Wars: The Ewok Adventures Collection</h2></a>
+          </div>
 
           
         </div>
@@ -2081,14 +2173,16 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5c583868c3a36826a6868f1e" data-media-type="collection" data-media-adult="false" class="result" href="/collection/580019"><h2>LEGO Star Wars: The Yoda Chronicles Collection</h2></a>
+          <div>
+            <a data-id="5c583868c3a36826a6868f1e" data-media-type="collection" data-media-adult="false" class="result" href="/collection/580019"><h2>LEGO Star Wars: The Yoda Chronicles Collection</h2></a>
+          </div>
 
           
         </div>
       </div>
 
       <div class="overview">
-        <p>The LEGO adventures of Jedi Master Yoda, set during various eras of Star Wars.</p>
+        <p>Based on the Star Wars franchise, this series of shorts follow the comedic adventures of LEGO Yoda.</p>
       </div>
     </div>
   </div>
@@ -2121,6 +2215,17 @@
       </li>
     
       <li>
+        <a href="/company/147374">
+          <div>
+            
+              Star Wars Theory
+            
+            
+          </div>
+        </a>
+      </li>
+    
+      <li>
         <a href="/company/95365">
           <div>
             
@@ -2146,7 +2251,11 @@
   
       <ul class="results">
   
-    <li><a href="/keyword/274498">star-wars</a></li>
+    <li><a href="/keyword/276057">star wars</a></li>
+  
+    <li><a href="/keyword/276058">star wars fan film</a></li>
+  
+    <li><a href="/keyword/276059">star wars theory</a></li>
   
   </ul>
 
@@ -2223,7 +2332,7 @@
         </div>
       </nav>
 
-      <section>Build c8e5215 (732)</section>
+      <section>Build 7e18b8e (974)</section>
     </footer>
 
     
@@ -2322,7 +2431,7 @@
 
     
 
-    <script src="/assets/2/footer-88d8069a2b64f6a5751f9ec90b06b9d13a6f59e2caa683d857b36a4b1455a764.js"></script>
+    <script src="/assets/2/footer-ec8fd260239bf7b85be386d03eb1bcb6a8ed5062578ef49351e9984ffee6bb86.js"></script>
     
       <script src="/assets/2/timeago/locales/jquery.timeago.en-US-f9d144e55407ca11f35de7a0d44b0d54ec1ffc6c4039dffd5a11c0a12e6a9482.js"></script>
     
@@ -2368,7 +2477,7 @@
         }
       }
 
-      $(document).ready(function() {
+      $(function() {
         jQuery.timeago.settings.allowFuture = true;
         $("time.timeago").timeago();
 
@@ -2620,7 +2729,6 @@
 
         $("#search_v4").kendoAutoComplete({
           highlightFirst: false,
-          animation: false,
           minLength: 1,
           dataTextField: "title",
           template: kendo.template($("#slim_multi_search_template").html()),
@@ -2643,9 +2751,9 @@
           },
           filtering: function(e) {
             var filter = e.filter != undefined ? e.filter.value : "";
-            if (filter.value == '') {
-              if( ($('#search_v4-list #trending_search_header_template').length) == 0 ) {
-                $('#search_v4_listbox').empty();
+            if (filter == '') {
+              if ( ($('#search_v4-list #trending_search_header_template').length) == 0 ) {
+                // $('#search_v4_listbox').empty();
                 $('#search_v4-list').prepend($("#search_v4_headerTemplate").html());
               }
             } else {
@@ -2655,6 +2763,10 @@
           select: function(e) {
             processing_selected_item = true;
             processSelectedItem(e);
+          },
+          close: function(e) {
+            // e.preventDefault();
+            // handle the event
           }
         }).data("kendoAutoComplete");
 
@@ -2739,7 +2851,7 @@
         });
 
         $(document).on('keydown', null, 'esc', function() {
-          if ( $('div.custom_bg.keyboard_s').length ) {
+          if ( $('div.custom_bg.keyboard_s').length && $('#ott_offers_window a.close').length ) {
             $('#ott_offers_window a.close')[0].click();
           }
         });
@@ -2794,7 +2906,6 @@
             <p class="sub">No known credits.</p>
           # } #
         </div>
-        <div class="clear"></div>
       </div>
     </script>
 
@@ -2923,7 +3034,7 @@
     <script id="search_v4_headerTemplate" type="text/x-kendo-template">
       <div id="trending_search_header_template" class="slim_search_results_header">
         <div class="wrapper">
-          <h2>Trending</h2>
+          <h2><span class="glyphicons_v2 trending"></span> Trending</h2>
         </div>
       </div>
     </script>

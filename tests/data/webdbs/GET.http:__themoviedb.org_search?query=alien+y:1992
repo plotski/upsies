@@ -30,13 +30,13 @@
     <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen">
-    <link rel="stylesheet" href="/assets/2/application-a294576d87517e34efab9ccc38ef849872a6c3a7520061e74675fde872222802.css" media="screen">
+    <link rel="stylesheet" href="/assets/2/application-3619bce98ff2736e0f0ecf793917e42178112bd7db629cc0be689b26e9ac4742.css" media="screen">
     
     
-      <link rel="stylesheet" href="/assets/2/v4/media-13e11edeb59636d078c8f8a5658961aa257a06483d97df7a8f96e9032bffd844.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/media-7b01183c64a6819c82ef4f23a3087f1ff79f8de786653d6ffb10a07d2a5b70ef.css" media="screen">
       
     
-      <link rel="stylesheet" href="/assets/2/v4/account-42a198e695401c9420e5cf0f4d569277e5310b13ef74fcc2ddf29d7f16867b88.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/account-3a7e7607340c2ba9de9204b09ee40d73a687e5df2b2f7f6194e034fa8fd869c7.css" media="screen">
       
     
     
@@ -194,18 +194,15 @@
       $(function() {
         jQuery.event.special.touchstart = {
           setup: function( _, ns, handle ) {
-            this.addEventListener("touchstart", handle, { passive: true });
+            this.addEventListener("touchstart", handle, { passive: !ns.includes("noPreventDefault") });
+          }
+        };
+        jQuery.event.special.touchmove = {
+          setup: function( _, ns, handle ) {
+            this.addEventListener("touchmove", handle, { passive: !ns.includes("noPreventDefault") });
           }
         };
       });
-    </script>
-    <script src="/assets/2/kendo-fae9a5643b2ce630515830333c2ce1c86cecafc7ebe7837c4ae31e170c21a171.js"></script>
-    <script src="/assets/2/application-8b439329775a36098a2cbd50c366be017846961294003d640f99dbd7b416c181.js"></script>
-    
-      <script src="/assets/2/application.desktop-fc642e932de23c6d7bd19995577faae48e55c0c22f1b7cf5f9a60845689e5d3c.js"></script>
-    
-
-    <script>
       detected_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
         timezone = detected_timezone;
@@ -216,17 +213,22 @@
       'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
       })(window,document,'script','dataLayer','GTM-5QWVXV');
     </script>
+    <script src="/assets/2/kendo-59bc8069669538cda019bccf140d9a7598fd5e3392322771187961e4fef87b99.js"></script>
+    <script src="/assets/2/application-e59348eacf3926a7720c9af9abf03f0e89eeca294d61773cbe3f041ab8fc8111.js"></script>
+    
+      <script src="/assets/2/application.desktop-ea69249141a43ef7c6a59a19ee40eface5e171cf03eefffddb488574a66dea02.js"></script>
+    
+    
   </head>
 <body class="en v4">
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5QWVXV" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   
   
   
+    <script src="/assets/2/kendo-2021.1.204/messages/kendo.messages.en-US.min-79da68ae0221b4fd7978805d0c79cc7f682fddace5f2137aa0dae8fe1c5ddacd.js"></script>
   
-    <script src="/assets/2/kendo-2020.2.617/messages/kendo.messages.en-US.min-bca5bee854a9d1e5546abb31e5b16ae45e672d5c8739a9969483e769620830f8.js"></script>
   
-  
-    <script src="/assets/2/kendo-2020.2.617/cultures/kendo.culture.en-US.min-d7f7bc0e7130adf476f5d1d19bb64d908a43d3104ddc1d4264218803fb4d8264.js"></script>
+    <script src="/assets/2/kendo-2021.1.204/cultures/kendo.culture.en-US.min-61ce5636474a35333ecff74fe30c528d459bcee29b3b32fc0c58ac77de788b34.js"></script>
     <script>kendo.culture("en-US");</script>
   
 
@@ -328,7 +330,7 @@
   
 
   <script>
-  $(document).ready(function() {
+  $(function() {
     initializeScroller(false, '#search_menu_scroller');
     active_nav_item = 'movie';
 
@@ -412,7 +414,7 @@
               
                 <li class="">
                   <a id="person" href="/search/person?query=alien y:1992" class="search_tab " title="People" alt="People">People</a>
-                    <span>31</span>
+                    <span>30</span>
                 </li>
               
                 <li class="">
@@ -427,7 +429,7 @@
               
                 <li class="">
                   <a id="collection" href="/search/collection?query=alien y:1992" class="search_tab " title="Collections" alt="Collections">Collections</a>
-                    <span>10</span>
+                    <span>9</span>
                 </li>
               
                 <li class="">
@@ -466,7 +468,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4bc8a526017a3c122d03dd61" data-media-type="movie" data-media-adult="false" class="result" href="/movie/8077"><h2>Alien³</h2></a>
+          <div>
+            <a data-id="4bc8a526017a3c122d03dd61" data-media-type="movie" data-media-adult="false" class="result" href="/movie/8077"><h2>Alien³</h2></a>
+          </div>
 
           
             <span class="release_date">May 22, 1992</span>
@@ -476,76 +480,6 @@
 
       <div class="overview">
         <p>After escaping with Newt and Hicks from the alien planet, Ripley crash lands on Fiorina 161, a prison planet and host to a correctional facility. Unfortunately, although Newt and Hicks do not survive the crash, a more unwelcome visitor does. The prison does not allow weapons of any kind, and with aid being a long time away, the prisoners must simply survive in any way they can.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_563e5c559251417819008fa3" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="563e5c559251417819008fa3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/367099">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/83iq7QORVNUmmcNmuS4qrDDS5fs.jpg" srcset="/t/p/w94_and_h141_bestv2/83iq7QORVNUmmcNmuS4qrDDS5fs.jpg 1x, /t/p/w188_and_h282_bestv2/83iq7QORVNUmmcNmuS4qrDDS5fs.jpg 2x" alt="Alien Platoon">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="563e5c559251417819008fa3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/367099"><h2>Alien Platoon</h2></a>
-
-          
-            <span class="release_date">November 26, 1992</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_4bc8917b017a3c122d00c594" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="4bc8917b017a3c122d00c594" data-media-type="movie" data-media-adult="false" class="result" href="/movie/679">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/r1x5JGpyqZU8PYhbs4UcrO1Xb6x.jpg" srcset="/t/p/w94_and_h141_bestv2/r1x5JGpyqZU8PYhbs4UcrO1Xb6x.jpg 1x, /t/p/w188_and_h282_bestv2/r1x5JGpyqZU8PYhbs4UcrO1Xb6x.jpg 2x" alt="Aliens">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="4bc8917b017a3c122d00c594" data-media-type="movie" data-media-adult="false" class="result" href="/movie/679"><h2>Aliens</h2></a>
-
-          
-            <span class="release_date">July 18, 1986</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>When Ripley's lifepod is found by a salvage crew over 50 years later, she finds that terra-formers are on the very planet they found the alien species. When the company sends a family of colonists out to investigate her story—all contact is lost with the planet and colonists. They enlist Ripley and the colonial marines to return and search for answers.</p>
       </div>
     </div>
   </div>
@@ -571,7 +505,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4bc8c029017a3c122d07a3fb" data-media-type="movie" data-media-adult="false" class="result" href="/movie/19459"><h2>Tribulation 99: Alien Anomalies Under America</h2></a>
+          <div>
+            <a data-id="4bc8c029017a3c122d07a3fb" data-media-type="movie" data-media-adult="false" class="result" href="/movie/19459"><h2>Tribulation 99: Alien Anomalies Under America</h2></a>
+          </div>
 
           
             <span class="release_date">April 27, 1992</span>
@@ -581,6 +517,43 @@
 
       <div class="overview">
         <p>Baldwin’s “pseudo-pseudo-documentary” presents a factual chronicle of US intervention in Latin America in the form of the ultimate far-right conspiracy theory, combining covert action, environmental catastrophe, space aliens, cattle mutilations, killer bees, religious prophecy, doomsday diatribes, and just about every other crackpot theory broadcast through the dentures of the modern paranoiac.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_563e5c559251417819008fa3" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="563e5c559251417819008fa3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/367099">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/83iq7QORVNUmmcNmuS4qrDDS5fs.jpg" srcset="/t/p/w94_and_h141_bestv2/83iq7QORVNUmmcNmuS4qrDDS5fs.jpg 1x, /t/p/w188_and_h282_bestv2/83iq7QORVNUmmcNmuS4qrDDS5fs.jpg 2x" alt="Alien Platoon">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="563e5c559251417819008fa3" data-media-type="movie" data-media-adult="false" class="result" href="/movie/367099"><h2>Alien Platoon</h2></a>
+          </div>
+
+          
+            <span class="release_date">November 26, 1992</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        
       </div>
     </div>
   </div>
@@ -606,7 +579,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5e318356326c1900181e6576" data-media-type="movie" data-media-adult="false" class="result" href="/movie/667962"><h2>The Making of &#39;Alien³&#39;</h2></a>
+          <div>
+            <a data-id="5e318356326c1900181e6576" data-media-type="movie" data-media-adult="false" class="result" href="/movie/667962"><h2>The Making of &#39;Alien³&#39;</h2></a>
+          </div>
 
           
             <span class="release_date">January  1, 1992</span>
@@ -616,6 +591,43 @@
 
       <div class="overview">
         <p>A short promotional documentary detailing production of the 1992 film Alien³, containing interviews with cast and crew, as well as behind the scenes clips.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_4bc8917b017a3c122d00c594" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="4bc8917b017a3c122d00c594" data-media-type="movie" data-media-adult="false" class="result" href="/movie/679">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/r1x5JGpyqZU8PYhbs4UcrO1Xb6x.jpg" srcset="/t/p/w94_and_h141_bestv2/r1x5JGpyqZU8PYhbs4UcrO1Xb6x.jpg 1x, /t/p/w188_and_h282_bestv2/r1x5JGpyqZU8PYhbs4UcrO1Xb6x.jpg 2x" alt="Aliens">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="4bc8917b017a3c122d00c594" data-media-type="movie" data-media-adult="false" class="result" href="/movie/679"><h2>Aliens</h2></a>
+          </div>
+
+          
+            <span class="release_date">July 18, 1986</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>When Ripley's lifepod is found by a salvage crew over 50 years later, she finds that terra-formers are on the very planet they found the alien species. When the company sends a family of colonists out to investigate her story—all contact is lost with the planet and colonists. They enlist Ripley and the colonial marines to return and search for answers.</p>
       </div>
     </div>
   </div>
@@ -641,7 +653,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4cc89fb45e73d650250002ff" data-media-type="movie" data-media-adult="false" class="result" href="/movie/48302"><h2>Bad Channels</h2></a>
+          <div>
+            <a data-id="4cc89fb45e73d650250002ff" data-media-type="movie" data-media-adult="false" class="result" href="/movie/48302"><h2>Bad Channels</h2></a>
+          </div>
 
           
             <span class="release_date">June 25, 1992</span>
@@ -651,41 +665,6 @@
 
       <div class="overview">
         <p>An alien determined to capture human females takes over a radio station to do it.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_movie_58c2d7cb925141051d013981" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="58c2d7cb925141051d013981" data-media-type="movie" data-media-adult="false" class="result" href="/movie/446184">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/tFHzZZT56CQDzQO3pAhe4wdVVVE.jpg" srcset="/t/p/w94_and_h141_bestv2/tFHzZZT56CQDzQO3pAhe4wdVVVE.jpg 1x, /t/p/w188_and_h282_bestv2/tFHzZZT56CQDzQO3pAhe4wdVVVE.jpg 2x" alt="Space Case">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="58c2d7cb925141051d013981" data-media-type="movie" data-media-adult="false" class="result" href="/movie/446184"><h2>Space Case</h2></a>
-
-          
-            <span class="release_date">January  1, 1992</span>
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>In the future, mental institutions are located on far-away planets. One such planet is the apex for an invasion of Earth by rodent-like aliens. It is up to a band of intrepid mental patients to thwart their evil schemes.</p>
       </div>
     </div>
   </div>
@@ -711,7 +690,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="53b8cd4e0e0a266cb900066c" data-media-type="movie" data-media-adult="false" class="result" href="/movie/280495"><h2>Deceit</h2></a>
+          <div>
+            <a data-id="53b8cd4e0e0a266cb900066c" data-media-type="movie" data-media-adult="false" class="result" href="/movie/280495"><h2>Deceit</h2></a>
+          </div>
 
           
             <span class="release_date">August 21, 1992</span>
@@ -746,7 +727,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4f4e7d9119c2953fa3004e4d" data-media-type="movie" data-media-adult="false" class="result" href="/movie/92779"><h2>Seedpeople</h2></a>
+          <div>
+            <a data-id="4f4e7d9119c2953fa3004e4d" data-media-type="movie" data-media-adult="false" class="result" href="/movie/92779"><h2>Seedpeople</h2></a>
+          </div>
 
           
             <span class="release_date">May 28, 1992</span>
@@ -763,14 +746,14 @@
   
 </div>
     
-      <div id="card_movie_5a82650e0e0a260835002e52" class="card v4 tight">
+      <div id="card_movie_58c2d7cb925141051d013981" class="card v4 tight">
   <div class="wrapper">
     <div class="image">
       <div class="poster">
-        <a data-id="5a82650e0e0a260835002e52" data-media-type="movie" data-media-adult="false" class="result" href="/movie/504914">
+        <a data-id="58c2d7cb925141051d013981" data-media-type="movie" data-media-adult="false" class="result" href="/movie/446184">
             
     
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/kF4bXxWo6KatxmUj9HSohq9Ki85.jpg" srcset="/t/p/w94_and_h141_bestv2/kF4bXxWo6KatxmUj9HSohq9Ki85.jpg 1x, /t/p/w188_and_h282_bestv2/kF4bXxWo6KatxmUj9HSohq9Ki85.jpg 2x" alt="Aliens Cut My Hair">
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/tFHzZZT56CQDzQO3pAhe4wdVVVE.jpg" srcset="/t/p/w94_and_h141_bestv2/tFHzZZT56CQDzQO3pAhe4wdVVVE.jpg 1x, /t/p/w188_and_h282_bestv2/tFHzZZT56CQDzQO3pAhe4wdVVVE.jpg 2x" alt="Space Case">
     
   
 
@@ -781,16 +764,18 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5a82650e0e0a260835002e52" data-media-type="movie" data-media-adult="false" class="result" href="/movie/504914"><h2>Aliens Cut My Hair</h2></a>
+          <div>
+            <a data-id="58c2d7cb925141051d013981" data-media-type="movie" data-media-adult="false" class="result" href="/movie/446184"><h2>Space Case</h2></a>
+          </div>
 
           
-            <span class="release_date">May 18, 1992</span>
+            <span class="release_date">January  1, 1992</span>
           
         </div>
       </div>
 
       <div class="overview">
-        <p>Alien drag queens in outer space versus hunky young cadet space boys. Hair toxins, revenge, love, and deceit on the final frontier forces the dashing Captain Priapus into a love triangle, splitting him from lover and leading him to confront his greatest enemy...his hairdresser!</p>
+        <p>In the future, mental institutions are located on far-away planets. One such planet is the apex for an invasion of Earth by rodent-like aliens. It is up to a band of intrepid mental patients to thwart their evil schemes.</p>
       </div>
     </div>
   </div>
@@ -816,7 +801,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4c316f995e73d63ccf000259" data-media-type="movie" data-media-adult="false" class="result" href="/movie/40221"><h2>The Borrower</h2></a>
+          <div>
+            <a data-id="4c316f995e73d63ccf000259" data-media-type="movie" data-media-adult="false" class="result" href="/movie/40221"><h2>The Borrower</h2></a>
+          </div>
 
           
             <span class="release_date">August 16, 1991</span>
@@ -826,6 +813,43 @@
 
       <div class="overview">
         <p>Aliens punish one of their own by sending him to earth. The alien is very violent, and when the body he occupies is damaged, he is forced to find another.</p>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+    
+      <div id="card_movie_5a82650e0e0a260835002e52" class="card v4 tight">
+  <div class="wrapper">
+    <div class="image">
+      <div class="poster">
+        <a data-id="5a82650e0e0a260835002e52" data-media-type="movie" data-media-adult="false" class="result" href="/movie/504914">
+            
+    
+      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/kF4bXxWo6KatxmUj9HSohq9Ki85.jpg" srcset="/t/p/w94_and_h141_bestv2/kF4bXxWo6KatxmUj9HSohq9Ki85.jpg 1x, /t/p/w188_and_h282_bestv2/kF4bXxWo6KatxmUj9HSohq9Ki85.jpg 2x" alt="Aliens Cut My Hair">
+    
+  
+
+        </a>
+      </div>
+    </div>
+
+    <div class="details">
+      <div class="wrapper">
+        <div class="title">
+          <div>
+            <a data-id="5a82650e0e0a260835002e52" data-media-type="movie" data-media-adult="false" class="result" href="/movie/504914"><h2>Aliens Cut My Hair</h2></a>
+          </div>
+
+          
+            <span class="release_date">May 18, 1992</span>
+          
+        </div>
+      </div>
+
+      <div class="overview">
+        <p>Alien drag queens in outer space versus hunky young cadet space boys. Hair toxins, revenge, love, and deceit on the final frontier forces the dashing Captain Priapus into a love triangle, splitting him from lover and leading him to confront his greatest enemy...his hairdresser!</p>
       </div>
     </div>
   </div>
@@ -863,7 +887,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5259752a760ee34661a5e441" data-media-type="tv" data-media-adult="false" class="result" href="/tv/47220"><h2>Intruders</h2></a>
+          <div>
+            <a data-id="5259752a760ee34661a5e441" data-media-type="tv" data-media-adult="false" class="result" href="/tv/47220"><h2>Intruders</h2></a>
+          </div>
 
           
             <span class="release_date">May 17, 1992</span>
@@ -894,22 +920,6 @@
       
   <div class="item profile list_item">
     <div class="image_content profile">
-      <a id="person_1365179" data-id="541a92e40e0a26013e000c02" data-media-type="person" data-media-adult="false" class="result" href="/person/1365179" title="Black Alien" alt="Black Alien">
-          
-    <div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 zero profile"></div>
-  
-
-      </a>
-    </div>
-
-    <div class="content">
-      <p class="name"><a id="person_1365179" data-id="541a92e40e0a26013e000c02" data-media-type="person" data-media-adult="false" class="result" href="/person/1365179" title="Black Alien" alt="Black Alien">Black Alien</a></p>
-      <p class="sub"><span>Acting</span> &bull; <a href="/movie/248697" alt="Como Ser Solteiro" title="Como Ser Solteiro">Como Ser Solteiro</a>, <a href="/movie/172293" alt="Palavra (En)Cantada" title="Palavra (En)Cantada">Palavra (En)Cantada</a>, <a href="/movie/293448" alt="Mr. Niteroi: The Lyric Beretta" title="Mr. Niteroi: The Lyric Beretta">Mr. Niteroi: The Lyric Beretta</a></p>
-    </div>
-  </div>
-  
-  <div class="item profile list_item">
-    <div class="image_content profile">
       <a id="person_1080477" data-id="50236f6d57c7b10c3605be05" data-media-type="person" data-media-adult="false" class="result" href="/person/1080477" title="Alien Huang" alt="Alien Huang">
           
     
@@ -922,7 +932,7 @@
 
     <div class="content">
       <p class="name"><a id="person_1080477" data-id="50236f6d57c7b10c3605be05" data-media-type="person" data-media-adult="false" class="result" href="/person/1080477" title="Alien Huang" alt="Alien Huang">Alien Huang</a></p>
-      <p class="sub"><span>Acting</span> &bull; <a href="/movie/118609" alt="Din Tao: Leader of the Parade" title="Din Tao: Leader of the Parade">Din Tao: Leader of the Parade</a>, <a href="/tv/95717" alt="Someday or One Day" title="Someday or One Day">Someday or One Day</a>, <a href="/movie/472572" alt="All Because of Love" title="All Because of Love">All Because of Love</a></p>
+      <p class="sub"><span>Acting</span> &bull; <a href="/movie/118609.0" alt="Din Tao: Leader of the Parade" title="Din Tao: Leader of the Parade">Din Tao: Leader of the Parade</a>, <a href="/tv/95717.0" alt="Someday or One Day" title="Someday or One Day">Someday or One Day</a>, <a href="/movie/335542.0" alt="Holiday Dreaming" title="Holiday Dreaming">Holiday Dreaming</a></p>
     </div>
   </div>
   
@@ -954,7 +964,23 @@
 
     <div class="content">
       <p class="name"><a id="person_2560163" data-id="5e64eec2151c5c0015ff9b04" data-media-type="person" data-media-adult="false" class="result" href="/person/2560163" title="Alien Tong" alt="Alien Tong">Alien Tong</a></p>
-      <p class="sub"><span>Production</span> &bull; <a href="/movie/563489" alt="Go Back to China" title="Go Back to China">Go Back to China</a></p>
+      <p class="sub"><span>Production</span> &bull; <a href="/movie/563489.0" alt="Go Back to China" title="Go Back to China">Go Back to China</a></p>
+    </div>
+  </div>
+  
+  <div class="item profile list_item">
+    <div class="image_content profile">
+      <a id="person_1365179" data-id="541a92e40e0a26013e000c02" data-media-type="person" data-media-adult="false" class="result" href="/person/1365179" title="Black Alien" alt="Black Alien">
+          
+    <div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 zero profile"></div>
+  
+
+      </a>
+    </div>
+
+    <div class="content">
+      <p class="name"><a id="person_1365179" data-id="541a92e40e0a26013e000c02" data-media-type="person" data-media-adult="false" class="result" href="/person/1365179" title="Black Alien" alt="Black Alien">Black Alien</a></p>
+      <p class="sub"><span>Acting</span> &bull; <a href="/movie/248697" alt="Como Ser Solteiro" title="Como Ser Solteiro">Como Ser Solteiro</a>, <a href="/movie/172293" alt="Palavra (En)Cantada" title="Palavra (En)Cantada">Palavra (En)Cantada</a>, <a href="/movie/293448" alt="Mr. Niteroi: The Lyric Beretta" title="Mr. Niteroi: The Lyric Beretta">Mr. Niteroi: The Lyric Beretta</a></p>
     </div>
   </div>
   
@@ -1040,6 +1066,38 @@
   
   <div class="item profile list_item">
     <div class="image_content profile">
+      <a id="person_2813217" data-id="5f84b54d8e2ba60033e7866b" data-media-type="person" data-media-adult="false" class="result" href="/person/2813217" title="JIN" alt="JIN">
+          
+    <div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 two profile"></div>
+  
+
+      </a>
+    </div>
+
+    <div class="content">
+      <p class="name"><a id="person_2813217" data-id="5f84b54d8e2ba60033e7866b" data-media-type="person" data-media-adult="false" class="result" href="/person/2813217" title="JIN" alt="JIN">JIN</a></p>
+      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937" alt="BEASTARS" title="BEASTARS">BEASTARS</a>, <a href="/tv/95479" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
+    </div>
+  </div>
+  
+  <div class="item profile list_item">
+    <div class="image_content profile">
+      <a id="person_2813215" data-id="5f84b5198741c40037493078" data-media-type="person" data-media-adult="false" class="result" href="/person/2813215" title="ALEX" alt="ALEX">
+          
+    <div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 two profile"></div>
+  
+
+      </a>
+    </div>
+
+    <div class="content">
+      <p class="name"><a id="person_2813215" data-id="5f84b5198741c40037493078" data-media-type="person" data-media-adult="false" class="result" href="/person/2813215" title="ALEX" alt="ALEX">ALEX</a></p>
+      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937.0" alt="BEASTARS" title="BEASTARS">BEASTARS</a>, <a href="/tv/95479.0" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
+    </div>
+  </div>
+  
+  <div class="item profile list_item">
+    <div class="image_content profile">
       <a id="person_150992" data-id="4d3b12617b9aa16149006849" data-media-type="person" data-media-adult="false" class="result" href="/person/150992" title="Al Jourgensen" alt="Al Jourgensen">
           
     
@@ -1074,6 +1132,22 @@
   
   <div class="item profile list_item">
     <div class="image_content profile">
+      <a id="person_2813219" data-id="5f84b5bb798e060036cf5689" data-media-type="person" data-media-adult="false" class="result" href="/person/2813219" title="ZERU" alt="ZERU">
+          
+    <div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 two profile"></div>
+  
+
+      </a>
+    </div>
+
+    <div class="content">
+      <p class="name"><a id="person_2813219" data-id="5f84b5bb798e060036cf5689" data-media-type="person" data-media-adult="false" class="result" href="/person/2813219" title="ZERU" alt="ZERU">ZERU</a></p>
+      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937" alt="BEASTARS" title="BEASTARS">BEASTARS</a></p>
+    </div>
+  </div>
+  
+  <div class="item profile list_item">
+    <div class="image_content profile">
       <a id="person_2585472" data-id="5e83fc40da10f00018eb19b8" data-media-type="person" data-media-adult="false" class="result" href="/person/2585472" title="Alien1k" alt="Alien1k">
           
     <div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 zero profile"></div>
@@ -1100,7 +1174,7 @@
 
     <div class="content">
       <p class="name"><a id="person_2813207" data-id="5f84b37569eb900039c5d630" data-media-type="person" data-media-adult="false" class="result" href="/person/2813207" title="CÉSAR" alt="CÉSAR">CÉSAR</a></p>
-      <p class="sub"><span>Sound</span> &bull; <a href="/tv/95479.0" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
+      <p class="sub"><span>Sound</span> &bull; <a href="/tv/95479" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
     </div>
   </div>
   
@@ -1116,23 +1190,7 @@
 
     <div class="content">
       <p class="name"><a id="person_2813212" data-id="5f84b4235a46900037eb35ee" data-media-type="person" data-media-adult="false" class="result" href="/person/2813212" title="LUTHFI" alt="LUTHFI">LUTHFI</a></p>
-      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937.0" alt="BEASTARS" title="BEASTARS">BEASTARS</a>, <a href="/tv/95479.0" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
-    </div>
-  </div>
-  
-  <div class="item profile list_item">
-    <div class="image_content profile">
-      <a id="person_2813215" data-id="5f84b5198741c40037493078" data-media-type="person" data-media-adult="false" class="result" href="/person/2813215" title="ALEX" alt="ALEX">
-          
-    <div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 two profile"></div>
-  
-
-      </a>
-    </div>
-
-    <div class="content">
-      <p class="name"><a id="person_2813215" data-id="5f84b5198741c40037493078" data-media-type="person" data-media-adult="false" class="result" href="/person/2813215" title="ALEX" alt="ALEX">ALEX</a></p>
-      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937.0" alt="BEASTARS" title="BEASTARS">BEASTARS</a>, <a href="/tv/95479.0" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
+      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937" alt="BEASTARS" title="BEASTARS">BEASTARS</a>, <a href="/tv/95479" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
     </div>
   </div>
   
@@ -1148,39 +1206,7 @@
 
     <div class="content">
       <p class="name"><a id="person_2813216" data-id="5f84b5438741c40039490674" data-media-type="person" data-media-adult="false" class="result" href="/person/2813216" title="YU" alt="YU">YU</a></p>
-      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937.0" alt="BEASTARS" title="BEASTARS">BEASTARS</a>, <a href="/tv/95479.0" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
-    </div>
-  </div>
-  
-  <div class="item profile list_item">
-    <div class="image_content profile">
-      <a id="person_2813217" data-id="5f84b54d8e2ba60033e7866b" data-media-type="person" data-media-adult="false" class="result" href="/person/2813217" title="JIN" alt="JIN">
-          
-    <div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 two profile"></div>
-  
-
-      </a>
-    </div>
-
-    <div class="content">
-      <p class="name"><a id="person_2813217" data-id="5f84b54d8e2ba60033e7866b" data-media-type="person" data-media-adult="false" class="result" href="/person/2813217" title="JIN" alt="JIN">JIN</a></p>
-      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937.0" alt="BEASTARS" title="BEASTARS">BEASTARS</a>, <a href="/tv/95479.0" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
-    </div>
-  </div>
-  
-  <div class="item profile list_item">
-    <div class="image_content profile">
-      <a id="person_2813219" data-id="5f84b5bb798e060036cf5689" data-media-type="person" data-media-adult="false" class="result" href="/person/2813219" title="ZERU" alt="ZERU">
-          
-    <div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 two profile"></div>
-  
-
-      </a>
-    </div>
-
-    <div class="content">
-      <p class="name"><a id="person_2813219" data-id="5f84b5bb798e060036cf5689" data-media-type="person" data-media-adult="false" class="result" href="/person/2813219" title="ZERU" alt="ZERU">ZERU</a></p>
-      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937.0" alt="BEASTARS" title="BEASTARS">BEASTARS</a></p>
+      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937" alt="BEASTARS" title="BEASTARS">BEASTARS</a>, <a href="/tv/95479" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
     </div>
   </div>
   
@@ -1196,7 +1222,7 @@
 
     <div class="content">
       <p class="name"><a id="person_2813206" data-id="5f84b3615a46900038ea55fd" data-media-type="person" data-media-adult="false" class="result" href="/person/2813206" title="KAHADIO" alt="KAHADIO">KAHADIO</a></p>
-      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937.0" alt="BEASTARS" title="BEASTARS">BEASTARS</a>, <a href="/tv/95479.0" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
+      <p class="sub"><span>Sound</span> &bull; <a href="/tv/90937" alt="BEASTARS" title="BEASTARS">BEASTARS</a>, <a href="/tv/95479" alt="Jujutsu Kaisen" title="Jujutsu Kaisen">Jujutsu Kaisen</a></p>
     </div>
   </div>
   
@@ -1212,7 +1238,7 @@
 
     <div class="content">
       <p class="name"><a id="person_1445780" data-id="5513928b9251412c52000819" data-media-type="person" data-media-adult="false" class="result" href="/person/1445780" title="Aliena Jacobs" alt="Aliena Jacobs">Aliena Jacobs</a></p>
-      <p class="sub"><span>Acting</span> &bull; <a href="/movie/61035" alt="Here Comes Lola!" title="Here Comes Lola!">Here Comes Lola!</a></p>
+      <p class="sub"><span>Acting</span> &bull; <a href="/movie/61035.0" alt="Here Comes Lola!" title="Here Comes Lola!">Here Comes Lola!</a></p>
     </div>
   </div>
   
@@ -1298,6 +1324,17 @@
       </li>
     
       <li>
+        <a href="/company/94921">
+          <div>
+            
+              Alien Film
+            
+            
+          </div>
+        </a>
+      </li>
+    
+      <li>
         <a href="/company/120626">
           <div>
             
@@ -1309,10 +1346,10 @@
       </li>
     
       <li>
-        <a href="/company/94921">
+        <a href="/company/125561">
           <div>
             
-              Alien Film
+              Alien Produzioni
             
             
           </div>
@@ -1368,17 +1405,6 @@
           <div>
             
               Extraordinary Alien
-            
-            
-          </div>
-        </a>
-      </li>
-    
-      <li>
-        <a href="/company/125561">
-          <div>
-            
-              Alien Produzioni
             
             
           </div>
@@ -1494,7 +1520,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4bc88abb017a3c122d0000e1" data-media-type="collection" data-media-adult="false" class="result" href="/collection/8091"><h2>Alien Collection</h2></a>
+          <div>
+            <a data-id="4bc88abb017a3c122d0000e1" data-media-type="collection" data-media-adult="false" class="result" href="/collection/8091"><h2>Alien Collection</h2></a>
+          </div>
 
           
         </div>
@@ -1525,7 +1553,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="59ec9c5f925141245f003c3d" data-media-type="collection" data-media-adult="false" class="result" href="/collection/482721"><h2>Alien Avengers Collection</h2></a>
+          <div>
+            <a data-id="59ec9c5f925141245f003c3d" data-media-type="collection" data-media-adult="false" class="result" href="/collection/482721"><h2>Alien Avengers Collection</h2></a>
+          </div>
 
           
         </div>
@@ -1558,7 +1588,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5137a149760ee3211901a6ce" data-media-type="collection" data-media-adult="false" class="result" href="/collection/174245"><h2>Alien Nation Collection</h2></a>
+          <div>
+            <a data-id="5137a149760ee3211901a6ce" data-media-type="collection" data-media-adult="false" class="result" href="/collection/174245"><h2>Alien Nation Collection</h2></a>
+          </div>
 
           
         </div>
@@ -1589,7 +1621,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5d6ac17c55c926000f096885" data-media-type="collection" data-media-adult="false" class="result" href="/collection/627527"><h2>Alien Factor Collection</h2></a>
+          <div>
+            <a data-id="5d6ac17c55c926000f096885" data-media-type="collection" data-media-adult="false" class="result" href="/collection/627527"><h2>Alien Factor Collection</h2></a>
+          </div>
 
           
         </div>
@@ -1622,7 +1656,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5ea43a3f35c30a0024bddfce" data-media-type="collection" data-media-adult="false" class="result" href="/collection/697022"><h2>Alien: Covenant Short Film Collection</h2></a>
+          <div>
+            <a data-id="5ea43a3f35c30a0024bddfce" data-media-type="collection" data-media-adult="false" class="result" href="/collection/697022"><h2>Alien: Covenant Short Film Collection</h2></a>
+          </div>
 
           
         </div>
@@ -1655,7 +1691,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5ec534ce0c0b3800226c34a5" data-media-type="collection" data-media-adult="false" class="result" href="/collection/706507"><h2>Symbols of an Alien Sky</h2></a>
+          <div>
+            <a data-id="5ec534ce0c0b3800226c34a5" data-media-type="collection" data-media-adult="false" class="result" href="/collection/706507"><h2>Symbols of an Alien Sky</h2></a>
+          </div>
 
           
         </div>
@@ -1663,39 +1701,6 @@
 
       <div class="overview">
         <p>David Talbott's first glimpses of celestial dramas in ancient times. Just a few thousand years ago a gathering of planets hung as towering forms in the ancient sky close to the earth, provoking spectacular electric discharge formations above our forebears and inspiring the vast complex of world myths and symbols.</p>
-      </div>
-    </div>
-  </div>
-
-  
-</div>
-    
-      <div id="card_collection_5eafd9b1bf0f63001e7dacc7" class="card v4 tight">
-  <div class="wrapper">
-    <div class="image">
-      <div class="poster">
-        <a data-id="5eafd9b1bf0f63001e7dacc7" data-media-type="collection" data-media-adult="false" class="result" href="/collection/700219">
-            
-    
-      <img loading="lazy" class="poster" src="/t/p/w94_and_h141_bestv2/1HNN780aaYGcWhdy34n0IE0MBNR.jpg" srcset="/t/p/w94_and_h141_bestv2/1HNN780aaYGcWhdy34n0IE0MBNR.jpg 1x, /t/p/w188_and_h282_bestv2/1HNN780aaYGcWhdy34n0IE0MBNR.jpg 2x" alt="Alien 40th Anniversary Short Films">
-    
-  
-
-        </a>
-      </div>
-    </div>
-
-    <div class="details">
-      <div class="wrapper">
-        <div class="title">
-          <a data-id="5eafd9b1bf0f63001e7dacc7" data-media-type="collection" data-media-adult="false" class="result" href="/collection/700219"><h2>Alien 40th Anniversary Short Films</h2></a>
-
-          
-        </div>
-      </div>
-
-      <div class="overview">
-        <p>The Alien 40th anniversary short films are a series of six fan-made short films created in association with 20th Century Fox and Tongal to celebrate the 40th anniversary of the release of Alien.</p>
       </div>
     </div>
   </div>
@@ -1721,7 +1726,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="4fe36272760ee35aa4002fdb" data-media-type="collection" data-media-adult="false" class="result" href="/collection/115762"><h2>AVP Collection</h2></a>
+          <div>
+            <a data-id="4fe36272760ee35aa4002fdb" data-media-type="collection" data-media-adult="false" class="result" href="/collection/115762"><h2>AVP Collection</h2></a>
+          </div>
 
           
         </div>
@@ -1754,7 +1761,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="58a11a789251413d1b0056dd" data-media-type="collection" data-media-adult="false" class="result" href="/collection/441439"><h2>Alienation Trilogy</h2></a>
+          <div>
+            <a data-id="58a11a789251413d1b0056dd" data-media-type="collection" data-media-adult="false" class="result" href="/collection/441439"><h2>Alienation Trilogy</h2></a>
+          </div>
 
           
         </div>
@@ -1785,7 +1794,9 @@
     <div class="details">
       <div class="wrapper">
         <div class="title">
-          <a data-id="5f2d0148cdbaff0034a3ebea" data-media-type="collection" data-media-adult="false" class="result" href="/collection/730742"><h2>Aliens Ate My Homework Collection</h2></a>
+          <div>
+            <a data-id="5f2d0148cdbaff0034a3ebea" data-media-type="collection" data-media-adult="false" class="result" href="/collection/730742"><h2>Aliens Ate My Homework Collection</h2></a>
+          </div>
 
           
         </div>
@@ -1873,7 +1884,7 @@
         </div>
       </nav>
 
-      <section>Build c8e5215 (732)</section>
+      <section>Build 7e18b8e (974)</section>
     </footer>
 
     
@@ -1972,7 +1983,7 @@
 
     
 
-    <script src="/assets/2/footer-88d8069a2b64f6a5751f9ec90b06b9d13a6f59e2caa683d857b36a4b1455a764.js"></script>
+    <script src="/assets/2/footer-ec8fd260239bf7b85be386d03eb1bcb6a8ed5062578ef49351e9984ffee6bb86.js"></script>
     
       <script src="/assets/2/timeago/locales/jquery.timeago.en-US-f9d144e55407ca11f35de7a0d44b0d54ec1ffc6c4039dffd5a11c0a12e6a9482.js"></script>
     
@@ -2018,7 +2029,7 @@
         }
       }
 
-      $(document).ready(function() {
+      $(function() {
         jQuery.timeago.settings.allowFuture = true;
         $("time.timeago").timeago();
 
@@ -2270,7 +2281,6 @@
 
         $("#search_v4").kendoAutoComplete({
           highlightFirst: false,
-          animation: false,
           minLength: 1,
           dataTextField: "title",
           template: kendo.template($("#slim_multi_search_template").html()),
@@ -2293,9 +2303,9 @@
           },
           filtering: function(e) {
             var filter = e.filter != undefined ? e.filter.value : "";
-            if (filter.value == '') {
-              if( ($('#search_v4-list #trending_search_header_template').length) == 0 ) {
-                $('#search_v4_listbox').empty();
+            if (filter == '') {
+              if ( ($('#search_v4-list #trending_search_header_template').length) == 0 ) {
+                // $('#search_v4_listbox').empty();
                 $('#search_v4-list').prepend($("#search_v4_headerTemplate").html());
               }
             } else {
@@ -2305,6 +2315,10 @@
           select: function(e) {
             processing_selected_item = true;
             processSelectedItem(e);
+          },
+          close: function(e) {
+            // e.preventDefault();
+            // handle the event
           }
         }).data("kendoAutoComplete");
 
@@ -2389,7 +2403,7 @@
         });
 
         $(document).on('keydown', null, 'esc', function() {
-          if ( $('div.custom_bg.keyboard_s').length ) {
+          if ( $('div.custom_bg.keyboard_s').length && $('#ott_offers_window a.close').length ) {
             $('#ott_offers_window a.close')[0].click();
           }
         });
@@ -2444,7 +2458,6 @@
             <p class="sub">No known credits.</p>
           # } #
         </div>
-        <div class="clear"></div>
       </div>
     </script>
 
@@ -2573,7 +2586,7 @@
     <script id="search_v4_headerTemplate" type="text/x-kendo-template">
       <div id="trending_search_header_template" class="slim_search_results_header">
         <div class="wrapper">
-          <h2>Trending</h2>
+          <h2><span class="glyphicons_v2 trending"></span> Trending</h2>
         </div>
       </div>
     </script>
