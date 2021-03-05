@@ -61,6 +61,16 @@ class ImdbApi(WebDbApiBase):
                    for item in items]
         return results
 
+    async def directors(self, id):
+        soup = await self._get_soup(f'title/{id}')
+        directors = []
+        for tag in soup.find_all(class_='credit_summary_item'):
+            strings = tuple(tag.stripped_strings)
+            if 'Director:' in strings or 'Directors:' in strings:
+                for link in tag.find_all('a'):
+                    directors.append(link.text)
+        return directors
+
     async def cast(self, id):
         soup = await self._get_soup(f'title/{id}')
         cast_tag = soup.find(class_='cast_list')

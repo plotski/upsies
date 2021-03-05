@@ -65,6 +65,9 @@ class TvmazeApi(WebDbApiBase):
         else:
             return show
 
+    async def directors(self, id):
+        return []
+
     async def cast(self, id):
         show = await self._get_show(id)
         cast = show.get('_embedded', {}).get('cast', ())

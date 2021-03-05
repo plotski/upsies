@@ -278,6 +278,26 @@ async def test_search_result_year(query, exp_year, api, store_response):
 
 
 @pytest.mark.parametrize(
+    argnames=('id', 'exp_directors'),
+    argvalues=(
+        ('tt3286052', ['Oz Perkins']),  # February (movie)
+        ('tt0192802', ['Dave Unwin', 'Dennis Abey']),  # Wind in the Willows (TV movie)
+        ('tt0471711', ['Dwayne Carey-Hill']),  # Bender's Big Score (Video)
+        ('tt0097270', ['Alan Clarke']),  # Elephant (TV Short)
+        ('tt3472226', ['David Sandberg']),  # Kung Fury (Short)
+        ('tt6560040', []),  # The Forest (TV mini-series)
+        ('tt2372162', []),  # Orange Is the New Black (series)
+        ('tt5440238', ['Michael Trim']),  # Orange Is the New Black - S07E01 (episode)
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_directors(id, exp_directors, api, store_response):
+    directors = await api.directors(id)
+    assert directors == exp_directors
+
+
+@pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),
     argvalues=(
         ('tt0080455', ['Tom Erhart', 'Gerald Walling', 'John Belushi',

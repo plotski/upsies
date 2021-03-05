@@ -35,6 +35,10 @@ class WebDbApiBase(abc.ABC):
         """
 
     @abc.abstractmethod
+    async def directors(self, id):
+        """Return list of director names (usually empty for series)"""
+
+    @abc.abstractmethod
     async def cast(self, id):
         """Return list of cast names"""
 

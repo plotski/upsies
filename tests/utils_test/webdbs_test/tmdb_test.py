@@ -219,6 +219,22 @@ async def test_search_result_year(query, exp_title, exp_year, api, store_respons
 
 
 @pytest.mark.parametrize(
+    argnames=('id', 'exp_directors'),
+    argvalues=(
+        ('movie/125244', ['Jack Kinney', 'James Algar']),
+        ('movie/334536', ['Oz Perkins']),
+        ('tv/1406', []),
+        ('tv/74802', []),
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_directors(id, exp_directors, api, store_response):
+    directors = await api.directors(id)
+    assert directors == exp_directors
+
+
+@pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),
     argvalues=(
         ('movie/525', ('Dan Aykroyd', 'John Belushi')),

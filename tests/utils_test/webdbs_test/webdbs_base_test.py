@@ -17,6 +17,7 @@ class TestApi(WebDbApiBase):
     label = 'Foo'
     search = AsyncMock()
 
+    directors = AsyncMock()
     cast = AsyncMock()
     countries = AsyncMock()
     keywords = AsyncMock()

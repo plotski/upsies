@@ -242,6 +242,22 @@ async def test_cast(id, exp_cast, api, store_response):
     for member in exp_cast:
         assert member in cast
 
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_directors'),
+    argvalues=(
+        (1259, []),
+        (117, []),
+        (36483, []),
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_directors(id, exp_directors, api, store_response):
+    directors = await api.directors(id)
+    assert directors == exp_directors
+
+
 @pytest.mark.parametrize(
     argnames=('id', 'exp_countries'),
     argvalues=(
