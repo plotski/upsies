@@ -213,9 +213,9 @@ async def test_search_result_type(api, store_response):
 @pytest.mark.parametrize(
     argnames=('title', 'exp_url'),
     argvalues=(
-        ('Star Wars: Clone Wars', 'http://www.tvmaze.com/shows/1259/star-wars-clone-wars'),
-        ('Star Wars Rebels', 'http://www.tvmaze.com/shows/117/star-wars-rebels'),
-        ('Star Wars Resistance', 'http://www.tvmaze.com/shows/36483/star-wars-resistance'),
+        ('Star Wars: Clone Wars', 'https://www.tvmaze.com/shows/1259/star-wars-clone-wars'),
+        ('Star Wars Rebels', 'https://www.tvmaze.com/shows/117/star-wars-rebels'),
+        ('Star Wars Resistance', 'https://www.tvmaze.com/shows/36483/star-wars-resistance'),
     ),
 )
 @pytest.mark.asyncio
