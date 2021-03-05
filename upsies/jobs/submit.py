@@ -130,7 +130,6 @@ class SubmitJob(JobBase):
 
         # Ensure all jobs were successful
         if all(job.exit_code == 0 for job in self.jobs_before_upload):
-            _log.debug('All jobs_before_upload were successul')
             await self._submit()
 
     async def _submit(self):
