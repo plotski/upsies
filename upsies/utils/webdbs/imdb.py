@@ -69,7 +69,7 @@ class ImdbApi(WebDbApiBase):
             if 'Director:' in strings or 'Directors:' in strings:
                 for link in tag.find_all('a'):
                     directors.append(link.text)
-        return directors
+        return tuple(directors)
 
     async def creators(self, id):
         soup = await self._get_soup(f'title/{id}')
@@ -79,7 +79,7 @@ class ImdbApi(WebDbApiBase):
             if 'Creator:' in strings or 'Creators:' in strings:
                 for link in tag.find_all('a'):
                     creators.append(link.text)
-        return creators
+        return tuple(creators)
 
     async def cast(self, id):
         soup = await self._get_soup(f'title/{id}')
@@ -92,7 +92,7 @@ class ImdbApi(WebDbApiBase):
                 cast.append(''.join(td_tags[1].stripped_strings))
             except IndexError:
                 pass
-        return cast
+        return tuple(cast)
 
     async def countries(self, id):
         soup = await self._get_soup(f'title/{id}')
@@ -101,7 +101,7 @@ class ImdbApi(WebDbApiBase):
         countries = []
         for country_tag in countries_tag.find_all('a'):
             countries.append(''.join(country_tag.stripped_strings))
-        return countries
+        return tuple(countries)
 
     async def keywords(self, id):
         soup = await self._get_soup(f'title/{id}')
@@ -111,8 +111,8 @@ class ImdbApi(WebDbApiBase):
             for subtext in subtexts:
                 keywords = re.findall(r'(\w+)(?:\s*,\s*|\s*$)', subtext)
                 if len(keywords) > 1:
-                    return keywords
-        return []
+                    return tuple(keywords)
+        return ()
 
     async def summary(self, id):
         soup = await self._get_soup(f'title/{id}')
@@ -280,10 +280,10 @@ class _ImdbSearchResult(common.SearchResult):
     def _get_cast(self, soup):
         people = soup.find(string=re.compile(r'Stars?.*'))
         if people:
-            names = [name.string.strip() for name in people.parent.find_all('a')]
+            names = tuple(name.string.strip() for name in people.parent.find_all('a'))
             return names[1:]
         else:
-            return []
+            return ()
 
     def _get_id(self, soup):
         href = soup.find('a').get('href')
@@ -303,7 +303,7 @@ class _ImdbSearchResult(common.SearchResult):
             keywords = soup.find(class_='genre').string.strip()
         except AttributeError:
             keywords = ''
-        return [kw.strip().casefold() for kw in keywords.split(',')]
+        return tuple(kw.strip().casefold() for kw in keywords.split(','))
 
     def _get_summary(self, soup):
         tags = soup.find_all(class_='text-muted')

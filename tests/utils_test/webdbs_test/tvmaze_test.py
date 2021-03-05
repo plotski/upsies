@@ -246,9 +246,9 @@ async def test_cast(id, exp_cast, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_directors'),
     argvalues=(
-        (1259, []),
-        (117, []),
-        (36483, []),
+        (1259, ()),
+        (117, ()),
+        (36483, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -261,7 +261,7 @@ async def test_directors(id, exp_directors, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_creators'),
     argvalues=(
-        (170, ['Jenji Kohan']),
+        (170, ('Jenji Kohan',)),
     ),
     ids=lambda value: str(value),
 )

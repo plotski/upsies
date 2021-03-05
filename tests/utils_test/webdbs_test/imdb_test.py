@@ -109,10 +109,10 @@ async def test_search_result_cast(query, exp_cast, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_countries'),
     argvalues=(
-        (Query('Star Wars', type=ReleaseType.movie, year=1977), ['USA', 'UK'],),
-        (Query('Bron Broen', type=ReleaseType.series, year=2011), ['Sweden', 'Denmark', 'Germany']),
-        (Query('The Forest', type=ReleaseType.series, year=2017), ['France']),
-        (Query('Karppi', type=ReleaseType.series, year=2018), ['Finland', 'Germany']),
+        (Query('Star Wars', type=ReleaseType.movie, year=1977), ('USA', 'UK')),
+        (Query('Bron Broen', type=ReleaseType.series, year=2011), ('Sweden', 'Denmark', 'Germany')),
+        (Query('The Forest', type=ReleaseType.series, year=2017), ('France',)),
+        (Query('Karppi', type=ReleaseType.series, year=2018), ('Finland', 'Germany')),
     ),
     ids=lambda value: str(value),
 )
@@ -157,10 +157,10 @@ async def test_search_result_director(query, exp_director, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_keywords'),
     argvalues=(
-        (Query('star wars', type=ReleaseType.movie, year=1977), ['action', 'adventure', 'fantasy']),
-        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ['action', 'adventure', 'comedy']),
-        (Query('The Forest', type=ReleaseType.series, year=2017), ['crime', 'drama']),
-        (Query('Deadwood', type=ReleaseType.series, year=2004), ['crime', 'drama', 'history']),
+        (Query('star wars', type=ReleaseType.movie, year=1977), ('action', 'adventure', 'fantasy')),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ('action', 'adventure', 'comedy')),
+        (Query('The Forest', type=ReleaseType.series, year=2017), ('crime', 'drama')),
+        (Query('Deadwood', type=ReleaseType.series, year=2004), ('crime', 'drama', 'history')),
     ),
     ids=lambda value: str(value),
 )
@@ -280,14 +280,14 @@ async def test_search_result_year(query, exp_year, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_directors'),
     argvalues=(
-        ('tt3286052', ['Oz Perkins']),  # February (movie)
-        ('tt0192802', ['Dave Unwin', 'Dennis Abey']),  # Wind in the Willows (TV movie)
-        ('tt0471711', ['Dwayne Carey-Hill']),  # Bender's Big Score (Video)
-        ('tt0097270', ['Alan Clarke']),  # Elephant (TV Short)
-        ('tt3472226', ['David Sandberg']),  # Kung Fury (Short)
-        ('tt6560040', []),  # The Forest (TV mini-series)
-        ('tt2372162', []),  # Orange Is the New Black (series)
-        ('tt5440238', ['Michael Trim']),  # Orange Is the New Black - S07E01 (episode)
+        ('tt3286052', ('Oz Perkins',)),  # February (movie)
+        ('tt0192802', ('Dave Unwin', 'Dennis Abey')),  # Wind in the Willows (TV movie)
+        ('tt0471711', ('Dwayne Carey-Hill',)),  # Bender's Big Score (Video)
+        ('tt0097270', ('Alan Clarke',)),  # Elephant (TV Short)
+        ('tt3472226', ('David Sandberg',)),  # Kung Fury (Short)
+        ('tt6560040', ()),  # The Forest (TV mini-series)
+        ('tt2372162', ()),  # Orange Is the New Black (series)
+        ('tt5440238', ('Michael Trim',)),  # Orange Is the New Black - S07E01 (episode)
     ),
     ids=lambda value: str(value),
 )
@@ -300,14 +300,14 @@ async def test_directors(id, exp_directors, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_creators'),
     argvalues=(
-        ('tt3286052', []),  # February (movie)
-        ('tt0192802', []),  # Wind in the Willows (TV movie)
-        ('tt0471711', []),  # Bender's Big Score (Video)
-        ('tt0097270', []),  # Elephant (TV Short)
-        ('tt3472226', []),  # Kung Fury (Short)
-        ('tt6560040', ['Delinda Jacobs']),  # The Forest (TV mini-series)
-        ('tt2372162', ['Jenji Kohan']),  # Orange Is the New Black (series)
-        ('tt5440238', []),  # Orange Is the New Black - S07E01 (episode)
+        ('tt3286052', ()),  # February (movie)
+        ('tt0192802', ()),  # Wind in the Willows (TV movie)
+        ('tt0471711', ()),  # Bender's Big Score (Video)
+        ('tt0097270', ()),  # Elephant (TV Short)
+        ('tt3472226', ()),  # Kung Fury (Short)
+        ('tt6560040', ('Delinda Jacobs',)),  # The Forest (TV mini-series)
+        ('tt2372162', ('Jenji Kohan',)),  # Orange Is the New Black (series)
+        ('tt5440238', ()),  # Orange Is the New Black - S07E01 (episode)
     ),
     ids=lambda value: str(value),
 )
@@ -320,22 +320,22 @@ async def test_creators(id, exp_creators, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),
     argvalues=(
-        ('tt0080455', ['Tom Erhart', 'Gerald Walling', 'John Belushi',
-                       'Walter Levine', 'Frank Oz']),  # Blues Brothers (movie)
-        ('tt0192802', ['Alan Bennett', 'Michael Palin', 'Michael Gambon',
-                       'Rik Mayall', 'James Villiers']),  # Wind in the Willows (TV movie)
-        ('tt0471711', ['Billy West', 'Katey Sagal', 'John DiMaggio', 'Tress MacNeille',
-                       'Maurice LaMarche']),  # Bender's Big Score (Video)
-        ('tt0097270', ['Gary Walker', 'Bill Hamilton', 'Michael Foyle', 'Danny Small',
-                       'Robert J. Taylor']),  # Elephant (TV Short)
-        ('tt3472226', ['David Sandberg', 'Jorma Taccone', 'Steven Chew',
-                       'Leopold Nilsson', 'Andreas Cahling']),  # Kung Fury (Short)
-        ('tt6560040', ['Samuel Labarthe', 'Suzanne Clément', 'Alexia Barlier',
-                       'Frédéric Diefenthal', 'Patrick Ridremont']),  # The Forest (TV mini-series)
-        ('tt2372162', ['Taylor Schilling', 'Kate Mulgrew', 'Uzo Aduba',
-                       'Danielle Brooks', 'Dascha Polanco']),  # Orange Is the New Black (series)
-        ('tt5440238', ['Taylor Schilling', 'Natasha Lyonne', 'Uzo Aduba',
-                       'Danielle Brooks', 'Jackie Cruz']),  # Orange Is the New Black - S07E01 (episode)
+        ('tt0080455', ('Tom Erhart', 'Gerald Walling', 'John Belushi',
+                       'Walter Levine', 'Frank Oz')),  # Blues Brothers (movie)
+        ('tt0192802', ('Alan Bennett', 'Michael Palin', 'Michael Gambon',
+                       'Rik Mayall', 'James Villiers')),  # Wind in the Willows (TV movie)
+        ('tt0471711', ('Billy West', 'Katey Sagal', 'John DiMaggio', 'Tress MacNeille',
+                       'Maurice LaMarche')),  # Bender's Big Score (Video)
+        ('tt0097270', ('Gary Walker', 'Bill Hamilton', 'Michael Foyle', 'Danny Small',
+                       'Robert J. Taylor')),  # Elephant (TV Short)
+        ('tt3472226', ('David Sandberg', 'Jorma Taccone', 'Steven Chew',
+                       'Leopold Nilsson', 'Andreas Cahling')),  # Kung Fury (Short)
+        ('tt6560040', ('Samuel Labarthe', 'Suzanne Clément', 'Alexia Barlier',
+                       'Frédéric Diefenthal', 'Patrick Ridremont')),  # The Forest (TV mini-series)
+        ('tt2372162', ('Taylor Schilling', 'Kate Mulgrew', 'Uzo Aduba',
+                       'Danielle Brooks', 'Dascha Polanco')),  # Orange Is the New Black (series)
+        ('tt5440238', ('Taylor Schilling', 'Natasha Lyonne', 'Uzo Aduba',
+                       'Danielle Brooks', 'Jackie Cruz')),  # Orange Is the New Black - S07E01 (episode)
     ),
     ids=lambda value: str(value),
 )
@@ -348,15 +348,15 @@ async def test_cast(id, exp_cast, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_countries'),
     argvalues=(
-        ('tt0080455', ['USA']),                           # Blues Brothers (movie)
-        ('tt3286052', ['Canada']),                        # February (movie)
-        ('tt0192802', ['UK']),                            # Wind in the Willows (TV movie)
-        ('tt0471711', ['USA']),                           # Bender's Big Score (Video)
-        ('tt0097270', ['UK']),                            # Elephant (TV Short)
-        ('tt3472226', ['Sweden']),                        # Kung Fury (Short)
-        ('tt1733785', ['Sweden', 'Denmark', 'Germany']),  # The Bridge (series)
-        ('tt0348914', ['USA']),                           # Deadwood (series)
-        ('tt0556307', ['USA']),                           # Deadwood - S02E04 (episode)
+        ('tt0080455', ('USA',)),  # Blues Brothers (movie)
+        ('tt3286052', ('Canada',)),  # February (movie)
+        ('tt0192802', ('UK',)),  # Wind in the Willows (TV movie)
+        ('tt0471711', ('USA',)),  # Bender's Big Score (Video)
+        ('tt0097270', ('UK',)),  # Elephant (TV Short)
+        ('tt3472226', ('Sweden',)),  # Kung Fury (Short)
+        ('tt1733785', ('Sweden', 'Denmark', 'Germany')),  # The Bridge (series)
+        ('tt0348914', ('USA',)),  # Deadwood (series)
+        ('tt0556307', ('USA',)),  # Deadwood - S02E04 (episode)
     ),
     ids=lambda value: str(value),
 )
@@ -369,14 +369,14 @@ async def test_countries(id, exp_countries, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_keywords'),
     argvalues=(
-        ('tt0080455', ['action', 'adventure', 'comedy']),   # Blues Brothers (movie)
-        ('tt0192802', ['animation', 'family']),             # Wind in the Willows (TV movie)
-        ('tt0471711', ['animation', 'comedy', 'romance']),  # Bender's Big Score (Video)
-        ('tt0097270', ['crime', 'drama']),                  # Elephant (TV movie)
-        ('tt3472226', ['short', 'action', 'comedy']),       # Kung Fury (Short)
-        ('tt6560040', ['crime', 'drama']),                  # The Forest (mini series)
-        ('tt0348914', ['crime', 'drama', 'history']),       # Deadwood (series)
-        ('tt0556307', ['crime', 'drama', 'history']),       # Deadwood - S02E04 (episode)
+        ('tt0080455', ('action', 'adventure', 'comedy')),  # Blues Brothers (movie)
+        ('tt0192802', ('animation', 'family')),  # Wind in the Willows (TV movie)
+        ('tt0471711', ('animation', 'comedy', 'romance')),  # Bender's Big Score (Video)
+        ('tt0097270', ('crime', 'drama')),  # Elephant (TV movie)
+        ('tt3472226', ('short', 'action', 'comedy')),  # Kung Fury (Short)
+        ('tt6560040', ('crime', 'drama')),  # The Forest (mini series)
+        ('tt0348914', ('crime', 'drama', 'history')),  # Deadwood (series)
+        ('tt0556307', ('crime', 'drama', 'history')),  # Deadwood - S02E04 (episode)
     ),
     ids=lambda value: str(value),
 )

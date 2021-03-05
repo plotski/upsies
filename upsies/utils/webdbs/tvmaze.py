@@ -65,7 +65,7 @@ class TvmazeApi(WebDbApiBase):
             return show
 
     async def directors(self, id):
-        return []
+        return ()
 
     async def creators(self, id):
         show = await self._get_show(id)
@@ -74,7 +74,7 @@ class TvmazeApi(WebDbApiBase):
         for item in crew:
             if item.get('type') == 'Creator' and item.get('person', {}).get('name'):
                 creators.append(item['person']['name'])
-        return creators
+        return tuple(creators)
 
     async def cast(self, id):
         show = await self._get_show(id)

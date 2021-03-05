@@ -221,10 +221,10 @@ async def test_search_result_year(query, exp_title, exp_year, api, store_respons
 @pytest.mark.parametrize(
     argnames=('id', 'exp_directors'),
     argvalues=(
-        ('movie/125244', ['Jack Kinney', 'James Algar']),
-        ('movie/334536', ['Oz Perkins']),
-        ('tv/1406', []),
-        ('tv/74802', []),
+        ('movie/125244', ('Jack Kinney', 'James Algar')),
+        ('movie/334536', ('Oz Perkins',)),
+        ('tv/1406', ()),
+        ('tv/74802', ()),
     ),
     ids=lambda value: str(value),
 )
@@ -237,10 +237,10 @@ async def test_directors(id, exp_directors, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_creators'),
     argvalues=(
-        ('movie/125244', []),
-        ('movie/334536', []),
-        ('tv/1406', ['David Milch']),
-        ('tv/74802', ['Rike Jokela']),
+        ('movie/125244', ()),
+        ('movie/334536', ()),
+        ('tv/1406', ('David Milch',)),
+        ('tv/74802', ('Rike Jokela',)),
     ),
     ids=lambda value: str(value),
 )

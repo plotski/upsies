@@ -69,7 +69,7 @@ class TmdbApi(WebDbApiBase):
                 link = profile.find('a')
                 if link:
                     directors.append(link.text)
-        return directors
+        return tuple(directors)
 
     async def creators(self, id):
         soup = await self._get_soup(id)
@@ -80,7 +80,7 @@ class TmdbApi(WebDbApiBase):
                 link = profile.find('a')
                 if link:
                     creators.append(link.text)
-        return creators
+        return tuple(creators)
 
     async def cast(self, id):
         soup = await self._get_soup(id)
@@ -91,7 +91,7 @@ class TmdbApi(WebDbApiBase):
                 strings = list(link.stripped_strings)
                 if strings:
                     cast.append(strings[0])
-        return cast
+        return tuple(cast)
 
     async def countries(self, id):
         raise NotImplementedError('Country lookup is not implemented for TMDb')
@@ -100,14 +100,14 @@ class TmdbApi(WebDbApiBase):
         soup = await self._get_soup(id)
         keywords = soup.find(class_='keywords')
         if not keywords:
-            return []
+            return ()
         else:
             keywords = list(keywords.stripped_strings)
             if keywords[0] == 'Keywords':
                 keywords.pop(0)
             if 'No keywords have been added.' in keywords:
                 keywords.clear()
-            return keywords
+            return tuple(keywords)
 
     _no_overview_texts = (
         "We don't have an overview",
