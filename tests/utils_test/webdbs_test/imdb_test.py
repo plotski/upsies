@@ -341,7 +341,7 @@ async def test_creators(id, exp_creators, api, store_response):
 )
 @pytest.mark.asyncio
 async def test_cast(id, exp_cast, api, store_response):
-    cast = await api.cast(id)
+    cast = (await api.cast(id))[:5]
     assert cast == exp_cast
 
 

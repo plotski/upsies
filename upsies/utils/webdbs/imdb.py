@@ -92,9 +92,6 @@ class ImdbApi(WebDbApiBase):
                 cast.append(''.join(td_tags[1].stripped_strings))
             except IndexError:
                 pass
-            else:
-                if len(cast) >= 5:
-                    break
         return cast
 
     async def countries(self, id):
