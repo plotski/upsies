@@ -25,6 +25,8 @@ _abbreviated_scene_filename_regexs = (
     re.compile(r'^[a-z0-9]+-[a-z0-9_\.-]+?(?!-[a-z]{2,})\.(?:mkv|avi)$'),
     # Match "ttl.720p-group.mkv"
     re.compile(r'^[a-z0-9]+[\.-]\d{3,4}p-[a-z]{2,}\.(?:mkv|avi)$'),
+    # Match "GR0UP1080pTTL.mkv"
+    re.compile(r'^[a-zA-Z0-9]+\d{3,4}p[a-zA-Z]+\.(?:mkv|avi)$'),
 )
 
 
