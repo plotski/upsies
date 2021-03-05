@@ -22,6 +22,20 @@ class TmdbApi(WebDbApiBase):
     label = 'TMDb'
     _url_base = 'http://themoviedb.org'
 
+    _soup_cache = {}
+
+    async def _get_soup(self, path, params={}):
+        cache_id = (path, tuple(sorted(params.items())))
+        if cache_id in self._soup_cache:
+            return self._soup_cache[cache_id]
+        text = await http.get(
+            url=f'{self._url_base}/{path.lstrip("/")}',
+            params=params,
+            cache=True,
+        )
+        self._soup_cache[cache_id] = html.parse(text)
+        return self._soup_cache[cache_id]
+
     async def search(self, query):
         _log.debug('Searching TMDb for %s', query)
         if not query.title:
@@ -30,15 +44,13 @@ class TmdbApi(WebDbApiBase):
         params = {'query': query.title_normalized}
         if query.year is not None:
             params['query'] += f' y:{query.year}'
-        if query.type is ReleaseType.movie:
-            url = f'{self._url_base}/search/movie'
-        elif query.type in (ReleaseType.season, ReleaseType.episode):
-            url = f'{self._url_base}/search/tv'
-        else:
-            url = f'{self._url_base}/search'
 
-        text = await http.get(url, params=params, cache=True)
-        soup = html.parse(text)
+        if query.type is ReleaseType.movie:
+            soup = await self._get_soup('/search/movie', params=params)
+        elif query.type in (ReleaseType.season, ReleaseType.episode):
+            soup = await self._get_soup('/search/tv', params=params)
+        else:
+            soup = await self._get_soup('/search', params=params)
 
         # When search for year, unmatching results are included but hidden.
         for tag in soup.find_all('div', class_='hide'):
@@ -49,12 +61,7 @@ class TmdbApi(WebDbApiBase):
                 for item in items]
 
     async def cast(self, id):
-        try:
-            text = await http.get(f'{self._url_base}/{id}', cache=True)
-        except errors.RequestError:
-            return ''
-
-        soup = html.parse(text)
+        soup = await self._get_soup(id)
         cards = soup.select('.people > .card')
         cast = []
         for card in cards:
@@ -68,12 +75,7 @@ class TmdbApi(WebDbApiBase):
         raise NotImplementedError('Country lookup is not implemented for TMDb')
 
     async def keywords(self, id):
-        try:
-            text = await http.get(f'{self._url_base}/{id}', cache=True)
-        except errors.RequestError:
-            return ''
-
-        soup = html.parse(text)
+        soup = await self._get_soup(id)
         keywords = soup.find(class_='keywords')
         if not keywords:
             return []
@@ -91,12 +93,7 @@ class TmdbApi(WebDbApiBase):
     )
 
     async def summary(self, id):
-        try:
-            text = await http.get(f'{self._url_base}/{id}', cache=True)
-        except errors.RequestError:
-            return ''
-
-        soup = html.parse(text)
+        soup = await self._get_soup(id)
         overview = ''.join(soup.find('div', class_='overview').stripped_strings)
         if any(text in overview for text in self._no_overview_texts):
             overview = ''
@@ -114,12 +111,7 @@ class TmdbApi(WebDbApiBase):
         raise NotImplementedError('Type lookup is not implemented for TMDb')
 
     async def year(self, id):
-        try:
-            text = await http.get(f'{self._url_base}/{id}', cache=True)
-        except errors.RequestError:
-            return ''
-
-        soup = html.parse(text)
+        soup = await self._get_soup(id)
         year = ''.join(soup.find(class_='release_date').stripped_strings).strip('()')
         _log.debug(year)
         if len(year) == 4 and year.isdigit():
