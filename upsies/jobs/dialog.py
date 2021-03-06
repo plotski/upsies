@@ -150,7 +150,7 @@ class ChoiceJob(JobBase):
         self.choices = choices
         self.focused = focused
 
-    def choice_selected(self, choice):
+    def choice_accepted(self, choice):
         """
         Must be called by the UI when the user makes a choice
 

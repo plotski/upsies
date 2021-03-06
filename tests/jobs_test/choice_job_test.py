@@ -179,13 +179,13 @@ def test_focused_set_to_invalid_choice():
 
 
 @pytest.mark.parametrize('choice', (('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
-def test_choice_selected_with_valid_choice(choice):
+def test_choice_accepted_with_valid_choice(choice):
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
     assert job.choice is None
-    job.choice_selected(choice)
+    job.choice_accepted(choice)
     assert cb.mock_calls == [call.chosen(choice[1]), call.output(choice[0])]
     assert job.choice == choice[1]
     assert job.output == (choice[0],)
@@ -193,13 +193,13 @@ def test_choice_selected_with_valid_choice(choice):
     asyncio.get_event_loop().run_until_complete(job.wait())
     assert job.is_finished
 
-def test_choice_selected_with_invalid_choice():
+def test_choice_accepted_with_invalid_choice():
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
     cb = Mock()
     job.signal.register('chosen', cb)
     assert job.focused == ('a', 1)
     assert job.choice is None
-    job.choice_selected(('d', 4))
+    job.choice_accepted(('d', 4))
     assert job.focused == ('a', 1)
     assert job.choice is None
     assert cb.call_args_list == []
@@ -210,13 +210,13 @@ def test_choice_selected_with_invalid_choice():
     assert job.is_finished
 
 @pytest.mark.parametrize('index, exp_choice', ((0, ('a', 'foo')), (1, ('b', 'bar')), (2, ('c', 'baz'))))
-def test_choice_selected_with_valid_index(index, exp_choice):
+def test_choice_accepted_with_valid_index(index, exp_choice):
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
     assert job.choice is None
-    job.choice_selected(index)
+    job.choice_accepted(index)
     assert job.choice is exp_choice[1]
     assert cb.mock_calls == [call.chosen(exp_choice[1]), call.output(exp_choice[0])]
     assert job.output == (exp_choice[0],)
@@ -224,13 +224,13 @@ def test_choice_selected_with_valid_index(index, exp_choice):
     asyncio.get_event_loop().run_until_complete(job.wait())
     assert job.is_finished
 
-def test_choice_selected_with_invalid_index():
+def test_choice_accepted_with_invalid_index():
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
     assert job.choice is None
-    job.choice_selected(3)
+    job.choice_accepted(3)
     assert job.choice is None
     assert cb.mock_calls == []
     assert job.output == ()
@@ -247,13 +247,13 @@ def test_choice_selected_with_invalid_index():
     ('bar', ('b', 'bar')),
     ('baz', ('c', 'baz')),
 ))
-def test_choice_selected_with_valid_value(value, exp_choice):
+def test_choice_accepted_with_valid_value(value, exp_choice):
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
     assert job.choice is None
-    job.choice_selected(value)
+    job.choice_accepted(value)
     assert job.choice is exp_choice[1]
     assert cb.mock_calls == [call.chosen(exp_choice[1]), call.output(exp_choice[0])]
     assert job.output == (exp_choice[0],)
@@ -261,13 +261,13 @@ def test_choice_selected_with_valid_value(value, exp_choice):
     asyncio.get_event_loop().run_until_complete(job.wait())
     assert job.is_finished
 
-def test_choice_selected_with_invalid_value():
+def test_choice_accepted_with_invalid_value():
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
     assert job.choice is None
-    job.choice_selected('arf')
+    job.choice_accepted('arf')
     assert job.choice is None
     assert cb.mock_calls == []
     assert job.output == ()
@@ -276,13 +276,13 @@ def test_choice_selected_with_invalid_value():
         asyncio.get_event_loop().run_until_complete(job.wait())
     assert job.is_finished
 
-def test_choice_selected_with_None():
+def test_choice_accepted_with_None():
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=(('a', 'foo'), ('b', 'bar'), ('c', 'baz')))
     cb = Mock()
     job.signal.register('chosen', cb.chosen)
     job.signal.register('output', cb.output)
     assert job.choice is None
-    job.choice_selected(None)
+    job.choice_accepted(None)
     assert job.choice is None
     assert cb.mock_calls == []
     assert job.output == ()
