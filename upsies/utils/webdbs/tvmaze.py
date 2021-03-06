@@ -115,6 +115,9 @@ class TvmazeApi(WebDbApiBase):
         # and episode by IMDb ID.
         raise NotImplementedError('Type lookup is not implemented for TVmaze')
 
+    async def url(self, id):
+        return f'{self._url_base.rstrip("/")}/shows/{id}'
+
     async def year(self, id):
         show = await self._get_show(id)
         return _get_year(show)

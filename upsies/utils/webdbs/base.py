@@ -71,6 +71,10 @@ class WebDbApiBase(abc.ABC):
         """Return :class:`~.types.ReleaseType`"""
 
     @abc.abstractmethod
+    async def url(self, id):
+        """Return URL for `id`"""
+
+    @abc.abstractmethod
     async def year(self, id):
         """Return release year or empty string"""
 

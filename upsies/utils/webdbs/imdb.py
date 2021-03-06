@@ -234,6 +234,9 @@ class ImdbApi(WebDbApiBase):
                 return ReleaseType.movie
         return ReleaseType.unknown
 
+    async def url(self, id):
+        return f'{self._url_base.rstrip("/")}/title/{id}'
+
     async def year(self, id):
         soup = await self._get_soup(f'title/{id}')
 

@@ -359,6 +359,11 @@ async def test_type(id, api, store_response):
         await api.type(id)
 
 
+@pytest.mark.asyncio
+async def test_url(api):
+    assert await api.url('123') == api._url_base + '/shows/123'
+
+
 @pytest.mark.parametrize(
     argnames=('id', 'exp_year'),
     argvalues=(

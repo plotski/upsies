@@ -26,6 +26,7 @@ class TestApi(WebDbApiBase):
     title_english = AsyncMock()
     title_original = AsyncMock()
     type = AsyncMock()
+    url = AsyncMock()
     year = AsyncMock()
 
 

@@ -131,6 +131,9 @@ class TmdbApi(WebDbApiBase):
     async def type(self, id):
         raise NotImplementedError('Type lookup is not implemented for TMDb')
 
+    async def url(self, id):
+        return f'{self._url_base.rstrip("/")}/{id}'
+
     async def year(self, id):
         soup = await self._get_soup(id)
         year = ''.join(soup.find(class_='release_date').stripped_strings).strip('()')

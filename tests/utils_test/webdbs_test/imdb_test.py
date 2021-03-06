@@ -481,6 +481,11 @@ async def test_type(id, exp_type, api, store_response):
     assert await api.type(id) == exp_type
 
 
+@pytest.mark.asyncio
+async def test_url(api):
+    assert await api.url('foo') == api._url_base + '/title/foo'
+
+
 @pytest.mark.parametrize(
     argnames=('id', 'exp_year'),
     argvalues=(
