@@ -39,6 +39,7 @@ setuptools.setup(
         'pyimgbox==1.*',
         'pyxdg',
         'torf==3.*',
+        'Unidecode==1.2.*',
     ],
     entry_points={'console_scripts': ['upsies = upsies.uis.tui:main']},
 )
