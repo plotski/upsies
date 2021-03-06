@@ -5,7 +5,7 @@ Abstract base class for tracker APIs
 import abc
 import argparse
 
-from .. import jobs as _jobs
+from .. import errors, jobs
 from ..utils import cached_property, fs, signal, webdbs
 
 import logging  # isort:skip
@@ -181,7 +181,7 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def create_torrent_job(self):
         """:class:`~.jobs.torrent.CreateTorrentJob` instance"""
-        return _jobs.torrent.CreateTorrentJob(
+        return jobs.torrent.CreateTorrentJob(
             content_path=self.content_path,
             tracker=self.tracker,
             **self.common_job_args,
@@ -191,7 +191,7 @@ class TrackerJobsBase(abc.ABC):
     def add_torrent_job(self):
         """:class:`~.jobs.torrent.AddTorrentJob` instance"""
         if self.bittorrent_client:
-            add_torrent_job = _jobs.torrent.AddTorrentJob(
+            add_torrent_job = jobs.torrent.AddTorrentJob(
                 autostart=False,
                 client=self.bittorrent_client,
                 download_path=fs.dirname(self.content_path),
@@ -207,7 +207,7 @@ class TrackerJobsBase(abc.ABC):
     def copy_torrent_job(self):
         """:class:`~.jobs.torrent.CopyTorrentJob` instance"""
         if self.torrent_destination:
-            copy_torrent_job = _jobs.torrent.CopyTorrentJob(
+            copy_torrent_job = jobs.torrent.CopyTorrentJob(
                 autostart=False,
                 destination=self.torrent_destination,
                 **self.common_job_args,
@@ -221,7 +221,7 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def release_name_job(self):
         """:class:`~.jobs.release_name.ReleaseNameJob` instance"""
-        return _jobs.release_name.ReleaseNameJob(
+        return jobs.release_name.ReleaseNameJob(
             content_path=self.content_path,
             **self.common_job_args,
         )
@@ -229,7 +229,7 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def imdb_job(self):
         """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
-        imdb_job = _jobs.webdb.SearchWebDbJob(
+        imdb_job = jobs.webdb.SearchWebDbJob(
             content_path=self.content_path,
             db=webdbs.webdb('imdb'),
             **self.common_job_args,
@@ -241,7 +241,7 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def tmdb_job(self):
         """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
-        return _jobs.webdb.SearchWebDbJob(
+        return jobs.webdb.SearchWebDbJob(
             content_path=self.content_path,
             db=webdbs.webdb('tmdb'),
             **self.common_job_args,
@@ -250,7 +250,7 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def tvmaze_job(self):
         """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
-        return _jobs.webdb.SearchWebDbJob(
+        return jobs.webdb.SearchWebDbJob(
             content_path=self.content_path,
             db=webdbs.webdb('tvmaze'),
             **self.common_job_args,
@@ -267,7 +267,7 @@ class TrackerJobsBase(abc.ABC):
         The number of screenshots to make is taken from the "--screenshots" CLI
         argument, if present and non-falsy, and defaults to :attr:`screenshots`.
         """
-        return _jobs.screenshots.ScreenshotsJob(
+        return jobs.screenshots.ScreenshotsJob(
             content_path=self.content_path,
             count=getattr(self.cli_args, 'screenshots', None) or self.screenshots,
             **self.common_job_args,
@@ -277,7 +277,7 @@ class TrackerJobsBase(abc.ABC):
     def upload_screenshots_job(self):
         """:class:`~.jobs.imghost.ImageHostJob` instance"""
         if self.image_host:
-            imghost_job = _jobs.imghost.ImageHostJob(
+            imghost_job = jobs.imghost.ImageHostJob(
                 imghost=self.image_host,
                 **self.common_job_args,
             )
@@ -296,7 +296,7 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def mediainfo_job(self):
         """:class:`~.jobs.mediainfo.MediainfoJob` instance"""
-        return _jobs.mediainfo.MediainfoJob(
+        return jobs.mediainfo.MediainfoJob(
             content_path=self.content_path,
             **self.common_job_args,
         )
@@ -304,7 +304,7 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def scene_check_job(self):
         """:class:`~.jobs.scene.SceneCheckJob` instance"""
-        return _jobs.scene.SceneCheckJob(
+        return jobs.scene.SceneCheckJob(
             content_path=self.content_path,
             **self.common_job_args,
         )
