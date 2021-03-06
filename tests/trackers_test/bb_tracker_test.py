@@ -4,11 +4,11 @@ from unittest.mock import Mock, call
 import bs4
 import pytest
 
-# from upsies import __project_name__, __version__, errors
 from upsies import errors
-from upsies.trackers.bb import BbTracker
-
-# from pytest_httpserver.httpserver import Response
+from upsies.trackers.bb import BbTracker, BbTrackerConfig
+from upsies.trackers.bb.movie import MovieBbTrackerJobs
+from upsies.trackers.bb.series import SeriesBbTrackerJobs
+from upsies.utils.release import ReleaseType
 
 
 class AsyncMock(Mock):
@@ -18,32 +18,58 @@ class AsyncMock(Mock):
         return coro()
 
 
-class RequestHandler:
-    def __init__(self):
-        self.requests_seen = []
-
-    def __call__(self, request):
-        # `request` is a Request object from werkzeug
-        # https://werkzeug.palletsprojects.com/en/1.0.x/wrappers/#werkzeug.wrappers.BaseRequest
-        try:
-            return self.handle(request)
-        except Exception as e:
-            # pytest-httpserver doesn't show the traceback if we call
-            # raise_for_status() on the response.
-            import traceback
-            traceback.print_exception(type(e), e, e.__traceback__)
-            raise
-
-    def handle(self, request):
-        raise NotImplementedError()
-
-
 def test_name_attribute():
     assert BbTracker.name == 'bb'
 
 
 def test_label_attribute():
     assert BbTracker.label == 'bB'
+
+
+def test_TrackerConfig_attribute():
+    assert BbTracker.TrackerConfig is BbTrackerConfig
+
+
+@pytest.mark.parametrize(
+    argnames='release_type, exp_TrackerJobs_subclass',
+    argvalues=(
+        (ReleaseType.movie, MovieBbTrackerJobs),
+        (ReleaseType.season, SeriesBbTrackerJobs),
+        (ReleaseType.episode, SeriesBbTrackerJobs),
+    ),
+    ids=lambda v: str(v),
+)
+def test_TrackerJobs_propery_from_cli_args(release_type, exp_TrackerJobs_subclass):
+    tracker = BbTracker(
+        config={
+            'username': 'bunny',
+            'password': 'hunter2',
+            # 'base_url': 'http://bb.local',
+        },
+        cli_args=Mock(type=release_type),
+    )
+    assert tracker.TrackerJobs is exp_TrackerJobs_subclass
+
+@pytest.mark.parametrize(
+    argnames='release_type, exp_TrackerJobs_subclass',
+    argvalues=(
+        (ReleaseType.movie, MovieBbTrackerJobs),
+        (ReleaseType.season, SeriesBbTrackerJobs),
+        (ReleaseType.episode, SeriesBbTrackerJobs),
+    ),
+    ids=lambda v: str(v),
+)
+def test_TrackerJobs_propery_from_ReleaseInfo(release_type, exp_TrackerJobs_subclass, mocker):
+    mocker.patch('upsies.utils.release.ReleaseInfo', return_value={'type': release_type})
+    tracker = BbTracker(
+        config={
+            'username': 'bunny',
+            'password': 'hunter2',
+            'base_url': 'http://bb.local',
+        },
+        cli_args=Mock(type=None),
+    )
+    assert tracker.TrackerJobs is exp_TrackerJobs_subclass
 
 
 @pytest.mark.asyncio
