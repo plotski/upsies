@@ -24,29 +24,19 @@ def test_cached_property_caches_return_value_of_decorated_function():
     assert foo.bar == 'asdf'
 
 
-def test_submodules_finds_modules_and_packages():
-    import importlib
-    assert set(utils.submodules('upsies.utils')) == {
-        importlib.import_module('upsies.utils.browser'),
-        importlib.import_module('upsies.utils.btclients'),
-        importlib.import_module('upsies.utils.configfiles'),
-        importlib.import_module('upsies.utils.daemon'),
-        importlib.import_module('upsies.utils.fs'),
-        importlib.import_module('upsies.utils.html'),
-        importlib.import_module('upsies.utils.http'),
-        importlib.import_module('upsies.utils.imghosts'),
-        importlib.import_module('upsies.utils.iso'),
-        importlib.import_module('upsies.utils.release'),
-        importlib.import_module('upsies.utils.scene'),
-        importlib.import_module('upsies.utils.screenshot'),
-        importlib.import_module('upsies.utils.signal'),
-        importlib.import_module('upsies.utils.subproc'),
-        importlib.import_module('upsies.utils.timestamp'),
-        importlib.import_module('upsies.utils.torrent'),
-        importlib.import_module('upsies.utils.types'),
-        importlib.import_module('upsies.utils.video'),
-        importlib.import_module('upsies.utils.webdbs'),
-    }
+def test_submodules_finds_modules_and_packages(mocker):
+    listdir_mock = mocker.patch('os.listdir', return_value=(
+        '_this_is_private',
+        'this_is_a_package',
+        'this_is_a_module.py',
+        'this_is_something_else.foo',
+    ))
+    import_mock = mocker.patch('importlib.import_module', side_effect=(1, 2, 3, 4, 5))
+    assert set(utils.submodules('asdf')) == {1, 2}
+    assert import_mock.call_args_list == [
+        call(name='.this_is_a_package', package='asdf'),
+        call(name='.this_is_a_module', package='asdf'),
+    ]
 
 
 def test_subclasses():

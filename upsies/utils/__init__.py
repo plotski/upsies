@@ -99,9 +99,10 @@ def submodules(package):
         if not name.startswith('_'):
             if name.endswith('.py'):
                 name = name[:-3]
-            submods.append(
-                importlib.import_module(name=f'.{name}', package=package)
-            )
+            if '.' not in name:
+                submods.append(
+                    importlib.import_module(name=f'.{name}', package=package)
+                )
     return submods
 
 
