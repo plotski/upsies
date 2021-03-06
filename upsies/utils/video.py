@@ -298,7 +298,7 @@ def audio_format(path):
     except errors.ContentError:
         return None
     else:
-        _log.debug('Audio track for %r: %r', path, audio_track)
+        # _log.debug('Audio track for %r: %r', path, audio_track)
 
         fmt = translate_format(audio_track)
         if fmt:
@@ -365,7 +365,7 @@ def video_format(path):
     except errors.ContentError:
         return None
     else:
-        _log.debug('Video track for %r: %r', path, video_track)
+        # _log.debug('Video track for %r: %r', path, video_track)
         video_format = translate(video_track)
         _log.debug('Detected video format: %s', video_format)
         return video_format
