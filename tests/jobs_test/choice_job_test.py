@@ -16,6 +16,12 @@ def test_label_property():
     assert job.label == 'Foo'
 
 
+def test_cache_id_property():
+    job = dialog.ChoiceJob(name='foo', label='Foo', choices=('a', 'b', 'c'))
+    job.choice_accepted('b')
+    assert job.cache_id == ('foo', 'b')
+
+
 def test_choices_are_strings():
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     cb = Mock()
