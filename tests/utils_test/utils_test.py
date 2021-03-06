@@ -25,7 +25,7 @@ def test_cached_property_caches_return_value_of_decorated_function():
 
 
 def test_submodules_finds_modules_and_packages(mocker):
-    listdir_mock = mocker.patch('os.listdir', return_value=(
+    mocker.patch('os.listdir', return_value=(
         '_this_is_private',
         'this_is_a_package',
         'this_is_a_module.py',
