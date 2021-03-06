@@ -1,46 +1,47 @@
 """
-bB API
+BbTracker class
 """
 
 import asyncio
-import base64
 import re
 import urllib
 
-from .. import errors, jobs
-from ..utils import cached_property, html, http
-from ..utils.types import ReleaseType
-from . import base
+from ... import errors
+from ...utils import html, http, release
+from ...utils.types import ReleaseType
+from ..base import TrackerBase
+from .config import BbTrackerConfig
+from .movie import MovieBbTrackerJobs
+from .series import SeriesBbTrackerJobs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class BbTrackerConfig(base.TrackerConfigBase):
-    defaults = {
-        'base_url'   : base64.b64decode('aHR0cHM6Ly9iYWNvbmJpdHMub3Jn').decode('ascii'),
-        'username'   : '',
-        'password'   : '',
-        'exclude'    : [],
-        'source'     : 'bB',
-        'image_host' : 'imgbox',
-    }
-
-
-class BbTrackerJobs(base.TrackerJobsBase):
-    @cached_property
-    def jobs_before_upload(self):
-        return ()
-
-
-class BbTracker(base.TrackerBase):
+class BbTracker(TrackerBase):
     name = 'bb'
     label = 'bB'
 
-    argument_definitions = {}
+    argument_definitions = {
+        ('--type', '-t'): {
+            'help': 'Submission type ("movie" or "tv")',
+            'type': ReleaseType,
+        },
+    }
 
-    TrackerJobs = BbTrackerJobs
     TrackerConfig = BbTrackerConfig
+
+    @property
+    def TrackerJobs(self):
+        if self.cli_args.type:
+            release_type = self.cli_args.type
+        else:
+            release_type = release.ReleaseInfo(self.cli_args.CONTENT)['type']
+
+        if release_type is ReleaseType.movie:
+            return MovieBbTrackerJobs
+        elif release_type in (ReleaseType.season, ReleaseType.episode):
+            return SeriesBbTrackerJobs
 
     _url_path = {
         'login': '/login.php',
@@ -151,7 +152,20 @@ class BbTracker(base.TrackerBase):
             _log.debug('%s: Announce URL: %s', self.name, announce_url_tag['value'])
             return announce_url_tag['value']
 
-    async def upload(self, metadata):
-        _log.debug('%s: Uploading %s', self.name, metadata)
-        await asyncio.sleep(2)
+    async def upload(self, tracker_jobs):
+        _log.debug('Uploading %r', tracker_jobs.post_data)
+
+        upload_url = urllib.parse.urljoin(
+            self.config['base_url'],
+            self._url_path['upload'],
+        )
+
+        response = await http.post(
+            url=upload_url,
+            user_agent=True,
+            allow_redirects=False,
+            files={'file_input': (tracker_jobs.torrent_filepath, 'application/x-bittorrent')},
+            data=tracker_jobs.post_data,
+        )
+
         return 'http://bb.local/path/to/uploaded/torrent'
