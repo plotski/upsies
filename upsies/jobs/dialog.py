@@ -209,6 +209,11 @@ class TextFieldJob(JobBase):
         return self._label
 
     @property
+    def cache_id(self):
+        """:attr:`name` and :attr:`text`"""
+        return (self.name, self.text)
+
+    @property
     def text(self):
         """Current text"""
         return getattr(self, '_text', ())

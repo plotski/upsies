@@ -13,6 +13,11 @@ def test_label_property():
     assert job.label == 'Foo'
 
 
+def test_cache_id_property():
+    job = TextFieldJob(name='foo', label='Foo', text='asdf')
+    assert job.cache_id == ('foo', 'asdf')
+
+
 def test_text_property():
     job = TextFieldJob(name='foo', label='Foo', text='bar')
     cb = Mock()
