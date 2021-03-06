@@ -20,7 +20,7 @@ class ImdbApi(WebDbApiBase):
 
     name = 'imdb'
     label = 'IMDb'
-    _url_base = 'http://imdb.com'
+    _url_base = 'https://imdb.com'
 
     _soup_cache = {}
 
