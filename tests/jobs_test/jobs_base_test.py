@@ -556,12 +556,13 @@ def test_cache_id_includes_keyword_arguments(tmp_path):
     job = BarJob(home_directory=tmp_path, ignore_cache=False, **kwargs)
     assert job.cache_id == kwargs
 
-def test_cache_id_complains_about_keyword_arguments_with_no_string_representation(tmp_path):
+@pytest.mark.parametrize('value', (object(), print, lambda: None), ids=lambda v: str(v))
+def test_cache_id_complains_about_keyword_arguments_with_no_string_representation(value, tmp_path):
     class BarJob(FooJob):
         def initialize(self, foo, bar, baz):
             pass
 
-    kwargs = {'foo': 'asdf', 'bar': (1, 2, 3), 'baz': object()}
+    kwargs = {'foo': 'asdf', 'bar': (1, 2, 3), 'baz': value}
     job = BarJob(home_directory=tmp_path, ignore_cache=False, **kwargs)
-    with pytest.raises(RuntimeError, match=r"<class 'object'> has no string representation"):
+    with pytest.raises(RuntimeError, match=rf'^{re.escape(str(type(value)))} has no string representation$'):
         job.cache_id

@@ -423,8 +423,9 @@ class JobBase(abc.ABC):
         :meth:`initialize`.
         """
         # Check if any values don't have a string representation to prevent
-        # random cache IDs
-        no_str_regex = re.compile(r'^<[\w\.]+ object at 0x[a-f\d]+>$')
+        # random cache IDs. We don't want "<foo.bar object at 0x...>" or
+        # "<function foo.bar at 0x...>" in our cache ID.
+        no_str_regex = re.compile(r'^<.*>$')
         for key, value in self.kwargs.items():
             if no_str_regex.search(str(key)):
                 raise RuntimeError(f'{type(key)!r} has no string representation')
