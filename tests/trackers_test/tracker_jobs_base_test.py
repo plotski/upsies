@@ -1,8 +1,20 @@
+import asyncio
 from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
+from upsies import errors
 from upsies.trackers.base import TrackerJobsBase
+
+
+class AsyncMock(Mock):
+    def __call__(self, *args, **kwargs):
+        async def coro(_sup=super()):
+            return _sup.__call__(*args, **kwargs)
+        return coro()
+
+    def __await__(self):
+        return self().__await__()
 
 
 @pytest.fixture
@@ -67,6 +79,44 @@ def test_signals(mocker):
         call('warning', 'foo'),
         call('error', 'bar'),
         call('exception', 'baz'),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_background_tasks(mocker):
+    coros = (AsyncMock(), AsyncMock(), AsyncMock())
+    cb = Mock()
+    tracker_jobs = make_TestTrackerJobs()
+    tracker_jobs.signal.register('warning', cb.warning)
+    tracker_jobs.signal.register('exception', cb.exception)
+    for coro in coros:
+        tracker_jobs.add_background_task(coro)
+    assert all(not task.done() for task in tracker_jobs._background_tasks)
+    await tracker_jobs.wait_for_background_tasks()
+    assert all(task.done() for task in tracker_jobs._background_tasks)
+    for coro in coros:
+        assert coro.call_args_list == [call()]
+    assert cb.mock_calls == []
+
+@pytest.mark.asyncio
+async def test_background_tasks_catches_exceptions(mocker):
+    coros = (
+        AsyncMock(),
+        AsyncMock(side_effect=errors.RequestError('foo!')),
+        AsyncMock(side_effect=errors.ContentError('bar!')),
+    )
+    cb = Mock()
+    tracker_jobs = make_TestTrackerJobs()
+    tracker_jobs.signal.register('warning', cb.warning)
+    tracker_jobs.signal.register('exception', cb.exception)
+    for coro in coros:
+        tracker_jobs.add_background_task(coro)
+    await tracker_jobs.wait_for_background_tasks()
+    for coro in coros:
+        assert coro.call_args_list == [call()]
+    assert cb.mock_calls == [
+        call.warning(errors.RequestError('foo!')),
+        call.exception(errors.ContentError('bar!')),
     ]
 
 

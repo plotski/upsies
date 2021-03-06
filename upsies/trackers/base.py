@@ -4,6 +4,7 @@ Abstract base class for tracker APIs
 
 import abc
 import argparse
+import asyncio
 
 from .. import errors, jobs
 from ..utils import cached_property, fs, signal, webdbs
@@ -78,6 +79,37 @@ class TrackerJobsBase(abc.ABC):
         self._common_job_args = common_job_args
         self._cli_args = cli_args or argparse.Namespace()
         self._signal = signal.Signal('warning', 'error', 'exception')
+        self._background_tasks = []
+
+    def add_background_task(self, task):
+        """
+        Await asynchronous coroutine in a background task and return immediately
+
+        This method should be used to call coroutines in a synchronous context.
+
+        :param task: Any awaitable object
+
+        If `task` raises :class:`~.errors.RequestError`, it is passed to
+        :meth:`warn`. Any other exception is passed to :meth:`exception`.
+        """
+        async def handle_exceptions(id):
+            try:
+                return await task
+            except errors.RequestError as e:
+                self.warn(e)
+            except BaseException as e:
+                self.exception(e)
+
+        self._background_tasks.append(
+            asyncio.ensure_future(handle_exceptions(task))
+        )
+
+    async def wait_for_background_tasks(self):
+        """
+        Wait for background tasks that were previously passed to
+        :meth:`add_background_task`
+        """
+        return await asyncio.gather(*self._background_tasks)
 
     @property
     def cli_args(self):
