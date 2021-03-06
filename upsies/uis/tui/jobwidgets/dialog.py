@@ -26,3 +26,26 @@ class ChoiceJobWidget(JobWidgetBase):
     @cached_property
     def runtime_widget(self):
         return self._radiolist
+
+
+class TextFieldJobWidget(JobWidgetBase):
+    def setup(self):
+        self._input_field = widgets.InputField(
+            text=self.job.text,
+            read_only=self.job.read_only,
+            style='class:dialog.text',
+            on_accepted=self._handle_text_accepted,
+        )
+        self.job.signal.register('dialog_updated', self._handle_dialog_updated)
+
+    def _handle_dialog_updated(self, job):
+        self._input_field.read_only = job.read_only
+        self._input_field.text = job.text
+        self.invalidate()
+
+    def _handle_text_accepted(self, buffer):
+        self.job.text_accepted(buffer.text)
+
+    @cached_property
+    def runtime_widget(self):
+        return self._input_field

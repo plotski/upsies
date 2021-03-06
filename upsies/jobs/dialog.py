@@ -182,3 +182,94 @@ class ChoiceJob(JobBase):
         elif choice is not None:
             self.exception(ValueError(f'Invalid choice: {choice!r}'))
         self.finish()
+
+
+class TextFieldJob(JobBase):
+    """
+    Ask the user for text input
+
+    This job adds the following signals to the :attr:`~.JobBase.signal`
+    attribute:
+
+        ``dialog_updated``
+            Emitted when :attr:`choices` or :attr:`focused` is set. Registered
+            callbacks get the job instance as a positional argument.
+
+        ``accepted``
+            Emitted when the user accepts the text. Registered callbacks get the
+            entered text as a positional argument.
+    """
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def text(self):
+        """Current text"""
+        return getattr(self, '_text', ())
+
+    @text.setter
+    def text(self, text):
+        self._text = str(text)
+        self.signal.emit('dialog_updated', self)
+
+    @property
+    def obscured(self):
+        """Whether the text is unreadable, e.g. when entering passwords"""
+        return getattr(self, '_obscured', False)
+
+    @obscured.setter
+    def obscured(self, obscured):
+        self._obscured = bool(obscured)
+        self.signal.emit('dialog_updated', self)
+
+    @property
+    def read_only(self):
+        """Whether the user can change the text"""
+        return getattr(self, '_read_only', False)
+
+    @read_only.setter
+    def read_only(self, read_only):
+        self._read_only = bool(read_only)
+        self.signal.emit('dialog_updated', self)
+
+    def initialize(self, *, name, label, text='', validator=None, obscured=False, read_only=False):
+        """
+        Set internal state
+
+        :param name: Name for internal use
+        :param label: Name for user-facing use
+        :param text: Initial text
+        :param validator: Callable that gets the text before it is accepted. If
+            `ValueError` is raised, if is displayed as a warning instead of
+            finishing the job.
+        :param validator: callable or None
+        """
+        self._name = str(name)
+        self._label = str(label)
+        self._validator = validator or (lambda _: None)
+        self.signal.add('dialog_updated')
+        self.signal.add('accepted')
+        self.text = text
+        self.obscured = obscured
+        self.read_only = read_only
+
+    def text_accepted(self, text):
+        """
+        Must be called by the UI when the user accepts the entered text
+
+        :param text: Text accepted by the user
+        """
+        if not self.read_only:
+            try:
+                self._validator(str(text))
+            except ValueError as e:
+                self.warn(e)
+            else:
+                self.send(str(text))
+                self.finish()
