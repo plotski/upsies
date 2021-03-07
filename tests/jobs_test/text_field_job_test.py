@@ -1,5 +1,7 @@
 from unittest.mock import Mock, call
 
+import pytest
+
 from upsies.jobs.dialog import TextFieldJob
 
 
@@ -18,14 +20,35 @@ def test_cache_id_property():
     assert job.cache_id == ('foo', 'asdf')
 
 
-def test_text_property():
-    job = TextFieldJob(name='foo', label='Foo', text='bar')
+@pytest.mark.parametrize('read_only', (True, False))
+def test_text_property(read_only):
+    def validator(text):
+        if not text.isdigit():
+            raise ValueError('Not a number')
+
+    job = TextFieldJob(name='foo', label='Foo', text='0',
+                       validator=validator, read_only=read_only)
     cb = Mock()
     job.signal.register('dialog_updated', cb)
-    assert job.text == 'bar'
+    assert job.text == '0'
     assert cb.call_args_list == []
     job.text = 123
     assert job.text == '123'
+    assert cb.call_args_list == [call(job)]
+    with pytest.raises(ValueError, match=r'^Not a number$'):
+        job.text = 'foo'
+    assert cb.call_args_list == [call(job)]
+
+
+def test_clear():
+    validator = Mock()
+    job = TextFieldJob(name='foo', label='Foo', text='foo', validator=validator)
+    assert validator.call_args_list == [call('foo')]
+    cb = Mock()
+    job.signal.register('dialog_updated', cb)
+    job.clear()
+    assert job.text == ''
+    assert validator.call_args_list == [call('foo')]
     assert cb.call_args_list == [call(job)]
 
 
@@ -51,30 +74,12 @@ def test_read_only_property():
     assert cb.call_args_list == [call(job)]
 
 
-def test_text_accepted_with_successful_validation():
+@pytest.mark.parametrize('read_only', (True, False))
+def test_finish(read_only):
     validator = Mock()
-    job = TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
-    job.text_accepted('asdf')
-    assert validator.call_args_list == [call('asdf')]
+    job = TextFieldJob(name='foo', label='Foo', text='bar',
+                       validator=validator, read_only=read_only)
+    assert validator.call_args_list == [call('bar')]
+    job.finish()
     assert job.is_finished
-    assert job.output == ('asdf',)
-
-def test_text_accepted_with_failed_validation():
-    validator = Mock(side_effect=ValueError('no good'))
-    job = TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
-    job.text_accepted('asdf')
-    assert validator.call_args_list == [call('asdf')]
-    assert not job.is_finished
-    assert job.output == ()
-    assert len(job.warnings) == 1
-    assert isinstance(job.warnings[0], ValueError)
-    assert str(job.warnings[0]) == 'no good'
-
-def test_text_accepted_while_read_only():
-    validator = Mock()
-    job = TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
-    job.read_only = True
-    job.text_accepted('asdf')
-    assert validator.call_args_list == []
-    assert not job.is_finished
-    assert job.output == ()
+    assert job.output == ('bar',)

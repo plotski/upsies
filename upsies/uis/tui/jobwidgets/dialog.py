@@ -34,7 +34,7 @@ class TextFieldJobWidget(JobWidgetBase):
             text=self.job.text,
             read_only=self.job.read_only,
             style='class:dialog.text',
-            on_accepted=self._handle_text_accepted,
+            on_accepted=self._handle_accepted,
         )
         self.job.signal.register('dialog_updated', self._handle_dialog_updated)
 
@@ -43,8 +43,13 @@ class TextFieldJobWidget(JobWidgetBase):
         self._input_field.text = job.text
         self.invalidate()
 
-    def _handle_text_accepted(self, buffer):
-        self.job.text_accepted(buffer.text)
+    def _handle_accepted(self, buffer):
+        try:
+            self.job.text = buffer.text
+        except ValueError as e:
+            self.job.warn(e)
+        else:
+            self.job.finish()
 
     @cached_property
     def runtime_widget(self):

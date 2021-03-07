@@ -197,8 +197,8 @@ class TextFieldJob(JobBase):
     attribute:
 
         ``dialog_updated``
-            Emitted when :attr:`choices` or :attr:`focused` is set. Registered
-            callbacks get the job instance as a positional argument.
+            Emitted when any property is set. Registered callbacks get the job
+            instance as a positional argument.
 
         ``accepted``
             Emitted when the user accepts the text. Registered callbacks get the
@@ -220,12 +220,24 @@ class TextFieldJob(JobBase):
 
     @property
     def text(self):
-        """Current text"""
+        """
+        Current text
+
+        Setting this property calls `validator` and raises any exception from
+        that.
+        """
         return getattr(self, '_text', ())
 
     @text.setter
     def text(self, text):
-        self._text = str(text)
+        text = str(text)
+        self._validator(text)
+        self._text = text
+        self.signal.emit('dialog_updated', self)
+
+    def clear(self):
+        """Remove any text"""
+        self._text = ''
         self.signal.emit('dialog_updated', self)
 
     @property
@@ -269,17 +281,7 @@ class TextFieldJob(JobBase):
         self.obscured = obscured
         self.read_only = read_only
 
-    def text_accepted(self, text):
-        """
-        Must be called by the UI when the user accepts the entered text
-
-        :param text: Text accepted by the user
-        """
-        if not self.read_only:
-            try:
-                self._validator(str(text))
-            except ValueError as e:
-                self.warn(e)
-            else:
-                self.send(str(text))
-                self.finish()
+    def finish(self):
+        """:meth:`send` current :attr:`text` and :meth:`finish` this job"""
+        self.send(self.text)
+        super().finish()
