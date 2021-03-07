@@ -143,6 +143,14 @@ class ReleaseName(collections.abc.Mapping):
         self._info['aka'] = str(value)
 
     @property
+    def title_with_aka(self):
+        """Combination of :attr:`title` and :attr:`title_aka`"""
+        if self.title_aka:
+            return f'{self.title} AKA {self.title_aka}'
+        else:
+            return self.title
+
+    @property
     def year(self):
         """
         Release year or "UNKNOWN_YEAR" for movies, empty string for series unless

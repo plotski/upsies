@@ -57,7 +57,7 @@ def test_str(ReleaseInfo_mock):
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
-    assert len(rn) == 17
+    assert len(rn) == 18
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -162,6 +162,14 @@ def test_title_aka_setter(ReleaseInfo_mock):
     assert rn.title_aka == 'The Baz'
     rn.title = 'The Baz'
     assert rn.title_aka == ''
+
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_title_with_aka(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': ''}
+    assert ReleaseName('path/to/something').title_with_aka == 'The Foo'
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'The Bar'}
+    assert ReleaseName('path/to/something').title_with_aka == 'The Foo AKA The Bar'
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
