@@ -29,14 +29,14 @@ GUESSIT_OPTIONS = {
     'expected_title': [
         'The Collector',
     ],
-    "advanced_config": {
+    'advanced_config': {
         # https://github.com/guessit-io/guessit/pull/678
-        "audio_codec": {
-            "audio_channels": {
-                "1.0": [
-                    "1ch",
-                    "mono",
-                    "re:(1[\\W_]0(?:ch)?)(?=[^\\d]|$)",
+        'audio_codec': {
+            'audio_channels': {
+                '1.0': [
+                    '1ch',
+                    'mono',
+                    're:(1[\\W_]0(?:ch)?)(?=[^\\d]|$)',
                 ],
             },
         },
