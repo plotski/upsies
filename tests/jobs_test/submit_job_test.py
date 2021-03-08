@@ -163,11 +163,13 @@ async def test_wait_does_everything_in_correct_order(job, mocker):
     mocks.before1.configure_mock(start=Mock(), finish=Mock(), name='before1', output='before1 output', exit_code=0)
     mocks.before2.configure_mock(start=Mock(), finish=Mock(), name='before2', output='before2 output', exit_code=0)
     mocks.before3.configure_mock(start=Mock(), finish=Mock(), name='before3', output='before3 output', exit_code=0)
+    mocks.wait_for_background_tasks = AsyncMock()
     mocks.after1.configure_mock(start=Mock(), finish=Mock(), name='after1', output='after1 output', exit_code=0)
     mocks.after2.configure_mock(start=Mock(), finish=Mock(), name='after1', output='after2 output', exit_code=0)
     mocker.patch.object(job, '_submit', mocks._submit)
     mocks._submit.side_effect = lambda *_, **__: job.send('mock torrent url')
     mocker.patch.object(job, 'jobs_before_upload', (mocks.before1, mocks.before2, mocks.before3))
+    mocker.patch.object(job._tracker_jobs, 'wait_for_background_tasks', mocks.wait_for_background_tasks)
     mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
     await job.wait()
     assert job.is_finished
@@ -179,12 +181,13 @@ async def test_wait_does_everything_in_correct_order(job, mocker):
         str(call.before2.wait()),
         str(call.before3.wait()),
     }
-    assert mocks.mock_calls[3] == call._submit()
-    assert set((str(call) for call in mocks.mock_calls[4:6])) == {
+    assert mocks.mock_calls[3] == call.wait_for_background_tasks()
+    assert mocks.mock_calls[4] == call._submit()
+    assert set((str(call) for call in mocks.mock_calls[5:7])) == {
         str(call.after1.start()),
         str(call.after2.start()),
     }
-    assert len(mocks.mock_calls) == 6
+    assert len(mocks.mock_calls) == 7
 
 @pytest.mark.parametrize('failed_job_number', (1, 2, 3))
 @pytest.mark.asyncio

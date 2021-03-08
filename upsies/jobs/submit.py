@@ -128,6 +128,9 @@ class SubmitJob(JobBase):
         _log.debug('Waiting for jobs before upload: %r', self.jobs_before_upload)
         await asyncio.gather(*(job.wait() for job in self.jobs_before_upload))
 
+        # Ensure all background tasks initiated by jobs_before_upload are done
+        await self._tracker_jobs.wait_for_background_tasks()
+
         # Ensure all jobs were successful
         if all(job.exit_code == 0 for job in self.jobs_before_upload):
             await self._submit()
