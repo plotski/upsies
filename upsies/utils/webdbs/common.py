@@ -210,3 +210,12 @@ class SearchResult:
     def __repr__(self):
         kwargs = ', '.join(f'{k}={v!r}' for k, v in self._info.items())
         return f'{type(self).__name__}({kwargs})'
+
+
+class Person(str):
+    """:class:`str` subclass with an `url` attribute"""
+
+    def __new__(cls, string, url=''):
+        obj = super().__new__(cls, string)
+        obj.url = url
+        return obj

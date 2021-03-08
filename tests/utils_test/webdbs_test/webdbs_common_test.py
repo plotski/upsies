@@ -228,3 +228,9 @@ def test_SearchResult_preserves_id_type(id, exp_type):
     result = webdbs.SearchResult(**info)
     assert result.id == id
     assert isinstance(result.id, exp_type)
+
+
+def test_Person():
+    assert isinstance(webdbs.Person('Foo Bar'), str)
+    assert webdbs.Person('Foo Bar').url == ''
+    assert webdbs.Person('Foo Bar', url='http://foo').url == 'http://foo'

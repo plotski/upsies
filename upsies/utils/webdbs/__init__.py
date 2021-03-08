@@ -5,7 +5,7 @@ API for querying services like IMDb
 from .. import CaseInsensitiveString, subclasses, submodules
 from . import imdb, tmdb, tvmaze
 from .base import WebDbApiBase
-from .common import Query, SearchResult
+from .common import Person, Query, SearchResult
 
 
 def webdbs():
