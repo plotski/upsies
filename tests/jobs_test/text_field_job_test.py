@@ -22,12 +22,9 @@ def test_cache_id_property():
 
 @pytest.mark.parametrize('read_only', (True, False))
 def test_text_property(read_only):
-    def validator(text):
-        if not text.isdigit():
-            raise ValueError('Not a number')
-
     job = TextFieldJob(name='foo', label='Foo', text='0',
-                       validator=validator, read_only=read_only)
+                       validator=Mock(side_effect=ValueError('No likey')),
+                       read_only=read_only)
     cb = Mock()
     job.signal.register('dialog_updated', cb)
     assert job.text == '0'
@@ -35,21 +32,9 @@ def test_text_property(read_only):
     job.text = 123
     assert job.text == '123'
     assert cb.call_args_list == [call(job)]
-    with pytest.raises(ValueError, match=r'^Not a number$'):
-        job.text = 'foo'
-    assert cb.call_args_list == [call(job)]
-
-
-def test_clear():
-    validator = Mock()
-    job = TextFieldJob(name='foo', label='Foo', text='foo', validator=validator)
-    assert validator.call_args_list == [call('foo')]
-    cb = Mock()
-    job.signal.register('dialog_updated', cb)
-    job.clear()
-    assert job.text == ''
-    assert validator.call_args_list == [call('foo')]
-    assert cb.call_args_list == [call(job)]
+    job.text = 'foo'
+    assert job.text == 'foo'
+    assert cb.call_args_list == [call(job), call(job)]
 
 
 def test_obscured_property():
@@ -75,11 +60,29 @@ def test_read_only_property():
 
 
 @pytest.mark.parametrize('read_only', (True, False))
-def test_finish(read_only):
+def test_finish_with_valid_text(read_only):
     validator = Mock()
     job = TextFieldJob(name='foo', label='Foo', text='bar',
                        validator=validator, read_only=read_only)
-    assert validator.call_args_list == [call('bar')]
+    assert validator.call_args_list == []
+    job.text = 'baz'
     job.finish()
+    assert validator.call_args_list == [call('baz')]
+    assert job.warnings == ()
     assert job.is_finished
-    assert job.output == ('bar',)
+    assert job.output == ('baz',)
+
+@pytest.mark.parametrize('read_only', (True, False))
+def test_finish_with_invalid_text(read_only):
+    validator = Mock(side_effect=ValueError('Nope'))
+    job = TextFieldJob(name='foo', label='Foo', text='bar',
+                       validator=validator, read_only=read_only)
+    assert validator.call_args_list == []
+    job.text = 'baz'
+    job.finish()
+    assert validator.call_args_list == [call('baz')]
+    assert len(job.warnings) == 1
+    assert isinstance(job.warnings[0], ValueError)
+    assert str(job.warnings[0]) == 'Nope'
+    assert not job.is_finished
+    assert job.output == ()

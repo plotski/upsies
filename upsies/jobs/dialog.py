@@ -237,14 +237,7 @@ class TextFieldJob(JobBase):
 
     @text.setter
     def text(self, text):
-        text = str(text)
-        self._validator(text)
-        self._text = text
-        self.signal.emit('dialog_updated', self)
-
-    def clear(self):
-        """Remove any text"""
-        self._text = ''
+        self._text = str(text)
         self.signal.emit('dialog_updated', self)
 
     @property
@@ -274,8 +267,8 @@ class TextFieldJob(JobBase):
         :param name: Name for internal use
         :param label: Name for user-facing use
         :param text: Initial text
-        :param validator: Callable that gets the text before it is accepted. If
-            `ValueError` is raised, if is displayed as a warning instead of
+        :param validator: Callable that gets text before job is finished. If
+            `ValueError` is raised, it is displayed as a warning instead of
             finishing the job.
         :param validator: callable or None
         """
@@ -289,6 +282,16 @@ class TextFieldJob(JobBase):
         self.read_only = read_only
 
     def finish(self):
-        """:meth:`send` current :attr:`text` and :meth:`finish` this job"""
-        self.send(self.text)
-        super().finish()
+        """
+        :meth:`send` current :attr:`text` and :meth:`finish`
+
+        If `validator` raises :class:`ValueError`, pass it to :meth:`warn` and
+        do not finish.
+        """
+        try:
+            self._validator(self.text)
+        except ValueError as e:
+            self.warn(e)
+        else:
+            self.send(self.text)
+            super().finish()
