@@ -21,7 +21,8 @@ class ChoiceJobWidget(JobWidgetBase):
         self.invalidate()
 
     def _handle_accepted(self, choice):
-        self.job.choice_accepted(choice)
+        # This also finishes self.job
+        self.job.choice = choice
 
     @cached_property
     def runtime_widget(self):

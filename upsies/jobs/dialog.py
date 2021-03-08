@@ -18,12 +18,13 @@ class ChoiceJob(JobBase):
     attribute:
 
         ``dialog_updated``
-            Emitted when :attr:`choices` or :attr:`focused` is set. Registered
-            callbacks get the job instance as a positional argument.
+            Emitted when the :attr:`choices` or :attr:`focused` properties are
+            set. Registered callbacks get the job instance as a positional
+            argument.
 
         ``chosen``
-            Emitted when the user made a choice. Registered callbacks get the
-            second item from the selected choice as a positional argument.
+            Emitted when the :attr:`choice` property is set. Registered
+            callbacks get the job instance as a positional argument.
     """
 
     @property
@@ -37,7 +38,8 @@ class ChoiceJob(JobBase):
     @property
     def cache_id(self):
         """:attr:`name` and :attr:`text`"""
-        return (self.name, self.choice)
+        if self.is_finished:
+            return (self.name, self.choice)
 
     @property
     def choices(self):
@@ -66,14 +68,14 @@ class ChoiceJob(JobBase):
                 valid_choices.append((choice, choice))
             elif isinstance(choice, collections.abc.Sequence):
                 if len(choice) != 2:
-                    raise ValueError(f'Choice must be a 2-tuple, not {choice!r}')
+                    raise ValueError(f'Choice must be 2-tuple, not {choice!r}')
                 else:
                     valid_choices.append((str(choice[0]), choice[1]))
             else:
-                raise ValueError(f'Choice must be a 2-tuple, not {choice!r}')
+                raise ValueError(f'Choice must be 2-tuple, not {choice!r}')
 
         if len(valid_choices) < 2:
-            raise ValueError(f'Choices must have at least 2 items: {choices!r}')
+            raise ValueError(f'There must be at least 2 choices: {choices!r}')
 
         prev_focused = self.focused
         self._choices = tuple(valid_choices)
@@ -87,7 +89,7 @@ class ChoiceJob(JobBase):
     @property
     def focused(self):
         """
-        Currently focused choice
+        Currently focused choice (2-tuple)
 
         Setting this property to `None` focuses the first choice in
         :attr:`choices`.
@@ -125,15 +127,54 @@ class ChoiceJob(JobBase):
         self.signal.emit('dialog_updated', self)
 
     @property
+    def focused_index(self):
+        """Index of currently focused choice in :attr:`choices`"""
+        return getattr(self, '_focused_index', None)
+
+    @property
     def choice(self):
         """
         User-chosen value if job is finished, `None` otherwise
 
+        Setting this property finishes the job.
+
         While :attr:`output` contains the user-readable string (first item of
-        the choice in :attr:`choices`), this is the object attached to it
+        the chosen item in :attr:`choices`), this is the object attached to it
         (second item).
+
+        This property can be set to an index in :attr:`choices`, an item in
+        :attr:`choices` or the first or second item of an item in
+        :attr:`choices`.
         """
-        return self._choice
+        if self.is_finished:
+            return getattr(self, '_choice', None)
+
+    @choice.setter
+    def choice(self, choice):
+        def choose(choice):
+            # Machine-readable choice
+            self._choice = choice[1]
+            self.signal.emit('chosen', self)
+            # User-readable string
+            self.send(choice[0])
+            self.finish()
+
+        if choice in self.choices:
+            choose(choice)
+        elif isinstance(choice, int):
+            try:
+                choose(self.choices[choice])
+            except IndexError:
+                raise ValueError(f'Invalid choice: {choice!r}')
+        elif isinstance(choice, str):
+            for c in self.choices:
+                if choice == c[0] or choice == c[1]:
+                    choose(c)
+                    break
+            else:
+                raise ValueError(f'Invalid choice: {choice!r}')
+        else:
+            raise ValueError(f'Invalid choice: {choice!r}')
 
     def initialize(self, *, name, label, choices, focused=None):
         """
@@ -149,44 +190,10 @@ class ChoiceJob(JobBase):
         """
         self._name = str(name)
         self._label = str(label)
-        self._choice = None
         self.signal.add('dialog_updated')
         self.signal.add('chosen')
         self.choices = choices
         self.focused = focused
-
-    def choice_accepted(self, choice):
-        """
-        Must be called by the UI when the user makes a choice
-
-        :param choice: Index in :attr:`choices`, item in :attr:`choices`, first
-            or second item of a sequence in :attr:`choices` or `None` (user
-            refused to choose)
-        """
-        def choose(choice):
-            # Machine-readable choice
-            self._choice = choice[1]
-            self.signal.emit('chosen', choice[1])
-            # User-readable string
-            self.send(choice[0])
-
-        if choice in self.choices:
-            choose(choice)
-        elif isinstance(choice, int):
-            try:
-                choose(self.choices[choice])
-            except IndexError:
-                self.exception(ValueError(f'Invalid choice: {choice!r}'))
-        elif isinstance(choice, str):
-            for c in self.choices:
-                if choice == c[0] or choice == c[1]:
-                    choose(c)
-                    break
-            else:
-                self.exception(ValueError(f'Invalid choice: {choice!r}'))
-        elif choice is not None:
-            self.exception(ValueError(f'Invalid choice: {choice!r}'))
-        self.finish()
 
 
 class TextFieldJob(JobBase):
