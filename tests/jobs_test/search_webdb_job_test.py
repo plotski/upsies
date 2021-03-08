@@ -25,12 +25,15 @@ def foodb(mocker):
         label = 'FooDB'
         search = AsyncMock()
         cast = AsyncMock()
+        creators = AsyncMock()
         countries = AsyncMock()
+        directors = AsyncMock()
         keywords = AsyncMock()
         summary = AsyncMock()
         title_english = AsyncMock()
         title_original = AsyncMock()
         type = AsyncMock()
+        url = AsyncMock()
         year = AsyncMock()
     return TestDb()
 
