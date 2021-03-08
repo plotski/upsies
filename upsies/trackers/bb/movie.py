@@ -15,42 +15,6 @@ _log = logging.getLogger(__name__)
 
 
 class MovieBbTrackerJobs(BbTrackerJobsBase):
-
-    def handle_imdb_id(self, id):
-        async def set_title():
-            try:
-                await self.release_name.fetch_info(id)
-                self.title_job.text = self.release_name.title
-                if self.release_name.title_aka:
-                    self.title_job.text += f' AKA {self.release_name.title_aka}'
-                self.year_job.text = self.release_name.year
-            finally:
-                self.title_job.read_only = False
-
-        self.add_background_task(set_title())
-
-        async def set_tags():
-            try:
-                self.tags_job.text = await self._generate_tags(id)
-            except BaseException:
-                self.tags_job.text = ''
-                raise
-            finally:
-                self.tags_job.read_only = False
-
-        self.add_background_task(set_tags())
-
-        async def set_description():
-            try:
-                self.description_job.text = await self._generate_description(id)
-            except BaseException:
-                self.description_job.text = ''
-                raise
-            finally:
-                self.description_job.read_only = False
-
-        self.add_background_task(set_description())
-
     @cached_property
     def jobs_before_upload(self):
         return (
@@ -75,16 +39,17 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
             text = text.strip()
             if not text:
                 raise ValueError(f'Invalid title: {text}')
-            self.release_name.title = text
 
         return jobs.dialog.TextFieldJob(
             name='movie-title',
             label='Title',
-            text=self.release_name.title,
-            read_only=True,
             validator=validator,
             **self.common_job_args,
         )
+
+    async def generate_title(self, id):
+        await self.release_name.fetch_info(id)
+        return self.release_name.title_with_aka
 
     @cached_property
     def year_job(self):
@@ -99,6 +64,10 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
             validator=validator,
             **self.common_job_args,
         )
+
+    async def generate_year(self, id):
+        await self.release_name.fetch_info(id)
+        return self.release_name.year
 
     @cached_property
     def resolution_job(self):
@@ -274,13 +243,11 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='movie-tags',
             label='Tags',
-            text='Loading...',
-            read_only=True,
             validator=validator,
             **self.common_job_args,
         )
 
-    async def _generate_tags(self, id):
+    async def generate_tags(self, id):
         def normalize_tags(strings):
             normalized = []
             for string in strings:
@@ -330,13 +297,11 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='movie-description',
             label='Description',
-            read_only=True,
-            text='Loading...',
             validator=validator,
             **self.common_job_args,
         )
 
-    async def _generate_description(self, id):
+    async def generate_description(self, id):
         info = await self.imdb.gather(id, 'title_original', 'title_english', 'year', 'url')
         _log.debug('info: %r', info)
         lines = []
@@ -348,6 +313,33 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
         lines.append('[b]Link[/b]: [url={url}]IMDb[/url]'.format(**info))
         # lines.append('[b]IMDb Rating[/b]: {rating}'.format(**info))
         return '\n'.join(lines)
+
+    def handle_imdb_id(self, id):
+        self.add_background_task(self.update_text_field_job(
+            job=self.title_job,
+            text_getter_coro=self.generate_title(id),
+            finish_on_success=False,
+            default_text=self.release_name.title_with_aka,
+        ))
+
+        self.add_background_task(self.update_text_field_job(
+            job=self.year_job,
+            text_getter_coro=self.generate_year(id),
+            finish_on_success=True,
+            default_text=self.release_name.year,
+        ))
+
+        self.add_background_task(self.update_text_field_job(
+            job=self.tags_job,
+            text_getter_coro=self.generate_tags(id),
+            finish_on_success=True,
+        ))
+
+        self.add_background_task(self.update_text_field_job(
+            job=self.description_job,
+            text_getter_coro=self.generate_description(id),
+            finish_on_success=True,
+        ))
 
     @property
     def torrent_filepath(self):
