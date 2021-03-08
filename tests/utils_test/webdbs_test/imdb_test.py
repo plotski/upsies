@@ -261,8 +261,8 @@ async def test_search_result_type(query, exp_top_type, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_url'),
     argvalues=(
-        (Query('The Blues Brothers', year=1980), 'http://imdb.com/title/tt0080455'),
-        (Query('Deadwood', year=2004), 'http://imdb.com/title/tt0348914'),
+        (Query('The Blues Brothers', year=1980), 'https://imdb.com/title/tt0080455'),
+        (Query('Deadwood', year=2004), 'https://imdb.com/title/tt0348914'),
     ),
     ids=lambda value: str(value),
 )
