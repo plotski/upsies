@@ -73,13 +73,19 @@ class TvmazeApi(WebDbApiBase):
         creators = []
         for item in crew:
             if item.get('type') == 'Creator' and item.get('person', {}).get('name'):
-                creators.append(item['person']['name'])
+                creators.append(common.Person(
+                    item['person']['name'],
+                    item['person'].get('url', ''),
+                ))
         return tuple(creators)
 
     async def cast(self, id):
         show = await self._get_show(id)
         cast = show.get('_embedded', {}).get('cast', ())
-        return tuple(str(c['person']['name']) for c in cast)
+        return tuple(
+            common.Person(item['person']['name'], item['person'].get('url', ''))
+            for item in cast
+        )
 
     async def countries(self, id):
         show = await self._get_show(id)

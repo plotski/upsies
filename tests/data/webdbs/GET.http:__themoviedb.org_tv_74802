@@ -775,6 +775,44 @@
                   </li>
                 
                   <li class="card">
+                    <a href="/person/93004-tommi-korpela">
+                        
+    
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/iGJ7vZCvYOBqmU2lXioSNj7jA9m.jpg" srcset="/t/p/w138_and_h175_face/iGJ7vZCvYOBqmU2lXioSNj7jA9m.jpg 1x, /t/p/w276_and_h350_face/iGJ7vZCvYOBqmU2lXioSNj7jA9m.jpg 2x" alt="Tommi Korpela">
+    
+  
+
+                    </a>
+
+                    <p><a href="/person/93004-tommi-korpela">Tommi Korpela</a></p>
+                    <p class="character">
+                      
+                        Alex Hoikkala
+                      
+                    </p>
+                    <p class="episode_count">12 Episodes</p>
+                  </li>
+                
+                  <li class="card">
+                    <a href="/person/125631-jonna-jarnefelt">
+                        
+    
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/eNz4NM9AUcWPOv4BwfWbtoSvkcQ.jpg" srcset="/t/p/w138_and_h175_face/eNz4NM9AUcWPOv4BwfWbtoSvkcQ.jpg 1x, /t/p/w276_and_h350_face/eNz4NM9AUcWPOv4BwfWbtoSvkcQ.jpg 2x" alt="Jonna Järnefelt">
+    
+  
+
+                    </a>
+
+                    <p><a href="/person/125631-jonna-jarnefelt">Jonna Järnefelt</a></p>
+                    <p class="character">
+                      
+                        Linda Hoikkala
+                      
+                    </p>
+                    <p class="episode_count">12 Episodes</p>
+                  </li>
+                
+                  <li class="card">
                     <a href="/person/93565-kari-hietalahti">
                         
     
@@ -807,44 +845,6 @@
                     <p class="character">
                       
                         Sakari Nurmi
-                      
-                    </p>
-                    <p class="episode_count">12 Episodes</p>
-                  </li>
-                
-                  <li class="card">
-                    <a href="/person/125631-jonna-jarnefelt">
-                        
-    
-      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/eNz4NM9AUcWPOv4BwfWbtoSvkcQ.jpg" srcset="/t/p/w138_and_h175_face/eNz4NM9AUcWPOv4BwfWbtoSvkcQ.jpg 1x, /t/p/w276_and_h350_face/eNz4NM9AUcWPOv4BwfWbtoSvkcQ.jpg 2x" alt="Jonna Järnefelt">
-    
-  
-
-                    </a>
-
-                    <p><a href="/person/125631-jonna-jarnefelt">Jonna Järnefelt</a></p>
-                    <p class="character">
-                      
-                        Linda Hoikkala
-                      
-                    </p>
-                    <p class="episode_count">12 Episodes</p>
-                  </li>
-                
-                  <li class="card">
-                    <a href="/person/93004-tommi-korpela">
-                        
-    
-      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/iGJ7vZCvYOBqmU2lXioSNj7jA9m.jpg" srcset="/t/p/w138_and_h175_face/iGJ7vZCvYOBqmU2lXioSNj7jA9m.jpg 1x, /t/p/w276_and_h350_face/iGJ7vZCvYOBqmU2lXioSNj7jA9m.jpg 2x" alt="Tommi Korpela">
-    
-  
-
-                    </a>
-
-                    <p><a href="/person/93004-tommi-korpela">Tommi Korpela</a></p>
-                    <p class="character">
-                      
-                        Alex Hoikkala
                       
                     </p>
                     <p class="episode_count">12 Episodes</p>
@@ -1262,16 +1262,16 @@
     
       <div class="edit_leader">
         <div class="avatar">
-          <a href="/u/Goffred0">
+          <a href="/u/Fuchs246">
             
-              <img loading="lazy" class="avatar" src="/t/p/w45_and_h45_face/7DMTlTJ5CqTlvXNCkmkSwa4XnTQ.jpg" srcset="/t/p/w45_and_h45_face/7DMTlTJ5CqTlvXNCkmkSwa4XnTQ.jpg 1x, /t/p/w90_and_h90_face/7DMTlTJ5CqTlvXNCkmkSwa4XnTQ.jpg 2x" alt="Goffred0">
+              <span class="round initials background_color teal">F</span>
             
           </a>
         </div>
         <div class="info">
           <p class="edit_count">
             5<br>
-            <a href="/u/Goffred0">Goffred0</a>
+            <a href="/u/Fuchs246">Fuchs246</a>
           </p>
         </div>
       </div>
@@ -1847,7 +1847,7 @@
         </div>
       </nav>
 
-      <section>Build 7e18b8e (974)</section>
+      <section>Build 0be56a6 (976)</section>
     </footer>
 
     

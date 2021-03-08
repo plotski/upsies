@@ -59,15 +59,26 @@ class TmdbApi(WebDbApiBase):
         return [_TmdbSearchResult(soup=item, tmdb_api=self)
                 for item in items]
 
+    _person_url_path_regex = re.compile(r'(/person/\d+[-a-z]+)')
+
+    def _get_persons(self, tag):
+        a_tags = tag.find_all('a', href=self._person_url_path_regex)
+        persons = []
+        for a_tag in a_tags:
+            if a_tag.string:
+                name = a_tag.string.strip()
+                url_path = self._person_url_path_regex.match(a_tag["href"]).group(1)
+                url = f'{self._url_base.rstrip("/")}/{url_path.lstrip("/")}'
+                persons.append(common.Person(name, url))
+        return tuple(persons)
+
     async def directors(self, id):
         soup = await self._get_soup(id)
         profiles = soup.select('.people > .profile')
         directors = []
         for profile in profiles:
             if profile.find('p', text=re.compile(r'(?i:Director)')):
-                link = profile.find('a')
-                if link:
-                    directors.append(link.text)
+                directors.extend(self._get_persons(profile))
         return tuple(directors)
 
     async def creators(self, id):
@@ -76,9 +87,7 @@ class TmdbApi(WebDbApiBase):
         creators = []
         for profile in profiles:
             if profile.find('p', text=re.compile(r'(?i:Creator)')):
-                link = profile.find('a')
-                if link:
-                    creators.append(link.text)
+                creators.extend(self._get_persons(profile))
         return tuple(creators)
 
     async def cast(self, id):
@@ -86,10 +95,7 @@ class TmdbApi(WebDbApiBase):
         cards = soup.select('.people > .card')
         cast = []
         for card in cards:
-            for link in card.find_all('a'):
-                strings = list(link.stripped_strings)
-                if strings:
-                    cast.append(strings[0])
+            cast.extend(self._get_persons(card))
         return tuple(cast)
 
     async def countries(self, id):

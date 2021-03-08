@@ -1,3 +1,4 @@
+from itertools import zip_longest
 from unittest.mock import Mock
 
 import pytest
@@ -289,21 +290,28 @@ async def test_search_result_year(query, exp_year, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_directors'),
     argvalues=(
-        ('tt3286052', ('Oz Perkins',)),  # February (movie)
-        ('tt0192802', ('Dave Unwin', 'Dennis Abey')),  # Wind in the Willows (TV movie)
-        ('tt0471711', ('Dwayne Carey-Hill',)),  # Bender's Big Score (Video)
-        ('tt0097270', ('Alan Clarke',)),  # Elephant (TV Short)
-        ('tt3472226', ('David Sandberg',)),  # Kung Fury (Short)
+        ('tt3286052', (('Oz Perkins', 'https://imdb.com/name/nm0674020'),)),  # February (movie)
+        # Wind in the Willows (TV movie)
+        ('tt0192802', (('Dave Unwin', 'https://imdb.com/name/nm0881386'),
+                       ('Dennis Abey', 'https://imdb.com/name/nm0008688'))),
+        ('tt0471711', (('Dwayne Carey-Hill', 'https://imdb.com/name/nm1401752'),)),  # Bender's Big Score (Video)
+        ('tt0097270', (('Alan Clarke', 'https://imdb.com/name/nm0164639'),)),  # Elephant (TV Short)
+        ('tt3472226', (('David Sandberg', 'https://imdb.com/name/nm6247887'),)),  # Kung Fury (Short)
         ('tt6560040', ()),  # The Forest (TV mini-series)
         ('tt2372162', ()),  # Orange Is the New Black (series)
-        ('tt5440238', ('Michael Trim',)),  # Orange Is the New Black - S07E01 (episode)
+        ('tt5440238', (('Michael Trim', 'https://imdb.com/name/nm0872841'),)),  # Orange Is the New Black - S07E01 (episode)
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
 async def test_directors(id, exp_directors, api, store_response):
     directors = await api.directors(id)
-    assert directors == exp_directors
+    if not directors:
+        assert exp_directors == ()
+    else:
+        for person, (name, url) in zip_longest(directors, exp_directors):
+            assert person == name
+            assert person.url == url
 
 
 @pytest.mark.parametrize(
@@ -314,8 +322,8 @@ async def test_directors(id, exp_directors, api, store_response):
         ('tt0471711', ()),  # Bender's Big Score (Video)
         ('tt0097270', ()),  # Elephant (TV Short)
         ('tt3472226', ()),  # Kung Fury (Short)
-        ('tt6560040', ('Delinda Jacobs',)),  # The Forest (TV mini-series)
-        ('tt2372162', ('Jenji Kohan',)),  # Orange Is the New Black (series)
+        ('tt6560040', (('Delinda Jacobs', 'https://imdb.com/name/nm3064398'),)),  # The Forest (TV mini-series)
+        ('tt2372162', (('Jenji Kohan', 'https://imdb.com/name/nm0463176'),)),  # Orange Is the New Black (series)
         ('tt5440238', ()),  # Orange Is the New Black - S07E01 (episode)
     ),
     ids=lambda value: str(value),
@@ -323,35 +331,61 @@ async def test_directors(id, exp_directors, api, store_response):
 @pytest.mark.asyncio
 async def test_creators(id, exp_creators, api, store_response):
     creators = await api.creators(id)
-    assert creators == exp_creators
+    if not creators:
+        assert exp_creators == ()
+    else:
+        for person, (name, url) in zip_longest(creators, exp_creators):
+            assert person == name
+            assert person.url == url
 
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),
     argvalues=(
-        ('tt0080455', ('Tom Erhart', 'Gerald Walling', 'John Belushi',
-                       'Walter Levine', 'Frank Oz')),  # Blues Brothers (movie)
-        ('tt0192802', ('Alan Bennett', 'Michael Palin', 'Michael Gambon',
-                       'Rik Mayall', 'James Villiers')),  # Wind in the Willows (TV movie)
-        ('tt0471711', ('Billy West', 'Katey Sagal', 'John DiMaggio', 'Tress MacNeille',
-                       'Maurice LaMarche')),  # Bender's Big Score (Video)
-        ('tt0097270', ('Gary Walker', 'Bill Hamilton', 'Michael Foyle', 'Danny Small',
-                       'Robert J. Taylor')),  # Elephant (TV Short)
-        ('tt3472226', ('David Sandberg', 'Jorma Taccone', 'Steven Chew',
-                       'Leopold Nilsson', 'Andreas Cahling')),  # Kung Fury (Short)
-        ('tt6560040', ('Samuel Labarthe', 'Suzanne Clément', 'Alexia Barlier',
-                       'Frédéric Diefenthal', 'Patrick Ridremont')),  # The Forest (TV mini-series)
-        ('tt2372162', ('Taylor Schilling', 'Kate Mulgrew', 'Uzo Aduba',
-                       'Danielle Brooks', 'Dascha Polanco')),  # Orange Is the New Black (series)
-        ('tt5440238', ('Taylor Schilling', 'Natasha Lyonne', 'Uzo Aduba',
-                       'Danielle Brooks', 'Jackie Cruz')),  # Orange Is the New Black - S07E01 (episode)
+        # Blues Brothers (movie)
+        ('tt0080455', (('Tom Erhart', 'https://imdb.com/name/nm0258931'),
+                       ('Gerald Walling', 'https://imdb.com/name/nm0909212'),
+                       ('John Belushi', 'https://imdb.com/name/nm0000004'))),
+        # Wind in the Willows (TV movie)
+        ('tt0192802', (('Alan Bennett', 'https://imdb.com/name/nm0003141'),
+                       ('Michael Palin', 'https://imdb.com/name/nm0001589'),
+                       ('Michael Gambon', 'https://imdb.com/name/nm0002091'))),
+        # Bender's Big Score (Video)
+        ('tt0471711', (('Billy West', 'https://imdb.com/name/nm0921942'),
+                       ('Katey Sagal', 'https://imdb.com/name/nm0005408'),
+                       ('John DiMaggio', 'https://imdb.com/name/nm0224007'))),
+        # Elephant (TV Short)
+        ('tt0097270', (('Gary Walker', 'https://imdb.com/name/nm1281884'),
+                       ('Bill Hamilton', 'https://imdb.com/name/nm1685093'),
+                       ('Michael Foyle', 'https://imdb.com/name/nm0289432'))),
+        # Kung Fury (Short)
+        ('tt3472226', (('David Sandberg', 'https://imdb.com/name/nm6247887'),
+                       ('Jorma Taccone', 'https://imdb.com/name/nm1672246'),
+                       ('Steven Chew', 'https://imdb.com/name/nm7320022'))),
+        # The Forest (TV mini-series)
+        ('tt6560040', (('Samuel Labarthe', 'https://imdb.com/name/nm0479355'),
+                       ('Suzanne Clément', 'https://imdb.com/name/nm0167501'),
+                       ('Alexia Barlier', 'https://imdb.com/name/nm1715145'))),
+        # Orange Is the New Black (series)
+        ('tt2372162', (('Taylor Schilling', 'https://imdb.com/name/nm2279940'),
+                       ('Kate Mulgrew', 'https://imdb.com/name/nm0000550'),
+                       ('Uzo Aduba', 'https://imdb.com/name/nm2499064'))),
+        # Orange Is the New Black - S07E01 (episode)
+        ('tt5440238', (('Taylor Schilling', 'https://imdb.com/name/nm2279940'),
+                       ('Natasha Lyonne', 'https://imdb.com/name/nm0005169'),
+                       ('Uzo Aduba', 'https://imdb.com/name/nm2499064'))),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
 async def test_cast(id, exp_cast, api, store_response):
-    cast = (await api.cast(id))[:5]
-    assert cast == exp_cast
+    cast = (await api.cast(id))[:3]
+    if not cast:
+        assert exp_cast == ()
+    else:
+        for person, (name, url) in zip_longest(cast, exp_cast):
+            assert person == name
+            assert person.url == url
 
 
 @pytest.mark.parametrize(

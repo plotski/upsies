@@ -1,3 +1,4 @@
+from itertools import zip_longest
 from unittest.mock import Mock
 
 import pytest
@@ -233,8 +234,9 @@ async def test_search_result_year(query, exp_title, exp_year, api, store_respons
 @pytest.mark.parametrize(
     argnames=('id', 'exp_directors'),
     argvalues=(
-        ('movie/125244', ('Jack Kinney', 'James Algar')),
-        ('movie/334536', ('Oz Perkins',)),
+        ('movie/125244', (('James Algar', 'http://themoviedb.org/person/5690-james-algar'),
+                          ('Jack Kinney', 'http://themoviedb.org/person/74565-jack-kinney'))),
+        ('movie/334536', (('Oz Perkins', 'http://themoviedb.org/person/90609-oz-perkins'),)),
         ('tv/1406', ()),
         ('tv/74802', ()),
     ),
@@ -243,8 +245,12 @@ async def test_search_result_year(query, exp_title, exp_year, api, store_respons
 @pytest.mark.asyncio
 async def test_directors(id, exp_directors, api, store_response):
     directors = await api.directors(id)
-    for member in exp_directors:
-        assert member in directors
+    if not directors:
+        assert exp_directors == ()
+    else:
+        for person, (name, url) in zip_longest(directors, exp_directors):
+            assert person == name
+            assert person.url == url
 
 
 @pytest.mark.parametrize(
@@ -252,33 +258,45 @@ async def test_directors(id, exp_directors, api, store_response):
     argvalues=(
         ('movie/125244', ()),
         ('movie/334536', ()),
-        ('tv/1406', ('David Milch',)),
-        ('tv/74802', ('Rike Jokela',)),
+        ('tv/1406', (('David Milch', 'http://themoviedb.org/person/151295-david-milch'),)),
+        ('tv/74802', (('Rike Jokela', 'http://themoviedb.org/person/140497-rike-jokela'),)),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
 async def test_creators(id, exp_creators, api, store_response):
     creators = await api.creators(id)
-    for member in exp_creators:
-        assert member in creators
+    if not creators:
+        assert exp_creators == ()
+    else:
+        for person, (name, url) in zip_longest(creators, exp_creators):
+            assert person == name
+            assert person.url == url
 
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),
     argvalues=(
-        ('movie/525', ('Dan Aykroyd', 'John Belushi')),
-        ('movie/334536', ('Emma Roberts', 'Kiernan Shipka')),
-        ('tv/1406', ('Timothy Olyphant', 'Ian McShane')),
-        ('tv/74802', ('Pihla Viitala', 'Tommi Korpela')),
+        ('movie/525', (('Dan Aykroyd', 'http://themoviedb.org/person/707-dan-aykroyd'),
+                       ('John Belushi', 'http://themoviedb.org/person/7171-john-belushi'))),
+        ('movie/334536', (('Emma Roberts', 'http://themoviedb.org/person/34847-emma-roberts'),
+                          ('Kiernan Shipka', 'http://themoviedb.org/person/934289-kiernan-shipka'))),
+        ('tv/1406', (('Timothy Olyphant', 'http://themoviedb.org/person/18082-timothy-olyphant'),
+                     ('Ian McShane', 'http://themoviedb.org/person/6972-ian-mcshane'))),
+        ('tv/74802', (('Pihla Viitala', 'http://themoviedb.org/person/93564-pihla-viitala'),
+                      ('Tommi Korpela', 'http://themoviedb.org/person/93004-tommi-korpela'))),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
 async def test_cast(id, exp_cast, api, store_response):
-    cast = await api.cast(id)
-    for member in exp_cast:
-        assert member in cast
+    cast = (await api.cast(id))[:2]
+    if not cast:
+        assert exp_cast == ()
+    else:
+        for person, (name, url) in zip_longest(cast, exp_cast):
+            assert person == name
+            assert person.url == url
 
 
 @pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))

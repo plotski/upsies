@@ -61,14 +61,26 @@ class ImdbApi(WebDbApiBase):
                    for item in items]
         return results
 
+    _person_url_path_regex = re.compile(r'(/name/nm\d+)')
+
+    def _get_persons(self, tag):
+        a_tags = tag.find_all('a', href=self._person_url_path_regex)
+        persons = []
+        for a_tag in a_tags:
+            if a_tag.string:
+                name = a_tag.string.strip()
+                url_path = self._person_url_path_regex.match(a_tag["href"]).group(1)
+                url = f'{self._url_base.rstrip("/")}/{url_path.lstrip("/")}'
+                persons.append(common.Person(name, url))
+        return tuple(persons)
+
     async def directors(self, id):
         soup = await self._get_soup(f'title/{id}')
         directors = []
         for tag in soup.find_all(class_='credit_summary_item'):
             strings = tuple(tag.stripped_strings)
             if 'Director:' in strings or 'Directors:' in strings:
-                for link in tag.find_all('a'):
-                    directors.append(link.text)
+                directors.extend(self._get_persons(tag))
         return tuple(directors)
 
     async def creators(self, id):
@@ -77,8 +89,7 @@ class ImdbApi(WebDbApiBase):
         for tag in soup.find_all(class_='credit_summary_item'):
             strings = tuple(tag.stripped_strings)
             if 'Creator:' in strings or 'Creators:' in strings:
-                for link in tag.find_all('a'):
-                    creators.append(link.text)
+                creators.extend(self._get_persons(tag))
         return tuple(creators)
 
     async def cast(self, id):
@@ -87,11 +98,7 @@ class ImdbApi(WebDbApiBase):
         cast = []
         tr_tags = cast_tag.find_all('tr')
         for tr_tag in tr_tags:
-            td_tags = tr_tag.find_all('td')
-            try:
-                cast.append(''.join(td_tags[1].stripped_strings))
-            except IndexError:
-                pass
+            cast.extend(self._get_persons(tr_tag))
         return tuple(cast)
 
     async def countries(self, id):
