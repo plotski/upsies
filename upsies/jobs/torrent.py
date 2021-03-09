@@ -60,11 +60,13 @@ class CreateTorrentJob(base.JobBase):
 
         def create_torrent_process_wrapper(task):
             try:
-                self._create_torrent_process(task.result())
+                announce_url = task.result()
             except errors.RequestError as e:
                 self.error(e)
             except Exception as e:
                 self.exception(e)
+            else:
+                self._create_torrent_process(announce_url)
 
         self._announce_url_task = asyncio.ensure_future(
             self._tracker.with_login(
