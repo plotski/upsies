@@ -38,8 +38,7 @@ class ChoiceJob(JobBase):
     @property
     def cache_id(self):
         """:attr:`name` and :attr:`text`"""
-        if self.is_finished:
-            return (self.name, self.choice)
+        return self.name
 
     @property
     def choices(self):

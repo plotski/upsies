@@ -18,9 +18,7 @@ def test_label_property():
 
 def test_cache_id_property():
     job = dialog.ChoiceJob(name='foo', label='Foo', choices=('a', 'b', 'c'))
-    assert job.cache_id is None
-    job.choice = 'b'
-    assert job.cache_id == ('foo', 'b')
+    assert job.cache_id == 'foo'
 
 
 def test_choices_getter():
