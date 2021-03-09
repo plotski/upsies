@@ -507,7 +507,7 @@ async def test_request_catches_HTTP_error_status(method, mock_cache, httpserver)
         status=404,
         headers={'foo': 'bar'},
     )
-    with pytest.raises(errors.RequestError, match=rf'{url}: Dave is not here') as excinfo:
+    with pytest.raises(errors.RequestError, match=rf'^{url}: Dave is not here$') as excinfo:
         await http._request(method=method, url=url)
     assert excinfo.value.status_code == 404
     assert excinfo.value.headers['foo'] == 'bar'
@@ -515,8 +515,8 @@ async def test_request_catches_HTTP_error_status(method, mock_cache, httpserver)
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
 async def test_request_catches_NetworkError(method, mock_cache):
-    url = 'http://localhost:12345/foo/bar/baz'
-    with pytest.raises(errors.RequestError, match=rf'{url}: Failed to connect') as excinfo:
+    url = 'http://127.0.0.1:12345/foo/bar/baz'
+    with pytest.raises(errors.RequestError, match=rf'^{url}: .*Connect call failed') as excinfo:
         await http._request(method=method, url=url)
     assert excinfo.value.status_code is None
     assert excinfo.value.headers == {}
@@ -530,7 +530,7 @@ async def test_request_catches_TimeoutException(method, mock_cache, mocker):
     )
     mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
-    with pytest.raises(errors.RequestError, match=rf'{url}: Timeout') as excinfo:
+    with pytest.raises(errors.RequestError, match=rf'^{url}: Timeout$') as excinfo:
         await http._request(method=method, url=url)
     assert excinfo.value.status_code is None
     assert excinfo.value.headers == {}
@@ -544,7 +544,7 @@ async def test_request_catches_HTTPError(method, mock_cache, mocker):
     )
     mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
-    with pytest.raises(errors.RequestError, match=rf'{url}: Some error') as excinfo:
+    with pytest.raises(errors.RequestError, match=rf'^{url}: Some error$') as excinfo:
         await http._request(method=method, url=url)
     assert excinfo.value.status_code is None
     assert excinfo.value.headers == {}
@@ -665,7 +665,7 @@ def test_open_files_opens_files(mocker):
 
 def test_get_fileobj_catches_OSError():
     filepath = 'path/to/foo'
-    with pytest.raises(errors.RequestError, match=rf'{filepath}: No such file or directory'):
+    with pytest.raises(errors.RequestError, match=rf'^{filepath}: No such file or directory$'):
         http._get_fileobj(filepath)
 
 def test_get_fileobj_returns_fileobj(tmp_path):
