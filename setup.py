@@ -31,7 +31,7 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        'httpx==0.16.*',
+        'httpx==0.*,>=0.16.0',
         'beautifulsoup4==4.*',
         'guessit==3.*,>=3.3.0',
         'natsort==7.*',
