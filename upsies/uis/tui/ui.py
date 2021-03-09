@@ -72,7 +72,6 @@ class UI:
                 self._jobs[job.name].job = job
                 self._jobs[job.name].widget = jobwidgets.JobWidget(job, self._app)
                 self._jobs[job.name].container = to_container(self._jobs[job.name].widget)
-                _log.debug('Created JobWidget %r: %r', job.name, self._jobs[job.name])
 
                 # Terminate application if job encounters error
                 job.signal.register('error', self._exit)
