@@ -14,5 +14,7 @@ class DummyClientApi(ClientApiBase):
 
     async def add_torrent(self, torrent_path, download_path=None):
         """Pretend to add `torrent_path`"""
+        # Raise exception if file doesn't exist
+        self.read_torrent_file(torrent_path)
         await asyncio.sleep(2)
         return 'DE4DB33F'
