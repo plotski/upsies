@@ -194,7 +194,7 @@ class AddTorrentJob(base.QueueJobBase):
         self._info = ''
         self.signal.register('adding', lambda tp: setattr(self, '_info', f'Adding {fs.basename(tp)}'))
         self.signal.register('added', lambda _: setattr(self, '_info', ''))
-        self.signal.register('finished', lambda: setattr(self, '_info', ''))
+        self.signal.register('finished', lambda _: setattr(self, '_info', ''))
         self.signal.register('error', lambda _: setattr(self, '_info', ''))
 
     MAX_TORRENT_SIZE = 10 * 2**20  # 10 MiB
@@ -262,7 +262,7 @@ class CopyTorrentJob(base.QueueJobBase):
         self._info = ''
         self.signal.register('copying', lambda fp: setattr(self, '_info', f'Copying {fs.basename(fp)}'))
         self.signal.register('copied', lambda _: setattr(self, '_info', ''))
-        self.signal.register('finished', lambda: setattr(self, '_info', ''))
+        self.signal.register('finished', lambda _: setattr(self, '_info', ''))
         self.signal.register('error', lambda _: setattr(self, '_info', ''))
 
     MAX_FILE_SIZE = 10 * 2**20  # 10 MiB

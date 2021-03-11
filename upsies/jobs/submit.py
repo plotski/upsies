@@ -78,7 +78,7 @@ class SubmitJob(JobBase):
                                 ('logged_out', '')):
             self.signal.add(signal)
             self.signal.register(signal, lambda msg=message: setattr(self, '_info', msg))
-        self.signal.register('finished', lambda: setattr(self, '_info', ''))
+        self.signal.register('finished', lambda _: setattr(self, '_info', ''))
         self.signal.register('error', lambda _: setattr(self, '_info', ''))
 
         # Create jobs_after_upload now so they can connect to other jobs,

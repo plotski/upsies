@@ -71,7 +71,7 @@ class create_torrent(CommandBase):
             # Pass CreateTorrentJob output to AddTorrentJob input.
             self.create_torrent_job.signal.register('output', add_torrent_job.enqueue)
             # Tell AddTorrentJob to finish the current upload and then finish.
-            self.create_torrent_job.signal.register('finished', add_torrent_job.finalize)
+            self.create_torrent_job.signal.register('finished', lambda _: add_torrent_job.finalize())
             return add_torrent_job
 
     @utils.cached_property
@@ -85,7 +85,7 @@ class create_torrent(CommandBase):
             # Pass CreateTorrentJob output to CopyTorrentJob input.
             self.create_torrent_job.signal.register('output', copy_torrent_job.enqueue)
             # Tell CopyTorrentJob to finish when CreateTorrentJob is done.
-            self.create_torrent_job.signal.register('finished', copy_torrent_job.finalize)
+            self.create_torrent_job.signal.register('finished', lambda _: copy_torrent_job.finalize())
             return copy_torrent_job
 
     @utils.cached_property

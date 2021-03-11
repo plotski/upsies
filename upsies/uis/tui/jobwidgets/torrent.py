@@ -10,7 +10,7 @@ class CreateTorrentJobWidget(JobWidgetBase):
     def setup(self):
         self._progress = widgets.ProgressBar()
         self.job.signal.register('progress_update', self.handle_progress_update)
-        self.job.signal.register('finished', self.invalidate)
+        self.job.signal.register('finished', lambda _: self.invalidate())
 
     def handle_progress_update(self, percent_done):
         self._progress.percent = percent_done

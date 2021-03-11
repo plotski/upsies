@@ -67,7 +67,7 @@ class screenshots(CommandBase):
             # Pass ScreenshotsJob's output to ImageHostJob input.
             self.screenshots_job.signal.register('output', imghost_job.enqueue)
             # Tell imghost_job to finish the current upload and then finish.
-            self.screenshots_job.signal.register('finished', imghost_job.finalize)
+            self.screenshots_job.signal.register('finished', lambda _: imghost_job.finalize())
             return imghost_job
 
     @utils.cached_property

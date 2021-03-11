@@ -78,7 +78,7 @@ class UI:
 
                 if self._jobs[job.name].widget.is_interactive:
                     # Display next interactive job
-                    job.signal.register('finished', self._update_jobs_container)
+                    job.signal.register('finished', lambda _: self._update_jobs_container())
 
                 if job.autostart:
                     asyncio.get_event_loop().call_soon(job.start)

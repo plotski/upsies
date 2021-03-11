@@ -161,7 +161,7 @@ async def test_finish_emits_finished_signal(job):
     job.signal.register('finished', cb)
     for _ in range(3):
         job.finish()
-        assert cb.call_args_list == [call()]
+        assert cb.call_args_list == [call(job)]
 
 @pytest.mark.asyncio
 async def test_finish_writes_cache(job, mocker):
@@ -312,7 +312,7 @@ def test_error_on_finished_job(job, mocker):
     assert job.signal.emit.call_args_list == [call('error', 'foo')]
     job.finish()
     job.error('bar')
-    assert job.signal.emit.call_args_list == [call('error', 'foo'), call('finished')]
+    assert job.signal.emit.call_args_list == [call('error', 'foo'), call('finished', job)]
 
 def test_error_fills_errors_property(job, mocker):
     job.start()
