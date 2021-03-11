@@ -119,26 +119,42 @@ async def test_target_sends_to_error_callback():
 
 
 @pytest.mark.asyncio
-async def test_target_sends_result_to_finished_callback():
-    finished_callback = Mock()
+async def test_target_sends_to_result_callback():
+    result_callback = Mock()
     proc = DaemonProcess(
         target=target_sending_result_to_finished_callback,
-        finished_callback=finished_callback,
+        result_callback=result_callback,
     )
     proc.start()
     await proc.join()
-    assert finished_callback.call_args_list == [call('foo')]
+    assert result_callback.call_args_list == [call('foo')]
 
 
+@pytest.mark.parametrize(
+    argnames='target',
+    argvalues=(
+        target_raising_exception,
+        target_sending_to_init_callback,
+        target_sending_to_info_callback,
+        target_sending_to_error_callback,
+        target_sending_result_to_finished_callback,
+        target_never_terminating,
+    ),
+)
 @pytest.mark.asyncio
-async def test_target_sends_no_result_to_finished_callback():
+async def test_target_calls_finished_callback(target):
     finished_callback = Mock()
     proc = DaemonProcess(
-        target=target_sending_no_result_to_finished_callback,
+        target=target,
         finished_callback=finished_callback,
     )
     proc.start()
-    await proc.join()
+    if target is target_never_terminating:
+        proc.stop()
+    try:
+        await proc.join()
+    except:
+        pass
     assert finished_callback.call_args_list == [call()]
 
 
@@ -231,6 +247,6 @@ async def test_finished_callback_raises_exception():
     proc.start()
     with pytest.raises(RuntimeError, match=r'^Boo!$'):
         await proc.join()
-    assert finished_callback.call_args_list == [call('foo')]
+    assert finished_callback.call_args_list == [call()]
     assert proc.exception is exception
     assert error_callback.call_args_list == [call(proc.exception)]

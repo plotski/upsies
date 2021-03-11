@@ -34,8 +34,8 @@ class DaemonProcess:
     """
 
     def __init__(self, target, name=None, args=(), kwargs={},
-                 init_callback=None, info_callback=None,
-                 error_callback=None, finished_callback=None):
+                 init_callback=None, info_callback=None, error_callback=None,
+                 result_callback=None, finished_callback=None):
         self._target = target
         self._name = name
         self._target_args = args
@@ -43,6 +43,7 @@ class DaemonProcess:
         self._init_callback = init_callback
         self._info_callback = info_callback
         self._error_callback = error_callback
+        self._result_callback = result_callback
         self._finished_callback = finished_callback
 
         self._ctx = multiprocessing.get_context('spawn')
@@ -70,6 +71,8 @@ class DaemonProcess:
         )
         self._process.start()
         self._read_queue_reader_task = self._loop.create_task(self._read_queue_reader())
+        if self._finished_callback:
+            self._read_queue_reader_task.add_done_callback(self._handle_read_queue_reader_task_done)
 
     async def _read_queue_reader(self):
         try:
@@ -91,18 +94,33 @@ class DaemonProcess:
                         if self._error_callback:
                             self._error_callback(msg)
                 elif typ is MsgType.result:
-                    if self._finished_callback:
-                        self._finished_callback(msg)
+                    if self._result_callback:
+                        self._result_callback(msg)
                     break
                 elif typ is MsgType.terminate:
-                    if self._finished_callback:
-                        self._finished_callback()
                     break
                 else:
                     raise RuntimeError(f'Unknown message type: {typ!r}')
         except BaseException as e:
             self._exception = e
-            self._error_callback(e)
+            if self._error_callback:
+                try:
+                    self._error_callback(e)
+                except BaseException as e:
+                    self._exception = e
+            raise self._exception
+
+    def _handle_read_queue_reader_task_done(self, task):
+        if self._finished_callback:
+            try:
+                self._finished_callback()
+            except BaseException as e:
+                self._exception = e
+                if self._error_callback:
+                    try:
+                        self._error_callback(e)
+                    except BaseException as e:
+                        self._exception = e
 
     def stop(self):
         """Stop the process"""
@@ -120,7 +138,11 @@ class DaemonProcess:
     @property
     def exception(self):
         """Exception from `target` or callback, `None` if no exception was raised"""
-        return self._exception
+        task = self._read_queue_reader_task
+        if task and task.done() and task.exception():
+            return task.exception()
+        else:
+            return self._exception
 
     async def join(self):
         """Block asynchronously until the process exits"""
@@ -134,7 +156,7 @@ class DaemonProcess:
                 # Unblock self._read_queue()
                 self._read_queue.put((MsgType.terminate, None))
                 await self._read_queue_reader_task
-            exc = self._read_queue_reader_task.exception() or self._exception
+            exc = self.exception
             if exc:
                 raise exc
 
