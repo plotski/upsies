@@ -77,7 +77,9 @@ async def test_exceptions_from_target_are_reraised_when_process_is_joined():
     assert exc_info.value.original_traceback.startswith('Subprocess traceback:\n')
     assert 'target_raising_exception' in exc_info.value.original_traceback
     assert exc_info.value.original_traceback.endswith('ValueError: Kaboom!')
-    assert error_callback.call_args_list == []
+    assert len(error_callback.call_args_list) == 1
+    assert isinstance(error_callback.call_args_list[0][0][0], ValueError)
+    assert str(error_callback.call_args_list[0][0][0]) == 'Kaboom!'
 
 
 @pytest.mark.asyncio
@@ -170,31 +172,42 @@ async def test_is_alive_property():
 
 @pytest.mark.asyncio
 async def test_init_callback_raises_exception():
-    init_callback = Mock(side_effect=RuntimeError('Boo!'))
+    exception = RuntimeError('Boo!')
+    init_callback = Mock(side_effect=exception)
+    error_callback = Mock()
     proc = DaemonProcess(
         target=target_sending_to_init_callback,
         init_callback=init_callback,
+        error_callback=error_callback,
     )
     proc.start()
     with pytest.raises(RuntimeError, match=r'^Boo!$'):
         await proc.join()
     assert init_callback.call_args_list == [call(0)]
+    assert proc.exception is exception
+    assert error_callback.call_args_list == [call(exception)]
 
 @pytest.mark.asyncio
 async def test_info_callback_raises_exception():
-    info_callback = Mock(side_effect=RuntimeError('Boo!'))
+    exception = RuntimeError('Boo!')
+    info_callback = Mock(side_effect=exception)
+    error_callback = Mock()
     proc = DaemonProcess(
         target=target_sending_to_info_callback,
         info_callback=info_callback,
+        error_callback=error_callback,
     )
     proc.start()
     with pytest.raises(RuntimeError, match=r'^Boo!$'):
         await proc.join()
     assert info_callback.call_args_list == [call(0)]
+    assert proc.exception is exception
+    assert error_callback.call_args_list == [call(exception)]
 
 @pytest.mark.asyncio
 async def test_error_callback_raises_exception():
-    error_callback = Mock(side_effect=RuntimeError('Boo!'))
+    exception = RuntimeError('Boo!')
+    error_callback = Mock(side_effect=exception)
     proc = DaemonProcess(
         target=target_sending_to_error_callback,
         error_callback=error_callback,
@@ -202,16 +215,22 @@ async def test_error_callback_raises_exception():
     proc.start()
     with pytest.raises(RuntimeError, match=r'^Boo!$'):
         await proc.join()
-    assert error_callback.call_args_list == [call(0)]
+    assert proc.exception is exception
+    assert error_callback.call_args_list == [call(0), call(exception)]
 
 @pytest.mark.asyncio
 async def test_finished_callback_raises_exception():
-    finished_callback = Mock(side_effect=RuntimeError('Boo!'))
+    exception = RuntimeError('Boo!')
+    finished_callback = Mock(side_effect=exception)
+    error_callback = Mock()
     proc = DaemonProcess(
         target=target_sending_result_to_finished_callback,
         finished_callback=finished_callback,
+        error_callback=error_callback,
     )
     proc.start()
     with pytest.raises(RuntimeError, match=r'^Boo!$'):
         await proc.join()
     assert finished_callback.call_args_list == [call('foo')]
+    assert proc.exception is exception
+    assert error_callback.call_args_list == [call(proc.exception)]
