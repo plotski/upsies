@@ -28,7 +28,7 @@ class ClientApiBase(abc.ABC):
 
         :raise TorrentError: if adding `torrent_path` fails
 
-        :return: HASH of the added torrent
+        :return: Info hash of the added torrent
         """
 
     @staticmethod
