@@ -1,7 +1,5 @@
-import asyncio
-import sys
 from types import SimpleNamespace
-from unittest.mock import Mock, call
+from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 from prompt_toolkit.application import Application
@@ -39,62 +37,102 @@ def mock_JobWidget(mocker):
     mocker.patch('upsies.uis.tui.jobwidgets.JobWidget', Mock(return_value=job_widget))
 
 
-def test_add_jobs_registers_signals(mocker):
-    jobs = (
-        Mock(name='a', wait=AsyncMock(), exit_code=0),
-        Mock(name='b', wait=AsyncMock(), exit_code=0),
-        Mock(name='c', wait=AsyncMock(), exit_code=0),
-        Mock(name='d', wait=AsyncMock(), exit_code=0),
-    )
-    job_widgets = (
-        Mock(name='w.a', is_interactive=True, __pt_container__=Mock(return_value=(Window()))),
-        Mock(name='w.b', is_interactive=False, __pt_container__=Mock(return_value=(Window()))),
-        Mock(name='w.c', is_interactive=True, __pt_container__=Mock(return_value=(Window()))),
-        Mock(name='w.d', is_interactive=False, __pt_container__=Mock(return_value=(Window()))),
-    )
-    JobWidget_mock = mocker.patch('upsies.uis.tui.jobwidgets.JobWidget', Mock(side_effect=job_widgets))
+def test_add_jobs_does_not_add_same_job_twice(mocker):
+    jobs = (Mock(), Mock(), Mock(), Mock())
+    for job, name in zip(jobs, ('a', 'b', 'b', 'c')):
+        job.configure_mock(name=name)
+    mocker.patch('upsies.uis.tui.jobwidgets.JobWidget')
+    mocker.patch('upsies.uis.tui.ui.to_container', Mock(return_value=True))
     ui = UI()
-    ui.run(jobs)
+    with pytest.raises(RuntimeError, match=r'^Job b was already added$'):
+        ui.add_jobs(*jobs)
+
+
+def test_add_jobs_creates_JobWidgets(mocker):
+    jobs = (Mock(), Mock(), Mock())
+    JobWidget_mock = mocker.patch('upsies.uis.tui.jobwidgets.JobWidget')
+    to_container_mock = mocker.patch('upsies.uis.tui.ui.to_container', Mock(return_value=True))
+    ui = UI()
+    ui.add_jobs(*jobs)
+    assert tuple(ui._jobs) == (jobs[0].name, jobs[1].name, jobs[2].name)
+    for jobinfo in ui._jobs.values():
+        assert jobinfo.widget == JobWidget_mock.return_value
+        assert jobinfo.container == to_container_mock.return_value
     assert JobWidget_mock.call_args_list == [
-        call(jobs[0], ui._make_app.return_value),
-        call(jobs[1], ui._make_app.return_value),
-        call(jobs[2], ui._make_app.return_value),
-        call(jobs[3], ui._make_app.return_value),
+        call(jobs[0], ui._app),
+        call(jobs[1], ui._app),
+        call(jobs[2], ui._app),
     ]
+    assert to_container_mock.call_args_list == [
+        call(JobWidget_mock.return_value),
+        call(JobWidget_mock.return_value),
+        call(JobWidget_mock.return_value),
+    ]
+
+def test_add_jobs_registers_signals(mocker):
+    jobs = (Mock(), Mock(), Mock())
+    for job, name in zip(jobs, ('a', 'b', 'c')):
+        job.configure_mock(name=name)
+    job_widgets = (
+        Mock(is_interactive=True, __pt_container__=Mock(return_value=(Window()))),
+        Mock(is_interactive=False, __pt_container__=Mock(return_value=(Window()))),
+        Mock(is_interactive=True, __pt_container__=Mock(return_value=(Window()))),
+        Mock(is_interactive=False, __pt_container__=Mock(return_value=(Window()))),
+    )
+    mocker.patch('upsies.uis.tui.jobwidgets.JobWidget', Mock(side_effect=job_widgets))
+    ui = UI()
+    ui.add_jobs(*jobs)
     for job, jobw in zip(jobs, job_widgets):
         if jobw.is_interactive:
             assert job.signal.register.call_args_list == [
-                call('error', ui._exit),
+                call('finished', ui._exit_if_all_jobs_finished),
+                call('finished', ui._exit_if_job_failed),
                 call('finished', ui._update_jobs_container),
             ]
         else:
             assert job.signal.register.call_args_list == [
-                call('error', ui._exit),
+                call('finished', ui._exit_if_all_jobs_finished),
+                call('finished', ui._exit_if_job_failed),
             ]
 
-def test_add_jobs_does_not_start_jobs_with_autostart_set_to_False():
+def test_add_jobs_calls_update_jobs_container(mocker):
+    ui = UI()
+    mocker.patch.object(ui, '_update_jobs_container')
+    ui.add_jobs()
+    assert ui._update_jobs_container.call_args_list == [call()]
+
+
+def test_update_jobs_container_start_jobs_autostarts_enabled_jobs():
     jobs = (
-        Mock(autostart=False, wait=AsyncMock(), exit_code=0),
-        Mock(autostart=True, wait=AsyncMock(), exit_code=0),
-        Mock(autostart=False, wait=AsyncMock(), exit_code=0),
-        Mock(autostart=True, wait=AsyncMock(), exit_code=0),
+        (Mock(autostart=False, is_enabled=False, is_started=False), False),
+
+        (Mock(autostart=False, is_enabled=False, is_started=True), False),
+        (Mock(autostart=False, is_enabled=True, is_started=False), False),
+        (Mock(autostart=True, is_enabled=False, is_started=False), False),
+
+        (Mock(autostart=True, is_enabled=True, is_started=False), True),
+        (Mock(autostart=True, is_enabled=False, is_started=True), False),
+        (Mock(autostart=False, is_enabled=True, is_started=True), False),
+
+        (Mock(autostart=True, is_enabled=True, is_started=True), False),
     )
     ui = UI()
-    ui.run(jobs)
-    for job in jobs:
-        if job.autostart:
+    ui.add_jobs(*(j[0] for j in jobs))
+    for job, exp_start_called in jobs:
+        if exp_start_called:
             assert job.start.call_args_list == [call()]
         else:
             assert job.start.call_args_list == []
 
-
 def test_update_jobs_container_sorts_interactive_jobs_above_background_jobs():
     ui = UI()
     ui._jobs = {
-        'a': SimpleNamespace(job=Mock(), widget=Mock(is_interactive=True), container=Mock()),
-        'b': SimpleNamespace(job=Mock(), widget=Mock(is_interactive=False), container=Mock()),
-        'c': SimpleNamespace(job=Mock(), widget=Mock(is_interactive=True), container=Mock()),
-        'd': SimpleNamespace(job=Mock(), widget=Mock(is_interactive=False), container=Mock()),
+        'a': SimpleNamespace(job=Mock(is_enabled=True), widget=Mock(is_interactive=True), container=Mock()),
+        'b': SimpleNamespace(job=Mock(is_enabled=True), widget=Mock(is_interactive=False), container=Mock()),
+        'c': SimpleNamespace(job=Mock(is_enabled=True), widget=Mock(is_interactive=True), container=Mock()),
+        'd': SimpleNamespace(job=Mock(is_enabled=True), widget=Mock(is_interactive=False), container=Mock()),
+        'e': SimpleNamespace(job=Mock(is_enabled=False), widget=Mock(is_interactive=True), container=Mock()),
+        'f': SimpleNamespace(job=Mock(is_enabled=False), widget=Mock(is_interactive=False), container=Mock()),
     }
     ui._update_jobs_container()
     assert ui._jobs_container.children == [
@@ -104,144 +142,190 @@ def test_update_jobs_container_sorts_interactive_jobs_above_background_jobs():
         ui._jobs['d'].container,
     ]
 
-def test_update_jobs_container_only_adds_first_unfinished_job():
+def test_update_jobs_container_only_adds_first_unfinished_job_and_focuses_it():
     ui = UI()
     ui._jobs = {
-        'a': SimpleNamespace(job=Mock(is_finished=False), widget=Mock(is_interactive=True), container=Mock()),
-        'b': SimpleNamespace(job=Mock(is_finished=False), widget=Mock(is_interactive=False), container=Mock()),
-        'c': SimpleNamespace(job=Mock(is_finished=False), widget=Mock(is_interactive=True), container=Mock()),
-        'd': SimpleNamespace(job=Mock(is_finished=False), widget=Mock(is_interactive=False), container=Mock()),
-        'e': SimpleNamespace(job=Mock(is_finished=False), widget=Mock(is_interactive=True), container=Mock()),
+        'ai': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False), widget=Mock(is_interactive=True), container=Mock(name='aw')),
+        'bn': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False), widget=Mock(is_interactive=False), container=Mock(name='bw')),
+        'ci': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False), widget=Mock(is_interactive=True), container=Mock(name='cw')),
+        'dn': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False), widget=Mock(is_interactive=False), container=Mock(name='dw')),
+        'ei': SimpleNamespace(job=Mock(is_enabled=False, is_finished=False), widget=Mock(is_interactive=True), container=Mock(name='ew')),
+        'fn': SimpleNamespace(job=Mock(is_enabled=False, is_finished=False), widget=Mock(is_interactive=False), container=Mock(name='fw')),
+        'gi': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False), widget=Mock(is_interactive=True), container=Mock(name='gw')),
     }
     ui._layout = Mock()
+    jobs_container_id = id(ui._jobs_container)
 
     def assert_jobs_container(*keys, focused):
-        jobs_container_id = id(ui._jobs_container)
         ui._update_jobs_container()
         assert id(ui._jobs_container) == jobs_container_id
         containers = [ui._jobs[k].container for k in keys]
         assert ui._jobs_container.children == containers
         assert ui._layout.focus.call_args_list[-1] == call(ui._jobs[focused].container)
 
-    assert_jobs_container('a', 'b', 'd', focused='a')
-
-    ui._jobs['a'].job.is_finished = True
-    assert_jobs_container('a', 'c', 'b', 'd', focused='c')
-
-    ui._jobs['b'].job.is_finished = True
-    assert_jobs_container('a', 'c', 'b', 'd', focused='c')
-
-    ui._jobs['d'].job.is_finished = True
-    assert_jobs_container('a', 'c', 'b', 'd', focused='c')
-
-    ui._jobs['c'].job.is_finished = True
-    assert_jobs_container('a', 'c', 'e', 'b', 'd', focused='e')
-
-    ui._jobs['e'].job.is_finished = True
-    assert_jobs_container('a', 'c', 'e', 'b', 'd', focused='e')
+    assert_jobs_container('ai', 'bn', 'dn', focused='ai')
+    ui._jobs['ai'].job.is_finished = True
+    assert_jobs_container('ai', 'ci', 'bn', 'dn', focused='ci')
+    ui._jobs['bn'].job.is_finished = True
+    assert_jobs_container('ai', 'ci', 'bn', 'dn', focused='ci')
+    ui._jobs['dn'].job.is_finished = True
+    assert_jobs_container('ai', 'ci', 'bn', 'dn', focused='ci')
+    ui._jobs['ci'].job.is_finished = True
+    assert_jobs_container('ai', 'ci', 'gi', 'bn', 'dn', focused='gi')
 
 
-def test_exception_is_raised_by_app(mocker):
+def test_run_calls_add_jobs(mocker):
     ui = UI()
-    mocker.patch.object(ui._app, 'run', Mock(side_effect=RuntimeError('This is bad')))
-    mocker.patch.object(ui, '_wait_for_all_jobs', AsyncMock())
-    with pytest.raises(RuntimeError, match=r'^This is bad$'):
-        ui.run(())
+    add_jobs_mock = mocker.patch.object(ui, 'add_jobs')
+    mocker.patch.object(ui._app, 'run')
+    ui.run(('a', 'b', 'c'))
+    assert add_jobs_mock.call_args_list == [call('a', 'b', 'c')]
 
-def test_CancelledError_is_raised_by_app(mocker):
+def test_run_runs_application(mocker):
     ui = UI()
-    mocker.patch.object(ui._app, 'run', Mock(side_effect=asyncio.CancelledError()))
-    mocker.patch.object(ui, '_wait_for_all_jobs', AsyncMock())
-    ui.run(())
+    mocker.patch.object(ui, 'add_jobs')
+    app_run_mock = mocker.patch.object(ui._app, 'run')
+    ui.run(('a', 'b', 'c'))
+    assert app_run_mock.call_args_list == [call(set_exception_handler=False)]
 
-def test_exception_is_raised_by_wait_for_all_jobs(mocker):
+def test_run_raises_stored_exception(mocker):
     ui = UI()
-    mocker.patch.object(ui, '_wait_for_all_jobs', AsyncMock(side_effect=RuntimeError('This is bad')))
-    with pytest.raises(RuntimeError, match=r'^This is bad$'):
-        ui.run(())
+    ui._exception = ValueError('foo')
+    mocker.patch.object(ui, 'add_jobs')
+    mocker.patch.object(ui._app, 'run')
+    with pytest.raises(ValueError, match=r'^foo$'):
+        ui.run(('a', 'b', 'c'))
 
-def test_CancelledError_is_raised_by_wait_for_all_jobs(mocker):
+def test_run_returns_first_nonzero_job_exit_code(mocker):
     ui = UI()
-    mocker.patch.object(ui, '_wait_for_all_jobs', AsyncMock(side_effect=asyncio.CancelledError()))
-    ui.run(())
+    ui._jobs = {
+        'a': SimpleNamespace(job=Mock(exit_code=0)),
+        'b': SimpleNamespace(job=Mock(exit_code=1)),
+        'c': SimpleNamespace(job=Mock(exit_code=2)),
+        'd': SimpleNamespace(job=Mock(exit_code=3)),
+    }
+    mocker.patch.object(ui, 'add_jobs')
+    mocker.patch.object(ui._app, 'run')
+    exit_code = ui.run(('a', 'b', 'c'))
+    assert exit_code == 1
 
-def test_exception_is_raised_by_background_coroutine():
-    def delayed_exception():
-        async def raise_exception():
-            await asyncio.sleep(0.1)
-            raise RuntimeError('This is bad')
-        asyncio.ensure_future(raise_exception())
-
-    jobs = (
-        Mock(wait=AsyncMock(), start=delayed_exception, exit_code=0),
-        Mock(wait=lambda: asyncio.sleep(100), exit_code=0),
-        Mock(wait=AsyncMock(), exit_code=0),
-    )
+def test_run_returns_zero_if_all_jobs_finished_successfully(mocker):
     ui = UI()
-    with pytest.raises(RuntimeError, match=r'^This is bad$'):
-        ui.run(jobs)
-    assert jobs[0].wait.call_args_list == [call()]
-    assert jobs[2].wait.call_args_list == [call()]
-    for job in jobs:
-        assert job.finish.call_args_list
+    ui._jobs = {
+        'a': SimpleNamespace(job=Mock(exit_code=0)),
+        'b': SimpleNamespace(job=Mock(exit_code=0)),
+        'c': SimpleNamespace(job=Mock(exit_code=0)),
+        'd': SimpleNamespace(job=Mock(exit_code=0)),
+    }
+    mocker.patch.object(ui, 'add_jobs')
+    mocker.patch.object(ui._app, 'run')
+    exit_code = ui.run(('a', 'b', 'c'))
+    assert exit_code == 0
 
-def test_exceptions_are_raised_by_job_start():
-    jobs = (
-        Mock(wait=AsyncMock()),
-        Mock(wait=AsyncMock()),
-        Mock(wait=AsyncMock(), start=Mock(side_effect=RuntimeError('This is bad'))),
-        Mock(wait=AsyncMock(), start=Mock(side_effect=RuntimeError('This is also bad'))),
-    )
+
+def test_exit_if_all_jobs_finished(mocker):
     ui = UI()
-    with pytest.raises(RuntimeError, match=r'^This is bad$'):
-        ui.run(jobs)
-    for job in jobs:
-        assert job.wait.call_args_list == []
-        assert job.finish.call_args_list
+    ui._jobs = {
+        'a': SimpleNamespace(job=Mock(is_finished=False)),
+        'b': SimpleNamespace(job=Mock(is_finished=False)),
+        'c': SimpleNamespace(job=Mock(is_finished=False)),
+        'd': SimpleNamespace(job=Mock(is_finished=False)),
+    }
+    exit_mock = mocker.patch.object(ui, '_exit')
+    for job_name in ('a', 'b', 'c', 'd'):
+        ui._exit_if_all_jobs_finished()
+        assert exit_mock.call_args_list == []
+        ui._exit_if_all_jobs_finished('mock job instance')
+        assert exit_mock.call_args_list == []
+        ui._jobs[job_name].job.is_finished = True
+    ui._exit_if_all_jobs_finished()
+    assert exit_mock.call_args_list == [call()]
 
-def test_exceptions_are_raised_by_job_wait():
-    jobs = (
-        Mock(wait=AsyncMock(), exit_code=0),
-        Mock(wait=AsyncMock(side_effect=RuntimeError('This is bad'))),
-        Mock(wait=AsyncMock(), exit_code=0),
-        Mock(wait=AsyncMock(side_effect=RuntimeError('This is also bad'))),
-    )
+
+def test_exit_if_job_failed_does_nothing_if_already_exited(mocker):
     ui = UI()
-    if sys.version_info >= (3, 7, 0):
-        with pytest.raises(RuntimeError, match=r'^This is bad$'):
-            ui.run(jobs)
-    else:
-        # In Python 3.6 asyncio.gather() raises exceptions randomly
-        with pytest.raises(RuntimeError, match=r'^This is (?:also |)bad$'):
-            ui.run(jobs)
-    for job in jobs:
-        assert job.wait.call_args_list == [call()]
-        assert job.finish.call_args_list
+    ui._app_terminated = True
+    exit_mock = mocker.patch.object(ui, '_exit')
+    ui._exit_if_job_failed(Mock(is_finished=True, exit_code=1, exceptions=()))
+    assert exit_mock.call_args_list == []
+    assert ui._exception is None
 
-
-def test_CancelledError_is_raised_by_job_wait():
-    jobs = (
-        Mock(wait=AsyncMock(), exit_code=0),
-        Mock(wait=AsyncMock(side_effect=asyncio.CancelledError('a')), exit_code=0),
-        Mock(wait=AsyncMock(), exit_code=0),
-        Mock(wait=AsyncMock(side_effect=asyncio.CancelledError('b')), exit_code=0),
-    )
+def test_exit_if_job_failed_does_nothing_if_job_is_not_finished(mocker):
     ui = UI()
-    ui.run(jobs)
-    for job in jobs:
-        assert job.wait.call_args_list == [call()]
-        assert job.finish.call_args_list
+    exit_mock = mocker.patch.object(ui, '_exit')
+    ui._exit_if_job_failed(Mock(is_finished=False, exit_code=0, exceptions=()))
+    assert exit_mock.call_args_list == []
+    assert ui._exception is None
+    ui._exit_if_job_failed(Mock(is_finished=False, exit_code=123, exceptions=()))
+    assert exit_mock.call_args_list == []
+    assert ui._exception is None
 
-
-def test_jobs_return_with_nonzero_exit_code():
-    jobs = (
-        Mock(wait=AsyncMock(), exit_code=0),
-        Mock(wait=AsyncMock(), exit_code=123),
-        Mock(wait=AsyncMock(), exit_code=0),
-        Mock(wait=AsyncMock(), exit_code=99),
-    )
+def test_exit_if_job_failed_does_nothing_if_exit_code_is_zero(mocker):
     ui = UI()
-    assert ui.run(jobs) == 123
-    for job in jobs:
-        assert job.wait.call_args_list == [call()]
-        assert job.finish.call_args_list
+    exit_mock = mocker.patch.object(ui, '_exit')
+    ui._exit_if_job_failed(Mock(is_finished=True, exit_code=0, exceptions=()))
+    assert exit_mock.call_args_list == []
+    assert ui._exception is None
+
+def test_exit_if_job_failed_calls_exit_if_exit_code_is_nonzero(mocker):
+    ui = UI()
+    exit_mock = mocker.patch.object(ui, '_exit')
+    mocker.patch.object(ui, '_finish_jobs')
+    ui._exit_if_job_failed(Mock(is_finished=True, exit_code=1, exceptions=()))
+    assert exit_mock.call_args_list == [call()]
+
+def test_exit_if_job_failed_preserves_first_exception_from_jobs(mocker):
+    ui = UI()
+    mocker.patch.object(ui, '_exit')
+    mocker.patch.object(ui, '_finish_jobs')
+    ui._exit_if_job_failed(Mock(is_finished=True, exit_code=1, exceptions=('e1', 'e2', 'e3')))
+    assert ui._exception == 'e1'
+    ui._exit_if_job_failed(Mock(is_finished=True, exit_code=1, exceptions=('foo', 'bar', 'baz')))
+    assert ui._exception == 'e1'
+
+
+def test_exit_calls_finish_jobs(mocker):
+    ui = UI()
+    mocker.patch.object(type(ui._app), 'is_running', PropertyMock(return_value=True))
+    mocker.patch.object(type(ui._app), 'is_done', PropertyMock(return_value=False))
+    mocker.patch.object(ui._app, 'exit')
+    mocker.patch.object(ui._loop, 'call_soon')
+    finish_jobs_mock = mocker.patch.object(ui, '_finish_jobs')
+    ui._exit()
+    assert finish_jobs_mock.call_args_list == [call()]
+
+def test_exit_waits_for_application_to_run(mocker):
+    ui = UI()
+    mocker.patch.object(type(ui._app), 'is_running', PropertyMock(return_value=False))
+    mocker.patch.object(type(ui._app), 'is_done', PropertyMock(return_value=False))
+    app_exit_mock = mocker.patch.object(ui._app, 'exit')
+    call_soon_mock = mocker.patch.object(ui._loop, 'call_soon')
+    ui._exit()
+    assert call_soon_mock.call_args_list == [call(ui._exit)]
+    assert app_exit_mock.call_args_list == []
+
+def test_exit_exits_application(mocker):
+    ui = UI()
+    mocker.patch.object(type(ui._app), 'is_running', PropertyMock(return_value=True))
+    mocker.patch.object(type(ui._app), 'is_done', PropertyMock(return_value=False))
+    app_exit_mock = mocker.patch.object(ui._app, 'exit')
+    call_soon_mock = mocker.patch.object(ui._loop, 'call_soon')
+    ui._exit()
+    assert call_soon_mock.call_args_list == []
+    assert app_exit_mock.call_args_list == [call()]
+    assert ui._app_terminated is True
+
+
+def test_finish_jobs():
+    ui = UI()
+    ui._jobs = {
+        'a': SimpleNamespace(job=Mock(is_finished=False)),
+        'b': SimpleNamespace(job=Mock(is_finished=True)),
+        'c': SimpleNamespace(job=Mock(is_finished=False)),
+        'd': SimpleNamespace(job=Mock(is_finished=True)),
+    }
+    ui._finish_jobs()
+    assert ui._jobs['a'].job.finish.call_args_list == [call()]
+    assert ui._jobs['b'].job.finish.call_args_list == []
+    assert ui._jobs['c'].job.finish.call_args_list == [call()]
+    assert ui._jobs['d'].job.finish.call_args_list == []

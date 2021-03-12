@@ -25,10 +25,18 @@ class UI:
         #   container - Container instance
         self._jobs = collections.defaultdict(lambda: types.SimpleNamespace())
         self._app = self._make_app()
+        self._app_terminated = False
         self._exception = None
-        self._wait_for_all_jobs_task = None
         self._loop = asyncio.get_event_loop()
         self._loop.set_exception_handler(self._handle_exception)
+
+    def _handle_exception(self, loop, context):
+        exception = context.get('exception')
+        if exception:
+            _log.debug('Caught unhandled exception: %r', exception)
+            if not self._exception:
+                self._exception = exception
+            self._exit()
 
     def _make_app(self):
         self._jobs_container = HSplit(
@@ -68,32 +76,41 @@ class UI:
     def add_jobs(self, *jobs):
         """Add :class:`~.jobs.base.JobBase` instances"""
         for job in jobs:
-            if job.name not in self._jobs:
+            if job.name in self._jobs:
+                raise RuntimeError(f'Job {job.name} was already added')
+            else:
                 self._jobs[job.name].job = job
                 self._jobs[job.name].widget = jobwidgets.JobWidget(job, self._app)
                 self._jobs[job.name].container = to_container(self._jobs[job.name].widget)
 
-                # Terminate application if job encounters error
-                job.signal.register('error', self._exit)
+                # Terminate application if all jobs finished
+                job.signal.register('finished', self._exit_if_all_jobs_finished)
+
+                # Terminate application if any job finished with non-zero exit code
+                job.signal.register('finished', self._exit_if_job_failed)
 
                 if self._jobs[job.name].widget.is_interactive:
-                    # Display next interactive job
-                    job.signal.register('finished', lambda _: self._update_jobs_container())
-
-                if job.autostart:
-                    asyncio.get_event_loop().call_soon(job.start)
+                    # Display next interactive job when currently focused job finishes
+                    job.signal.register('finished', self._update_jobs_container)
 
         self._update_jobs_container()
 
-    def _update_jobs_container(self):
+    def _update_jobs_container(self, *_):
+        if self._app_terminated:
+            return
+
         job_containers = []
 
-        # Show all finished interactive jobs and the first unfinished
-        # interactive job
-        for jobinfo in self._jobs.values():
+        # Ensure enabled jobs are started
+        for jobinfo in self._enabled_jobs:
+            if not jobinfo.job.is_started and jobinfo.job.autostart:
+                jobinfo.job.start()
+
+        # List interactive jobs first
+        for jobinfo in self._enabled_jobs:
             if jobinfo.widget.is_interactive:
                 job_containers.append(jobinfo.container)
-                # Focus the first unfinished job and stop adding more
+                # Focus the first unfinished job
                 if not jobinfo.job.is_finished:
                     _log.debug('Active job: %r', jobinfo.job.name)
                     try:
@@ -103,14 +120,19 @@ class UI:
                     break
 
         # Add non-interactive jobs below interactive jobs so the interactive
-        # widgets don't change position while non-interactive widgets change
+        # widgets don't change position when non-interactive widgets change
         # size.
-        for jobinfo in self._jobs.values():
+        for jobinfo in self._enabled_jobs:
             if not jobinfo.widget.is_interactive:
                 job_containers.append(jobinfo.container)
 
         # Replace visible containers
         self._jobs_container.children[:] = job_containers
+
+    @property
+    def _enabled_jobs(self):
+        return tuple(jobinfo for jobinfo in self._jobs.values()
+                     if jobinfo.job.is_enabled)
 
     def run(self, jobs):
         """
@@ -125,78 +147,44 @@ class UI:
         """
         self.add_jobs(*jobs)
 
-        self._wait_for_all_jobs_task = self._loop.create_task(self._wait_for_all_jobs())
-        self._wait_for_all_jobs_task.add_done_callback(self._exit_on_exception)
-
-        # Block until all jobs are finished
-        try:
-            self._app.run(set_exception_handler=False)
-        except asyncio.CancelledError:
-            pass
-        finally:
-            self._finish_jobs()
-            try:
-                asyncio.get_event_loop().run_until_complete(self._wait_for_all_jobs_task)
-            except asyncio.CancelledError:
-                pass
+        # Block until _exit() is called
+        self._app.run(set_exception_handler=False)
 
         if self._exception:
+            _log.debug('Application exception: %r', self._exception)
             raise self._exception
         else:
-            # First non-zero exit_code is the applications exit_code
-            for jobinfo in self._jobs.values():
+            # First non-zero exit_code is the application exit_code
+            for jobinfo in self._enabled_jobs:
                 _log.debug('Checking exit_code of %r: %r', jobinfo.job.name, jobinfo.job.exit_code)
-                if not isinstance(jobinfo.job.exit_code, int):
-                    raise TypeError(f'Job has invalid exit_code: {jobinfo.job.exit_code!r}')
-                elif jobinfo.job.exit_code != 0:
+                if jobinfo.job.exit_code != 0:
                     return jobinfo.job.exit_code
             return 0
 
-    async def _wait_for_all_jobs(self):
-        # FIXME: This coroutine can finish before self._app has found its
-        #        internal state. self._exit() can find self._app.is_running to
-        #        be False and not call self._app.exit(). self._app then becomes
-        #        fully alive and blocks until self._app.exit() is called, which
-        #        never happens because self._exit() was already called.
-        while not self._app.is_running:
-            _log.debug('Waiting for %r to be running', self._app)
-            await asyncio.sleep(0)
-
-        # Wait for all jobs simultaneously so that the first exception raised by
-        # any job.wait() is raised here. We don't need to catch it because
-        # _handle_exception() will take care of it.
-        await asyncio.gather(*(jobinfo.job.wait() for jobinfo in self._jobs.values()))
-
-        _log.debug('All jobs terminated')
-        self._exit()
-
-    def _handle_exception(self, loop, context):
-        exception = context.get('exception')
-        if exception:
-            _log.debug('Caught unhandled exception: %r', exception)
-            if not self._exception:
-                self._exception = exception
-            if self._wait_for_all_jobs_task:
-                self._wait_for_all_jobs_task.cancel()
+    def _exit_if_all_jobs_finished(self, *_):
+        if all(jobinfo.job.is_finished for jobinfo in self._enabled_jobs):
+            _log.debug('All jobs finished')
             self._exit()
 
-    def _exit_on_exception(self, fut):
-        try:
-            fut.result()
-        except asyncio.CancelledError:
-            pass
-        except BaseException as e:
-            if not self._exception:
-                _log.debug('Caught exception from %r: %r', fut, e)
-                self._exception = e
-        finally:
+    def _exit_if_job_failed(self, job):
+        if not self._app_terminated and job.is_finished and job.exit_code != 0:
             self._exit()
+            _log.debug('Terminating application because of failed job: %r', job.name)
+            if not self._exception and job.exceptions:
+                _log.debug('Exceptions: %r', job.exceptions)
+                self._exception = job.exceptions[0]
 
-    def _exit(self, *_, **__):
-        if self._app.is_running and not self._app.is_done:
-            self._finish_jobs()
-            self._app.exit()
+    def _exit(self):
+        if not self._app_terminated:
+            if not self._app.is_running and not self._app.is_done:
+                self._loop.call_soon(self._exit)
+            elif self._app.is_running and not self._app.is_done:
+                self._app_terminated = True
+                self._finish_jobs()
+                self._app.exit()
 
     def _finish_jobs(self):
         for jobinfo in self._jobs.values():
-            jobinfo.job.finish()
+            if not jobinfo.job.is_finished:
+                _log.debug('Finishing %s', jobinfo.job.name)
+                jobinfo.job.finish()
