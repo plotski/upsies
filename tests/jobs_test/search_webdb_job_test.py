@@ -81,6 +81,7 @@ def test_SearchWebDbJob_initialize_creates_searcher(tmp_path, mocker, foodb):
         search_coro=foodb.search,
         results_callback=job._handle_search_results,
         error_callback=job.warn,
+        exception_callback=job.exception,
         searching_callback=job._handle_searching_status,
     )]
 
@@ -110,6 +111,7 @@ def test_SearchWebDbJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
     assert job._info_updater is InfoUpdater_mock.return_value
     assert InfoUpdater_mock.call_args_list == [call(
         error_callback=job.warn,
+        exception_callback=job.exception,
         targets={
             'id': 'id func',
             'summary': 'summary func',
@@ -251,6 +253,7 @@ async def searcher():
         search_coro=AsyncMock(),
         results_callback=Mock(),
         error_callback=Mock(),
+        exception_callback=Mock(),
         searching_callback=Mock(),
     )
     yield searcher
@@ -362,6 +365,7 @@ async def info_updater():
     info_updater = webdb._InfoUpdater(
         targets={},
         error_callback=Mock(),
+        exception_callback=Mock(),
     )
     yield info_updater
     await info_updater.wait()

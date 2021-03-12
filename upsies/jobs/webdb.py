@@ -81,9 +81,11 @@ class SearchWebDbJob(JobBase):
             results_callback=self._handle_search_results,
             searching_callback=self._handle_searching_status,
             error_callback=self.warn,
+            exception_callback=self.exception,
         )
         self._info_updater = _InfoUpdater(
             error_callback=self.warn,
+            exception_callback=self.exception,
             targets={
                 'id': self._make_update_info_func('id'),
                 'summary': self._make_update_info_func('summary'),
@@ -168,11 +170,13 @@ class SearchWebDbJob(JobBase):
 
 
 class _Searcher:
-    def __init__(self, search_coro, results_callback, searching_callback, error_callback):
+    def __init__(self, search_coro, results_callback, searching_callback,
+                 error_callback, exception_callback):
         self._search_coro = search_coro
         self._results_callback = results_callback
         self._searching_callback = searching_callback
         self._error_callback = error_callback
+        self._exception_callback = exception_callback
         self._previous_search_time = 0
         self._search_task = None
 
@@ -182,6 +186,13 @@ class _Searcher:
                 await self._search_task
             except asyncio.CancelledError:
                 pass
+
+    def _handle_search_task(self, task):
+        try:
+            if task.exception():
+                self._exception_callback(task.exception())
+        except asyncio.CancelledError:
+            pass
 
     def search(self, query):
         """
@@ -194,6 +205,7 @@ class _Searcher:
             self._search_task.cancel()
             self._search_task = None
         self._search_task = asyncio.ensure_future(self._search(query))
+        self._search_task.add_done_callback(self._handle_search_task)
 
     async def _search(self, query):
         self._results_callback(())
@@ -220,7 +232,7 @@ class _Searcher:
 
 
 class _InfoUpdater:
-    def __init__(self, targets, error_callback):
+    def __init__(self, targets, error_callback, exception_callback):
         super().__init__()
         # `targets` maps names of SearchResult attributes to callbacks that get
         # the value of each attribute. For example, {"title": handle_title}
@@ -230,6 +242,7 @@ class _InfoUpdater:
         # handle_title(await search_result.title()).
         self._targets = targets
         self._error_callback = error_callback
+        self._exception_callback = exception_callback
         # SearchResult instance or None
         self._result = None
         self._update_task = None
@@ -245,6 +258,13 @@ class _InfoUpdater:
         if self._update_task:
             self._update_task.cancel()
 
+    def _handle_update_task(self, task):
+        try:
+            if task.exception():
+                self._exception_callback(task.exception())
+        except asyncio.CancelledError:
+            pass
+
     def set_result(self, result):
         self.cancel()
         self._result = result
@@ -256,6 +276,7 @@ class _InfoUpdater:
             # Schedule calls of SearchResult attributes that are coroutine
             # functions
             self._update_task = asyncio.ensure_future(self._update())
+            self._update_task.add_done_callback(self._handle_update_task)
 
             # Update plain, non-callable values immediately
             if result is not None:
