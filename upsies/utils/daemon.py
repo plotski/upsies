@@ -71,56 +71,55 @@ class DaemonProcess:
         )
         self._process.start()
         self._read_queue_reader_task = self._loop.create_task(self._read_queue_reader())
-        if self._finished_callback:
-            self._read_queue_reader_task.add_done_callback(self._handle_read_queue_reader_task_done)
+        self._read_queue_reader_task.add_done_callback(self._handle_read_queue_reader_task_done)
 
     async def _read_queue_reader(self):
-        try:
-            while True:
-                typ, msg = await self._loop.run_in_executor(None, self._read_queue.get)
-                if typ is MsgType.init:
-                    if self._init_callback:
-                        self._init_callback(msg)
-                elif typ is MsgType.info:
-                    if self._info_callback:
-                        self._info_callback(msg)
-                elif typ is MsgType.error:
-                    if isinstance(msg, tuple):
-                        exception, traceback = msg
-                        raise errors.SubprocessError(exception, traceback)
-                    elif isinstance(msg, BaseException):
-                        raise msg
-                    else:
-                        if self._error_callback:
-                            self._error_callback(msg)
-                elif typ is MsgType.result:
-                    if self._result_callback:
-                        self._result_callback(msg)
-                    break
-                elif typ is MsgType.terminate:
-                    break
+        while True:
+            typ, msg = await self._loop.run_in_executor(None, self._read_queue.get)
+            if typ is MsgType.init:
+                if self._init_callback:
+                    self._init_callback(msg)
+            elif typ is MsgType.info:
+                if self._info_callback:
+                    self._info_callback(msg)
+            elif typ is MsgType.error:
+                if isinstance(msg, tuple):
+                    exception, traceback = msg
+                    raise errors.SubprocessError(exception, traceback)
+                elif isinstance(msg, BaseException):
+                    raise msg
                 else:
-                    raise RuntimeError(f'Unknown message type: {typ!r}')
-        except BaseException as e:
-            self._exception = e
-            if self._error_callback:
-                try:
-                    self._error_callback(e)
-                except BaseException as e:
-                    self._exception = e
-            raise self._exception
+                    if self._error_callback:
+                        self._error_callback(msg)
+            elif typ is MsgType.result:
+                if self._result_callback:
+                    self._result_callback(msg)
+                break
+            elif typ is MsgType.terminate:
+                break
+            else:
+                raise RuntimeError(f'Unknown message type: {typ!r}')
 
     def _handle_read_queue_reader_task_done(self, task):
-        if self._finished_callback:
-            try:
-                self._finished_callback()
-            except BaseException as e:
-                self._exception = e
-                if self._error_callback:
-                    try:
+        # Catch exceptions from _read_queue_reader()
+        try:
+            task.result()
+        except BaseException as e:
+            _log.debug('Caught _read_queue_reader() exception: %r', e)
+            self._exception = e
+            if self._error_callback:
+                self._error_callback(e)
+            else:
+                raise self._exception
+        finally:
+            if self._finished_callback:
+                try:
+                    self._finished_callback()
+                except BaseException as e:
+                    self._exception = e
+                    if self._error_callback:
                         self._error_callback(e)
-                    except BaseException as e:
-                        self._exception = e
+                    raise self._exception
 
     def stop(self):
         """Stop the process"""

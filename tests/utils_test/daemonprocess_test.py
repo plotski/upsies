@@ -153,7 +153,7 @@ async def test_target_calls_finished_callback(target):
         proc.stop()
     try:
         await proc.join()
-    except:
+    except BaseException:
         pass
     assert finished_callback.call_args_list == [call()]
 
