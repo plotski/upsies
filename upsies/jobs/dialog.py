@@ -4,6 +4,7 @@ Get information from the user
 
 import collections
 
+from .. import errors
 from . import JobBase
 
 import logging  # isort:skip
@@ -294,3 +295,34 @@ class TextFieldJob(JobBase):
         else:
             self.send(self.text)
             super().finish()
+
+    async def fetch_text(self, coro, default_text='', finish_on_success=False):
+        """
+        Get :attr:`text` from coroutine
+
+        :param coro: Coroutine that returns the new :attr:`text`
+        :param default_text: String to use if `coro` raises
+            :class:`~.errors.RequestError`
+        :param finish_on_success: Whether to call :meth:`finish` after setting
+            :attr:`text` to `coro` return value
+
+        If `coro` raises :class:`~.errors.RequestError`, it is passed to
+        :meth:`warn`.
+        """
+        self.read_only = True
+        self.text = 'Loading...'
+        try:
+            # Try to set text field value, e.g. from IMDb
+            self.text = await coro
+        except errors.RequestError as e:
+            # Inform user about failure and allow them to make manual
+            # adjustments to default text
+            self.warn(e)
+            self.text = default_text
+        else:
+            # Auto-accept on success or let the user confirm it
+            if finish_on_success:
+                self.finish()
+        finally:
+            # Always re-enable text field after we're done messing with it
+            self.read_only = False

@@ -2,7 +2,18 @@ from unittest.mock import Mock, call
 
 import pytest
 
+from upsies import errors
 from upsies.jobs.dialog import TextFieldJob
+
+
+class AsyncMock(Mock):
+    def __call__(self, *args, **kwargs):
+        async def coro(_sup=super()):
+            return _sup.__call__(*args, **kwargs)
+        return coro()
+
+    def __await__(self):
+        return self().__await__()
 
 
 def test_name_property():
@@ -86,3 +97,47 @@ def test_finish_with_invalid_text(read_only):
     assert str(job.warnings[0]) == 'Nope'
     assert not job.is_finished
     assert job.output == ()
+
+
+@pytest.mark.parametrize('finish_on_success', (True, False))
+@pytest.mark.asyncio
+async def test_fetch_text_sets_text(finish_on_success):
+    fetcher = AsyncMock(return_value='fetched text')
+    job = TextFieldJob(name='foo', label='Foo', text='bar')
+    job.text = 'baz'
+    assert not job.is_finished
+    await job.fetch_text(fetcher, finish_on_success=finish_on_success)
+    assert job.text == 'fetched text'
+    assert job.is_finished is finish_on_success
+
+@pytest.mark.parametrize('finish_on_success', (True, False))
+@pytest.mark.asyncio
+async def test_fetch_text_sets_read_only_while_fetching(finish_on_success):
+    async def fetcher(job):
+        assert job.read_only
+
+    job = TextFieldJob(name='foo', label='Foo', text='bar')
+    assert not job.read_only
+    await job.fetch_text(fetcher(job), finish_on_success=finish_on_success)
+    assert not job.read_only
+    assert job.is_finished is finish_on_success
+
+@pytest.mark.parametrize('finish_on_success', (True, False))
+@pytest.mark.asyncio
+async def test_fetch_text_catches_RequestError(finish_on_success):
+    fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))
+    job = TextFieldJob(name='foo', label='Foo')
+    assert not job.is_finished
+    await job.fetch_text(fetcher, default_text='default text', finish_on_success=finish_on_success)
+    assert job.text == 'default text'
+    assert job.warnings == (errors.RequestError('connection failed'),)
+    assert job.is_finished is False
+
+@pytest.mark.parametrize('finish_on_success', (True, False))
+@pytest.mark.asyncio
+async def test_fetch_text_finishes_job(finish_on_success):
+    fetcher = AsyncMock(return_value='fetched text')
+    job = TextFieldJob(name='foo', label='Foo')
+    assert not job.is_finished
+    await job.fetch_text(fetcher, finish_on_success=finish_on_success)
+    assert job.is_finished is finish_on_success
