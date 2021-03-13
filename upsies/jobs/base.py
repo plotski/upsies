@@ -210,6 +210,11 @@ class JobBase(abc.ABC):
             _log.debug('Executing %r', self)
             self.execute()
 
+    @property
+    def is_started(self):
+        """Whether :meth:`start` was called"""
+        return self._is_started
+
     async def wait(self):
         """
         Wait for this job to finish

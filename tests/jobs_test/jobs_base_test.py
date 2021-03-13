@@ -100,6 +100,11 @@ def test_callbacks_argument(job):
     assert cb.hey in job.signal.signals['greeted']
 
 
+def test_start_sets_is_started_property(job):
+    assert job.is_started is False
+    job.start()
+    assert job.is_started is True
+
 def test_start_is_called_multiple_times(job):
     job.start()
     with pytest.raises(RuntimeError, match=r'^start\(\) was already called$'):
