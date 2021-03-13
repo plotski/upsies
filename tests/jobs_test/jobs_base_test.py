@@ -12,6 +12,16 @@ from upsies.jobs import JobBase
 from upsies.utils import signal
 
 
+class AsyncMock(Mock):
+    def __call__(self, *args, **kwargs):
+        async def coro(_sup=super()):
+            return _sup.__call__(*args, **kwargs)
+        return coro()
+
+    def __await__(self):
+        return self().__await__()
+
+
 class FooJob(JobBase):
     name = 'foo'
     label = 'Foo'
@@ -183,6 +193,25 @@ async def test_finish_writes_cache(job, mocker):
     for i in range(3):
         job.finish()
         assert job._write_cache.call_args_list == [call()]
+
+@pytest.mark.asyncio
+async def test_finish_cancels_added_tasks(job):
+    job._tasks = [
+        Mock(done=Mock(return_value=False)),
+        Mock(done=Mock(return_value=True)),
+        Mock(done=Mock(return_value=False)),
+    ]
+    job.start()
+    for task in job._tasks:
+        assert task.done.call_args_list == []
+        assert task.cancel.call_args_list == []
+    for i in range(3):
+        job.finish()
+        for task in job._tasks:
+            assert task.done.call_args_list == [call()]
+        assert job._tasks[0].cancel.call_args_list == [call()]
+        assert job._tasks[1].cancel.call_args_list == []
+        assert job._tasks[2].cancel.call_args_list == [call()]
 
 
 @pytest.mark.asyncio
@@ -359,6 +388,47 @@ async def test_exception_finishes_job(job):
     assert not job.is_finished
     job.exception(TypeError('Sorry, not my type.'))
     assert job.is_finished
+
+
+@pytest.mark.asyncio
+async def test_added_task_returns_return_value(job, mocker):
+    coro = AsyncMock(return_value='foo')
+    job.add_task(coro)
+    assert await job._tasks[0] == 'foo'
+    assert not job.is_finished
+    assert job.raised is None
+
+@pytest.mark.asyncio
+async def test_added_task_passes_return_value_to_callback(job, mocker):
+    callback = Mock()
+    coro = AsyncMock(return_value='foo')
+    job.add_task(coro, callback=callback)
+    assert await job._tasks[0] == 'foo'
+    assert not job.is_finished
+    assert job.raised is None
+    assert callback.call_args_list == [call('foo')]
+
+@pytest.mark.asyncio
+async def test_added_task_catches_exceptions(job, mocker):
+    callback = Mock()
+    coro = AsyncMock(side_effect=TypeError('foo'))
+    job.add_task(coro, callback=callback)
+    await job._tasks[0]
+    assert job.is_finished
+    assert isinstance(job.raised, TypeError)
+    assert str(job.raised) == 'foo'
+    assert callback.call_args_list == []
+
+@pytest.mark.parametrize('finish_when_done', (False, True))
+@pytest.mark.asyncio
+async def test_added_task_ignores_CancelledError(finish_when_done, job, mocker):
+    callback = Mock()
+    coro = AsyncMock(side_effect=asyncio.CancelledError())
+    job.add_task(coro, callback=callback, finish_when_done=finish_when_done)
+    await job._tasks[0]  # No CancelledError raised
+    assert job.is_finished == finish_when_done
+    assert job.raised is None
+    assert callback.call_args_list == []
 
 
 @pytest.mark.parametrize('cache_file_value', (None, ''))

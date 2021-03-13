@@ -149,6 +149,7 @@ class JobBase(abc.ABC):
         self._output = []
         self._warnings = []
         self._errors = []
+        self._tasks = []
         self._finished_event = asyncio.Event()
 
         self._signal = signal.Signal('output', 'warning', 'error', 'finished')
@@ -252,6 +253,10 @@ class JobBase(abc.ABC):
         This method does not block.
         """
         if not self.is_finished:
+            for task in self._tasks:
+                if not task.done():
+                    _log.debug('%s job: Cancelling %r', self.name, task)
+                    task.cancel()
             self._finished_event.set()
             self.signal.emit('finished', self)
             self._write_cache()
@@ -350,6 +355,55 @@ class JobBase(abc.ABC):
     def raised(self):
         """Exception passed to :meth:`exception`"""
         return self._exception
+
+    def add_task(self, coro, callback=None, finish_when_done=False):
+        """
+        Run asynchronous coroutine in a background task and return immediately
+
+        This method should be used to call coroutine functions and other
+        awaitables in a synchronous context.
+
+        Any exceptions from `coro` are passed to :meth:`exception`.
+        :class:`asyncio.CancelledError` is ignored.
+
+        :param coro: Any awaitable object
+        :param callback: Callable that is called with the return value of `coro`
+        :param bool finish_when_done: Whether to call :meth:`finish` when `coro`
+            is done
+
+        :return: :class:`asyncio.Task` instance
+        """
+
+        async def wrapper(coro, callback, finish_when_done):
+            try:
+                result = await asyncio.ensure_future(coro)
+            except asyncio.CancelledError:
+                pass
+            except BaseException as e:
+                _log.debug('%s: Caught %r from %r', self.name, e, coro)
+                self.exception(e)
+            else:
+                if callback:
+                    callback(result)
+                return result
+            finally:
+                if finish_when_done:
+                    _log.debug('Finishing %r because of finished coro: %r', self.name, coro)
+                    self.finish()
+
+        async def catch_cancelled_error(coro):
+            try:
+                return await asyncio.ensure_future(coro)
+            except asyncio.CancelledError:
+                _log.debug('%s: Cancelled: %r', self.name, coro)
+
+        wrapped = asyncio.ensure_future(
+            catch_cancelled_error(
+                wrapper(coro, callback, finish_when_done),
+            ),
+        )
+        self._tasks.append(wrapped)
+        return wrapped
 
     def _write_cache(self):
         """
