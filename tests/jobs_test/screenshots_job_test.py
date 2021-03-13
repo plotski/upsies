@@ -371,18 +371,6 @@ def test_ScreenshotsJob_finish(job, tmp_path):
     assert job._screenshots_process.stop.call_args_list == [call()]
 
 
-@pytest.mark.asyncio
-async def test_ScreenshotsJob_wait(job, tmp_path):
-    job.execute()
-    job._screenshots_total = 1
-    job.finish()
-    assert job._screenshots_process.join.call_args_list == []
-    await job.wait()
-    assert job._screenshots_process.join.call_args_list == [call()]
-    assert job.is_finished
-    assert job.exit_code is not None
-
-
 def test_ScreenshotsJob_handle_info_sets_video_file(job):
     cb = Mock()
     job.signal.register('video_file', cb)
@@ -409,7 +397,15 @@ def test_ScreenshotsJob_handle_info_sends_screenshot_paths(job):
     assert job.output == ('path/to/foo.png', 'path/to/bar.png', 'path/to/baz.png')
 
 
-def test_ScreenshotsJob_handle_error(job):
+def test_ScreenshotsJob_handle_error_with_exception(job):
+    assert job.raised is None
+    assert job.errors == ()
+    job._handle_error(errors.ScreenshotError('Foo!'))
+    assert job.raised == errors.ScreenshotError('Foo!')
+    assert job.errors == ()
+    assert job.is_finished
+
+def test_ScreenshotsJob_handle_error_with_string(job):
     assert job.errors == ()
     job._handle_error('Foo!')
     assert job.errors == ('Foo!',)

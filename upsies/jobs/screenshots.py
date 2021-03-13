@@ -87,11 +87,6 @@ class ScreenshotsJob(JobBase):
         self._screenshots_process.stop()
         super().finish()
 
-    async def wait(self):
-        """Join screenshot creation subprocess"""
-        await self._screenshots_process.join()
-        await super().wait()
-
     def _handle_info(self, info):
         if not self.is_finished:
             if info[0] == 'video_file':
@@ -106,7 +101,9 @@ class ScreenshotsJob(JobBase):
                 self.send(info[1])
 
     def _handle_error(self, error):
-        if not self.is_finished:
+        if isinstance(error, BaseException):
+            self.exception(error)
+        else:
             self.error(error, finish=True)
 
     @property
