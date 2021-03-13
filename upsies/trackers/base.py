@@ -81,37 +81,6 @@ class TrackerJobsBase(abc.ABC):
         self._signal = signal.Signal('warning', 'error', 'exception')
         self._background_tasks = []
 
-    @staticmethod
-    async def update_text_field_job(job, text_getter_coro, default_text='', finish_on_success=False):
-        """
-        Get text from coroutine and provide it to :class:`~.dialog.TextFieldJob`
-
-        :param job: :class:`~.dialog.TextFieldJob` instance
-        :param text_getter_coro: Coroutine that returns the string that replaces
-            the job's :attr:`~.dialog.TextFieldJob.text`
-        :param default_text: String to use if `text_getter_coro` raises
-            :class:`~.errors.RequestError`
-        :param finish_on_success: Whether to call :meth:`~.base.JobBase.finish`
-            after text from `text_getter_coro` is set
-        """
-        job.read_only = True
-        job.text = 'Loading...'
-        try:
-            # Try to set text field value, e.g. from IMDb
-            job.text = await text_getter_coro
-        except errors.RequestError as e:
-            # Inform user about failure allow them to make manual adjustments to
-            # default text
-            job.warn(e)
-            job.text = default_text
-        else:
-            # Auto-accept on success or let the user confirm it
-            if finish_on_success:
-                job.finish()
-        finally:
-            # Always re-enable text field after we're done messing with it
-            job.read_only = False
-
     @property
     def cli_args(self):
         """
