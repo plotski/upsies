@@ -82,6 +82,20 @@ class JobBase(abc.ABC):
         return self._autostart
 
     @property
+    def is_enabled(self):
+        """
+        Return value of `condition` as :class:`bool`
+
+        If this value is `False`, this job must not be started nor included in
+        the UI.
+
+        This property must be checked by the UI every time any job finishes.
+        This job must be started and added to the UI if it changes from `False`
+        to `True`.
+        """
+        return bool(self._condition())
+
+    @property
     def kwargs(self):
         """Keyword arguments from instantiation as :class:`dict`"""
         return self._kwargs
@@ -115,7 +129,7 @@ class JobBase(abc.ABC):
         return self._signal
 
     def __init__(self, *, home_directory=None, ignore_cache=False, hidden=False,
-                 autostart=True, callbacks={}, **kwargs):
+                 autostart=True, condition=None, callbacks={}, **kwargs):
         if home_directory:
             # Custome home specific to some content. Store cache in hidden
             # directory in there.
@@ -129,6 +143,7 @@ class JobBase(abc.ABC):
         self._ignore_cache = bool(ignore_cache)
         self._hidden = bool(hidden)
         self._autostart = bool(autostart)
+        self._condition = condition or (lambda: True)
         self._is_started = False
         self._exception = None
         self._output = []

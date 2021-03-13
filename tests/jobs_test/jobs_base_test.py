@@ -57,6 +57,14 @@ def test_autostart_property(tmp_path):
     assert FooJob(home_directory=tmp_path, ignore_cache=False, autostart='').autostart is False
     assert FooJob(home_directory=tmp_path, ignore_cache=False, autostart=1).autostart is True
 
+def test_is_enabled_property(tmp_path):
+    condition = Mock()
+    job = FooJob(home_directory=tmp_path, ignore_cache=False, condition=condition)
+    condition.return_value = 0
+    assert job.is_enabled is False
+    condition.return_value = 'yes'
+    assert job.is_enabled is True
+
 def test_kwargs_property(tmp_path):
     assert FooJob(home_directory=tmp_path, ignore_cache=False, foo='a').kwargs.get('foo') == 'a'
     assert FooJob(home_directory=tmp_path, ignore_cache=False, foo='a').kwargs.get('bar') is None
