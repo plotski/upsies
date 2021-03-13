@@ -178,7 +178,7 @@ class JobBase(abc.ABC):
 
     def execute(self):
         """
-        Do the job, e.g. ask for user input or start background worker
+        Do the job, e.g. ask for user input or start a task or subprocess
 
         This method must not block.
         """
