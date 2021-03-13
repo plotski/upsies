@@ -202,8 +202,11 @@ class TrackerJobsBase(abc.ABC):
             # Pass CreateTorrentJob output to AddTorrentJob input.
             self.create_torrent_job.signal.register('output', add_torrent_job.enqueue)
             # Tell AddTorrentJob to finish the current upload and then finish.
-            self.create_torrent_job.signal.register('finished', lambda _: add_torrent_job.finalize())
+            self.create_torrent_job.signal.register('finished', self.finalize_add_torrent_job)
             return add_torrent_job
+
+    def finalize_add_torrent_job(self, _):
+        self.add_torrent_job.finalize()
 
     @cached_property
     def copy_torrent_job(self):
@@ -217,8 +220,11 @@ class TrackerJobsBase(abc.ABC):
             # Pass CreateTorrentJob output to CopyTorrentJob input.
             self.create_torrent_job.signal.register('output', copy_torrent_job.enqueue)
             # Tell CopyTorrentJob to finish when CreateTorrentJob is done.
-            self.create_torrent_job.signal.register('finished', lambda _: copy_torrent_job.finalize())
+            self.create_torrent_job.signal.register('finished', self.finalize_copy_torrent_job)
             return copy_torrent_job
+
+    def finalize_copy_torrent_job(self, _):
+        self.copy_torrent_job.finalize()
 
     @cached_property
     def release_name_job(self):
@@ -292,8 +298,11 @@ class TrackerJobsBase(abc.ABC):
             # Pass ScreenshotsJob's output to ImageHostJob input.
             self.screenshots_job.signal.register('output', imghost_job.enqueue)
             # Tell imghost_job to finish the current upload and then finish.
-            self.screenshots_job.signal.register('finished', lambda _: imghost_job.finalize())
+            self.screenshots_job.signal.register('finished', self.finalize_upload_screenshots_job)
             return imghost_job
+
+    def finalize_upload_screenshots_job(self, _):
+        self.upload_screenshots_job.finalize()
 
     @cached_property
     def mediainfo_job(self):

@@ -1,7 +1,4 @@
-import asyncio
-from unittest.mock import Mock, PropertyMock, call
-
-import pytest
+from unittest.mock import Mock, PropertyMock
 
 from upsies.trackers.base import TrackerBase
 
