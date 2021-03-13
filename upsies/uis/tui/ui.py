@@ -170,9 +170,9 @@ class UI:
         if not self._app_terminated and job.is_finished and job.exit_code != 0:
             self._exit()
             _log.debug('Terminating application because of failed job: %r', job.name)
-            if not self._exception and job.exceptions:
-                _log.debug('Exceptions: %r', job.exceptions)
-                self._exception = job.exceptions[0]
+            if not self._exception and job.raised:
+                _log.debug('Exception: %r', job.raised)
+                self._exception = job.raised
 
     def _exit(self):
         if not self._app_terminated:

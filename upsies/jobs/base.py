@@ -231,11 +231,11 @@ class JobBase(abc.ABC):
 
         Calling this method multiple times simultaneously is safe.
 
-        :raise: Any exceptions given to :meth:`exception`
+        :raise: The first exception given to :meth:`exception`
         """
         await self._finished_event.wait()
-        if self._exception is not None:
-            raise self._exception
+        if self.raised:
+            raise self.raised
 
     def finish(self):
         """
@@ -265,7 +265,7 @@ class JobBase(abc.ABC):
     def exit_code(self):
         """`0` if job was successful, `> 0` otherwise, None while job is not finished"""
         if self.is_finished:
-            if not self.output or self.errors or self._exception:
+            if not self.output or self.errors or self.raised:
                 return 1
             else:
                 return 0
@@ -331,10 +331,10 @@ class JobBase(abc.ABC):
 
     def exception(self, exception):
         """
-        Set exception to raise in :meth:`wait` and call :meth:`finish`
+        Make `exception` available as :attr:`raised` and call :meth:`finish`
 
         .. warning:: Setting an exception means you want to throw a traceback in
-                     the user's face, which may not be a good idea.
+                     the user's face.
 
         :param Exception exception: Exception instance
         """
@@ -345,6 +345,11 @@ class JobBase(abc.ABC):
             _log.debug('Exception in %s: %s', self.name, tb)
             self._exception = exception
             self.finish()
+
+    @property
+    def raised(self):
+        """Exception passed to :meth:`exception`"""
+        return self._exception
 
     def _write_cache(self):
         """
