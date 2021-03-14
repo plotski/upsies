@@ -4,9 +4,8 @@ Abstract base class for tracker APIs
 
 import abc
 import argparse
-import asyncio
 
-from .. import errors, jobs
+from .. import jobs
 from ..utils import cached_property, fs, signal, webdbs
 
 import logging  # isort:skip
