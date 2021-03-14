@@ -2,7 +2,6 @@
 Create torrent file
 """
 
-import asyncio
 import os
 import queue
 
@@ -50,30 +49,28 @@ class CreateTorrentJob(base.JobBase):
         )
         self.signal.add('progress_update')
         self._info = ''
-        self._announce_url_task = None
         self._torrent_process = None
 
     def execute(self):
         """Get announce URL from `tracker`, then execute torrent creation subprocess"""
+        self.add_task(self._get_announce_url())
+
+    async def _get_announce_url(self):
         self._info = 'Getting announce URL...'
         self.signal.emit('progress_update', 0.0)
-
-        def create_torrent_process_wrapper(task):
+        try:
+            await self._tracker.login()
+            announce_url = await self._tracker.get_announce_url()
+        except errors.RequestError as e:
+            self.error(e, finish=True)
+        else:
+            self._create_torrent_process(announce_url)
+        finally:
+            self._info = ''
             try:
-                announce_url = task.result()
+                await self._tracker.logout()
             except errors.RequestError as e:
-                self.error(e)
-            except Exception as e:
-                self.exception(e)
-            else:
-                self._create_torrent_process(announce_url)
-
-        self._announce_url_task = asyncio.ensure_future(
-            self._tracker.with_login(
-                self._tracker.get_announce_url(),
-            )
-        )
-        self._announce_url_task.add_done_callback(create_torrent_process_wrapper)
+                self.warn(e)
 
     def _create_torrent_process(self, announce_url):
         self._torrent_process = daemon.DaemonProcess(
@@ -89,8 +86,9 @@ class CreateTorrentJob(base.JobBase):
             },
             init_callback=self._handle_file_tree,
             info_callback=self._handle_progress_update,
-            error_callback=self.error,
-            finished_callback=self._handle_torrent_created,
+            error_callback=self._handle_error,
+            result_callback=self._handle_torrent_created,
+            finished_callback=self.finish,
         )
         self._torrent_process.start()
 
@@ -98,15 +96,7 @@ class CreateTorrentJob(base.JobBase):
         """Terminate torrent creation subprocess and finish"""
         if self._torrent_process:
             self._torrent_process.stop()
-        if self._announce_url_task:
-            self._announce_url_task.cancel()
         super().finish()
-
-    async def wait(self):
-        """Join torrent creation subprocess"""
-        if self._torrent_process:
-            await self._torrent_process.join()
-        await super().wait()
 
     def _handle_file_tree(self, file_tree):
         self._info = fs.file_tree(file_tree)
@@ -123,7 +113,14 @@ class CreateTorrentJob(base.JobBase):
         _log.debug('Torrent created: %r', torrent_path)
         if torrent_path:
             self.send(torrent_path)
-        self.finish()
+
+    def _handle_error(self, error):
+        if isinstance(error, BaseException):
+            _log.debug('CreateTorrentJob: Raising %r', error)
+            self.exception(error)
+        else:
+            _log.debug('CreateTorrentJob: Reporting %r', error)
+            self.error(error)
 
 
 def _torrent_process(output_queue, input_queue, *args, **kwargs):
