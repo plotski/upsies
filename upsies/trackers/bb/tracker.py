@@ -7,12 +7,11 @@ import re
 import urllib
 
 from ... import errors
-from ...utils import html, http, release
+from ...utils import html, http
 from ...utils.types import ReleaseType
 from ..base import TrackerBase
 from .config import BbTrackerConfig
-from .movie import MovieBbTrackerJobs
-from .series import SeriesBbTrackerJobs
+from .jobs import BbTrackerJobs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -30,18 +29,7 @@ class BbTracker(TrackerBase):
     }
 
     TrackerConfig = BbTrackerConfig
-
-    @property
-    def TrackerJobs(self):
-        if self.cli_args.type:
-            release_type = self.cli_args.type
-        else:
-            release_type = release.ReleaseInfo(self.cli_args.CONTENT)['type']
-
-        if release_type is ReleaseType.movie:
-            return MovieBbTrackerJobs
-        elif release_type in (ReleaseType.season, ReleaseType.episode):
-            return SeriesBbTrackerJobs
+    TrackerJobs = BbTrackerJobs
 
     _url_path = {
         'login': '/login.php',

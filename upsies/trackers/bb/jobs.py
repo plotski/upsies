@@ -1,79 +1,187 @@
 """
-:class:`~.base.TrackerJobsBase` subclass for movie submissions
+:class:`~.base.TrackerJobsBase` subclass
 """
 
 import re
 
 import unidecode
 
-from ... import jobs
-from ...utils import cached_property, fs, video
-from .base import BbTrackerJobsBase
+from ... import __homepage__, __project_name__, __version__, jobs
+from ...utils import cached_property, fs, release, video, webdbs
+from ..base import TrackerJobsBase
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class MovieBbTrackerJobs(BbTrackerJobsBase):
-    @cached_property
-    def jobs_before_upload(self):
-        return (
-            self.imdb_job,
-            self.title_job,
-            self.year_job,
-            self.resolution_job,
-            self.source_job,
-            self.audio_codec_job,
-            self.video_codec_job,
-            self.container_job,
-            self.release_info_job,
-            self.tags_job,
-            self.description_job,
-            # self.create_torrent_job,
-            # self.screenshots_job,
+class BbTrackerJobs(TrackerJobsBase):
+    def make_choices_job(self, name, label, autodetect_value, options, condition=None):
+        """
+        Return :class:`~.jobs.dialog.ChoiceJob` instance
+
+        :param name: See :class:`~.jobs.dialog.ChoiceJob`
+        :param label: See :class:`~.jobs.dialog.ChoiceJob`
+        :param autodetect_value: Autodetected choice
+        :param options: Sequence of `(label, value, regex)` tuples. `label` is
+            presented to the user and `value` is available via
+            :attr:`~.jobs.dialog.ChoiceJob.choice` when this job is
+            finished. The first `regex` that matches `autodetect_value` is
+            visually marked as "auto-detected" for the user.
+        :param condition: See ``condition`` for :class:`~.base.JobBase`
+        """
+        focused = None
+        choices = []
+        for choice, value, regex in options:
+            if not focused and regex.search(autodetect_value):
+                choices.append((f'{choice} (auto-detected)', value))
+                focused = choices[-1]
+            else:
+                choices.append((choice, value))
+
+        return jobs.dialog.ChoiceJob(
+            name=name,
+            label=label,
+            condition=condition,
+            choices=choices,
+            focused=focused,
+            **self.common_job_args,
         )
 
     @cached_property
-    def title_job(self):
+    def jobs_before_upload(self):
+        return (
+            # Generic jobs
+            self.release_type_job,
+            self.imdb_job,
+            self.create_torrent_job,
+            self.screenshots_job,
+
+            # Movie jobs
+            self.movie_title_job,
+            self.movie_year_job,
+            self.movie_resolution_job,
+            self.movie_source_job,
+            self.movie_audio_codec_job,
+            self.movie_video_codec_job,
+            self.movie_container_job,
+            self.movie_release_info_job,
+            self.movie_tags_job,
+            self.movie_description_job,
+
+            # Series jobs
+            self.series_title_job,
+        )
+
+    # Generic jobs
+
+    @cached_property
+    def release_type_job(self):
+        return jobs.dialog.ChoiceJob(
+            name='release-type',
+            label='Release Type',
+            choices=(
+                ('Movie', release.ReleaseType.movie),
+                ('Series', release.ReleaseType.series),
+            ),
+            focused=self.release_name.type,
+            **self.common_job_args,
+        )
+
+    @property
+    def is_movie_release(self):
+        return self.release_type_job.choice is release.ReleaseType.movie
+
+    @property
+    def is_series_release(self):
+        return self.release_type_job.choice is release.ReleaseType.series
+
+    @cached_property
+    def release_name(self):
+        """:class:`~.release.ReleaseName` instance"""
+        return release.ReleaseName(self.content_path)
+
+    @cached_property
+    def imdb(self):
+        """:class:`~.webdbs.imdb.ImdbApi` instance"""
+        return webdbs.imdb.ImdbApi()
+
+    @cached_property
+    def imdb_job(self):
+        """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
+        return jobs.webdb.SearchWebDbJob(
+            content_path=self.content_path,
+            db=self.imdb,
+            **self.common_job_args,
+        )
+
+    # Movie jobs
+
+    @cached_property
+    def movie_title_job(self):
         def validator(text):
             text = text.strip()
             if not text:
                 raise ValueError(f'Invalid title: {text}')
 
+        def handle_imdb_id(id):
+            self.movie_title_job.add_task(
+                self.movie_title_job.fetch_text(
+                    coro=self.generate_movie_title(id),
+                    default_text=self.release_name.title_with_aka,
+                    finish_on_success=False,
+                )
+            )
+
+        self.imdb_job.signal.register('output', handle_imdb_id)
+
         return jobs.dialog.TextFieldJob(
             name='movie-title',
             label='Title',
+            condition=lambda: self.is_movie_release,
             validator=validator,
             **self.common_job_args,
         )
 
-    async def generate_title(self, id):
+    async def generate_movie_title(self, id):
         await self.release_name.fetch_info(id)
         return self.release_name.title_with_aka
 
     @cached_property
-    def year_job(self):
+    def movie_year_job(self):
         def validator(text):
             # Raises ValueError if not a valid year
             self.release_name.year = text
 
+        def handle_imdb_id(id):
+            self.movie_year_job.add_task(
+                self.movie_year_job.fetch_text(
+                    coro=self.generate_movie_year(id),
+                    default_text=self.release_name.year,
+                    finish_on_success=True,
+                )
+            )
+
+        self.imdb_job.signal.register('output', handle_imdb_id)
+
         return jobs.dialog.TextFieldJob(
             name='movie-year',
             label='Year',
+            condition=lambda: self.is_movie_release,
             text=self.release_name.year,
             validator=validator,
             **self.common_job_args,
         )
 
-    async def generate_year(self, id):
+    async def generate_movie_year(self, id):
         await self.release_name.fetch_info(id)
         return self.release_name.year
 
     @cached_property
-    def resolution_job(self):
+    def movie_resolution_job(self):
         return self.make_choices_job(
             name='movie-resolution',
             label='Resolution',
+            condition=lambda: self.is_movie_release,
             autodetect_value=self.release_name.resolution,
             options=(
                 ('4320p', '2160p', re.compile(r'4320p')),
@@ -91,11 +199,12 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
         )
 
     @cached_property
-    def source_job(self):
+    def movie_source_job(self):
         _log.debug('source: %r', self.release_name.source)
         return self.make_choices_job(
             name='movie-source',
             label='Source',
+            condition=lambda: self.is_movie_release,
             autodetect_value=self.release_name.source,
             options=(
                 ('BluRay', 'BluRay', re.compile('^BluRay')),  # BluRay or BluRay Remux
@@ -122,10 +231,11 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
         )
 
     @cached_property
-    def audio_codec_job(self):
+    def movie_audio_codec_job(self):
         return self.make_choices_job(
             name='movie-audio-codec',
             label='Audio Codec',
+            condition=lambda: self.is_movie_release,
             autodetect_value=self.release_name.audio_format,
             options=(
                 ('AAC', 'AAC', re.compile(r'^AAC$')),
@@ -143,10 +253,11 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
         )
 
     @cached_property
-    def video_codec_job(self):
+    def movie_video_codec_job(self):
         return self.make_choices_job(
             name='movie-video-codec',
             label='Video Codec',
+            condition=lambda: self.is_movie_release,
             autodetect_value=self.release_name.video_format,
             options=(
                 ('x264', 'x264', re.compile(r'x264')),
@@ -162,10 +273,11 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
         )
 
     @cached_property
-    def container_job(self):
+    def movie_container_job(self):
         return self.make_choices_job(
             name='movie-container',
             label='Container',
+            condition=lambda: self.is_movie_release,
             autodetect_value=fs.file_extension(video.first_video(self.content_path)),
             options=(
                 ('AVI', 'AVI', re.compile(r'(?i:AVI)')),
@@ -179,7 +291,7 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
         )
 
     @cached_property
-    def release_info_job(self):
+    def movie_release_info_job(self):
         info = []
 
         if 'Remux' in self.release_name.source:
@@ -229,25 +341,37 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='movie-release-info',
             label='Release Info',
+            condition=lambda: self.is_movie_release,
             text=' / '.join(info),
             **self.common_job_args,
         )
 
     @cached_property
-    def tags_job(self):
+    def movie_tags_job(self):
         def validator(text):
             text = text.strip()
             if not text:
                 raise ValueError(f'Invalid tags: {text}')
 
+        def handle_imdb_id(id):
+            self.movie_tags_job.add_task(
+                self.movie_tags_job.fetch_text(
+                    coro=self.generate_movie_tags(id),
+                    finish_on_success=True,
+                )
+            )
+
+        self.imdb_job.signal.register('output', handle_imdb_id)
+
         return jobs.dialog.TextFieldJob(
             name='movie-tags',
             label='Tags',
+            condition=lambda: self.is_movie_release,
             validator=validator,
             **self.common_job_args,
         )
 
-    async def generate_tags(self, id):
+    async def generate_movie_tags(self, id):
         def normalize_tags(strings):
             normalized = []
             for string in strings:
@@ -288,58 +412,78 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
         return tags_string
 
     @cached_property
-    def description_job(self):
+    def movie_description_job(self):
         def validator(text):
             text = text.strip()
             if not text:
                 raise ValueError(f'Invalid description: {text}')
 
+        def handle_imdb_id(id):
+            self.movie_description_job.add_task(
+                self.movie_description_job.fetch_text(
+                    coro=self.generate_movie_description(id),
+                    finish_on_success=True,
+                )
+            )
+
+        self.imdb_job.signal.register('output', handle_imdb_id)
+
         return jobs.dialog.TextFieldJob(
             name='movie-description',
             label='Description',
+            condition=lambda: self.is_movie_release,
             validator=validator,
             **self.common_job_args,
         )
 
-    async def generate_description(self, id):
-        info = await self.imdb.gather(id, 'title_original', 'title_english', 'year', 'url')
+    async def generate_movie_description(self, id):
+        info = await self.imdb.gather(id, 'title_original', 'title_english',
+                                      'year', 'url', 'summary', 'directors', 'cast')
         _log.debug('info: %r', info)
         lines = []
-
         lines.append('[b]Title[/b]: {title_original}'.format(**info))
         if info['title_english']:
             lines.append('[b]Also Known As[/b]: {title_english}'.format(**info))
         lines.append('[b]Year[/b]: {year}'.format(**info))
         lines.append('[b]Link[/b]: [url={url}]IMDb[/url]'.format(**info))
+
         # lines.append('[b]IMDb Rating[/b]: {rating}'.format(**info))
-        return '\n'.join(lines)
 
-    def handle_imdb_id(self, id):
-        self.add_background_task(self.update_text_field_job(
-            job=self.title_job,
-            text_getter_coro=self.generate_title(id),
-            finish_on_success=False,
-            default_text=self.release_name.title_with_aka,
-        ))
+        directors = [f'[url={director.url}]{director}[/url]'
+                     for director in info['directors']]
+        lines.append(f'[b]Direcor{"s" if len(directors) > 1 else ""}[/b]: '
+                     f'{", ".join(directors)}')
 
-        self.add_background_task(self.update_text_field_job(
-            job=self.year_job,
-            text_getter_coro=self.generate_year(id),
-            finish_on_success=True,
-            default_text=self.release_name.year,
-        ))
+        actors = [f'[url={actor.url}]{actor}[/url]'
+                  for actor in info['cast'][:5]]
+        lines.append(f'[b]Cast[/b]: {", ".join(actors)}')
 
-        self.add_background_task(self.update_text_field_job(
-            job=self.tags_job,
-            text_getter_coro=self.generate_tags(id),
-            finish_on_success=True,
-        ))
+        return (
+            f'[quote]{info["summary"]}[/quote]'
+            '\n'
+            '[quote]' + '\n'.join(lines) + '[/quote]'
+            '\n'
+            '[align=right][size=1]Shared with '
+            f'[url={__homepage__}]{__project_name__} {__version__}[/url]'
+            '[/size][/align]'
+        )
 
-        self.add_background_task(self.update_text_field_job(
-            job=self.description_job,
-            text_getter_coro=self.generate_description(id),
-            finish_on_success=True,
-        ))
+    # Series jobs
+
+    @cached_property
+    def series_title_job(self):
+        def validator(text):
+            text = text.strip()
+            if not text:
+                raise ValueError(f'Invalid title: {text}')
+
+        return jobs.dialog.TextFieldJob(
+            name='series-title',
+            label='Series Title',
+            condition=lambda: self.is_series_release,
+            validator=validator,
+            **self.common_job_args,
+        )
 
     @property
     def torrent_filepath(self):
@@ -347,16 +491,17 @@ class MovieBbTrackerJobs(BbTrackerJobsBase):
 
     @property
     def post_data(self):
-        return {
-            'type': "Movies",
-            'title': self.title_job.output[0],
-            'year': self.year_job.output[0],
-            'source': self.source_job.choice,
-            'video_codec': self.video_codec_job.choice,
-            'audio_codec': self.audio_codec_job.choice,
-            'container': self.container_job.choice,
-            'resolution': self.resolution_job.choice,
-            'remaster_title': self.release_info_job.output[0],
-            'tags': self.tags_job.output[0],
-            'desc': self.description_job.output[0],
-        }
+        if self.is_movie_release:
+            return {
+                'type': "Movies",
+                'title': self.movie_title_job.output[0],
+                'year': self.movie_year_job.output[0],
+                'source': self.movie_source_job.choice,
+                'video_codec': self.movie_video_codec_job.choice,
+                'audio_codec': self.movie_audio_codec_job.choice,
+                'container': self.movie_container_job.choice,
+                'resolution': self.movie_resolution_job.choice,
+                'remaster_title': self.movie_release_info_job.output[0],
+                'tags': self.movie_tags_job.output[0],
+                'desc': self.movie_description_job.output[0],
+            }
