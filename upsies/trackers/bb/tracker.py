@@ -21,13 +21,6 @@ class BbTracker(TrackerBase):
     name = 'bb'
     label = 'bB'
 
-    argument_definitions = {
-        ('--type', '-t'): {
-            'help': 'Submission type ("movie" or "tv")',
-            'type': ReleaseType,
-        },
-    }
-
     TrackerConfig = BbTrackerConfig
     TrackerJobs = BbTrackerJobs
 

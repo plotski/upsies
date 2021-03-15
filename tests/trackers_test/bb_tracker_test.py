@@ -5,9 +5,7 @@ import bs4
 import pytest
 
 from upsies import errors
-from upsies.trackers.bb import BbTracker, BbTrackerConfig
-from upsies.trackers.bb.movie import MovieBbTrackerJobs
-from upsies.trackers.bb.series import SeriesBbTrackerJobs
+from upsies.trackers.bb import BbTracker, BbTrackerConfig, BbTrackerJobs
 from upsies.utils.release import ReleaseType
 
 
@@ -30,46 +28,8 @@ def test_TrackerConfig_attribute():
     assert BbTracker.TrackerConfig is BbTrackerConfig
 
 
-@pytest.mark.parametrize(
-    argnames='release_type, exp_TrackerJobs_subclass',
-    argvalues=(
-        (ReleaseType.movie, MovieBbTrackerJobs),
-        (ReleaseType.season, SeriesBbTrackerJobs),
-        (ReleaseType.episode, SeriesBbTrackerJobs),
-    ),
-    ids=lambda v: str(v),
-)
-def test_TrackerJobs_propery_from_cli_args(release_type, exp_TrackerJobs_subclass):
-    tracker = BbTracker(
-        config={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://bb.local',
-        },
-        cli_args=Mock(type=release_type),
-    )
-    assert tracker.TrackerJobs is exp_TrackerJobs_subclass
-
-@pytest.mark.parametrize(
-    argnames='release_type, exp_TrackerJobs_subclass',
-    argvalues=(
-        (ReleaseType.movie, MovieBbTrackerJobs),
-        (ReleaseType.season, SeriesBbTrackerJobs),
-        (ReleaseType.episode, SeriesBbTrackerJobs),
-    ),
-    ids=lambda v: str(v),
-)
-def test_TrackerJobs_propery_from_ReleaseInfo(release_type, exp_TrackerJobs_subclass, mocker):
-    mocker.patch('upsies.utils.release.ReleaseInfo', return_value={'type': release_type})
-    tracker = BbTracker(
-        config={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://bb.local',
-        },
-        cli_args=Mock(type=None),
-    )
-    assert tracker.TrackerJobs is exp_TrackerJobs_subclass
+def test_TrackerJobs_attribute():
+    assert BbTracker.TrackerJobs is BbTrackerJobs
 
 
 @pytest.mark.asyncio
