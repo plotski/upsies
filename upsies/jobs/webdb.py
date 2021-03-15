@@ -110,11 +110,6 @@ class SearchWebDbJob(JobBase):
         # between initialize() and execute() is used to register callbacks.
         self._searcher.search(self._query)
 
-    def finish(self):
-        """Cancel any running internal coroutines and finish"""
-        self._info_updater.cancel()
-        super().finish()
-
     async def wait(self):
         """Wait for any running internal coroutines"""
         # Raise any exceptions and avoid warnings about unawaited tasks
@@ -123,6 +118,12 @@ class SearchWebDbJob(JobBase):
             self._info_updater.wait(),
         )
         await super().wait()
+
+    def finish(self):
+        """Cancel any running internal coroutines and finish"""
+        self._searcher.cancel()
+        self._info_updater.cancel()
+        super().finish()
 
     def search(self, query):
         """Make a new search request after cancelling any currently ongoing request"""
@@ -186,6 +187,10 @@ class _Searcher:
                 await self._search_task
             except asyncio.CancelledError:
                 pass
+
+    def cancel(self):
+        if self._search_task:
+            self._search_task.cancel()
 
     def _handle_search_task(self, task):
         try:

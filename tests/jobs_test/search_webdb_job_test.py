@@ -156,9 +156,22 @@ def test_SearchWebDbJob_execute_does_initial_search(job):
     assert job._searcher.search.call_args_list == [call(job.query)]
 
 
-def test_SearchWebDbJob_finish_cancels_info_updater(job):
+@pytest.mark.asyncio
+async def test_SearchWebDbJob_wait(job):
+    assert job._searcher.wait.call_args_list == []
+    assert job._info_updater.wait.call_args_list == []
+    asyncio.get_event_loop().call_soon(job.finish)
+    await job.wait()
+    assert job.is_finished
+    assert job._searcher.wait.call_args_list == [call()]
+    assert job._info_updater.wait.call_args_list == [call()]
+
+
+def test_SearchWebDbJob_finish_cancels_tasks(job):
+    job._searcher = Mock()
     job._info_updater = Mock()
     job.finish()
+    assert job._searcher.cancel.call_args_list == [call()]
     assert job._info_updater.cancel.call_args_list == [call()]
 
 
@@ -257,7 +270,6 @@ async def searcher():
         searching_callback=Mock(),
     )
     yield searcher
-    await searcher.wait()
 
 
 @pytest.mark.asyncio
@@ -271,6 +283,17 @@ async def test_Searcher_wait_while_searching(searcher):
     searcher._search_task = asyncio.ensure_future(AsyncMock())
     await searcher.wait()
     assert searcher._search_task.done()
+
+
+def test_Searcher_cancel_while_searching(searcher):
+    searcher._search_task = AsyncMock(cancel=Mock())
+    searcher.cancel()
+    assert searcher._search_task.cancel.call_args_list == [call()]
+
+def test_Searcher_cancel_while_not_searching(searcher):
+    searcher._search_task = None
+    searcher.cancel()
+    assert searcher._search_task is None
 
 
 def test_Searcher_search_while_not_searching(searcher, mocker):
@@ -293,6 +316,26 @@ def test_Searcher_search_while_searching(searcher, mocker):
     assert old_task.cancel.call_args_list == [call()]
     assert not new_task.done()
     assert not new_task.cancelled()
+
+@pytest.mark.asyncio
+async def test_Searcher_search_reports_exception(searcher, mocker):
+    exception_cb = Mock()
+    mocker.patch.object(searcher, '_exception_callback', exception_cb)
+    mocker.patch.object(searcher, '_search', AsyncMock(side_effect=TypeError('your code sucks')))
+    searcher.search('mock query')
+    await asyncio.sleep(0.1)
+    assert isinstance(exception_cb.call_args_list[0][0][0], TypeError)
+    assert str(exception_cb.call_args_list[0][0][0]) == 'your code sucks'
+
+@pytest.mark.asyncio
+async def test_Searcher_search_ignores_CancelledError(searcher, mocker):
+    exception_cb = Mock()
+    mocker.patch.object(searcher, '_exception_callback', exception_cb)
+    mocker.patch.object(searcher, '_search', lambda query: asyncio.sleep(10))
+    searcher.search('mock query')
+    searcher.cancel()
+    await asyncio.sleep(0.1)
+    assert exception_cb.call_args_list == []
 
 
 @pytest.mark.asyncio
@@ -368,7 +411,6 @@ async def info_updater():
         exception_callback=Mock(),
     )
     yield info_updater
-    await info_updater.wait()
 
 
 @pytest.mark.asyncio
@@ -398,6 +440,14 @@ async def test_InfoUpdater_wait_while_updating(info_updater):
     await info_updater.wait()
     assert info_updater._update_task.done()
 
+
+@pytest.mark.asyncio
+async def test_InfoUpdater_set_result_reports_exception(info_updater, mocker):
+    info_updater._update = AsyncMock(side_effect=TypeError('your code sucks'))
+    info_updater.set_result('mock result')
+    await asyncio.sleep(0.1)
+    assert isinstance(info_updater._exception_callback.call_args_list[0][0][0], TypeError)
+    assert str(info_updater._exception_callback.call_args_list[0][0][0]) == 'your code sucks'
 
 @pytest.mark.asyncio
 async def test_InfoUpdater_set_result_cancels_previous_update_task(info_updater, mocker):
