@@ -8,7 +8,6 @@ import urllib
 
 from ... import errors
 from ...utils import html, http
-from ...utils.types import ReleaseType
 from ..base import TrackerBase
 from .config import BbTrackerConfig
 from .jobs import BbTrackerJobs

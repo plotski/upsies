@@ -6,7 +6,6 @@ import pytest
 
 from upsies import errors
 from upsies.trackers.bb import BbTracker, BbTrackerConfig, BbTrackerJobs
-from upsies.utils.release import ReleaseType
 
 
 class AsyncMock(Mock):
