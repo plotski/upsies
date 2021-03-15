@@ -150,9 +150,10 @@ class UI:
         # Block until _exit() is called
         self._app.run(set_exception_handler=False)
 
-        if self._exception:
-            _log.debug('Application exception: %r', self._exception)
-            raise self._exception
+        exception = self._get_exception()
+        if exception:
+            _log.debug('Application exception: %r', exception)
+            raise exception
         else:
             # First non-zero exit_code is the application exit_code
             for jobinfo in self._enabled_jobs:
@@ -168,11 +169,8 @@ class UI:
 
     def _exit_if_job_failed(self, job):
         if not self._app_terminated and job.is_finished and job.exit_code != 0:
-            self._exit()
             _log.debug('Terminating application because of failed job: %r', job.name)
-            if not self._exception and job.raised:
-                _log.debug('Exception: %r', job.raised)
-                self._exception = job.raised
+            self._exit()
 
     def _exit(self):
         if not self._app_terminated:
@@ -180,11 +178,22 @@ class UI:
                 self._loop.call_soon(self._exit)
             elif self._app.is_running and not self._app.is_done:
                 self._app_terminated = True
-                self._finish_jobs()
                 self._app.exit()
+                self._finish_jobs()
 
     def _finish_jobs(self):
         for jobinfo in self._jobs.values():
             if not jobinfo.job.is_finished:
                 _log.debug('Finishing %s', jobinfo.job.name)
                 jobinfo.job.finish()
+
+    def _get_exception(self):
+        if self._exception:
+            # Exception from _handle_exception()
+            return self._exception
+        else:
+            # First exception from jobs
+            for jobinfo in self._jobs.values():
+                if jobinfo.job.raised:
+                    _log.debug('Exception from %s: %r', jobinfo.job.name, jobinfo.job.raised)
+                    return jobinfo.job.raised

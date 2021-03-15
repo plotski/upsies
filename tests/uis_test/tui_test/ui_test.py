@@ -176,23 +176,23 @@ def test_update_jobs_container_only_adds_first_unfinished_job_and_focuses_it():
 
 def test_run_calls_add_jobs(mocker):
     ui = UI()
-    add_jobs_mock = mocker.patch.object(ui, 'add_jobs')
+    mocker.patch.object(ui, 'add_jobs')
     mocker.patch.object(ui._app, 'run')
     ui.run(('a', 'b', 'c'))
-    assert add_jobs_mock.call_args_list == [call('a', 'b', 'c')]
+    assert ui.add_jobs.call_args_list == [call('a', 'b', 'c')]
 
 def test_run_runs_application(mocker):
     ui = UI()
     mocker.patch.object(ui, 'add_jobs')
-    app_run_mock = mocker.patch.object(ui._app, 'run')
+    mocker.patch.object(ui._app, 'run')
     ui.run(('a', 'b', 'c'))
-    assert app_run_mock.call_args_list == [call(set_exception_handler=False)]
+    assert ui._app.run.call_args_list == [call(set_exception_handler=False)]
 
 def test_run_raises_stored_exception(mocker):
     ui = UI()
-    ui._exception = ValueError('foo')
     mocker.patch.object(ui, 'add_jobs')
     mocker.patch.object(ui._app, 'run')
+    mocker.patch.object(ui, '_get_exception', Mock(return_value=ValueError('foo')))
     with pytest.raises(ValueError, match=r'^foo$'):
         ui.run(('a', 'b', 'c'))
 
@@ -206,6 +206,7 @@ def test_run_returns_first_nonzero_job_exit_code(mocker):
     }
     mocker.patch.object(ui, 'add_jobs')
     mocker.patch.object(ui._app, 'run')
+    mocker.patch.object(ui, '_get_exception', Mock(return_value=None))
     exit_code = ui.run(('a', 'b', 'c'))
     assert exit_code == 1
 
@@ -219,6 +220,7 @@ def test_run_returns_zero_if_all_jobs_finished_successfully(mocker):
     }
     mocker.patch.object(ui, 'add_jobs')
     mocker.patch.object(ui._app, 'run')
+    mocker.patch.object(ui, '_get_exception', Mock(return_value=None))
     exit_code = ui.run(('a', 'b', 'c'))
     assert exit_code == 0
 
@@ -231,88 +233,80 @@ def test_exit_if_all_jobs_finished(mocker):
         'c': SimpleNamespace(job=Mock(is_finished=False)),
         'd': SimpleNamespace(job=Mock(is_finished=False)),
     }
-    exit_mock = mocker.patch.object(ui, '_exit')
+    mocker.patch.object(ui, '_exit')
     for job_name in ('a', 'b', 'c', 'd'):
         ui._exit_if_all_jobs_finished()
-        assert exit_mock.call_args_list == []
+        assert ui._exit.call_args_list == []
         ui._exit_if_all_jobs_finished('mock job instance')
-        assert exit_mock.call_args_list == []
+        assert ui._exit.call_args_list == []
         ui._jobs[job_name].job.is_finished = True
     ui._exit_if_all_jobs_finished()
-    assert exit_mock.call_args_list == [call()]
+    assert ui._exit.call_args_list == [call()]
 
 
 def test_exit_if_job_failed_does_nothing_if_already_exited(mocker):
     ui = UI()
     ui._app_terminated = True
-    exit_mock = mocker.patch.object(ui, '_exit')
+    mocker.patch.object(ui, '_exit')
     ui._exit_if_job_failed(Mock(is_finished=True, exit_code=1, exceptions=()))
-    assert exit_mock.call_args_list == []
-    assert ui._exception is None
+    assert ui._exit.call_args_list == []
 
 def test_exit_if_job_failed_does_nothing_if_job_is_not_finished(mocker):
     ui = UI()
-    exit_mock = mocker.patch.object(ui, '_exit')
+    mocker.patch.object(ui, '_exit')
     ui._exit_if_job_failed(Mock(is_finished=False, exit_code=0, exceptions=()))
-    assert exit_mock.call_args_list == []
-    assert ui._exception is None
+    assert ui._exit.call_args_list == []
     ui._exit_if_job_failed(Mock(is_finished=False, exit_code=123, exceptions=()))
-    assert exit_mock.call_args_list == []
-    assert ui._exception is None
+    assert ui._exit.call_args_list == []
 
 def test_exit_if_job_failed_does_nothing_if_exit_code_is_zero(mocker):
     ui = UI()
-    exit_mock = mocker.patch.object(ui, '_exit')
+    mocker.patch.object(ui, '_exit')
     ui._exit_if_job_failed(Mock(is_finished=True, exit_code=0, exceptions=()))
-    assert exit_mock.call_args_list == []
-    assert ui._exception is None
+    assert ui._exit.call_args_list == []
 
 def test_exit_if_job_failed_calls_exit_if_exit_code_is_nonzero(mocker):
     ui = UI()
-    exit_mock = mocker.patch.object(ui, '_exit')
-    mocker.patch.object(ui, '_finish_jobs')
-    ui._exit_if_job_failed(Mock(is_finished=True, exit_code=1, exceptions=()))
-    assert exit_mock.call_args_list == [call()]
-
-def test_exit_if_job_failed_preserves_first_exception_from_jobs(mocker):
-    ui = UI()
     mocker.patch.object(ui, '_exit')
     mocker.patch.object(ui, '_finish_jobs')
-    ui._exit_if_job_failed(Mock(is_finished=True, exit_code=1, exceptions=('e1', 'e2', 'e3')))
-    assert ui._exception == 'e1'
-    ui._exit_if_job_failed(Mock(is_finished=True, exit_code=1, exceptions=('foo', 'bar', 'baz')))
-    assert ui._exception == 'e1'
+    ui._exit_if_job_failed(Mock(is_finished=True, exit_code=1, exceptions=()))
+    assert ui._exit.call_args_list == [call()]
 
 
-def test_exit_calls_finish_jobs(mocker):
+def test_exit_does_nothing_if_already_exited(mocker):
     ui = UI()
-    mocker.patch.object(type(ui._app), 'is_running', PropertyMock(return_value=True))
-    mocker.patch.object(type(ui._app), 'is_done', PropertyMock(return_value=False))
+    ui._app_terminated = True
+    mocker.patch.object(ui, '_finish_jobs')
     mocker.patch.object(ui._app, 'exit')
-    mocker.patch.object(ui._loop, 'call_soon')
-    finish_jobs_mock = mocker.patch.object(ui, '_finish_jobs')
     ui._exit()
-    assert finish_jobs_mock.call_args_list == [call()]
+    assert ui._finish_jobs.call_args_list == []
+    assert ui._app.exit.call_args_list == []
 
 def test_exit_waits_for_application_to_run(mocker):
     ui = UI()
+    mocker.patch.object(ui, '_finish_jobs')
+    mocker.patch.object(ui._app, 'exit')
     mocker.patch.object(type(ui._app), 'is_running', PropertyMock(return_value=False))
     mocker.patch.object(type(ui._app), 'is_done', PropertyMock(return_value=False))
-    app_exit_mock = mocker.patch.object(ui._app, 'exit')
-    call_soon_mock = mocker.patch.object(ui._loop, 'call_soon')
+    mocker.patch.object(ui._loop, 'call_soon')
     ui._exit()
-    assert call_soon_mock.call_args_list == [call(ui._exit)]
-    assert app_exit_mock.call_args_list == []
+    assert ui._loop.call_soon.call_args_list == [call(ui._exit)]
+    assert ui._app.exit.call_args_list == []
+    assert ui._finish_jobs.call_args_list == []
+    assert ui._app.exit.call_args_list == []
 
 def test_exit_exits_application(mocker):
     ui = UI()
+    mocks = Mock()
+    mocker.patch.object(ui, '_finish_jobs', mocks.finish_jobs)
+    mocker.patch.object(ui._app, 'exit', mocks.app_exit)
     mocker.patch.object(type(ui._app), 'is_running', PropertyMock(return_value=True))
     mocker.patch.object(type(ui._app), 'is_done', PropertyMock(return_value=False))
-    app_exit_mock = mocker.patch.object(ui._app, 'exit')
-    call_soon_mock = mocker.patch.object(ui._loop, 'call_soon')
+    mocker.patch.object(ui._loop, 'call_soon')
     ui._exit()
-    assert call_soon_mock.call_args_list == []
-    assert app_exit_mock.call_args_list == [call()]
+    assert ui._loop.call_soon.call_args_list == []
+    assert mocks.mock_calls == [call.app_exit(), call.finish_jobs()]
+    assert ui._app.exit.call_args_list == [call()]
     assert ui._app_terminated is True
 
 
@@ -329,3 +323,38 @@ def test_finish_jobs():
     assert ui._jobs['b'].job.finish.call_args_list == []
     assert ui._jobs['c'].job.finish.call_args_list == [call()]
     assert ui._jobs['d'].job.finish.call_args_list == []
+
+
+def test_get_exception_from_loop_exception_handler():
+    ui = UI()
+    ui._exception = ValueError('asdf')
+    ui._jobs = {
+        'a': SimpleNamespace(job=Mock(raised=ValueError('foo'))),
+        'b': SimpleNamespace(job=Mock(raised=None)),
+        'c': SimpleNamespace(job=Mock(raised=ValueError('bar'))),
+    }
+    exc = ui._get_exception()
+    assert isinstance(exc, ValueError)
+    assert str(exc) == 'asdf'
+
+def test_get_exception_from_first_failed_job():
+    ui = UI()
+    ui._exception = None
+    ui._jobs = {
+        'a': SimpleNamespace(job=Mock(raised=ValueError('foo'))),
+        'b': SimpleNamespace(job=Mock(raised=None)),
+        'c': SimpleNamespace(job=Mock(raised=ValueError('bar'))),
+    }
+    exc = ui._get_exception()
+    assert isinstance(exc, ValueError)
+    assert str(exc) == 'foo'
+
+def test_get_exception_returns_None_if_no_exception_raised():
+    ui = UI()
+    ui._exception = None
+    ui._jobs = {
+        'a': SimpleNamespace(job=Mock(raised=None)),
+        'b': SimpleNamespace(job=Mock(raised=None)),
+        'c': SimpleNamespace(job=Mock(raised=None)),
+    }
+    assert ui._get_exception() is None
