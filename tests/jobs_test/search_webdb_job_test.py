@@ -167,23 +167,12 @@ async def test_SearchWebDbJob_wait(job):
     assert job._info_updater.wait.call_args_list == [call()]
 
 
-def test_SearchWebDbJob_finish_cancels_tasks(job):
+def test_SearchWebDbJob_finish(job):
     job._searcher = Mock()
     job._info_updater = Mock()
     job.finish()
     assert job._searcher.cancel.call_args_list == [call()]
     assert job._info_updater.cancel.call_args_list == [call()]
-
-
-@pytest.mark.asyncio
-async def test_SearchWebDbJob_wait(job):
-    assert job._searcher.wait.call_args_list == []
-    assert job._info_updater.wait.call_args_list == []
-    asyncio.get_event_loop().call_soon(job.finish)
-    await job.wait()
-    assert job.is_finished
-    assert job._searcher.wait.call_args_list == [call()]
-    assert job._info_updater.wait.call_args_list == [call()]
 
 
 def test_SearchWebDbJob_search_before_finished(job):

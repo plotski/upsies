@@ -44,7 +44,7 @@ def test_TrackerJobs_propery_from_cli_args(release_type, exp_TrackerJobs_subclas
         config={
             'username': 'bunny',
             'password': 'hunter2',
-            # 'base_url': 'http://bb.local',
+            'base_url': 'http://bb.local',
         },
         cli_args=Mock(type=release_type),
     )
