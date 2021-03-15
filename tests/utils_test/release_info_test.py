@@ -327,7 +327,7 @@ def test_extended_source(source, exp_source):
 service_samples = (
     ('NF', 'NF'), ('Netflix', 'NF'),
     ('AMZN', 'AMZN'), ('Amazon', 'AMZN'),
-    ('APTV', 'ATVP'),  # Not sure if this is cannonical; guessit seems to prefer it
+    ('APTV', 'APTV'),
     ('BBC', 'BBC'),
     ('HBO', 'HBO'),
     ('HMAX', 'HMAX'),
