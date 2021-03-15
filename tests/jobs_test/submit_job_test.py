@@ -118,115 +118,87 @@ async def test_initialize_starts_jobs_after_upload_on_output(tmp_path, tracker, 
         assert j.start.call_args_list == [call()]
 
 
-@pytest.mark.asyncio
-async def test_wait_does_nothing_after_the_first_call(job, mocker):
-    mocker.patch.object(job, '_run_jobs', AsyncMock())
-    await job.wait()
-    assert job.is_finished
-    for _ in range(3):
-        await job.wait()
+def test_execute_adds_run_jobs_task(job, mocker):
+    mocker.patch.object(job, 'add_task')
+    mocker.patch.object(job, '_run_jobs', Mock())
+    assert job.add_task.call_args_list == []
+    job.execute()
+    assert job.add_task.call_args_list == [call(job._run_jobs.return_value)]
     assert job._run_jobs.call_args_list == [call()]
 
-@pytest.mark.asyncio
-async def test_wait_is_called_multiple_times_simultaneously(job, mocker):
-    calls = []
+def test_execute_does_nothing_if_job_is_finished_task(job, mocker):
+    mocker.patch.object(job, 'add_task')
+    mocker.patch.object(job, '_run_jobs')
+    assert job.add_task.call_args_list == []
+    job.finish()
+    job.execute()
+    assert job.add_task.call_args_list == []
 
-    async def _run_jobs():
-        if calls:
-            raise RuntimeError('I was already called')
-        calls.append(call())
-        await asyncio.sleep(0.1)
-
-    mocker.patch.object(job, '_run_jobs', _run_jobs)
-
-    await asyncio.gather(job.wait(), job.wait(), job.wait())
-    assert job.is_finished
-    assert calls == [call()]
 
 @pytest.mark.asyncio
-async def test_wait_is_cancelled_by_finish(job, mocker):
-    mocker.patch.object(job, '_run_jobs', lambda: asyncio.sleep(100))
-    asyncio.get_event_loop().call_soon(job.finish)
-    await job.wait()
-    assert job.is_finished
+async def test_run_jobs_waits_for_jobs_until_all_are_finished(job, mocker):
+    class MockJob:
+        def __init__(self, name, is_finished_values):
+            self.name = name
+            self.exit_code = 0
+            self._is_finished_values = list(is_finished_values)
+            self._is_finished = self._is_finished_values.pop(0)
+            self.wait_calls = 0
 
-@pytest.mark.asyncio
-async def test_wait_gets_unexpected_exception(job, mocker):
-    mocker.patch.object(job, '_run_jobs', AsyncMock(side_effect=RuntimeError('asdf')))
-    with pytest.raises(RuntimeError, match=r'^asdf$'):
-        await job.wait()
-    assert job.is_finished
+        async def wait(self):
+            if self._is_finished_values:
+                self.wait_calls += 1
+                self._is_finished = self._is_finished_values.pop(0)
 
-@pytest.mark.asyncio
-async def test_wait_does_everything_in_correct_order(job, mocker):
-    mocks = AsyncMock()
-    mocks.before1.configure_mock(start=Mock(), finish=Mock(), name='before1', output='before1 output', exit_code=0)
-    mocks.before2.configure_mock(start=Mock(), finish=Mock(), name='before2', output='before2 output', exit_code=0)
-    mocks.before3.configure_mock(start=Mock(), finish=Mock(), name='before3', output='before3 output', exit_code=0)
-    mocks.wait_for_background_tasks = AsyncMock()
-    mocks.after1.configure_mock(start=Mock(), finish=Mock(), name='after1', output='after1 output', exit_code=0)
-    mocks.after2.configure_mock(start=Mock(), finish=Mock(), name='after1', output='after2 output', exit_code=0)
-    mocker.patch.object(job, '_submit', mocks._submit)
-    mocks._submit.side_effect = lambda *_, **__: job.send('mock torrent url')
-    mocker.patch.object(job, 'jobs_before_upload', (mocks.before1, mocks.before2, mocks.before3))
-    mocker.patch.object(job._tracker_jobs, 'wait_for_background_tasks', mocks.wait_for_background_tasks)
-    mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
-    await job.wait()
-    assert job.is_finished
-    # Order of before* and after* jobs doesn't matter and is random for Python <
-    # 3.8. Compare str(call()) because call() isn't hashable and sets can only
-    # contain hashable values.
-    assert set((str(call) for call in mocks.mock_calls[:3])) == {
-        str(call.before1.wait()),
-        str(call.before2.wait()),
-        str(call.before3.wait()),
+        @property
+        def is_finished(self):
+            return self._is_finished
+
+    jobs = {
+        'a': MockJob('a', (False, False, True)),
+        'b': MockJob('b', (False, True)),
+        'c': MockJob('c', (False, False, False, True)),
     }
-    assert mocks.mock_calls[3] == call.wait_for_background_tasks()
-    assert mocks.mock_calls[4] == call._submit()
-    assert set((str(call) for call in mocks.mock_calls[5:7])) == {
-        str(call.after1.start()),
-        str(call.after2.start()),
-    }
-    assert len(mocks.mock_calls) == 7
+    mocker.patch.object(type(job), 'jobs_before_upload', PropertyMock(side_effect=(
+        (jobs['a'],),
+        (jobs['a'], jobs['b']),
+        (jobs['a'], jobs['b'], jobs['c']),
+        (jobs['a'], jobs['b'], jobs['c']),
+        (jobs['a'], jobs['b'], jobs['c']),
+        (jobs['a'], jobs['b'], jobs['c']),
+    )))
+    await job._run_jobs()
+    assert jobs['a'].wait_calls == 2
+    assert jobs['b'].wait_calls == 1
+    assert jobs['c'].wait_calls == 3
 
-@pytest.mark.parametrize('failed_job_number', (1, 2, 3))
 @pytest.mark.asyncio
-async def test_wait_doesnt_submit_nor_call_jobs_after_upload_if_job_before_upload_fails(failed_job_number, job, mocker):
-    mocks = AsyncMock()
-    mocks.before1.configure_mock(start=Mock(), finish=Mock(), name='before1', output='before1 output', exit_code=0)
-    mocks.before2.configure_mock(start=Mock(), finish=Mock(), name='before2', output='before2 output', exit_code=0)
-    mocks.before3.configure_mock(start=Mock(), finish=Mock(), name='before3', output='before3 output', exit_code=0)
-    mocks.after1.configure_mock(start=Mock(), finish=Mock(), name='after1', output='after1 output', exit_code=0)
-    mocks.after2.configure_mock(start=Mock(), finish=Mock(), name='after1', output='after2 output', exit_code=0)
-    getattr(mocks, f'before{failed_job_number}').exit_code = 1
-    mocker.patch.object(job, '_submit', mocks._submit)
-    mocker.patch.object(job, 'jobs_before_upload', (mocks.before1, mocks.before2, mocks.before3))
-    mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
-    await job.wait()
+async def test_run_jobs_submits_if_all_jobs_succeeded(job, mocker):
+    mocker.patch.object(job, '_submit', AsyncMock())
+    mocker.patch.object(type(job), 'jobs_before_upload', PropertyMock(return_value=(
+        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
+        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
+        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
+    )))
+    assert not job.is_finished
+    await job._run_jobs()
+    assert job._submit.call_args_list == [call()]
     assert job.is_finished
-    for j in job.jobs_before_upload:
-        j.finish.call_args_list == [call()]
-    for j in job.jobs_after_upload:
-        j.finish.call_args_list == [call()]
+
+@pytest.mark.parametrize('job_index', (0, 1, 2))
+@pytest.mark.asyncio
+async def test_run_jobs_does_not_submit_if_any_job_fails(job_index, job, mocker):
+    mocker.patch.object(job, '_submit', AsyncMock())
+    mocker.patch.object(type(job), 'jobs_before_upload', PropertyMock(return_value=(
+        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
+        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
+        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
+    )))
+    job.jobs_before_upload[job_index].exit_code = 1
+    assert not job.is_finished
+    await job._run_jobs()
     assert job._submit.call_args_list == []
-    assert set((str(call) for call in mocks.mock_calls)) == {
-        str(call.before1.wait()),
-        str(call.before2.wait()),
-        str(call.before3.wait()),
-    }
-
-@pytest.mark.asyncio
-async def test_wait_does_not_call_jobs_after_upload_if_submit_fails(job, mocker):
-    mocks = AsyncMock()
-    mocks.after1.configure_mock(start=Mock(), finish=Mock(), name='after1', output='after1 output', exit_code=0)
-    mocks.after2.configure_mock(start=Mock(), finish=Mock(), name='after1', output='after2 output', exit_code=0)
-    mocker.patch.object(job, '_submit', mocks._submit)  # Not sending output means failure
-    mocker.patch.object(job, 'jobs_after_upload', (mocks.after1, mocks.after2))
-    await job.wait()
     assert job.is_finished
-    for j in job.jobs_after_upload:
-        j.finish.call_args_list == [call()]
-    assert mocks.mock_calls == [call._submit()]
 
 
 @pytest.mark.parametrize('method', ('login', 'logout', 'upload'))
@@ -309,12 +281,15 @@ async def test_submit_sets_info_property_to_current_status(job):
 
 @pytest.mark.parametrize('attrname', ('jobs_before_upload', 'jobs_after_upload'))
 @pytest.mark.asyncio
-async def test_None_is_filtered_from_jobs(attrname, tmp_path, tracker, tracker_jobs, mocker):
+async def test_None_and_disabled_are_filtered_from_jobs_attributes(attrname, tmp_path, tracker, tracker_jobs, mocker):
+    foo_job = Mock(name='foo', is_enabled=True)
+    bar_job = Mock(name='bar', is_enabled=False)
+    baz_job = Mock(name='baz', is_enabled=True)
     mocker.patch('upsies.jobs.submit.SubmitJob._submit')
     setattr(
         type(tracker_jobs),
         attrname,
-        PropertyMock(return_value=[None, 'foo', None, 'bar']),
+        PropertyMock(return_value=[foo_job, None, bar_job, None, baz_job]),
     )
     job = SubmitJob(
         home_directory=tmp_path,
@@ -322,4 +297,4 @@ async def test_None_is_filtered_from_jobs(attrname, tmp_path, tracker, tracker_j
         tracker=tracker,
         tracker_jobs=tracker_jobs,
     )
-    assert getattr(job, attrname) == ('foo', 'bar')
+    assert getattr(job, attrname) == (foo_job, baz_job)
