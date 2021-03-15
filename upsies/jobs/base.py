@@ -25,6 +25,8 @@ class JobBase(abc.ABC):
         should not be re-used
     :param bool hidden: Whether to hide the job's output in the UI
     :param bool autostart: Whether this job is started automatically
+    :param condition: Callable that gets no arguments and returns whether this
+        job is enabled or disabled
     :param callbacks: Mapping of :attr:`signal` names to callable or sequence of
         callables to :meth:`~.signal.Signal.register` for that signal
 
