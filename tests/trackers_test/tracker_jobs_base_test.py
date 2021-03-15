@@ -164,6 +164,20 @@ def test_add_torrent_job_is_singleton(mocker):
     assert tracker_jobs.add_torrent_job is tracker_jobs.add_torrent_job
 
 
+def test_finalize_add_torrent_job(mocker):
+    mocker.patch('upsies.jobs.torrent.AddTorrentJob')
+    mocker.patch('upsies.jobs.torrent.CreateTorrentJob')
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        tracker='mock tracker',
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+        bittorrent_client='bittorrent client mock',
+    )
+    mocker.patch.object(tracker_jobs, 'add_torrent_job')
+    tracker_jobs.finalize_add_torrent_job('mock job')
+    assert tracker_jobs.add_torrent_job.finalize.call_args_list == [call()]
+
+
 def test_copy_torrent_job_without_torrent_destination_argument(mocker):
     CopyTorrentJob_mock = mocker.patch('upsies.jobs.torrent.CopyTorrentJob')
     tracker_jobs = make_TestTrackerJobs(
@@ -205,6 +219,20 @@ def test_copy_torrent_job_is_singleton(mocker):
         torrent_destination='path/to/torrent/destination',
     )
     assert tracker_jobs.copy_torrent_job is tracker_jobs.copy_torrent_job
+
+
+def test_finalize_copy_torrent_job(mocker):
+    mocker.patch('upsies.jobs.torrent.CopyTorrentJob')
+    mocker.patch('upsies.jobs.torrent.CreateTorrentJob')
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        tracker='mock tracker',
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+        bittorrent_client='bittorrent client mock',
+    )
+    mocker.patch.object(tracker_jobs, 'copy_torrent_job')
+    tracker_jobs.finalize_copy_torrent_job('mock job')
+    assert tracker_jobs.copy_torrent_job.finalize.call_args_list == [call()]
 
 
 def test_release_name_job(mocker):
@@ -393,6 +421,19 @@ def test_upload_screenshots_job_is_singleton(mocker):
         image_host=Mock(),
     )
     assert tracker_jobs.upload_screenshots_job is tracker_jobs.upload_screenshots_job
+
+
+def test_finalize_upload_screenshots_job(mocker):
+    mocker.patch('upsies.jobs.screenshots.ScreenshotsJob', side_effect=(Mock(), Mock()))
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        tracker='mock tracker',
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+        bittorrent_client='bittorrent client mock',
+    )
+    mocker.patch.object(tracker_jobs, 'upload_screenshots_job')
+    tracker_jobs.finalize_upload_screenshots_job('mock job')
+    assert tracker_jobs.upload_screenshots_job.finalize.call_args_list == [call()]
 
 
 def test_mediainfo_job(mocker):
