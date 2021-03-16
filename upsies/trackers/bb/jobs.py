@@ -7,7 +7,7 @@ import re
 import unidecode
 
 from ... import __homepage__, __project_name__, __version__, jobs
-from ...utils import cached_property, fs, release, video, webdbs
+from ...utils import cached_property, fs, release, string, timestamp, video, webdbs
 from ..base import TrackerJobsBase
 
 import logging  # isort:skip
@@ -437,36 +437,58 @@ class BbTrackerJobs(TrackerJobsBase):
         )
 
     async def generate_movie_description(self, id):
-        info = await self.imdb.gather(id, 'title_original', 'title_english',
-                                      'year', 'url', 'summary', 'directors', 'cast')
+        info = await self.imdb.gather(id, 'cast', 'countries', 'directors',
+                                      'rating', 'summary', 'title_english',
+                                      'title_original', 'url', 'year')
         _log.debug('info: %r', info)
-        lines = []
-        lines.append('[b]Title[/b]: {title_original}'.format(**info))
-        if info['title_english']:
-            lines.append('[b]Also Known As[/b]: {title_english}'.format(**info))
-        lines.append('[b]Year[/b]: {year}'.format(**info))
-        lines.append('[b]Link[/b]: [url={url}]IMDb[/url]'.format(**info))
+        lines = ['[b]IMDb[/b]: [url={url}]{id}[/url]'.format(**info)]
 
-        # lines.append('[b]IMDb Rating[/b]: {rating}'.format(**info))
+        # Rating
+        if info['rating'] is not None:
+            info['rating_stars'] = ''.join((
+                '[color=#ffff00]',
+                string.star_rating(info['rating']),
+                '[/color]',
+            ))
+            lines.append('[b]Rating[/b]: {rating}/10 {rating_stars}'.format(**info))
 
-        directors = [f'[url={director.url}]{director}[/url]'
-                     for director in info['directors']]
-        lines.append(f'[b]Direcor{"s" if len(directors) > 1 else ""}[/b]: '
-                     f'{", ".join(directors)}')
+        # Main info
+        if info['countries']:
+            countries = ', '.join(info['countries'])
+            if len(info['countries']) == 1:
+                lines.append(f'[b]Country[/b]: {countries}')
+            elif len(info['countries']) >= 2:
+                lines.append(f'[b]Countries[/b]: {countries}')
 
-        actors = [f'[url={actor.url}]{actor}[/url]'
-                  for actor in info['cast'][:5]]
-        lines.append(f'[b]Cast[/b]: {", ".join(actors)}')
+        lines.append(f'[b]Runtime[/b]: {timestamp.pretty(video.duration(self.content_path))}')
 
-        return (
-            f'[quote]{info["summary"]}[/quote]'
-            '\n'
-            '[quote]' + '\n'.join(lines) + '[/quote]'
-            '\n'
+        # Director(s)
+        if info['directors']:
+            directors = [f'[url={director.url}]{director}[/url]'
+                         for director in info['directors']]
+            lines.append(f'[b]Direcor{"s" if len(directors) > 1 else ""}[/b]: '
+                         f'{", ".join(directors)}')
+
+        # Actors
+        if info['cast']:
+            actors = [f'[url={actor.url}]{actor}[/url]'
+                      for actor in info['cast'][:10]]
+            lines.append(f'[b]Cast[/b]: {", ".join(actors)}')
+
+        # Link to project
+        promotion = (
             '[align=right][size=1]Shared with '
             f'[url={__homepage__}]{__project_name__} {__version__}[/url]'
             '[/size][/align]'
         )
+
+        return ''.join((
+            '[size=3][b]{title_original}[/b] ({year})[/size]\n'.format(**info),
+            '[size=2]{title_english}[/size]'.format(**info) if info['title_english'] else '',
+            '[quote]{summary}[/quote]'.format(**info),
+            '[quote]' + '\n'.join(lines) + '[/quote]',
+            promotion,
+        ))
 
     # Series jobs
 
