@@ -62,17 +62,6 @@ def test_closest_number():
         assert utils.closest_number(n, numbers) == 30
 
 
-def test_pretty_bytes():
-    assert utils.pretty_bytes(1023) == '1023 B'
-    assert utils.pretty_bytes(1024) == '1.00 KiB'
-    assert utils.pretty_bytes(1024 + 1024 / 2) == '1.50 KiB'
-    assert utils.pretty_bytes((1024**2) - 102.4) == '1023.90 KiB'
-    assert utils.pretty_bytes(1024**2) == '1.00 MiB'
-    assert utils.pretty_bytes((1024**3) * 123) == '123.00 GiB'
-    assert utils.pretty_bytes((1024**4) * 456) == '456.00 TiB'
-    assert utils.pretty_bytes((1024**5) * 456) == '456.00 PiB'
-
-
 def test_CaseInsensitiveString_equality():
     assert utils.CaseInsensitiveString('Foo') == 'foo'
     assert utils.CaseInsensitiveString('fOo') == 'FOO'

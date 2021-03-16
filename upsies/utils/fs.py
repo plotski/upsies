@@ -7,7 +7,7 @@ import os
 import re
 
 from .. import __project_name__, errors
-from . import LazyModule, os_family, pretty_bytes
+from . import LazyModule, os_family, string
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -264,7 +264,7 @@ def file_tree(tree, _parents_is_last=()):
                 indent += f'{_DOWN_RIGHT}{_RIGHT}'
 
         if isinstance(node, int):
-            lines.append(f'{indent}{name} ({pretty_bytes(node)})')
+            lines.append(f'{indent}{name} ({string.pretty_bytes(node)})')
         else:
             lines.append(f'{indent}{name}')
             # Descend into child node
