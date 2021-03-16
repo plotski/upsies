@@ -54,6 +54,7 @@ async def test_gather(webdb):
     webdb.year.return_value = 'mock year'
     assert await webdb.gather('mock id', 'type', 'year', 'cast', 'keywords') == {
         'cast': 'mock cast',
+        'id': 'mock id',
         'keywords': ['mock genre one', 'mock genre two'],
         'type': 'mock type',
         'year': 'mock year',

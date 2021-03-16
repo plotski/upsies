@@ -105,6 +105,8 @@ class WebDbApiBase(abc.ABC):
         corofuncs = (getattr(self, method) for method in methods)
         awaitables = (corofunc(id) for corofunc in corofuncs)
         results = await asyncio.gather(*awaitables)
+        dct = {'id': id}
         # "The order of result values corresponds to the order of awaitables in `aws`."
         # https://docs.python.org/3/library/asyncio-task.html#running-tasks-concurrently
-        return {method: result for method, result in zip(methods, results)}
+        dct.update((method, result) for method, result in zip(methods, results))
+        return dct
