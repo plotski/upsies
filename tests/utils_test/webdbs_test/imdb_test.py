@@ -430,6 +430,26 @@ async def test_keywords(id, exp_keywords, api, store_response):
 
 
 @pytest.mark.parametrize(
+    argnames=('id', 'exp_rating'),
+    argvalues=(
+        ('tt0080455', 7.9),  # Blues Brothers (movie)
+        ('tt0192802', 7.6),  # Wind in the Willows (TV movie)
+        ('tt0471711', 7.7),  # Bender's Big Score (Video)
+        ('tt0097270', 7.2),  # Elephant (TV movie)
+        ('tt3472226', 8.0),  # Kung Fury (Short)
+        ('tt6560040', 7.3),  # The Forest (mini series)
+        ('tt0348914', 8.6),  # Deadwood (series)
+        ('tt0556307', 8.4),  # Deadwood - S02E04 (episode)
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_rating(id, exp_rating, api, store_response):
+    rating = await api.rating(id)
+    assert rating == exp_rating
+
+
+@pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
         ('tt0080455', ('Jake Blues, just released from prison, puts together '

@@ -114,6 +114,18 @@ class TmdbApi(WebDbApiBase):
                 keywords.clear()
             return tuple(keywords)
 
+    rating_min = 0.0
+    rating_max = 100.0
+
+    async def rating(self, id):
+        soup = await self._get_soup(id)
+        rating_tag = soup.find(class_='user_score_chart')
+        if rating_tag:
+            try:
+                return float(rating_tag['data-percent'])
+            except (ValueError, TypeError):
+                pass
+
     _no_overview_texts = (
         "We don't have an overview",
         'No overview found.',

@@ -327,6 +327,20 @@ async def test_keywords(id, exp_keywords, api, store_response):
 
 
 @pytest.mark.parametrize(
+    argnames=('id', 'exp_rating'),
+    argvalues=(
+        (1259, 8.2),
+        (35256, 7.9),
+        (36072, 7.6),
+    ),
+)
+@pytest.mark.asyncio
+async def test_rating(id, exp_rating, api, store_response):
+    rating = await api.rating(id)
+    assert rating == exp_rating
+
+
+@pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
         (1259, 'downfall of the Jedi'),

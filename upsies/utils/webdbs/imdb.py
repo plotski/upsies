@@ -121,6 +121,18 @@ class ImdbApi(WebDbApiBase):
                     return tuple(keywords)
         return ()
 
+    rating_min = 0.0
+    rating_max = 10.0
+
+    async def rating(self, id):
+        soup = await self._get_soup(f'title/{id}')
+        rating_tag = soup.find(itemprop='ratingValue')
+        if rating_tag:
+            try:
+                return float(rating_tag.string)
+            except (ValueError, TypeError):
+                pass
+
     async def summary(self, id):
         soup = await self._get_soup(f'title/{id}')
         summary_tag = soup.find(class_='summary_text')

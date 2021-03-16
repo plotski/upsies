@@ -95,6 +95,13 @@ class TvmazeApi(WebDbApiBase):
         show = await self._get_show(id)
         return _get_keywords(show)
 
+    rating_min = 0.0
+    rating_max = 10.0
+
+    async def rating(self, id):
+        show = await self._get_show(id)
+        return show.get('rating', {}).get('average')
+
     async def summary(self, id):
         show = await self._get_show(id)
         return _get_summary(show)

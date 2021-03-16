@@ -55,6 +55,20 @@ class WebDbApiBase(abc.ABC):
         """Return list of keywords, e.g. genres"""
 
     @abc.abstractmethod
+    async def rating(self, id):
+        """Return rating as a number or `None`"""
+
+    @property
+    @abc.abstractmethod
+    async def rating_min(self):
+        """Minimum :meth:`rating` value"""
+
+    @property
+    @abc.abstractmethod
+    async def rating_max(self):
+        """Maximum :meth:`rating` value"""
+
+    @abc.abstractmethod
     async def summary(self, id):
         """Return short plot description"""
 
