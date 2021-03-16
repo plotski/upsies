@@ -171,7 +171,17 @@ class ImdbApi(WebDbApiBase):
                 return original_title
             # else:
             #     _log.debug('Similar to English title %r: %r', english_title, original_title)
-        # _log.debug('Defaulting to English title: %r', english_title)
+        else:
+            # Default to getting title from link to main page
+            # _log.debug('No original title in AKAs found')
+            soup = await self._get_soup(f'title/{id}/releaseinfo')
+            title_tag = soup.find(class_='subpage_title_block__right-column')
+            if title_tag:
+                a_tag = title_tag.find('a', href=re.compile(r'/title/tt'))
+                if a_tag:
+                    return a_tag.string
+
+        _log.debug('Defaulting to English title: %r', english_title)
         return english_title
 
     def _titles_are_similar(self, a, b):
