@@ -232,49 +232,6 @@ async def test_search_result_year(query, exp_title, exp_year, api, store_respons
 
 
 @pytest.mark.parametrize(
-    argnames=('id', 'exp_directors'),
-    argvalues=(
-        ('movie/125244', (('James Algar', 'http://themoviedb.org/person/5690-james-algar'),
-                          ('Jack Kinney', 'http://themoviedb.org/person/74565-jack-kinney'))),
-        ('movie/334536', (('Oz Perkins', 'http://themoviedb.org/person/90609-oz-perkins'),)),
-        ('tv/1406', ()),
-        ('tv/74802', ()),
-    ),
-    ids=lambda value: str(value),
-)
-@pytest.mark.asyncio
-async def test_directors(id, exp_directors, api, store_response):
-    directors = await api.directors(id)
-    if not directors:
-        assert exp_directors == ()
-    else:
-        for person, (name, url) in zip_longest(directors, exp_directors):
-            assert person == name
-            assert person.url == url
-
-
-@pytest.mark.parametrize(
-    argnames=('id', 'exp_creators'),
-    argvalues=(
-        ('movie/125244', ()),
-        ('movie/334536', ()),
-        ('tv/1406', (('David Milch', 'http://themoviedb.org/person/151295-david-milch'),)),
-        ('tv/74802', (('Rike Jokela', 'http://themoviedb.org/person/140497-rike-jokela'),)),
-    ),
-    ids=lambda value: str(value),
-)
-@pytest.mark.asyncio
-async def test_creators(id, exp_creators, api, store_response):
-    creators = await api.creators(id)
-    if not creators:
-        assert exp_creators == ()
-    else:
-        for person, (name, url) in zip_longest(creators, exp_creators):
-            assert person == name
-            assert person.url == url
-
-
-@pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),
     argvalues=(
         ('movie/525', (('Dan Aykroyd', 'http://themoviedb.org/person/707-dan-aykroyd'),
@@ -304,6 +261,49 @@ async def test_cast(id, exp_cast, api, store_response):
 async def test_countries(id, api, store_response):
     with pytest.raises(NotImplementedError, match=r'^Country lookup is not implemented for TMDb$'):
         await api.countries(id)
+
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_creators'),
+    argvalues=(
+        ('movie/125244', ()),
+        ('movie/334536', ()),
+        ('tv/1406', (('David Milch', 'http://themoviedb.org/person/151295-david-milch'),)),
+        ('tv/74802', (('Rike Jokela', 'http://themoviedb.org/person/140497-rike-jokela'),)),
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_creators(id, exp_creators, api, store_response):
+    creators = await api.creators(id)
+    if not creators:
+        assert exp_creators == ()
+    else:
+        for person, (name, url) in zip_longest(creators, exp_creators):
+            assert person == name
+            assert person.url == url
+
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_directors'),
+    argvalues=(
+        ('movie/125244', (('James Algar', 'http://themoviedb.org/person/5690-james-algar'),
+                          ('Jack Kinney', 'http://themoviedb.org/person/74565-jack-kinney'))),
+        ('movie/334536', (('Oz Perkins', 'http://themoviedb.org/person/90609-oz-perkins'),)),
+        ('tv/1406', ()),
+        ('tv/74802', ()),
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_directors(id, exp_directors, api, store_response):
+    directors = await api.directors(id)
+    if not directors:
+        assert exp_directors == ()
+    else:
+        for person, (name, url) in zip_longest(directors, exp_directors):
+            assert person == name
+            assert person.url == url
 
 
 @pytest.mark.parametrize(

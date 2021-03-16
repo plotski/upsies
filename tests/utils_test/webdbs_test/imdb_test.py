@@ -288,58 +288,6 @@ async def test_search_result_year(query, exp_year, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames=('id', 'exp_directors'),
-    argvalues=(
-        ('tt3286052', (('Oz Perkins', 'https://imdb.com/name/nm0674020'),)),  # February (movie)
-        # Wind in the Willows (TV movie)
-        ('tt0192802', (('Dave Unwin', 'https://imdb.com/name/nm0881386'),
-                       ('Dennis Abey', 'https://imdb.com/name/nm0008688'))),
-        ('tt0471711', (('Dwayne Carey-Hill', 'https://imdb.com/name/nm1401752'),)),  # Bender's Big Score (Video)
-        ('tt0097270', (('Alan Clarke', 'https://imdb.com/name/nm0164639'),)),  # Elephant (TV Short)
-        ('tt3472226', (('David Sandberg', 'https://imdb.com/name/nm6247887'),)),  # Kung Fury (Short)
-        ('tt6560040', ()),  # The Forest (TV mini-series)
-        ('tt2372162', ()),  # Orange Is the New Black (series)
-        ('tt5440238', (('Michael Trim', 'https://imdb.com/name/nm0872841'),)),  # Orange Is the New Black - S07E01 (episode)
-    ),
-    ids=lambda value: str(value),
-)
-@pytest.mark.asyncio
-async def test_directors(id, exp_directors, api, store_response):
-    directors = await api.directors(id)
-    if not directors:
-        assert exp_directors == ()
-    else:
-        for person, (name, url) in zip_longest(directors, exp_directors):
-            assert person == name
-            assert person.url == url
-
-
-@pytest.mark.parametrize(
-    argnames=('id', 'exp_creators'),
-    argvalues=(
-        ('tt3286052', ()),  # February (movie)
-        ('tt0192802', ()),  # Wind in the Willows (TV movie)
-        ('tt0471711', ()),  # Bender's Big Score (Video)
-        ('tt0097270', ()),  # Elephant (TV Short)
-        ('tt3472226', ()),  # Kung Fury (Short)
-        ('tt6560040', (('Delinda Jacobs', 'https://imdb.com/name/nm3064398'),)),  # The Forest (TV mini-series)
-        ('tt2372162', (('Jenji Kohan', 'https://imdb.com/name/nm0463176'),)),  # Orange Is the New Black (series)
-        ('tt5440238', ()),  # Orange Is the New Black - S07E01 (episode)
-    ),
-    ids=lambda value: str(value),
-)
-@pytest.mark.asyncio
-async def test_creators(id, exp_creators, api, store_response):
-    creators = await api.creators(id)
-    if not creators:
-        assert exp_creators == ()
-    else:
-        for person, (name, url) in zip_longest(creators, exp_creators):
-            assert person == name
-            assert person.url == url
-
-
-@pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),
     argvalues=(
         # Blues Brothers (movie)
@@ -407,6 +355,58 @@ async def test_cast(id, exp_cast, api, store_response):
 async def test_countries(id, exp_countries, api, store_response):
     countries = await api.countries(id)
     assert countries == exp_countries
+
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_creators'),
+    argvalues=(
+        ('tt3286052', ()),  # February (movie)
+        ('tt0192802', ()),  # Wind in the Willows (TV movie)
+        ('tt0471711', ()),  # Bender's Big Score (Video)
+        ('tt0097270', ()),  # Elephant (TV Short)
+        ('tt3472226', ()),  # Kung Fury (Short)
+        ('tt6560040', (('Delinda Jacobs', 'https://imdb.com/name/nm3064398'),)),  # The Forest (TV mini-series)
+        ('tt2372162', (('Jenji Kohan', 'https://imdb.com/name/nm0463176'),)),  # Orange Is the New Black (series)
+        ('tt5440238', ()),  # Orange Is the New Black - S07E01 (episode)
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_creators(id, exp_creators, api, store_response):
+    creators = await api.creators(id)
+    if not creators:
+        assert exp_creators == ()
+    else:
+        for person, (name, url) in zip_longest(creators, exp_creators):
+            assert person == name
+            assert person.url == url
+
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_directors'),
+    argvalues=(
+        ('tt3286052', (('Oz Perkins', 'https://imdb.com/name/nm0674020'),)),  # February (movie)
+        # Wind in the Willows (TV movie)
+        ('tt0192802', (('Dave Unwin', 'https://imdb.com/name/nm0881386'),
+                       ('Dennis Abey', 'https://imdb.com/name/nm0008688'))),
+        ('tt0471711', (('Dwayne Carey-Hill', 'https://imdb.com/name/nm1401752'),)),  # Bender's Big Score (Video)
+        ('tt0097270', (('Alan Clarke', 'https://imdb.com/name/nm0164639'),)),  # Elephant (TV Short)
+        ('tt3472226', (('David Sandberg', 'https://imdb.com/name/nm6247887'),)),  # Kung Fury (Short)
+        ('tt6560040', ()),  # The Forest (TV mini-series)
+        ('tt2372162', ()),  # Orange Is the New Black (series)
+        ('tt5440238', (('Michael Trim', 'https://imdb.com/name/nm0872841'),)),  # Orange Is the New Black - S07E01 (episode)
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_directors(id, exp_directors, api, store_response):
+    directors = await api.directors(id)
+    if not directors:
+        assert exp_directors == ()
+    else:
+        for person, (name, url) in zip_longest(directors, exp_directors):
+            assert person == name
+            assert person.url == url
 
 
 @pytest.mark.parametrize(

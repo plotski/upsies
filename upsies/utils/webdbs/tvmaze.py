@@ -64,8 +64,17 @@ class TvmazeApi(WebDbApiBase):
         else:
             return show
 
-    async def directors(self, id):
-        return ()
+    async def cast(self, id):
+        show = await self._get_show(id)
+        cast = show.get('_embedded', {}).get('cast', ())
+        return tuple(
+            common.Person(item['person']['name'], item['person'].get('url', ''))
+            for item in cast
+        )
+
+    async def countries(self, id):
+        show = await self._get_show(id)
+        return _get_countries(show)
 
     async def creators(self, id):
         show = await self._get_show(id)
@@ -79,17 +88,8 @@ class TvmazeApi(WebDbApiBase):
                 ))
         return tuple(creators)
 
-    async def cast(self, id):
-        show = await self._get_show(id)
-        cast = show.get('_embedded', {}).get('cast', ())
-        return tuple(
-            common.Person(item['person']['name'], item['person'].get('url', ''))
-            for item in cast
-        )
-
-    async def countries(self, id):
-        show = await self._get_show(id)
-        return _get_countries(show)
+    async def directors(self, id):
+        return ()
 
     async def keywords(self, id):
         show = await self._get_show(id)

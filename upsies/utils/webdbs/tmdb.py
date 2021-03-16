@@ -72,24 +72,6 @@ class TmdbApi(WebDbApiBase):
                 persons.append(common.Person(name, url))
         return tuple(persons)
 
-    async def directors(self, id):
-        soup = await self._get_soup(id)
-        profiles = soup.select('.people > .profile')
-        directors = []
-        for profile in profiles:
-            if profile.find('p', text=re.compile(r'(?i:Director)')):
-                directors.extend(self._get_persons(profile))
-        return tuple(directors)
-
-    async def creators(self, id):
-        soup = await self._get_soup(id)
-        profiles = soup.select('.people > .profile')
-        creators = []
-        for profile in profiles:
-            if profile.find('p', text=re.compile(r'(?i:Creator)')):
-                creators.extend(self._get_persons(profile))
-        return tuple(creators)
-
     async def cast(self, id):
         soup = await self._get_soup(id)
         cards = soup.select('.people > .card')
@@ -100,6 +82,24 @@ class TmdbApi(WebDbApiBase):
 
     async def countries(self, id):
         raise NotImplementedError('Country lookup is not implemented for TMDb')
+
+    async def creators(self, id):
+        soup = await self._get_soup(id)
+        profiles = soup.select('.people > .profile')
+        creators = []
+        for profile in profiles:
+            if profile.find('p', text=re.compile(r'(?i:Creator)')):
+                creators.extend(self._get_persons(profile))
+        return tuple(creators)
+
+    async def directors(self, id):
+        soup = await self._get_soup(id)
+        profiles = soup.select('.people > .profile')
+        directors = []
+        for profile in profiles:
+            if profile.find('p', text=re.compile(r'(?i:Director)')):
+                directors.extend(self._get_persons(profile))
+        return tuple(directors)
 
     async def keywords(self, id):
         soup = await self._get_soup(id)

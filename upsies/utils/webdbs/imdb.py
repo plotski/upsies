@@ -74,24 +74,6 @@ class ImdbApi(WebDbApiBase):
                 persons.append(common.Person(name, url))
         return tuple(persons)
 
-    async def directors(self, id):
-        soup = await self._get_soup(f'title/{id}')
-        directors = []
-        for tag in soup.find_all(class_='credit_summary_item'):
-            strings = tuple(tag.stripped_strings)
-            if 'Director:' in strings or 'Directors:' in strings:
-                directors.extend(self._get_persons(tag))
-        return tuple(directors)
-
-    async def creators(self, id):
-        soup = await self._get_soup(f'title/{id}')
-        creators = []
-        for tag in soup.find_all(class_='credit_summary_item'):
-            strings = tuple(tag.stripped_strings)
-            if 'Creator:' in strings or 'Creators:' in strings:
-                creators.extend(self._get_persons(tag))
-        return tuple(creators)
-
     async def cast(self, id):
         soup = await self._get_soup(f'title/{id}')
         cast_tag = soup.find(class_='cast_list')
@@ -109,6 +91,24 @@ class ImdbApi(WebDbApiBase):
         for country_tag in countries_tag.find_all('a'):
             countries.append(''.join(country_tag.stripped_strings))
         return tuple(countries)
+
+    async def creators(self, id):
+        soup = await self._get_soup(f'title/{id}')
+        creators = []
+        for tag in soup.find_all(class_='credit_summary_item'):
+            strings = tuple(tag.stripped_strings)
+            if 'Creator:' in strings or 'Creators:' in strings:
+                creators.extend(self._get_persons(tag))
+        return tuple(creators)
+
+    async def directors(self, id):
+        soup = await self._get_soup(f'title/{id}')
+        directors = []
+        for tag in soup.find_all(class_='credit_summary_item'):
+            strings = tuple(tag.stripped_strings)
+            if 'Director:' in strings or 'Directors:' in strings:
+                directors.extend(self._get_persons(tag))
+        return tuple(directors)
 
     async def keywords(self, id):
         soup = await self._get_soup(f'title/{id}')

@@ -242,39 +242,6 @@ async def test_search_result_year(title, exp_year, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames=('id', 'exp_directors'),
-    argvalues=(
-        (1259, ()),
-        (117, ()),
-        (36483, ()),
-    ),
-    ids=lambda value: str(value),
-)
-@pytest.mark.asyncio
-async def test_directors(id, exp_directors, api, store_response):
-    directors = await api.directors(id)
-    assert directors == exp_directors
-
-
-@pytest.mark.parametrize(
-    argnames=('id', 'exp_creators'),
-    argvalues=(
-        (170, (('Jenji Kohan', 'https://www.tvmaze.com/people/29524/jenji-kohan'),)),
-    ),
-    ids=lambda value: str(value),
-)
-@pytest.mark.asyncio
-async def test_creators(id, exp_creators, api, store_response):
-    creators = await api.creators(id)
-    if not creators:
-        assert exp_creators == ()
-    else:
-        for person, (name, url) in zip_longest(creators, exp_creators):
-            assert person == name
-            assert person.url == url
-
-
-@pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),
     argvalues=(
         (1259, (('André Sogliuzzo', 'https://www.tvmaze.com/people/53172/andre-sogliuzzo'),
@@ -309,6 +276,39 @@ async def test_cast(id, exp_cast, api, store_response):
 @pytest.mark.asyncio
 async def test_countries(id, exp_countries, api, store_response):
     assert await api.countries(id) == exp_countries
+
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_creators'),
+    argvalues=(
+        (170, (('Jenji Kohan', 'https://www.tvmaze.com/people/29524/jenji-kohan'),)),
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_creators(id, exp_creators, api, store_response):
+    creators = await api.creators(id)
+    if not creators:
+        assert exp_creators == ()
+    else:
+        for person, (name, url) in zip_longest(creators, exp_creators):
+            assert person == name
+            assert person.url == url
+
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_directors'),
+    argvalues=(
+        (1259, ()),
+        (117, ()),
+        (36483, ()),
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_directors(id, exp_directors, api, store_response):
+    directors = await api.directors(id)
+    assert directors == exp_directors
 
 
 @pytest.mark.parametrize(
