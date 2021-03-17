@@ -15,45 +15,6 @@ _log = logging.getLogger(__name__)
 
 
 class BbTrackerJobs(TrackerJobsBase):
-    def make_choices_job(self, name, label, autodetect_value, options,
-                         condition=None, autofinish=False):
-        """
-        Return :class:`~.jobs.dialog.ChoiceJob` instance
-
-        :param name: See :class:`~.jobs.dialog.ChoiceJob`
-        :param label: See :class:`~.jobs.dialog.ChoiceJob`
-        :param autodetect_value: Autodetected choice
-        :param options: Sequence of `(label, value, regex)` tuples. `label` is
-            presented to the user and `value` is available via
-            :attr:`~.jobs.dialog.ChoiceJob.choice` when this job is
-            finished. The first `regex` that matches `autodetect_value` is
-            visually marked as "auto-detected" for the user.
-        :param condition: See ``condition`` for :class:`~.base.JobBase`
-        :param bool autofinish: Whether to choose the autodetected value with no
-            user-interaction
-        """
-        focused = None
-        choices = []
-        for text, value, regex in options:
-            if not focused and regex.search(autodetect_value):
-                choices.append((f'{text} (auto-detected)', value))
-                focused = choices[-1]
-                autofinish = autofinish and True
-            else:
-                choices.append((text, value))
-
-        job = jobs.dialog.ChoiceJob(
-            name=name,
-            label=label,
-            condition=condition,
-            choices=choices,
-            focused=focused,
-            **self.common_job_args,
-        )
-        if autofinish and focused:
-            job.choice = focused
-        return job
-
     @cached_property
     def jobs_before_upload(self):
         return (
@@ -559,3 +520,42 @@ class BbTrackerJobs(TrackerJobsBase):
             raise RuntimeError('Screeenshots not uploaded yet')
         else:
             return {f'screenshot{i}': url for i, url in enumerate(urls, start=1)}
+
+    def make_choices_job(self, name, label, autodetect_value, options,
+                         condition=None, autofinish=False):
+        """
+        Return :class:`~.jobs.dialog.ChoiceJob` instance
+
+        :param name: See :class:`~.jobs.dialog.ChoiceJob`
+        :param label: See :class:`~.jobs.dialog.ChoiceJob`
+        :param autodetect_value: Autodetected choice
+        :param options: Sequence of `(label, value, regex)` tuples. `label` is
+            presented to the user and `value` is available via
+            :attr:`~.jobs.dialog.ChoiceJob.choice` when this job is
+            finished. The first `regex` that matches `autodetect_value` is
+            visually marked as "auto-detected" for the user.
+        :param condition: See ``condition`` for :class:`~.base.JobBase`
+        :param bool autofinish: Whether to choose the autodetected value with no
+            user-interaction
+        """
+        focused = None
+        choices = []
+        for text, value, regex in options:
+            if not focused and regex.search(autodetect_value):
+                choices.append((f'{text} (auto-detected)', value))
+                focused = choices[-1]
+                autofinish = autofinish and True
+            else:
+                choices.append((text, value))
+
+        job = jobs.dialog.ChoiceJob(
+            name=name,
+            label=label,
+            condition=condition,
+            choices=choices,
+            focused=focused,
+            **self.common_job_args,
+        )
+        if autofinish and focused:
+            job.choice = focused
+        return job
