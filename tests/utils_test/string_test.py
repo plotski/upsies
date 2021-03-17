@@ -1,6 +1,6 @@
-from upsies.utils import string
-
 import pytest
+
+from upsies.utils import string
 
 
 def test_pretty_bytes():

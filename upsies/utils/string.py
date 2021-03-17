@@ -4,7 +4,6 @@ String formatting and parsing
 
 import math
 
-
 _byte_units = {
     'PiB': 1024 ** 5,
     'TiB': 1024 ** 4,

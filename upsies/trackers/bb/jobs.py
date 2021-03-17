@@ -391,17 +391,17 @@ class BbTrackerJobs(TrackerJobsBase):
     async def generate_movie_tags(self, id):
         def normalize_tags(strings):
             normalized = []
-            for string in strings:
-                string = (
-                    string
+            for s in strings:
+                s = (
+                    s
                     .lower()
                     .replace(' ', '.')
                     .replace('-', '.')
                     .replace('\'', '.')
                 )
-                string = re.sub(r'\.+', '.', string)  # Dedup "."
-                string = unidecode.unidecode(string)  # Replace non-ASCII
-                normalized.append(string)
+                s = re.sub(r'\.+', '.', s)  # Dedup "."
+                s = unidecode.unidecode(s)  # Replace non-ASCII
+                normalized.append(s)
             return normalized
 
         def assemble(*sequences):
