@@ -63,6 +63,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.mediainfo_job,
             self.create_torrent_job,
             self.screenshots_job,
+            self.upload_screenshots_job,
 
             # Movie jobs
             self.movie_title_job,
@@ -534,16 +535,27 @@ class BbTrackerJobs(TrackerJobsBase):
     def post_data(self):
         if self.is_movie_release:
             return {
-                'type': "Movies",
-                'title': self.movie_title_job.output[0],
-                'year': self.movie_year_job.output[0],
-                'source': self.movie_source_job.choice,
-                'video_codec': self.movie_video_codec_job.choice,
-                'audio_codec': self.movie_audio_codec_job.choice,
-                'container': self.movie_container_job.choice,
-                'resolution': self.movie_resolution_job.choice,
-                'remaster_title': self.movie_release_info_job.output[0],
-                'tags': self.movie_tags_job.output[0],
-                'desc': self.movie_description_job.output[0],
-                'release_desc': self.mediainfo_job.output[0],
+                **{
+                    'type': "Movies",
+                    'title': self.movie_title_job.output[0],
+                    'year': self.movie_year_job.output[0],
+                    'source': self.movie_source_job.choice,
+                    'video_codec': self.movie_video_codec_job.choice,
+                    'audio_codec': self.movie_audio_codec_job.choice,
+                    'container': self.movie_container_job.choice,
+                    'resolution': self.movie_resolution_job.choice,
+                    'remaster_title': self.movie_release_info_job.output[0],
+                    'tags': self.movie_tags_job.output[0],
+                    'desc': self.movie_description_job.output[0],
+                    'release_desc': self.mediainfo_job.output[0],
+                },
+                **self.post_data_screenshot_urls,
             }
+
+    @property
+    def post_data_screenshot_urls(self):
+        urls = self.upload_screenshots_job.output
+        if not urls:
+            raise RuntimeError('Screeenshots not uploaded yet')
+        else:
+            return {f'screenshot{i}': url for i, url in enumerate(urls, start=1)}
