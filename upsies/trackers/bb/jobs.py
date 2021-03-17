@@ -60,6 +60,7 @@ class BbTrackerJobs(TrackerJobsBase):
             # Generic jobs
             self.release_type_job,
             self.imdb_job,
+            self.mediainfo_job,
             self.create_torrent_job,
             self.screenshots_job,
 
@@ -541,4 +542,5 @@ class BbTrackerJobs(TrackerJobsBase):
                 'remaster_title': self.movie_release_info_job.output[0],
                 'tags': self.movie_tags_job.output[0],
                 'desc': self.movie_description_job.output[0],
+                'release_desc': self.mediainfo_job.output[0],
             }
