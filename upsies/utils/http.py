@@ -98,15 +98,16 @@ async def post(url, headers={}, data={}, files={}, auth=None,
     )
 
 
-class Response(str):
+class Result(str):
     """
     Response to an HTTP request
 
     This is a subclass of :class:`str` with additional attributes and methods.
     """
 
-    def __new__(cls, text, headers={}, status_code=None):
+    def __new__(cls, text, bytes, headers={}, status_code=None):
         obj = super().__new__(cls, text)
+        obj._bytes = bytes
         obj._headers = headers
         obj._status_code = status_code
         return obj
@@ -120,6 +121,11 @@ class Response(str):
     def status_code(self):
         """HTTP status code"""
         return self._status_code
+
+    @property
+    def bytes(self):
+        """Response data as :class:`bytes`"""
+        return self._bytes
 
     def json(self):
         """
@@ -136,6 +142,7 @@ class Response(str):
     def __repr__(self):
         return (f'{type(self).__name__}('
                 f'text={str(self)!r}, '
+                f'bytes={self.bytes!r}, '
                 f'headers={self.headers!r}, '
                 f'status_code={self.status_code!r})')
 
@@ -166,9 +173,9 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
     async with request_lock:
         if cache:
             cache_file = _cache_file(method, url, params)
-            response = _from_cache(cache_file)
-            if response is not None:
-                return Response(response)
+            result = _from_cache(cache_file)
+            if result is not None:
+                return result
 
         _log.debug('%s: %r: %r', method, url, params)
         try:
@@ -192,9 +199,10 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
         else:
             if cache:
                 cache_file = _cache_file(method, url, params)
-                _to_cache(cache_file, response.text)
-            return Response(
+                _to_cache(cache_file, response.content)
+            return Result(
                 text=response.text,
+                bytes=response.content,
                 headers=response.headers,
                 status_code=response.status_code,
             )
@@ -235,6 +243,7 @@ def _open_files(files):
             raise RuntimeError(f'Invalid file: {fileinfo}')
     return opened
 
+
 def _get_fileobj(filepath):
     """
     Open `filepath` and return the file object
@@ -251,21 +260,34 @@ def _get_fileobj(filepath):
         raise errors.RequestError(f'{filepath}: {msg}')
 
 
-def _from_cache(cache_file):
+def _to_cache(cache_file, bytes):
     try:
-        with open(cache_file, 'r') as f:
-            data = f.read()
-    except OSError:
-        return None
-    else:
-        return data
-
-def _to_cache(cache_file, string):
-    try:
-        with open(cache_file, 'w') as f:
-            f.write(string)
+        with open(cache_file, 'wb') as f:
+            f.write(bytes)
     except OSError as e:
         raise RuntimeError(f'Unable to write cache file {cache_file}: {e}')
+
+
+def _from_cache(cache_file):
+    bytes = _read_bytes_from_file(cache_file)
+    text = _read_string_from_file(cache_file)
+    if bytes and text:
+        return Result(text=text, bytes=bytes)
+
+
+def _read_string_from_file(filepath):
+    bytes = _read_bytes_from_file(filepath)
+    if bytes:
+        return str(bytes, encoding='utf-8', errors='replace')
+
+
+def _read_bytes_from_file(filepath):
+    try:
+        with open(filepath, 'rb') as f:
+            return f.read()
+    except OSError:
+        pass
+
 
 def _cache_file(method, url, params={}):
     def make_filename(method, url, params_str):
@@ -286,6 +308,7 @@ def _cache_file(method, url, params={}):
         fs.tmpdir(),
         make_filename(method, url, params_str),
     )
+
 
 def _semantic_hash(obj):
     """

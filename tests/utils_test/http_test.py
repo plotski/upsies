@@ -65,7 +65,7 @@ class AsyncMock(Mock):
 @pytest.mark.asyncio
 async def test_get_forwards_arguments_to_request(auth, cache, user_agent, allow_redirects, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
-    response = await http.get(
+    result = await http.get(
         url='http://localhost:123/foo',
         headers={'foo': 'bar'},
         params={'bar': 'baz'},
@@ -86,7 +86,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, user_agent, allow_
             allow_redirects=allow_redirects,
         )
     ]
-    assert response is request_mock.return_value
+    assert result is request_mock.return_value
 
 @pytest.mark.parametrize(
     argnames=('auth', 'cache', 'user_agent', 'allow_redirects'),
@@ -100,7 +100,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, user_agent, allow_
 @pytest.mark.asyncio
 async def test_post_forwards_arguments_to_request(auth, cache, user_agent, allow_redirects, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
-    response = await http.post(
+    result = await http.post(
         url='http://localhost:123/foo',
         headers={'foo': 'bar'},
         data=b'foo',
@@ -123,33 +123,42 @@ async def test_post_forwards_arguments_to_request(auth, cache, user_agent, allow
             allow_redirects=allow_redirects,
         )
     ]
-    assert response is request_mock.return_value
+    assert result is request_mock.return_value
 
 
-def test_Response_is_string():
-    r = http.Response('foo')
+def test_Result_is_string():
+    r = http.Result('foo', b'foo')
     assert isinstance(r, str)
     assert r == 'foo'
 
-def test_Response_headers():
-    r = http.Response('foo')
+def test_Result_headers():
+    r = http.Result('foo', b'foo')
     assert r.headers == {}
-    r = http.Response('foo', headers={'a': '1', 'b': '2'})
+    r = http.Result('foo', b'foo', headers={'a': '1', 'b': '2'})
     assert r.headers == {'a': '1', 'b': '2'}
 
-def test_Response_status_code():
-    r = http.Response('foo')
+def test_Result_status_code():
+    r = http.Result('foo', b'foo')
     assert r.status_code is None
-    r = http.Response('foo', status_code=304)
+    r = http.Result('foo', b'foo', status_code=304)
     assert r.status_code == 304
 
-def test_Response_json():
-    r = http.Response('{"this":"that"}')
+def test_Result_bytes():
+    r = http.Result('föö', bytes('föö', 'utf-8'))
+    assert r.bytes == bytes('föö', 'utf-8')
+    assert str(r.bytes, 'utf-8') == 'föö'
+
+def test_Result_json():
+    r = http.Result('{"this":"that"}', b'{"this":"that"}')
     assert r.json() == {'this': 'that'}
-    r = http.Response('{"this":"that"')
+    r = http.Result('{"this":"that"', b'{"this":"that"')
     assert r == '{"this":"that"'
     with pytest.raises(errors.RequestError, match=r'^Malformed JSON: {"this":"that": '):
         r.json()
+
+def test_Result_repr():
+    r = http.Result('föö', bytes('föö', 'utf-8'))
+    assert repr(r) == f"Result(text='föö', bytes={bytes('föö', 'utf-8')!r}, headers={{}}, status_code=None)"
 
 
 @pytest.mark.asyncio
@@ -175,24 +184,24 @@ async def test_request_with_caching_disabled(method, mock_cache, httpserver):
         'have this',
     )
     for i in range(3):
-        response = await http._request(
+        result = await http._request(
             method=method,
             url=httpserver.url_for('/foo'),
             cache=False,
         )
-        assert response == 'have this'
-        assert isinstance(response, http.Response)
+        assert result == 'have this'
+        assert isinstance(result, http.Result)
         assert mock_cache.mock_calls == []
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
-async def test_request_gets_cached_response(method, mock_cache):
-    mock_cache.from_cache.return_value = 'cached response'
+async def test_request_gets_cached_result(method, mock_cache):
+    mock_cache.from_cache.return_value = 'cached result'
     url = 'http://localhost:12345/foo'
     for i in range(1, 4):
-        response = await http._request(method=method, url=url, cache=True)
-        assert response == 'cached response'
-        assert isinstance(response, http.Response)
+        result = await http._request(method=method, url=url, cache=True)
+        assert result == 'cached result'
+        assert result is mock_cache.from_cache.return_value
         assert mock_cache.mock_calls == [
             call.cache_file(method, url, {}),
             call.from_cache(mock_cache.cache_file.return_value),
@@ -200,7 +209,7 @@ async def test_request_gets_cached_response(method, mock_cache):
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
-async def test_request_caches_response(method, mock_cache, httpserver):
+async def test_request_caches_result(method, mock_cache, httpserver):
     mock_cache.from_cache.return_value = None
     httpserver.expect_request(
         uri='/foo',
@@ -208,18 +217,20 @@ async def test_request_caches_response(method, mock_cache, httpserver):
     ).respond_with_data(
         'have this',
     )
-    response = await http._request(
+    print(httpserver)
+    print(dir(httpserver))
+    result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
         cache=True,
     )
-    assert response == 'have this'
-    assert isinstance(response, http.Response)
+    assert result == 'have this'
+    assert isinstance(result, http.Result)
     assert mock_cache.mock_calls == [
         call.cache_file(method, httpserver.url_for('/foo'), {}),
         call.from_cache(mock_cache.cache_file.return_value),
         call.cache_file(method, httpserver.url_for('/foo'), {}),
-        call.to_cache(mock_cache.cache_file.return_value, 'have this'),
+        call.to_cache(mock_cache.cache_file.return_value, b'have this'),
     ]
 
 
@@ -238,13 +249,13 @@ async def test_request_sends_default_headers(method, mock_cache, httpserver):
     ).respond_with_handler(
         Handler(),
     )
-    response = await http._request(
+    result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
         user_agent=True,
     )
-    assert response == 'have this'
-    assert isinstance(response, http.Response)
+    assert result == 'have this'
+    assert isinstance(result, http.Result)
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -265,13 +276,13 @@ async def test_request_sends_custom_headers(method, mock_cache, httpserver, mock
     ).respond_with_handler(
         Handler(),
     )
-    response = await http._request(
+    result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
         headers=custom_headers,
     )
-    assert response == 'have this'
-    assert isinstance(response, http.Response)
+    assert result == 'have this'
+    assert isinstance(result, http.Result)
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -284,13 +295,13 @@ async def test_request_sends_params(method, mock_cache, httpserver):
     ).respond_with_data(
         'have this',
     )
-    response = await http._request(
+    result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
         params=query,
     )
-    assert response == 'have this'
-    assert isinstance(response, http.Response)
+    assert result == 'have this'
+    assert isinstance(result, http.Result)
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -303,13 +314,13 @@ async def test_request_sends_data(method, mock_cache, httpserver):
     ).respond_with_data(
         'have this',
     )
-    response = await http._request(
+    result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
         data=data,
     )
-    assert response == 'have this'
-    assert isinstance(response, http.Response)
+    assert result == 'have this'
+    assert isinstance(result, http.Result)
 
 @pytest.mark.asyncio
 async def test_request_sends_files(mock_cache, httpserver, mocker):
@@ -352,13 +363,13 @@ async def test_request_sends_files(mock_cache, httpserver, mocker):
     ).respond_with_handler(
         Handler(),
     )
-    response = await http._request(
+    result = await http._request(
         method='POST',
         url=httpserver.url_for('/foo'),
         files=files,
     )
-    assert response == 'have this'
-    assert isinstance(response, http.Response)
+    assert result == 'have this'
+    assert isinstance(result, http.Result)
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -378,13 +389,13 @@ async def test_request_sends_auth(method, mock_cache, httpserver):
     ).respond_with_handler(
         Handler(),
     )
-    response = await http._request(
+    result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
         auth=auth,
     )
-    assert response == 'have this'
-    assert isinstance(response, http.Response)
+    assert result == 'have this'
+    assert isinstance(result, http.Result)
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -400,13 +411,13 @@ async def test_request_does_not_send_auth(method, mock_cache, httpserver):
     ).respond_with_handler(
         Handler(),
     )
-    response = await http._request(
+    result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
         auth=None,
     )
-    assert response == 'have this'
-    assert isinstance(response, http.Response)
+    assert result == 'have this'
+    assert isinstance(result, http.Result)
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -422,13 +433,13 @@ async def test_request_sends_user_agent(method, mock_cache, httpserver):
     ).respond_with_handler(
         Handler(),
     )
-    response = await http._request(
+    result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
         user_agent=True,
     )
-    assert response == 'have this'
-    assert isinstance(response, http.Response)
+    assert result == 'have this'
+    assert isinstance(result, http.Result)
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -444,13 +455,13 @@ async def test_request_does_not_send_user_agent(method, mock_cache, httpserver):
     ).respond_with_handler(
         Handler(),
     )
-    response = await http._request(
+    result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
         user_agent=False,
     )
-    assert response == 'have this'
-    assert isinstance(response, http.Response)
+    assert result == 'have this'
+    assert isinstance(result, http.Result)
 
 
 @pytest.mark.parametrize('allow_redirects', (True, False))
@@ -483,16 +494,16 @@ async def test_request_with_allow_redirects(status_code, method, allow_redirects
         handler,
     )
 
-    response = await http._request(
+    result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
         allow_redirects=allow_redirects,
     )
     if allow_redirects:
-        assert response == 'redirected'
+        assert result == 'redirected'
     else:
-        assert response == 'not redirected'
-    assert isinstance(response, http.Response)
+        assert result == 'not redirected'
+    assert isinstance(result, http.Result)
 
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
@@ -574,9 +585,9 @@ async def test_get_performs_only_one_identical_request_at_the_same_time(httpserv
         (http.get(httpserver.url_for('/c'), params={'foo': '1'}, cache=True) for _ in range(3)),
         (http.get(httpserver.url_for('/c'), params={'foo': '2'}, cache=True) for _ in range(6)),
     ))
-    responses = await asyncio.gather(*coros)
+    results = await asyncio.gather(*coros)
 
-    assert set(responses) == set(
+    assert set(results) == set(
         ['/a?'] * 10
         + ['/b?'] * 5
         + ['/c?foo=1'] * 3
@@ -614,15 +625,15 @@ async def test_post_request_performs_only_one_identical_request_at_the_same_time
         (http.post(httpserver.url_for('/c'), data={'foo': '1'}, cache=True) for _ in range(3)),
         (http.post(httpserver.url_for('/c'), data={'foo': '2'}, cache=True) for _ in range(6)),
     ))
-    responses = await asyncio.gather(*coros)
+    results = await asyncio.gather(*coros)
 
-    assert set(responses) == set(
+    assert set(results) == set(
         ["/a? data:"] * 10
         + ['/b? data:'] * 5
         + ['/c? data:foo=1'] * 3
         + ['/c? data:foo=2'] * 6
     )
-    assert len(responses) == 10 + 5 + 3 + 6
+    assert len(results) == 10 + 5 + 3 + 6
     assert set(handler.requests_seen) == {
         '/a? data:',
         '/b? data:',
@@ -705,15 +716,15 @@ def test_cache_file_with_very_long_params(method, mocker):
 def test_from_cache_cannot_read_cache_file(mocker):
     open_mock = mocker.patch('builtins.open', side_effect=OSError('Ouch'))
     assert http._from_cache('mock/path') is None
-    assert open_mock.call_args_list == [call('mock/path', 'r')]
+    assert open_mock.call_args_list == [call('mock/path', 'rb'), call('mock/path', 'rb')]
 
 def test_from_cache_can_read_cache_file(mocker):
     open_mock = mocker.patch('builtins.open')
     filehandle = open_mock.return_value.__enter__.return_value
-    filehandle.read.return_value = 'cached data'
-    assert http._from_cache('mock/path') == 'cached data'
-    assert open_mock.call_args_list == [call('mock/path', 'r')]
-    assert filehandle.read.call_args_list == [call()]
+    filehandle.read.return_value = b'cached data'
+    assert http._from_cache('mock/path') == http.Result('cached data', b'cached data')
+    assert open_mock.call_args_list == [call('mock/path', 'rb'), call('mock/path', 'rb')]
+    assert filehandle.read.call_args_list == [call(), call()]
 
 
 def test_to_cache_cannot_write_cache_file(mocker):
@@ -727,5 +738,5 @@ def test_to_cache_can_write_cache_file(mocker):
     open_mock = mocker.patch('builtins.open')
     filehandle = open_mock.return_value.__enter__.return_value
     assert http._to_cache('mock/path', 'data') is None
-    assert open_mock.call_args_list == [call('mock/path', 'w')]
+    assert open_mock.call_args_list == [call('mock/path', 'wb')]
     assert filehandle.write.call_args_list == [call('data')]
