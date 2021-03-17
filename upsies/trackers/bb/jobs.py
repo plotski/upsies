@@ -15,7 +15,8 @@ _log = logging.getLogger(__name__)
 
 
 class BbTrackerJobs(TrackerJobsBase):
-    def make_choices_job(self, name, label, autodetect_value, options, condition=None):
+    def make_choices_job(self, name, label, autodetect_value, options,
+                         condition=None, autofinish=False):
         """
         Return :class:`~.jobs.dialog.ChoiceJob` instance
 
@@ -28,17 +29,20 @@ class BbTrackerJobs(TrackerJobsBase):
             finished. The first `regex` that matches `autodetect_value` is
             visually marked as "auto-detected" for the user.
         :param condition: See ``condition`` for :class:`~.base.JobBase`
+        :param bool autofinish: Whether to choose the autodetected value with no
+            user-interaction
         """
         focused = None
         choices = []
-        for choice, value, regex in options:
+        for text, value, regex in options:
             if not focused and regex.search(autodetect_value):
-                choices.append((f'{choice} (auto-detected)', value))
+                choices.append((f'{text} (auto-detected)', value))
                 focused = choices[-1]
+                autofinish = autofinish and True
             else:
-                choices.append((choice, value))
+                choices.append((text, value))
 
-        return jobs.dialog.ChoiceJob(
+        job = jobs.dialog.ChoiceJob(
             name=name,
             label=label,
             condition=condition,
@@ -46,6 +50,9 @@ class BbTrackerJobs(TrackerJobsBase):
             focused=focused,
             **self.common_job_args,
         )
+        if autofinish and focused:
+            job.choice = focused
+        return job
 
     @cached_property
     def jobs_before_upload(self):
@@ -183,6 +190,7 @@ class BbTrackerJobs(TrackerJobsBase):
             label='Resolution',
             condition=lambda: self.is_movie_release,
             autodetect_value=self.release_name.resolution,
+            autofinish=True,
             options=(
                 ('4320p', '2160p', re.compile(r'4320p')),
                 ('2160p', '2160p', re.compile(r'2160p')),
@@ -206,6 +214,7 @@ class BbTrackerJobs(TrackerJobsBase):
             label='Source',
             condition=lambda: self.is_movie_release,
             autodetect_value=self.release_name.source,
+            autofinish=True,
             options=(
                 ('BluRay', 'BluRay', re.compile('^BluRay')),  # BluRay or BluRay Remux
                 # ('BluRay 3D', ' ', re.compile('^ $')),
@@ -237,6 +246,7 @@ class BbTrackerJobs(TrackerJobsBase):
             label='Audio Codec',
             condition=lambda: self.is_movie_release,
             autodetect_value=self.release_name.audio_format,
+            autofinish=True,
             options=(
                 ('AAC', 'AAC', re.compile(r'^AAC$')),
                 ('AC-3', 'AC-3', re.compile(r'^DD\+?$')),                   # DD, DD+, not DD+ Atmos
@@ -259,6 +269,7 @@ class BbTrackerJobs(TrackerJobsBase):
             label='Video Codec',
             condition=lambda: self.is_movie_release,
             autodetect_value=self.release_name.video_format,
+            autofinish=True,
             options=(
                 ('x264', 'x264', re.compile(r'x264')),
                 ('x265', 'x265', re.compile(r'x265')),
@@ -279,6 +290,7 @@ class BbTrackerJobs(TrackerJobsBase):
             label='Container',
             condition=lambda: self.is_movie_release,
             autodetect_value=fs.file_extension(video.first_video(self.content_path)),
+            autofinish=True,
             options=(
                 ('AVI', 'AVI', re.compile(r'(?i:AVI)')),
                 ('MKV', 'MKV', re.compile('(?i:MKV)')),
