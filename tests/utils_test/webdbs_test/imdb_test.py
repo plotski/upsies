@@ -1,3 +1,4 @@
+import re
 from itertools import zip_longest
 from unittest.mock import Mock
 
@@ -427,6 +428,26 @@ async def test_directors(id, exp_directors, api, store_response):
 async def test_keywords(id, exp_keywords, api, store_response):
     keywords = await api.keywords(id)
     assert keywords == exp_keywords
+
+
+@pytest.mark.parametrize(
+    argnames='id',
+    argvalues=(
+        'tt0080455',  # Blues Brothers (movie)
+        'tt0192802',  # Wind in the Willows (TV movie)
+        'tt0471711',  # Bender's Big Score (Video)
+        'tt0097270',  # Elephant (TV movie)
+        'tt3472226',  # Kung Fury (Short)
+        'tt6560040',  # The Forest (mini series)
+        'tt0348914',  # Deadwood (series)
+        'tt0556307',  # Deadwood - S02E04 (episode)
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_poster_url(id, api, store_response):
+    poster_url = await api.poster_url(id)
+    assert re.search(r'^https?://m\.media-amazon\.com/images/M/[a-zA-Z0-9\._,@]+\.jpg$', poster_url)
 
 
 @pytest.mark.parametrize(

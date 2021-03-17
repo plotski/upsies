@@ -22,6 +22,7 @@ class TestApi(WebDbApiBase):
     cast = AsyncMock()
     countries = AsyncMock()
     keywords = AsyncMock()
+    poster_url = AsyncMock()
     rating_min = 0.0
     rating_max = 10.0
     rating = AsyncMock()

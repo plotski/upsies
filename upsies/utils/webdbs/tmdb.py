@@ -114,6 +114,15 @@ class TmdbApi(WebDbApiBase):
                 keywords.clear()
             return tuple(keywords)
 
+    async def poster_url(self, id):
+        soup = await self._get_soup(id)
+        img_tag = soup.find('img', class_='poster')
+        if img_tag:
+            srcs = img_tag.get('data-srcset')
+            if srcs:
+                path = srcs.split()[0]
+                return f'{self._url_base.rstrip("/")}/{path.lstrip("/")}'
+
     rating_min = 0.0
     rating_max = 100.0
 

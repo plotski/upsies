@@ -121,6 +121,16 @@ class ImdbApi(WebDbApiBase):
                     return tuple(keywords)
         return ()
 
+    async def poster_url(self, id):
+        soup = await self._get_soup(f'title/{id}')
+        poster_tag = soup.find(class_='poster')
+        if poster_tag:
+            img_tag = poster_tag.find('img')
+            if img_tag:
+                url = img_tag.get('src')
+                if url:
+                    return url
+
     rating_min = 0.0
     rating_max = 10.0
 

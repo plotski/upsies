@@ -55,6 +55,10 @@ class WebDbApiBase(abc.ABC):
         """Return list of keywords, e.g. genres"""
 
     @abc.abstractmethod
+    async def poster_url(self, id):
+        """Return URL of poster image or `None`"""
+
+    @abc.abstractmethod
     async def rating(self, id):
         """Return rating as a number or `None`"""
 

@@ -1,3 +1,4 @@
+import re
 from itertools import zip_longest
 from unittest.mock import Mock
 
@@ -326,6 +327,24 @@ async def test_keywords(id, exp_keywords, api, store_response):
             assert member in keywords
     else:
         assert not keywords
+
+
+@pytest.mark.parametrize(
+    argnames='id',
+    argvalues=(
+        'movie/525',
+        'movie/334536',
+        'tv/1406',
+        'tv/74802',
+        'tv/66260',
+        'movie/3405',
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_poster_url(id, api, store_response):
+    poster_url = await api.poster_url(id)
+    assert re.search(r'^https?://themoviedb\.org/[a-zA-Z0-9/_]+\.jpg$', poster_url)
 
 
 @pytest.mark.parametrize(

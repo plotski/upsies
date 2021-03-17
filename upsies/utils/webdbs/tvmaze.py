@@ -95,6 +95,10 @@ class TvmazeApi(WebDbApiBase):
         show = await self._get_show(id)
         return _get_keywords(show)
 
+    async def poster_url(self, id):
+        show = await self._get_show(id)
+        return show.get('image', {}).get('medium', None)
+
     rating_min = 0.0
     rating_max = 10.0
 

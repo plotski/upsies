@@ -1,3 +1,4 @@
+import re
 from itertools import zip_longest
 from unittest.mock import Mock, call
 
@@ -324,6 +325,20 @@ async def test_keywords(id, exp_keywords, api, store_response):
     keywords = await api.keywords(id)
     for kw in exp_keywords:
         assert kw in keywords
+
+
+@pytest.mark.parametrize(
+    argnames='id',
+    argvalues=(
+        1259,
+        35256,
+        36072,
+    ),
+)
+@pytest.mark.asyncio
+async def test_poster_url(id, api, store_response):
+    poster_url = await api.poster_url(id)
+    assert re.search(r'^https?://static\.tvmaze\.com/uploads/images/[a-zA-Z0-9/_]+.jpg$', poster_url)
 
 
 @pytest.mark.parametrize(
