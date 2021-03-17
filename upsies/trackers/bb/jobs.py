@@ -304,6 +304,15 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_release_info_job(self):
+        return jobs.dialog.TextFieldJob(
+            name='movie-release-info',
+            label='Release Info',
+            condition=lambda: self.is_movie_release,
+            text=self.generate_movie_release_info(),
+            **self.common_job_args,
+        )
+
+    def generate_movie_release_info(self):
         info = []
 
         if 'Remux' in self.release_name.source:
@@ -350,13 +359,7 @@ class BbTrackerJobs(TrackerJobsBase):
             if 'en' in subtitle_languages:
                 info.append('Subtitles')
 
-        return jobs.dialog.TextFieldJob(
-            name='movie-release-info',
-            label='Release Info',
-            condition=lambda: self.is_movie_release,
-            text=' / '.join(info),
-            **self.common_job_args,
-        )
+        return ' / '.join(info)
 
     @cached_property
     def movie_tags_job(self):
