@@ -525,7 +525,10 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def torrent_filepath(self):
-        return self.create_torrent_job.output[0]
+        if self.create_torrent_job.output:
+            return self.create_torrent_job.output[0]
+        else:
+            raise RuntimeError('Torrent is not ready yet')
 
     @property
     def post_data(self):
