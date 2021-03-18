@@ -52,6 +52,7 @@ class BbTrackerJobs(TrackerJobsBase):
             choices=(
                 ('Movie', release.ReleaseType.movie),
                 ('Series', release.ReleaseType.series),
+                ('Episode', release.ReleaseType.episode),
             ),
             focused=self.release_name.type,
             **self.common_job_args,
@@ -63,7 +64,8 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def is_series_release(self):
-        return self.release_type_job.choice is release.ReleaseType.series
+        return self.release_type_job.choice in (release.ReleaseType.series,
+                                                release.ReleaseType.episode)
 
     @cached_property
     def release_name(self):
