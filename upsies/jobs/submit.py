@@ -68,7 +68,6 @@ class SubmitJob(JobBase):
         self._tracker = tracker
         self._tracker_jobs = tracker_jobs
         self._submit_lock = asyncio.Lock()
-        self._info = ''
         for signal, message in (('logging_in', 'Logging in'),
                                 ('logged_in', 'Logged in'),
                                 ('uploading', 'Uploading'),
@@ -76,9 +75,9 @@ class SubmitJob(JobBase):
                                 ('logging_out', 'Logging out'),
                                 ('logged_out', '')):
             self.signal.add(signal)
-            self.signal.register(signal, lambda msg=message: setattr(self, '_info', msg))
-        self.signal.register('finished', lambda _: setattr(self, '_info', ''))
-        self.signal.register('error', lambda _: setattr(self, '_info', ''))
+            self.signal.register(signal, lambda msg=message: setattr(self, 'info', msg))
+        self.signal.register('finished', lambda _: setattr(self, 'info', ''))
+        self.signal.register('error', lambda _: setattr(self, 'info', ''))
 
         # Create jobs_after_upload now so they can connect to other jobs,
         # e.g. add_torrent_job needs to register for create_torrent_job's output
@@ -157,8 +156,3 @@ class SubmitJob(JobBase):
         """
         return tuple(job for job in self._tracker_jobs.jobs_after_upload
                      if job and job.is_enabled)
-
-    @property
-    def info(self):
-        """Current submission status as user-readable string"""
-        return self._info
