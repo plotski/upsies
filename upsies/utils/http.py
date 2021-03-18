@@ -1,5 +1,5 @@
 """
-HTTP methods
+HTTP methods with caching
 """
 
 import asyncio
