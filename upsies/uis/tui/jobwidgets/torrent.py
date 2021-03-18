@@ -23,8 +23,7 @@ class CreateTorrentJobWidget(JobWidgetBase):
 
 class AddTorrentJobWidget(JobWidgetBase):
     def setup(self):
-        self.job.signal.register('adding', lambda _: self.invalidate())
-        self.job.signal.register('added', lambda _: self.invalidate())
+        pass
 
     @cached_property
     def runtime_widget(self):
@@ -33,8 +32,7 @@ class AddTorrentJobWidget(JobWidgetBase):
 
 class CopyTorrentJobWidget(JobWidgetBase):
     def setup(self):
-        self.job.signal.register('copying', lambda _: self.invalidate())
-        self.job.signal.register('copied', lambda _: self.invalidate())
+        pass
 
     @cached_property
     def runtime_widget(self):

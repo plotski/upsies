@@ -159,7 +159,6 @@ async def test_CreateTorrentJob_get_announce_url_creates_torrent_process(job, mo
         assert job.info == 'Getting announce URL...'
 
     mocks = AsyncMock(
-        progress_update_cb=Mock(),
         create_torrent_process=Mock(side_effect=create_torrent_process_mock),
         get_announce_url=AsyncMock(return_value='http://announce.url'),
     )
@@ -168,11 +167,9 @@ async def test_CreateTorrentJob_get_announce_url_creates_torrent_process(job, mo
     mocker.patch.object(job._tracker, 'get_announce_url', mocks.get_announce_url)
     mocker.patch.object(job, '_create_torrent_process', mocks.create_torrent_process)
 
-    job.signal.register('progress_update', mocks.progress_update_cb)
     assert job.info == ''
     await job._get_announce_url()
     assert mocks.mock_calls == [
-        call.progress_update_cb(0.0),
         call.login(),
         call.get_announce_url(),
         call.create_torrent_process('http://announce.url'),
@@ -186,7 +183,6 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_login
         assert job.info == 'Getting announce URL...'
 
     mocks = AsyncMock(
-        progress_update_cb=Mock(),
         create_torrent_process=Mock(side_effect=create_torrent_process_mock),
         get_announce_url=AsyncMock(return_value='http://announce.url'),
         login=AsyncMock(side_effect=errors.RequestError('connection failed')),
@@ -196,11 +192,9 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_login
     mocker.patch.object(job._tracker, 'get_announce_url', mocks.get_announce_url)
     mocker.patch.object(job, '_create_torrent_process', mocks.create_torrent_process)
 
-    job.signal.register('progress_update', mocks.progress_update_cb)
     assert job.info == ''
     await job._get_announce_url()
     assert mocks.mock_calls == [
-        call.progress_update_cb(0.0),
         call.login(),
         call.logout(),
     ]
@@ -214,7 +208,6 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_get_a
         assert job.info == 'Getting announce URL...'
 
     mocks = AsyncMock(
-        progress_update_cb=Mock(),
         create_torrent_process=Mock(side_effect=create_torrent_process_mock),
         get_announce_url=AsyncMock(side_effect=errors.RequestError('no url found')),
     )
@@ -223,11 +216,9 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_get_a
     mocker.patch.object(job._tracker, 'get_announce_url', mocks.get_announce_url)
     mocker.patch.object(job, '_create_torrent_process', mocks.create_torrent_process)
 
-    job.signal.register('progress_update', mocks.progress_update_cb)
     assert job.info == ''
     await job._get_announce_url()
     assert mocks.mock_calls == [
-        call.progress_update_cb(0.0),
         call.login(),
         call.get_announce_url(),
         call.logout(),
@@ -242,7 +233,6 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_logou
         assert job.info == 'Getting announce URL...'
 
     mocks = AsyncMock(
-        progress_update_cb=Mock(),
         create_torrent_process=Mock(side_effect=create_torrent_process_mock),
         get_announce_url=AsyncMock(return_value='http://announce.url'),
         logout=AsyncMock(side_effect=errors.RequestError('connection failed')),
@@ -252,11 +242,9 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_logou
     mocker.patch.object(job._tracker, 'get_announce_url', mocks.get_announce_url)
     mocker.patch.object(job, '_create_torrent_process', mocks.create_torrent_process)
 
-    job.signal.register('progress_update', mocks.progress_update_cb)
     assert job.info == ''
     await job._get_announce_url()
     assert mocks.mock_calls == [
-        call.progress_update_cb(0.0),
         call.login(),
         call.get_announce_url(),
         call.create_torrent_process('http://announce.url'),
@@ -312,7 +300,7 @@ def test_CreateTorrentJob_finish(torrent_process, job):
 def test_handle_file_tree(file_tree_mock, job):
     assert job.info == ''
     job._handle_file_tree('beautiful tree')
-    assert job.info is file_tree_mock.return_value
+    assert job.info == str(file_tree_mock.return_value)
     assert file_tree_mock.call_args_list == [call('beautiful tree')]
 
 

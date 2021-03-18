@@ -48,7 +48,6 @@ class CreateTorrentJob(base.JobBase):
             f'{fs.basename(content_path)}.{tracker.name.lower()}.torrent',
         )
         self.signal.add('progress_update')
-        self._info = ''
         self._torrent_process = None
 
     def execute(self):
@@ -56,8 +55,7 @@ class CreateTorrentJob(base.JobBase):
         self.add_task(self._get_announce_url())
 
     async def _get_announce_url(self):
-        self._info = 'Getting announce URL...'
-        self.signal.emit('progress_update', 0.0)
+        self.info = 'Getting announce URL...'
         try:
             await self._tracker.login()
             announce_url = await self._tracker.get_announce_url()
@@ -66,7 +64,7 @@ class CreateTorrentJob(base.JobBase):
         else:
             self._create_torrent_process(announce_url)
         finally:
-            self._info = ''
+            self.info = ''
             try:
                 await self._tracker.logout()
             except errors.RequestError as e:
@@ -99,12 +97,7 @@ class CreateTorrentJob(base.JobBase):
         super().finish()
 
     def _handle_file_tree(self, file_tree):
-        self._info = fs.file_tree(file_tree)
-
-    @property
-    def info(self):
-        """Status information, e.g. file tree"""
-        return self._info
+        self.info = fs.file_tree(file_tree)
 
     def _handle_progress_update(self, percent_done):
         self.signal.emit('progress_update', percent_done)
@@ -188,11 +181,10 @@ class AddTorrentJob(base.QueueJobBase):
         self._download_path = download_path
         self.signal.add('adding')
         self.signal.add('added')
-        self._info = ''
-        self.signal.register('adding', lambda tp: setattr(self, '_info', f'Adding {fs.basename(tp)}'))
-        self.signal.register('added', lambda _: setattr(self, '_info', ''))
-        self.signal.register('finished', lambda _: setattr(self, '_info', ''))
-        self.signal.register('error', lambda _: setattr(self, '_info', ''))
+        self.signal.register('adding', lambda tp: setattr(self, 'info', f'Adding {fs.basename(tp)}'))
+        self.signal.register('added', lambda _: setattr(self, 'info', ''))
+        self.signal.register('finished', lambda _: setattr(self, 'info', ''))
+        self.signal.register('error', lambda _: setattr(self, 'info', ''))
 
     MAX_TORRENT_SIZE = 10 * 2**20  # 10 MiB
     """Upper limit of acceptable size of `.torrent` files"""
@@ -215,11 +207,6 @@ class AddTorrentJob(base.QueueJobBase):
         else:
             self.send(torrent_hash)
             self.signal.emit('added', torrent_hash)
-
-    @property
-    def info(self):
-        """Current status as user-readable string"""
-        return self._info
 
 
 class CopyTorrentJob(base.QueueJobBase):
@@ -256,11 +243,10 @@ class CopyTorrentJob(base.QueueJobBase):
         self._destination = None if not destination else str(destination)
         self.signal.add('copying')
         self.signal.add('copied')
-        self._info = ''
-        self.signal.register('copying', lambda fp: setattr(self, '_info', f'Copying {fs.basename(fp)}'))
-        self.signal.register('copied', lambda _: setattr(self, '_info', ''))
-        self.signal.register('finished', lambda _: setattr(self, '_info', ''))
-        self.signal.register('error', lambda _: setattr(self, '_info', ''))
+        self.signal.register('copying', lambda fp: setattr(self, 'info', f'Copying {fs.basename(fp)}'))
+        self.signal.register('copied', lambda _: setattr(self, 'info', ''))
+        self.signal.register('finished', lambda _: setattr(self, 'info', ''))
+        self.signal.register('error', lambda _: setattr(self, 'info', ''))
 
     MAX_FILE_SIZE = 10 * 2**20  # 10 MiB
     """Upper limit of acceptable file size"""
@@ -291,8 +277,3 @@ class CopyTorrentJob(base.QueueJobBase):
             else:
                 self.send(new_path)
                 self.signal.emit('copied', new_path)
-
-    @property
-    def info(self):
-        """Current status as user-readable string"""
-        return self._info
