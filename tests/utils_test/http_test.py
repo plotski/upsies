@@ -217,8 +217,6 @@ async def test_request_caches_result(method, mock_cache, httpserver):
     ).respond_with_data(
         'have this',
     )
-    print(httpserver)
-    print(dir(httpserver))
     result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
@@ -641,6 +639,59 @@ async def test_post_request_performs_only_one_identical_request_at_the_same_time
         '/c? data:foo=2',
     }
     assert len(handler.requests_seen) == 4
+
+
+@pytest.mark.parametrize('cache', (True, False))
+@pytest.mark.asyncio
+async def test_download_always_disables_caching(cache, mocker, tmp_path):
+    mocker.patch('upsies.utils.http.get', AsyncMock(
+        return_value=Mock(bytes=b'downloaded data'),
+    ))
+    filepath = tmp_path / 'downloaded'
+    return_value = await http.download('mock url', filepath, cache=cache)
+    assert return_value == filepath
+    assert http.get.call_args_list == [call('mock url', cache=False)]
+
+@pytest.mark.asyncio
+async def test_download_forwards_args_and_kwargs_to_get(mocker, tmp_path):
+    mocker.patch('upsies.utils.http.get', AsyncMock(
+        return_value=Mock(bytes=b'downloaded data'),
+    ))
+    filepath = tmp_path / 'downloaded'
+    return_value = await http.download('mock url', filepath, 'foo', bar='baz')
+    assert return_value == filepath
+    assert http.get.call_args_list == [call('mock url', 'foo', bar='baz', cache=False)]
+
+@pytest.mark.asyncio
+async def test_download_does_nothing_if_file_exists(mocker, tmp_path):
+    mocker.patch('upsies.utils.http.get', AsyncMock(
+        return_value=Mock(bytes=b'downloaded data'),
+    ))
+    filepath = tmp_path / 'downloaded'
+    filepath.write_bytes(b'downloaded data')
+    return_value = await http.download('mock url', filepath)
+    assert return_value == filepath
+    assert http.get.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_download_writes_filepath(mocker, tmp_path):
+    mocker.patch('upsies.utils.http.get', AsyncMock(
+        return_value=Mock(bytes=b'downloaded data'),
+    ))
+    filepath = tmp_path / 'downloaded'
+    return_value = await http.download('mock url', filepath)
+    assert return_value == filepath
+    assert filepath.read_bytes() == b'downloaded data'
+
+@pytest.mark.asyncio
+async def test_download_catches_OSError_when_opening_filepath(mocker, tmp_path):
+    mocker.patch('upsies.utils.http.get', AsyncMock(
+        return_value=Mock(bytes=b'downloaded data'),
+    ))
+    filepath = tmp_path / 'downloaded'
+    mocker.patch('builtins.open', side_effect=OSError('Ouch'))
+    with pytest.raises(errors.RequestError, match=rf'^Unable to write {filepath}: Ouch$'):
+        await http.download('mock url', filepath)
 
 
 def test_open_files_raises_exception_from_get_fileobj(mocker):

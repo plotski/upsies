@@ -97,6 +97,37 @@ async def post(url, headers={}, data={}, files={}, auth=None,
         allow_redirects=allow_redirects,
     )
 
+async def download(url, filepath, *args, **kwargs):
+    """
+    Write downloaded data to file
+
+    :param url: Where to download the data from
+    :param filepath: Where to save the downloaded data
+
+    Any other arguments are passed to :func:`get`, except for `cache`, which is
+    always `False`.
+
+    If `filepath` exists, no request is made.
+
+    :raise RequestError: if anything goes wrong
+    :return: `filepath`
+    """
+    kwargs['cache'] = False
+    if not os.path.exists(filepath):
+        _log.debug('Downloading %r to %r', url, filepath)
+        try:
+            with open(filepath, 'wb') as f:
+                response = await get(url, *args, **kwargs)
+                f.write(response.bytes)
+        except OSError as e:
+            if e.strerror:
+                raise errors.RequestError(f'Unable to write {filepath}: {e.strerror}')
+            else:
+                raise errors.RequestError(f'Unable to write {filepath}: {e}')
+    else:
+        _log.debug('Already downloaded %r to %r', url, filepath)
+    return filepath
+
 
 class Result(str):
     """
