@@ -120,6 +120,10 @@ class JobBase(abc.ABC):
             cache. Registered callbacks get the value passed to :meth:`send` as
             a positional argument.
 
+        ``info``
+            is emitted when :attr:`info` is set. Registered callbacks get the
+            new :attr:`info` as a positional argument.
+
         ``warning``
             is emitted when :meth:`warn` is called. Registered callbacks get the
             value passed to :meth:`warn` as a positional argument.
@@ -151,10 +155,11 @@ class JobBase(abc.ABC):
         self._output = []
         self._warnings = []
         self._errors = []
+        self._info = ''
         self._tasks = []
         self._finished_event = asyncio.Event()
 
-        self._signal = signal.Signal('output', 'warning', 'error', 'finished')
+        self._signal = signal.Signal('output', 'info', 'warning', 'error', 'finished')
         self._signal.register('output', lambda output: self._output.append(str(output)))
         self._signal.register('warning', lambda warning: self._warnings.append(warning))
         self._signal.register('error', lambda error: self._errors.append(error))
@@ -291,10 +296,17 @@ class JobBase(abc.ABC):
     @property
     def info(self):
         """
-        Additional information that is only displayed in the UI and not part of the
-        job's result
+        String that is only displayed while the job is running and not part of the
+        job's output
+
+        Setting this property emits the ``info`` signal.
         """
-        return ''
+        return self._info
+
+    @info.setter
+    def info(self, info):
+        self._info = str(info)
+        self.signal.emit('info', info)
 
     def warn(self, warning):
         """Append `warning` to :attr:`warnings` and emit ``warning`` signal"""

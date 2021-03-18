@@ -85,7 +85,7 @@ def test_kwargs_property(tmp_path):
 
 def test_signal_property(job):
     assert isinstance(job.signal, signal.Signal)
-    assert set(job.signal.signals) == {'output', 'warning', 'error', 'finished'}
+    assert set(job.signal.signals) == {'output', 'info', 'warning', 'error', 'finished'}
     assert set(job.signal.recording) == {'output'}
 
 
@@ -292,7 +292,13 @@ def test_output(job):
 
 
 def test_info(job):
+    cb = Mock()
+    job.signal.register('info', cb)
     assert job.info == ''
+    assert cb.call_args_list == []
+    job.info = 'foo'
+    assert job.info == 'foo'
+    assert cb.call_args_list == [call('foo')]
 
 
 def test_warn(job):

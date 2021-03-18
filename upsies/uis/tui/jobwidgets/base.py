@@ -24,6 +24,7 @@ class JobWidgetBase(abc.ABC):
         self._job = job
         self._app = app
         self.setup()
+        self.job.signal.register('info', lambda _: self.invalidate())
         self.job.signal.register('warning', lambda _: self.invalidate())
         main_widget = HSplit(
             children=[
