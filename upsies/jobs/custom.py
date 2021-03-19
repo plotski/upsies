@@ -23,6 +23,7 @@ class CustomJob(JobBase):
 
     @property
     def cache_id(self):
+        """:attr:`name` of this job"""
         return self.name
 
     def initialize(self, *, name, label, worker):
