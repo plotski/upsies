@@ -9,9 +9,12 @@ def test_defaults():
         'username'   : '',
         'password'   : '',
         'announce'   : '',
-        'exclude'    : [],
         'source'     : 'bB',
         'image_host' : 'imgbox',
         'add-to'     : '',
         'copy-to'    : '',
+        'exclude'    : [
+            r'\.(?i:nfo|txt|jpg|jpeg|png)$',
+            r'/(?i:sample|extra|bonus|feature)',
+        ],
     }

@@ -12,7 +12,10 @@ class BbTrackerConfig(TrackerConfigBase):
         'base_url'   : base64.b64decode('aHR0cHM6Ly9iYWNvbmJpdHMub3Jn').decode('ascii'),
         'username'   : '',
         'password'   : '',
-        'exclude'    : [],
         'source'     : 'bB',
         'image_host' : 'imgbox',
+        'exclude'    : [
+            r'\.(?i:nfo|txt|jpg|jpeg|png)$',
+            r'/(?i:sample|extra|bonus|feature)',
+        ],
     }
