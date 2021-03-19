@@ -29,6 +29,10 @@ def foodb(mocker):
         countries = AsyncMock()
         directors = AsyncMock()
         keywords = AsyncMock()
+        poster_url = AsyncMock()
+        rating = AsyncMock()
+        rating_min = 0
+        rating_max = 10
         summary = AsyncMock()
         title_english = AsyncMock()
         title_original = AsyncMock()
