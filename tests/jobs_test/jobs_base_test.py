@@ -462,12 +462,25 @@ def test_write_cache_does_nothing_if_exit_code_is_nonzero(job):
     job._write_cache()
     assert not os.path.exists(job.cache_file)
 
-def test_write_cache_writes_signal_emissions(job, mocker):
+def test_write_cache_does_nothing_if_job_was_not_executed(job):
+    job.error('Bar!')
+    job.finish()
+    job._write_cache()
+    assert not os.path.exists(job.cache_file)
+
+def test_write_cache_writes_signal_emissions(tmp_path, mocker):
+    class BarJob(FooJob):
+        def execute(self):
+            pass
+
+    job = BarJob(home_directory=tmp_path)
     job.send('Foo')
+    job.start()
     job.finish()
     mocker.patch.object(type(job.signal), 'emissions', PropertyMock(return_value='emissions mock'))
     job._write_cache()
-    assert open(job.cache_file, 'r').read() == '"emissions mock"\n'
+    serialized_emissions = open(job.cache_file, 'rb').read()
+    assert job._deserialize_from_cache(serialized_emissions) == 'emissions mock'
 
 @pytest.mark.parametrize(
     argnames='exception, error',
@@ -478,12 +491,13 @@ def test_write_cache_writes_signal_emissions(job, mocker):
 )
 def test_write_cache_fails_to_write_cache_file(exception, error, job, mocker):
     open_mock = mocker.patch('upsies.jobs.base.open', side_effect=exception)
+    job.start()
     job.finish()
     job._output = ['foo']
     with pytest.raises(RuntimeError, match=(rf'^Unable to write cache '
                                             rf'{re.escape(job.cache_file)}: {error}$')):
         job._write_cache()
-    assert open_mock.call_args_list == [call(job.cache_file, 'w')]
+    assert open_mock.call_args_list == [call(job.cache_file, 'wb')]
 
 @pytest.mark.asyncio
 async def test_cache_is_properly_written_when_repeating_command(tmp_path):
@@ -546,10 +560,10 @@ def test_read_cache_fails_to_read_cache_file(exception, error, job, mocker):
     open_mock = mocker.patch('upsies.jobs.base.open', side_effect=exception)
     with pytest.raises(RuntimeError, match=rf'^Unable to read cache {job.cache_file}: {error}$'):
         job._read_cache()
-    assert open_mock.call_args_list == [call(job.cache_file, 'r')]
+    assert open_mock.call_args_list == [call(job.cache_file, 'rb')]
 
 def test_read_cache_replays_signal_emissions(job, mocker):
-    open(job.cache_file, 'w').write('"emissions mock"\n')
+    open(job.cache_file, 'wb').write(job._serialize_for_cache('emissions mock'))
     replay_mock = mocker.patch.object(type(job.signal), 'replay')
     assert job._read_cache() is True
     assert replay_mock.call_args_list == [call('emissions mock')]

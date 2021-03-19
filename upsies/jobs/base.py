@@ -5,7 +5,7 @@ Abstract base class for jobs
 import abc
 import asyncio
 import collections
-import json
+import pickle
 import os
 import re
 
@@ -151,6 +151,7 @@ class JobBase(abc.ABC):
         self._autostart = bool(autostart)
         self._condition = condition or (lambda: True)
         self._is_started = False
+        self._is_executed = False
         self._exception = None
         self._output = []
         self._warnings = []
@@ -216,6 +217,7 @@ class JobBase(abc.ABC):
             self.finish()
         else:
             _log.debug('Executing %r', self)
+            self._is_executed = True
             self.execute()
 
     @property
@@ -421,20 +423,19 @@ class JobBase(abc.ABC):
 
     def _write_cache(self):
         """
-        Store :attr:`output` in :attr:`cache_file`
+        Store recorded signals in :attr:`cache_file`
 
-        The base class implementation stores output as JSON. Child classes may
-        use other formats.
+        Emitted signals are serialized with :meth:`_serialize_for_cache`.
 
-        :raise RuntimeError: if :attr:`output` is not JSON-encodable or
-            :attr:`cache_file` is not writable
+        :raise RuntimeError: if writing :attr:`cache_file` fails
         """
-        if self.output and self.exit_code == 0 and self.cache_file:
-            emissions_string = json.dumps(self.signal.emissions, indent=4)
+        if self.output and self.exit_code == 0 and self.cache_file and self._is_executed:
+            emissions_serialized = self._serialize_for_cache(self.signal.emissions)
+            _log.debug('%s: Caching emitted signals: %r', self.name, emissions_serialized)
             try:
-                with open(self.cache_file, 'w') as f:
-                    f.write(emissions_string)
-                    f.write('\n')
+                with open(self.cache_file, 'wb') as f:
+                    f.write(emissions_serialized)
+                    f.write(b'\n')
             except OSError as e:
                 if e.strerror:
                     raise RuntimeError(f'Unable to write cache {self.cache_file}: {e.strerror}')
@@ -443,7 +444,9 @@ class JobBase(abc.ABC):
 
     def _read_cache(self):
         """
-        Set :attr:`output` to data stored in :attr:`cache_file`
+        Read cached :attr:`~.signal.Signal.emissions` from :attr:`cache_file`
+
+        Emitted signals are deserialized with :meth:`_deserialize_from_cache`.
 
         :raise RuntimeError: if :attr:`cache_file` exists and is unreadable
 
@@ -451,19 +454,39 @@ class JobBase(abc.ABC):
         """
         if not self._ignore_cache and self.cache_file and os.path.exists(self.cache_file):
             try:
-                with open(self.cache_file, 'r') as f:
-                    emissions_string = f.read()
+                with open(self.cache_file, 'rb') as f:
+                    emissions_serialized = f.read()
             except OSError as e:
                 if e.strerror:
                     raise RuntimeError(f'Unable to read cache {self.cache_file}: {e.strerror}')
                 else:
                     raise RuntimeError(f'Unable to read cache {self.cache_file}: {e}')
             else:
-                emissions = json.loads(emissions_string)
-                _log.debug('%s: Replaying cached signals: %r', self.name, emissions)
-                self.signal.replay(emissions)
+                emissions_serialized = self._deserialize_from_cache(emissions_serialized)
+                _log.debug('%s: Replaying cached signals: %r', self.name, emissions_serialized)
+                self.signal.replay(emissions_serialized)
                 return True
         return False
+
+    def _serialize_for_cache(self, emissions):
+        """
+        Convert emitted signals to cache format
+
+        :param emissions: See :attr:`Signal.emissions`
+
+        :return: :class:`bytes`
+        """
+        return pickle.dumps(emissions, protocol=0, fix_imports=False)
+
+    def _deserialize_from_cache(self, emissions_serialized):
+        """
+        Convert return value of :meth:`_serialize_for_cache` back to emitted signals
+
+        :param emissions_serialized: :class:`bytes` object
+
+        :return: See :attr:`Signal.emissions`
+        """
+        return pickle.loads(emissions_serialized)
 
     @cached_property
     def cache_directory(self):
