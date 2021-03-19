@@ -229,12 +229,7 @@ class TextFieldJob(JobBase):
 
     @property
     def text(self):
-        """
-        Current text
-
-        Setting this property calls `validator` and raises any exception from
-        that.
-        """
+        """Current text"""
         return getattr(self, '_text', ())
 
     @text.setter
