@@ -289,7 +289,10 @@ def test_handle_scene_check_result_triggers_dialog_if_no_errors(is_scene_release
     ids=lambda v: str(v),
 )
 def test_finalize(is_scene_release, exp_msg, make_SceneCheckJob, mocker):
+    cb = Mock()
     job = make_SceneCheckJob()
+    job.signal.register('checked', cb)
     job.finalize(is_scene_release)
     assert job.output == (exp_msg,)
+    assert cb.call_args_list == [call(is_scene_release)]
     assert job.is_finished

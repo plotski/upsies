@@ -215,6 +215,7 @@ class SceneCheckJob(JobBase):
         :param is_scene_release: :class:`~.types.SceneCheckResult` enum
         """
         _log.debug('User decided: %r', is_scene_release)
+        self.signal.emit('checked', is_scene_release)
         if is_scene_release is types.SceneCheckResult.true:
             self.send('Scene release')
         elif is_scene_release is types.SceneCheckResult.false:
