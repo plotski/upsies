@@ -32,11 +32,9 @@ class CustomJob(JobBase):
 
         :param name: Name for internal use
         :param label: Name for user-facing use
-        :param worker: Coroutine function or any awaitable
-
-        If `worker` is a coroutine function (a function defined with an async
-        def syntax), it is called with the job instance as a positional
-        argument.
+        :param worker: Coroutine function (a function defined with an
+            ``async def`` syntax) that takes the job instance as a
+            positional argument.
 
         This job finishes when `worker` returns.
 
@@ -45,10 +43,15 @@ class CustomJob(JobBase):
         """
         self._name = str(name)
         self._label = str(label)
-        if asyncio.iscoroutinefunction(worker):
-            self._task = asyncio.ensure_future(self._catch_cancelled_error(worker(self)))
-        else:
-            self._task = asyncio.ensure_future(self._catch_cancelled_error(worker))
+        self._worker = worker
+        self._task = None
+
+    def execute(self):
+        self._task = asyncio.ensure_future(
+            self._catch_cancelled_error(
+                self._worker(self),
+            ),
+        )
         self._task.add_done_callback(self._handle_worker_done)
 
     async def _catch_cancelled_error(self, worker):
@@ -70,10 +73,12 @@ class CustomJob(JobBase):
 
     async def wait(self):
         """Wait for `worker`"""
-        await self._task
+        if self._task:
+            await self._task
         await super().wait()
 
     def finish(self):
         """Cancel `worker` and finish this job"""
-        self._task.cancel()
+        if self._task:
+            self._task.cancel()
         super().finish()
