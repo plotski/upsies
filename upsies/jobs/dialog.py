@@ -24,8 +24,9 @@ class ChoiceJob(JobBase):
             argument.
 
         ``chosen``
-            Emitted when the :attr:`choice` property is set. Registered
-            callbacks get the job instance as a positional argument.
+            Emitted when the :attr:`choice` property is set or when the job's
+            cache is read. Registered callbacks get :attr:`choice` as a
+            positional argument.
     """
 
     @property
@@ -153,8 +154,7 @@ class ChoiceJob(JobBase):
     def choice(self, choice):
         def choose(choice):
             # Machine-readable choice
-            self._choice = choice[1]
-            self.signal.emit('chosen', self)
+            self.signal.emit('chosen', choice[1])
             # User-readable string
             self.send(choice[0])
             self.finish()
@@ -192,6 +192,8 @@ class ChoiceJob(JobBase):
         self._label = str(label)
         self.signal.add('dialog_updated')
         self.signal.add('chosen')
+        self.signal.record('chosen')
+        self.signal.register('chosen', lambda choice: setattr(self, '_choice', choice))
         self.choices = choices
         self.focused = focused
 

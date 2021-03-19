@@ -280,4 +280,4 @@ def test_choice_setter_emits_chose_signal():
     job.signal.register('chosen', cb.chosen)
     job.signal.register('dialog_updated', cb.dialog_updated)
     job.choice = 'b'
-    assert cb.mock_calls == [call.chosen(job)]
+    assert cb.mock_calls == [call.chosen(2)]
