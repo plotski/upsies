@@ -108,6 +108,14 @@ class SceneCheckJob(JobBase):
         """Final segment of the `content_path` argument to :meth:`initialize`"""
         return (fs.basename(self._content_path),)
 
+    @property
+    def is_scene_release(self):
+        """
+        :class:`~.utils.types.SceneCheckResult` enum or `None` before job is
+        finished
+        """
+        return self._is_scene_release
+
     def initialize(self, *, content_path):
         """
         Set internal state
@@ -116,6 +124,7 @@ class SceneCheckJob(JobBase):
             video file or release name
         """
         self._content_path = content_path
+        self._is_scene_release = None
         self._release_name = fs.strip_extension(fs.basename(content_path))
         self.signal.add('ask_release_name')
         self.signal.add('ask_is_scene_release')
@@ -215,6 +224,7 @@ class SceneCheckJob(JobBase):
         :param is_scene_release: :class:`~.types.SceneCheckResult` enum
         """
         _log.debug('User decided: %r', is_scene_release)
+        self._is_scene_release = is_scene_release
         self.signal.emit('checked', is_scene_release)
         if is_scene_release is types.SceneCheckResult.true:
             self.send('Scene release')

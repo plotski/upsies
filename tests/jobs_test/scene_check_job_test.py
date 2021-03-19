@@ -292,7 +292,9 @@ def test_finalize(is_scene_release, exp_msg, make_SceneCheckJob, mocker):
     cb = Mock()
     job = make_SceneCheckJob()
     job.signal.register('checked', cb)
+    assert job.is_scene_release is None
     job.finalize(is_scene_release)
     assert job.output == (exp_msg,)
     assert cb.call_args_list == [call(is_scene_release)]
+    assert job.is_scene_release is is_scene_release
     assert job.is_finished
