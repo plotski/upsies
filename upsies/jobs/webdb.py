@@ -7,7 +7,7 @@ import collections
 from time import monotonic as time_monotonic
 
 from .. import errors
-from ..utils import webdbs
+from ..utils import fs, webdbs
 from . import JobBase
 
 import logging  # isort:skip
@@ -47,6 +47,11 @@ class SearchWebDbJob(JobBase):
     @property
     def label(self):
         return f'{self._db.label} ID'
+
+    @property
+    def cache_id(self):
+        """Final segment of `content_path` and database :attr:`~.WebDbApiBase.name`"""
+        return (fs.basename(self._content_path), self._db.name)
 
     @property
     def query(self):

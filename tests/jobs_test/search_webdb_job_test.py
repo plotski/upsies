@@ -64,6 +64,10 @@ def test_SearchWebDbJob_label(job):
     assert job.label == 'FooDB ID'
 
 
+def test_SearchWebDbJob_cache_id(job):
+    assert job.cache_id == ('foo', 'foodb')
+
+
 def test_SearchWebDbJob_query(job):
     assert isinstance(job.query, Query)
 
