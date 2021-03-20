@@ -28,6 +28,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.screenshots_job,
             self.upload_screenshots_job,
             self.poster_job,
+            self.scene_check_job,
 
             # Movie jobs
             self.movie_title_job,
@@ -545,6 +546,8 @@ class BbTrackerJobs(TrackerJobsBase):
                 'image': self.poster_job.output[0],
             }
             post_data.update(self.post_data_screenshot_urls)
+            if self.scene_check_job.is_scene_release:
+                post_data['scene'] = '1'
             return post_data
 
         elif self.is_series_release:
