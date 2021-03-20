@@ -2,12 +2,14 @@
 :class:`~.base.TrackerJobsBase` subclass
 """
 
+import os
 import re
 
 import unidecode
 
 from ... import __homepage__, __project_name__, __version__, jobs
-from ...utils import cached_property, fs, release, string, timestamp, video, webdbs
+from ...utils import (cached_property, fs, http, release, string, timestamp,
+                      video, webdbs)
 from ..base import TrackerJobsBase
 
 import logging  # isort:skip
@@ -25,6 +27,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.create_torrent_job,
             self.screenshots_job,
             self.upload_screenshots_job,
+            self.poster_job,
 
             # Movie jobs
             self.movie_title_job,
@@ -83,6 +86,35 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.webdb.SearchWebDbJob(
             content_path=self.content_path,
             db=self.imdb,
+            **self.common_job_args,
+        )
+
+    @cached_property
+    def poster_job(self):
+        """Re-upload poster from IMDb to :attr:`~.TrackerJobsBase.image_host`"""
+        async def get_poster(poster_job):
+            # Wait for user to pick IMDb ID
+            poster_job.info = 'Waiting for IMDb ID'
+            await self.imdb_job.wait()
+
+            # Download poster
+            poster_job.info = f'Downloading poster: {poster_url}'
+            poster_url = await self.imdb.poster_url(self.imdb_job.output[0])
+            poster_path = os.path.join(poster_job.home_directory, 'poster.bb.jpg')
+            await http.download(poster_url, poster_path)
+
+            # Upload poster to self.image_host
+            poster_job.info = f'Uploading poster to {self.image_host.name}'
+            real_poster_url = await self.image_host.upload(poster_path)
+
+            # Provide re-uploaded poster as output
+            poster_job.info = ''
+            poster_job.send(real_poster_url)
+
+        return jobs.custom.CustomJob(
+            name='poster',
+            label='Poster',
+            worker=get_poster,
             **self.common_job_args,
         )
 
@@ -497,23 +529,28 @@ class BbTrackerJobs(TrackerJobsBase):
     @property
     def post_data(self):
         if self.is_movie_release:
-            return {
-                **{
-                    'type': "Movies",
-                    'title': self.movie_title_job.output[0],
-                    'year': self.movie_year_job.output[0],
-                    'source': self.movie_source_job.choice,
-                    'video_codec': self.movie_video_codec_job.choice,
-                    'audio_codec': self.movie_audio_codec_job.choice,
-                    'container': self.movie_container_job.choice,
-                    'resolution': self.movie_resolution_job.choice,
-                    'remaster_title': self.movie_release_info_job.output[0],
-                    'tags': self.movie_tags_job.output[0],
-                    'desc': self.movie_description_job.output[0],
-                    'release_desc': self.mediainfo_job.output[0],
-                },
-                **self.post_data_screenshot_urls,
+            post_data = {
+                'type': 'Movies',
+                'title': self.movie_title_job.output[0],
+                'year': self.movie_year_job.output[0],
+                'source': self.movie_source_job.choice,
+                'video_codec': self.movie_video_codec_job.choice,
+                'audio_codec': self.movie_audio_codec_job.choice,
+                'container': self.movie_container_job.choice,
+                'resolution': self.movie_resolution_job.choice,
+                'remaster_title': self.movie_release_info_job.output[0],
+                'tags': self.movie_tags_job.output[0],
+                'desc': self.movie_description_job.output[0],
+                'release_desc': self.mediainfo_job.output[0],
+                'image': self.poster_job.output[0],
             }
+            post_data.update(self.post_data_screenshot_urls)
+            return post_data
+
+        elif self.is_series_release:
+            self.error('TV series are not supported yet.')
+        else:
+            raise RuntimeError(f'Weird release type: {self.release_type_job.choice}')
 
     @property
     def post_data_screenshot_urls(self):
