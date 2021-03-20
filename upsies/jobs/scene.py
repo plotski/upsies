@@ -190,6 +190,8 @@ class SceneCheckJob(JobBase):
         warnings = [e for e in exceptions if isinstance(e, errors.SceneMissingInfoError)]
         for e in serious_errors:
             self.error(e)
+            if hasattr(e, 'url') and e.url:
+                self.error(e.url)
         for e in warnings:
             self.warn(e)
 

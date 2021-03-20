@@ -240,6 +240,7 @@ def test_handle_scene_check_result_handles_SceneErrors(make_SceneCheckJob, mocke
     assert job.errors == (
         errors.SceneError('foo'),
         errors.SceneRenamedError('bar', 'Bar'),
+        'https://www.srrdb.com/release/details/bar',
         errors.SceneFileSizeError('baz', 123, 456),
     )
     assert ask_is_scene_release.call_args_list == []
