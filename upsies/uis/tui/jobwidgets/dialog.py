@@ -45,12 +45,7 @@ class TextFieldJobWidget(JobWidgetBase):
         self.invalidate()
 
     def _handle_accepted(self, buffer):
-        try:
-            self.job.text = buffer.text
-        except ValueError as e:
-            self.job.warn(e)
-        else:
-            self.job.finish()
+        self.job.send(buffer.text)
 
     @cached_property
     def runtime_widget(self):

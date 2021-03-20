@@ -278,19 +278,21 @@ class TextFieldJob(JobBase):
         self.obscured = obscured
         self.read_only = read_only
 
-    def finish(self):
+    def send(self, output):
         """
-        :meth:`send` current :attr:`text` and :meth:`finish`
+        Validate `output` before actually sending it
 
-        If `validator` raises :class:`ValueError`, pass it to :meth:`warn` and
-        do not finish.
+        Pass `output` to `validator`. If :class:`ValueError` is raised, pass it
+        to :meth:`warn` and do not finish. Otherwise, pass `output` to
+        :meth:`~.base.JobBase.send` and :meth:`~.base.JobBase.finish` this job.
         """
+        _log.debug('%r: Sending %r', self.name, output)
         try:
-            self._validator(self.text)
+            self._validator(output)
         except ValueError as e:
             self.warn(e)
         else:
-            self.send(self.text)
+            super().send(output)
             super().finish()
 
     async def fetch_text(self, coro, default_text='', finish_on_success=False):
@@ -310,16 +312,18 @@ class TextFieldJob(JobBase):
         self.text = 'Loading...'
         try:
             # Try to set text field value, e.g. from IMDb
-            self.text = await coro
+            text = await coro
         except errors.RequestError as e:
             # Inform user about failure and allow them to make manual
             # adjustments to default text
             self.warn(e)
             self.text = default_text
         else:
-            # Auto-accept on success or let the user confirm it
+            # send() also finishes. This is important for reading from cache.
             if finish_on_success:
-                self.finish()
+                self.send(text)
+            else:
+                self.text = text
         finally:
             # Always re-enable text field after we're done messing with it
             self.read_only = False

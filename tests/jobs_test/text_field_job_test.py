@@ -70,27 +70,21 @@ def test_read_only_property():
     assert cb.call_args_list == [call(job)]
 
 
-@pytest.mark.parametrize('read_only', (True, False))
-def test_finish_with_valid_text(read_only):
+def test_send_valid_text():
     validator = Mock()
-    job = TextFieldJob(name='foo', label='Foo', text='bar',
-                       validator=validator, read_only=read_only)
+    job = TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
     assert validator.call_args_list == []
-    job.text = 'baz'
-    job.finish()
+    job.send('baz')
     assert validator.call_args_list == [call('baz')]
     assert job.warnings == ()
     assert job.is_finished
     assert job.output == ('baz',)
 
-@pytest.mark.parametrize('read_only', (True, False))
-def test_finish_with_invalid_text(read_only):
+def test_finish_with_invalid_text():
     validator = Mock(side_effect=ValueError('Nope'))
-    job = TextFieldJob(name='foo', label='Foo', text='bar',
-                       validator=validator, read_only=read_only)
+    job = TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
     assert validator.call_args_list == []
-    job.text = 'baz'
-    job.finish()
+    job.send('baz')
     assert validator.call_args_list == [call('baz')]
     assert len(job.warnings) == 1
     assert isinstance(job.warnings[0], ValueError)
@@ -101,20 +95,10 @@ def test_finish_with_invalid_text(read_only):
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
 @pytest.mark.asyncio
-async def test_fetch_text_sets_text(finish_on_success):
-    fetcher = AsyncMock(return_value='fetched text')
-    job = TextFieldJob(name='foo', label='Foo', text='bar')
-    job.text = 'baz'
-    assert not job.is_finished
-    await job.fetch_text(fetcher, finish_on_success=finish_on_success)
-    assert job.text == 'fetched text'
-    assert job.is_finished is finish_on_success
-
-@pytest.mark.parametrize('finish_on_success', (True, False))
-@pytest.mark.asyncio
 async def test_fetch_text_sets_read_only_while_fetching(finish_on_success):
     async def fetcher(job):
         assert job.read_only
+        assert job.text == 'Loading...'
 
     job = TextFieldJob(name='foo', label='Foo', text='bar')
     assert not job.read_only
