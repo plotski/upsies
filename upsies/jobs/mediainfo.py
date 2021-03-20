@@ -22,7 +22,8 @@ class MediainfoJob(JobBase):
     name = 'mediainfo'
     label = 'Mediainfo'
 
-    # Don't show mediainfo output in UI
+    # Don't show mediainfo output in TUI. It is printed out to stdout if this is
+    # the only/final job.
     hidden = True
 
     def initialize(self, *, content_path):
