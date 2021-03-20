@@ -52,3 +52,7 @@ class SrrDbApi(base.SceneDbApiBase):
                 }
                 for f in sorted(files, key=lambda f: f['name'].casefold())
             }
+
+    def release_url(self, release_name):
+        """Return website URL for particular release"""
+        return f'https://{self._url_base}/release/details/{release_name}'
