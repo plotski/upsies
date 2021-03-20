@@ -5,7 +5,7 @@ Wrapper for ``mediainfo`` command
 import asyncio
 
 from .. import errors
-from ..utils import video
+from ..utils import fs, video
 from . import JobBase
 
 import logging  # isort:skip
@@ -25,6 +25,11 @@ class MediainfoJob(JobBase):
     # Don't show mediainfo output in TUI. It is printed out to stdout if this is
     # the only/final job.
     hidden = True
+
+    @property
+    def cache_id(self):
+        """Final segment of `content_path`"""
+        return fs.basename(self._content_path)
 
     def initialize(self, *, content_path):
         """

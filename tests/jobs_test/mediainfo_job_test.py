@@ -5,6 +5,14 @@ from upsies import errors
 from upsies.jobs.mediainfo import MediainfoJob
 
 
+def test_cache_id(tmp_path):
+    mi = MediainfoJob(
+        home_directory=tmp_path,
+        content_path='mock/path',
+    )
+    assert mi.cache_id == 'path'
+
+
 @patch('upsies.utils.video.mediainfo')
 def test_execute_gets_mediainfo(mediainfo_mock, tmp_path):
     mediainfo_mock.return_value = 'mock mediainfo output'
