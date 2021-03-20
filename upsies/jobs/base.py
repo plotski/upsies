@@ -5,8 +5,8 @@ Abstract base class for jobs
 import abc
 import asyncio
 import collections
-import pickle
 import os
+import pickle
 import re
 
 from ..utils import cached_property, fs, signal
