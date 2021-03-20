@@ -101,6 +101,11 @@ class SceneCheckJob(JobBase):
     hidden = False
 
     @property
+    def cache_id(self):
+        """Final segment of `content_path`"""
+        return fs.basename(self._content_path)
+
+    @property
     def is_scene_release(self):
         """
         :class:`~.utils.types.SceneCheckResult` enum or `None` before job is

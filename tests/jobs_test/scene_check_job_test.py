@@ -27,6 +27,11 @@ async def make_SceneCheckJob(tmp_path):
     return make_SceneCheckJob
 
 
+def test_cache_id(make_SceneCheckJob):
+    job = make_SceneCheckJob(content_path='path/to/Foo/')
+    assert job.cache_id == 'Foo'
+
+
 @pytest.mark.parametrize(
     argnames='exc, msg, exp_exc, exp_msg',
     argvalues=(
