@@ -26,11 +26,6 @@ def test_label_property():
     assert job.label == 'Foo'
 
 
-def test_cache_id_property():
-    job = TextFieldJob(name='foo', label='Foo', text='asdf')
-    assert job.cache_id == ('foo', 'asdf')
-
-
 @pytest.mark.parametrize('read_only', (True, False))
 def test_text_property(read_only):
     job = TextFieldJob(name='foo', label='Foo', text='0',

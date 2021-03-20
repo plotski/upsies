@@ -5,7 +5,7 @@ Scene release search and check
 import asyncio
 
 from .. import errors
-from ..utils import cached_property, fs, scene, types
+from ..utils import fs, scene, types
 from . import JobBase
 
 import logging  # isort:skip
@@ -28,14 +28,6 @@ class SceneSearchJob(JobBase):
     name = 'scene-search'
     label = 'Scene Search'
     hidden = True
-
-    @cached_property
-    def cache_id(self):
-        """
-        Scene database name and final segment of the `content_path` argument to
-        :meth:`initialize`
-        """
-        return (fs.basename(self._content_path),)
 
     def initialize(self, *, content_path):
         """
@@ -102,11 +94,6 @@ class SceneCheckJob(JobBase):
     name = 'scene-check'
     label = 'Scene Check'
     hidden = False
-
-    @cached_property
-    def cache_id(self):
-        """Final segment of the `content_path` argument to :meth:`initialize`"""
-        return (fs.basename(self._content_path),)
 
     @property
     def is_scene_release(self):

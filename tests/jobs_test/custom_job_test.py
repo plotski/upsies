@@ -26,11 +26,6 @@ def test_label():
     assert job.label == 'Foo'
 
 
-def test_cache_id():
-    job = CustomJob(name='foo', label='Foo', worker=AsyncMock())
-    assert job.cache_id == 'foo'
-
-
 def test_initialize():
     worker = AsyncMock()
     job = CustomJob(name='foo', label='Foo', worker=worker)

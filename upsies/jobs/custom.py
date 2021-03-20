@@ -21,11 +21,6 @@ class CustomJob(JobBase):
     def label(self):
         return self._label
 
-    @property
-    def cache_id(self):
-        """:attr:`name` of this job"""
-        return self.name
-
     def initialize(self, *, name, label, worker):
         """
         Set internal state

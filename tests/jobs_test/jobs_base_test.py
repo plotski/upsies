@@ -586,39 +586,68 @@ def test_cache_directory_with_custom_home_directory(job, mocker, tmp_path):
 
 
 def test_cache_file_when_cache_id_is_None(tmp_path, mocker):
-    class BarJob(FooJob):
-        cache_id = None
-
-    job = BarJob(home_directory=tmp_path, ignore_cache=False)
+    job = FooJob(home_directory=tmp_path)
+    mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value=None))
     assert job.cache_file is None
 
-@pytest.mark.parametrize('cache_id_value', ('', {}, ()))
+@pytest.mark.parametrize('cache_id_value', ('', {}, ()), ids=lambda v: repr(v))
 def test_cache_file_when_cache_id_is_falsy(cache_id_value, tmp_path, mocker):
-    class BarJob(FooJob):
-        cache_id = cache_id_value
-
-    job = BarJob(home_directory=tmp_path, ignore_cache=False)
+    job = FooJob(home_directory=tmp_path)
+    mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value=cache_id_value))
     assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.json')
 
-def test_cache_file_when_cache_id_is_nonstring(tmp_path, mocker):
-    class BarJob(FooJob):
-        cache_id = 123
+def test_cache_file_when_cache_id_is_too_long(tmp_path, mocker):
+    job = FooJob(home_directory=tmp_path)
+    job._max_filename_len = 20
+    too_long = ''.join(str(n) for n in range(50))
+    mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value=too_long))
+    mocker.patch.object(type(job), '_cache_id_as_string', Mock(return_value=too_long))
+    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.0123…4849.json')
 
-    job = BarJob(home_directory=tmp_path, ignore_cache=False)
-    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.123.json')
+def test_cache_file_when_cache_id_is_not_too_long(tmp_path, mocker):
+    job = FooJob(home_directory=tmp_path)
+    mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value='something'))
+    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.something.json')
 
-def test_cache_file_when_cache_id_is_iterable(tmp_path, mocker):
-    class BarJob(FooJob):
-        cache_id = iter((1, 'two', 3))
+def test_cache_file_masks_illegal_characters(tmp_path, mocker):
+    job = FooJob(home_directory=tmp_path)
+    mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value='hey you there'))
+    mocker.patch('upsies.utils.fs.sanitize_filename', side_effect=lambda path: path.replace(' ', '#'))
+    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.hey#you#there.json')
 
-    job = BarJob(home_directory=tmp_path, ignore_cache=False)
-    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.1,two,3.json')
 
-def test_cache_file_normalizes_existing_paths(tmp_path):
-    class BarJob(FooJob):
-        def initialize(self, some_path):
-            pass
+def test_cache_id(tmp_path):
+    job = FooJob(home_directory=tmp_path)
+    assert job.cache_id == ''
 
+
+def test_cache_id_as_string_when_cache_id_is_nonstring(tmp_path, mocker):
+    job = FooJob(home_directory=tmp_path)
+    assert job._cache_id_as_string(123) == '123'
+
+def test_cache_id_as_string_when_cache_id_is_nonstring_iterable(tmp_path, mocker):
+    job = FooJob(home_directory=tmp_path)
+    assert job._cache_id_as_string((1, 2, 3)) == '1,2,3'
+
+@pytest.mark.parametrize('value', (object(), print, lambda: None), ids=lambda v: str(v))
+def test_cache_id_as_string_when_cache_id_is_mapping_with_nonstringable_key(value, tmp_path, mocker):
+    job = FooJob(home_directory=tmp_path)
+    with pytest.raises(RuntimeError, match=rf'^{re.escape(str(type(value)))} has no string representation$'):
+        job._cache_id_as_string({1: 'foo', value: 'bar', 3: 'baz'})
+
+@pytest.mark.parametrize('value', (object(), print, lambda: None), ids=lambda v: str(v))
+def test_cache_id_as_string_when_cache_id_is_mapping_with_nonstringable_value(value, tmp_path, mocker):
+    job = FooJob(home_directory=tmp_path)
+    with pytest.raises(RuntimeError, match=rf'^{re.escape(str(type(value)))} has no string representation$'):
+        job._cache_id_as_string({1: 'foo', 2: value, 3: 'baz'})
+
+@pytest.mark.parametrize('value', (object(), print, lambda: None), ids=lambda v: str(v))
+def test_cache_id_as_string_when_cache_id_is_sequence_with_nonstringable_item(value, tmp_path, mocker):
+    job = FooJob(home_directory=tmp_path)
+    with pytest.raises(RuntimeError, match=rf'^{re.escape(str(type(value)))} has no string representation$'):
+        job._cache_id_as_string((1, value, 3))
+
+def test_cache_id_as_string_normalizes_existing_paths(tmp_path):
     some_dir = tmp_path / 'foo' / 'bar'
     some_path = some_dir / 'baz.txt'
     some_dir.mkdir(parents=True)
@@ -628,47 +657,13 @@ def test_cache_file_normalizes_existing_paths(tmp_path):
     orig_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
-        job1 = BarJob(home_directory=tmp_path, ignore_cache=False, some_path=abs_path)
-        job2 = BarJob(home_directory=tmp_path, ignore_cache=False, some_path=rel_path)
-        assert job1.cache_file == job2.cache_file
+        job1 = FooJob(home_directory=tmp_path)
+        job2 = FooJob(home_directory=tmp_path)
+        assert job1._cache_id_as_string(abs_path) == job2._cache_id_as_string(rel_path)
     finally:
         os.chdir(orig_cwd)
 
-def test_cache_file_name_does_not_contain_illegal_characters(tmp_path, mocker):
-    class BarJob(FooJob):
-        cache_id = 'hey you there'
-
-    mocker.patch('upsies.utils.fs.sanitize_filename',
-                 side_effect=lambda path: path.replace(' ', '#'))
-    job = BarJob(home_directory=tmp_path, ignore_cache=False)
-    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.hey#you#there.json')
-
-def test_cache_file_name_is_never_too_long(tmp_path):
-    class BarJob(FooJob):
-        def initialize(self, **kwargs):
-            pass
-
-    job = BarJob(home_directory=tmp_path, ignore_cache=False,
-                 **{str(i):i for i in range(1000)})
-    assert len(os.path.basename(job.cache_file)) < 255
-
-
-def test_cache_id_includes_keyword_arguments(tmp_path):
-    class BarJob(FooJob):
-        def initialize(self, foo, bar, baz):
-            pass
-
-    kwargs = {'foo': 'asdf', 'bar': (1, 2, 3), 'baz': {'hey': 'ho', 'hoo': ['ha', 'ha', 'ha']}}
-    job = BarJob(home_directory=tmp_path, ignore_cache=False, **kwargs)
-    assert job.cache_id == kwargs
-
-@pytest.mark.parametrize('value', (object(), print, lambda: None), ids=lambda v: str(v))
-def test_cache_id_complains_about_keyword_arguments_with_no_string_representation(value, tmp_path):
-    class BarJob(FooJob):
-        def initialize(self, foo, bar, baz):
-            pass
-
-    kwargs = {'foo': 'asdf', 'bar': (1, 2, 3), 'baz': value}
-    job = BarJob(home_directory=tmp_path, ignore_cache=False, **kwargs)
-    with pytest.raises(RuntimeError, match=rf'^{re.escape(str(type(value)))} has no string representation$'):
-        job.cache_id
+def test_cache_id_as_string_normalizes_multibyte_characters(tmp_path, mocker):
+    job = FooJob(home_directory=tmp_path)
+    mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value='kožušček'))
+    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.kozuscek.json')

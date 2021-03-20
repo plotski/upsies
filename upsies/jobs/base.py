@@ -9,6 +9,8 @@ import os
 import pickle
 import re
 
+import unidecode
+
 from ..utils import cached_property, fs, signal
 
 import logging  # isort:skip
@@ -495,6 +497,8 @@ class JobBase(abc.ABC):
             os.mkdir(self._cache_directory)
         return self._cache_directory
 
+    _max_filename_len = 255
+
     @cached_property
     def cache_file(self):
         """
@@ -508,21 +512,17 @@ class JobBase(abc.ABC):
         elif not cache_id:
             filename = f'{self.name}.json'
         else:
-            # Avoid file name being too long. 255 bytes seems common. Leave
-            # some headroom for multibytes.
+            # Avoid file name being too long. 255 bytes seems common.
             # https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits
-            max_len = 250 - len(self.name) - len('..json')
-            cache_id_str = self._cache_data_as_string(cache_id)
+            max_len = self._max_filename_len - len(self.name) - len('..json')
+            cache_id_str = self._cache_id_as_string(cache_id)
             if len(cache_id_str) > max_len:
                 cache_id_str = ''.join((
                     cache_id_str[:int(max_len / 2 - 1)],
                     '…',
                     cache_id_str[-int(max_len / 2 - 1):],
                 ))
-            if cache_id_str:
-                filename = f'{self.name}.{cache_id_str}.json'
-            else:
-                filename = f'{self.name}.json'
+            filename = f'{self.name}.{cache_id_str}.json'
             filename = fs.sanitize_filename(filename)
         return os.path.join(self.cache_directory, filename)
 
@@ -531,38 +531,39 @@ class JobBase(abc.ABC):
         """
         Unique object based on the job's input data
 
-        The return value is turned into a string. Items of non-string iterables
-        are passed to :class:`str` and :meth:`~.str.join`\\ ed with ",".
+        The return value is turned into a string. If it is a non-string sequence
+        or a mapping, items are converted to strings and joined with ",".
+        Multibyte characters and directory delimiters are replaced.
 
-        If this property returns `None`, cache is not read or written.
+        If this property returns `None`, :attr:`cache_file` is not read or
+        written.
 
-        The default implementation uses the arguments passed to
-        :meth:`initialize`.
+        If this property returns any other falsy value, :attr:`name` is used.
         """
-        # Check if any values don't have a string representation to prevent
-        # random cache IDs. We don't want "<foo.bar object at 0x...>" or
-        # "<function foo.bar at 0x...>" in our cache ID.
-        no_str_regex = re.compile(r'^<.*>$')
-        for key, value in self.kwargs.items():
-            if no_str_regex.search(str(key)):
-                raise RuntimeError(f'{type(key)!r} has no string representation')
-            elif no_str_regex.search(str(value)):
-                raise RuntimeError(f'{type(value)!r} has no string representation')
-        return self._kwargs
+        return ''
 
-    def _cache_data_as_string(self, value):
+    def _cache_id_as_string(self, value):
         if isinstance(value, collections.abc.Mapping):
-            return ','.join((f'{k}={self._cache_data_as_string(v)}' for k, v in value.items()))
-
+            return ','.join((f'{self._cache_id_value_as_string(k)}={self._cache_id_as_string(v)}'
+                             for k, v in value.items()))
         elif isinstance(value, collections.abc.Iterable) and not isinstance(value, str):
-            return ','.join((self._cache_data_as_string(v) for v in value))
-
+            return ','.join((self._cache_id_as_string(v) for v in value))
         elif isinstance(value, (str, os.PathLike)) and os.path.exists(value):
             # Use same cache file for absolute and relative paths
             return str(os.path.realpath(value))
-
         else:
-            return str(value)
+            return self._cache_id_value_as_string(value)
+
+    _object_without_str_regex = re.compile(r'^<.*>$')
+
+    def _cache_id_value_as_string(self, value):
+        # Avoid multibyte characters stay below maximum file length
+        value_string = unidecode.unidecode(str(value))
+        # Check if `value` has a proper string representation to prevent random
+        # cache IDs. We don't want "<foo.bar object at 0x...>" in our cache ID.
+        if self._object_without_str_regex.search(value_string):
+            raise RuntimeError(f'{type(value)!r} has no string representation')
+        return value_string
 
 
 class QueueJobBase(JobBase):

@@ -38,11 +38,6 @@ class ChoiceJob(JobBase):
         return self._label
 
     @property
-    def cache_id(self):
-        """:attr:`name` and :attr:`text`"""
-        return self.name
-
-    @property
     def choices(self):
         """
         Sequence of choices the user can make
@@ -221,11 +216,6 @@ class TextFieldJob(JobBase):
     @property
     def label(self):
         return self._label
-
-    @property
-    def cache_id(self):
-        """:attr:`name` and :attr:`text`"""
-        return (self.name, self.text)
 
     @property
     def text(self):
