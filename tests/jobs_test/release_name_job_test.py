@@ -14,6 +14,16 @@ class AsyncMock(Mock):
         return coro()
 
 
+def test_cache_id(mocker, tmp_path):
+    ReleaseName_mock = mocker.patch('upsies.utils.release.ReleaseName')
+    job = ReleaseNameJob(
+        home_directory=tmp_path,
+        ignore_cache=True,
+        content_path='mock/path',
+    )
+    assert job.cache_id == 'path'
+
+
 def test_release_name_property(mocker, tmp_path):
     ReleaseName_mock = mocker.patch('upsies.utils.release.ReleaseName')
     job = ReleaseNameJob(

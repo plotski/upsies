@@ -4,7 +4,7 @@ Generate uniform release name
 
 import asyncio
 
-from ..utils import release
+from ..utils import fs, release
 from . import JobBase
 
 import logging  # isort:skip
@@ -37,6 +37,11 @@ class ReleaseNameJob(JobBase):
     label = 'Release Name'
 
     @property
+    def cache_id(self):
+        """Final segment of `content_path`"""
+        return fs.basename(self._content_path)
+
+    @property
     def release_name(self):
         """:class:`~.utils.release.ReleaseName` instance"""
         return self._release_name
@@ -47,6 +52,7 @@ class ReleaseNameJob(JobBase):
 
         :param content_path: Path to release file or directory
         """
+        self._content_path = content_path
         self._release_name = release.ReleaseName(content_path)
         self.signal.add('release_name_updated')
         self.signal.add('release_name')
