@@ -31,8 +31,8 @@ class CreateTorrentJob(base.JobBase):
 
     @property
     def cache_id(self):
-        """:attr:`.TrackerBase.name`"""
-        return self._tracker.name
+        """Final segment of `content_path` and tracker :attr:`~.TrackerBase.name`"""
+        return (fs.basename(self._content_path), self._tracker.name)
 
     def initialize(self, *, tracker, content_path):
         """
