@@ -322,6 +322,17 @@ def job(tmp_path, mocker):
     )
 
 
+def test_cache_id(tmp_path):
+    job = ScreenshotsJob(home_directory=tmp_path, content_path='some/path')
+    assert job.cache_id == ('path',)
+    job = ScreenshotsJob(home_directory=tmp_path, content_path='some/path', timestamps=(1, 2, 3))
+    assert job.cache_id == ('path', (1, 2, 3))
+    job = ScreenshotsJob(home_directory=tmp_path, content_path='some/path', count=4)
+    assert job.cache_id == ('path', 4)
+    job = ScreenshotsJob(home_directory=tmp_path, content_path='some/path', timestamps=(1, 2), count=4)
+    assert job.cache_id == ('path', (1, 2), 4)
+
+
 @patch('upsies.utils.daemon.DaemonProcess')
 def test_ScreenshotsJob_initialize(DaemonProcess_mock, tmp_path):
     job = ScreenshotsJob(

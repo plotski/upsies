@@ -38,6 +38,16 @@ class ScreenshotsJob(JobBase):
     name = 'screenshots'
     label = 'Screenshots'
 
+    @property
+    def cache_id(self):
+        """Final segment of `content_path`"""
+        cache_id = [fs.basename(self._content_path)]
+        if self.kwargs.get('timestamps'):
+            cache_id.append(self.kwargs['timestamps'])
+        if self.kwargs.get('count'):
+            cache_id.append(self.kwargs['count'])
+        return tuple(cache_id)
+
     def initialize(self, *, content_path, timestamps=(), count=0):
         """
         Set internal state
@@ -52,6 +62,7 @@ class ScreenshotsJob(JobBase):
         picked at even intervals. If `count` is larger than the length of
         `timestamps`, more timestamps are added.
         """
+        self._content_path = content_path
         self._screenshots_created = 0
         self._screenshots_total = -1
         self._video_file = ''
