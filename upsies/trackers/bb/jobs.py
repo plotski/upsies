@@ -99,8 +99,8 @@ class BbTrackerJobs(TrackerJobsBase):
             await self.imdb_job.wait()
 
             # Download poster
-            poster_job.info = f'Downloading poster: {poster_url}'
             poster_url = await self.imdb.poster_url(self.imdb_job.output[0])
+            poster_job.info = f'Downloading poster: {poster_url}'
             poster_path = os.path.join(poster_job.home_directory, 'poster.bb.jpg')
             await http.download(poster_url, poster_path)
 
