@@ -29,6 +29,11 @@ class SceneSearchJob(JobBase):
     label = 'Scene Search'
     hidden = True
 
+    @property
+    def cache_id(self):
+        """Final segment of `content_path`"""
+        return fs.basename(self._content_path)
+
     def initialize(self, *, content_path):
         """
         Set internal state

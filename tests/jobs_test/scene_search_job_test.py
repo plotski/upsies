@@ -24,6 +24,11 @@ async def make_SceneSearchJob(tmp_path):
     return make_SceneSearchJob
 
 
+def test_cache_id(make_SceneSearchJob):
+    job = make_SceneSearchJob(content_path='path/to/Foo/')
+    assert job.cache_id == 'Foo'
+
+
 @pytest.mark.parametrize('ignore_cache', ((True, False),))
 @pytest.mark.asyncio
 async def test_execute_cache_argument(ignore_cache, make_SceneSearchJob, mocker):
