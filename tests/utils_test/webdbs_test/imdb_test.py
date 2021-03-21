@@ -473,41 +473,38 @@ async def test_rating(id, exp_rating, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
-        ('tt0080455', ('Jake Blues, just released from prison, puts together '
-                       'his old band to save the Catholic home where he and '
-                       'his brother Elwood were raised.')),  # Blues Brothers (movie)
-        ('tt0192802', ('When three tight friends Mole "Alan Bennett", Ratty "Sir Michael Palin", '
-                       'and Badger "Sir Michael Gambon", find out that the infamous Mr. Toad '
-                       '"Rik Mayall" of Toad Hall has been up to no good, they must find him and '
-                       'change his ways for good.')),  # Wind in the Willows (TV movie)
+        ('tt0080455', ('After the release of Jake Blues from prison, he and brother Elwood '
+                       'go to visit "The Penguin", the last of the nuns who raised them '
+                       'in an orphanage.')),  # Blues Brothers (movie)
+        ('tt0192802', ('A mole, taken from the fever of spring, comes out of her den, starting '
+                       'a journey with a rat friend on the river and in the woods, where there '
+                       'is the den of the badger and where they spend the lethargy.')),  # Wind in the Willows (TV movie)
         ('tt0471711', ('Planet Express sees a hostile takeover and Bender falls into the hands of '
                        'criminals where he is used to fulfill their schemes.')),  # Bender's Big Score (Video)
         ('tt0097270', ('A depiction of a series of violent killings in Northern Ireland '
                        'with no clue as to exactly who is responsible.')),  # Elephant (TV Short)
-        ('tt3472226', ('In 1985, Kung Fury, the toughest martial artist cop in Miami, goes '
-                       'back in time to kill the worst criminal of all time - Kung Führer, '
-                       'a.k.a. Adolf Hitler.')),  # Kung Fury (Short)
+        ('tt3472226', ('During an unfortunate series of events a friend of Kung Fury is assassinated '
+                       'by the most dangerous kung fu master criminal of all time; '
+                       'Adolf Hitler, a.k.a Kung Führer.')),  # Kung Fury (Short)
         ('tt6560040', ('Sixteen-year-old Jennifer disappears one night from her village '
                        'in the Ardennes. Captain Gaspard Deker leads the investigation with '
                        'local cop Virginie Musso, who knew the girl well. They are helped '
                        'by Eve, a lonely and mysterious woman.')),  # The Forest (TV mini-series)
-        ('tt0348914', ('A show set in the late 1800s, revolving around the characters of Deadwood, '
-                       'South Dakota; a town of deep corruption and crime.')),  # Deadwood (series)
-        ('tt0556307', ('Doc contemplates a procedure that could cure Swearengen - or kill him. '
-                       'Bullock attempts to settle into domesticity, while Sol gets a new '
-                       'student bookkeeper - Trixie. Alma cuts ties with ...')),  # Deadwood - S02E04 (episode)
+        ('tt0348914', ('The town of Deadwood, South Dakota in the weeks following the Custer massacre '
+                       'is a lawless sinkhole of crime and corruption.')),  # Deadwood (series)
+        ('tt0556307', ('Doc contemplates a procedure that could cure Swearengen '
+                       '- or kill him.')),  # Deadwood - S02E04 (episode)
         ('tt0014838', ''),  # The Deadwood Coach
         # Links in summary
-        ('tt0200849', ('In the 1950s, an adolescent Werner Herzog was transfixed by '
-                       'a film performance of the young Klaus Kinski. Years later, '
-                       'they would share an apartment where, in an unabated, forty-eight-hour ...')),  # Mein liebster Feind
+        ('tt0200849', ('In the 1950s, an adolescent Werner Herzog was transfixed by a '
+                       'film performance of the young Klaus Kinski.')),  # Mein liebster Feind
     ),
     ids=lambda value: str(value)[:30] or '<empty>',
 )
 @pytest.mark.asyncio
 async def test_summary(id, exp_summary, api, store_response):
     summary = await api.summary(id)
-    assert exp_summary == summary
+    assert summary.startswith(exp_summary)
 
 
 @pytest.mark.parametrize(

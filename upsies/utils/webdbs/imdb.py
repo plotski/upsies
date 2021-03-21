@@ -145,11 +145,14 @@ class ImdbApi(WebDbApiBase):
 
     async def summary(self, id):
         soup = await self._get_soup(f'title/{id}')
-        summary_tag = soup.find(class_='summary_text')
-        if summary_tag:
-            summary = ''.join(summary_tag.strings).strip()
-            if 'add a plot' not in summary.lower():
-                return re.sub(r'\s*See full summary\W+$', '', summary)
+        storyline_tag = soup.find(id='titleStoryLine')
+        try:
+            summary_tag = storyline_tag.div.p.span
+        except AttributeError:
+            pass
+        else:
+            if summary_tag:
+                return ''.join(summary_tag.strings).strip()
         return ''
 
     async def title_english(self, id, allow_empty=True):
