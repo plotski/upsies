@@ -147,7 +147,7 @@ class ImdbApi(WebDbApiBase):
         soup = await self._get_soup(f'title/{id}')
         summary_tag = soup.find(class_='summary_text')
         if summary_tag:
-            summary = ''.join(summary_tag.stripped_strings).strip()
+            summary = ''.join(summary_tag.strings).strip()
             if 'add a plot' not in summary.lower():
                 return re.sub(r'\s*See full summary\W+$', '', summary)
         return ''

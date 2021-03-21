@@ -497,6 +497,10 @@ async def test_rating(id, exp_rating, api, store_response):
                        'Bullock attempts to settle into domesticity, while Sol gets a new '
                        'student bookkeeper - Trixie. Alma cuts ties with ...')),  # Deadwood - S02E04 (episode)
         ('tt0014838', ''),  # The Deadwood Coach
+        # Links in summary
+        ('tt0200849', ('In the 1950s, an adolescent Werner Herzog was transfixed by '
+                       'a film performance of the young Klaus Kinski. Years later, '
+                       'they would share an apartment where, in an unabated, forty-eight-hour ...')),  # Mein liebster Feind
     ),
     ids=lambda value: str(value)[:30] or '<empty>',
 )
