@@ -40,9 +40,7 @@ class SearchWebDbJob(JobBase):
             function.
     """
 
-    @property
-    def name(self):
-        return f'{self._db.name}-id'
+    name = 'id'
 
     @property
     def label(self):
@@ -51,7 +49,7 @@ class SearchWebDbJob(JobBase):
     @property
     def cache_id(self):
         """Final segment of `content_path` and database :attr:`~.WebDbApiBase.name`"""
-        return (fs.basename(self._content_path), self._db.name)
+        return (self._db.name, fs.basename(self._content_path))
 
     @property
     def query(self):
