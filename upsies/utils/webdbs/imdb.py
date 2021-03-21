@@ -358,10 +358,10 @@ class _ImdbSearchResult(common.SearchResult):
         if not summary:
             summary_link = soup.find('a', text=re.compile(r'(?i:full\s+summary)'))
             if summary_link:
-                summary_string = summary_link.previous_sibling
-                if summary_string:
-                    summary = summary_string.strip()
-
+                summary_tag = summary_link.parent
+                if summary_tag:
+                    summary = ''.join(summary_tag.strings)
+                    summary = re.sub(r'See full summary.*', '', summary).strip()
         return summary
 
     def _get_title(self, soup):
