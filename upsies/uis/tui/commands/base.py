@@ -5,6 +5,7 @@ Abstract base class for commands
 import abc
 import argparse
 import collections
+import re
 import sys
 import textwrap
 
@@ -48,6 +49,7 @@ class _MyHelpFormatter(argparse.HelpFormatter):
                 )
 
         width = min(width, self.MAX_WIDTH) - len(indent)
+        text = re.sub(r'``(.*?)``', '\x1b[3m\\1\x1b[23m', text)
         return [line
                 for paragraph in text.split('\n')
                 for line in wrap(paragraph)]
