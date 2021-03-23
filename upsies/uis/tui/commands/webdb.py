@@ -7,7 +7,7 @@ from . import argtypes
 from .base import CommandBase
 
 
-class search_webdb(CommandBase):
+class webdb_search(CommandBase):
     """
     Search online database like IMDb to get an ID
 
