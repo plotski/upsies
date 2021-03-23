@@ -7,10 +7,10 @@ from . import argtypes
 from .base import CommandBase
 
 
-class create_torrent(CommandBase):
+class torrent_create(CommandBase):
     """Create torrent file and optionally add or copy it"""
 
-    names = ('create-torrent', 'ct')
+    names = ('torrent-create', 'tc')
 
     argument_definitions = {}
 

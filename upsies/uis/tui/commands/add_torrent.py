@@ -7,10 +7,10 @@ from . import argtypes
 from .base import CommandBase
 
 
-class add_torrent(CommandBase):
+class torrent_add(CommandBase):
     """Add torrent file to BitTorrent client"""
 
-    names = ('add-torrent', 'at')
+    names = ('torrent-add', 'ta')
 
     argument_definitions = {
         'CLIENT': {
