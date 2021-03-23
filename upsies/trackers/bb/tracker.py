@@ -144,7 +144,7 @@ class BbTracker(TrackerBase):
             url=upload_url,
             user_agent=True,
             allow_redirects=False,
-            files={'file_input': (tracker_jobs.torrent_filepath, 'application/x-bittorrent')},
+            files={'file_input': (tracker_jobs.torrent_filepath, 'application/octet-stream')},
             data=tracker_jobs.post_data,
         )
 
