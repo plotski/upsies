@@ -27,10 +27,6 @@ class ReleaseNameJob(JobBase):
             Emitted after the user approved a release name. Registered callbacks
             get a :class:`~.release.ReleaseName` instance as a positional
             argument.
-
-            .. note:: This signal is handy because the ``output`` signal always
-                      emits a string so it can be cached in a user-readable text
-                      file.
     """
 
     name = 'release-name'
