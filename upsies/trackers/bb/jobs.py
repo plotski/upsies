@@ -451,8 +451,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     async def generate_movie_description(self, id):
         info = await self.imdb.gather(id, 'cast', 'countries', 'directors',
-                                      'rating', 'summary', 'title_english',
-                                      'title_original', 'url', 'year')
+                                      'rating', 'summary', 'url', 'year')
         _log.debug('info: %r', info)
         lines = ['[b]IMDb[/b]: [url={url}]{id}[/url]'.format(**info)]
 
@@ -496,8 +495,6 @@ class BbTrackerJobs(TrackerJobsBase):
         )
 
         return ''.join((
-            '[size=3][b]{title_original}[/b] ({year})[/size]\n'.format(**info),
-            '[size=2]{title_english}[/size]'.format(**info) if info['title_english'] else '',
             '[quote]{summary}[/quote]'.format(**info),
             '[quote]' + '\n'.join(lines) + '[/quote]',
             promotion,
