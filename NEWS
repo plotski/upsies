@@ -1,11 +1,13 @@
 2021-??-?? 0.?.?
+  * Renamed command: create-torrent -> torrent-create
+  * Renamed command: add-torrent -> torrent-add
   * New command: scene-search: List scene release names
   * New command: scene-check: Identify release as scene and check if it was
     altered
   * release-name: Don't accept release name if any obligatory information is
     unknown.
   * Look up announce URLs on the tracker instead of the config file
-  * create-torrent: Store creation date in .torrent file
+  * torrent-create: Store creation date in .torrent file
 
 
 2021-01-26 0.1.0
