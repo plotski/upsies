@@ -43,4 +43,3 @@ def scenedb(name, **kwargs):
 def scenedb_names():
     """Return sequence of valid `name` arguments for :func:`.scenedb`"""
     return sorted(utils.CaseInsensitiveString(cls.name) for cls in scenedbs())
-
