@@ -27,6 +27,7 @@ class BbTracker(TrackerBase):
         'login': '/login.php',
         'logout': '/logout.php',
         'upload': '/upload.php',
+        'torrent': '/torrents.php',
     }
 
     _max_login_attempts = 15
@@ -148,4 +149,19 @@ class BbTracker(TrackerBase):
             data=tracker_jobs.post_data,
         )
 
-        return 'http://bb.local/path/to/uploaded/torrent'
+        # Upload response should redirect to torrent page via "Location" header
+        _log.debug('Upload response: %r', response)
+        _log.debug('Upload response text: %r', str(response))
+        _log.debug('Upload response headers: %r', response.headers)
+        torrent_page_url = urllib.parse.urljoin(
+            self.config['base_url'],
+            response.headers.get('Location', ''),
+        )
+        _log.debug('Torrent page URL: %r', torrent_page_url)
+        if urllib.parse.urlparse(torrent_page_url).path == self._url_path['torrent']:
+            return str(torrent_page_url)
+        else:
+            _log.debug('Unexpected torrent page URL: %r', torrent_page_url)
+            doc = html.parse(response)
+            html.dump(doc.prettify(), 'upload.html')
+            raise RuntimeError('Failed to find error message. See upload.html for more information.')
