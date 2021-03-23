@@ -531,12 +531,13 @@ class BbTrackerJobs(TrackerJobsBase):
     def post_data(self):
         if self.is_movie_release:
             post_data = {
+                'submit': 'true',
                 'type': 'Movies',
                 'title': self.movie_title_job.output[0],
                 'year': self.movie_year_job.output[0],
                 'source': self.movie_source_job.choice,
-                'video_codec': self.movie_video_codec_job.choice,
-                'audio_codec': self.movie_audio_codec_job.choice,
+                'videoformat': self.movie_video_codec_job.choice,
+                'audioformat': self.movie_audio_codec_job.choice,
                 'container': self.movie_container_job.choice,
                 'resolution': self.movie_resolution_job.choice,
                 'remaster_title': self.movie_release_info_job.output[0],
