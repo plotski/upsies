@@ -99,18 +99,25 @@ class BbTrackerJobs(TrackerJobsBase):
             await self.imdb_job.wait()
 
             # Download poster
-            poster_url = await self.imdb.poster_url(self.imdb_job.output[0])
-            poster_job.info = f'Downloading poster: {poster_url}'
-            poster_path = os.path.join(poster_job.home_directory, 'poster.bb.jpg')
-            await http.download(poster_url, poster_path)
+            imdb_id = self.imdb_job.output[0]
+            poster_url = await self.imdb.poster_url(imdb_id)
+            _log.debug('Poster URL for %r: %r', imdb_id, poster_url)
+            if not poster_url:
+                self.error('Failed to find poster for {imdb_id}')
+            else:
+                poster_job.info = f'Downloading poster: {poster_url}'
+                poster_path = os.path.join(poster_job.home_directory, 'poster.bb.jpg')
+                await http.download(poster_url, poster_path)
+                if not os.path.exists(poster_path) or not os.path.getsize(poster_path) > 0:
+                    self.error('Poster download failed: {poster_url}')
+                else:
+                    # Upload poster to self.image_host
+                    poster_job.info = f'Uploading poster to {self.image_host.name}'
+                    real_poster_url = await self.image_host.upload(poster_path)
 
-            # Upload poster to self.image_host
-            poster_job.info = f'Uploading poster to {self.image_host.name}'
-            real_poster_url = await self.image_host.upload(poster_path)
-
-            # Provide re-uploaded poster as output
-            poster_job.info = ''
-            poster_job.send(real_poster_url)
+                    # Provide re-uploaded poster as output
+                    poster_job.info = ''
+                    poster_job.send(real_poster_url)
 
         return jobs.custom.CustomJob(
             name='poster',
