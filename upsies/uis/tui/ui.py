@@ -77,7 +77,7 @@ class UI:
         """Add :class:`~.jobs.base.JobBase` instances"""
         for job in jobs:
             if job.name in self._jobs:
-                raise RuntimeError(f'Job {job.name} was already added')
+                raise RuntimeError(f'Job {job.name} was already added: {job.name}')
             else:
                 self._jobs[job.name].job = job
                 self._jobs[job.name].widget = jobwidgets.JobWidget(job, self._app)
