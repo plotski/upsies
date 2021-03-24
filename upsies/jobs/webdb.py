@@ -40,7 +40,9 @@ class SearchWebDbJob(JobBase):
             function.
     """
 
-    name = 'id'
+    @property
+    def name(self):
+        return f'{self._db.name}-id'
 
     @property
     def label(self):

@@ -57,7 +57,7 @@ def job(foodb, tmp_path, mocker):
 
 
 def test_SearchWebDbJob_name(job):
-    assert job.name == 'id'
+    assert job.name == 'foodb-id'
 
 
 def test_SearchWebDbJob_label(job):
