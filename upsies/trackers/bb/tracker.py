@@ -135,14 +135,10 @@ class BbTracker(TrackerBase):
 
     async def upload(self, tracker_jobs):
         _log.debug('Uploading %r', tracker_jobs.post_data)
-
-        upload_url = urllib.parse.urljoin(
-            self.config['base_url'],
-            self._url_path['upload'],
-        )
-
+        upload_url = urllib.parse.urljoin(self.config['base_url'], self._url_path['upload'])
         response = await http.post(
             url=upload_url,
+            cache=False,
             user_agent=True,
             allow_redirects=False,
             files={'file_input': (tracker_jobs.torrent_filepath, 'application/octet-stream')},
@@ -150,18 +146,25 @@ class BbTracker(TrackerBase):
         )
 
         # Upload response should redirect to torrent page via "Location" header
-        _log.debug('Upload response: %r', response)
-        _log.debug('Upload response text: %r', str(response))
-        _log.debug('Upload response headers: %r', response.headers)
         torrent_page_url = urllib.parse.urljoin(
             self.config['base_url'],
             response.headers.get('Location', ''),
         )
-        _log.debug('Torrent page URL: %r', torrent_page_url)
         if urllib.parse.urlparse(torrent_page_url).path == self._url_path['torrent']:
             return str(torrent_page_url)
         else:
             _log.debug('Unexpected torrent page URL: %r', torrent_page_url)
             doc = html.parse(response)
-            html.dump(doc.prettify(), 'upload.html')
+
+            # Try to find error message
+            error_tag = doc.find('p', style=re.compile(r'color: red'))
+            if error_tag:
+                error_msg = error_tag.string.strip()
+                if error_msg:
+                    raise errors.RequestError(f'Upload failed: {error_msg}')
+
+            # Unable to find error message
+            html.dump(response, 'upload.html')
             raise RuntimeError('Failed to find error message. See upload.html for more information.')
+
+

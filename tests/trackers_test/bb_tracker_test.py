@@ -5,6 +5,7 @@ import bs4
 import pytest
 
 from upsies import errors
+from upsies.utils.http import Result
 from upsies.trackers.bb import BbTracker, BbTrackerConfig, BbTrackerJobs
 
 
@@ -316,11 +317,7 @@ def test_logged_in():
 async def test_logout(auth_token, mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = BbTracker(
-        config={
-            'base_url': 'http://bb.local',
-        },
-    )
+    tracker = BbTracker(config={'base_url': 'http://bb.local'})
     if auth_token:
         tracker._auth_token = auth_token
     await tracker.logout()
@@ -346,11 +343,7 @@ async def test_get_announce_url_succeeds(mocker):
     ''',
     ))
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = BbTracker(
-        config={
-            'base_url': 'http://bb.local',
-        },
-    )
+    tracker = BbTracker(config={'base_url': 'http://bb.local'})
     announce_url = await tracker.get_announce_url()
     assert announce_url == 'https://bb.local:123/d34db33f/announce'
     assert get_mock.call_args_list == [
@@ -360,17 +353,96 @@ async def test_get_announce_url_succeeds(mocker):
 
 @pytest.mark.asyncio
 async def test_get_announce_url_fails(mocker):
-    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(
-        return_value='<html>foo</html> ',
-    ))
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(return_value='<html>foo</html> '))
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = BbTracker(
-        config={
-            'base_url': 'http://bb.local',
-        },
-    )
+    tracker = BbTracker(config={'base_url': 'http://bb.local'})
     assert await tracker.get_announce_url() is None
     assert get_mock.call_args_list == [
         call('http://bb.local' + BbTracker._url_path['upload'], cache=False, user_agent=True),
     ]
     assert post_mock.call_args_list == []
+
+
+@pytest.mark.asyncio
+async def test_upload_makes_expected_request(mocker):
+    response = Result(text='', bytes=b'', headers={'Location': 'torrents.php?id=123'})
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
+    tracker = BbTracker(config={'base_url': 'http://bb.local'})
+    tracker_jobs_mock = Mock()
+    torrent_page_url = await tracker.upload(tracker_jobs_mock)
+    assert torrent_page_url == 'http://bb.local/torrents.php?id=123'
+    assert post_mock.call_args_list == [call(
+        url='http://bb.local' + BbTracker._url_path['upload'],
+        cache=False,
+        user_agent=True,
+        allow_redirects=False,
+        files={'file_input': (tracker_jobs_mock.torrent_filepath, 'application/octet-stream')},
+        data=tracker_jobs_mock.post_data,
+    )]
+
+@pytest.mark.parametrize('headers', ({'Location': 'somewhere.php'}, {}))
+@pytest.mark.asyncio
+async def test_upload_is_redirected_to_unexpected_page(headers, mocker):
+    response = Result(
+        text='''
+        <html>
+        <body>
+        <p style="color: red;text-align:center;">
+            This is the error message
+        </p>
+        </body>
+        </html>
+        ''',
+        bytes=b'not relevant',
+        headers=headers,
+    )
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
+    tracker = BbTracker(
+        config={
+            'base_url': 'http://bb.local',
+        },
+    )
+    tracker_jobs_mock = Mock()
+    with pytest.raises(errors.RequestError, match=r'^Upload failed: This is the error message$'):
+        await tracker.upload(tracker_jobs_mock)
+
+@pytest.mark.asyncio
+async def test_upload_finds_empty_error_message(mocker):
+    response = Result(
+        text='''
+        <html>
+        <body>
+        <p style="color: red;text-align:center;">
+
+        </p>
+        </body>
+        </html>
+        ''',
+        bytes=b'not relevant',
+    )
+    html_dump_mock = mocker.patch('upsies.utils.html.dump')
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
+    tracker = BbTracker(config={'base_url': 'http://bb.local'})
+    tracker_jobs_mock = Mock()
+    with pytest.raises(RuntimeError, match=r'^Failed to find error message. See upload.html for more information.$'):
+        await tracker.upload(tracker_jobs_mock)
+    assert html_dump_mock.call_args_list == [call(response, 'upload.html')]
+
+@pytest.mark.asyncio
+async def test_upload_fails_to_find_error_message(mocker):
+    response = Result(
+        text='''
+        <html>
+        <body>
+        </body>
+        </html>
+        ''',
+        bytes=b'not relevant',
+    )
+    html_dump_mock = mocker.patch('upsies.utils.html.dump')
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
+    tracker = BbTracker(config={'base_url': 'http://bb.local'})
+    tracker_jobs_mock = Mock()
+    with pytest.raises(RuntimeError, match=r'^Failed to find error message. See upload.html for more information.$'):
+        await tracker.upload(tracker_jobs_mock)
+    assert html_dump_mock.call_args_list == [call(response, 'upload.html')]
