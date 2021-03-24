@@ -135,10 +135,10 @@ class BbTrackerJobs(TrackerJobsBase):
             if not text:
                 raise ValueError(f'Invalid title: {text}')
 
-        def handle_imdb_id(id):
+        def handle_imdb_id(imdb_id):
             self.movie_title_job.add_task(
                 self.movie_title_job.fetch_text(
-                    coro=self.generate_movie_title(id),
+                    coro=self.get_title(imdb_id),
                     default_text=self.release_name.title_with_aka,
                     finish_on_success=False,
                 )
@@ -164,10 +164,10 @@ class BbTrackerJobs(TrackerJobsBase):
             # Raises ValueError if not a valid year
             self.release_name.year = text
 
-        def handle_imdb_id(id):
+        def handle_imdb_id(imdb_id):
             self.movie_year_job.add_task(
                 self.movie_year_job.fetch_text(
-                    coro=self.generate_movie_year(id),
+                    coro=self.get_year(imdb_id),
                     default_text=self.release_name.year,
                     finish_on_success=True,
                 )
