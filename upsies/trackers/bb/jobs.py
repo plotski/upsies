@@ -373,7 +373,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 self.error('Poster download failed: {e}')
             else:
                 if not os.path.exists(poster_path) or not os.path.getsize(poster_path) > 0:
-                    self.error('Poster download failed: {poster_url}')
+                    self.error(f'Poster download failed: {poster_url}')
                 else:
                     # Upload poster to self.image_host
                     poster_job.info = f'Uploading poster to {self.image_host.name}'
