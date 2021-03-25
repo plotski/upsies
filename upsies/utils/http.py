@@ -115,9 +115,9 @@ async def download(url, filepath, *args, **kwargs):
     kwargs['cache'] = False
     if not os.path.exists(filepath):
         _log.debug('Downloading %r to %r', url, filepath)
+        response = await get(url, *args, **kwargs)
         try:
             with open(filepath, 'wb') as f:
-                response = await get(url, *args, **kwargs)
                 f.write(response.bytes)
         except OSError as e:
             if e.strerror:

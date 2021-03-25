@@ -676,6 +676,16 @@ async def test_download_does_nothing_if_file_exists(mocker, tmp_path):
 @pytest.mark.asyncio
 async def test_download_writes_filepath(mocker, tmp_path):
     mocker.patch('upsies.utils.http.get', AsyncMock(
+        side_effect=errors.RequestError('no response'),
+    ))
+    filepath = tmp_path / 'downloaded'
+    with pytest.raises(errors.RequestError, match=r'^no response$'):
+        await http.download('mock url', filepath)
+    assert not filepath.exists()
+
+@pytest.mark.asyncio
+async def test_download_does_not_write_filepath_if_request_fails(mocker, tmp_path):
+    mocker.patch('upsies.utils.http.get', AsyncMock(
         return_value=Mock(bytes=b'downloaded data'),
     ))
     filepath = tmp_path / 'downloaded'
