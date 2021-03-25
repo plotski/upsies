@@ -139,7 +139,7 @@ class BbTrackerJobs(TrackerJobsBase):
         def handle_imdb_id(imdb_id):
             self.movie_year_job.add_task(
                 self.movie_year_job.fetch_text(
-                    coro=self.get_year(imdb_id),
+                    coro=self.imdb.year(imdb_id),
                     default_text=self.release_name.year,
                     finish_on_success=True,
                 )
@@ -354,10 +354,6 @@ class BbTrackerJobs(TrackerJobsBase):
     async def get_title(self, imdb_id):
         await self.release_name.fetch_info(imdb_id)
         return self.release_name.title_with_aka
-
-    async def get_year(self, imdb_id):
-        await self.release_name.fetch_info(imdb_id)
-        return self.release_name.year
 
     async def get_poster_url(self, poster_job, poster_url_getter):
         # Get original poster URL (e.g. "http://imdb.com/...jpg")
