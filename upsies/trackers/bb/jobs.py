@@ -39,8 +39,16 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.release_type_job.choice is release.ReleaseType.movie
 
     @property
+    def is_season_release(self):
+        return self.release_type_job.choice is release.ReleaseType.season
+
+    @property
+    def is_episode_release(self):
+        return self.release_type_job.choice is release.ReleaseType.episode
+
+    @property
     def is_series_release(self):
-        return self.release_type_job.choice in (release.ReleaseType.series,
+        return self.release_type_job.choice in (release.ReleaseType.season,
                                                 release.ReleaseType.episode)
 
     # Generic jobs
