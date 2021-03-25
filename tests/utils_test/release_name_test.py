@@ -164,12 +164,24 @@ def test_title_aka_setter(ReleaseInfo_mock):
     assert rn.title_aka == ''
 
 
+@pytest.mark.parametrize(
+    argnames='release_info, year_required, exp_title_full',
+    argvalues=(
+        ({'title': 'The Foo', 'aka': '', 'year': '2015'}, True, 'The Foo 2015'),
+        ({'title': 'The Foo', 'aka': '', 'year': '2015'}, False, 'The Foo'),
+        ({'title': 'The Foo', 'aka': 'The Bar', 'year': '2015'}, False, 'The Foo AKA The Bar'),
+        ({'title': 'The Foo', 'aka': 'The Bar', 'year': '2015'}, True, 'The Foo AKA The Bar 2015'),
+        ({'title': 'The Foo', 'aka': 'The Bar', 'year': ''}, False, 'The Foo AKA The Bar'),
+        ({'title': 'The Foo', 'aka': 'The Bar', 'year': ''}, True, 'The Foo AKA The Bar UNKNOWN_YEAR'),
+    ),
+    ids=lambda v: str(v),
+)
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_title_with_aka(ReleaseInfo_mock):
-    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': ''}
-    assert ReleaseName('path/to/something').title_with_aka == 'The Foo'
-    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'The Bar'}
-    assert ReleaseName('path/to/something').title_with_aka == 'The Foo AKA The Bar'
+def test_title_full(ReleaseInfo_mock, release_info, year_required, exp_title_full):
+    ReleaseInfo_mock.return_value = release_info
+    rn = ReleaseName('path/to/something')
+    rn.year_required = year_required
+    assert rn.title_full == exp_title_full
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))

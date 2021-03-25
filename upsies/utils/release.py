@@ -143,12 +143,22 @@ class ReleaseName(collections.abc.Mapping):
         self._info['aka'] = str(value)
 
     @property
-    def title_with_aka(self):
-        """Combination of :attr:`title` and :attr:`title_aka`"""
+    def title_full(self):
+        """
+        Combination of :attr:`title`, :attr:`title_aka` and :attr:`year`
+
+        For movies, the :attr:`year` is always appended to the
+        :attr:`title`. For series, the :attr:`year` is appended if
+        :attr:`year_required` is `True`.
+
+        :attr:`title_aka` is appended if it is truthy.
+        """
+        title_full = [self.title]
         if self.title_aka:
-            return f'{self.title} AKA {self.title_aka}'
-        else:
-            return self.title
+            title_full.extend(('AKA', self.title_aka))
+        if self.year_required:
+            title_full.append(self.year)
+        return ' '.join(title_full)
 
     @property
     def year(self):
