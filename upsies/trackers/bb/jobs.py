@@ -306,10 +306,10 @@ class BbTrackerJobs(TrackerJobsBase):
             if not text:
                 raise ValueError(f'Invalid tags: {text}')
 
-        def handle_imdb_id(id):
+        def handle_imdb_id(imdb_id):
             self.movie_tags_job.add_task(
                 self.movie_tags_job.fetch_text(
-                    coro=self.get_movie_tags(id),
+                    coro=self.get_tags(imdb_id),
                     finish_on_success=True,
                 )
             )
@@ -323,6 +323,7 @@ class BbTrackerJobs(TrackerJobsBase):
             validator=validator,
             **self.common_job_args,
         )
+
     @cached_property
     def movie_description_job(self):
         def validator(text):
@@ -330,10 +331,10 @@ class BbTrackerJobs(TrackerJobsBase):
             if not text:
                 raise ValueError(f'Invalid description: {text}')
 
-        def handle_imdb_id(id):
+        def handle_imdb_id(imdb_id):
             self.movie_description_job.add_task(
                 self.movie_description_job.fetch_text(
-                    coro=self.get_movie_description(id),
+                    coro=self.get_movie_description(imdb_id),
                     finish_on_success=True,
                 )
             )
@@ -395,7 +396,7 @@ class BbTrackerJobs(TrackerJobsBase):
         _log.debug('Poster URL for %r: %r', tvmaze_id, poster_url)
         return poster_url
 
-    async def get_movie_tags(self, id):
+    async def get_tags(self, imdb_id):
         def normalize_tags(strings):
             normalized = []
             for s in strings:
@@ -418,9 +419,9 @@ class BbTrackerJobs(TrackerJobsBase):
                 for item in seq
             )
 
-        genres = await self.imdb.keywords(id)
-        directors = await self.imdb.directors(id)
-        cast = await self.imdb.cast(id)
+        genres = await self.imdb.keywords(imdb_id)
+        directors = await self.imdb.directors(imdb_id)
+        cast = await self.imdb.cast(imdb_id)
         tags = sum((
             normalize_tags(genres),
             normalize_tags(directors),
@@ -484,8 +485,8 @@ class BbTrackerJobs(TrackerJobsBase):
 
         return ' / '.join(info)
 
-    async def get_movie_description(self, id):
-        info = await self.imdb.gather(id, 'cast', 'countries', 'directors',
+    async def get_movie_description(self, imdb_id):
+        info = await self.imdb.gather(imdb_id, 'cast', 'countries', 'directors',
                                       'rating', 'summary', 'url', 'year')
         _log.debug('info: %r', info)
         lines = ['[b]IMDb[/b]: [url={url}]{id}[/url]'.format(**info)]
