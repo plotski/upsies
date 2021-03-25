@@ -417,3 +417,16 @@ async def test_url(api):
 @pytest.mark.asyncio
 async def test_year(id, exp_year, api, store_response):
     assert await api.year(id) == exp_year
+
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_imdb_id'),
+    argvalues=(
+        (35256, 'tt8078816'),
+        (37993, 'tt1405737'),
+        (36072, 'tt8168678'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_imdb_id(id, exp_imdb_id, api, store_response):
+    assert await api.imdb_id(id) == exp_imdb_id

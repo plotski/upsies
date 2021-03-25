@@ -111,17 +111,14 @@ class TvmazeApi(WebDbApiBase):
         return _get_summary(show)
 
     async def title_english(self, id):
-        show = await self._get_show(id)
-        imdb_id = show.get('externals', {}).get('imdb')
+        imdb_id = await self.imdb_id(id)
         if imdb_id:
             return await self._imdb.title_english(imdb_id)
         else:
             return ''
 
     async def title_original(self, id):
-        show = await self._get_show(id)
-        imdb_id = show.get('externals', {}).get('imdb')
-        _log.debug('Getting original title via imdb id: %r', imdb_id)
+        imdb_id = await self.imdb_id(id)
         if imdb_id:
             return await self._imdb.title_original(imdb_id)
         else:
@@ -138,6 +135,13 @@ class TvmazeApi(WebDbApiBase):
     async def year(self, id):
         show = await self._get_show(id)
         return _get_year(show)
+
+    async def imdb_id(self, id):
+        """Return IMDb ID for TVmaze ID `id` or `None`"""
+        show = await self._get_show(id)
+        imdb_id = show.get('externals', {}).get('imdb')
+        if imdb_id:
+            return imdb_id
 
 
 class _TvmazeSearchResult(common.SearchResult):
