@@ -309,7 +309,7 @@ class BbTrackerJobs(TrackerJobsBase):
         def handle_imdb_id(imdb_id):
             self.movie_tags_job.add_task(
                 self.movie_tags_job.fetch_text(
-                    coro=self.get_tags(imdb_id),
+                    coro=self.get_tags(self.imdb, imdb_id),
                     finish_on_success=True,
                 )
             )
@@ -392,7 +392,7 @@ class BbTrackerJobs(TrackerJobsBase):
         _log.debug('Poster URL for %r: %r', tvmaze_id, poster_url)
         return poster_url
 
-    async def get_tags(self, imdb_id):
+    async def get_tags(self, webdb, id):
         def normalize_tags(strings):
             normalized = []
             for s in strings:
@@ -415,14 +415,16 @@ class BbTrackerJobs(TrackerJobsBase):
                 for item in seq
             )
 
-        genres = await self.imdb.keywords(imdb_id)
-        directors = await self.imdb.directors(imdb_id)
-        cast = await self.imdb.cast(imdb_id)
-        tags = sum((
-            normalize_tags(genres),
-            normalize_tags(directors),
-            normalize_tags(cast),
-        ), start=[])
+        # Gather tags
+        tags = list(await webdb.keywords(id))
+        if self.is_movie_release:
+            tags.extend(await webdb.directors(id))
+        elif self.is_series_release:
+            tags.extend(await webdb.creators(id))
+        tags.extend(await webdb.cast(id))
+
+        # Replace spaces, non-ASCII characters, etc
+        tags = normalize_tags(tags)
 
         # Maximum length of concatenated tags is 200 characters
         tags_string = assemble(tags)
