@@ -17,20 +17,49 @@ _log = logging.getLogger(__name__)
 
 
 class BbTrackerJobs(TrackerJobsBase):
+    # Web DBs
+
+    @cached_property
+    def imdb(self):
+        """:class:`~.webdbs.imdb.ImdbApi` instance"""
+        return webdbs.webdb('imdb')
+
+    @cached_property
+    def tvmaze(self):
+        """:class:`~.webdbs.imdb.TvmazeApi` instance"""
+        return webdbs.webdb('tvmaze')
+
+    @cached_property
+    def release_name(self):
+        """:class:`~.release.ReleaseName` instance"""
+        return release.ReleaseName(self.content_path)
+
+    @property
+    def is_movie_release(self):
+        return self.release_type_job.choice is release.ReleaseType.movie
+
+    @property
+    def is_series_release(self):
+        return self.release_type_job.choice in (release.ReleaseType.series,
+                                                release.ReleaseType.episode)
+
+    # Generic jobs
+
     @cached_property
     def jobs_before_upload(self):
+        # Return all possible jobs and disable/enable them on a condition based
+        # on self.is_movie|series_release.
         return (
             # Generic jobs
             self.release_type_job,
-            self.imdb_job,
             self.mediainfo_job,
             self.create_torrent_job,
             self.screenshots_job,
             self.upload_screenshots_job,
-            self.poster_job,
             self.scene_check_job,
 
             # Movie jobs
+            self.imdb_job,
             self.movie_title_job,
             self.movie_year_job,
             self.movie_resolution_job,
@@ -39,14 +68,15 @@ class BbTrackerJobs(TrackerJobsBase):
             self.movie_video_codec_job,
             self.movie_container_job,
             self.movie_release_info_job,
+            self.movie_poster_job,
             self.movie_tags_job,
             self.movie_description_job,
 
             # Series jobs
+            self.tvmaze_job,
             self.series_title_job,
+            self.series_poster_job,
         )
-
-    # Generic jobs
 
     @cached_property
     def release_type_job(self):
@@ -62,71 +92,17 @@ class BbTrackerJobs(TrackerJobsBase):
             **self.common_job_args,
         )
 
-    @property
-    def is_movie_release(self):
-        return self.release_type_job.choice is release.ReleaseType.movie
-
-    @property
-    def is_series_release(self):
-        return self.release_type_job.choice in (release.ReleaseType.series,
-                                                release.ReleaseType.episode)
-
-    @cached_property
-    def release_name(self):
-        """:class:`~.release.ReleaseName` instance"""
-        return release.ReleaseName(self.content_path)
-
-    @cached_property
-    def imdb(self):
-        """:class:`~.webdbs.imdb.ImdbApi` instance"""
-        return webdbs.imdb.ImdbApi()
+    # Movie jobs
 
     @cached_property
     def imdb_job(self):
         """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
         return jobs.webdb.SearchWebDbJob(
+            condition=lambda: self.is_movie_release,
             content_path=self.content_path,
             db=self.imdb,
             **self.common_job_args,
         )
-
-    @cached_property
-    def poster_job(self):
-        """Re-upload poster from IMDb to :attr:`~.TrackerJobsBase.image_host`"""
-        async def get_poster(poster_job):
-            # Wait for user to pick IMDb ID
-            poster_job.info = 'Waiting for IMDb ID'
-            await self.imdb_job.wait()
-
-            # Download poster
-            imdb_id = self.imdb_job.output[0]
-            poster_url = await self.imdb.poster_url(imdb_id)
-            _log.debug('Poster URL for %r: %r', imdb_id, poster_url)
-            if not poster_url:
-                self.error('Failed to find poster for {imdb_id}')
-            else:
-                poster_job.info = f'Downloading poster: {poster_url}'
-                poster_path = os.path.join(poster_job.home_directory, 'poster.bb.jpg')
-                await http.download(poster_url, poster_path)
-                if not os.path.exists(poster_path) or not os.path.getsize(poster_path) > 0:
-                    self.error('Poster download failed: {poster_url}')
-                else:
-                    # Upload poster to self.image_host
-                    poster_job.info = f'Uploading poster to {self.image_host.name}'
-                    real_poster_url = await self.image_host.upload(poster_path)
-
-                    # Provide re-uploaded poster as output
-                    poster_job.info = ''
-                    poster_job.send(real_poster_url)
-
-        return jobs.custom.CustomJob(
-            name='poster',
-            label='Poster',
-            worker=get_poster,
-            **self.common_job_args,
-        )
-
-    # Movie jobs
 
     @cached_property
     def movie_title_job(self):
@@ -139,7 +115,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.movie_title_job.add_task(
                 self.movie_title_job.fetch_text(
                     coro=self.get_title(imdb_id),
-                    default_text=self.release_name.title_with_aka,
+                    default_text=self.release_name.title_full,
                     finish_on_success=False,
                 )
             )
@@ -153,10 +129,6 @@ class BbTrackerJobs(TrackerJobsBase):
             validator=validator,
             **self.common_job_args,
         )
-
-    async def generate_movie_title(self, id):
-        await self.release_name.fetch_info(id)
-        return self.release_name.title_with_aka
 
     @cached_property
     def movie_year_job(self):
@@ -183,10 +155,6 @@ class BbTrackerJobs(TrackerJobsBase):
             validator=validator,
             **self.common_job_args,
         )
-
-    async def generate_movie_year(self, id):
-        await self.release_name.fetch_info(id)
-        return self.release_name.year
 
     @cached_property
     def movie_resolution_job(self):
@@ -313,11 +281,161 @@ class BbTrackerJobs(TrackerJobsBase):
             name='movie-release-info',
             label='Release Info',
             condition=lambda: self.is_movie_release,
-            text=self.generate_movie_release_info(),
+            text=self.get_movie_release_info(),
             **self.common_job_args,
         )
 
-    def generate_movie_release_info(self):
+    @cached_property
+    def movie_poster_job(self):
+        """Re-upload poster from IMDb to :attr:`~.TrackerJobsBase.image_host`"""
+        async def get_poster(poster_job):
+            return await self.get_poster_url(poster_job, self.get_movie_poster_url)
+
+        return jobs.custom.CustomJob(
+            name='movie-poster',
+            label='Poster',
+            condition=lambda: self.is_movie_release,
+            worker=get_poster,
+            **self.common_job_args,
+        )
+
+    @cached_property
+    def movie_tags_job(self):
+        def validator(text):
+            text = text.strip()
+            if not text:
+                raise ValueError(f'Invalid tags: {text}')
+
+        def handle_imdb_id(id):
+            self.movie_tags_job.add_task(
+                self.movie_tags_job.fetch_text(
+                    coro=self.get_movie_tags(id),
+                    finish_on_success=True,
+                )
+            )
+
+        self.imdb_job.signal.register('output', handle_imdb_id)
+
+        return jobs.dialog.TextFieldJob(
+            name='movie-tags',
+            label='Tags',
+            condition=lambda: self.is_movie_release,
+            validator=validator,
+            **self.common_job_args,
+        )
+    @cached_property
+    def movie_description_job(self):
+        def validator(text):
+            text = text.strip()
+            if not text:
+                raise ValueError(f'Invalid description: {text}')
+
+        def handle_imdb_id(id):
+            self.movie_description_job.add_task(
+                self.movie_description_job.fetch_text(
+                    coro=self.get_movie_description(id),
+                    finish_on_success=True,
+                )
+            )
+
+        self.imdb_job.signal.register('output', handle_imdb_id)
+
+        return jobs.dialog.TextFieldJob(
+            name='movie-description',
+            label='Description',
+            condition=lambda: self.is_movie_release,
+            validator=validator,
+            **self.common_job_args,
+        )
+
+    # Metadata generators
+
+    async def get_title(self, imdb_id):
+        await self.release_name.fetch_info(imdb_id)
+        return self.release_name.title_full
+
+    async def get_year(self, imdb_id):
+        await self.release_name.fetch_info(imdb_id)
+        return self.release_name.year
+
+    async def get_poster_url(self, poster_job, poster_url_getter):
+        # Get original poster URL (e.g. "http://imdb.com/...jpg")
+        poster_job.info = 'Waiting for ID'
+        poster_url = await poster_url_getter()
+        if not poster_url:
+            self.error('Failed to find poster')
+        else:
+            poster_job.info = f'Downloading poster: {poster_url}'
+            poster_path = os.path.join(poster_job.home_directory, 'poster.bb.jpg')
+            try:
+                await http.download(poster_url, poster_path)
+            except errors.RequestError as e:
+                self.error('Poster download failed: {e}')
+            else:
+                if not os.path.exists(poster_path) or not os.path.getsize(poster_path) > 0:
+                    self.error('Poster download failed: {poster_url}')
+                else:
+                    # Upload poster to self.image_host
+                    poster_job.info = f'Uploading poster to {self.image_host.name}'
+                    real_poster_url = await self.image_host.upload(poster_path)
+                    poster_job.info = ''
+                    poster_job.send(real_poster_url)
+
+    async def get_movie_poster_url(self):
+        await self.imdb_job.wait()
+        imdb_id = self.imdb_job.output[0]
+        poster_url = await self.imdb.poster_url(imdb_id)
+        _log.debug('Poster URL for %r: %r', imdb_id, poster_url)
+        return poster_url
+
+    async def get_series_poster_url(self):
+        await self.tvmaze_job.wait()
+        tvmaze_id = self.tvmaze_job.output[0]
+        poster_url = await self.tvmaze.poster_url(tvmaze_id)
+        _log.debug('Poster URL for %r: %r', tvmaze_id, poster_url)
+        return poster_url
+
+    async def get_movie_tags(self, id):
+        def normalize_tags(strings):
+            normalized = []
+            for s in strings:
+                s = (
+                    s
+                    .lower()
+                    .replace(' ', '.')
+                    .replace('-', '.')
+                    .replace('\'', '.')
+                )
+                s = re.sub(r'\.+', '.', s)  # Dedup "."
+                s = unidecode.unidecode(s)  # Replace non-ASCII
+                normalized.append(s)
+            return normalized
+
+        def assemble(*sequences):
+            return ','.join(
+                item
+                for seq in sequences
+                for item in seq
+            )
+
+        genres = await self.imdb.keywords(id)
+        directors = await self.imdb.directors(id)
+        cast = await self.imdb.cast(id)
+        tags = sum((
+            normalize_tags(genres),
+            normalize_tags(directors),
+            normalize_tags(cast),
+        ), start=[])
+
+        # Maximum length of concatenated tags is 200 characters
+        tags_string = assemble(tags)
+        while len(tags_string) > 200:
+            del tags[-1]
+            tags_string = assemble(tags)
+
+        return tags_string
+
+    def get_movie_release_info(self):
         info = []
 
         if 'Remux' in self.release_name.source:
@@ -366,97 +484,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
         return ' / '.join(info)
 
-    @cached_property
-    def movie_tags_job(self):
-        def validator(text):
-            text = text.strip()
-            if not text:
-                raise ValueError(f'Invalid tags: {text}')
-
-        def handle_imdb_id(id):
-            self.movie_tags_job.add_task(
-                self.movie_tags_job.fetch_text(
-                    coro=self.generate_movie_tags(id),
-                    finish_on_success=True,
-                )
-            )
-
-        self.imdb_job.signal.register('output', handle_imdb_id)
-
-        return jobs.dialog.TextFieldJob(
-            name='movie-tags',
-            label='Tags',
-            condition=lambda: self.is_movie_release,
-            validator=validator,
-            **self.common_job_args,
-        )
-
-    async def generate_movie_tags(self, id):
-        def normalize_tags(strings):
-            normalized = []
-            for s in strings:
-                s = (
-                    s
-                    .lower()
-                    .replace(' ', '.')
-                    .replace('-', '.')
-                    .replace('\'', '.')
-                )
-                s = re.sub(r'\.+', '.', s)  # Dedup "."
-                s = unidecode.unidecode(s)  # Replace non-ASCII
-                normalized.append(s)
-            return normalized
-
-        def assemble(*sequences):
-            return ','.join(
-                item
-                for seq in sequences
-                for item in seq
-            )
-
-        genres = await self.imdb.keywords(id)
-        directors = await self.imdb.directors(id)
-        cast = await self.imdb.cast(id)
-        tags = sum((
-            normalize_tags(genres),
-            normalize_tags(directors),
-            normalize_tags(cast),
-        ), start=[])
-
-        # Maximum length of concatenated tags is 200 characters
-        tags_string = assemble(tags)
-        while len(tags_string) > 200:
-            del tags[-1]
-            tags_string = assemble(tags)
-
-        return tags_string
-
-    @cached_property
-    def movie_description_job(self):
-        def validator(text):
-            text = text.strip()
-            if not text:
-                raise ValueError(f'Invalid description: {text}')
-
-        def handle_imdb_id(id):
-            self.movie_description_job.add_task(
-                self.movie_description_job.fetch_text(
-                    coro=self.generate_movie_description(id),
-                    finish_on_success=True,
-                )
-            )
-
-        self.imdb_job.signal.register('output', handle_imdb_id)
-
-        return jobs.dialog.TextFieldJob(
-            name='movie-description',
-            label='Description',
-            condition=lambda: self.is_movie_release,
-            validator=validator,
-            **self.common_job_args,
-        )
-
-    async def generate_movie_description(self, id):
+    async def get_movie_description(self, id):
         info = await self.imdb.gather(id, 'cast', 'countries', 'directors',
                                       'rating', 'summary', 'url', 'year')
         _log.debug('info: %r', info)
@@ -507,22 +535,7 @@ class BbTrackerJobs(TrackerJobsBase):
             promotion,
         ))
 
-    # Series jobs
-
-    @cached_property
-    def series_title_job(self):
-        def validator(text):
-            text = text.strip()
-            if not text:
-                raise ValueError(f'Invalid title: {text}')
-
-        return jobs.dialog.TextFieldJob(
-            name='series-title',
-            label='Series Title',
-            condition=lambda: self.is_series_release,
-            validator=validator,
-            **self.common_job_args,
-        )
+    # Web form data
 
     @property
     def torrent_filepath(self):
@@ -548,7 +561,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 'tags': self.movie_tags_job.output[0],
                 'desc': self.movie_description_job.output[0],
                 'release_desc': self.mediainfo_job.output[0],
-                'image': self.poster_job.output[0],
+                'image': self.movie_poster_job.output[0],
             }
             post_data.update(self.post_data_screenshot_urls)
             if self.scene_check_job.is_scene_release:
@@ -567,6 +580,8 @@ class BbTrackerJobs(TrackerJobsBase):
             raise RuntimeError('Screeenshots not uploaded yet')
         else:
             return {f'screenshot{i}': url for i, url in enumerate(urls, start=1)}
+
+    # Other stuff
 
     def make_choices_job(self, name, label, autodetect_value, options,
                          condition=None, autofinish=False):
