@@ -85,7 +85,7 @@ class BbTrackerJobs(TrackerJobsBase):
             label='Release Type',
             choices=(
                 ('Movie', release.ReleaseType.movie),
-                ('Series', release.ReleaseType.series),
+                ('Season', release.ReleaseType.season),
                 ('Episode', release.ReleaseType.episode),
             ),
             focused=self.release_name.type,
