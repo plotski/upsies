@@ -114,7 +114,7 @@ class BbTrackerJobs(TrackerJobsBase):
         def handle_imdb_id(imdb_id):
             self.movie_title_job.add_task(
                 self.movie_title_job.fetch_text(
-                    coro=self.get_title(imdb_id),
+                    coro=self.get_movie_title(imdb_id),
                     default_text=self.release_name.title_with_aka,
                     finish_on_success=False,
                 )
@@ -351,7 +351,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     # Metadata generators
 
-    async def get_title(self, imdb_id):
+    async def get_movie_title(self, imdb_id):
         await self.release_name.fetch_info(imdb_id)
         return self.release_name.title_with_aka
 
