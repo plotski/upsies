@@ -242,8 +242,12 @@ def test_year_setter(ReleaseInfo_mock):
 def test_year_required(ReleaseInfo_mock, type, year_required, year, exp_year):
     ReleaseInfo_mock.return_value = {'year': year, 'type': type}
     rn = ReleaseName('path/to/something')
-    assert rn.year_required is False
+    if type is ReleaseType.movie:
+        assert rn.year_required is True
+    else:
+        assert rn.year_required is False
     rn.year_required = year_required
+    assert rn.year_required is year_required
     assert rn.year == exp_year
 
 
@@ -706,26 +710,31 @@ def test_update_attributes(ReleaseInfo_mock, ImdbApi_mock, guessed_type, imdb_ty
     ]
 
 
-_unique_titles = (Mock(title='The Foo'), Mock(title='The Bar'))
-_same_titles = (Mock(title='The Foo'), Mock(title='The Foo'))
-
 @patch('upsies.utils.webdbs.imdb.ImdbApi')
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, results, exp_year_required',
     argvalues=(
-        (ReleaseType.movie, _unique_titles, False),
-        (ReleaseType.movie, _same_titles, False),
-        (ReleaseType.season, _unique_titles, False),
-        (ReleaseType.season, _same_titles, True),
-        (ReleaseType.episode, _unique_titles, False),
-        (ReleaseType.episode, _same_titles, True),
+        (ReleaseType.movie, (Mock(title='The Foo'), Mock(title='The Bar')), True),
+        (ReleaseType.movie, (Mock(title='The Foo'), Mock(title='The Föö')), True),
+        (ReleaseType.season, (Mock(title='The Foo'), Mock(title='The Bar')), None),
+        (ReleaseType.season, (Mock(title='The Foo'), Mock(title='The Föö')), True),
+        (ReleaseType.episode, (Mock(title='The Foo'), Mock(title='The Bar')), None),
+        (ReleaseType.episode, (Mock(title='The Foo'), Mock(title='The Föö')), True),
     ),
+    ids=lambda v: str(v),
 )
 def test_update_year_required(ReleaseInfo_mock, ImdbApi_mock, type, results, exp_year_required):
     ImdbApi_mock.return_value.search = AsyncMock(return_value=results)
     ReleaseInfo_mock.return_value = {'type': type, 'title': 'The Foo'}
     rn = ReleaseName('path/to/something')
-    assert rn.year_required is False
+    orig_year_required = rn.year_required
+    if type is ReleaseType.movie:
+        assert rn.year_required is True
+    else:
+        assert rn.year_required is False
     run_async(rn._update_year_required())
-    assert rn.year_required is exp_year_required
+    if exp_year_required is None:
+        assert rn.year_required is orig_year_required
+    else:
+        assert rn.year_required is exp_year_required

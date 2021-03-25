@@ -16,6 +16,7 @@ import os
 import re
 
 import natsort
+import unidecode
 
 from .. import constants, errors
 from ..utils import scene, webdbs
@@ -188,16 +189,12 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def year_required(self):
         """
-        Whether release year is needed to make :attr:`title` of TV series unique
-
-        If set to `True`, :meth:`format` appends :attr:`year` after
-        :attr:`title` even if :attr:`type` is not :attr:`ReleaseType.movie`.
-
-        For movies, this property should have no effect.
+        Whether :attr:`title_full` includes :attr:`year`
 
         See also :meth:`fetch_info`.
         """
-        return getattr(self, '_year_required', False)
+        default = self.type is ReleaseType.movie
+        return getattr(self, '_year_required', default)
 
     @year_required.setter
     def year_required(self, value):
@@ -452,12 +449,10 @@ class ReleaseName(collections.abc.Mapping):
             query = webdbs.Query(title=self.title, type=ReleaseType.series)
             results = await self._imdb.search(query)
             same_titles = tuple(f'{r.title} ({r.year})' for r in results
-                                if r.title.casefold() == self.title.casefold())
-            _log.debug('Found multiple search results for %r: %r', query, same_titles)
+                                if unidecode.unidecode(r.title) == unidecode.unidecode(self.title))
             if len(same_titles) >= 2:
+                _log.debug('Found multiple search results for %r: %r', query, same_titles)
                 self.year_required = True
-            else:
-                self.year_required = False
 
     def format(self, aka=True, aka_first=False, sep=' '):
         """
