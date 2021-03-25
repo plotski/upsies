@@ -15,7 +15,7 @@ class BbTrackerConfig(TrackerConfigBase):
         'source'     : 'bB',
         'image_host' : 'imgbox',
         'exclude'    : [
-            r'\.(?i:nfo|txt|jpg|jpeg|png)$',
+            r'\.(?i:nfo|txt|jpg|jpeg|png|sfv)$',
             r'/(?i:sample|extra|bonus|feature)',
         ],
     }
