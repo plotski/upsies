@@ -454,23 +454,11 @@ class ReleaseName(collections.abc.Mapping):
                 _log.debug('Found multiple search results for %r: %r', query, same_titles)
                 self.year_required = True
 
-    def format(self, aka=True, aka_first=False, sep=' '):
-        """
-        Assemble all the parts into a string
-        """
-        parts = [self.title]
-        if (aka or aka_first) and self.title_aka:
-            if aka_first:
-                parts[0:0] = (self.title_aka, 'AKA')
-            else:
-                parts[1:] = ('AKA', self.title_aka)
+    def format(self, sep=' '):
+        """Assemble all parts into string"""
+        parts = [self.title_full]
 
-        if self.type is ReleaseType.movie:
-            parts.append(self.year)
-
-        elif self.type in (ReleaseType.season, ReleaseType.episode):
-            if self.year_required:
-                parts.append(self.year)
+        if self.type in (ReleaseType.season, ReleaseType.episode):
             parts.append(str(self.episodes))
 
         if self.edition:
