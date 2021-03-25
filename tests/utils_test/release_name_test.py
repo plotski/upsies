@@ -57,7 +57,7 @@ def test_str(ReleaseInfo_mock):
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
-    assert len(rn) == 18
+    assert len(rn) == 19
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -164,8 +164,16 @@ def test_title_aka_setter(ReleaseInfo_mock):
     assert rn.title_aka == ''
 
 
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_title_with_aka(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': ''}
+    assert ReleaseName('path/to/something').title_with_aka == 'The Foo'
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'The Bar'}
+    assert ReleaseName('path/to/something').title_with_aka == 'The Foo AKA The Bar'
+
+
 @pytest.mark.parametrize(
-    argnames='release_info, year_required, exp_title_full',
+    argnames='release_info, year_required, exp_title_with_aka_and_year',
     argvalues=(
         ({'title': 'The Foo', 'aka': '', 'year': '2015'}, True, 'The Foo 2015'),
         ({'title': 'The Foo', 'aka': '', 'year': '2015'}, False, 'The Foo'),
@@ -177,11 +185,11 @@ def test_title_aka_setter(ReleaseInfo_mock):
     ids=lambda v: str(v),
 )
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_title_full(ReleaseInfo_mock, release_info, year_required, exp_title_full):
+def test_title_full(ReleaseInfo_mock, release_info, year_required, exp_title_with_aka_and_year):
     ReleaseInfo_mock.return_value = release_info
     rn = ReleaseName('path/to/something')
     rn.year_required = year_required
-    assert rn.title_full == exp_title_full
+    assert rn.title_with_aka_and_year == exp_title_with_aka_and_year
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))

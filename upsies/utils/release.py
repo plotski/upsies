@@ -144,7 +144,15 @@ class ReleaseName(collections.abc.Mapping):
         self._info['aka'] = str(value)
 
     @property
-    def title_full(self):
+    def title_with_aka(self):
+        """Combination of :attr:`title` and :attr:`title_aka`"""
+        if self.title_aka:
+            return f'{self.title} AKA {self.title_aka}'
+        else:
+            return self.title
+
+    @property
+    def title_with_aka_and_year(self):
         """
         Combination of :attr:`title`, :attr:`title_aka` and :attr:`year`
 
@@ -154,12 +162,12 @@ class ReleaseName(collections.abc.Mapping):
 
         :attr:`title_aka` is appended if it is truthy.
         """
-        title_full = [self.title]
+        title = [self.title]
         if self.title_aka:
-            title_full.extend(('AKA', self.title_aka))
+            title.extend(('AKA', self.title_aka))
         if self.year_required:
-            title_full.append(self.year)
-        return ' '.join(title_full)
+            title.append(self.year)
+        return ' '.join(title)
 
     @property
     def year(self):
@@ -456,7 +464,7 @@ class ReleaseName(collections.abc.Mapping):
 
     def format(self, sep=' '):
         """Assemble all parts into string"""
-        parts = [self.title_full]
+        parts = [self.title_with_aka_and_year]
 
         if self.type in (ReleaseType.season, ReleaseType.episode):
             parts.append(str(self.episodes))
