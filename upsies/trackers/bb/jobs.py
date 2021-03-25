@@ -84,6 +84,8 @@ class BbTrackerJobs(TrackerJobsBase):
             self.tvmaze_job,
             self.series_title_job,
             self.series_poster_job,
+            self.series_tags_job,
+            self.series_description_job,
         )
 
     @cached_property
@@ -357,11 +359,153 @@ class BbTrackerJobs(TrackerJobsBase):
             **self.common_job_args,
         )
 
+    # Series jobs
+
+    @cached_property
+    def tvmaze_job(self):
+        """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
+        return jobs.webdb.SearchWebDbJob(
+            condition=lambda: self.is_series_release,
+            content_path=self.content_path,
+            db=webdbs.webdb('tvmaze'),
+            **self.common_job_args,
+        )
+
+    @cached_property
+    def series_title_job(self):
+        def validator(text):
+            text = text.strip()
+            if not text:
+                raise ValueError(f'Invalid title: {text}')
+            unknown = ', '.join(u.lower() for u in re.findall(r'UNKNOWN_([A-Z_]+)', text))
+            if unknown:
+                raise ValueError(f'Failed to autodetect: {unknown}')
+
+        def handle_tvmaze_id(tvmaze_id):
+            self.series_title_job.add_task(
+                self.series_title_job.fetch_text(
+                    coro=self.get_series_title(tvmaze_id),
+                    default_text=self.release_name.title_with_aka,
+                    finish_on_success=False,
+                )
+            )
+
+        self.tvmaze_job.signal.register('output', handle_tvmaze_id)
+
+        return jobs.dialog.TextFieldJob(
+            name='series-title',
+            label='Title',
+            condition=lambda: self.is_series_release,
+            validator=validator,
+            **self.common_job_args,
+        )
+
+    @cached_property
+    def series_poster_job(self):
+        """Re-upload poster from TVmaze to :attr:`~.TrackerJobsBase.image_host`"""
+        async def get_poster(poster_job):
+            return await self.get_poster_url(poster_job, self.get_series_poster_url)
+
+        return jobs.custom.CustomJob(
+            name='series-poster',
+            label='Poster',
+            condition=lambda: self.is_series_release,
+            worker=get_poster,
+            **self.common_job_args,
+        )
+
+    @cached_property
+    def series_tags_job(self):
+        def validator(text):
+            text = text.strip()
+            if not text:
+                raise ValueError(f'Invalid tags: {text}')
+
+        def handle_tvmaze_id(tvmaze_id):
+            self.series_tags_job.add_task(
+                self.series_tags_job.fetch_text(
+                    coro=self.get_tags(self.tvmaze, tvmaze_id),
+                    finish_on_success=True,
+                )
+            )
+
+        self.tvmaze_job.signal.register('output', handle_tvmaze_id)
+
+        return jobs.dialog.TextFieldJob(
+            name='series-tags',
+            label='Tags',
+            condition=lambda: self.is_series_release,
+            validator=validator,
+            **self.common_job_args,
+        )
+
+    @cached_property
+    def series_description_job(self):
+        def validator(text):
+            text = text.strip()
+            if not text:
+                raise ValueError(f'Invalid description: {text}')
+
+        def handle_tvmaze_id(tvmaze_id):
+            self.series_description_job.add_task(
+                self.series_description_job.fetch_text(
+                    coro=self.get_series_description(tvmaze_id),
+                    finish_on_success=True,
+                )
+            )
+
+        self.tvmaze_job.signal.register('output', handle_tvmaze_id)
+
+        return jobs.dialog.TextFieldJob(
+            name='series-description',
+            label='Description',
+            condition=lambda: self.is_series_release,
+            validator=validator,
+            **self.common_job_args,
+        )
+
     # Metadata generators
 
     async def get_movie_title(self, imdb_id):
         await self.release_name.fetch_info(imdb_id)
         return self.release_name.title_with_aka
+
+    async def get_series_title(self, tvmaze_id):
+        _log.debug('Converting tvmaze ID: %r', tvmaze_id)
+        imdb_id = await self.tvmaze.imdb_id(tvmaze_id)
+        if imdb_id:
+            _log.debug('Converted tvmaze ID: %r', imdb_id)
+            await self.release_name.fetch_info(imdb_id)
+
+        title = [self.release_name.title_with_aka_and_year]
+
+        # "Season x"
+        if self.is_season_release:
+            _log.debug('episodes: %r', self.release_name.episodes)
+            _log.debug('episodes: %r', type(self.release_name.episodes))
+            seasons = tuple(release.Episodes.from_string(self.release_name.episodes))
+            _log.debug('seasons: %r', seasons)
+            if len(seasons) != 1:
+                raise RuntimeError(f'Unsupported number of seasons: {len(seasons)}: {seasons!r}')
+            title.append(f'- Season {seasons[0]}')
+
+        # "SxxEyy"
+        elif self.is_episode_release:
+            title.append(str(self.release_name.episodes))
+
+        # "[Source / VideoCodec / AudioCodec / Container / Resolution]"
+        info = [
+            self.release_name.source,
+            self.release_name.video_format,
+            self.release_name.audio_format,
+            fs.file_extension(video.first_video(self.content_path)).upper(),
+            self.release_name.resolution,
+        ]
+
+        if 'Proper' in self.release_name.edition:
+            info.append('PROPER')
+
+        return ' '.join(title) + f' [{" / ".join(info)}]'
 
     async def get_poster_url(self, poster_job, poster_url_getter):
         # Get original poster URL (e.g. "http://imdb.com/...jpg")
@@ -542,6 +686,9 @@ class BbTrackerJobs(TrackerJobsBase):
             promotion,
         ))
 
+    async def get_series_description(self, tvmaze_id):
+        return 'foo'
+
     # Web form data
 
     @property
@@ -576,7 +723,18 @@ class BbTrackerJobs(TrackerJobsBase):
             return post_data
 
         elif self.is_series_release:
-            self.error('TV series are not supported yet.')
+            post_data = {
+                'submit': 'true',
+                'type': 'TV',
+                'title': self.series_title_job.output[0],
+                'tags': self.series_tags_job.output[0],
+                'desc': self.series_description_job.output[0],
+                'image': self.series_poster_job.output[0],
+            }
+            if self.scene_check_job.is_scene_release:
+                post_data['scene'] = '1'
+            return post_data
+
         else:
             raise RuntimeError(f'Weird release type: {self.release_type_job.choice}')
 
