@@ -44,7 +44,7 @@ def test_add_jobs_does_not_add_same_job_twice(mocker):
     mocker.patch('upsies.uis.tui.jobwidgets.JobWidget')
     mocker.patch('upsies.uis.tui.ui.to_container', Mock(return_value=True))
     ui = UI()
-    with pytest.raises(RuntimeError, match=r'^Job b was already added$'):
+    with pytest.raises(RuntimeError, match=r'^Job was already added: b$'):
         ui.add_jobs(*jobs)
 
 
