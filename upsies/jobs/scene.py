@@ -59,10 +59,10 @@ class SceneSearchJob(JobBase):
     def _handle_results(self, task):
         try:
             results = task.result()
-            _log.debug('Handling results: %r', results)
         except errors.SceneError as e:
             self.error(e)
         else:
+            _log.debug('Handling results: %r', results)
             if results:
                 for result in results:
                     self.send(result)
