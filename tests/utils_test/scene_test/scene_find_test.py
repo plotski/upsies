@@ -26,7 +26,7 @@ def test_SceneQuery_from_string(mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='release, exp_keywords, exp_group, exp_episodes',
+    argnames='release, needed_keys, exp_keywords, exp_group, exp_episodes',
     argvalues=(
         (
             {
@@ -38,7 +38,8 @@ def test_SceneQuery_from_string(mocker):
                 'group': 'ASDF',
                 'episodes': Episodes({}),
             },
-            ('The', 'Foo', '2004', '720p', 'BluRay', 'x264'),
+            ('title', 'episodes', 'resolution'),
+            ('The', 'Foo', '720p'),
             'ASDF',
             {},
         ),
@@ -52,14 +53,16 @@ def test_SceneQuery_from_string(mocker):
                 'group': 'ASDF',
                 'episodes': Episodes({'1': ('1', '2')}),
             },
-            ('The', 'Foo', 'S01E01E02', '720p', 'BluRay', 'x264'),
+            ('title', 'source', 'group'),
+            ('The', 'Foo', 'BluRay'),
             'ASDF',
             {'1': ('1', '2')},
         ),
     ),
     ids=lambda v: str(v),
 )
-def test_SceneQuery_from_release(release, exp_keywords, exp_group, exp_episodes):
+def test_SceneQuery_from_release(release, needed_keys, exp_keywords, exp_group, exp_episodes, mocker):
+    mocker.patch('upsies.utils.scene.common.get_needed_keys', return_value=needed_keys)
     query = find.SceneQuery.from_release(release)
     assert query.keywords == exp_keywords
     assert query.group == exp_group

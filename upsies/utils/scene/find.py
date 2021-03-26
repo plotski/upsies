@@ -6,7 +6,7 @@ import re
 
 from ... import errors
 from .. import LazyModule, release
-from . import predb, srrdb
+from . import common, predb, srrdb
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -68,10 +68,12 @@ class SceneQuery:
             ``resolution``, ``source``, ``video_codec`` and ``group``.
         """
         info = dict(release)
-        keywords = [info['title']]
-        for key in ('year', 'episodes', 'resolution', 'source', 'video_codec'):
-            if info.get(key):
-                keywords.append(info[key])
+        keywords = []
+        # Group and episodes are handled separately
+        needed_keys = [k for k in common.get_needed_keys(info)
+                       if k not in ('group', 'episodes')]
+        keywords = [info[key] for key in needed_keys
+                    if key in info]
         query = cls(
             *keywords,
             group=release.get('group', ''),
