@@ -5,8 +5,8 @@ import bs4
 import pytest
 
 from upsies import errors
-from upsies.utils.http import Result
 from upsies.trackers.bb import BbTracker, BbTrackerConfig, BbTrackerJobs
+from upsies.utils.http import Result
 
 
 class AsyncMock(Mock):
@@ -396,7 +396,7 @@ async def test_upload_is_redirected_to_unexpected_page(headers, mocker):
         bytes=b'not relevant',
         headers=headers,
     )
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
+    mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
     tracker = BbTracker(
         config={
             'base_url': 'http://bb.local',
@@ -421,7 +421,7 @@ async def test_upload_finds_empty_error_message(mocker):
         bytes=b'not relevant',
     )
     html_dump_mock = mocker.patch('upsies.utils.html.dump')
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
+    mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
     tracker = BbTracker(config={'base_url': 'http://bb.local'})
     tracker_jobs_mock = Mock()
     with pytest.raises(RuntimeError, match=r'^Failed to find error message. See upload.html for more information.$'):
@@ -440,7 +440,7 @@ async def test_upload_fails_to_find_error_message(mocker):
         bytes=b'not relevant',
     )
     html_dump_mock = mocker.patch('upsies.utils.html.dump')
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
+    mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
     tracker = BbTracker(config={'base_url': 'http://bb.local'})
     tracker_jobs_mock = Mock()
     with pytest.raises(RuntimeError, match=r'^Failed to find error message. See upload.html for more information.$'):
