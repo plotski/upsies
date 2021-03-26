@@ -7,7 +7,7 @@ import re
 
 import unidecode
 
-from ... import __homepage__, __project_name__, __version__, jobs
+from ... import __homepage__, __project_name__, __version__, errors, jobs
 from ...utils import (cached_property, fs, http, release, string, timestamp,
                       video, webdbs)
 from ..base import TrackerJobsBase
@@ -519,7 +519,7 @@ class BbTrackerJobs(TrackerJobsBase):
             try:
                 await http.download(poster_url, poster_path)
             except errors.RequestError as e:
-                self.error('Poster download failed: {e}')
+                self.error(f'Poster download failed: {e}')
             else:
                 if not os.path.exists(poster_path) or not os.path.getsize(poster_path) > 0:
                     self.error(f'Poster download failed: {poster_url}')
