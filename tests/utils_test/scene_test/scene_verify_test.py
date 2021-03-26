@@ -85,6 +85,9 @@ def test_assert_not_abbreviated_filename(filename, should_raise):
         ('Justified.S02.720p.BluRay.x264-REWARD', SceneCheckResult.false),  # REWARD only released S01 + S04
         ('Justified.720p.BluRay.x264-REWARD', SceneCheckResult.unknown),
 
+        # Ignore resolution for DVDRip
+        ('The.Fall.Guy.S02.480p.DVDRip.XviD.AAC-nodlabs', SceneCheckResult.true),
+
         # Non-scene release
         ('Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv', SceneCheckResult.false),
         ('Damnation.S01.720p.AMZN.WEB-DL.DDP5.1.H.264-AJP69', SceneCheckResult.false),
@@ -95,6 +98,12 @@ def test_assert_not_abbreviated_filename(filename, should_raise):
 async def test_is_scene_release(release_name, exp_return_value, store_response):
     assert await verify.is_scene_release(release_name) is exp_return_value
     assert await verify.is_scene_release(ReleaseInfo(release_name)) is exp_return_value
+
+@pytest.mark.asyncio
+async def test_is_scene_release_with_no_needed_keys(mocker):
+    mocker.patch('upsies.utils.scene.verify._predb.search', AsyncMock(return_value=('a', 'b')))
+    mocker.patch('upsies.utils.scene.common.get_needed_keys', Mock(return_value=()))
+    assert await verify.is_scene_release('Some.Release-NAME') is SceneCheckResult.unknown
 
 
 @pytest.mark.parametrize(

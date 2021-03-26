@@ -8,7 +8,7 @@ import re
 
 from ... import errors, utils
 from ..types import ReleaseType, SceneCheckResult
-from . import predb, srrdb
+from . import common, predb, srrdb
 from .find import SceneQuery
 
 import logging  # isort:skip
@@ -16,9 +16,6 @@ _log = logging.getLogger(__name__)
 
 _predb = predb.PreDbApi()
 _srrdb = srrdb.SrrDbApi()
-
-_needed_movie_keys = ('title', 'year', 'resolution', 'source', 'video_codec', 'group')
-_needed_series_keys = ('title', 'episodes', 'resolution', 'source', 'video_codec', 'group')
 
 _abbreviated_scene_filename_regexs = (
     # Match names with group in front
@@ -65,20 +62,16 @@ async def is_scene_release(release):
     query = SceneQuery.from_release(release_info)
     results = await _predb.search(query)
     if results:
-        # Do we have enough information to find a single release?
-        if release_info['type'] is ReleaseType.movie:
-            needed_keys = _needed_movie_keys
-        elif release_info['type'] in (ReleaseType.season, ReleaseType.episode):
-            needed_keys = _needed_series_keys
-        else:
-            # If we don't even know the type, we certainly don't have enough
-            # information to pin down a release.
+        # Do we have enough information to pinpoint a single release?
+        needed_keys = common.get_needed_keys(release_info)
+        if not needed_keys:
+            # If we don't know how to identify a release uniquely, we are not in
+            # a position to make any claims.
             return SceneCheckResult.unknown
-
-        if not all(release_info[k] for k in needed_keys):
-            return SceneCheckResult.unknown
-        else:
+        elif all(release_info[k] for k in needed_keys):
             return SceneCheckResult.true
+        else:
+            return SceneCheckResult.unknown
 
     # If this is a file like "abd-mother.mkv" without a properly named parent
     # directory and we didn't find it above, it's possibly a scene release, but
