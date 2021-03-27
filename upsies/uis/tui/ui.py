@@ -168,7 +168,7 @@ class UI:
             self._exit()
 
     def _exit_if_job_failed(self, job):
-        if not self._app_terminated and job.is_finished and job.exit_code != 0:
+        if job.is_finished and job.exit_code != 0:
             _log.debug('Terminating application because of failed job: %r', job.name)
             self._exit()
 
@@ -176,10 +176,26 @@ class UI:
         if not self._app_terminated:
             if not self._app.is_running and not self._app.is_done:
                 self._loop.call_soon(self._exit)
-            elif self._app.is_running and not self._app.is_done:
+            else:
+                def when_jobs_terminated():
+                    self._app.exit()
+                    self._update_jobs_container()
+
                 self._app_terminated = True
-                self._app.exit()
-                self._finish_jobs()
+                self._app.create_background_task(
+                    self._terminate_jobs(callback=when_jobs_terminated),
+                )
+
+    async def _terminate_jobs(self, callback=None):
+        _log.debug('Waiting for jobs before exiting')
+        self._finish_jobs()
+        for jobinfo in self._jobs.values():
+            if not jobinfo.job.is_finished:
+                _log.debug('Waiting for %r', jobinfo.job.name)
+                await jobinfo.job.wait()
+                _log.debug('Waiting for %r', jobinfo.job.name)
+        if callback:
+            callback()
 
     def _finish_jobs(self):
         for jobinfo in self._jobs.values():

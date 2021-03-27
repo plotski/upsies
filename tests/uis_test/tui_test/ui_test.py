@@ -1,3 +1,4 @@
+import asyncio
 from types import SimpleNamespace
 from unittest.mock import Mock, PropertyMock, call
 
@@ -244,13 +245,6 @@ def test_exit_if_all_jobs_finished(mocker):
     assert ui._exit.call_args_list == [call()]
 
 
-def test_exit_if_job_failed_does_nothing_if_already_exited(mocker):
-    ui = UI()
-    ui._app_terminated = True
-    mocker.patch.object(ui, '_exit')
-    ui._exit_if_job_failed(Mock(is_finished=True, exit_code=1, exceptions=()))
-    assert ui._exit.call_args_list == []
-
 def test_exit_if_job_failed_does_nothing_if_job_is_not_finished(mocker):
     ui = UI()
     mocker.patch.object(ui, '_exit')
@@ -276,38 +270,53 @@ def test_exit_if_job_failed_calls_exit_if_exit_code_is_nonzero(mocker):
 def test_exit_does_nothing_if_already_exited(mocker):
     ui = UI()
     ui._app_terminated = True
-    mocker.patch.object(ui, '_finish_jobs')
-    mocker.patch.object(ui._app, 'exit')
+    mocker.patch.object(ui, '_terminate_jobs', AsyncMock())
     ui._exit()
-    assert ui._finish_jobs.call_args_list == []
-    assert ui._app.exit.call_args_list == []
+    assert ui._terminate_jobs.call_args_list == []
+    assert ui._app_terminated is True
 
 def test_exit_waits_for_application_to_run(mocker):
     ui = UI()
-    mocker.patch.object(ui, '_finish_jobs')
-    mocker.patch.object(ui._app, 'exit')
+    mocker.patch.object(ui, '_terminate_jobs', AsyncMock())
     mocker.patch.object(type(ui._app), 'is_running', PropertyMock(return_value=False))
     mocker.patch.object(type(ui._app), 'is_done', PropertyMock(return_value=False))
     mocker.patch.object(ui._loop, 'call_soon')
     ui._exit()
     assert ui._loop.call_soon.call_args_list == [call(ui._exit)]
-    assert ui._app.exit.call_args_list == []
-    assert ui._finish_jobs.call_args_list == []
-    assert ui._app.exit.call_args_list == []
+    assert ui._terminate_jobs.call_args_list == []
+    assert ui._app_terminated is False
 
-def test_exit_exits_application(mocker):
+@pytest.mark.asyncio
+async def test_exit_calls_terminate_jobs(mocker):
     ui = UI()
-    mocks = Mock()
-    mocker.patch.object(ui, '_finish_jobs', mocks.finish_jobs)
-    mocker.patch.object(ui._app, 'exit', mocks.app_exit)
     mocker.patch.object(type(ui._app), 'is_running', PropertyMock(return_value=True))
     mocker.patch.object(type(ui._app), 'is_done', PropertyMock(return_value=False))
-    mocker.patch.object(ui._loop, 'call_soon')
+    mocker.patch.object(type(ui._app), 'exit', Mock())
+    mocker.patch.object(ui, '_update_jobs_container', Mock())
     ui._exit()
-    assert ui._loop.call_soon.call_args_list == []
-    assert mocks.mock_calls == [call.app_exit(), call.finish_jobs()]
-    assert ui._app.exit.call_args_list == [call()]
+    await asyncio.sleep(0)
     assert ui._app_terminated is True
+    assert ui._app.exit.call_args_list == [call()]
+    assert ui._update_jobs_container.call_args_list == [call()]
+
+
+@pytest.mark.parametrize('callback', (Mock(), None))
+@pytest.mark.asyncio
+async def test_terminate_jobs(callback, mocker):
+    ui = UI()
+    ui._jobs = {
+        'a': SimpleNamespace(job=Mock(is_finished=False, wait=AsyncMock())),
+        'b': SimpleNamespace(job=Mock(is_finished=True, wait=AsyncMock())),
+        'c': SimpleNamespace(job=Mock(is_finished=False, wait=AsyncMock())),
+    }
+    mocker.patch.object(ui, '_finish_jobs', Mock())
+    await ui._terminate_jobs(callback=callback)
+    assert ui._finish_jobs.call_args_list == [call()]
+    assert ui._jobs['a'].job.wait.call_args_list == [call()]
+    assert ui._jobs['b'].job.wait.call_args_list == []
+    assert ui._jobs['c'].job.wait.call_args_list == [call()]
+    if callback:
+        assert callback.call_args_list == [call()]
 
 
 def test_finish_jobs():
