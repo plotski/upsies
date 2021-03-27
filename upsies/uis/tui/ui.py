@@ -117,7 +117,11 @@ class UI:
                         self._layout.focus(jobinfo.container)
                     except ValueError:
                         pass
-                    break
+                    # Don't display more than one unfinished interactive job
+                    # unless any job has errors, in which case we are
+                    # terminating the application and display all jobs.
+                    if not any(jobinfo.job.errors for jobinfo in self._jobs.values()):
+                        break
 
         # Add non-interactive jobs below interactive jobs so the interactive
         # widgets don't change position when non-interactive widgets change

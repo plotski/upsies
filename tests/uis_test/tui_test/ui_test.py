@@ -143,16 +143,16 @@ def test_update_jobs_container_sorts_interactive_jobs_above_background_jobs():
         ui._jobs['d'].container,
     ]
 
-def test_update_jobs_container_only_adds_first_unfinished_job_and_focuses_it():
+def test_update_jobs_container_only_adds_first_unfinished_job_and_focuses_it_if_no_job_has_errors():
     ui = UI()
     ui._jobs = {
-        'ai': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False), widget=Mock(is_interactive=True), container=Mock(name='aw')),
-        'bn': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False), widget=Mock(is_interactive=False), container=Mock(name='bw')),
-        'ci': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False), widget=Mock(is_interactive=True), container=Mock(name='cw')),
-        'dn': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False), widget=Mock(is_interactive=False), container=Mock(name='dw')),
-        'ei': SimpleNamespace(job=Mock(is_enabled=False, is_finished=False), widget=Mock(is_interactive=True), container=Mock(name='ew')),
-        'fn': SimpleNamespace(job=Mock(is_enabled=False, is_finished=False), widget=Mock(is_interactive=False), container=Mock(name='fw')),
-        'gi': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False), widget=Mock(is_interactive=True), container=Mock(name='gw')),
+        'ai': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False, errors=()), widget=Mock(is_interactive=True), container=Mock(name='aw')),
+        'bn': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False, errors=()), widget=Mock(is_interactive=False), container=Mock(name='bw')),
+        'ci': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False, errors=()), widget=Mock(is_interactive=True), container=Mock(name='cw')),
+        'dn': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False, errors=()), widget=Mock(is_interactive=False), container=Mock(name='dw')),
+        'ei': SimpleNamespace(job=Mock(is_enabled=False, is_finished=False, errors=()), widget=Mock(is_interactive=True), container=Mock(name='ew')),
+        'fn': SimpleNamespace(job=Mock(is_enabled=False, is_finished=False, errors=()), widget=Mock(is_interactive=False), container=Mock(name='fw')),
+        'gi': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False, errors=()), widget=Mock(is_interactive=True), container=Mock(name='gw')),
     }
     ui._layout = Mock()
     jobs_container_id = id(ui._jobs_container)
@@ -173,6 +173,31 @@ def test_update_jobs_container_only_adds_first_unfinished_job_and_focuses_it():
     assert_jobs_container('ai', 'ci', 'bn', 'dn', focused='ci')
     ui._jobs['ci'].job.is_finished = True
     assert_jobs_container('ai', 'ci', 'gi', 'bn', 'dn', focused='gi')
+
+@pytest.mark.parametrize('failed_job_name', ('ai', 'bn', 'ci', 'dn', 'ei', 'fn', 'gi'))
+def test_update_jobs_container_adds_all_jobs_it_if_one_job_has_errors(failed_job_name):
+    ui = UI()
+    ui._jobs = {
+        'ai': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False, errors=()), widget=Mock(is_interactive=True), container=Mock(name='aw')),
+        'bn': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False, errors=()), widget=Mock(is_interactive=False), container=Mock(name='bw')),
+        'ci': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False, errors=()), widget=Mock(is_interactive=True), container=Mock(name='cw')),
+        'dn': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False, errors=()), widget=Mock(is_interactive=False), container=Mock(name='dw')),
+        'ei': SimpleNamespace(job=Mock(is_enabled=False, is_finished=False, errors=()), widget=Mock(is_interactive=True), container=Mock(name='ew')),
+        'fn': SimpleNamespace(job=Mock(is_enabled=False, is_finished=False, errors=()), widget=Mock(is_interactive=False), container=Mock(name='fw')),
+        'gi': SimpleNamespace(job=Mock(is_enabled=True, is_finished=False, errors=()), widget=Mock(is_interactive=True), container=Mock(name='gw')),
+    }
+    ui._jobs[failed_job_name].job.errors = ('Some error message',)
+
+    ui._layout = Mock()
+    jobs_container_id = id(ui._jobs_container)
+
+    def assert_jobs_container(*keys, focused):
+        ui._update_jobs_container()
+        assert id(ui._jobs_container) == jobs_container_id
+        containers = [ui._jobs[k].container for k in keys]
+        assert ui._jobs_container.children == containers
+
+    assert_jobs_container('ai', 'ci', 'gi', 'bn', 'dn', focused='ai')
 
 
 def test_run_calls_add_jobs(mocker):
