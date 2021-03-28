@@ -53,16 +53,19 @@ class TvmazeApi(WebDbApiBase):
                 return results_in_year
             return results
 
-    async def _get_show(self, id):
-        url = f'{self._url_base}/shows/{id}?embed[]=cast&embed[]=crew'
+    async def _get_json(self, url):
         response = await http.get(url, cache=True)
         try:
-            show = json.loads(response)
-            assert isinstance(show, dict)
+            info = json.loads(response)
+            assert isinstance(info, dict)
         except (ValueError, TypeError, AssertionError):
             raise errors.RequestError(f'Unexpected search response: {response}')
         else:
-            return show
+            return info
+
+    async def _get_show(self, id):
+        url = f'{self._url_base}/shows/{id}?embed[]=cast&embed[]=crew'
+        return await self._get_json(url)
 
     async def cast(self, id):
         show = await self._get_show(id)
