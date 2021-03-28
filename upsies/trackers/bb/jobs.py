@@ -209,7 +209,6 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_source_job(self):
-        _log.debug('source: %r', self.release_name.source)
         return self.make_choices_job(
             name='movie-source',
             label='Source',
@@ -362,7 +361,7 @@ class BbTrackerJobs(TrackerJobsBase):
         def handle_imdb_id(imdb_id):
             self.movie_description_job.add_task(
                 self.movie_description_job.fetch_text(
-                    coro=self.get_movie_description(imdb_id),
+                    coro=self.get_description(self.imdb, imdb_id),
                     finish_on_success=True,
                 )
             )
@@ -467,7 +466,7 @@ class BbTrackerJobs(TrackerJobsBase):
         def handle_tvmaze_id(tvmaze_id):
             self.series_description_job.add_task(
                 self.series_description_job.fetch_text(
-                    coro=self.get_series_description(tvmaze_id),
+                    coro=self.get_description(self.tvmaze, tvmaze_id),
                     finish_on_success=True,
                 )
             )
@@ -489,23 +488,15 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.release_name.title_with_aka
 
     async def get_series_title(self, tvmaze_id):
-        _log.debug('Converting tvmaze ID: %r', tvmaze_id)
         imdb_id = await self.tvmaze.imdb_id(tvmaze_id)
         if imdb_id:
-            _log.debug('Converted tvmaze ID: %r', imdb_id)
             await self.release_name.fetch_info(imdb_id)
 
         title = [self.release_name.title_with_aka_and_year]
 
         # "Season x"
         if self.is_season_release:
-            _log.debug('episodes: %r', self.release_name.episodes)
-            _log.debug('episodes: %r', type(self.release_name.episodes))
-            seasons = tuple(release.Episodes.from_string(self.release_name.episodes))
-            _log.debug('seasons: %r', seasons)
-            if len(seasons) != 1:
-                raise RuntimeError(f'Unsupported number of seasons: {len(seasons)}: {seasons!r}')
-            title.append(f'- Season {seasons[0]}')
+            title.append(f'- Season {self.season}')
 
         # "SxxEyy"
         elif self.is_episode_release:
@@ -653,43 +644,22 @@ class BbTrackerJobs(TrackerJobsBase):
 
         return ' / '.join(info)
 
-    async def get_movie_description(self, imdb_id):
-        info = await self.imdb.gather(imdb_id, 'cast', 'countries', 'directors',
-                                      'rating', 'summary', 'url', 'year')
-        _log.debug('info: %r', info)
-        lines = ['[b]IMDb[/b]: [url={url}]{id}[/url]'.format(**info)]
-
-        # Rating
-        if info['rating'] is not None:
-            info['rating_stars'] = ''.join((
-                '[color=#ffff00]',
-                string.star_rating(info['rating']),
-                '[/color]',
-            ))
-            lines.append('[b]Rating[/b]: {rating}/10 {rating_stars}'.format(**info))
-
-        # Main info
-        if info['countries']:
-            countries = ', '.join(info['countries'])
-            if len(info['countries']) == 1:
-                lines.append(f'[b]Country[/b]: {countries}')
-            elif len(info['countries']) >= 2:
-                lines.append(f'[b]Countries[/b]: {countries}')
-
-        lines.append(f'[b]Runtime[/b]: {timestamp.pretty(video.duration(self.content_path))}')
-
-        # Director(s)
-        if info['directors']:
-            directors = [f'[url={director.url}]{director}[/url]'
-                         for director in info['directors']]
-            lines.append(f'[b]Direcor{"s" if len(directors) > 1 else ""}[/b]: '
-                         f'{", ".join(directors)}')
-
-        # Actors
-        if info['cast']:
-            actors = [f'[url={actor.url}]{actor}[/url]'
-                      for actor in info['cast'][:10]]
-            lines.append(f'[b]Cast[/b]: {", ".join(actors)}')
+    async def get_description(self, webdb, id):
+        info = await webdb.gather(id, 'cast', 'countries', 'directors',
+                                  'creators', 'rating', 'summary', 'url',
+                                  'year')
+        info_table = [
+            await self.format_description_id(webdb, info),
+            await self.format_description_rating(info),
+            await self.format_description_year(info),
+            await self.format_description_countries(info),
+            await self.format_description_runtime(info),
+            await self.format_description_directors(info),
+            await self.format_description_creators(info),
+            await self.format_description_cast(info),
+        ]
+        info_string = '\n'.join(str(item) for item in info_table
+                                if item is not None)
 
         # Link to project
         promotion = (
@@ -699,13 +669,110 @@ class BbTrackerJobs(TrackerJobsBase):
         )
 
         return ''.join((
-            '[quote]{summary}[/quote]'.format(**info),
-            '[quote]' + '\n'.join(lines) + '[/quote]',
+            await self.format_description_summary(info) or '',
+            f'[quote]{info_string}[/quote]',
             promotion,
         ))
 
-    async def get_series_description(self, tvmaze_id):
-        return 'foo'
+    async def format_description_summary(self, info):
+        if 'summary' in info:
+            summary = '[quote]' + info['summary']
+            if self.is_episode_release and self.season and self.episode:
+                season = self.release_name.episodes
+                episode = await self.tvmaze.episode(
+                    id=info["id"],
+                    season=self.season,
+                    episode=self.episode,
+                )
+                _log.debug(episode)
+                summary += ''.join((
+                    '\n\n'
+                    f'[url={episode["url"]}]{episode["title"]}[/url]',
+                    ' - ',
+                    f'Season {episode["season"]}, Episode {episode["episode"]}',
+                    ' - ',
+                    f'[size=2]{episode["date"]}[/size]\n\n',
+                    f'[spoiler]\n{episode["summary"]}[/spoiler]\n',
+                ))
+            summary += '[/quote]'
+            return summary
+
+    async def format_description_id(self, webdb, info):
+        return f'[b]{webdb.label}[/b]: [url={{url}}]{{id}}[/url]'.format(**info)
+
+    async def format_description_rating(self, info):
+        rating_stars = ''.join((
+            '[color=#ffff00]',
+            string.star_rating(info['rating']),
+            '[/color]',
+        ))
+        return f'[b]Rating[/b]: {{rating}}/10 {rating_stars}'.format(**info)
+
+    async def format_description_year(self, info):
+        async def get_year_from_episode(episode):
+            episode = await self.tvmaze.episode(
+                id=info["id"],
+                season=self.season,
+                episode=1,
+                )
+            if episode.get('date'):
+                return episode['date'].split('-')[0]
+
+        if self.is_movie_release:
+            if info.get('year'):
+                return '[b]Year[/b]: {year}'.format(**info)
+        elif self.is_season_release:
+            return f'[b]Year[/b]: {await get_year_from_episode(1)}'
+        elif self.is_episode_release:
+            return f'[b]Year[/b]: {await get_year_from_episode(self.episode)}'
+
+    async def format_description_countries(self, info):
+        if info.get('countries'):
+            countries = ', '.join(info['countries'])
+            if len(info['countries']) == 1:
+                return f'[b]Country[/b]: {countries}'
+            elif len(info['countries']) >= 2:
+                return f'[b]Countries[/b]: {countries}'
+
+    async def format_description_runtime(self, info):
+        if self.is_movie_release or self.is_episode_release:
+            runtime = video.duration(self.content_path)
+        elif self.is_season_release:
+            # Return average runtime
+            filepaths = fs.file_list(self.content_path)
+            if len(filepaths) >= 5:
+                # Ignore first and last episode as they are often longer
+                filepaths = filepaths[1:-1]
+            runtime = sum(video.duration(f) for f in filepaths) / len(filepaths)
+        else:
+            return None
+        return f'[b]Runtime[/b]: {timestamp.pretty(runtime)}'
+
+    async def format_description_directors(self, info):
+        if info.get('directors'):
+            directors = [
+                f'[url={director.url}]{director}[/url]' if director.url else director
+                for director in info['directors']
+            ]
+            return (f'[b]Direcor{"s" if len(directors) > 1 else ""}[/b]: '
+                    f'{", ".join(directors)}')
+
+    async def format_description_creators(self, info):
+        if info.get('creators'):
+            creators = [
+                f'[url={creator.url}]{creator}[/url]' if creator.url else creator
+                for creator in info['creators']
+            ]
+            return (f'[b]Creator{"s" if len(creators) > 1 else ""}[/b]: '
+                    f'{", ".join(creators)}')
+
+    async def format_description_cast(self, info):
+        if info.get('cast'):
+            actors = [
+                f'[url={actor.url}]{actor}[/url]' if actor.url else actor
+                for actor in info['cast']
+            ]
+            return f'[b]Cast[/b]: {", ".join(actors)}'
 
     # Web form data
 
