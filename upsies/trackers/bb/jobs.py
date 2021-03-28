@@ -51,6 +51,24 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.release_type_job.choice in (release.ReleaseType.season,
                                                 release.ReleaseType.episode)
 
+    @property
+    def season(self):
+        """Season number or `None`"""
+        seasons = tuple(release.Episodes.from_string(self.release_name.episodes))
+        if len(seasons) != 1:
+            raise RuntimeError(f'Unsupported number of seasons: {len(seasons)}: {seasons!r}')
+        else:
+            return seasons[0]
+
+    @property
+    def episode(self):
+        """Episode number or `None`"""
+        seasons = release.Episodes.from_string(self.release_name.episodes)
+        try:
+            return seasons[self.season][0]
+        except (KeyError, IndexError):
+            pass
+
     # Generic jobs
 
     @cached_property
