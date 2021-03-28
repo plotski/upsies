@@ -28,6 +28,7 @@ VIDEO_FILE_EXTENSIONS = ('mkv', 'mp4', 'ts', 'avi')
 GUESSIT_OPTIONS = {
     'expected_title': [
         'The Collector',
+        'xXx',
     ],
     'advanced_config': {
         # https://github.com/guessit-io/guessit/pull/678
