@@ -430,3 +430,38 @@ async def test_year(id, exp_year, api, store_response):
 @pytest.mark.asyncio
 async def test_imdb_id(id, exp_imdb_id, api, store_response):
     assert await api.imdb_id(id) == exp_imdb_id
+
+
+@pytest.mark.parametrize(
+    argnames=('id', 'season', 'episode', 'exp_episode'),
+    argvalues=(
+        (35256, 1, 5, {
+            'date': '2018-04-13',
+            'episode': 5,
+            'season': 1,
+            'summary': ("Setting aside her guilt, Jin Ah spends the night at Jun Hee's place. "
+                        "Back at work after the business trip, she gets called to Director Nam's office."),
+            'title': 'Episode 5',
+            'url': 'https://www.tvmaze.com/episodes/1436940/something-in-the-rain-1x05-episode-5',
+        }),
+        (37993, 3, 10, {
+            'date': '2011-08-13',
+            'episode': 10,
+            'season': 3,
+            'summary': '',
+            'title': 'Test in Shlomy',
+            'url': 'https://www.tvmaze.com/episodes/1505367/ramzor-3x10-test-in-shlomy',
+        }),
+        (117, 1, 3, {
+            'date': '2014-10-27',
+            'episode': 3,
+            'season': 1,
+            'summary': 'The Rebels undergo a daring rescue mission, only to find themselves facing a powerful foe.',
+            'title': 'Rise of the Old Masters',
+            'url': 'https://www.tvmaze.com/episodes/9023/star-wars-rebels-1x03-rise-of-the-old-masters',
+        }),
+    ),
+)
+@pytest.mark.asyncio
+async def test_episode(id, season, episode, exp_episode, api, store_response):
+    assert await api.episode(id, season, episode) == exp_episode

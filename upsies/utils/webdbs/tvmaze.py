@@ -146,6 +146,34 @@ class TvmazeApi(WebDbApiBase):
         if imdb_id:
             return imdb_id
 
+    async def episode(self, id, season, episode):
+        """
+        Get episode information
+
+        :param id: Show ID
+        :param season: Season number
+        :param episode: Episode number
+
+        :return: :class:`dict` with these keys:
+
+            - ``date`` (:class:`str` as "YYYY-MM-DD")
+            - ``episode`` (:class:`int`)
+            - ``season`` (:class:`int`)
+            - ``summary`` (:class:`str`)
+            - ``title`` (:class:`str`)
+            - ``url`` (:class:`str`)
+        """
+        url = f'{self._url_base}/shows/{id}/episodebynumber?season={season}&number={episode}'
+        episode = await self._get_json(url)
+        return {
+            'date': episode.get('airdate'),
+            'episode': episode.get('number', -1),
+            'season': episode.get('season', -1),
+            'summary': _get_summary(episode),
+            'title': episode.get('name'),
+            'url': episode.get('url'),
+        }
+
 
 class _TvmazeSearchResult(common.SearchResult):
     def __init__(self, *, show, tvmaze_api):
