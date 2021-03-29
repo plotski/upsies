@@ -652,6 +652,7 @@ class BbTrackerJobs(TrackerJobsBase):
             await self.format_description_id(webdb, info),
             await self.format_description_rating(info),
             await self.format_description_year(info),
+            await self.format_description_status(info),
             await self.format_description_countries(info),
             await self.format_description_runtime(info),
             await self.format_description_directors(info),
@@ -725,6 +726,12 @@ class BbTrackerJobs(TrackerJobsBase):
             return f'[b]Year[/b]: {await get_year_from_episode(1)}'
         elif self.is_episode_release:
             return f'[b]Year[/b]: {await get_year_from_episode(self.episode)}'
+
+    async def format_description_status(self, info):
+        if self.is_series_release:
+            status = await self.tvmaze.status(info['id'])
+            if status:
+                return f'[b]Status[/b]: {status}'
 
     async def format_description_countries(self, info):
         if info.get('countries'):
