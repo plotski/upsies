@@ -549,7 +549,7 @@ class BbTrackerJobs(TrackerJobsBase):
     async def get_series_poster_url(self):
         await self.tvmaze_job.wait()
         tvmaze_id = self.tvmaze_job.output[0]
-        poster_url = await self.tvmaze.poster_url(tvmaze_id)
+        poster_url = await self.tvmaze.poster_url(tvmaze_id, season=self.season)
         _log.debug('Poster URL for %r: %r', tvmaze_id, poster_url)
         return poster_url
 
