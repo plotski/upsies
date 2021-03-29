@@ -7,7 +7,8 @@ import re
 
 import unidecode
 
-from ... import __homepage__, __project_name__, __version__, errors, jobs
+from ... import (__homepage__, __project_name__, __version__, constants,
+                 errors, jobs)
 from ...utils import (cached_property, fs, http, release, string, timestamp,
                       video, webdbs)
 from ..base import TrackerJobsBase
@@ -766,7 +767,10 @@ class BbTrackerJobs(TrackerJobsBase):
             runtime = video.duration(self.content_path)
         elif self.is_season_release:
             # Return average runtime
-            filepaths = fs.file_list(self.content_path)
+            filepaths = fs.file_list(
+                self.content_path,
+                extensions=constants.VIDEO_FILE_EXTENSIONS,
+            )
             if len(filepaths) >= 5:
                 # Ignore first and last episode as they are often longer
                 filepaths = filepaths[1:-1]
