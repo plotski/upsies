@@ -166,5 +166,3 @@ class BbTracker(TrackerBase):
             # Unable to find error message
             html.dump(response, 'upload.html')
             raise RuntimeError('Failed to find error message. See upload.html for more information.')
-
-

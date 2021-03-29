@@ -700,7 +700,6 @@ class BbTrackerJobs(TrackerJobsBase):
         if 'summary' in info:
             summary = '[quote]' + info['summary']
             if self.is_episode_release and self.season and self.episode:
-                season = self.release_name.episodes
                 episode = await self.tvmaze.episode(
                     id=info["id"],
                     season=self.season,
@@ -736,7 +735,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 id=info["id"],
                 season=self.season,
                 episode=1,
-                )
+            )
             if episode.get('date'):
                 return episode['date'].split('-')[0]
 

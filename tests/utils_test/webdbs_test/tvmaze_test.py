@@ -1,4 +1,3 @@
-import re
 from itertools import zip_longest
 from unittest.mock import Mock, call
 
