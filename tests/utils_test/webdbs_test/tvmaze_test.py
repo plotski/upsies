@@ -328,17 +328,20 @@ async def test_keywords(id, exp_keywords, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames='id',
+    argnames='id, season, exp_url',
     argvalues=(
-        1259,
-        35256,
-        36072,
+        (1259, None, 'https://static.tvmaze.com/uploads/images/medium_portrait/7/18007.jpg'),
+        (35256, None, 'https://static.tvmaze.com/uploads/images/medium_portrait/149/374799.jpg'),
+        (36072, None, 'https://static.tvmaze.com/uploads/images/medium_portrait/201/504665.jpg'),
+        (1259, 3, 'https://static.tvmaze.com/uploads/images/medium_portrait/7/18007.jpg'),
+        (1910, 2, 'https://static.tvmaze.com/uploads/images/medium_portrait/252/631184.jpg'),
+        (117, 1, 'https://static.tvmaze.com/uploads/images/medium_portrait/51/127565.jpg'),
     ),
 )
 @pytest.mark.asyncio
-async def test_poster_url(id, api, store_response):
-    poster_url = await api.poster_url(id)
-    assert re.search(r'^https?://static\.tvmaze\.com/uploads/images/[a-zA-Z0-9/_]+.jpg$', poster_url)
+async def test_poster_url(id, season, exp_url, api, store_response):
+    poster_url = await api.poster_url(id, season=season)
+    assert poster_url == exp_url
 
 
 @pytest.mark.parametrize(

@@ -98,9 +98,23 @@ class TvmazeApi(WebDbApiBase):
         show = await self._get_show(id)
         return _get_keywords(show)
 
-    async def poster_url(self, id):
-        show = await self._get_show(id)
-        return show.get('image', {}).get('medium', None)
+    async def poster_url(self, id, season=None):
+        """
+        Return URL of poster image or `None`
+
+        :param season: Return poster for specific season
+        """
+        info = {}
+        if season:
+            url = f'{self._url_base}/shows/{id}/seasons'
+            seasons = await self._get_json(url)
+            for s in seasons:
+                if str(s.get('number')) == str(season) and s.get('image'):
+                    info = s
+                    break
+        if not info:
+            info = await self._get_show(id)
+        return (info.get('image') or {}).get('medium', None)
 
     rating_min = 0.0
     rating_max = 10.0
