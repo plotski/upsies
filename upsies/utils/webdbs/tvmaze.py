@@ -188,6 +188,11 @@ class TvmazeApi(WebDbApiBase):
             'url': episode.get('url'),
         }
 
+    async def status(self, id):
+        """Return "Running" or "Ended" or `None`"""
+        show = await self._get_show(id)
+        return show.get('status')
+
 
 class _TvmazeSearchResult(common.SearchResult):
     def __init__(self, *, show, tvmaze_api):

@@ -468,3 +468,16 @@ async def test_imdb_id(id, exp_imdb_id, api, store_response):
 @pytest.mark.asyncio
 async def test_episode(id, season, episode, exp_episode, api, store_response):
     assert await api.episode(id, season, episode) == exp_episode
+
+
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_status'),
+    argvalues=(
+        (35256, 'Ended'),
+        (37993, 'Ended'),
+        (36072, 'Ended'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_status(id, exp_status, api, store_response):
+    assert await api.status(id) == exp_status
