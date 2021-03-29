@@ -57,7 +57,7 @@ class TvmazeApi(WebDbApiBase):
         response = await http.get(url, cache=True)
         try:
             info = json.loads(response)
-            assert isinstance(info, dict)
+            assert isinstance(info, (dict, list))
         except (ValueError, TypeError, AssertionError):
             raise errors.RequestError(f'Unexpected search response: {response}')
         else:
