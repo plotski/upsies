@@ -35,51 +35,55 @@ class SetJob(JobBase):
         If `option` and `value` is given, set `option` to `value` display the
         result.
         """
+        if value and reset:
+            raise RuntimeError('Arguments "value" and "reset" are mutually exclusive.')
+        elif value and not option:
+            raise RuntimeError('Argument "value" needs argument "option".')
+        else:
+            self._config = config
+            self._option = option
+            self._value = value
+            self._reset = reset
+
+    def execute(self):
         try:
-            if reset:
-                self._reset_mode(config, option, value, reset)
-            elif value:
-                self._set_mode(config, option, value, reset)
+            if self._reset:
+                self._reset_mode()
+            elif self._value:
+                self._set_mode()
             else:
-                self._display_mode(config, option, value, reset)
+                self._display_mode()
         except errors.ConfigError as e:
             self.error(e)
         finally:
             self.finish()
 
-    def _reset_mode(self, config, option, value, reset):
-        if value:
-            raise RuntimeError('Arguments "value" and "reset" are mutually exclusive.')
-        if option:
-            config.reset(option)
-            self._write(config, option)
+    def _reset_mode(self):
+        if self._option:
+            self._config.reset(self._option)
+            self._write(self._option)
         else:
-            for o in config.paths:
-                config.reset(o)
-                self._write(config, o)
+            for o in self._config.paths:
+                self._config.reset(o)
+                self._write(o)
 
-    def _set_mode(self, config, option, value, reset):
-        if reset:
-            raise RuntimeError('Arguments "value" and "reset" are mutually exclusive.')
-        elif not option:
-            raise RuntimeError('Argument "value" needs argument "option".')
+    def _set_mode(self):
+        self._config[self._option] = self._value
+        self._write(self._option)
+
+    def _display_mode(self):
+        if self._option:
+            self._display_option(self._option)
         else:
-            config[option] = value
-            self._write(config, option)
+            for o in self._config.paths:
+                self._display_option(o)
 
-    def _display_mode(self, config, option, value, reset):
-        if option:
-            self._display_option(config, option)
+    def _write(self, option):
+        self._config.write(option)
+        self._display_option(option)
+
+    def _display_option(self, option):
+        if utils.is_sequence(self._config[option]):
+            self.send(f'{option} = {" ".join(str(v) for v in self._config[option])}')
         else:
-            for o in config.paths:
-                self._display_option(config, o)
-
-    def _write(self, config, option):
-        config.write(option)
-        self._display_option(config, option)
-
-    def _display_option(self, config, option):
-        if utils.is_sequence(config[option]):
-            self.send(f'{option} = {" ".join(str(v) for v in config[option])}')
-        else:
-            self.send(f'{option} = {config[option]}')
+            self.send(f'{option} = {self._config[option]}')

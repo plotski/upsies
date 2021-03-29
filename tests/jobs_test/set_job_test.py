@@ -32,8 +32,10 @@ def test_output_is_hidden():
     assert job.hidden is True
 
 
-def test_job_is_finished_immediately():
+def test_execute_finishes():
     job = SetJob(config=config_mock({'foo': 'bar'}))
+    assert not job.is_finished
+    job.execute()
     assert job.is_finished
 
 
@@ -41,7 +43,8 @@ def test_no_arguments(mocker):
     mocker.patch('upsies.jobs.config.SetJob._display_option')
     cfg = config_mock({'foo': '1', 'bar': '2', 'baz': '3'})
     job = SetJob(config=cfg)
-    assert job._display_option.call_args_list == [call(cfg, 'foo'), call(cfg, 'bar'), call(cfg, 'baz')]
+    job.execute()
+    assert job._display_option.call_args_list == [call('foo'), call('bar'), call('baz')]
 
 
 @pytest.mark.parametrize('option', ('foo', 'bar', 'baz'))
@@ -50,9 +53,10 @@ def test_arguments_option(option, mocker):
     values = {'foo': '1', 'bar': '2', 'baz': '3'}
     cfg = config_mock(values)
     job = SetJob(config=cfg, option=option)
+    job.execute()
     assert cfg.reset.call_args_list == []
     assert cfg.write.call_args_list == []
-    assert job._display_option.call_args_list == [call(cfg, option)]
+    assert job._display_option.call_args_list == [call(option)]
     assert dict(cfg) == values
 
 @pytest.mark.parametrize('option', ('foo', 'bar', 'baz'))
@@ -61,9 +65,10 @@ def test_arguments_option_and_value(option, mocker):
     values = {'foo': '1', 'bar': '2', 'baz': '3'}
     cfg = config_mock(values)
     job = SetJob(config=cfg, option=option, value='hello')
+    job.execute()
     assert cfg.reset.call_args_list == []
     assert cfg.write.call_args_list == [call(option)]
-    assert job._display_option.call_args_list == [call(cfg, option)]
+    assert job._display_option.call_args_list == [call(option)]
     assert dict(cfg) == {**values, option: 'hello'}
 
 @pytest.mark.parametrize('option', ('foo', 'bar', 'baz'))
@@ -72,9 +77,10 @@ def test_arguments_option_and_reset(option, mocker):
     values = {'foo': '1', 'bar': '2', 'baz': '3'}
     cfg = config_mock(values)
     job = SetJob(config=cfg, option=option, reset=True)
+    job.execute()
     assert cfg.reset.call_args_list == [call(option)]
     assert cfg.write.call_args_list == [call(option)]
-    assert job._display_option.call_args_list == [call(cfg, option)]
+    assert job._display_option.call_args_list == [call(option)]
     assert dict(cfg) == values
 
 def test_arguments_reset(mocker):
@@ -82,9 +88,10 @@ def test_arguments_reset(mocker):
     values = {'foo': '1', 'bar': '2', 'baz': '3'}
     cfg = config_mock(values)
     job = SetJob(config=cfg, reset=True)
+    job.execute()
     assert cfg.reset.call_args_list == [call('foo'), call('bar'), call('baz')]
     assert cfg.write.call_args_list == [call('foo'), call('bar'), call('baz')]
-    assert job._display_option.call_args_list == [call(cfg, 'foo'), call(cfg, 'bar'), call(cfg, 'baz')]
+    assert job._display_option.call_args_list == [call('foo'), call('bar'), call('baz')]
     assert dict(cfg) == values
 
 def test_arguments_value():
@@ -104,7 +111,7 @@ def test_arguments_option_and_value_and_reset():
     argnames=('mode', 'kwargs'),
     argvalues=(
         ('_reset_mode', {'reset': True}),
-        ('_set_mode', {'value': 'foo'}),
+        ('_set_mode', {'option': 'foo', 'value': 'bar'}),
         ('_display_mode', {}),
     ),
     ids=lambda v: str(v),
@@ -115,6 +122,7 @@ def test_ConfigError_is_handled(mode, kwargs, mocker):
     values = {'foo': '1', 'bar': '2', 'baz': '3'}
     cfg = config_mock(values)
     job = SetJob(config=cfg, **kwargs)
+    job.execute()
     assert job.errors == (errors.ConfigError('no!'),)
     assert job.is_finished
     assert job.exit_code != 0
@@ -137,4 +145,5 @@ def test_ConfigError_is_handled(mode, kwargs, mocker):
 )
 def test_display_option(name, value, exp_output):
     job = SetJob(config=config_mock({name: value}))
+    job.execute()
     assert job.output == (exp_output,)
