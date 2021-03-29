@@ -404,9 +404,17 @@ async def test_type(id, api, store_response):
         await api.type(id)
 
 
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_url'),
+    argvalues=(
+        (1259, 'https://www.tvmaze.com/shows/1259/star-wars-clone-wars'),
+        (35256, 'https://www.tvmaze.com/shows/35256/something-in-the-rain'),
+        (36072, 'https://www.tvmaze.com/shows/36072/le-chalet'),
+    ),
+)
 @pytest.mark.asyncio
-async def test_url(api):
-    assert await api.url('123') == api._url_base + '/shows/123'
+async def test_url(id, exp_url, api, store_response):
+    assert await api.url(id) == exp_url
 
 
 @pytest.mark.parametrize(
