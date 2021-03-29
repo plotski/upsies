@@ -23,7 +23,7 @@ class SceneSearchJobWidget(JobWidgetBase):
 
 class SceneCheckJobWidget(JobWidgetBase):
 
-    # Force this job to be interactive. Auto-detection doesn't work because
+    # Force this job to be interactive. Autodetection doesn't work because
     # potential dialogs pop up when we get a reply to a scenedb query.
     is_interactive = True
 
@@ -58,12 +58,12 @@ class SceneCheckJobWidget(JobWidgetBase):
             if choice:
                 string = 'Yes'
                 if is_scene_release is SceneCheckResult.true:
-                    string += ' (auto-detected)'
+                    string += ' (autodetected)'
                 return (string, SceneCheckResult.true)
             else:
                 string = 'No'
                 if is_scene_release is SceneCheckResult.false:
-                    string += ' (auto-detected)'
+                    string += ' (autodetected)'
                 return (string, SceneCheckResult.false)
 
         def handle_is_scene_release(choice):

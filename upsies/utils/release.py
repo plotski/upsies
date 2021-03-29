@@ -348,13 +348,13 @@ class ReleaseName(collections.abc.Mapping):
         Whether this release has a commentary audio track
 
         If not set explicitly and the given `path` exists, this value is
-        auto-detected by looking for "commentary" case-insensitively in an audio
+        autodetected by looking for "commentary" case-insensitively in any audio
         track title.
 
         If not set explicitly and the given `path` does not exists, default to
         detection by :class:`ReleaseInfo`.
 
-        Setting this value back to `None` turns on auto-detection as described
+        Setting this value back to `None` turns on autodetection as described
         above.
         """
         # Use manually set value unless it is None
@@ -520,7 +520,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
       - ``audio_channels`` (e.g. "2.0" or "7.1")
       - ``video_codec``
       - ``group``
-      - ``has_commentary`` (:class:`bool` or `None` to auto-detect)
+      - ``has_commentary`` (:class:`bool` or `None` to autodetect)
 
     Unless documented otherwise above, all values are strings. Unknown values
     are empty strings.

@@ -852,7 +852,7 @@ class BbTrackerJobs(TrackerJobsBase):
             presented to the user and `value` is available via
             :attr:`~.jobs.dialog.ChoiceJob.choice` when this job is
             finished. The first `regex` that matches `autodetect_value` is
-            visually marked as "auto-detected" for the user.
+            visually marked as "autodetected" for the user.
         :param condition: See ``condition`` for :class:`~.base.JobBase`
         :param bool autofinish: Whether to choose the autodetected value with no
             user-interaction
@@ -861,7 +861,7 @@ class BbTrackerJobs(TrackerJobsBase):
         choices = []
         for text, value, regex in options:
             if not focused and regex.search(autodetect_value):
-                choices.append((f'{text} (auto-detected)', value))
+                choices.append((f'{text} (autodetected)', value))
                 focused = choices[-1]
                 autofinish = autofinish and True
             else:

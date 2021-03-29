@@ -88,7 +88,7 @@ class ScreenshotsJob(JobBase):
         """
         Execute screenshot creation subprocess
 
-        The subprocess also finds the first video and auto-picks and/or
+        The subprocess also finds the first video and automatically picks and/or
         validates timestamps.
         """
         self._screenshots_process.start()

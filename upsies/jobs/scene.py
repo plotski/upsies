@@ -159,11 +159,11 @@ class SceneCheckJob(JobBase):
                 _log.debug('No search results: %r', self._content_path)
                 self._handle_scene_check_result(types.SceneCheckResult.unknown, exceptions=())
             elif len(results) == 1:
-                _log.debug('Auto-picking only search result: %r', results[0])
+                _log.debug('Autopicking only search result: %r', results[0])
                 release_name = results[0]
                 await self._verify_release(release_name)
             elif self._release_name in results:
-                _log.debug('Auto-picking from search results: %r', self._release_name)
+                _log.debug('Autopicking from search results: %r', self._release_name)
                 await self._verify_release(self._release_name)
             else:
                 _log.debug('Asking for release name: %r', results)
