@@ -69,6 +69,12 @@ class BbTrackerJobs(TrackerJobsBase):
         except (KeyError, IndexError):
             pass
 
+    promotion = (
+        '[align=right][size=1]Shared with '
+        f'[url={__homepage__}]{__project_name__} {__version__}[/url]'
+        '[/size][/align]'
+    )
+
     # Generic jobs
 
     @cached_property
@@ -659,21 +665,35 @@ class BbTrackerJobs(TrackerJobsBase):
             await self.format_description_creators(info),
             await self.format_description_cast(info),
         ]
-        info_string = '\n'.join(str(item) for item in info_table
-                                if item is not None)
+        info_table_string = '\n'.join(str(item) for item in info_table
+                                      if item is not None)
 
-        # Link to project
-        promotion = (
-            '[align=right][size=1]Shared with '
-            f'[url={__homepage__}]{__project_name__} {__version__}[/url]'
-            '[/size][/align]'
-        )
-
-        return ''.join((
+        parts = [
             await self.format_description_summary(info) or '',
-            f'[quote]{info_string}[/quote]',
-            promotion,
-        ))
+            f'[quote]{info_table_string}[/quote]',
+        ]
+
+        if self.is_series_release:
+            # Screenshots
+            await self.upload_screenshots_job.wait()
+            screenshots_bbcode = '\n\n'.join(
+                f'[img={screenshot_url}]'
+                for screenshot_url in self.upload_screenshots_job.output
+            )
+            parts.append(
+                '[quote]\n'
+                f'[align=center]{screenshots_bbcode}[/align]\n'
+                '[/quote]'
+            )
+
+            # Mediainfo
+            await self.mediainfo_job.wait()
+            parts.append(
+                f'[mediainfo]{self.mediainfo_job.output[0]}[/mediainfo]\n'
+            )
+
+        parts.append(self.promotion)
+        return ''.join(parts)
 
     async def format_description_summary(self, info):
         if 'summary' in info:
