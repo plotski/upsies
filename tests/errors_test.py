@@ -57,7 +57,7 @@ def test_SceneRenamedError_url_attribute_without_release_url(mocker):
     assert e.url is None
 
 def test_SceneRenamedError_url_attribute_with_release_url(mocker):
-    scenedb_mock = mocker.patch(
+    mocker.patch(
         'upsies.utils.scene.scenedb',
         return_value=Mock(release_url=Mock(return_value='http://foo')),
     )

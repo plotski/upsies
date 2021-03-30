@@ -140,7 +140,7 @@ async def test_login_fails_and_does_not_find_error_message(mocker):
         ''',
     ))
     sleep_mock = mocker.patch('asyncio.sleep', AsyncMock())
-    html_dump_mock = mocker.patch('upsies.utils.html.dump')
+    mocker.patch('upsies.utils.html.dump')
     tracker = BbTracker(
         config={
             'username': 'bunny',
