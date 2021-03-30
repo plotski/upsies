@@ -1,10 +1,25 @@
 import os
+import re
 from unittest.mock import Mock, call, patch
 
 import pytest
 
 from upsies import errors
 from upsies.utils import screenshot, video
+
+
+@pytest.mark.parametrize(
+    argnames='os, exp_executable',
+    argvalues=(
+        ('linux', 'ffmpeg'),
+        ('windows', 'ffmpeg.exe'),
+        ('plan9', 'ffmpeg'),
+    ),
+    ids=lambda v: str(v),
+)
+def test_ffmpeg_executable(os, exp_executable, mocker):
+    mocker.patch('upsies.utils.os_family', return_value=os)
+    assert screenshot._ffmpeg_executable() == exp_executable
 
 
 @patch('upsies.utils.fs.assert_file_readable')
@@ -18,12 +33,13 @@ def test_nonexisting_video_file(run_mock, assert_file_readable_mock):
     assert run_mock.call_args_list == []
 
 
+@pytest.mark.parametrize('invalid_timestamp', ('anywhere', [1, 2, 3]))
 @patch('upsies.utils.fs.assert_file_readable', Mock(return_value=True))
 @patch('upsies.utils.subproc.run')
-def test_invalid_timestamp(run_mock):
+def test_invalid_timestamp(run_mock, invalid_timestamp):
     mock_file = 'path/to/foo.mkv'
-    with pytest.raises(errors.ScreenshotError, match=r"^Invalid timestamp: 'anywhere'$"):
-        screenshot.create(mock_file, 'anywhere', 'screenshot.png')
+    with pytest.raises(errors.ScreenshotError, match=rf"^Invalid timestamp: {re.escape(repr(invalid_timestamp))}$"):
+        screenshot.create(mock_file, invalid_timestamp, 'screenshot.png')
     assert run_mock.call_args_list == []
 
 
@@ -94,6 +110,20 @@ def test_overwrite_existing_screenshot_file(duration_mock, run_mock, exists_mock
     assert run_mock.call_args_list == [call(exp_cmd,
                                             ignore_errors=True,
                                             join_stderr=True)]
+
+
+@patch('os.path.exists')
+@patch('upsies.utils.fs.assert_file_readable', Mock(return_value=True))
+@patch('upsies.utils.subproc.run')
+@patch('upsies.utils.video.make_ffmpeg_input', Mock(side_effect=lambda f: f))
+@patch('upsies.utils.video.duration')
+def test_screenshot_file_does_not_exist_for_some_reason(duration_mock, run_mock, exists_mock):
+    run_mock.return_value = 'Command error'
+    mock_file = 'path/to/foo.mkv'
+    duration_mock.return_value = 1e6
+    exists_mock.side_effect = (False, False)
+    with pytest.raises(errors.ScreenshotError, match=r'^path/to/foo.mkv: Failed to create screenshot at 601: Command error$'):
+        screenshot.create(mock_file, 601, 'screenshot.png')
 
 
 def test_screenshot_has_display_aspect_ratio(data_dir, tmp_path):

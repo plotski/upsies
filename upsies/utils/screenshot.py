@@ -10,17 +10,19 @@ from .. import errors, utils
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-if utils.os_family() == 'windows':
-    _ffmpeg_executable = 'ffmpeg.exe'
-else:
-    _ffmpeg_executable = 'ffmpeg'
-
 _timestamp_format = re.compile(r'^(?:(?:\d+:|)\d{2}:|)\d{2}$')
+
+
+def _ffmpeg_executable():
+    if utils.os_family() == 'windows':
+        return 'ffmpeg.exe'
+    else:
+        return 'ffmpeg'
 
 
 def _make_ffmpeg_cmd(video_file, timestamp, screenshot_file):
     return (
-        _ffmpeg_executable,
+        _ffmpeg_executable(),
         '-y',
         '-loglevel', 'level+error',
         '-ss', str(timestamp),
@@ -70,4 +72,6 @@ def create(video_file, timestamp, screenshot_file, overwrite=False):
     cmd = _make_ffmpeg_cmd(video_file, timestamp, screenshot_file)
     output = utils.subproc.run(cmd, ignore_errors=True, join_stderr=True)
     if not os.path.exists(screenshot_file):
-        raise errors.ScreenshotError(output, video_file, timestamp)
+        raise errors.ScreenshotError(
+            f'{video_file}: Failed to create screenshot at {timestamp}: {output}'
+        )

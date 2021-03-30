@@ -63,11 +63,6 @@ class RequestError(UpsiesError):
 
 class ScreenshotError(UpsiesError):
     """Screenshot creation failed"""
-    def __init__(self, msg, video_file=None, timestamp=None):
-        if not video_file or not timestamp:
-            super().__init__(msg)
-        else:
-            super().__init__(f'{video_file}: Failed to create screenshot at {timestamp}: {msg}')
 
 
 class TorrentError(UpsiesError):
