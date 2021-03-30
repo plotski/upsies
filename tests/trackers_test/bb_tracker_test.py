@@ -68,6 +68,32 @@ async def test_login_succeeds(mocker):
     assert tracker.is_logged_in
     assert tracker._auth_token == 'd34db33f'
 
+@pytest.mark.parametrize(
+    argnames='credentials, exp_error',
+    argvalues=(
+        ({}, 'No username configured'),
+        ({'username': 'foo'}, 'No password configured'),
+        ({'password': 'bar'}, 'No username configured'),
+    ),
+    ids=lambda v: str(v),
+)
+@pytest.mark.asyncio
+async def test_login_with_incomplete_login_credentials(credentials, exp_error, mocker):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
+    sleep_mock = mocker.patch('asyncio.sleep', AsyncMock())
+    tracker = BbTracker(
+        config={**{'base_url': 'http://bb.local'}, **credentials}
+    )
+    assert not tracker.is_logged_in
+    with pytest.raises(errors.RequestError, match=rf'^Login failed: {exp_error}$'):
+        await tracker.login()
+    assert get_mock.call_args_list == []
+    assert post_mock.call_args_list == []
+    assert sleep_mock.call_args_list == []
+    assert not tracker.is_logged_in
+    assert not hasattr(tracker, '_auth_token')
+
 @pytest.mark.asyncio
 async def test_login_fails_and_finds_error_message(mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())

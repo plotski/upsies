@@ -35,6 +35,11 @@ class BbTracker(TrackerBase):
 
     async def login(self):
         if not self.is_logged_in:
+            if not self.config.get('username'):
+                raise errors.RequestError(f'Login failed: No username configured')
+            elif not self.config.get('password'):
+                raise errors.RequestError(f'Login failed: No password configured')
+
             login_url = urllib.parse.urljoin(
                 self.config['base_url'],
                 self._url_path['login'],
