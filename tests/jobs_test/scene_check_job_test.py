@@ -234,9 +234,9 @@ def test_handle_scene_check_result_handles_SceneErrors(make_SceneCheckJob, mocke
         'mock scene check result',
         exceptions=(
             errors.SceneError('foo'),
-            errors.SceneRenamedError('bar', 'Bar'),
+            errors.SceneRenamedError(original_name='bar', existing_name='Bar'),
             errors.SceneMissingInfoError('burr'),
-            errors.SceneFileSizeError('baz', 123, 456),
+            errors.SceneFileSizeError('baz', original_size=123, existing_size=456),
         ),
     )
     assert job.warnings == (
@@ -244,9 +244,9 @@ def test_handle_scene_check_result_handles_SceneErrors(make_SceneCheckJob, mocke
     )
     assert job.errors == (
         errors.SceneError('foo'),
-        errors.SceneRenamedError('bar', 'Bar'),
+        errors.SceneRenamedError(original_name='bar', existing_name='Bar'),
         'https://www.srrdb.com/release/details/bar',
-        errors.SceneFileSizeError('baz', 123, 456),
+        errors.SceneFileSizeError('baz', original_size=123, existing_size=456),
     )
     assert ask_is_scene_release.call_args_list == []
     assert job.finalize.call_args_list == []
