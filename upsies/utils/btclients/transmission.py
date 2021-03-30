@@ -4,6 +4,7 @@ Client API for the Transmission daemon
 
 import base64
 import json
+import os
 
 from ... import errors
 from .. import http
@@ -79,7 +80,7 @@ class TransmissionClientApi(ClientApiBase):
             },
         }
         if download_path:
-            request['arguments']['download-dir'] = str(download_path)
+            request['arguments']['download-dir'] = str(os.path.abspath(download_path))
 
         info = await self._request(json.dumps(request))
         arguments = info.get('arguments', {})

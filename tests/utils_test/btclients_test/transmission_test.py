@@ -1,5 +1,6 @@
 import base64
 import json
+import os
 import re
 from unittest.mock import Mock, call
 
@@ -179,6 +180,34 @@ async def test_add_torrent_without_download_path_argument(torrent_added_field, m
             'method' : 'torrent-add',
             'arguments' : {
                 'metainfo': base64.b64encode(b'torrent metainfo').decode('ascii'),
+            },
+        })
+    )]
+
+@pytest.mark.asyncio
+async def test_add_torrent_with_relative_download_path_argument(mocker):
+    response = {
+        'arguments': {'torrent-added': {'hashString': 'DE4DB33F'}},
+        'result': 'success',
+    }
+    api = transmission.TransmissionClientApi()
+    mocker.patch.multiple(
+        api,
+        _request=AsyncMock(return_value=response),
+        read_torrent_file=Mock(return_value=b'torrent metainfo'),
+    )
+    torrent_hash = await api.add_torrent(
+        torrent_path='file.torrent',
+        download_path='relative/path',
+    )
+    assert torrent_hash == 'DE4DB33F'
+    assert api.read_torrent_file.call_args_list == [call('file.torrent')]
+    assert api._request.call_args_list == [call(
+        json.dumps({
+            'method' : 'torrent-add',
+            'arguments' : {
+                'metainfo': base64.b64encode(b'torrent metainfo').decode('ascii'),
+                'download-dir': os.path.abspath('relative/path'),
             },
         })
     )]
