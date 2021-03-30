@@ -80,7 +80,7 @@ class SceneError(UpsiesError):
 
 class SceneRenamedError(SceneError):
     """Renamed scene release"""
-    def __init__(self, original_name, existing_name):
+    def __init__(self, *, original_name, existing_name):
         super().__init__(f'Release name should be: {original_name}')
         self._original_name = original_name
         self._existing_name = existing_name
@@ -105,7 +105,7 @@ class SceneRenamedError(SceneError):
 
 class SceneFileSizeError(SceneError):
     """Scene release file size differs from original release"""
-    def __init__(self, filename, original_size, existing_size):
+    def __init__(self, filename, *, original_size, existing_size):
         super().__init__(f'{filename} should be {original_size} bytes, not {existing_size}')
         self._filename = filename
         self._original_size = original_size
