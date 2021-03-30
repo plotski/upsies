@@ -66,6 +66,38 @@ async def test_login_does_nothing_if_already_logged_in(mocker):
     assert tracker._logout_url == 'anything'
     assert tracker._auth_key == 'something'
 
+@pytest.mark.parametrize(
+    argnames='credentials, exp_error',
+    argvalues=(
+        ({}, 'No username configured'),
+        ({'username': 'foo'}, 'No password configured'),
+        ({'password': 'bar'}, 'No username configured'),
+    ),
+    ids=lambda v: str(v),
+)
+@pytest.mark.asyncio
+async def test_login_with_incomplete_login_credentials(credentials, exp_error, mocker):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
+    tracker = NblTracker(
+        config={
+            **{
+                'base_url': 'http://nbl.local',
+                'announce': 'http://nbl.local/announce',
+                'exclude': 'some files',
+            },
+            **credentials,
+        },
+    )
+    assert not tracker.is_logged_in
+    with pytest.raises(errors.RequestError, match=rf'^Login failed: {exp_error}$'):
+        await tracker.login()
+    assert not tracker.is_logged_in
+    assert get_mock.call_args_list == []
+    assert post_mock.call_args_list == []
+    assert not hasattr(tracker, '_logout_url')
+    assert not hasattr(tracker, '_auth_key')
+
 @pytest.mark.asyncio
 async def test_login_succeeds(mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
