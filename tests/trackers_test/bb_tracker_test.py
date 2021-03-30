@@ -114,6 +114,7 @@ async def test_login_fails_and_does_not_find_error_message(mocker):
         ''',
     ))
     sleep_mock = mocker.patch('asyncio.sleep', AsyncMock())
+    html_dump_mock = mocker.patch('upsies.utils.html.dump')
     tracker = BbTracker(
         config={
             'username': 'bunny',
@@ -122,7 +123,7 @@ async def test_login_fails_and_does_not_find_error_message(mocker):
         },
     )
     assert not tracker.is_logged_in
-    with pytest.raises(errors.RequestError, match=r'^Login failed: No error message found$'):
+    with pytest.raises(errors.RequestError, match=r'^Login failed: No error message found. See login.html.$'):
         await tracker.login()
     assert get_mock.call_args_list == []
     assert post_mock.call_args_list == [call(
@@ -289,9 +290,15 @@ def test_store_auth_token(token, exp_exception, mocker):
             (r'You are banned from logging in for another 4 hours and 42 minutes'),
             id='login.max-attempts',
         ),
+        pytest.param(
+            'login.no-error',
+            (r'No error message found\. See login\.html\.'),
+            id='login.no-error',
+        ),
     ),
 )
-def test_raise_login_error(page, exp_message, get_html_page):
+def test_raise_login_error(page, exp_message, get_html_page, mocker):
+    html_dump_mock = mocker.patch('upsies.utils.html.dump')
     tracker = BbTracker()
     html = bs4.BeautifulSoup(
         markup=get_html_page('bb', page),
@@ -299,6 +306,10 @@ def test_raise_login_error(page, exp_message, get_html_page):
     )
     with pytest.raises(errors.RequestError, match=rf'^Login failed: {exp_message}$'):
         tracker._raise_login_error(html)
+    if page == 'login.no-error':
+        assert html_dump_mock.call_args_list == [call(html, 'login.html')]
+    else:
+        assert html_dump_mock.call_args_list == []
 
 
 def test_logged_in():
@@ -424,7 +435,7 @@ async def test_upload_finds_empty_error_message(mocker):
     mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
     tracker = BbTracker(config={'base_url': 'http://bb.local'})
     tracker_jobs_mock = Mock()
-    with pytest.raises(RuntimeError, match=r'^Failed to find error message. See upload.html for more information.$'):
+    with pytest.raises(RuntimeError, match=r'^Failed to find error message\. See upload\.html\.$'):
         await tracker.upload(tracker_jobs_mock)
     assert html_dump_mock.call_args_list == [call(response, 'upload.html')]
 
@@ -443,6 +454,6 @@ async def test_upload_fails_to_find_error_message(mocker):
     mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
     tracker = BbTracker(config={'base_url': 'http://bb.local'})
     tracker_jobs_mock = Mock()
-    with pytest.raises(RuntimeError, match=r'^Failed to find error message. See upload.html for more information.$'):
+    with pytest.raises(RuntimeError, match=r'^Failed to find error message\. See upload\.html\.$'):
         await tracker.upload(tracker_jobs_mock)
     assert html_dump_mock.call_args_list == [call(response, 'upload.html')]

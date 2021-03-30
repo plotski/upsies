@@ -62,7 +62,8 @@ class BbTracker(TrackerBase):
         if error_tag:
             raise errors.RequestError(f'Login failed: {error_tag.string.strip()}')
         elif doc.find('form', id='loginform'):
-            raise errors.RequestError('Login failed: No error message found')
+            html.dump(doc, 'login.html')
+            raise errors.RequestError('Login failed: No error message found. See login.html.')
 
     async def _work_around_login_bug(self, doc):
         # Login sometimes fails and redirects to main page without logging in
@@ -165,4 +166,4 @@ class BbTracker(TrackerBase):
 
             # Unable to find error message
             html.dump(response, 'upload.html')
-            raise RuntimeError('Failed to find error message. See upload.html for more information.')
+            raise RuntimeError('Failed to find error message. See upload.html.')

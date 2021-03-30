@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+ <body>
+  <div id="head">
+  </div>
+  <table border="0" cellpadding="0" cellspacing="0" id="maincontent">
+   <tr>
+    <td align="center" valign="middle">
+     <div id="logo">
+      <a href="index.php">
+       Home
+      </a>
+      <a href="login.php" rel="nofollow">
+       Login
+      </a>
+     </div>
+     <div style="width:320px;">
+      <form action="login.php" id="loginform" method="post" name="loginform" onsubmit="return formVal();">
+       You have
+       <font color="green">
+        <strong>
+         6
+        </strong>
+       </font>
+       attempts remaining.
+       <br/>
+       <br/>
+       <strong>
+        WARNING:
+       </strong>
+       You will be banned for 6 hours after your login attempts run out.
+       <br/>
+       <br/>
+       <table align="center" border="0" cellpadding="2" cellspacing="1">
+        <tr valign="top">
+         <td align="right">
+          <label for="username">
+           Username
+          </label>
+         </td>
+         <td align="left">
+          <input autofocus="" class="inputtext" id="username" name="username" type="text"/>
+         </td>
+        </tr>
+        <tr valign="top">
+         <td align="right">
+          <label for="password">
+           Password
+          </label>
+         </td>
+         <td align="left">
+          <input class="inputtext" id="password" name="password" type="password"/>
+         </td>
+        </tr>
+        <tr valign="top">
+         <td align="right" colspan="2" style="padding: 5px;">
+          <input id="keeplogged" name="keeplogged" type="checkbox" value="1"/>
+          <label for="keeplogged">
+           Keep me logged in
+          </label>
+         </td>
+        </tr>
+        <tr>
+         <td align="right" colspan="2">
+          <input class="submit" name="login" type="submit" value="Log In!"/>
+         </td>
+        </tr>
+       </table>
+      </form>
+      <br/>
+      <br/>
+      Lost your password?
+      <a href="login.php?act=recover">
+       Recover it here!
+      </a>
+     </div>
+    </td>
+   </tr>
+   <tr>
+    <td align="center">
+     Contact: abuse.bb@protonmail.com for enquiries.
+    </td>
+   </tr>
+  </table>
+  <div id="foot">
+   <div id="copyleft">
+   </div>
+  </div>
+ </body>
+</html>
