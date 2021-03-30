@@ -454,15 +454,15 @@ async def test_verify_release_gets_wrong_release_files(mocker):
     verify_release_name_mock = mocker.patch('upsies.utils.scene.verify.verify_release_name', AsyncMock())
     verify_release_files_mock = mocker.patch('upsies.utils.scene.verify.verify_release_files', AsyncMock(
         return_value=(
-            errors.SceneFileSizeError('foo', 123, 456),
-            errors.SceneFileSizeError('bar', 100, 200),
+            errors.SceneFileSizeError('foo', original_size=123, existing_size=456),
+            errors.SceneFileSizeError('bar', original_size=100, existing_size=200),
         ),
     ))
     is_scene, exceptions = await verify.verify_release('mock/path', 'Mock.Release')
     assert is_scene is SceneCheckResult.true
     assert exceptions == (
-        errors.SceneFileSizeError('foo', 123, 456),
-        errors.SceneFileSizeError('bar', 100, 200),
+        errors.SceneFileSizeError('foo', original_size=123, existing_size=456),
+        errors.SceneFileSizeError('bar', original_size=100, existing_size=200),
     )
     assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
     assert is_scene_release_mock.call_args_list == [call('Mock.Release')]
@@ -480,16 +480,16 @@ async def test_verify_release_gets_wrong_release_name_and_files(mocker):
     ))
     verify_release_files_mock = mocker.patch('upsies.utils.scene.verify.verify_release_files', AsyncMock(
         return_value=(
-            errors.SceneFileSizeError('foo', 123, 456),
-            errors.SceneFileSizeError('bar', 100, 200),
+            errors.SceneFileSizeError('foo', original_size=123, existing_size=456),
+            errors.SceneFileSizeError('bar', original_size=100, existing_size=200),
         ),
     ))
     is_scene, exceptions = await verify.verify_release('mock/path', 'Mock.Release')
     assert is_scene is SceneCheckResult.true
     assert exceptions == (
         errors.SceneRenamedError(original_name='foo', existing_name='bar'),
-        errors.SceneFileSizeError('foo', 123, 456),
-        errors.SceneFileSizeError('bar', 100, 200),
+        errors.SceneFileSizeError('foo', original_size=123, existing_size=456),
+        errors.SceneFileSizeError('bar', original_size=100, existing_size=200),
     )
     assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
     assert is_scene_release_mock.call_args_list == [call('Mock.Release')]
