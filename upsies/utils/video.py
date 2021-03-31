@@ -249,19 +249,6 @@ _audio_translations = {
     'features': (
         ('Atmos', {'Format_Commercial_IfAny': re.compile(r'Dolby Atmos')}),
     ),
-    # NOTE: guessit only recognizes 7.1, 5.1, 2.0 and 1.0
-    'channels': (
-        ('1.0', re.compile(r'^1$')),
-        ('2.0', re.compile(r'^2$')),
-        ('2.0', re.compile(r'^3$')),
-        ('2.0', re.compile(r'^4$')),
-        ('2.0', re.compile(r'^5$')),
-        ('5.1', re.compile(r'^6$')),
-        ('5.1', re.compile(r'^7$')),
-        ('7.1', re.compile(r'^8$')),
-        ('7.1', re.compile(r'^9$')),
-        ('7.1', re.compile(r'^10$')),
-    ),
 }
 
 @functools.lru_cache(maxsize=None)
@@ -309,6 +296,20 @@ def audio_format(path):
         return audio_format
 
 
+# NOTE: guessit only recognizes 7.1, 5.1, 2.0 and 1.0
+_audio_channels_translations = (
+    ('1.0', re.compile(r'^1$')),
+    ('2.0', re.compile(r'^2$')),
+    ('2.0', re.compile(r'^3$')),
+    ('2.0', re.compile(r'^4$')),
+    ('2.0', re.compile(r'^5$')),
+    ('5.1', re.compile(r'^6$')),
+    ('5.1', re.compile(r'^7$')),
+    ('7.1', re.compile(r'^8$')),
+    ('7.1', re.compile(r'^9$')),
+    ('7.1', re.compile(r'^10$')),
+)
+
 @functools.lru_cache(maxsize=None)
 def audio_channels(path):
     """
@@ -325,7 +326,7 @@ def audio_channels(path):
         audio_channels = None
         channels = audio_track.get('Channels', '')
         if channels:
-            for achan,regex in _audio_translations['channels']:
+            for achan,regex in _audio_channels_translations:
                 if regex.search(channels):
                     audio_channels = achan
                     break
