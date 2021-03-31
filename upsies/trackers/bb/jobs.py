@@ -520,7 +520,7 @@ class BbTrackerJobs(TrackerJobsBase):
         ]
 
         if 'Proper' in self.release_name.edition:
-            info.append('PROPER')
+            info.append('Proper')
 
         info_string = ' / '.join(i for i in info if i)
 
