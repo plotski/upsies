@@ -509,7 +509,7 @@ class BbTrackerJobs(TrackerJobsBase):
         elif self.is_episode_release:
             title.append(str(self.release_name.episodes))
 
-        # "[Source / VideoCodec / AudioCodec / Container / Resolution( / Subtitles)]"
+        # "[Source / VideoCodec / AudioCodec / Container / Resolution( / w. Subtitles)]"
         info = [
             self.release_name.source,
             self.release_name.video_format,
@@ -610,7 +610,7 @@ class BbTrackerJobs(TrackerJobsBase):
         if subtitle_tracks:
             subtitle_languages = [track.get('Language') for track in subtitle_tracks]
             if 'en' in subtitle_languages:
-                return 'Subtitles'
+                return 'w. Subtitles'
 
     def get_movie_release_info(self):
         info = []
@@ -653,7 +653,7 @@ class BbTrackerJobs(TrackerJobsBase):
         info.append(self.get_subtitles_tag())
 
         if self.release_name.has_commentary:
-            info.append('Commentary')
+            info.append('w. Commentary')
 
         return ' / '.join(i for i in info if i)
 
