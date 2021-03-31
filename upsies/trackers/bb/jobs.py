@@ -509,19 +509,22 @@ class BbTrackerJobs(TrackerJobsBase):
         elif self.is_episode_release:
             title.append(str(self.release_name.episodes))
 
-        # "[Source / VideoCodec / AudioCodec / Container / Resolution]"
+        # "[Source / VideoCodec / AudioCodec / Container / Resolution( / Subtitles)]"
         info = [
             self.release_name.source,
             self.release_name.video_format,
             self.release_name.audio_format,
             fs.file_extension(video.first_video(self.content_path)).upper(),
             self.release_name.resolution,
+            self.get_subtitles_tag(),
         ]
 
         if 'Proper' in self.release_name.edition:
             info.append('PROPER')
 
-        return ' '.join(title) + f' [{" / ".join(info)}]'
+        info_string = ' / '.join(i for i in info if i)
+
+        return ' '.join(title) + f' [{info_string}]'
 
     async def get_poster_url(self, poster_job, poster_url_getter):
         # Get original poster URL (e.g. "http://imdb.com/...jpg")
@@ -602,6 +605,13 @@ class BbTrackerJobs(TrackerJobsBase):
 
         return tags_string
 
+    def get_subtitles_tag(self):
+        subtitle_tracks = video.tracks(self.content_path).get('Text', ())
+        if subtitle_tracks:
+            subtitle_languages = [track.get('Language') for track in subtitle_tracks]
+            if 'en' in subtitle_languages:
+                return 'Subtitles'
+
     def get_movie_release_info(self):
         info = []
 
@@ -643,13 +653,9 @@ class BbTrackerJobs(TrackerJobsBase):
         if self.release_name.has_commentary:
             info.append('Commentary')
 
-        subtitle_tracks = video.tracks(self.content_path).get('Text', ())
-        if subtitle_tracks:
-            subtitle_languages = [track.get('Language') for track in subtitle_tracks]
-            if 'en' in subtitle_languages:
-                info.append('Subtitles')
+        info.append(self.get_subtitles_tag())
 
-        return ' / '.join(info)
+        return ' / '.join(i for i in info if i)
 
     async def get_description(self, webdb, id):
         info = await webdb.gather(id, 'cast', 'countries', 'directors',
