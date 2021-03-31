@@ -346,9 +346,9 @@ def test_service_is_abbreviated(service, service_abbrev):
 
 
 audio_codec_samples = (
-    ('DD', 'DD'), ('AC3', 'DD'), ('AC-3', 'DD'),
-    ('DD+', 'DD+'), ('DDP', 'DD+'), ('EAC3', 'DD+'), ('E-AC3', 'DD+'), ('E-AC-3', 'DD+'),
-    ('DD+ Atmos', 'DD+ Atmos'), ('DDP Atmos', 'DD+ Atmos'),
+    ('DD', 'AC-3'), ('AC3', 'AC-3'), ('AC-3', 'AC-3'),
+    ('DD+', 'E-AC-3'), ('DDP', 'E-AC-3'), ('EAC3', 'E-AC-3'), ('E-AC3', 'E-AC-3'), ('E-AC-3', 'E-AC-3'),
+    ('Atmos', 'Atmos'), ('DD+ Atmos', 'Atmos'), ('DDP Atmos', 'Atmos'),
     ('TrueHD', 'TrueHD'), ('Dolby TrueHD', 'TrueHD'),
     ('TrueHD Atmos', 'TrueHD Atmos'), ('Dolby TrueHD Atmos', 'TrueHD Atmos'),
     ('DTS', 'DTS'),
@@ -372,9 +372,9 @@ audio_channels_samples = (
     ('FLAC 1.0', 'FLAC', '1.0'),
     ('AAC2.0', 'AAC', '2.0'),
     ('AAC 2.0', 'AAC', '2.0'),
-    ('DD5.1', 'DD', '5.1'),
-    ('DD 5.1', 'DD', '5.1'),
-    ('Dolby Digital 7.1', 'DD', '7.1'),
+    ('DD5.1', 'AC-3', '5.1'),
+    ('DD 5.1', 'AC-3', '5.1'),
+    ('Dolby Digital 7.1', 'AC-3', '7.1'),
 )
 @pytest.mark.parametrize('audio, audio_codec, audio_channels', audio_channels_samples)
 def test_audio_channels(audio, audio_codec, audio_channels):

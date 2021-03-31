@@ -828,10 +828,10 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return source
 
     _audio_codec_translation = {
-        re.compile(r'^AC-?3')             : 'DD',
-        re.compile(r'Dolby Digital$')     : 'DD',
-        re.compile(r'^E-?AC-?3')          : 'DD+',
-        re.compile(r'Dolby Digital Plus') : 'DD+',
+        re.compile(r'^AC-?3')             : 'AC-3',
+        re.compile(r'Dolby Digital$')     : 'AC-3',
+        re.compile(r'^E-?AC-?3')          : 'E-AC-3',
+        re.compile(r'Dolby Digital Plus') : 'E-AC-3',
         re.compile(r'TrueHD')             : 'TrueHD',
         re.compile(r'Dolby Atmos')        : 'Atmos',
         re.compile(r'Master Audio')       : 'MA',
@@ -861,7 +861,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
             if parts:
                 audio_codec = ' '.join(parts)
-                audio_codec = audio_codec.replace('DD TrueHD', 'TrueHD')
+                audio_codec = re.sub(r'(?:E-|)AC-?3 TrueHD', 'TrueHD', audio_codec)
+                audio_codec = re.sub(r'(?:E-|)AC-?3 Atmos', 'Atmos', audio_codec)
             else:
                 # Codecs like "MP3" or "FLAC" are already abbreviated
                 audio_codec = ' '.join(infos)
