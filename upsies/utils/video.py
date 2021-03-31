@@ -227,73 +227,58 @@ def has_dual_audio(path):
             return False
 
 
-_audio_translations = {
-    'formats': (
-        ('AAC', {'Format': re.compile(r'AAC')}),
-        ('DD', {'Format': re.compile(r'^AC-3')}),
-        ('DD', {'Format_Commercial_IfAny': re.compile(r'Dolby Digital(?! Plus)')}),
-        ('DD+', {'Format': re.compile(r'E-AC-3')}),
-        ('DD+', {'Format_Commercial_IfAny': re.compile(r'Dolby Digital Plus')}),
-        ('DTS:X', {'Format_AdditionalFeatures': re.compile(r'XLL X')}),
-        ('DTS-ES', {'Format_Commercial_IfAny': re.compile(r'DTS-ES')}),
-        ('DTS-HD MA', {'Format_Commercial_IfAny': re.compile(r'DTS-HD Master Audio')}),
-        ('DTS-HD', {'Format_Commercial_IfAny': re.compile(r'DTS-HD(?! Master Audio)')}),
-        ('DTS', {'Format': re.compile(r'DTS')}),
-        ('FLAC', {'Format': re.compile(r'FLAC')}),
-        ('MP3', {'Format': re.compile(r'MPEG Audio')}),
-        ('TrueHD', {'Format': re.compile(r'MLP ?FBA')}),
-        ('TrueHD', {'Format_Commercial_IfAny': re.compile(r'TrueHD')}),
-        ('Vorbis', {'Format': re.compile(r'\bVorbis\b')}),
-        ('Vorbis', {'Format': re.compile(r'\bOgg\b')}),
-    ),
-    'features': (
-        ('Atmos', {'Format_Commercial_IfAny': re.compile(r'Dolby Atmos')}),
-    ),
-}
+_audio_format_translations = (
+    # (<format>, <regex patterns per key>, <possible co-existing formats>)
+    # The last match wins.
+    ('AAC', {'Format': re.compile(r'^AAC$')}, ()),
+    ('AC-3', {'Format': re.compile(r'^AC-3$')}, ()),
+    ('E-AC-3', {'Format': re.compile(r'^E-AC-3$')}, ()),
+    ('TrueHD', {'Format': re.compile(r'MLP ?FBA')}, ('Atmos',)),
+    ('TrueHD', {'Format_Commercial_IfAny': re.compile(r'TrueHD')}, ('Atmos',)),
+    ('Atmos', {'Format_Commercial_IfAny': re.compile(r'Dolby Atmos')}, ('TrueHD',)),
+    ('DTS', {'Format': re.compile(r'^DTS$')}, ()),
+    ('DTS-ES', {'Format_Commercial_IfAny': re.compile(r'DTS-ES')}, ()),
+    ('DTS-HD', {'Format_Commercial_IfAny': re.compile(r'DTS-HD(?! Master Audio)')}, ()),
+    ('DTS-HD MA', {'Format_Commercial_IfAny': re.compile(r'DTS-HD Master Audio')}, ()),
+    ('DTS:X', {'Format_AdditionalFeatures': re.compile(r'XLL X')}, ()),
+    ('FLAC', {'Format': re.compile(r'FLAC')}, ()),
+    ('MP3', {'Format': re.compile(r'MPEG Audio')}, ()),
+    ('Vorbis', {'Format': re.compile(r'\bVorbis\b')}, ()),
+    ('Vorbis', {'Format': re.compile(r'\bOgg\b')}, ()),
+)
 
 @functools.lru_cache(maxsize=None)
 def audio_format(path):
     """
-    Return audio format (e.g. "DD", "MP3") or `None`
+    Return audio format (e.g. "AAC", "MP3") or `None`
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
     """
-    # Return audio format, e.g. "DTS"
-    def translate_format(audio_track):
-        for fmt,regexs in _audio_translations['formats']:
-            for key,regex in regexs.items():
-                value = audio_track.get(key)
-                if value:
-                    if regex.search(value):
-                        return fmt
-        return ''
-
-    # Return list of features like "Atmos"
-    def translate_features(audio_track):
-        feats = []
-        for feat,regexs in _audio_translations['features']:
-            for key,regex in regexs.items():
-                value = audio_track.get(key)
-                if value:
-                    if regex.search(value):
-                        feats.append(feat)
-        return feats
-
     try:
         audio_track = default_track('audio', path)
     except errors.ContentError:
         return None
     else:
-        # _log.debug('Audio track for %r: %r', path, audio_track)
+        def is_match(regexs, audio_track):
+            for key,regex in regexs.items():
+                value = audio_track.get(key)
+                if value:
+                    if regex.search(value):
+                        return True
+            return False
 
-        fmt = translate_format(audio_track)
-        if fmt:
-            audio_format = ' '.join([fmt] + translate_features(audio_track))
-        else:
-            audio_format = None
-        _log.debug('Detected audio format: %s', audio_format)
-        return audio_format
+        _log.debug('Audio track for %r: %r', path, audio_track)
+        parts = []
+        for fmt,regexs,coformats in _audio_format_translations:
+            # _log.debug('%r [%r]: %r', fmt, coformats, regexs)
+            if fmt not in parts and is_match(regexs, audio_track):
+                # Some formats may co-exist (e.g. "TrueHD" and "Atmos")
+                if not coformats or any(f not in coformats for f in parts):
+                    parts.clear()
+                parts.append(fmt)
+
+        return ' '.join(parts) or None
 
 
 # NOTE: guessit only recognizes 7.1, 5.1, 2.0 and 1.0
