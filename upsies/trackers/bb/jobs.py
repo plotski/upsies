@@ -650,10 +650,10 @@ class BbTrackerJobs(TrackerJobsBase):
         elif video.bit_depth(self.content_path) == '10':
             info.append('10-bit')
 
+        info.append(self.get_subtitles_tag())
+
         if self.release_name.has_commentary:
             info.append('Commentary')
-
-        info.append(self.get_subtitles_tag())
 
         return ' / '.join(i for i in info if i)
 
