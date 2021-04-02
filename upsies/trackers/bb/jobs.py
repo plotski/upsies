@@ -252,19 +252,19 @@ class BbTrackerJobs(TrackerJobsBase):
             name='movie-audio-codec',
             label='Audio Codec',
             condition=lambda: self.is_movie_release,
-            autodetect_value=self.release_name.audio_format,
+            autodetect_value=self.release_info_audio_format,
             autofinish=True,
             options=(
                 ('AAC', 'AAC', re.compile(r'^AAC$')),
-                ('AC-3', 'AC-3', re.compile(r'^(?:E-|)AC-3$')),
+                ('AC-3', 'AC-3', re.compile(r'^(?:E-|)AC-3$')),   # AC-3, E-AC-3
                 ('DTS', 'DTS', re.compile(r'^DTS(?!-HD)')),       # DTS, DTS-ES
                 ('DTS-HD', 'DTS-HD', re.compile(r'^DTS-HD\b')),   # DTS-HD, DTS-HD MA
                 ('DTS:X', 'DTS:X', re.compile(r'^DTS:X$')),
-                ('Dolby Atmos', 'Atmos', re.compile(r'^Atmos')),
+                ('Dolby Atmos', 'Atmos', re.compile(r'Atmos')),
                 ('FLAC', 'FLAC', re.compile(r'^FLAC$')),
                 ('MP3', 'MP3', re.compile(r'^MP3$')),
                 # ('PCM', 'PCM', re.compile(r'^$')),
-                ('TrueHD', 'True-HD', re.compile(r'TrueHD')),     # TrueHD, TrueHD Atmos
+                ('TrueHD', 'True-HD', re.compile(r'TrueHD')),
                 ('Vorbis', 'Vorbis', re.compile(r'^Vorbis$')),
             ),
         )
@@ -528,6 +528,14 @@ class BbTrackerJobs(TrackerJobsBase):
         if video.has_dual_audio(self.content_path):
             return 'Dual Audio'
 
+    @property
+    def release_info_audio_format(self):
+        audio_format = self.release_name.audio_format
+        # "E-AC-3 Atmos" and "TrueHD Atmos" -> "Atmos"
+        if 'Atmos' in audio_format:
+            return 'Atmos'
+        return audio_format
+
     # Metadata generators
 
     async def get_movie_title(self, imdb_id):
@@ -557,7 +565,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_name.source,
             self.release_name.video_format,
             self.release_info_10bit,
-            self.release_name.audio_format,
+            self.release_info_audio_format,
             fs.file_extension(video.first_video(self.content_path)).upper(),
             self.release_info_proper,
             self.release_name.resolution,
