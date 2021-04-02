@@ -59,14 +59,14 @@ class BbTrackerJobs(TrackerJobsBase):
         if len(seasons) != 1:
             raise RuntimeError(f'Unsupported number of seasons: {len(seasons)}: {seasons!r}')
         else:
-            return seasons[0]
+            return seasons[0] or None
 
     @property
     def episode(self):
         """Episode number or `None`"""
         seasons = release.Episodes.from_string(self.release_name.episodes)
         try:
-            return seasons[self.season][0]
+            return seasons[self.season][0] or None
         except (KeyError, IndexError):
             pass
 
