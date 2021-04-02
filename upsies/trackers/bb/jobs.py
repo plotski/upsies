@@ -499,7 +499,9 @@ class BbTrackerJobs(TrackerJobsBase):
         if imdb_id:
             await self.release_name.fetch_info(imdb_id)
 
-        title = [self.release_name.title_with_aka_and_year]
+        title = [self.release_name.title_with_aka]
+        if self.release_name.year_required:
+            title.append(f'({self.release_name.year})')
 
         # "Season x"
         if self.is_season_release:
