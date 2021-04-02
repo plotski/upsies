@@ -488,6 +488,46 @@ class BbTrackerJobs(TrackerJobsBase):
             **self.common_job_args,
         )
 
+    # Release Info
+
+    @property
+    def release_info_subtitles(self):
+        subtitle_tracks = video.tracks(self.content_path).get('Text', ())
+        if subtitle_tracks:
+            subtitle_languages = [track.get('Language') for track in subtitle_tracks]
+            if 'en' in subtitle_languages:
+                return 'w. Subtitles'
+
+    @property
+    def release_info_commentary(self):
+        if self.release_name.has_commentary:
+            return 'w. Commentary'
+
+    @property
+    def release_info_remux(self):
+        if 'Remux' in self.release_name.source:
+            return 'REMUX'
+
+    @property
+    def release_info_proper(self):
+        if 'Proper' in self.release_name.edition:
+            return 'PROPER'
+
+    @property
+    def release_info_hdr10(self):
+        if video.has_hdr10(self.content_path):
+            return 'HDR10'
+
+    @property
+    def release_info_10bit(self):
+        if video.bit_depth(self.content_path) == '10' and not self.release_info_hdr10:
+            return '10-bit'
+
+    @property
+    def release_info_dual_audio(self):
+        if video.has_dual_audio(self.content_path):
+            return 'Dual Audio'
+
     # Metadata generators
 
     async def get_movie_title(self, imdb_id):
