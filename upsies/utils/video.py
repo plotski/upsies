@@ -228,23 +228,25 @@ def has_dual_audio(path):
 
 
 _audio_format_translations = (
-    # (<format>, <regex patterns per key>, <possible co-existing formats>)
-    # The last match wins.
-    ('AAC', {'Format': re.compile(r'^AAC$')}, ()),
-    ('AC-3', {'Format': re.compile(r'^AC-3$')}, ()),
-    ('E-AC-3', {'Format': re.compile(r'^E-AC-3$')}, ()),
-    ('TrueHD', {'Format': re.compile(r'MLP ?FBA')}, ('Atmos',)),
-    ('TrueHD', {'Format_Commercial_IfAny': re.compile(r'TrueHD')}, ('Atmos',)),
-    ('Atmos', {'Format_Commercial_IfAny': re.compile(r'Dolby Atmos')}, ('TrueHD',)),
-    ('DTS', {'Format': re.compile(r'^DTS$')}, ()),
-    ('DTS-ES', {'Format_Commercial_IfAny': re.compile(r'DTS-ES')}, ()),
-    ('DTS-HD', {'Format_Commercial_IfAny': re.compile(r'DTS-HD(?! Master Audio)')}, ()),
-    ('DTS-HD MA', {'Format_Commercial_IfAny': re.compile(r'DTS-HD Master Audio')}, ()),
-    ('DTS:X', {'Format_AdditionalFeatures': re.compile(r'XLL X')}, ()),
-    ('FLAC', {'Format': re.compile(r'FLAC')}, ()),
-    ('MP3', {'Format': re.compile(r'MPEG Audio')}, ()),
-    ('Vorbis', {'Format': re.compile(r'\bVorbis\b')}, ()),
-    ('Vorbis', {'Format': re.compile(r'\bOgg\b')}, ()),
+    # (<format>, <<key>:<regex> dictionary>)
+    # - All <regex>s must match each <key> to identify <format>.
+    # - All identified <format>s are appended (e.g. "TrueHD Atmos").
+    # - {<key>: None} means <key> must not exist.
+    ('AAC', {'Format': re.compile(r'^AAC$')}),
+    ('AC-3', {'Format': re.compile(r'^AC-3$')}),
+    ('E-AC-3', {'Format': re.compile(r'^E-AC-3$')}),
+    ('TrueHD', {'Format': re.compile(r'MLP ?FBA')}),
+    ('TrueHD', {'Format_Commercial_IfAny': re.compile(r'TrueHD')}),
+    ('Atmos', {'Format_Commercial_IfAny': re.compile(r'Atmos')}),
+    ('DTS', {'Format': re.compile(r'^DTS$'), 'Format_Commercial_IfAny': None}),
+    ('DTS-ES', {'Format_Commercial_IfAny': re.compile(r'DTS-ES')}),
+    ('DTS-HD', {'Format_Commercial_IfAny': re.compile(r'DTS-HD(?! Master Audio)')}),
+    ('DTS-HD MA', {'Format_Commercial_IfAny': re.compile(r'DTS-HD Master Audio'), 'Format_AdditionalFeatures': re.compile(r'XLL$')}),
+    ('DTS:X', {'Format_AdditionalFeatures': re.compile(r'XLL X')}),
+    ('FLAC', {'Format': re.compile(r'FLAC')}),
+    ('MP3', {'Format': re.compile(r'MPEG Audio')}),
+    ('Vorbis', {'Format': re.compile(r'\bVorbis\b')}),
+    ('Vorbis', {'Format': re.compile(r'\bOgg\b')}),
 )
 
 @functools.lru_cache(maxsize=None)
@@ -262,20 +264,25 @@ def audio_format(path):
     else:
         def is_match(regexs, audio_track):
             for key,regex in regexs.items():
-                value = audio_track.get(key)
-                if value:
-                    if regex.search(value):
-                        return True
-            return False
+                if regex is None:
+                    if key in audio_track:
+                        # `key` must not exists but it does
+                        return False
+                else:
+                    # regex is not None
+                    if key not in audio_track:
+                        # `key` doesn't exist
+                        return False
+                    elif not regex.search(audio_track.get(key, '')):
+                        # `key` has value that doesn't match `regex`
+                        return False
+            # All `regexs` match and no forbidden keys exist in `audio_track`
+            return True
 
         _log.debug('Audio track for %r: %r', path, audio_track)
         parts = []
-        for fmt,regexs,coformats in _audio_format_translations:
-            # _log.debug('%r [%r]: %r', fmt, coformats, regexs)
+        for fmt,regexs in _audio_format_translations:
             if fmt not in parts and is_match(regexs, audio_track):
-                # Some formats may co-exist (e.g. "TrueHD" and "Atmos")
-                if not coformats or any(f not in coformats for f in parts):
-                    parts.clear()
                 parts.append(fmt)
 
         return ' '.join(parts) or None
