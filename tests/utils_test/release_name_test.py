@@ -723,12 +723,12 @@ def test_update_attributes(ReleaseInfo_mock, ImdbApi_mock, guessed_type, imdb_ty
 @pytest.mark.parametrize(
     argnames='type, results, exp_year_required',
     argvalues=(
-        (ReleaseType.movie, (Mock(title='The Foo'), Mock(title='The Bar')), True),
-        (ReleaseType.movie, (Mock(title='The Foo'), Mock(title='The Föö')), True),
-        (ReleaseType.season, (Mock(title='The Foo'), Mock(title='The Bar')), None),
-        (ReleaseType.season, (Mock(title='The Foo'), Mock(title='The Föö')), True),
-        (ReleaseType.episode, (Mock(title='The Foo'), Mock(title='The Bar')), None),
-        (ReleaseType.episode, (Mock(title='The Foo'), Mock(title='The Föö')), True),
+        (ReleaseType.movie, (Mock(title='The Foo'), Mock(title='the bar')), True),
+        (ReleaseType.movie, (Mock(title='The Foo'), Mock(title='the föö')), True),
+        (ReleaseType.season, (Mock(title='The Foo'), Mock(title='the bar')), None),
+        (ReleaseType.season, (Mock(title='The Foo'), Mock(title='the föö')), True),
+        (ReleaseType.episode, (Mock(title='The Foo'), Mock(title='the bar')), None),
+        (ReleaseType.episode, (Mock(title='The Foo'), Mock(title='the föö')), True),
     ),
     ids=lambda v: str(v),
 )

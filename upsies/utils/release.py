@@ -456,8 +456,13 @@ class ReleaseName(collections.abc.Mapping):
             # Find out if there are multiple series with this title
             query = webdbs.Query(title=self.title, type=ReleaseType.series)
             results = await self._imdb.search(query)
+
+            def normalize_title(title):
+                return unidecode.unidecode(title.casefold())
+
+            title_normalized = normalize_title(self.title)
             same_titles = tuple(f'{r.title} ({r.year})' for r in results
-                                if unidecode.unidecode(r.title) == unidecode.unidecode(self.title))
+                                if normalize_title(r.title) == title_normalized)
             if len(same_titles) >= 2:
                 _log.debug('Found multiple search results for %r: %r', query, same_titles)
                 self.year_required = True
