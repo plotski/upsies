@@ -103,12 +103,25 @@ async def test_fetch_text_sets_read_only_while_fetching(finish_on_success):
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
 @pytest.mark.asyncio
-async def test_fetch_text_catches_RequestError(finish_on_success):
+async def test_fetch_text_catches_fatal_error(finish_on_success):
     fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))
     job = TextFieldJob(name='foo', label='Foo')
     assert not job.is_finished
-    await job.fetch_text(fetcher, default_text='default text', finish_on_success=finish_on_success)
+    await job.fetch_text(fetcher, default_text='default text', finish_on_success=finish_on_success, error_is_fatal=True)
     assert job.text == 'default text'
+    assert job.errors == (errors.RequestError('connection failed'),)
+    assert job.warnings == ()
+    assert job.is_finished is True
+
+@pytest.mark.parametrize('finish_on_success', (True, False))
+@pytest.mark.asyncio
+async def test_fetch_text_catches_nonfatal_error(finish_on_success):
+    fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))
+    job = TextFieldJob(name='foo', label='Foo')
+    assert not job.is_finished
+    await job.fetch_text(fetcher, default_text='default text', finish_on_success=finish_on_success, error_is_fatal=False)
+    assert job.text == 'default text'
+    assert job.errors == ()
     assert job.warnings == (errors.RequestError('connection failed'),)
     assert job.is_finished is False
 
