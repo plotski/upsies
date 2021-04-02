@@ -551,21 +551,22 @@ class BbTrackerJobs(TrackerJobsBase):
         elif self.is_episode_release:
             title.append(str(self.release_name.episodes))
 
-        # "[Source / VideoCodec / AudioCodec / Container / Resolution( / w. Subtitles)]"
+        # "[Source / VideoCodec / AudioCodec / Container / Resolution( / ...)]"
         info = [
+            self.release_info_remux,
             self.release_name.source,
             self.release_name.video_format,
+            self.release_info_10bit,
             self.release_name.audio_format,
             fs.file_extension(video.first_video(self.content_path)).upper(),
+            self.release_info_proper,
             self.release_name.resolution,
-            self.get_subtitles_tag(),
+            self.release_info_hdr10,
+            self.release_info_dual_audio,
+            self.release_info_commentary,
+            self.release_info_subtitles,
         ]
-
-        if 'Proper' in self.release_name.edition:
-            info.append('Proper')
-
         info_string = ' / '.join(i for i in info if i)
-
         return ' '.join(title) + f' [{info_string}]'
 
     async def get_poster_url(self, poster_job, poster_url_getter):
@@ -647,21 +648,11 @@ class BbTrackerJobs(TrackerJobsBase):
 
         return tags_string
 
-    def get_subtitles_tag(self):
-        subtitle_tracks = video.tracks(self.content_path).get('Text', ())
-        if subtitle_tracks:
-            subtitle_languages = [track.get('Language') for track in subtitle_tracks]
-            if 'en' in subtitle_languages:
-                return 'w. Subtitles'
-
     def get_movie_release_info(self):
-        info = []
-
-        if 'Remux' in self.release_name.source:
-            info.append('REMUX')
-
-        if 'Proper' in self.release_name.edition:
-            info.append('Proper')
+        info = [
+            self.release_info_remux,
+            self.release_info_proper,
+        ]
 
         for name in fs.file_and_parent(self.content_path):
             match = re.search(r'[ \.](\d+)th[ \.]Anniversary[ \.]', name)
@@ -684,18 +675,13 @@ class BbTrackerJobs(TrackerJobsBase):
             if ed in self.release_name.edition:
                 info.append(ed_)
 
-        if video.has_dual_audio(self.content_path):
-            info.append('Dual Audio')
-
-        if video.has_hdr10(self.content_path):
-            info.append('HDR10')
-        elif video.bit_depth(self.content_path) == '10':
-            info.append('10-bit')
-
-        info.append(self.get_subtitles_tag())
-
-        if self.release_name.has_commentary:
-            info.append('w. Commentary')
+        info.extend((
+            self.release_info_dual_audio,
+            self.release_info_hdr10,
+            self.release_info_10bit,
+            self.release_info_commentary,
+            self.release_info_subtitles,
+        ))
 
         return ' / '.join(i for i in info if i)
 
