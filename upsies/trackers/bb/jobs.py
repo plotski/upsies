@@ -409,7 +409,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.series_title_job.add_task(
                 self.series_title_job.fetch_text(
                     coro=self.get_series_title(tvmaze_id),
-                    default_text=self.release_name.title_with_aka,
+                    default_text=self.release_name.title_with_aka_and_year,
                     finish_on_success=False,
                 )
             )
