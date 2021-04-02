@@ -408,7 +408,7 @@ class BbTrackerJobs(TrackerJobsBase):
         def handle_tvmaze_id(tvmaze_id):
             self.series_title_job.add_task(
                 self.series_title_job.fetch_text(
-                    coro=self.get_series_title(tvmaze_id),
+                    coro=self.get_series_title_and_release_info(tvmaze_id),
                     default_text=self.release_name.title_with_aka_and_year,
                     finish_on_success=False,
                 )
@@ -494,7 +494,7 @@ class BbTrackerJobs(TrackerJobsBase):
         await self.release_name.fetch_info(imdb_id)
         return self.release_name.title_with_aka
 
-    async def get_series_title(self, tvmaze_id):
+    async def get_series_title_and_release_info(self, tvmaze_id):
         imdb_id = await self.tvmaze.imdb_id(tvmaze_id)
         if imdb_id:
             await self.release_name.fetch_info(imdb_id)
