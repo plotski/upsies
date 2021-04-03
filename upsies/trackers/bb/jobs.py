@@ -2,6 +2,7 @@
 :class:`~.base.TrackerJobsBase` subclass
 """
 
+import asyncio
 import os
 import re
 
@@ -706,17 +707,17 @@ class BbTrackerJobs(TrackerJobsBase):
         info = await webdb.gather(id, 'cast', 'countries', 'directors',
                                   'creators', 'rating', 'summary', 'url',
                                   'year')
-        info_table = [
-            await self.format_description_id(webdb, info),
-            await self.format_description_rating(info),
-            await self.format_description_year(info),
-            await self.format_description_status(info),
-            await self.format_description_countries(info),
-            await self.format_description_runtime(info),
-            await self.format_description_directors(info),
-            await self.format_description_creators(info),
-            await self.format_description_cast(info),
-        ]
+        info_table = await asyncio.gather(
+            self.format_description_id(webdb, info),
+            self.format_description_rating(info),
+            self.format_description_year(info),
+            self.format_description_status(info),
+            self.format_description_countries(info),
+            self.format_description_runtime(info),
+            self.format_description_directors(info),
+            self.format_description_creators(info),
+            self.format_description_cast(info),
+        )
         info_table_string = '\n'.join(str(item) for item in info_table
                                       if item is not None)
 
