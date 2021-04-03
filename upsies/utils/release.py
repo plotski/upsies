@@ -791,6 +791,13 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     def _get_source(self):
         source = self._guess.get('source', '')
+
+        # guessit parses multiple source (e.g. ["WEB", "Blu-ray"]) if it can
+        # find them. This is an issue if an episode title contains a "source",
+        # e.g. "TC" -> "Telecine".
+        if not isinstance(source, str):
+            source = source[0]
+
         if source.lower() == 'web':
             # guessit doesn't distinguish between WEB-DL and WEBRip
             match = self._web_source_regex.search(self.release_name_params)
