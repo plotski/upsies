@@ -103,7 +103,7 @@ def test_add_jobs_calls_update_jobs_container(mocker):
     assert ui._update_jobs_container.call_args_list == [call()]
 
 
-def test_update_jobs_container_start_jobs_autostarts_enabled_jobs():
+def test_update_jobs_container_autostarts_enabled_jobs():
     jobs = (
         (Mock(autostart=False, is_enabled=False, is_started=False), False),
 

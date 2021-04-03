@@ -96,9 +96,6 @@ class UI:
         self._update_jobs_container()
 
     def _update_jobs_container(self, *_):
-        if self._app_terminated:
-            return
-
         job_containers = []
 
         # Ensure enabled jobs are started
