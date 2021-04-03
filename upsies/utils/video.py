@@ -132,6 +132,42 @@ def default_track(type, path):
     raise errors.ContentError(f'{path}: No {type.lower()} track found')
 
 
+@functools.lru_cache(maxsize=None)
+def height(path):
+    """
+    Return displayed height of video file `path` or `0`
+
+    :param str path: Path to video file or directory. :func:`first_video` is
+        applied.
+
+    :return: int
+    """
+    try:
+        video_track = default_track('video', path)
+    except errors.ContentError as e:
+        return 0
+    else:
+        return int(video_track.get('Height', 0))
+
+
+@functools.lru_cache(maxsize=None)
+def width(path):
+    """
+    Return displayed width of video file `path` or `0`
+
+    :param str path: Path to video file or directory. :func:`first_video` is
+        applied.
+
+    :return: int
+    """
+    try:
+        video_track = default_track('video', path)
+    except errors.ContentError:
+        return 0
+    else:
+        return int(video_track.get('Width', 0))
+
+
 _standard_widths = (640, 768, 1280, 1920, 3840, 7680)
 _standard_heights = (480, 576, 720, 1080, 2160, 4320)
 

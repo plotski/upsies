@@ -208,6 +208,20 @@ def test_default_track_fails_to_find_any_track(default_track_mock):
         video.default_track('video', 'foo.mkv')
 
 
+@pytest.mark.parametrize('func, key', ((video.height, 'Height'), (video.width, 'Width')))
+@patch('upsies.utils.video.default_track')
+def test_height_and_width(default_track_mock, func, key):
+    default_track_mock.return_value = {'@type': 'Video', key: '123'}
+    func.cache_clear()
+    assert func('foo.mkv') == 123
+    default_track_mock.return_value = {'@type': 'Video'}
+    func.cache_clear()
+    assert func('foo.mkv') == 0
+    default_track_mock.side_effect = errors.ContentError('bar')
+    func.cache_clear()
+    assert func('foo.mkv') == 0
+
+
 @pytest.mark.parametrize(
     argnames='width, height, exp_res',
     argvalues=(
