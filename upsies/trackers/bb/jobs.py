@@ -197,7 +197,7 @@ class BbTrackerJobs(TrackerJobsBase):
             name='movie-resolution',
             label='Resolution',
             condition=lambda: self.is_movie_release,
-            autodetect_value=self.release_name.resolution,
+            autodetect_value=self.release_info_resolution,
             autofinish=True,
             options=(
                 ('4320p', '2160p', re.compile(r'4320p')),
@@ -210,7 +210,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 ('576i', '480i', re.compile(r'576i')),
                 ('480p', '480p', re.compile(r'480p')),
                 ('480i', '480i', re.compile(r'480i')),
-                ('SD', 'SD', re.compile(r'')),
+                ('SD', 'SD', re.compile(r'SD')),
             ),
         )
 
@@ -507,6 +507,15 @@ class BbTrackerJobs(TrackerJobsBase):
     def release_info_remux(self):
         if 'Remux' in self.release_name.source:
             return 'REMUX'
+
+    @property
+    def release_info_resolution(self):
+        # Rule 3.6.1 - Encodes with a stored resolution less than 700px AND a
+        #              height less than 460px should be labelled "SD"
+        if video.width(self.content_path) < 700 and video.height(self.content_path) < 460:
+            return 'SD'
+        else:
+            return self.release_name.resolution
 
     @property
     def release_info_proper(self):
