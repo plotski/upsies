@@ -247,6 +247,18 @@ class TextFieldJob(JobBase):
         self._read_only = bool(read_only)
         self.signal.emit('dialog_updated', self)
 
+    @property
+    def exit_code(self):
+        """
+        Always exit with ``0``
+
+        Instead of exiting with a non-zero exit code, the application should
+        :meth:`warn` the user about invalid values. This is done by providing a
+        `validator`.
+        """
+        if self.is_finished:
+            return 0
+
     def initialize(self, *, name, label, text='', validator=None, obscured=False, read_only=False):
         """
         Set internal state

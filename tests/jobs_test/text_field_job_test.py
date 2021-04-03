@@ -73,6 +73,7 @@ def test_send_valid_text():
     assert validator.call_args_list == [call('baz')]
     assert job.warnings == ()
     assert job.is_finished
+    assert job.exit_code == 0
     assert job.output == ('baz',)
 
 def test_finish_with_invalid_text():
@@ -85,6 +86,7 @@ def test_finish_with_invalid_text():
     assert isinstance(job.warnings[0], ValueError)
     assert str(job.warnings[0]) == 'Nope'
     assert not job.is_finished
+    assert job.exit_code is None
     assert job.output == ()
 
 
@@ -100,6 +102,10 @@ async def test_fetch_text_sets_read_only_while_fetching(finish_on_success):
     await job.fetch_text(fetcher(job), finish_on_success=finish_on_success)
     assert not job.read_only
     assert job.is_finished is finish_on_success
+    if finish_on_success:
+        assert job.exit_code == 0
+    else:
+        assert job.exit_code is None
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
 @pytest.mark.asyncio
@@ -112,6 +118,7 @@ async def test_fetch_text_catches_fatal_error(finish_on_success):
     assert job.errors == (errors.RequestError('connection failed'),)
     assert job.warnings == ()
     assert job.is_finished is True
+    assert job.exit_code == 0
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
 @pytest.mark.asyncio
@@ -124,6 +131,7 @@ async def test_fetch_text_catches_nonfatal_error(finish_on_success):
     assert job.errors == ()
     assert job.warnings == (errors.RequestError('connection failed'),)
     assert job.is_finished is False
+    assert job.exit_code is None
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
 @pytest.mark.asyncio
@@ -133,3 +141,7 @@ async def test_fetch_text_finishes_job(finish_on_success):
     assert not job.is_finished
     await job.fetch_text(fetcher, finish_on_success=finish_on_success)
     assert job.is_finished is finish_on_success
+    if finish_on_success:
+        assert job.exit_code == 0
+    else:
+        assert job.exit_code is None
