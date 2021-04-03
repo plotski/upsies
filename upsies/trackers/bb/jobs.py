@@ -562,7 +562,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
         # "Season x"
         if self.is_season_release:
-            title.append(f'- Season {self.season}')
+            title.append(f'- Season {self.season or "UNKNOWN_SEASON"}')
 
         # "SxxEyy"
         elif self.is_episode_release:
