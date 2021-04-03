@@ -270,6 +270,10 @@ class TextFieldJob(JobBase):
             `ValueError` is raised, it is displayed as a warning instead of
             finishing the job.
         :param validator: callable or None
+        :param bool obscured: Whether :attr:`obscured` is set to `True`
+            initially
+        :param bool read_only: Whether :attr:`read_only` is set to `True`
+            initially
         """
         self._name = str(name)
         self._label = str(label)
