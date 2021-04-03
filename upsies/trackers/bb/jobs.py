@@ -56,10 +56,10 @@ class BbTrackerJobs(TrackerJobsBase):
     def season(self):
         """Season number or `None`"""
         seasons = tuple(release.Episodes.from_string(self.release_name.episodes))
-        if len(seasons) != 1:
-            raise RuntimeError(f'Unsupported number of seasons: {len(seasons)}: {seasons!r}')
-        else:
+        if len(seasons) == 1:
             return seasons[0] or None
+        elif len(seasons) > 1:
+            raise RuntimeError(f'Unsupported number of seasons: {len(seasons)}: {seasons!r}')
 
     @property
     def episode(self):
