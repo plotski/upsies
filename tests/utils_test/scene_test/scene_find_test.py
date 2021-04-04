@@ -70,6 +70,21 @@ def test_SceneQuery_from_release(release, needed_keys, exp_keywords, exp_group, 
 
 
 @pytest.mark.parametrize(
+    argnames='video_codec, exp_keyword',
+    argvalues=(
+        ('H.264', 'H264'),
+        ('H.265', 'H265'),
+        ('h.264', 'h264'),
+        ('h.265', 'h265'),
+    ),
+)
+def test_SceneQuery_from_release_normalizes_h26x(video_codec, exp_keyword, mocker):
+    mocker.patch('upsies.utils.scene.common.get_needed_keys', return_value=('video_codec',))
+    query = find.SceneQuery.from_release({'video_codec': video_codec})
+    assert query.keywords == (exp_keyword,)
+
+
+@pytest.mark.parametrize(
     argnames='keywords, exp_keywords',
     argvalues=(
         (('foo', 'bar'), ('foo', 'bar')),
