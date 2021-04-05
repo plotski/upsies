@@ -65,6 +65,10 @@ class ScreenshotError(UpsiesError):
     """Screenshot creation failed"""
 
 
+class ImageResizeError(UpsiesError):
+    """Image resizing failed"""
+
+
 class TorrentError(UpsiesError):
     """Torrent file creation failed"""
 
