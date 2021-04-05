@@ -144,7 +144,7 @@ def height(path):
     """
     try:
         video_track = default_track('video', path)
-    except errors.ContentError as e:
+    except errors.ContentError:
         return 0
     else:
         return int(video_track.get('Height', 0))
