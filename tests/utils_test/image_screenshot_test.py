@@ -53,7 +53,8 @@ def test_valid_timestamp(duration_mock, run_mock, exists_mock):
     duration_mock.return_value = 1e6
     for ts in ('12', '01:24', '1:02:03', '01:02:03', '123:02:03', 123):
         exists_mock.side_effect = (False, True)
-        image.screenshot(mock_file, ts, 'image.png')
+        screenshot_path = image.screenshot(mock_file, ts, 'image.png')
+        assert screenshot_path == 'image.png'
         exp_cmd = image._make_screenshot_cmd(mock_file, ts, 'image.png')
         assert run_mock.call_args_list == [call(exp_cmd,
                                                 ignore_errors=True,
@@ -76,7 +77,8 @@ def test_timestamp_after_video_end(duration_mock, run_mock, exists_mock):
     assert run_mock.call_args_list == []
 
     exists_mock.side_effect = (False, True)
-    image.screenshot(mock_file, 599, 'image.png')
+    screenshot_path = image.screenshot(mock_file, 599, 'image.png')
+    assert screenshot_path == 'image.png'
     exp_cmd = image._make_screenshot_cmd(mock_file, 599, 'image.png')
     assert run_mock.call_args_list == [call(exp_cmd,
                                             ignore_errors=True,
@@ -92,7 +94,8 @@ def test_existing_screenshot_file(duration_mock, run_mock, exists_mock):
     mock_file = 'path/to/foo.mkv'
     duration_mock.return_value = 1e6
     exists_mock.side_effect = (True, True)
-    image.screenshot(mock_file, '1:02:03', 'image.png')
+    screenshot_path = image.screenshot(mock_file, '1:02:03', 'image.png')
+    assert screenshot_path == 'image.png'
     assert run_mock.call_args_list == []
 
 
@@ -105,7 +108,8 @@ def test_overwrite_existing_screenshot_file(duration_mock, run_mock, exists_mock
     mock_file = 'path/to/foo.mkv'
     duration_mock.return_value = 1e6
     exists_mock.side_effect = (True, True)
-    image.screenshot(mock_file, '1:02:03', 'image.png', overwrite=True)
+    screenshot_path = image.screenshot(mock_file, '1:02:03', 'image.png', overwrite=True)
+    assert screenshot_path == 'image.png'
     exp_cmd = image._make_screenshot_cmd(mock_file, '1:02:03', 'image.png')
     assert run_mock.call_args_list == [call(exp_cmd,
                                             ignore_errors=True,
@@ -129,7 +133,8 @@ def test_screenshot_file_does_not_exist_for_some_reason(duration_mock, run_mock,
 def test_screenshot_has_display_aspect_ratio(data_dir, tmp_path):
     video_file = os.path.join(data_dir, 'video', 'aspect_ratio.mkv')
     screenshot_file = tmp_path / 'image.jpg'
-    image.screenshot(video_file, 0, screenshot_file)
+    screenshot_path = image.screenshot(video_file, 0, screenshot_file)
+    assert screenshot_path == screenshot_file
     tracks = video._tracks(screenshot_file)
     width = int(tracks['Image'][0]['Width'])
     height = int(tracks['Image'][0]['Height'])

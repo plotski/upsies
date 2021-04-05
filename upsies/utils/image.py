@@ -59,7 +59,7 @@ def screenshot(video_file, timestamp, screenshot_file, overwrite=False):
 
     if not overwrite and os.path.exists(screenshot_file):
         _log.debug('Screenshot already exists: %s', screenshot_file)
-        return
+        return screenshot_file
 
     duration = utils.video.duration(video_file)
     if duration <= utils.timestamp.parse(timestamp):
@@ -74,6 +74,8 @@ def screenshot(video_file, timestamp, screenshot_file, overwrite=False):
         raise errors.ScreenshotError(
             f'{video_file}: Failed to create screenshot at {timestamp}: {output}'
         )
+    else:
+        return screenshot_file
 
 
 def _make_resize_cmd(image_file, dimensions, resized_file):
