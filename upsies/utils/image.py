@@ -100,16 +100,19 @@ def resize(image_file, width=None, height=None):
         raise errors.ImageResizeError(f'Height must be greater than zero: {height}')
     elif width and height:
         dimensions = f'w={int(width)}:h={int(height)}'
+        extension = f'.{width}x{height}.'
     elif width:
         dimensions = f'w={int(width)}:h=-1'
+        extension = f'.{width}x-1.'
     elif height:
         dimensions = f'w=-1:h={int(height)}'
+        extension = f'.-1x{height}.'
     else:
         return image_file
 
     target_path = (
         utils.fs.strip_extension(image_file)
-        + '.resized.'
+        + extension
         + utils.fs.file_extension(image_file)
     )
     _log.debug('Resizing to %r: %r', dimensions, image_file)

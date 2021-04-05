@@ -35,11 +35,11 @@ def test_resize_with_invalid_height(mocker):
     argnames='image_file, width, height, exp_args',
     argvalues=(
         ('a.jpg', 10, 20,
-         ['-y', '-loglevel', 'level+error', '-i', 'file:a.jpg', '-vf', 'scale=w=10:h=20', 'file:a.resized.jpg']),
+         ['-y', '-loglevel', 'level+error', '-i', 'file:a.jpg', '-vf', 'scale=w=10:h=20', 'file:a.10x20.jpg']),
         ('a.jpg', 10, None,
-         ['-y', '-loglevel', 'level+error', '-i', 'file:a.jpg', '-vf', 'scale=w=10:h=-1', 'file:a.resized.jpg']),
+         ['-y', '-loglevel', 'level+error', '-i', 'file:a.jpg', '-vf', 'scale=w=10:h=-1', 'file:a.10x-1.jpg']),
         ('a.jpg', None, 20,
-         ['-y', '-loglevel', 'level+error', '-i', 'file:a.jpg', '-vf', 'scale=w=-1:h=20', 'file:a.resized.jpg']),
+         ['-y', '-loglevel', 'level+error', '-i', 'file:a.jpg', '-vf', 'scale=w=-1:h=20', 'file:a.-1x20.jpg']),
         ('a.jpg', None, None,
          []),
     ),
@@ -52,7 +52,7 @@ def test_resize_with_valid_dimensions(image_file, width, height, exp_args, mocke
     mocker.patch('os.path.exists', return_value=True)
     resized_image = image.resize(image_file, width, height)
     if exp_args:
-        assert resized_image == 'a.resized.jpg'
+        assert resized_image == f'a.{width or -1}x{height or -1}.jpg'
         exp_cmd = tuple(['ffmpeg'] + exp_args)
         assert run_mock.call_args_list == [call(exp_cmd, ignore_errors=True, join_stderr=True)]
     else:
