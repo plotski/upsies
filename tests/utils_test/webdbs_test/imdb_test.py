@@ -1,4 +1,3 @@
-import re
 from itertools import zip_longest
 from unittest.mock import Mock
 
@@ -432,23 +431,23 @@ async def test_keywords(id, exp_keywords, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames='id',
+    argnames='id, exp_poster_url',
     argvalues=(
-        'tt0080455',  # Blues Brothers (movie)
-        'tt0192802',  # Wind in the Willows (TV movie)
-        'tt0471711',  # Bender's Big Score (Video)
-        'tt0097270',  # Elephant (TV movie)
-        'tt3472226',  # Kung Fury (Short)
-        'tt6560040',  # The Forest (mini series)
-        'tt0348914',  # Deadwood (series)
-        'tt0556307',  # Deadwood - S02E04 (episode)
+        ('tt0080455', 'https://m.media-amazon.com/images/M/MV5BYTdlMDExOGUtN2I3MS00MjY5LWE1NTAtYzc3MzIxN2M3OWY1XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_.jpg'),  # Blues Brothers (movie)
+        ('tt0192802', 'https://m.media-amazon.com/images/M/MV5BOGQ3NWM5OTAtOThjZS00MzMyLTkwZjMtOWIyOTdlZjFiZGI1XkEyXkFqcGdeQXVyNzMwOTY2NTI@._V1_.jpg'),  # Wind in the Willows (TV movie)
+        ('tt0471711', 'https://m.media-amazon.com/images/M/MV5BM2U3NmRiNDItMDQwYy00Y2Q0LWJiYzItNjAzNThkZjFlM2RiXkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_.jpg'),  # Bender's Big Score (Video)
+        ('tt0097270', 'https://m.media-amazon.com/images/M/MV5BMWE0ZTBiOWItY2ZkNS00MzI0LWE5Y2QtYjJmNjM1MGRkZGNmXkEyXkFqcGdeQXVyMzU0MTk1Nzc@._V1_.jpg'),  # Elephant (TV movie)
+        ('tt3472226', 'https://m.media-amazon.com/images/M/MV5BMjQwMjU2ODU5NF5BMl5BanBnXkFtZTgwNTU1NjM4NTE@._V1_.jpg'),  # Kung Fury (Short)
+        ('tt6560040', 'https://m.media-amazon.com/images/M/MV5BMzY5NThkOWItN2I1OC00MzQ2LThlYjktMGExYTk2YzM1ZGRmXkEyXkFqcGdeQXVyODEyMzI2OTE@._V1_.jpg'),  # The Forest (mini series)
+        ('tt0348914', 'https://m.media-amazon.com/images/M/MV5BNDJhMjUzMDYtNzc4MS00Nzk2LTkyMGQtN2M5NTczYTZmYmY5XkEyXkFqcGdeQXVyMzU3MTc5OTE@._V1_.jpg'),  # Deadwood (series)
+        ('tt0556307', None),  # Deadwood - S02E04 (episode)
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_poster_url(id, api, store_response):
+async def test_poster_url(id, exp_poster_url, api, store_response):
     poster_url = await api.poster_url(id)
-    assert re.search(r'^https?://m\.media-amazon\.com/images/M/[a-zA-Z0-9\._,@]+\.jpg$', poster_url)
+    assert poster_url == exp_poster_url
 
 
 @pytest.mark.parametrize(

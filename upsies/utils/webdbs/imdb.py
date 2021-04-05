@@ -125,11 +125,18 @@ class ImdbApi(WebDbApiBase):
         soup = await self._get_soup(f'title/{id}')
         poster_tag = soup.find(class_='poster')
         if poster_tag:
-            img_tag = poster_tag.find('img')
-            if img_tag:
-                url = img_tag.get('src')
-                if url:
-                    return url
+            link_tag = poster_tag.find('a')
+            if link_tag and link_tag.get('href'):
+                soup = await self._get_soup(link_tag['href'])
+                img_tags = [
+                    tag
+                    for tag in soup.find_all('img', class_=re.compile(r'^MediaViewerImagestyles__PortraitImage'))
+                    if 'peek' not in tag['class']
+                ]
+                if img_tags:
+                    url = img_tags[0].get('src')
+                    if url:
+                        return url
 
     rating_min = 0.0
     rating_max = 10.0
