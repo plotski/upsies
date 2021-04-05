@@ -19,18 +19,6 @@ _log = logging.getLogger(__name__)
 
 
 class BbTrackerJobs(TrackerJobsBase):
-    # Web DBs
-
-    @cached_property
-    def imdb(self):
-        """:class:`~.webdbs.imdb.ImdbApi` instance"""
-        return webdbs.webdb('imdb')
-
-    @cached_property
-    def tvmaze(self):
-        """:class:`~.webdbs.imdb.TvmazeApi` instance"""
-        return webdbs.webdb('tvmaze')
-
     @cached_property
     def release_name(self):
         """:class:`~.release.ReleaseName` instance"""
@@ -76,6 +64,59 @@ class BbTrackerJobs(TrackerJobsBase):
         f'[url={__homepage__}]{__project_name__} {__version__}[/url]'
         '[/size][/align]'
     )
+
+    # Web DBs
+
+    @cached_property
+    def imdb(self):
+        """:class:`~.webdbs.imdb.ImdbApi` instance"""
+        return webdbs.webdb('imdb')
+
+    @cached_property
+    def tvmaze(self):
+        """:class:`~.webdbs.imdb.TvmazeApi` instance"""
+        return webdbs.webdb('tvmaze')
+
+    async def get_imdb_id(self):
+        """Return IMDb ID by any means possible, default to `None`"""
+        if self.imdb_job.is_enabled:
+            await self.imdb_job.wait()
+            if self.imdb_job.output:
+                return self.imdb_job.output[0]
+        else:
+            tvmaze_id = await self.get_tvmaze_id()
+            if tvmaze_id:
+                return await self.tvmaze.imdb_id(tvmaze_id)
+
+    async def get_tvmaze_id(self):
+        """Return TVmaze ID by any means possible, default to `None`"""
+        if self.tvmaze_job.is_enabled:
+            await self.tvmaze_job.wait()
+            if self.tvmaze_job.output:
+                return self.tvmaze_job.output[0]
+
+    async def try_webdbs(self, webdbs, method):
+        """
+        Try to run `method` on each item in `webdbs` and return the first truthy
+        return value
+
+        :params webdbs: Sequence of :class:`~.webdbs.base.WebDbApiBase`
+            instances
+        :params str method: Name of the method to call
+
+        First, an attempt is made to get the DB's ID by calling the
+        ``get_<webdb.name>_id`` method. If that fails, the next DB is tried. If
+        an ID is returned, it is passed to `method`.
+
+        :return: The first truthy return value of `method`
+        """
+        for webdb in webdbs:
+            id_getter = getattr(self, f'get_{webdb.name}_id')
+            id = await id_getter()
+            if id:
+                result = await getattr(webdb, method)(id)
+                if result:
+                    return result
 
     # Generic jobs
 
@@ -611,18 +652,18 @@ class BbTrackerJobs(TrackerJobsBase):
                     poster_job.send(real_poster_url)
 
     async def get_movie_poster_url(self):
-        await self.imdb_job.wait()
-        imdb_id = self.imdb_job.output[0]
-        poster_url = await self.imdb.poster_url(imdb_id)
-        _log.debug('Poster URL for %r: %r', imdb_id, poster_url)
-        return poster_url
+        imdb_id = await self.get_imdb_id()
+        if imdb_id:
+            poster_url = await self.imdb.poster_url(imdb_id)
+            _log.debug('Poster URL for %r: %r', imdb_id, poster_url)
+            return poster_url
 
     async def get_series_poster_url(self):
-        await self.tvmaze_job.wait()
-        tvmaze_id = self.tvmaze_job.output[0]
-        poster_url = await self.tvmaze.poster_url(tvmaze_id, season=self.season)
-        _log.debug('Poster URL for %r: %r', tvmaze_id, poster_url)
-        return poster_url
+        tvmaze_id = await self.get_tvmaze_id()
+        if tvmaze_id:
+            poster_url = await self.tvmaze.poster_url(tvmaze_id, season=self.season)
+            _log.debug('Poster URL for %r: %r', tvmaze_id, poster_url)
+            return poster_url
 
     async def get_tags(self, webdb, id):
         def normalize_tags(strings):
@@ -704,25 +745,20 @@ class BbTrackerJobs(TrackerJobsBase):
         return ' / '.join(i for i in info if i)
 
     async def get_description(self, webdb, id):
-        info = await webdb.gather(id, 'cast', 'countries', 'directors',
-                                  'creators', 'rating', 'summary', 'url',
-                                  'year')
         info_table = await asyncio.gather(
-            self.format_description_id(webdb, info),
-            self.format_description_rating(info),
-            self.format_description_year(info),
-            self.format_description_status(info),
-            self.format_description_countries(info),
-            self.format_description_runtime(info),
-            self.format_description_directors(info),
-            self.format_description_creators(info),
-            self.format_description_cast(info),
+            self.format_description_webdbs(),
+            self.format_description_year(),
+            self.format_description_status(),
+            self.format_description_countries(),
+            self.format_description_runtime(),
+            self.format_description_directors(),
+            self.format_description_creators(),
+            self.format_description_cast(),
         )
         info_table_string = '\n'.join(str(item) for item in info_table
                                       if item is not None)
-
         parts = [
-            await self.format_description_summary(info) or '',
+            await self.format_description_summary() or '',
             f'[quote]{info_table_string}[/quote]',
         ]
 
@@ -748,12 +784,14 @@ class BbTrackerJobs(TrackerJobsBase):
         parts.append(self.promotion)
         return ''.join(parts)
 
-    async def format_description_summary(self, info):
-        if 'summary' in info:
-            summary = '[quote]' + info['summary']
+    async def format_description_summary(self):
+        summary = await self.try_webdbs((self.tvmaze, self.imdb), 'summary')
+        if summary:
+            summary = '[quote]' + summary
             if self.is_episode_release and self.season and self.episode:
+                tvmaze_id = await self.get_tvmaze_id()
                 episode = await self.tvmaze.episode(
-                    id=info["id"],
+                    id=tvmaze_id,
                     season=self.season,
                     episode=self.episode,
                 )
@@ -770,50 +808,67 @@ class BbTrackerJobs(TrackerJobsBase):
             summary += '[/quote]'
             return summary
 
-    async def format_description_id(self, webdb, info):
-        return f'[b]{webdb.label}[/b]: [url={{url}}]{{id}}[/url]'.format(**info)
+    async def format_description_webdbs(self):
+        parts = []
 
-    async def format_description_rating(self, info):
-        rating_stars = ''.join((
-            '[color=#ffff00]',
-            string.star_rating(info['rating']),
-            '[/color]',
-        ))
-        return f'[b]Rating[/b]: {{rating}}/10 {rating_stars}'.format(**info)
+        async def append_line(webdb, id):
+            url = await webdb.url(id)
+            line = [f'[b]{webdb.label}[/b]: [url={url}]{id}[/url]']
+            rating = await webdb.rating(id)
+            if rating:
+                rating_stars = ''.join((
+                    '[color=#ffff00]',
+                    string.star_rating(rating, max_rating=webdb.rating_max),
+                    '[/color]',
+                ))
+                line.append(f'{rating} {rating_stars}')
+            parts.append(' | '.join(line))
 
-    async def format_description_year(self, info):
-        async def get_year_from_episode(episode):
-            episode = await self.tvmaze.episode(
-                id=info["id"],
-                season=self.season,
-                episode=1,
-            )
-            if episode.get('date'):
-                return episode['date'].split('-')[0]
+        imdb_id = await self.get_imdb_id()
+        if imdb_id:
+            await append_line(self.imdb, imdb_id)
+
+        tvmaze_id = await self.get_tvmaze_id()
+        if tvmaze_id:
+            await append_line(self.tvmaze, tvmaze_id)
+
+        return '\n'.join(parts)
+
+    async def format_description_year(self):
+        year = None
 
         if self.is_movie_release:
-            if info.get('year'):
-                return '[b]Year[/b]: {year}'.format(**info)
-        elif self.is_season_release:
-            return f'[b]Year[/b]: {await get_year_from_episode(1)}'
-        elif self.is_episode_release:
-            return f'[b]Year[/b]: {await get_year_from_episode(self.episode)}'
+            imdb_id = await self.get_imdb_id()
+            if imdb_id:
+                year = await self.imdb.year(imdb_id)
 
-    async def format_description_status(self, info):
-        if self.is_series_release:
-            status = await self.tvmaze.status(info['id'])
+        elif self.is_series_release:
+            tvmaze_id = await self.get_tvmaze_id()
+            if tvmaze_id:
+                if self.season:
+                    episode = await self.tvmaze.episode(id=tvmaze_id, season=self.season, episode=1)
+                    if episode.get('date'):
+                        year = episode['date'].split('-')[0]
+                else:
+                    year = await self.tvmaze.year(tvmaze_id)
+
+        if year:
+            return f'[b]Year[/b]: {year}'
+
+    async def format_description_status(self):
+        tvmaze_id = await self.get_tvmaze_id()
+        if tvmaze_id:
+            status = await self.tvmaze.status(tvmaze_id)
             if status:
                 return f'[b]Status[/b]: {status}'
 
-    async def format_description_countries(self, info):
-        if info.get('countries'):
-            countries = ', '.join(info['countries'])
-            if len(info['countries']) == 1:
-                return f'[b]Country[/b]: {countries}'
-            elif len(info['countries']) >= 2:
-                return f'[b]Countries[/b]: {countries}'
+    async def format_description_countries(self):
+        countries = await self.try_webdbs((self.tvmaze, self.imdb), 'countries')
+        if countries:
+            return (f'[b]Countr{"ies" if len(countries) > 1 else "y"}[/b]: '
+                    + ', '.join(countries))
 
-    async def format_description_runtime(self, info):
+    async def format_description_runtime(self):
         if self.is_movie_release or self.is_episode_release:
             runtime = video.duration(self.content_path)
         elif self.is_season_release:
@@ -830,31 +885,35 @@ class BbTrackerJobs(TrackerJobsBase):
             return None
         return f'[b]Runtime[/b]: {timestamp.pretty(runtime)}'
 
-    async def format_description_directors(self, info):
-        if info.get('directors'):
-            directors = [
+    async def format_description_directors(self):
+        directors = await self.try_webdbs((self.imdb, self.tvmaze), 'directors')
+        if directors:
+            directors_links = [
                 f'[url={director.url}]{director}[/url]' if director.url else director
-                for director in info['directors']
+                for director in directors
             ]
-            return (f'[b]Direcor{"s" if len(directors) > 1 else ""}[/b]: '
-                    f'{", ".join(directors)}')
+            return (f'[b]Director{"s" if len(directors) > 1 else ""}[/b]: '
+                    + ', '.join(directors_links))
 
-    async def format_description_creators(self, info):
-        if info.get('creators'):
-            creators = [
+    async def format_description_creators(self):
+        creators = await self.try_webdbs((self.tvmaze, self.imdb), 'creators')
+        if creators:
+            creators_links = [
                 f'[url={creator.url}]{creator}[/url]' if creator.url else creator
-                for creator in info['creators']
+                for creator in creators
             ]
             return (f'[b]Creator{"s" if len(creators) > 1 else ""}[/b]: '
-                    f'{", ".join(creators)}')
+                    + ', '.join(creators_links))
 
-    async def format_description_cast(self, info):
-        if info.get('cast'):
-            actors = [
+    async def format_description_cast(self):
+        actors = await self.try_webdbs((self.tvmaze, self.imdb), 'cast')
+        if actors:
+            actors_links = [
                 f'[url={actor.url}]{actor}[/url]' if actor.url else actor
-                for actor in info['cast']
+                for actor in actors
             ]
-            return f'[b]Cast[/b]: {", ".join(actors)}'
+            return (f'[b]Actor{"s" if len(actors) > 1 else ""}[/b]: '
+                    + ', '.join(actors_links))
 
     # Web form data
 
