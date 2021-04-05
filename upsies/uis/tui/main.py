@@ -27,6 +27,10 @@ def _main(args=None):
         print(e, file=sys.stderr)
         return 1
 
+    except errors.DependencyError as e:
+        print(e, file=sys.stderr)
+        return 1
+
     except Exception as e:
         # Unexpected exception; expected exceptions are handled by JobBase child
         # classes by calling their error() or exception() methods.
