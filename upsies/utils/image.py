@@ -20,7 +20,7 @@ def _ffmpeg_executable():
         return 'ffmpeg'
 
 
-def _make_ffmpeg_cmd(video_file, timestamp, screenshot_file):
+def _make_screenshot_cmd(video_file, timestamp, screenshot_file):
     return (
         _ffmpeg_executable(),
         '-y',
@@ -35,7 +35,7 @@ def _make_ffmpeg_cmd(video_file, timestamp, screenshot_file):
     )
 
 
-def create(video_file, timestamp, screenshot_file, overwrite=False):
+def screenshot(video_file, timestamp, screenshot_file, overwrite=False):
     """
     Create single screenshot from video file
 
@@ -69,7 +69,7 @@ def create(video_file, timestamp, screenshot_file, overwrite=False):
             + utils.timestamp.pretty(timestamp)
         )
 
-    cmd = _make_ffmpeg_cmd(video_file, timestamp, screenshot_file)
+    cmd = _make_screenshot_cmd(video_file, timestamp, screenshot_file)
     output = utils.subproc.run(cmd, ignore_errors=True, join_stderr=True)
     if not os.path.exists(screenshot_file):
         raise errors.ScreenshotError(

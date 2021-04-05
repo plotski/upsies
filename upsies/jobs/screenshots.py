@@ -6,7 +6,7 @@ import os
 import queue
 
 from .. import errors
-from ..utils import LazyModule, daemon, fs, screenshot, timestamp, video
+from ..utils import LazyModule, daemon, fs, image, timestamp, video
 from . import JobBase
 
 import logging  # isort:skip
@@ -259,7 +259,7 @@ def _screenshots_process(output_queue, input_queue,
                     fs.basename(video_file) + f'.{ts}.png',
                 )
                 try:
-                    screenshot.create(
+                    image.screenshot(
                         video_file=video_file,
                         screenshot_file=screenshot_file,
                         timestamp=ts,

@@ -77,14 +77,14 @@ def screenshots_process_patches(mocker):
         first_video=Mock(return_value='path/to/video.mp4'),
         shall_terminate=Mock(return_value=False),
         normalize_timestamps=Mock(return_value=('01:00', '01:00:00')),
-        screenshot_create=Mock(return_value=None),
+        screenshot=Mock(return_value=None),
         output_queue=Mock(),
         input_queue=Mock(),
     )
     mocker.patch('upsies.utils.video.first_video', parent.first_video)
     mocker.patch('upsies.jobs.screenshots._shall_terminate', parent.shall_terminate)
     mocker.patch('upsies.jobs.screenshots._normalize_timestamps', parent.normalize_timestamps)
-    mocker.patch('upsies.utils.screenshot.create', parent.screenshot_create)
+    mocker.patch('upsies.utils.image.screenshot', parent.screenshot)
     yield parent
 
 def test_screenshots_process_fails_to_find_first_video(tmp_path, screenshots_process_patches):
@@ -194,7 +194,7 @@ def test_screenshots_process_is_cancelled_after_first_screenshot(tmp_path, scree
         ),
         call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
         call.shall_terminate(screenshots_process_patches.input_queue),
-        call.screenshot_create(
+        call.screenshot(
             video_file='path/to/foo/bar.mkv',
             screenshot_file='path/to/destination/bar.mkv.0:10:00.png',
             timestamp='0:10:00',
@@ -207,7 +207,7 @@ def test_screenshots_process_is_cancelled_after_first_screenshot(tmp_path, scree
 def test_screenshots_process_fails_to_create_second_screenshot(tmp_path, screenshots_process_patches):
     screenshots_process_patches.first_video.return_value = 'path/to/foo/bar.mkv'
     screenshots_process_patches.normalize_timestamps.return_value = ('0:10:00', '0:20:00')
-    screenshots_process_patches.screenshot_create.side_effect = (
+    screenshots_process_patches.screenshot.side_effect = (
         'path/to/destination/bar.mkv.0:10:00.png',
         errors.ScreenshotError('No space left'),
     )
@@ -231,7 +231,7 @@ def test_screenshots_process_fails_to_create_second_screenshot(tmp_path, screens
         ),
         call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
         call.shall_terminate(screenshots_process_patches.input_queue),
-        call.screenshot_create(
+        call.screenshot(
             video_file='path/to/foo/bar.mkv',
             screenshot_file='path/to/destination/bar.mkv.0:10:00.png',
             timestamp='0:10:00',
@@ -239,7 +239,7 @@ def test_screenshots_process_fails_to_create_second_screenshot(tmp_path, screens
         ),
         call.output_queue.put((MsgType.info, ('screenshot', 'path/to/destination/bar.mkv.0:10:00.png'))),
         call.shall_terminate(screenshots_process_patches.input_queue),
-        call.screenshot_create(
+        call.screenshot(
             video_file='path/to/foo/bar.mkv',
             screenshot_file='path/to/destination/bar.mkv.0:20:00.png',
             timestamp='0:20:00',
@@ -271,7 +271,7 @@ def test_screenshots_process_succeeds(tmp_path, screenshots_process_patches):
         ),
         call.output_queue.put((MsgType.info, ('timestamps', ('0:10:00', '0:20:00')))),
         call.shall_terminate(screenshots_process_patches.input_queue),
-        call.screenshot_create(
+        call.screenshot(
             video_file='path/to/foo/bar.mkv',
             screenshot_file='path/to/destination/bar.mkv.0:10:00.png',
             timestamp='0:10:00',
@@ -279,7 +279,7 @@ def test_screenshots_process_succeeds(tmp_path, screenshots_process_patches):
         ),
         call.output_queue.put((MsgType.info, ('screenshot', 'path/to/destination/bar.mkv.0:10:00.png'))),
         call.shall_terminate(screenshots_process_patches.input_queue),
-        call.screenshot_create(
+        call.screenshot(
             video_file='path/to/foo/bar.mkv',
             screenshot_file='path/to/destination/bar.mkv.0:20:00.png',
             timestamp='0:20:00',

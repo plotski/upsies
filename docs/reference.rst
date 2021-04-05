@@ -31,7 +31,7 @@ For example, :class:`~.jobs.screenshots.ScreenshotsJob` takes a video file, the
 desired number of screenshots and a list of specific timestamps. It uses
 :mod:`.utils.timestamp` and :mod:`.utils.video` to validate the specific
 timestamps and add more until the desired number of screenshots is reached and
-then loops over :func:`.utils.screenshot.create`.
+then loops over :func:`.utils.image.screenshot`.
 
 The resulting screenshot paths are published via a
 :class:`~.utils.signal.Signal`. The UI uses that signal to display the paths of
