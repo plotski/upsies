@@ -944,6 +944,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 'image': self.movie_poster_job.output[0],
             }
             post_data.update(self.post_data_screenshot_urls)
+            _log.debug('Is scene release: %r', self.scene_check_job.is_scene_release)
             if self.scene_check_job.is_scene_release:
                 post_data['scene'] = '1'
             return post_data
