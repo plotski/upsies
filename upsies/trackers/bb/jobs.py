@@ -840,7 +840,7 @@ class BbTrackerJobs(TrackerJobsBase):
                     string.star_rating(rating, max_rating=webdb.rating_max),
                     '[/color]',
                 ))
-                line.append(f'{rating} {rating_stars}')
+                line.append(f'{rating}/{int(webdb.rating_max)} {rating_stars}')
             parts.append(' | '.join(line))
 
         imdb_id = await self.get_imdb_id()
