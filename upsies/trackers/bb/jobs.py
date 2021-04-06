@@ -800,24 +800,32 @@ class BbTrackerJobs(TrackerJobsBase):
         if summary:
             summary = '[quote]' + summary
             if self.is_episode_release and self.season and self.episode:
-                tvmaze_id = await self.get_tvmaze_id()
+                ep_summary = await self.format_description_episode_summary()
+                if ep_summary:
+                    summary += f'\n\n{ep_summary}'
+            summary += '[/quote]'
+            return summary
+
+    async def format_description_episode_summary(self):
+        tvmaze_id = await self.get_tvmaze_id()
+        if tvmaze_id:
+            try:
                 episode = await self.tvmaze.episode(
                     id=tvmaze_id,
                     season=self.season,
                     episode=self.episode,
                 )
-                _log.debug(episode)
-                summary += ''.join((
-                    '\n\n'
+            except errors.RequestError as e:
+                pass
+            else:
+                summary = (
                     f'[url={episode["url"]}]{episode["title"]}[/url]',
                     ' - ',
                     f'Season {episode["season"]}, Episode {episode["episode"]}',
-                    ' - ',
-                    f'[size=2]{episode["date"]}[/size]\n\n',
-                    f'[spoiler]\n{episode["summary"]}[/spoiler]\n',
-                ))
-            summary += '[/quote]'
-            return summary
+                    f' - [size=2]{episode["date"]}[/size]' if episode.get('date') else '',
+                    f'\n\n[spoiler]\n{episode["summary"]}[/spoiler]' if episode.get('summary') else '',
+                )
+                return ''.join(summary)
 
     async def format_description_webdbs(self):
         parts = []
