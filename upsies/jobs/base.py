@@ -494,7 +494,7 @@ class JobBase(abc.ABC):
     def cache_directory(self):
         """Path to existing directory that stores cache files"""
         if not os.path.exists(self._cache_directory):
-            os.mkdir(self._cache_directory)
+            os.makedirs(self._cache_directory)
         return self._cache_directory
 
     _max_filename_len = 255
