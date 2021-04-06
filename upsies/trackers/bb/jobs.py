@@ -98,11 +98,11 @@ class BbTrackerJobs(TrackerJobsBase):
 
         :params webdbs: Sequence of :class:`~.webdbs.base.WebDbApiBase`
             instances
-        :params str method: Name of the method to call
+        :params str method: Name of a method of any item in `webdbs`
 
-        First, an attempt is made to get the DB's ID by calling the
-        ``get_<webdb.name>_id`` method. If that fails, the next DB is tried. If
-        an ID is returned, it is passed to `method`.
+        Before calling `method`, an attempt is made to get the DB's ID by
+        calling the ``get_<webdb.name>_id`` method. If that fails, the next DB
+        is tried. If an ID is returned, it is passed to `method`.
 
         :return: The first truthy return value of `method`
         """
