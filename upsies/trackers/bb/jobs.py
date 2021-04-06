@@ -44,20 +44,16 @@ class BbTrackerJobs(TrackerJobsBase):
     @property
     def season(self):
         """Season number or `None`"""
-        seasons = tuple(release.Episodes.from_string(self.release_name.episodes))
-        if len(seasons) == 1:
-            return seasons[0] or None
-        elif len(seasons) > 1:
-            raise RuntimeError(f'Unsupported number of seasons: {len(seasons)}: {seasons!r}')
+        match = re.search(r'S0*(\d+)', self.release_name.episodes)
+        if match:
+            return int(match.group(1))
 
     @property
     def episode(self):
         """Episode number or `None`"""
-        seasons = release.Episodes.from_string(self.release_name.episodes)
-        try:
-            return seasons[self.season][0] or None
-        except (KeyError, IndexError):
-            pass
+        match = re.search(r'E0*(\d+)', self.release_name.episodes)
+        if match:
+            return int(match.group(1))
 
     promotion = (
         '[align=right][size=1]Shared with '
