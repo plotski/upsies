@@ -168,6 +168,18 @@ class BbTrackerJobs(TrackerJobsBase):
 
     # Movie jobs
 
+    def condition_is_movie_release(self):
+        return self.is_movie_release
+
+    def condition_is_season_release(self):
+        return self.is_season_release
+
+    def condition_is_episode_release(self):
+        return self.is_episode_release
+
+    def condition_is_series_release(self):
+        return self.is_series_release
+
     @cached_property
     def imdb_job(self):
         """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
