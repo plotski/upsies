@@ -1017,16 +1017,15 @@ class Episodes(dict):
             else:
                 raise TypeError(f'Invalid {name}: {value!r}')
 
-        arg = {}
+        validated_args = {}
         for season, episodes in dict(*args, **kwargs).items():
             season = number('season', season)
             if not isinstance(episodes, collections.abc.Iterable):
                 raise TypeError(f'Invalid episodes: {episodes!r}')
             else:
                 episodes = tuple(number('episode', e) for e in episodes)
-            arg[season] = episodes
-
-        return super().__init__(arg)
+            validated_args[season] = episodes
+        return super().__init__(validated_args)
 
     def remove_specific_episodes(self):
         """Remove episodes from each season, leaving only complete season"""
