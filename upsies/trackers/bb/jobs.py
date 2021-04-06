@@ -110,7 +110,8 @@ class BbTrackerJobs(TrackerJobsBase):
             id_getter = getattr(self, f'get_{webdb.name}_id')
             id = await id_getter()
             if id:
-                result = await getattr(webdb, method)(id)
+                result_getter = getattr(webdb, method)
+                result = await result_getter(id)
                 if result:
                     return result
 
