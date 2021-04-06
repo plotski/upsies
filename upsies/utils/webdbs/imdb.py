@@ -114,11 +114,11 @@ class ImdbApi(WebDbApiBase):
         soup = await self._get_soup(f'title/{id}')
         subtext_tag = soup.find(class_='subtext')
         if subtext_tag:
-            subtexts = ''.join(subtext_tag.stripped_strings).lower().split('|')
-            for subtext in subtexts:
-                keywords = re.findall(r'(\w+)(?:\s*,\s*|\s*$)', subtext)
-                if len(keywords) > 1:
-                    return tuple(keywords)
+            genre_links = subtext_tag.find_all('a', href=re.compile(r'/search/title\?genres='))
+            return tuple(
+                link.string.lower().strip()
+                for link in genre_links
+            )
         return ()
 
     async def poster_url(self, id):

@@ -165,6 +165,7 @@ async def test_search_result_director(query, exp_director, api, store_response):
         (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ('action', 'adventure', 'comedy')),
         (Query('The Forest', type=ReleaseType.series, year=2017), ('crime', 'drama')),
         (Query('Deadwood', type=ReleaseType.series, year=2004), ('crime', 'drama', 'history')),
+        (Query('The Believer', type=ReleaseType.movie, year=2001), ('drama',)),
     ),
     ids=lambda value: str(value),
 )
@@ -414,6 +415,7 @@ async def test_directors(id, exp_directors, api, store_response):
     argnames=('id', 'exp_keywords'),
     argvalues=(
         ('tt0080455', ('action', 'adventure', 'comedy')),  # Blues Brothers (movie)
+        ('tt0247199', ('drama',)),  # The Believer (single keyword)
         ('tt0192802', ('animation', 'family')),  # Wind in the Willows (TV movie)
         ('tt0471711', ('animation', 'comedy', 'romance')),  # Bender's Big Score (Video)
         ('tt0097270', ('crime', 'drama')),  # Elephant (TV movie)
