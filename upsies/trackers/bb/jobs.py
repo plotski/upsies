@@ -824,7 +824,7 @@ class BbTrackerJobs(TrackerJobsBase):
                     season=self.season,
                     episode=self.episode,
                 )
-            except errors.RequestError as e:
+            except errors.RequestError:
                 pass
             else:
                 summary = (
