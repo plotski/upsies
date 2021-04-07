@@ -41,6 +41,18 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.release_type_job.choice in (release.ReleaseType.season,
                                                 release.ReleaseType.episode)
 
+    def condition_is_movie_release(self):
+        return self.is_movie_release
+
+    def condition_is_season_release(self):
+        return self.is_season_release
+
+    def condition_is_episode_release(self):
+        return self.is_episode_release
+
+    def condition_is_series_release(self):
+        return self.is_series_release
+
     @property
     def season(self):
         """Season number or `None`"""
@@ -168,23 +180,11 @@ class BbTrackerJobs(TrackerJobsBase):
 
     # Movie jobs
 
-    def condition_is_movie_release(self):
-        return self.is_movie_release
-
-    def condition_is_season_release(self):
-        return self.is_season_release
-
-    def condition_is_episode_release(self):
-        return self.is_episode_release
-
-    def condition_is_series_release(self):
-        return self.is_series_release
-
     @cached_property
     def imdb_job(self):
         """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
         return jobs.webdb.SearchWebDbJob(
-            condition=lambda: self.is_movie_release,
+            condition=self.condition_is_movie_release,
             content_path=self.content_path,
             db=self.imdb,
             **self.common_job_args,
@@ -247,7 +247,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.make_choices_job(
             name='movie-resolution',
             label='Resolution',
-            condition=lambda: self.is_movie_release,
+            condition=self.condition_is_movie_release,
             autodetect_value=self.release_info_resolution,
             autofinish=True,
             options=(
@@ -270,7 +270,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.make_choices_job(
             name='movie-source',
             label='Source',
-            condition=lambda: self.is_movie_release,
+            condition=self.condition_is_movie_release,
             autodetect_value=self.release_name.source,
             autofinish=True,
             options=(
@@ -302,7 +302,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.make_choices_job(
             name='movie-audio-codec',
             label='Audio Codec',
-            condition=lambda: self.is_movie_release,
+            condition=self.condition_is_movie_release,
             autodetect_value=self.release_info_audio_format,
             autofinish=True,
             options=(
@@ -325,7 +325,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.make_choices_job(
             name='movie-video-codec',
             label='Video Codec',
-            condition=lambda: self.is_movie_release,
+            condition=self.condition_is_movie_release,
             autodetect_value=self.release_name.video_format,
             autofinish=True,
             options=(
@@ -346,7 +346,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.make_choices_job(
             name='movie-container',
             label='Container',
-            condition=lambda: self.is_movie_release,
+            condition=self.condition_is_movie_release,
             autodetect_value=fs.file_extension(video.first_video(self.content_path)),
             autofinish=True,
             options=(
@@ -365,7 +365,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='movie-release-info',
             label='Release Info',
-            condition=lambda: self.is_movie_release,
+            condition=self.condition_is_movie_release,
             text=self.get_movie_release_info(),
             **self.common_job_args,
         )
@@ -440,7 +440,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def tvmaze_job(self):
         """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
         return jobs.webdb.SearchWebDbJob(
-            condition=lambda: self.is_series_release,
+            condition=self.condition_is_series_release,
             content_path=self.content_path,
             db=self.tvmaze,
             **self.common_job_args,
@@ -470,7 +470,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='series-title',
             label='Title',
-            condition=lambda: self.is_series_release,
+            condition=self.condition_is_series_release,
             validator=validator,
             **self.common_job_args,
         )
@@ -484,7 +484,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.custom.CustomJob(
             name='series-poster',
             label='Poster',
-            condition=lambda: self.is_series_release,
+            condition=self.condition_is_series_release,
             worker=get_poster,
             **self.common_job_args,
         )
@@ -509,7 +509,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='series-tags',
             label='Tags',
-            condition=lambda: self.is_series_release,
+            condition=self.condition_is_series_release,
             validator=validator,
             **self.common_job_args,
         )
@@ -534,7 +534,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='series-description',
             label='Description',
-            condition=lambda: self.is_series_release,
+            condition=self.condition_is_series_release,
             validator=validator,
             **self.common_job_args,
         )
