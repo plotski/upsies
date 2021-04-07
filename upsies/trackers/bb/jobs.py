@@ -797,9 +797,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
             # Mediainfo
             await self.mediainfo_job.wait()
-            parts.append(
-                f'[mediainfo]{self.mediainfo_job.output[0]}[/mediainfo]\n'
-            )
+            parts.append(f'[mediainfo]{self.mediainfo_job.output[0]}[/mediainfo]\n')
 
         parts.append(self.promotion)
         return ''.join(parts)
