@@ -192,55 +192,55 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_title_job(self):
-        def validator(text):
-            text = text.strip()
-            if not text:
-                raise ValueError(f'Invalid title: {text}')
-
-        def handle_imdb_id(imdb_id):
-            self.movie_title_job.add_task(
-                self.movie_title_job.fetch_text(
-                    coro=self.get_movie_title(imdb_id),
-                    default_text=self.release_name.title_with_aka,
-                    finish_on_success=False,
-                )
-            )
-
-        self.imdb_job.signal.register('output', handle_imdb_id)
-
+        self.imdb_job.signal.register('output', self.movie_title_imdb_id_handler)
         return jobs.dialog.TextFieldJob(
             name='movie-title',
             label='Title',
-            condition=lambda: self.is_movie_release,
-            validator=validator,
+            condition=self.condition_is_movie_release,
+            validator=self.movie_title_validator,
             **self.common_job_args,
         )
+
+    def movie_title_validator(self, text):
+        text = text.strip()
+        if not text:
+            raise ValueError(f'Invalid title: {text}')
+
+    def movie_title_imdb_id_handler(self, imdb_id):
+        default_text = self.release_name.title_with_aka
+        coro = self.get_movie_title(imdb_id)
+        task = self.movie_title_job.fetch_text(
+            coro=coro,
+            default_text=default_text,
+            finish_on_success=False,
+        )
+        self.movie_title_job.add_task(task)
 
     @cached_property
     def movie_year_job(self):
-        def validator(text):
-            # Raises ValueError if not a valid year
-            self.release_name.year = text
-
-        def handle_imdb_id(imdb_id):
-            self.movie_year_job.add_task(
-                self.movie_year_job.fetch_text(
-                    coro=self.imdb.year(imdb_id),
-                    default_text=self.release_name.year,
-                    finish_on_success=True,
-                )
-            )
-
-        self.imdb_job.signal.register('output', handle_imdb_id)
-
+        self.imdb_job.signal.register('output', self.movie_year_imdb_id_handler)
         return jobs.dialog.TextFieldJob(
             name='movie-year',
             label='Year',
-            condition=lambda: self.is_movie_release,
+            condition=self.condition_is_movie_release,
             text=self.release_name.year,
-            validator=validator,
+            validator=self.movie_year_validator,
             **self.common_job_args,
         )
+
+    def movie_year_validator(self, text):
+        # Raises ValueError if not a valid year
+        self.release_name.year = text
+
+    def movie_year_imdb_id_handler(self, imdb_id):
+        default_text = self.release_name.year
+        coro = self.imdb.year(imdb_id)
+        task = self.movie_year_job.fetch_text(
+            coro=coro,
+            default_text=default_text,
+            finish_on_success=True,
+        )
+        self.movie_year_job.add_task(task)
 
     @cached_property
     def movie_resolution_job(self):
@@ -373,66 +373,64 @@ class BbTrackerJobs(TrackerJobsBase):
     @cached_property
     def movie_poster_job(self):
         """Re-upload poster from IMDb to :attr:`~.TrackerJobsBase.image_host`"""
-        async def get_poster(poster_job):
-            return await self.get_poster_url(poster_job, self.get_movie_poster_url)
-
         return jobs.custom.CustomJob(
             name='movie-poster',
             label='Poster',
-            condition=lambda: self.is_movie_release,
-            worker=get_poster,
+            condition=self.condition_is_movie_release,
+            worker=self.movie_get_poster_url,
             **self.common_job_args,
         )
+
+    async def movie_get_poster_url(self, poster_job):
+        return await self.get_poster_url(poster_job, self.get_movie_poster_url)
 
     @cached_property
     def movie_tags_job(self):
-        def validator(text):
-            text = text.strip()
-            if not text:
-                raise ValueError(f'Invalid tags: {text}')
-
-        def handle_imdb_id(imdb_id):
-            self.movie_tags_job.add_task(
-                self.movie_tags_job.fetch_text(
-                    coro=self.get_tags(self.imdb, imdb_id),
-                    finish_on_success=True,
-                )
-            )
-
-        self.imdb_job.signal.register('output', handle_imdb_id)
-
+        self.imdb_job.signal.register('output', self.movie_tags_imdb_id_handler)
         return jobs.dialog.TextFieldJob(
             name='movie-tags',
             label='Tags',
-            condition=lambda: self.is_movie_release,
-            validator=validator,
+            condition=self.condition_is_movie_release,
+            validator=self.movie_tags_validator,
             **self.common_job_args,
         )
+
+    def movie_tags_validator(self, text):
+        text = text.strip()
+        if not text:
+            raise ValueError(f'Invalid tags: {text}')
+
+    def movie_tags_imdb_id_handler(self, imdb_id):
+        coro = self.get_tags(self.imdb, imdb_id)
+        task = self.movie_tags_job.fetch_text(
+            coro=coro,
+            finish_on_success=True,
+        )
+        self.movie_tags_job.add_task(task)
 
     @cached_property
     def movie_description_job(self):
-        def validator(text):
-            text = text.strip()
-            if not text:
-                raise ValueError(f'Invalid description: {text}')
-
-        def handle_imdb_id(imdb_id):
-            self.movie_description_job.add_task(
-                self.movie_description_job.fetch_text(
-                    coro=self.get_description(self.imdb, imdb_id),
-                    finish_on_success=True,
-                )
-            )
-
-        self.imdb_job.signal.register('output', handle_imdb_id)
-
+        self.imdb_job.signal.register('output', self.movie_description_imdb_id_handler)
         return jobs.dialog.TextFieldJob(
             name='movie-description',
             label='Description',
-            condition=lambda: self.is_movie_release,
-            validator=validator,
+            condition=self.condition_is_movie_release,
+            validator=self.movie_description_validator,
             **self.common_job_args,
         )
+
+    def movie_description_validator(self, text):
+        text = text.strip()
+        if not text:
+            raise ValueError(f'Invalid description: {text}')
+
+    def movie_description_imdb_id_handler(self, imdb_id):
+        coro = self.get_description(self.imdb, imdb_id)
+        task = self.movie_description_job.fetch_text(
+            coro=coro,
+            finish_on_success=True,
+        )
+        self.movie_description_job.add_task(task)
 
     # Series jobs
 
