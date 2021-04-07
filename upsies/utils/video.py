@@ -223,7 +223,7 @@ def bit_depth(path):
 
 
 @functools.lru_cache(maxsize=None)
-def has_hdr10(path):
+def is_hdr10(path):
     """
     Return `True` if `path` is HDR10 video, `False` otherwise, `None` if it
     can't be determined

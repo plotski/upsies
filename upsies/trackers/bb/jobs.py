@@ -573,7 +573,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def release_info_hdr10(self):
-        if video.has_hdr10(self.content_path):
+        if video.is_hdr10(self.content_path):
             return 'HDR10'
 
     @property
