@@ -45,7 +45,7 @@ def bb_tracker_jobs(imghost, tmp_path, mocker):
     return bb_tracker_jobs
 
 
-def test_release_name_property(bb_tracker_jobs, mocker):
+def test_release_name(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'content_path',
                         PropertyMock(return_value='path/to/content'))
     ReleaseName_mock = mocker.patch('upsies.utils.release.ReleaseName')
@@ -55,7 +55,7 @@ def test_release_name_property(bb_tracker_jobs, mocker):
     assert ReleaseName_mock.call_args_list == [call('path/to/content')]
 
 
-def test_is_movie_release_property(bb_tracker_jobs, mocker):
+def test_is_movie_release(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
                         PropertyMock(return_value=Mock(choice=utils.types.ReleaseType.movie)))
     assert bb_tracker_jobs.is_movie_release is True
@@ -64,7 +64,7 @@ def test_is_movie_release_property(bb_tracker_jobs, mocker):
                             PropertyMock(return_value=Mock(choice=value)))
         assert bb_tracker_jobs.is_movie_release is False
 
-def test_is_season_release_property(bb_tracker_jobs, mocker):
+def test_is_season_release(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
                         PropertyMock(return_value=Mock(choice=utils.types.ReleaseType.season)))
     assert bb_tracker_jobs.is_season_release is True
@@ -73,7 +73,7 @@ def test_is_season_release_property(bb_tracker_jobs, mocker):
                             PropertyMock(return_value=Mock(choice=value)))
         assert bb_tracker_jobs.is_season_release is False
 
-def test_is_episode_release_property(bb_tracker_jobs, mocker):
+def test_is_episode_release(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
                         PropertyMock(return_value=Mock(choice=utils.types.ReleaseType.episode)))
     assert bb_tracker_jobs.is_episode_release is True
@@ -82,7 +82,7 @@ def test_is_episode_release_property(bb_tracker_jobs, mocker):
                             PropertyMock(return_value=Mock(choice=value)))
         assert bb_tracker_jobs.is_episode_release is False
 
-def test_is_series_release_property(bb_tracker_jobs, mocker):
+def test_is_series_release(bb_tracker_jobs, mocker):
     for value in (utils.types.ReleaseType.season, utils.types.ReleaseType.episode):
         mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
                             PropertyMock(return_value=Mock(choice=value)))
@@ -103,7 +103,7 @@ def test_is_series_release_property(bb_tracker_jobs, mocker):
         ('foo', None),
     ),
 )
-def test_season_property(episodes, exp_season, bb_tracker_jobs, mocker):
+def test_season(episodes, exp_season, bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'episodes', PropertyMock(return_value=episodes))
     assert bb_tracker_jobs.season == exp_season
 
@@ -116,12 +116,12 @@ def test_season_property(episodes, exp_season, bb_tracker_jobs, mocker):
         ('foo', None),
     ),
 )
-def test_episode_property(episodes, exp_episode, bb_tracker_jobs, mocker):
+def test_episode(episodes, exp_episode, bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'episodes', PropertyMock(return_value=episodes))
     assert bb_tracker_jobs.episode == exp_episode
 
 
-def test_promotion_property(bb_tracker_jobs, mocker):
+def test_promotion(bb_tracker_jobs, mocker):
     assert bb_tracker_jobs.promotion == ''.join((
         '[align=right][size=1]Shared with ',
         f'[url={__homepage__}]{__project_name__} {__version__}[/url]',
@@ -129,10 +129,10 @@ def test_promotion_property(bb_tracker_jobs, mocker):
     ))
 
 
-def test_imdb_property(bb_tracker_jobs, mocker):
+def test_imdb(bb_tracker_jobs, mocker):
     assert isinstance(bb_tracker_jobs.imdb, utils.webdbs.imdb.ImdbApi)
 
-def test_tvmaze_property(bb_tracker_jobs, mocker):
+def test_tvmaze(bb_tracker_jobs, mocker):
     assert isinstance(bb_tracker_jobs.tvmaze, utils.webdbs.tvmaze.TvmazeApi)
 
 
