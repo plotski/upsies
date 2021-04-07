@@ -442,7 +442,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.webdb.SearchWebDbJob(
             condition=lambda: self.is_series_release,
             content_path=self.content_path,
-            db=webdbs.webdb('tvmaze'),
+            db=self.tvmaze,
             **self.common_job_args,
         )
 
