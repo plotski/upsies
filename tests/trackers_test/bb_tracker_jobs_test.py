@@ -1,9 +1,9 @@
+import re
 from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
-from upsies import (__homepage__, __project_name__, __version__, errors, jobs,
-                    utils)
+from upsies import __homepage__, __project_name__, __version__, utils
 from upsies.trackers import bb
 
 
@@ -13,6 +13,7 @@ class AsyncMock(Mock):
             return _sup.__call__(*args, **kwargs)
         return coro()
 
+
 @pytest.fixture
 def imghost():
     class MockImageHost(utils.imghosts.base.ImageHostBase):
@@ -21,21 +22,27 @@ def imghost():
 
 
 @pytest.fixture
-def bb_tracker_jobs(imghost, tmp_path):
+def bb_tracker_jobs(imghost, tmp_path, mocker):
     content_path = tmp_path / 'content.mkv'
     content_path.write_bytes(b'mock matroska data')
-    return bb.BbTrackerJobs(
+
+    # Prevent black magic from coroutines to seep into our realm
+    mocker.patch('upsies.utils.release.ReleaseName._tracks')
+
+    bb_tracker_jobs = bb.BbTrackerJobs(
         content_path=str(content_path),
         tracker=Mock(),
         image_host=imghost,
         bittorrent_client=Mock(),
         torrent_destination=str(tmp_path / 'destination'),
         common_job_args={
-            'home_directory': tmp_path / 'home_directory',
+            'home_directory': str(tmp_path / 'home_directory'),
             'ignore_cache': True,
         },
         cli_args=None,
     )
+
+    return bb_tracker_jobs
 
 
 def test_release_name_property(bb_tracker_jobs, mocker):
@@ -49,35 +56,40 @@ def test_release_name_property(bb_tracker_jobs, mocker):
 
 
 def test_is_movie_release_property(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice',
-                        PropertyMock(return_value=utils.types.ReleaseType.movie))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
+                        PropertyMock(return_value=Mock(choice=utils.types.ReleaseType.movie)))
     assert bb_tracker_jobs.is_movie_release is True
     for value in (None, utils.types.ReleaseType.series, utils.types.ReleaseType.episode):
-        mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice', PropertyMock(return_value=value))
+        mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
+                            PropertyMock(return_value=Mock(choice=value)))
         assert bb_tracker_jobs.is_movie_release is False
 
 def test_is_season_release_property(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice',
-                        PropertyMock(return_value=utils.types.ReleaseType.season))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
+                        PropertyMock(return_value=Mock(choice=utils.types.ReleaseType.season)))
     assert bb_tracker_jobs.is_season_release is True
     for value in (None, utils.types.ReleaseType.movie, utils.types.ReleaseType.episode):
-        mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice', PropertyMock(return_value=value))
+        mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
+                            PropertyMock(return_value=Mock(choice=value)))
         assert bb_tracker_jobs.is_season_release is False
 
 def test_is_episode_release_property(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice',
-                        PropertyMock(return_value=utils.types.ReleaseType.episode))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
+                        PropertyMock(return_value=Mock(choice=utils.types.ReleaseType.episode)))
     assert bb_tracker_jobs.is_episode_release is True
     for value in (None, utils.types.ReleaseType.movie, utils.types.ReleaseType.season):
-        mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice', PropertyMock(return_value=value))
+        mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
+                            PropertyMock(return_value=Mock(choice=value)))
         assert bb_tracker_jobs.is_episode_release is False
 
 def test_is_series_release_property(bb_tracker_jobs, mocker):
     for value in (utils.types.ReleaseType.season, utils.types.ReleaseType.episode):
-        mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice', PropertyMock(return_value=value))
+        mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
+                            PropertyMock(return_value=Mock(choice=value)))
         assert bb_tracker_jobs.is_series_release is True
     for value in (None, utils.types.ReleaseType.movie):
-        mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice', PropertyMock(return_value=value))
+        mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
+                            PropertyMock(return_value=Mock(choice=value)))
         assert bb_tracker_jobs.is_series_release is False
 
 
@@ -158,7 +170,7 @@ async def test_get_imdb_id_from_nowhere(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', AsyncMock(return_value=None))
     mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock(return_value='123'))
     id = await bb_tracker_jobs.get_imdb_id()
-    assert id == None
+    assert id is None
     assert bb_tracker_jobs.imdb_job.wait.call_args_list == []
     assert bb_tracker_jobs.get_tvmaze_id.call_args_list == [call()]
     assert bb_tracker_jobs.tvmaze.imdb_id.call_args_list == []
@@ -180,7 +192,7 @@ async def test_get_tvmaze_id_from_nowhere(bb_tracker_jobs, mocker):
         is_enabled=False, wait=AsyncMock(), output=(),
     ))
     id = await bb_tracker_jobs.get_tvmaze_id()
-    assert id == None
+    assert id is None
     assert bb_tracker_jobs.tvmaze_job.wait.call_args_list == []
 
 
@@ -259,3 +271,391 @@ def test_condition_is_episode_release(bb_tracker_jobs, mocker):
 def test_condition_is_series_release(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value='foo'))
     assert bb_tracker_jobs.condition_is_series_release() == 'foo'
+
+
+def test_release_type_job(bb_tracker_jobs, mocker):
+    ChoiceJob_mock = mocker.patch('upsies.jobs.dialog.ChoiceJob')
+    assert bb_tracker_jobs.release_type_job is ChoiceJob_mock.return_value
+    assert ChoiceJob_mock.call_args_list == [call(
+        name='release-type',
+        label='Release Type',
+        choices=(
+            ('Movie', utils.types.ReleaseType.movie),
+            ('Season', utils.types.ReleaseType.season),
+            ('Episode', utils.types.ReleaseType.episode),
+        ),
+        focused=bb_tracker_jobs.release_name.type,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+
+def test_imdb_job(bb_tracker_jobs, mocker):
+    SearchWebDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchWebDbJob')
+    assert bb_tracker_jobs.imdb_job is SearchWebDbJob_mock.return_value
+    assert SearchWebDbJob_mock.call_args_list == [call(
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        content_path=bb_tracker_jobs.content_path,
+        db=bb_tracker_jobs.imdb,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+
+def test_movie_title_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'imdb_job')
+    TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
+    assert bb_tracker_jobs.movie_title_job is TextFieldJob_mock.return_value
+    assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
+        'output', bb_tracker_jobs.movie_title_imdb_id_handler,
+    )]
+    assert TextFieldJob_mock.call_args_list == [call(
+        name='movie-title',
+        label='Title',
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        validator=bb_tracker_jobs.movie_title_validator,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+@pytest.mark.parametrize(
+    argnames='title, exp_error',
+    argvalues=(
+        ('the title', None),
+        ('', 'Invalid title: '),
+        (' ', 'Invalid title: '),
+        ('\t', 'Invalid title: '),
+    ),
+)
+def test_movie_title_validator(title, exp_error, bb_tracker_jobs, mocker):
+    if exp_error is None:
+        bb_tracker_jobs.movie_title_validator(title)
+    else:
+        with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+            bb_tracker_jobs.movie_title_validator(title)
+
+def test_movie_title_imdb_id_handler(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'release_name',
+                        PropertyMock(title_with_aka='The Title AKA Teh Tilte'))
+    mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_movie_title', Mock())
+    mocker.patch.object(bb_tracker_jobs.movie_title_job, 'fetch_text', Mock())
+    mocker.patch.object(bb_tracker_jobs.movie_title_job, 'add_task', Mock())
+
+    bb_tracker_jobs.movie_title_imdb_id_handler('tt0123')
+
+    assert bb_tracker_jobs.get_movie_title.call_args_list == [call('tt0123')]
+    assert bb_tracker_jobs.movie_title_job.fetch_text.call_args_list == [call(
+        coro=bb_tracker_jobs.get_movie_title.return_value,
+        default_text=bb_tracker_jobs.release_name.title_with_aka,
+        finish_on_success=False,
+    )]
+    assert bb_tracker_jobs.movie_title_job.add_task.call_args_list == [call(
+        bb_tracker_jobs.movie_title_job.fetch_text.return_value
+    )]
+
+
+def test_movie_year_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'imdb_job')
+    TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
+    assert bb_tracker_jobs.movie_year_job is TextFieldJob_mock.return_value
+    assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
+        'output', bb_tracker_jobs.movie_year_imdb_id_handler,
+    )]
+    assert TextFieldJob_mock.call_args_list == [call(
+        name='movie-year',
+        label='Year',
+        text=bb_tracker_jobs.release_name.year,
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        validator=bb_tracker_jobs.movie_year_validator,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+def test_movie_year_validator(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'release_name')
+    bb_tracker_jobs.movie_year_validator('2015')
+    assert bb_tracker_jobs.release_name.year == '2015'
+
+def test_movie_year_imdb_id_handler(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'release_name', PropertyMock(year='2014'))
+    mocker.patch.object(bb_tracker_jobs.imdb, 'year', Mock())
+    mocker.patch.object(bb_tracker_jobs.movie_year_job, 'fetch_text', Mock())
+    mocker.patch.object(bb_tracker_jobs.movie_year_job, 'add_task', Mock())
+
+    bb_tracker_jobs.movie_year_imdb_id_handler('tt0123')
+
+    assert bb_tracker_jobs.imdb.year.call_args_list == [call('tt0123')]
+    assert bb_tracker_jobs.movie_year_job.fetch_text.call_args_list == [call(
+        coro=bb_tracker_jobs.imdb.year.return_value,
+        default_text=bb_tracker_jobs.release_name.year,
+        finish_on_success=True,
+    )]
+    assert bb_tracker_jobs.movie_year_job.add_task.call_args_list == [call(
+        bb_tracker_jobs.movie_year_job.fetch_text.return_value
+    )]
+
+
+def test_movie_resolution_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'make_choices_job')
+    assert bb_tracker_jobs.movie_resolution_job is bb_tracker_jobs.make_choices_job.return_value
+    assert bb_tracker_jobs.make_choices_job.call_args_list == [call(
+        name='movie-resolution',
+        label='Resolution',
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        autodetect_value=bb_tracker_jobs.release_info_resolution,
+        autofinish=True,
+        options=(
+            ('4320p', '2160p', re.compile(r'4320p')),
+            ('2160p', '2160p', re.compile(r'2160p')),
+            ('1080p', '1080p', re.compile(r'1080p')),
+            ('1080i', '1080i', re.compile(r'1080i')),
+            ('720p', '720p', re.compile(r'720p')),
+            ('720i', '720i', re.compile(r'720i')),
+            ('576p', '480p', re.compile(r'576p')),
+            ('576i', '480i', re.compile(r'576i')),
+            ('480p', '480p', re.compile(r'480p')),
+            ('480i', '480i', re.compile(r'480i')),
+            ('SD', 'SD', re.compile(r'SD')),
+        ),
+
+    )]
+
+
+def test_movie_source_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'make_choices_job')
+    assert bb_tracker_jobs.movie_source_job is bb_tracker_jobs.make_choices_job.return_value
+    assert bb_tracker_jobs.make_choices_job.call_args_list == [call(
+        name='movie-source',
+        label='Source',
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        autodetect_value=bb_tracker_jobs.release_name.source,
+        autofinish=True,
+        options=(
+            ('BluRay', 'BluRay', re.compile('^BluRay')),  # BluRay or BluRay Remux
+            # ('BluRay 3D', ' ', re.compile('^ $')),
+            # ('BluRay RC', ' ', re.compile('^ $')),
+            # ('CAM', ' ', re.compile('^ $')),
+            ('DVD5', 'DVD5', re.compile('^DVD5$')),
+            ('DVD9', 'DVD9', re.compile('^DVD9$')),
+            ('DVDRip', 'DVDRip', re.compile('^DVDRip$')),
+            # ('DVDSCR', ' ', re.compile('^ $')),
+            ('HD-DVD', 'HD-DVD', re.compile('^HD-DVD$')),
+            # ('HDRip', ' ', re.compile('^ $')),
+            ('HDTV', 'HDTV', re.compile('^HDTV$')),
+            # ('PDTV', ' ', re.compile('^ $')),
+            # ('R5', ' ', re.compile('^ $')),
+            # ('SDTV', ' ', re.compile('^ $')),
+            # ('TC', ' ', re.compile('^ $')),
+            # ('TeleSync', ' ', re.compile('^ $')),
+            # ('VHSRip', ' ', re.compile('^ $')),
+            # ('VODRip', ' ', re.compile('^ $')),
+            ('WEB-DL', 'WEB-DL', re.compile('^WEB-DL$')),
+            ('WEBRip', 'WebRip', re.compile('^WEBRip$')),
+        ),
+    )]
+
+
+def test_movie_audio_codec_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'make_choices_job')
+    assert bb_tracker_jobs.movie_audio_codec_job is bb_tracker_jobs.make_choices_job.return_value
+    assert bb_tracker_jobs.make_choices_job.call_args_list == [call(
+        name='movie-audio-codec',
+        label='Audio Codec',
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        autodetect_value=bb_tracker_jobs.release_info_audio_format,
+        autofinish=True,
+        options=(
+            ('AAC', 'AAC', re.compile(r'^AAC$')),
+            ('AC-3', 'AC-3', re.compile(r'^(?:E-|)AC-3$')),   # AC-3, E-AC-3
+            ('DTS', 'DTS', re.compile(r'^DTS(?!-HD)')),       # DTS, DTS-ES
+            ('DTS-HD', 'DTS-HD', re.compile(r'^DTS-HD\b')),   # DTS-HD, DTS-HD MA
+            ('DTS:X', 'DTS:X', re.compile(r'^DTS:X$')),
+            ('Dolby Atmos', 'Atmos', re.compile(r'Atmos')),
+            ('FLAC', 'FLAC', re.compile(r'^FLAC$')),
+            ('MP3', 'MP3', re.compile(r'^MP3$')),
+            # ('PCM', 'PCM', re.compile(r'^$')),
+            ('TrueHD', 'True-HD', re.compile(r'TrueHD')),
+            ('Vorbis', 'Vorbis', re.compile(r'^Vorbis$')),
+        ),
+    )]
+
+
+def test_movie_video_codec_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'make_choices_job')
+    assert bb_tracker_jobs.movie_video_codec_job is bb_tracker_jobs.make_choices_job.return_value
+    assert bb_tracker_jobs.make_choices_job.call_args_list == [call(
+        name='movie-video-codec',
+        label='Video Codec',
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        autodetect_value=bb_tracker_jobs.release_name.video_format,
+        autofinish=True,
+        options=(
+            ('x264', 'x264', re.compile(r'x264')),
+            ('x265', 'x265', re.compile(r'x265')),
+            ('XviD', 'XVid', re.compile(r'(?i:XviD)')),
+            # ('MPEG-2', 'MPEG-2', re.compile(r'')),
+            # ('WMV-HD', 'WMV-HD', re.compile(r'')),
+            # ('DivX', 'DivX', re.compile(r'')),
+            ('H.264', 'H.264', re.compile(r'H.264')),
+            ('H.265', 'H.265', re.compile(r'H.265')),
+            # ('VC-1', 'VC-1', re.compile(r'')),
+        ),
+    )]
+
+
+def test_movie_container_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'make_choices_job')
+    assert bb_tracker_jobs.movie_container_job is bb_tracker_jobs.make_choices_job.return_value
+    assert bb_tracker_jobs.make_choices_job.call_args_list == [call(
+        name='movie-container',
+        label='Container',
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        autodetect_value=utils.fs.file_extension(utils.video.first_video(bb_tracker_jobs.content_path)),
+        autofinish=True,
+        options=(
+            ('AVI', 'AVI', re.compile(r'(?i:AVI)')),
+            ('MKV', 'MKV', re.compile('(?i:MKV)')),
+            ('MP4', 'MP4', re.compile(r'(?i:MP4)')),
+            ('TS', 'TS', re.compile(r'(?i:TS)')),
+            ('VOB', 'VOB', re.compile(r'(?i:VOB)')),
+            ('WMV', 'WMV', re.compile(r'(?i:WMV)')),
+            ('m2ts', 'm2ts', re.compile(r'(?i:m2ts)')),
+        ),
+    )]
+
+
+def test_movie_release_info_job(bb_tracker_jobs, mocker):
+    TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
+    assert bb_tracker_jobs.movie_release_info_job is TextFieldJob_mock.return_value
+    assert TextFieldJob_mock.call_args_list == [call(
+        name='movie-release-info',
+        label='Release Info',
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        text=bb_tracker_jobs.get_movie_release_info(),
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+
+def test_movie_poster_job(bb_tracker_jobs, mocker):
+    CustomJob_mock = mocker.patch('upsies.jobs.custom.CustomJob')
+    assert bb_tracker_jobs.movie_poster_job is CustomJob_mock.return_value
+    assert CustomJob_mock.call_args_list == [call(
+        name='movie-poster',
+        label='Poster',
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        worker=bb_tracker_jobs.movie_get_poster_url,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+@pytest.mark.asyncio
+async def test_movie_get_poster_url(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_poster_url', AsyncMock(return_value='http://foo'))
+    poster_job = Mock()
+    poster_url = await bb_tracker_jobs.movie_get_poster_url(poster_job)
+    assert poster_url == 'http://foo'
+    assert bb_tracker_jobs.get_poster_url.call_args_list == [
+        call(poster_job, bb_tracker_jobs.get_movie_poster_url),
+    ]
+
+
+def test_movie_tags_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'imdb_job')
+    TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
+    assert bb_tracker_jobs.movie_tags_job is TextFieldJob_mock.return_value
+    assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
+        'output', bb_tracker_jobs.movie_tags_imdb_id_handler,
+    )]
+    assert TextFieldJob_mock.call_args_list == [call(
+        name='movie-tags',
+        label='Tags',
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        validator=bb_tracker_jobs.movie_tags_validator,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+@pytest.mark.parametrize(
+    argnames='tags, exp_error',
+    argvalues=(
+        ('foo,bar,baz', None),
+        ('', 'Invalid tags: '),
+        (' ', 'Invalid tags: '),
+        ('\t', 'Invalid tags: '),
+    ),
+)
+def test_movie_tags_validator(tags, exp_error, bb_tracker_jobs, mocker):
+    if exp_error is None:
+        bb_tracker_jobs.movie_tags_validator(tags)
+    else:
+        with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+            bb_tracker_jobs.movie_tags_validator(tags)
+
+def test_movie_tags_imdb_id_handler(bb_tracker_jobs, mocker):
+    mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_tags', Mock())
+    mocker.patch.object(bb_tracker_jobs.movie_tags_job, 'fetch_text', Mock())
+    mocker.patch.object(bb_tracker_jobs.movie_tags_job, 'add_task', Mock())
+
+    bb_tracker_jobs.movie_tags_imdb_id_handler('tt0123')
+
+    assert bb_tracker_jobs.get_tags.call_args_list == [call(bb_tracker_jobs.imdb, 'tt0123')]
+    assert bb_tracker_jobs.movie_tags_job.fetch_text.call_args_list == [call(
+        coro=bb_tracker_jobs.get_tags.return_value,
+        finish_on_success=True,
+    )]
+    assert bb_tracker_jobs.movie_tags_job.add_task.call_args_list == [call(
+        bb_tracker_jobs.movie_tags_job.fetch_text.return_value
+    )]
+
+
+def test_movie_description_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'imdb_job')
+    TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
+    assert bb_tracker_jobs.movie_description_job is TextFieldJob_mock.return_value
+    assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
+        'output', bb_tracker_jobs.movie_description_imdb_id_handler,
+    )]
+    assert TextFieldJob_mock.call_args_list == [call(
+        name='movie-description',
+        label='Description',
+        condition=bb_tracker_jobs.condition_is_movie_release,
+        validator=bb_tracker_jobs.movie_description_validator,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+@pytest.mark.parametrize(
+    argnames='description, exp_error',
+    argvalues=(
+        ('Something happens.', None),
+        ('', 'Invalid description: '),
+        (' ', 'Invalid description: '),
+        ('\t', 'Invalid description: '),
+    ),
+)
+def test_movie_description_validator(description, exp_error, bb_tracker_jobs, mocker):
+    if exp_error is None:
+        bb_tracker_jobs.movie_description_validator(description)
+    else:
+        with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+            bb_tracker_jobs.movie_description_validator(description)
+
+def test_movie_description_imdb_id_handler(bb_tracker_jobs, mocker):
+    mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_description', Mock())
+    mocker.patch.object(bb_tracker_jobs.movie_description_job, 'fetch_text', Mock())
+    mocker.patch.object(bb_tracker_jobs.movie_description_job, 'add_task', Mock())
+
+    bb_tracker_jobs.movie_description_imdb_id_handler('tt0123')
+
+    assert bb_tracker_jobs.get_description.call_args_list == [call(bb_tracker_jobs.imdb, 'tt0123')]
+    assert bb_tracker_jobs.movie_description_job.fetch_text.call_args_list == [call(
+        coro=bb_tracker_jobs.get_description.return_value,
+        finish_on_success=True,
+    )]
+    assert bb_tracker_jobs.movie_description_job.add_task.call_args_list == [call(
+        bb_tracker_jobs.movie_description_job.fetch_text.return_value
+    )]
+
+
+def test_tvmaze_job(bb_tracker_jobs, mocker):
+    SearchWebDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchWebDbJob')
+    assert bb_tracker_jobs.tvmaze_job is SearchWebDbJob_mock.return_value
+    assert SearchWebDbJob_mock.call_args_list == [call(
+        condition=bb_tracker_jobs.condition_is_series_release,
+        content_path=bb_tracker_jobs.content_path,
+        db=bb_tracker_jobs.tvmaze,
+        **bb_tracker_jobs.common_job_args,
+    )]
