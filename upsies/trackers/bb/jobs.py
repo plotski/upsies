@@ -446,96 +446,94 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def series_title_job(self):
-        def validator(text):
-            text = text.strip()
-            if not text:
-                raise ValueError(f'Invalid title: {text}')
-            unknown = ', '.join(u.lower() for u in re.findall(r'UNKNOWN_([A-Z_]+)', text))
-            if unknown:
-                raise ValueError(f'Failed to autodetect: {unknown}')
-
-        def handle_tvmaze_id(tvmaze_id):
-            self.series_title_job.add_task(
-                self.series_title_job.fetch_text(
-                    coro=self.get_series_title_and_release_info(tvmaze_id),
-                    default_text=self.release_name.title_with_aka_and_year,
-                    finish_on_success=False,
-                )
-            )
-
-        self.tvmaze_job.signal.register('output', handle_tvmaze_id)
-
+        self.tvmaze_job.signal.register('output', self.series_title_tvmaze_id_handler)
         return jobs.dialog.TextFieldJob(
             name='series-title',
             label='Title',
             condition=self.condition_is_series_release,
-            validator=validator,
+            validator=self.series_title_validator,
             **self.common_job_args,
         )
+
+    def series_title_validator(self, text):
+        text = text.strip()
+        if not text:
+            raise ValueError(f'Invalid title: {text}')
+        unknown = ', '.join(u.lower() for u in re.findall(r'UNKNOWN_([A-Z_]+)', text))
+        if unknown:
+            raise ValueError(f'Failed to autodetect: {unknown}')
+
+    def series_title_tvmaze_id_handler(self, tvmaze_id):
+        coro = self.get_series_title_and_release_info(tvmaze_id)
+        default_text = self.release_name.title_with_aka_and_year
+        task = self.series_title_job.fetch_text(
+            coro=coro,
+            default_text=default_text,
+            finish_on_success=False,
+        )
+        self.series_title_job.add_task(task)
 
     @cached_property
     def series_poster_job(self):
         """Re-upload poster from TVmaze to :attr:`~.TrackerJobsBase.image_host`"""
-        async def get_poster(poster_job):
-            return await self.get_poster_url(poster_job, self.get_series_poster_url)
-
         return jobs.custom.CustomJob(
             name='series-poster',
             label='Poster',
             condition=self.condition_is_series_release,
-            worker=get_poster,
+            worker=self.series_get_poster_url,
             **self.common_job_args,
         )
 
+    async def series_get_poster_url(self, poster_job):
+        return await self.get_poster_url(poster_job, self.get_series_poster_url)
+
     @cached_property
     def series_tags_job(self):
-        def validator(text):
-            text = text.strip()
-            if not text:
-                raise ValueError(f'Invalid tags: {text}')
-
-        def handle_tvmaze_id(tvmaze_id):
-            self.series_tags_job.add_task(
-                self.series_tags_job.fetch_text(
-                    coro=self.get_tags(self.tvmaze, tvmaze_id),
-                    finish_on_success=True,
-                )
-            )
-
-        self.tvmaze_job.signal.register('output', handle_tvmaze_id)
-
+        self.tvmaze_job.signal.register('output', self.series_tags_tvmaze_id_handler)
         return jobs.dialog.TextFieldJob(
             name='series-tags',
             label='Tags',
             condition=self.condition_is_series_release,
-            validator=validator,
+            validator=self.series_tags_validator,
             **self.common_job_args,
         )
 
+    def series_tags_validator(self, text):
+        text = text.strip()
+        if not text:
+            raise ValueError(f'Invalid tags: {text}')
+
+    def series_tags_tvmaze_id_handler(self, tvmaze_id):
+        coro = self.get_tags(self.tvmaze, tvmaze_id)
+        task = self.series_tags_job.fetch_text(
+            coro=coro,
+            finish_on_success=True,
+        )
+        self.series_tags_job.add_task(task)
+
     @cached_property
     def series_description_job(self):
-        def validator(text):
-            text = text.strip()
-            if not text:
-                raise ValueError(f'Invalid description: {text}')
-
-        def handle_tvmaze_id(tvmaze_id):
-            self.series_description_job.add_task(
-                self.series_description_job.fetch_text(
-                    coro=self.get_description(self.tvmaze, tvmaze_id),
-                    finish_on_success=True,
-                )
-            )
-
-        self.tvmaze_job.signal.register('output', handle_tvmaze_id)
-
+        self.tvmaze_job.signal.register('output', self.series_description_tvmaze_id_handler)
         return jobs.dialog.TextFieldJob(
             name='series-description',
             label='Description',
             condition=self.condition_is_series_release,
-            validator=validator,
+            validator=self.series_description_validator,
             **self.common_job_args,
         )
+
+    def series_description_validator(self, text):
+        text = text.strip()
+        if not text:
+            raise ValueError(f'Invalid description: {text}')
+
+    def series_description_tvmaze_id_handler(self, tvmaze_id):
+        coro = self.get_description(self.tvmaze, tvmaze_id)
+        task = self.series_description_job.fetch_text(
+            coro=coro,
+            finish_on_success=True,
+        )
+        self.series_description_job.add_task(task)
 
     # Release Info
 
