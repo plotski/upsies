@@ -315,7 +315,7 @@ class JobBase(abc.ABC):
     def warn(self, warning):
         """Append `warning` to :attr:`warnings` and emit ``warning`` signal"""
         if not self.is_finished:
-            self.signal.emit('warning', warning)
+            self.signal.emit('warning', str(warning))
 
     @property
     def warnings(self):

@@ -239,9 +239,7 @@ def test_handle_scene_check_result_handles_SceneErrors(make_SceneCheckJob, mocke
             errors.SceneFileSizeError('baz', original_size=123, existing_size=456),
         ),
     )
-    assert job.warnings == (
-        errors.SceneMissingInfoError('burr'),
-    )
+    assert job.warnings == (str(errors.SceneMissingInfoError('burr')),)
     assert job.errors == (
         errors.SceneError('foo'),
         errors.SceneRenamedError(original_name='bar', existing_name='Bar'),

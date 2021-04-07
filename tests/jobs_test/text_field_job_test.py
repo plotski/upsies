@@ -82,9 +82,7 @@ def test_finish_with_invalid_text():
     assert validator.call_args_list == []
     job.send('baz')
     assert validator.call_args_list == [call('baz')]
-    assert len(job.warnings) == 1
-    assert isinstance(job.warnings[0], ValueError)
-    assert str(job.warnings[0]) == 'Nope'
+    assert job.warnings == ('Nope',)
     assert not job.is_finished
     assert job.exit_code is None
     assert job.output == ()
@@ -129,7 +127,7 @@ async def test_fetch_text_catches_nonfatal_error(finish_on_success):
     await job.fetch_text(fetcher, default_text='default text', finish_on_success=finish_on_success, error_is_fatal=False)
     assert job.text == 'default text'
     assert job.errors == ()
-    assert job.warnings == (errors.RequestError('connection failed'),)
+    assert job.warnings == ('connection failed',)
     assert job.is_finished is False
     assert job.exit_code is None
 

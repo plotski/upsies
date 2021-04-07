@@ -250,7 +250,7 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_logou
         call.create_torrent_process('http://announce.url'),
         call.logout(),
     ]
-    assert job.warnings == (errors.RequestError('connection failed'),)
+    assert job.warnings == ('connection failed',)
     assert not job.is_finished
     assert job.info == ''
 
