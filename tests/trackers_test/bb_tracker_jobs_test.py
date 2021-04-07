@@ -659,3 +659,301 @@ def test_tvmaze_job(bb_tracker_jobs, mocker):
         db=bb_tracker_jobs.tvmaze,
         **bb_tracker_jobs.common_job_args,
     )]
+
+
+def test_series_title_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'tvmaze_job')
+    TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
+    assert bb_tracker_jobs.series_title_job is TextFieldJob_mock.return_value
+    assert bb_tracker_jobs.tvmaze_job.signal.register.call_args_list == [call(
+        'output', bb_tracker_jobs.series_title_tvmaze_id_handler,
+    )]
+    assert TextFieldJob_mock.call_args_list == [call(
+        name='series-title',
+        label='Title',
+        condition=bb_tracker_jobs.condition_is_series_release,
+        validator=bb_tracker_jobs.series_title_validator,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+@pytest.mark.parametrize(
+    argnames='title, exp_error',
+    argvalues=(
+        ('The Title S01 [foo / bar / baz]', None),
+        ('The Title S01 [foo / UNKNOWN_BAR / baz]', 'Failed to autodetect: bar'),
+        ('UNKNOWN_TITLE S01 [foo / bar / baz]', 'Failed to autodetect: title'),
+        ('', 'Invalid title: '),
+        (' ', 'Invalid title: '),
+        ('\t', 'Invalid title: '),
+    ),
+)
+def test_series_title_validator(title, exp_error, bb_tracker_jobs, mocker):
+    if exp_error is None:
+        bb_tracker_jobs.series_title_validator(title)
+    else:
+        with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+            bb_tracker_jobs.series_title_validator(title)
+
+def test_series_title_tvmaze_id_handler(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'release_name',
+                        PropertyMock(title_with_aka_and_year='The Title S01 [foo / bar / baz]'))
+    mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_series_title_and_release_info', Mock())
+    mocker.patch.object(bb_tracker_jobs.series_title_job, 'fetch_text', Mock())
+    mocker.patch.object(bb_tracker_jobs.series_title_job, 'add_task', Mock())
+
+    bb_tracker_jobs.series_title_tvmaze_id_handler('tt0123')
+
+    assert bb_tracker_jobs.get_series_title_and_release_info.call_args_list == [call('tt0123')]
+    assert bb_tracker_jobs.series_title_job.fetch_text.call_args_list == [call(
+        coro=bb_tracker_jobs.get_series_title_and_release_info.return_value,
+        default_text=bb_tracker_jobs.release_name.title_with_aka_and_year,
+        finish_on_success=False,
+    )]
+    assert bb_tracker_jobs.series_title_job.add_task.call_args_list == [call(
+        bb_tracker_jobs.series_title_job.fetch_text.return_value
+    )]
+
+
+def test_series_poster_job(bb_tracker_jobs, mocker):
+    CustomJob_mock = mocker.patch('upsies.jobs.custom.CustomJob')
+    assert bb_tracker_jobs.series_poster_job is CustomJob_mock.return_value
+    assert CustomJob_mock.call_args_list == [call(
+        name='series-poster',
+        label='Poster',
+        condition=bb_tracker_jobs.condition_is_series_release,
+        worker=bb_tracker_jobs.series_get_poster_url,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+@pytest.mark.asyncio
+async def test_series_get_poster_url(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_poster_url', AsyncMock(return_value='http://foo'))
+    poster_job = Mock()
+    poster_url = await bb_tracker_jobs.series_get_poster_url(poster_job)
+    assert poster_url == 'http://foo'
+    assert bb_tracker_jobs.get_poster_url.call_args_list == [
+        call(poster_job, bb_tracker_jobs.get_series_poster_url),
+    ]
+
+
+def test_series_tags_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'tvmaze_job')
+    TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
+    assert bb_tracker_jobs.series_tags_job is TextFieldJob_mock.return_value
+    assert bb_tracker_jobs.tvmaze_job.signal.register.call_args_list == [call(
+        'output', bb_tracker_jobs.series_tags_tvmaze_id_handler,
+    )]
+    assert TextFieldJob_mock.call_args_list == [call(
+        name='series-tags',
+        label='Tags',
+        condition=bb_tracker_jobs.condition_is_series_release,
+        validator=bb_tracker_jobs.series_tags_validator,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+@pytest.mark.parametrize(
+    argnames='tags, exp_error',
+    argvalues=(
+        ('foo,bar,baz', None),
+        ('', 'Invalid tags: '),
+        (' ', 'Invalid tags: '),
+        ('\t', 'Invalid tags: '),
+    ),
+)
+def test_series_tags_validator(tags, exp_error, bb_tracker_jobs, mocker):
+    if exp_error is None:
+        bb_tracker_jobs.series_tags_validator(tags)
+    else:
+        with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+            bb_tracker_jobs.series_tags_validator(tags)
+
+def test_series_tags_tvmaze_id_handler(bb_tracker_jobs, mocker):
+    mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_tags', Mock())
+    mocker.patch.object(bb_tracker_jobs.series_tags_job, 'fetch_text', Mock())
+    mocker.patch.object(bb_tracker_jobs.series_tags_job, 'add_task', Mock())
+
+    bb_tracker_jobs.series_tags_tvmaze_id_handler('tt0123')
+
+    assert bb_tracker_jobs.get_tags.call_args_list == [call(bb_tracker_jobs.tvmaze, 'tt0123')]
+    assert bb_tracker_jobs.series_tags_job.fetch_text.call_args_list == [call(
+        coro=bb_tracker_jobs.get_tags.return_value,
+        finish_on_success=True,
+    )]
+    assert bb_tracker_jobs.series_tags_job.add_task.call_args_list == [call(
+        bb_tracker_jobs.series_tags_job.fetch_text.return_value
+    )]
+
+
+def test_series_description_job(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'tvmaze_job')
+    TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
+    assert bb_tracker_jobs.series_description_job is TextFieldJob_mock.return_value
+    assert bb_tracker_jobs.tvmaze_job.signal.register.call_args_list == [call(
+        'output', bb_tracker_jobs.series_description_tvmaze_id_handler,
+    )]
+    assert TextFieldJob_mock.call_args_list == [call(
+        name='series-description',
+        label='Description',
+        condition=bb_tracker_jobs.condition_is_series_release,
+        validator=bb_tracker_jobs.series_description_validator,
+        **bb_tracker_jobs.common_job_args,
+    )]
+
+@pytest.mark.parametrize(
+    argnames='description, exp_error',
+    argvalues=(
+        ('foo,bar,baz', None),
+        ('', 'Invalid description: '),
+        (' ', 'Invalid description: '),
+        ('\t', 'Invalid description: '),
+    ),
+)
+def test_series_description_validator(description, exp_error, bb_tracker_jobs, mocker):
+    if exp_error is None:
+        bb_tracker_jobs.series_description_validator(description)
+    else:
+        with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+            bb_tracker_jobs.series_description_validator(description)
+
+def test_series_description_tvmaze_id_handler(bb_tracker_jobs, mocker):
+    mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_description', Mock())
+    mocker.patch.object(bb_tracker_jobs.series_description_job, 'fetch_text', Mock())
+    mocker.patch.object(bb_tracker_jobs.series_description_job, 'add_task', Mock())
+
+    bb_tracker_jobs.series_description_tvmaze_id_handler('tt0123')
+
+    assert bb_tracker_jobs.get_description.call_args_list == [call(bb_tracker_jobs.tvmaze, 'tt0123')]
+    assert bb_tracker_jobs.series_description_job.fetch_text.call_args_list == [call(
+        coro=bb_tracker_jobs.get_description.return_value,
+        finish_on_success=True,
+    )]
+    assert bb_tracker_jobs.series_description_job.add_task.call_args_list == [call(
+        bb_tracker_jobs.series_description_job.fetch_text.return_value
+    )]
+
+
+@pytest.mark.parametrize(
+    argnames='tracks, exp_text',
+    argvalues=(
+        ({}, None),
+        ({'foo': 'bar'}, None),
+        ({'Text': ({},)}, None),
+        ({'Text': ({'Language': 'foo'},)}, None),
+        ({'Text': ({'Language': 'en'},)}, 'w. Subtitles'),
+        ({'Text': ({'Language': 'foo'}, {'Language': 'en'}, {'Language': 'bar'})}, 'w. Subtitles'),
+    ),
+)
+def test_release_info_subtitles(tracks, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch('upsies.utils.video.tracks', return_value=tracks)
+    assert bb_tracker_jobs.release_info_subtitles == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='has_commentary, exp_text',
+    argvalues=(
+        (False, None),
+        (True, 'w. Commentary'),
+    ),
+)
+def test_release_info_commentary(has_commentary, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'has_commentary',
+                        PropertyMock(return_value=has_commentary))
+    assert bb_tracker_jobs.release_info_commentary == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='source, exp_text',
+    argvalues=(
+        ('WEB-DL', None),
+        ('BluRay', None),
+        ('BluRay Remux', 'REMUX'),
+    ),
+)
+def test_release_info_remux(source, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'source',
+                        PropertyMock(return_value=source))
+    assert bb_tracker_jobs.release_info_remux == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='width, height, resolution, exp_text',
+    argvalues=(
+        (700, 460, '123p', '123p'),
+        (699, 460, '123p', '123p'),
+        (700, 459, '123p', '123p'),
+        (699, 459, '123p', 'SD'),
+    ),
+)
+def test_release_info_resolution(width, height, resolution, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch('upsies.utils.video.width', return_value=width)
+    mocker.patch('upsies.utils.video.height', return_value=height)
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'resolution',
+                        PropertyMock(return_value=resolution))
+    assert bb_tracker_jobs.release_info_resolution == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='edition, exp_text',
+    argvalues=(
+        ((), None),
+        (('Proper',), 'PROPER'),
+        (('foo', 'Proper', 'bar'), 'PROPER'),
+    ),
+)
+def test_release_info_proper(edition, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'edition',
+                        PropertyMock(return_value=edition))
+    assert bb_tracker_jobs.release_info_proper == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='is_hdr10, exp_text',
+    argvalues=(
+        (False, None),
+        (True, 'HDR10'),
+    ),
+)
+def test_release_info_hdr10(is_hdr10, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch('upsies.utils.video.is_hdr10', return_value=is_hdr10)
+    assert bb_tracker_jobs.release_info_hdr10 == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='bit_depth, exp_text',
+    argvalues=(
+        ('5', None),
+        ('9', None),
+        ('10', '10-bit'),
+        ('11', None),
+    ),
+)
+def test_release_info_10bit(bit_depth, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch('upsies.utils.video.bit_depth', return_value=bit_depth)
+    assert bb_tracker_jobs.release_info_10bit == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='has_dual_audio, exp_text',
+    argvalues=(
+        (False, None),
+        (True, 'Dual Audio'),
+    ),
+)
+def test_release_info_dual_audio(has_dual_audio, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch('upsies.utils.video.has_dual_audio', return_value=has_dual_audio)
+    assert bb_tracker_jobs.release_info_dual_audio == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='audio_format, exp_text',
+    argvalues=(
+        ('DTS', 'DTS'),
+        ('E-AC-3', 'E-AC-3'),
+        ('E-AC-3 Atmos', 'Atmos'),
+        ('TrueHD Atmos', 'Atmos'),
+    ),
+)
+def test_release_info_audio_format(audio_format, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'audio_format',
+                        PropertyMock(return_value=audio_format))
+    assert bb_tracker_jobs.release_info_audio_format == exp_text
