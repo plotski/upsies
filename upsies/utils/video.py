@@ -133,24 +133,6 @@ def default_track(type, path):
 
 
 @functools.lru_cache(maxsize=None)
-def height(path):
-    """
-    Return displayed height of video file `path` or `0`
-
-    :param str path: Path to video file or directory. :func:`first_video` is
-        applied.
-
-    :return: int
-    """
-    try:
-        video_track = default_track('video', path)
-    except errors.ContentError:
-        return 0
-    else:
-        return int(video_track.get('Height', 0))
-
-
-@functools.lru_cache(maxsize=None)
 def width(path):
     """
     Return displayed width of video file `path` or `0`
@@ -165,11 +147,24 @@ def width(path):
     except errors.ContentError:
         return 0
     else:
-        return int(video_track.get('Width', 0))
+        return _get_display_width(video_track)
 
+@functools.lru_cache(maxsize=None)
+def height(path):
+    """
+    Return displayed height of video file `path` or `0`
 
-_standard_widths = (640, 768, 1280, 1920, 3840, 7680)
-_standard_heights = (480, 576, 720, 1080, 2160, 4320)
+    :param str path: Path to video file or directory. :func:`first_video` is
+        applied.
+
+    :return: int
+    """
+    try:
+        video_track = default_track('video', path)
+    except errors.ContentError:
+        return 0
+    else:
+        return _get_display_height(video_track)
 
 @functools.lru_cache(maxsize=None)
 def resolution(path):
@@ -185,39 +180,64 @@ def resolution(path):
         return None
 
     # Expect non-wide (1392x1080), narrow (1920x800) and weird (1918x1040)
-    height = int(video_track.get('Height', 0))
-    width = int(video_track.get('Width', 0))
-    _log.debug('Stored resolution of %s: %r x %r', path, width, height)
-    if height and width:
-        # Actual aspect ratio may differ from display aspect ratio,
-        # e.g.  960 x 534 is scaled up to 1280 x 534
-        par = float(video_track.get('PixelAspectRatio') or 1.0)
-        if par:
-            _log.debug('Pixel aspect ratio: %r', par)
-        if par > 1:
-            _log.debug('Display width: %r * %r = %r', width, par, width * par)
-            width = width * par
-        elif par < 1:
-            _log.debug('Display height: (1 / %r) * %r = %r', par, height, (1 / par) * height)
-            height = (1 / par) * height
-
-        # Find closest height and width in standard resolutions;
-        # limit to width/height + 10%
-        std_height = closest_number(height, _standard_heights, max=height * 1.1)
-        std_width = closest_number(width, _standard_widths, max=width * 1.1)
-        _log.debug('Standard resolutions: %r -> %r  x  %r -> %r', width, std_width, height, std_height)
-
-        # The resolution with the highest index wins
-        index = max(_standard_heights.index(std_height),
-                    _standard_widths.index(std_width))
-        res = _standard_heights[index]
-
+    _, std_height = _get_closest_standard_resolution(video_track)
+    if std_height:
         # "p" or "i", default to "p"
         scan = video_track.get('ScanType', 'Progressive')[0].lower()
-        _log.debug('Detected resolution: %r x %r -> %s%s', width, height, res, scan)
-        return f'{res}{scan}'
+        _log.debug('Detected resolution: %s%s', std_height, scan)
+        return f'{std_height}{scan}'
 
     return None
+
+def _get_display_width(video_track):
+    width = int(video_track.get('Width', 0))
+    _log.debug('Stored width: %r', width)
+    if width:
+        # Actual aspect ratio may differ from display aspect ratio,
+        # e.g. 960 x 534 is scaled up to 1280 x 534
+        par = float(video_track.get('PixelAspectRatio') or 1.0)
+        if par > 1.0:
+            _log.debug('Display width: %r * %r = %r', width, par, width * par)
+            width = width * par
+    return int(width)
+
+def _get_display_height(video_track):
+    height = int(video_track.get('Height', 0))
+    _log.debug('Stored height: %r', height)
+    if height:
+        # Actual aspect ratio may differ from display aspect ratio,
+        # e.g. 960 x 534 is scaled up to 1280 x 534
+        par = float(video_track.get('PixelAspectRatio') or 1.0)
+        if par < 1.0:
+            _log.debug('Display height: (1 / %r) * %r = %r', par, height, (1 / par) * height)
+            height = (1 / par) * height
+    return int(height)
+
+_standard_resolutions = (
+    (640, 480),    # 480p 4/3
+    (853, 480),    # 480p 16/9
+    (768, 576),    # 576p 4/3
+    (1014, 576),   # 576p 16/9
+    (1280, 720),   # 720p
+    (1920, 1080),  # 1080p
+    (3840, 2160),  # 2160p
+    (7680, 4320),  # 4320p
+)
+
+def _get_closest_standard_resolution(video_track):
+    actual_width = _get_display_width(video_track)
+    actual_height = _get_display_height(video_track)
+    std_width, std_height = 0, 0
+    if actual_width and actual_height:
+        distances = {}
+        for std_width, std_height in _standard_resolutions:
+            w_dist = abs(std_width - actual_width)
+            h_dist = abs(std_height - actual_height)
+            distances[h_dist] = (std_width, std_height)
+            distances[w_dist] = (std_width, std_height)
+        std_width, std_height = sorted(distances.items())[0][1]
+    _log.debug('Closest standard resolution: %r x %r -> %r x %r', actual_width, actual_height, std_width, std_height)
+    return std_width, std_height
 
 
 @functools.lru_cache(maxsize=None)

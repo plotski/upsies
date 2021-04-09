@@ -208,50 +208,84 @@ def test_default_track_fails_to_find_any_track(default_track_mock):
         video.default_track('video', 'foo.mkv')
 
 
-@pytest.mark.parametrize('func, key', ((video.height, 'Height'), (video.width, 'Width')))
+@pytest.mark.parametrize(
+    argnames='width, par, exp_width',
+    argvalues=(
+        ('1920', '1.0', 1920),
+        ('704', '1.455', 1024),
+        ('704', '0.888', 704),
+    ),
+)
 @patch('upsies.utils.video.default_track')
-def test_height_and_width(default_track_mock, func, key):
-    default_track_mock.return_value = {'@type': 'Video', key: '123'}
-    func.cache_clear()
-    assert func('foo.mkv') == 123
-    default_track_mock.return_value = {'@type': 'Video'}
-    func.cache_clear()
-    assert func('foo.mkv') == 0
-    default_track_mock.side_effect = errors.ContentError('bar')
-    func.cache_clear()
-    assert func('foo.mkv') == 0
+def test_width(default_track_mock, width, par, exp_width):
+    default_track_mock.return_value = {
+        '@type': 'Video',
+        'Width': width,
+        'PixelAspectRatio': par,
+    }
+    video.width.cache_clear()
+    assert video.width('foo.mkv') == exp_width
+    default_track_mock.side_effect = errors.ContentError('No')
+    video.width.cache_clear()
+    assert video.width('foo.mkv') == 0
 
 
 @pytest.mark.parametrize(
+    argnames='height, par, exp_height',
+    argvalues=(
+        ('1080', '1.0', 1080),
+        ('560', '1.455', 560),
+        ('480', '0.888', 540),
+    ),
+)
+@patch('upsies.utils.video.default_track')
+def test_height(default_track_mock, height, par, exp_height):
+    default_track_mock.return_value = {
+        '@type': 'Video',
+        'Height': height,
+        'PixelAspectRatio': par,
+    }
+    video.height.cache_clear()
+    assert video.height('foo.mkv') == exp_height
+    default_track_mock.side_effect = errors.ContentError('No')
+    video.height.cache_clear()
+    assert video.height('foo.mkv') == 0
+
+
+@pytest.mark.parametrize('scan_type, exp_scan_type', (('Progressive', 'p'), ('Interlaced', 'i')))
+@pytest.mark.parametrize(
     argnames='width, height, par, exp_res',
     argvalues=(
-        ('7680', '4320', None, '4320p'),
-        ('3840', '2160', None, '2160p'),
-        ('1920', '1080', None, '1080p'),
-        ('1920', '1044', None, '1080p'),
-        ('1918', '1040', None, '1080p'),
-        ('1920', '804', None, '1080p'),
-        ('1392', '1080', None, '1080p'),
-        ('1280', '534', None, '720p'),
-        ('768', '720', None, '720p'),
-        ('768', '576', None, '576p'),
-        ('640', '480', None, '480p'),
-        ('704', '572', '1.422', '576p'),  # mpv output: 704x572 => 1001x572
-        ('716', '480', '1.185', '576p'),  # mpv output: 716x480 => 848x480
-        ('704', '560', '1.455', '576p'),  # mpv output: 704x560 => 1024x560
-        ('704', '480', '0.888', '576p'),  # mpv output: 704x480 => 704x540
-        ('702', '478', '0.889', '576p'),  # mpv output: 702x478 => 702x537
+        ('7680', '4320', None, '4320'),
+        ('3840', '2160', None, '2160'),
+        ('1920', '1080', None, '1080'),
+        ('1920', '1044', None, '1080'),
+        ('1918', '1040', None, '1080'),
+        ('1920', '804', None, '1080'),
+        ('1392', '1080', None, '1080'),
+        ('1280', '534', None, '720'),
+        ('768', '720', None, '720'),
+        ('768', '576', None, '576'),
+        ('640', '480', None, '480'),
+        ('704', '572', '1.422', '576'),  # mpv output: 704x572 => 1001x572
+        ('704', '560', '1.455', '576'),  # mpv output: 704x560 => 1024x560
+        ('704', '480', '0.888', '576'),  # mpv output: 704x480 => 704x540
+        ('702', '478', '0.889', '576'),  # mpv output: 702x478 => 702x537
+        ('716', '480', '1.185', '480'),  # mpv output: 716x480 => 848x480
     ),
     ids=lambda value: str(value),
 )
 @patch('upsies.utils.video.default_track')
-def test_resolution(default_track_mock, width, height, par, exp_res):
-    default_track_mock.return_value = {'@type': 'Video',
-                                       'Width': width,
-                                       'Height': height,
-                                       'PixelAspectRatio': par}
+def test_resolution(default_track_mock, width, height, par, exp_res, scan_type, exp_scan_type):
+    default_track_mock.return_value = {
+        '@type': 'Video',
+        'Width': width,
+        'Height': height,
+        'PixelAspectRatio': par,
+        'ScanType': scan_type,
+    }
     video.resolution.cache_clear()
-    assert video.resolution('foo.mkv') == exp_res
+    assert video.resolution('foo.mkv') == f'{exp_res}{exp_scan_type}'
 
 @patch('upsies.utils.video.default_track')
 def test_resolution_is_unknown(default_track_mock):
