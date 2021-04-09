@@ -266,7 +266,6 @@ class JobBase(abc.ABC):
         if not self.is_finished:
             for task in self._tasks:
                 if not task.done():
-                    _log.debug('%s job: Cancelling %r', self.name, task)
                     task.cancel()
             self._finished_event.set()
             self.signal.emit('finished', self)
