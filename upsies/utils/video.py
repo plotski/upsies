@@ -187,16 +187,25 @@ def resolution(path):
     # Expect non-wide (1392x1080), narrow (1920x800) and weird (1918x1040)
     height = int(video_track.get('Height', 0))
     width = int(video_track.get('Width', 0))
+    _log.debug('Stored resolution of %s: %r x %r', path, width, height)
     if height and width:
         # Actual aspect ratio may differ from display aspect ratio,
         # e.g.  960 x 534 is scaled up to 1280 x 534
-        dar = float(video_track.get('PixelAspectRatio', 0))
-        if dar:
-            height = height * dar
+        par = float(video_track.get('PixelAspectRatio') or 1.0)
+        if par:
+            _log.debug('Pixel aspect ratio: %r', par)
+        if par > 1:
+            _log.debug('Display width: %r * %r = %r', width, par, width * par)
+            width = width * par
+        elif par < 1:
+            _log.debug('Display height: (1 / %r) * %r = %r', par, height, (1 / par) * height)
+            height = (1 / par) * height
 
-        # Find closest height and width in standard resolutions
-        std_height = closest_number(height, _standard_heights)
-        std_width = closest_number(width, _standard_widths)
+        # Find closest height and width in standard resolutions;
+        # limit to width/height + 10%
+        std_height = closest_number(height, _standard_heights, max=height * 1.1)
+        std_width = closest_number(width, _standard_widths, max=width * 1.1)
+        _log.debug('Standard resolutions: %r -> %r  x  %r -> %r', width, std_width, height, std_height)
 
         # The resolution with the highest index wins
         index = max(_standard_heights.index(std_height),

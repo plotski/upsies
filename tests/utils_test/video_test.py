@@ -223,26 +223,33 @@ def test_height_and_width(default_track_mock, func, key):
 
 
 @pytest.mark.parametrize(
-    argnames='width, height, exp_res',
+    argnames='width, height, par, exp_res',
     argvalues=(
-        ('7680', '4320', '4320p'),
-        ('3840', '2160', '2160p'),
-        ('1920', '1080', '1080p'),
-        ('1920', '1044', '1080p'),
-        ('1920', '800', '1080p'),
-        ('1390', '1080', '1080p'),
-        ('1280', '533', '720p'),
-        ('768', '720', '720p'),
-        ('768', '576', '576p'),
-        ('640', '480', '480p')
+        ('7680', '4320', None, '4320p'),
+        ('3840', '2160', None, '2160p'),
+        ('1920', '1080', None, '1080p'),
+        ('1920', '1044', None, '1080p'),
+        ('1918', '1040', None, '1080p'),
+        ('1920', '804', None, '1080p'),
+        ('1392', '1080', None, '1080p'),
+        ('1280', '534', None, '720p'),
+        ('768', '720', None, '720p'),
+        ('768', '576', None, '576p'),
+        ('640', '480', None, '480p'),
+        ('704', '572', '1.422', '576p'),  # mpv output: 704x572 => 1001x572
+        ('716', '480', '1.185', '576p'),  # mpv output: 716x480 => 848x480
+        ('704', '560', '1.455', '576p'),  # mpv output: 704x560 => 1024x560
+        ('704', '480', '0.888', '576p'),  # mpv output: 704x480 => 704x540
+        ('702', '478', '0.889', '576p'),  # mpv output: 702x478 => 702x537
     ),
     ids=lambda value: str(value),
 )
 @patch('upsies.utils.video.default_track')
-def test_resolution(default_track_mock, width, height, exp_res):
+def test_resolution(default_track_mock, width, height, par, exp_res):
     default_track_mock.return_value = {'@type': 'Video',
                                        'Width': width,
-                                       'Height': height}
+                                       'Height': height,
+                                       'PixelAspectRatio': par}
     video.resolution.cache_clear()
     assert video.resolution('foo.mkv') == exp_res
 
