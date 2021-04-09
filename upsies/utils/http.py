@@ -226,6 +226,7 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
         except httpx.TimeoutException:
             raise errors.RequestError(f'{url}: Timeout')
         except httpx.HTTPError as e:
+            _log.debug('Unexpected HTTP error: {e!r}')
             raise errors.RequestError(f'{url}: {e}')
         else:
             if cache:
