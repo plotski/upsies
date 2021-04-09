@@ -124,10 +124,22 @@ def subclasses(basecls, modules):
     return subclses
 
 
-def closest_number(n, ns):
-    """Return the number from `ns` that is closest to `n`"""
-    # https://stackoverflow.com/a/12141207
-    return min(ns, key=lambda x: abs(x - n))
+def closest_number(n, ns, max=None, default=0):
+    """
+    Return the number from `ns` that is closest to `n`
+
+    :param n: Given number
+    :param ns: Sequence of allowed numbers
+    :param max: Remove any item from `ns` that is larger than `max`
+    :param default: Return value in case `ns` is empty
+    """
+    if max is not None:
+        ns_ = tuple(n_ for n_ in ns if n_ <= max)
+        if not ns_:
+            raise ValueError(f'No number equal to or below {max}: {ns}')
+    else:
+        ns_ = ns
+    return min(ns_, key=lambda x: abs(x - n), default=default)
 
 
 class CaseInsensitiveString(str):

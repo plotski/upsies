@@ -53,13 +53,29 @@ def test_subclasses():
 
 
 def test_closest_number():
+    assert utils.closest_number(5, ()) == 0
+    assert utils.closest_number(5, (), default=123) == 123
+
     numbers = (10, 20, 30)
+
     for n in (-10, 0, 9, 10, 11, 14):
         assert utils.closest_number(n, numbers) == 10
     for n in (16, 19, 20, 21, 24):
         assert utils.closest_number(n, numbers) == 20
     for n in range(26, 50):
         assert utils.closest_number(n, numbers) == 30
+
+    for n in range(0, 50):
+        with pytest.raises(ValueError, match=rf'^No number equal to or below 9: \(10, 20, 30\)$'):
+            utils.closest_number(n, numbers, max=9)
+
+    for n in range(0, 50):
+        assert utils.closest_number(n, numbers, max=10) == 10
+
+    for n in range(0, 16):
+        assert utils.closest_number(n, numbers, max=20) == 10
+    for n in range(16, 50):
+        assert utils.closest_number(n, numbers, max=20) == 20
 
 
 def test_CaseInsensitiveString_equality():
