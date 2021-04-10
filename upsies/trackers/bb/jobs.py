@@ -782,7 +782,7 @@ class BbTrackerJobs(TrackerJobsBase):
             # Screenshots
             await self.upload_screenshots_job.wait()
             screenshot_urls = self.get_job_output(self.upload_screenshots_job)
-            screenshots_bbcode = '\n\n'.join(f'[img={screenshot_url}]' for u in screenshot_urls)
+            screenshots_bbcode = '\n\n'.join(f'[img={u}]' for u in screenshot_urls)
             parts.append(
                 '[quote]\n'
                 f'[align=center]{screenshots_bbcode}[/align]\n'
