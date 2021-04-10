@@ -2,6 +2,7 @@
 Video metadata
 """
 
+import collections
 import functools
 import json
 import os
@@ -180,12 +181,12 @@ def resolution(path):
         return None
 
     # Expect non-wide (1392x1080), narrow (1920x800) and weird (1918x1040)
-    _, std_height = _get_closest_standard_resolution(video_track)
-    if std_height:
+    std_resolution = _get_closest_standard_resolution(video_track)
+    if std_resolution:
         # "p" or "i", default to "p"
         scan = video_track.get('ScanType', 'Progressive')[0].lower()
-        _log.debug('Detected resolution: %s%s', std_height, scan)
-        return f'{std_height}{scan}'
+        _log.debug('Detected resolution: %s%s', std_resolution, scan)
+        return f'{std_resolution}{scan}'
 
     return None
 
@@ -214,30 +215,63 @@ def _get_display_height(video_track):
     return int(height)
 
 _standard_resolutions = (
-    (640, 480),    # 480p 4/3
-    (853, 480),    # 480p 16/9
-    (768, 576),    # 576p 4/3
-    (1024, 576),   # 576p 16/9
-    (1280, 720),   # 720p
-    (1920, 1080),  # 1080p
-    (3840, 2160),  # 2160p
-    (7680, 4320),  # 4320p
+    # (width, height, standard resolution)
+    # 4:3
+    (640, 480, 480),
+    (768, 576, 576),
+    (960, 720, 720),
+    (1440, 1080, 1080),
+    (2880, 2160, 2160),
+    (5760, 4320, 4320),
+
+    # 16:9
+    (853, 480, 480),
+    (1024, 576, 576),
+    (1280, 720, 720),
+    (1920, 1080, 1080),
+    (3840, 2160, 2160),
+    (7680, 4320, 4320),
+
+    # 21:9
+    (853, 480, 480),
+    (1024, 576, 576),
+    (1280, 548, 720),
+    (1920, 822, 1080),
+    (3840, 1645, 2160),
+    (7680, 3291, 4320),
 )
 
 def _get_closest_standard_resolution(video_track):
     actual_width = _get_display_width(video_track)
     actual_height = _get_display_height(video_track)
-    std_width, std_height = 0, 0
     if actual_width and actual_height:
-        distances = {}
-        for std_width, std_height in _standard_resolutions:
+        # Find distances from actual display width/height to each standard
+        # width/height. Categorize them by standard ratio.
+        distances = collections.defaultdict(lambda: {})
+        for std_width, std_height, std_resolution in _standard_resolutions:
+            std_aspect_ratio = round(std_width / std_height, 1)
             w_dist = abs(std_width - actual_width)
             h_dist = abs(std_height - actual_height)
-            distances[h_dist] = (std_width, std_height)
-            distances[w_dist] = (std_width, std_height)
-        std_width, std_height = sorted(distances.items())[0][1]
-    _log.debug('Closest standard resolution: %r x %r -> %r x %r', actual_width, actual_height, std_width, std_height)
-    return std_width, std_height
+            resolution = (std_width, std_height, std_resolution)
+            distances[std_aspect_ratio][w_dist] = distances[std_aspect_ratio][h_dist] = resolution
+
+        # Find standard aspect ratio closest to the given aspect ratio
+        actual_aspect_ratio = round(actual_width / actual_height, 1)
+        _log.debug('Actual resolution: %4d x %4d: aspect ratio: %r',
+                   actual_width, actual_height, actual_aspect_ratio)
+        std_aspect_ratios = tuple(distances)
+        closest_std_aspect_ratio = closest_number(actual_aspect_ratio, std_aspect_ratios)
+        _log.debug('Closest standard aspect ratio: %r', closest_std_aspect_ratio)
+
+        # Pick the standard resolution with the lowest distance to the given resolution
+        dists = distances[closest_std_aspect_ratio]
+        std_width, std_height, std_resolution = sorted(dists.items())[0][1]
+    else:
+        std_width, std_height, std_resolution = 0, 0, None
+
+    _log.debug('Closest standard resolution: %r x %r -> %r x %r -> %r',
+               actual_width, actual_height, std_width, std_height, std_resolution)
+    return std_resolution
 
 
 @functools.lru_cache(maxsize=None)
