@@ -126,6 +126,8 @@ class SceneCheckJob(JobBase):
         self.signal.add('ask_release_name')
         self.signal.add('ask_is_scene_release')
         self.signal.add('checked')
+        self.signal.record('checked')
+        self.signal.register('checked', lambda is_scene: setattr(self, '_is_scene_release', is_scene))
 
     async def _catch_errors(self, coro):
         try:
@@ -223,7 +225,6 @@ class SceneCheckJob(JobBase):
         :param is_scene_release: :class:`~.types.SceneCheckResult` enum
         """
         _log.debug('User decided: %r', is_scene_release)
-        self._is_scene_release = is_scene_release
         self.signal.emit('checked', is_scene_release)
         if is_scene_release is types.SceneCheckResult.true:
             self.send('Scene release')

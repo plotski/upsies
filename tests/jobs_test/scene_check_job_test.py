@@ -278,6 +278,7 @@ def test_handle_scene_check_result_triggers_dialog_if_no_errors(is_scene_release
     assert job.finalize.call_args_list == []
     assert not job.is_finished
 
+
 @pytest.mark.parametrize(
     argnames='is_scene_release, exp_msg',
     argvalues=(
@@ -297,3 +298,25 @@ def test_finalize(is_scene_release, exp_msg, make_SceneCheckJob, mocker):
     assert cb.call_args_list == [call(is_scene_release)]
     assert job.is_scene_release is is_scene_release
     assert job.is_finished
+
+
+@pytest.mark.parametrize(
+    argnames='is_scene_release',
+    argvalues=(
+        SceneCheckResult.true,
+        SceneCheckResult.false,
+        SceneCheckResult.unknown,
+    ),
+    ids=lambda v: str(v),
+)
+def test_is_scene_release_property_is_replayed_from_cache(is_scene_release, make_SceneCheckJob, mocker):
+    job = make_SceneCheckJob(ignore_cache=False)
+    assert job.is_scene_release is None
+    job.start()
+    job.finalize(is_scene_release)  # Cache is_scene_release
+    assert job.is_scene_release is is_scene_release
+
+    for _ in range(3):
+        job = make_SceneCheckJob(ignore_cache=False)
+        job.start()  # Load is_scene_release from cache
+        assert job.is_scene_release is is_scene_release
