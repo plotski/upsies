@@ -66,7 +66,7 @@ def test_closest_number():
         assert utils.closest_number(n, numbers) == 30
 
     for n in range(0, 50):
-        with pytest.raises(ValueError, match=rf'^No number equal to or below 9: \(10, 20, 30\)$'):
+        with pytest.raises(ValueError, match=r'^No number equal to or below 9: \(10, 20, 30\)$'):
             utils.closest_number(n, numbers, max=9)
 
     for n in range(0, 50):
