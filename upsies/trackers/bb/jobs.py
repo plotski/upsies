@@ -781,10 +781,8 @@ class BbTrackerJobs(TrackerJobsBase):
         if self.is_series_release:
             # Screenshots
             await self.upload_screenshots_job.wait()
-            screenshots_bbcode = '\n\n'.join(
-                f'[img={screenshot_url}]'
-                for screenshot_url in self.upload_screenshots_job.output
-            )
+            screenshot_urls = self.get_job_output(self.upload_screenshots_job)
+            screenshots_bbcode = '\n\n'.join(f'[img={screenshot_url}]' for u in screenshot_urls)
             parts.append(
                 '[quote]\n'
                 f'[align=center]{screenshots_bbcode}[/align]\n'
@@ -793,7 +791,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
             # Mediainfo
             await self.mediainfo_job.wait()
-            parts.append(f'[mediainfo]{self.mediainfo_job.output[0]}[/mediainfo]\n')
+            parts.append(f'[mediainfo]{self.get_job_output(self.mediainfo_job)[0]}[/mediainfo]\n')
 
         parts.append(self.promotion)
         return ''.join(parts)
@@ -939,12 +937,23 @@ class BbTrackerJobs(TrackerJobsBase):
 
     # Web form data
 
+    def get_job_output(self, job):
+        if not job.is_finished:
+            raise RuntimeError(f'Unfinished job: {job.name}')
+        elif not job.output:
+            raise RuntimeError(f'Job finished with no output: {job.name}')
+        else:
+            return job.output
+
+    def get_job_attribute(self, job, attribute):
+        if not job.is_finished:
+            raise RuntimeError(f'Unfinished job: {job.name}')
+        else:
+            return getattr(job, attribute)
+
     @property
     def torrent_filepath(self):
-        if self.create_torrent_job.output:
-            return self.create_torrent_job.output[0]
-        else:
-            raise RuntimeError('Torrent is not ready yet')
+        return self.get_job_output(self.create_torrent_job)[0]
 
     @property
     def post_data(self):
@@ -952,22 +961,22 @@ class BbTrackerJobs(TrackerJobsBase):
             post_data = {
                 'submit': 'true',
                 'type': 'Movies',
-                'title': self.movie_title_job.output[0],
-                'year': self.movie_year_job.output[0],
-                'source': self.movie_source_job.choice,
-                'videoformat': self.movie_video_codec_job.choice,
-                'audioformat': self.movie_audio_codec_job.choice,
-                'container': self.movie_container_job.choice,
-                'resolution': self.movie_resolution_job.choice,
-                'remaster_title': self.movie_release_info_job.output[0],
-                'tags': self.movie_tags_job.output[0],
-                'desc': self.movie_description_job.output[0],
-                'release_desc': self.mediainfo_job.output[0],
-                'image': self.movie_poster_job.output[0],
+                'title': self.get_job_output(self.movie_title_job)[0],
+                'year': self.get_job_output(self.movie_year_job)[0],
+                'source': self.get_job_attribute(self.movie_source_job, 'choice'),
+                'videoformat': self.get_job_attribute(self.movie_video_codec_job, 'choice'),
+                'audioformat': self.get_job_attribute(self.movie_audio_codec_job, 'choice'),
+                'container': self.get_job_attribute(self.movie_container_job, 'choice'),
+                'resolution': self.get_job_attribute(self.movie_resolution_job, 'choice'),
+                'remaster_title': self.get_job_output(self.movie_release_info_job)[0],
+                'tags': self.get_job_output(self.movie_tags_job)[0],
+                'desc': self.get_job_output(self.movie_description_job)[0],
+                'release_desc': self.get_job_output(self.mediainfo_job)[0],
+                'image': self.get_job_output(self.movie_poster_job)[0],
             }
             post_data.update(self.post_data_screenshot_urls)
             _log.debug('Is scene release: %r', self.scene_check_job.is_scene_release)
-            if self.scene_check_job.is_scene_release:
+            if self.get_job_attribute(self.scene_check_job, 'is_scene_release'):
                 post_data['scene'] = '1'
             return post_data
 
@@ -975,10 +984,10 @@ class BbTrackerJobs(TrackerJobsBase):
             post_data = {
                 'submit': 'true',
                 'type': 'TV',
-                'title': self.series_title_job.output[0],
-                'tags': self.series_tags_job.output[0],
-                'desc': self.series_description_job.output[0],
-                'image': self.series_poster_job.output[0],
+                'title': self.get_job_output(self.series_title_job)[0],
+                'tags': self.get_job_output(self.series_tags_job)[0],
+                'desc': self.get_job_output(self.series_description_job)[0],
+                'image': self.get_job_output(self.series_poster_job)[0],
             }
             if self.scene_check_job.is_scene_release:
                 post_data['scene'] = '1'
@@ -989,11 +998,8 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def post_data_screenshot_urls(self):
-        urls = self.upload_screenshots_job.output
-        if not urls:
-            raise RuntimeError('Screeenshots not uploaded yet')
-        else:
-            return {f'screenshot{i}': url for i, url in enumerate(urls, start=1)}
+        urls = self.get_job_output(self.upload_screenshots_job)
+        return {f'screenshot{i}': url for i, url in enumerate(urls, start=1)}
 
     # Other stuff
 
