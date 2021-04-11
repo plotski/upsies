@@ -121,17 +121,18 @@ class SubmitJob(JobBase):
         _log.debug('%s: Submitting', self._tracker.name)
         try:
             self.signal.emit('logging_in')
+            await asyncio.sleep(1)
             await self._tracker.login()
             self.signal.emit('logged_in')
             try:
-                await asyncio.sleep(1)
                 self.signal.emit('uploading')
+                await asyncio.sleep(1)
                 torrent_page_url = await self._tracker.upload(self._tracker_jobs)
                 self.send(torrent_page_url)
                 self.signal.emit('uploaded')
             finally:
-                await asyncio.sleep(1)
                 self.signal.emit('logging_out')
+                await asyncio.sleep(1)
                 await self._tracker.logout()
                 self.signal.emit('logged_out')
         except errors.RequestError as e:
