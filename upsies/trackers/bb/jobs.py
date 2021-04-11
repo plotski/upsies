@@ -937,13 +937,16 @@ class BbTrackerJobs(TrackerJobsBase):
 
     # Web form data
 
-    def get_job_output(self, job):
+    def get_job_output(self, job, slice=slice(None, None), default=None):
         if not job.is_finished:
             raise RuntimeError(f'Unfinished job: {job.name}')
-        elif not job.output:
-            raise RuntimeError(f'Job finished with no output: {job.name}')
-        else:
-            return job.output
+        try:
+            return job.output[slice]
+        except IndexError:
+            if default is not None:
+                return default
+            else:
+                raise RuntimeError(f'Job finished with insufficient output: {job.name}: {job.output}')
 
     def get_job_attribute(self, job, attribute):
         if not job.is_finished:
@@ -961,18 +964,18 @@ class BbTrackerJobs(TrackerJobsBase):
             post_data = {
                 'submit': 'true',
                 'type': 'Movies',
-                'title': self.get_job_output(self.movie_title_job)[0],
-                'year': self.get_job_output(self.movie_year_job)[0],
+                'title': self.get_job_output(self.movie_title_job, slice=0),
+                'year': self.get_job_output(self.movie_year_job, slice=0),
                 'source': self.get_job_attribute(self.movie_source_job, 'choice'),
                 'videoformat': self.get_job_attribute(self.movie_video_codec_job, 'choice'),
                 'audioformat': self.get_job_attribute(self.movie_audio_codec_job, 'choice'),
                 'container': self.get_job_attribute(self.movie_container_job, 'choice'),
                 'resolution': self.get_job_attribute(self.movie_resolution_job, 'choice'),
-                'remaster_title': self.get_job_output(self.movie_release_info_job)[0],
-                'tags': self.get_job_output(self.movie_tags_job)[0],
-                'desc': self.get_job_output(self.movie_description_job)[0],
-                'release_desc': self.get_job_output(self.mediainfo_job)[0],
-                'image': self.get_job_output(self.movie_poster_job)[0],
+                'remaster_title': self.get_job_output(self.movie_release_info_job, slice=0, default=''),
+                'tags': self.get_job_output(self.movie_tags_job, slice=0),
+                'desc': self.get_job_output(self.movie_description_job, slice=0),
+                'release_desc': self.get_job_output(self.mediainfo_job, slice=0),
+                'image': self.get_job_output(self.movie_poster_job, slice=0),
             }
             post_data.update(self.post_data_screenshot_urls)
             if self.get_job_attribute(self.scene_check_job, 'is_scene_release'):
@@ -983,10 +986,10 @@ class BbTrackerJobs(TrackerJobsBase):
             post_data = {
                 'submit': 'true',
                 'type': 'TV',
-                'title': self.get_job_output(self.series_title_job)[0],
-                'tags': self.get_job_output(self.series_tags_job)[0],
-                'desc': self.get_job_output(self.series_description_job)[0],
-                'image': self.get_job_output(self.series_poster_job)[0],
+                'title': self.get_job_output(self.series_title_job, slice=0),
+                'tags': self.get_job_output(self.series_tags_job, slice=0),
+                'desc': self.get_job_output(self.series_description_job, slice=0),
+                'image': self.get_job_output(self.series_poster_job, slice=0),
             }
             if self.scene_check_job.is_scene_release:
                 post_data['scene'] = '1'
