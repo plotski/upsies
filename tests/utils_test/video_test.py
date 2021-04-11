@@ -272,6 +272,7 @@ def test_height(default_track_mock, height, par, exp_height):
         ('704', '560', '1.455', '576'),  # mpv output: 704x560 => 1024x560
         ('704', '480', '0.888', '576'),  # mpv output: 704x480 => 704x540
         ('702', '478', '0.889', '576'),  # mpv output: 702x478 => 702x537
+        ('720', '428', '1.422', '576'),  # mpv output: 720x428 => 1024x428
         ('716', '480', '1.185', '480'),  # mpv output: 716x480 => 848x480
     ),
     ids=lambda value: str(value),
