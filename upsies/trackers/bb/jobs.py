@@ -557,12 +557,22 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def release_info_resolution(self):
-        # Rule 3.6.1 - Encodes with a stored resolution less than 700px AND a
-        #              height less than 460px should be labelled "SD"
+        # Move/TV Rule 3.6.1 - Encodes with a stored resolution less than 700px
+        #                      AND a height less than 460px should be labelled
+        #                      "SD"
         if video.width(self.content_path) < 700 and video.height(self.content_path) < 460:
             return 'SD'
-        else:
-            return self.release_name.resolution
+
+        # Movie Rule 3.6.2 - 576p PAL encodes with a stored resolution of at
+        #                    least 700px wide and/or 560px tall should be
+        #                    labelled "480p" with "576p PAL" noted in the
+        #                    Release Info field
+        # We also apply this to series releases by using this property in
+        # get_series_title_and_release_info().
+        if self.release_name.resolution == '576p' and video.frame_rate(self.content_path) == 25:
+            return '576p PAL'
+
+        return self.release_name.resolution
 
     @property
     def release_info_proper(self):
@@ -624,7 +634,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_audio_format,
             fs.file_extension(video.first_video(self.content_path)).upper(),
             self.release_info_proper,
-            self.release_name.resolution,
+            self.release_info_resolution,
             self.release_info_hdr10,
             self.release_info_dual_audio,
             self.release_info_commentary,
@@ -724,10 +734,18 @@ class BbTrackerJobs(TrackerJobsBase):
         return tags_string
 
     def get_movie_release_info(self):
-        info = [
+        info = []
+
+        # Rule 3.6.2 - 576p PAL encodes with a stored resolution of at least
+        #              700px wide and/or 560px tall should be labelled "480p"
+        #              with "576p PAL" noted in the Release Info field
+        if self.release_info_resolution == '576p PAL':
+            info.append(self.release_info_resolution)
+
+        info.extend((
             self.release_info_remux,
             self.release_info_proper,
-        ]
+        ))
 
         for name in fs.file_and_parent(self.content_path):
             match = re.search(r'[ \.](\d+)th[ \.]Anniversary[ \.]', name)
