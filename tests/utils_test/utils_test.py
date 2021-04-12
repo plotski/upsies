@@ -125,3 +125,26 @@ def test_merge_dicts(a, b, merged):
     assert utils.merge_dicts(a, b) == merged
     assert id(a) != id(merged)
     assert id(b) != id(merged)
+
+
+def test_deduplicate_deduplicates():
+    assert utils.deduplicate([1, 2, 1, 3, 1, 4, 3, 5]) == [1, 2, 3, 4, 5]
+
+def test_deduplicate_maintains_order():
+    assert utils.deduplicate([3, 2, 1, 1, 4, 5, 1, 3]) == [3, 2, 1, 4, 5]
+
+def test_deduplicate_deduplicates_unhashable_items():
+    items = [
+        {'a': 1, 'b': 2},
+        {'a': 2, 'b': 2},
+        {'a': 3, 'b': 1},
+        {'a': 4, 'b': 3},
+        {'a': 5, 'b': 1},
+        {'a': 6, 'b': 4},
+    ]
+    assert utils.deduplicate(items, key=lambda item: item['b']) == [
+        {'a': 1, 'b': 2},
+        {'a': 3, 'b': 1},
+        {'a': 4, 'b': 3},
+        {'a': 6, 'b': 4},
+    ]

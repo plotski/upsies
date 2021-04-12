@@ -195,6 +195,26 @@ def merge_dicts(a, b, path=()):
     return merged
 
 
+def deduplicate(l, key=None):
+    """
+    Return sequence `l` with all duplicate items removed while maintaining the
+    original order
+
+    :param key: Callable that gets each item and returns a hashable identifier
+        for that item
+    """
+    if key is None:
+        key = lambda k: k
+    seen_keys = set()
+    deduped = []
+    for item in l:
+        k = key(item)
+        if k not in seen_keys:
+            seen_keys.add(k)
+            deduped.append(item)
+    return deduped
+
+
 from . import (browser, btclients, configfiles, daemon, fs, html, http, image,
                imghosts, iso, release, scene, signal, string, subproc,
                timestamp, torrent, types, video, webdbs)
