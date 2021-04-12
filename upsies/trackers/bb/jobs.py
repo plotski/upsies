@@ -962,16 +962,13 @@ class BbTrackerJobs(TrackerJobsBase):
 
     # Web form data
 
-    def get_job_output(self, job, slice=slice(None, None), default=None):
+    def get_job_output(self, job, slice=slice(None, None)):
         if not job.is_finished:
             raise RuntimeError(f'Unfinished job: {job.name}')
         try:
             return job.output[slice]
         except IndexError:
-            if default is not None:
-                return default
-            else:
-                raise RuntimeError(f'Job finished with insufficient output: {job.name}: {job.output}')
+            raise RuntimeError(f'Job finished with insufficient output: {job.name}: {job.output}')
 
     def get_job_attribute(self, job, attribute):
         if not job.is_finished:
@@ -997,7 +994,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 'audioformat': self.get_job_attribute(self.movie_audio_codec_job, 'choice'),
                 'container': self.get_job_attribute(self.movie_container_job, 'choice'),
                 'resolution': self.get_job_attribute(self.movie_resolution_job, 'choice'),
-                'remaster_title': self.get_job_output(self.movie_release_info_job, slice=0, default=''),
+                'remaster_title': self.get_job_output(self.movie_release_info_job, slice=0),
                 'tags': self.get_job_output(self.movie_tags_job, slice=0),
                 'desc': self.get_job_output(self.movie_description_job, slice=0),
                 'release_desc': self.get_job_output(self.mediainfo_job, slice=0),
