@@ -288,8 +288,7 @@ class JobBase(abc.ABC):
     def send(self, output):
         """Append `output` to :attr:`output` and emit ``output`` signal"""
         if not self.is_finished:
-            if output:
-                self.signal.emit('output', str(output))
+            self.signal.emit('output', str(output))
 
     @property
     def output(self):

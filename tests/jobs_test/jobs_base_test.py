@@ -258,15 +258,12 @@ def test_send_emits_output_signal(job, mocker):
     assert job.signal.emit.call_args_list == [call('output', 'foo')]
     job.send([1, 2])
     assert job.signal.emit.call_args_list == [call('output', 'foo'), call('output', '[1, 2]')]
-
-def test_send_ignores_falsy_values(job, mocker):
-    mocker.patch.object(job.signal, 'emit')
-    job.start()
-    assert job.signal.emit.call_args_list == []
     job.send('')
-    assert job.signal.emit.call_args_list == []
-    job.send(None)
-    assert job.signal.emit.call_args_list == []
+    assert job.signal.emit.call_args_list == [
+        call('output', 'foo'),
+        call('output', '[1, 2]'),
+        call('output', ''),
+    ]
 
 def test_send_on_finished_job(job):
     job.start()
