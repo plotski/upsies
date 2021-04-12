@@ -1,4 +1,5 @@
 2021-??-?? 0.?.?
+  * Added support for tracker: bB
   * Renamed command: create-torrent -> torrent-create
   * Renamed command: add-torrent -> torrent-add
   * New command: scene-search: List scene release names
@@ -6,6 +7,7 @@
     altered
   * release-name: Don't accept release name if any obligatory information is
     unknown.
+  * Better video resolution detection
   * Look up announce URLs on the tracker instead of the config file
   * torrent-create: Store creation date in .torrent file
 
