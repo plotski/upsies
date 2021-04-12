@@ -551,6 +551,13 @@ class BbTrackerJobs(TrackerJobsBase):
             return 'w. Commentary'
 
     @property
+    def release_info_source(self):
+        if self.release_name.source == 'WEBRip':
+            return 'WebRip'
+        else:
+            return self.release_name.source
+
+    @property
     def release_info_remux(self):
         if 'Remux' in self.release_name.source:
             return 'REMUX'
@@ -628,7 +635,7 @@ class BbTrackerJobs(TrackerJobsBase):
         # "[Source / VideoCodec / AudioCodec / Container / Resolution( / ...)]"
         info = [
             self.release_info_remux,
-            self.release_name.source,
+            self.release_info_source,
             self.release_name.video_format,
             self.release_info_10bit,
             self.release_info_audio_format,
