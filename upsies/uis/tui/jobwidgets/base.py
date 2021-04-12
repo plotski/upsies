@@ -100,7 +100,10 @@ class JobWidgetBase(abc.ABC):
         """
         return Window(
             style='class:output',
-            content=FormattedTextControl(lambda: '\n'.join(self.job.output)),
+            # FIXME: If output is empty, prompt-toolkit ignores the
+            #        "dont_extend_height" argument. Using a space (0x20) as a
+            #        placeholder seems to prevent this issue.
+            content=FormattedTextControl(lambda: '\n'.join(self.job.output) or ' '),
             dont_extend_height=True,
             wrap_lines=True,
         )
