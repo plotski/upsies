@@ -275,6 +275,20 @@ def _get_closest_standard_resolution(video_track):
 
 
 @functools.lru_cache(maxsize=None)
+def frame_rate(path):
+    """
+    Return frames per second as :class:`float` of default video track or `0` if
+    it can't be determined
+    """
+    try:
+        video_track = default_track('video', path)
+    except errors.ContentError:
+        return 0
+    else:
+        return float(video_track.get('FrameRate', 0))
+
+
+@functools.lru_cache(maxsize=None)
 def bit_depth(path):
     """Return bit depth of default video track or `None` if it can't be determined"""
     try:

@@ -308,6 +308,28 @@ def test_resolution_uses_display_aspect_ratio(data_dir):
 
 
 @pytest.mark.parametrize(
+    argnames='exp_frame_rate, video_dict',
+    argvalues=(
+        (0.0, {}),
+        (25.0, {'FrameRate': '25.000'}),
+        (23.976, {'FrameRate': '23.976'}),
+    ),
+    ids=lambda v: str(v),
+)
+@patch('upsies.utils.video.default_track')
+def test_frame_rate(default_track_mock, exp_frame_rate, video_dict):
+    default_track_mock.return_value = video_dict
+    video.frame_rate.cache_clear()
+    assert video.frame_rate('foo.mkv') == exp_frame_rate
+
+@patch('upsies.utils.video.default_track')
+def test_frame_rate_catches_ContentError(default_track_mock):
+    default_track_mock.side_effect = errors.ContentError('Something went wrong')
+    video.frame_rate.cache_clear()
+    assert video.frame_rate('foo.mkv') == 0.0
+
+
+@pytest.mark.parametrize(
     argnames='exp_bit_depth, video_dict',
     argvalues=(
         (None, {}),
