@@ -263,6 +263,15 @@ async def test_cast(id, exp_cast, api, store_response):
             assert person == name
             assert person.url == url
 
+@pytest.mark.asyncio
+async def test_cast_deduplicates_actors_with_multiple_roles(api, store_response):
+    cast = await api.cast(83)  # The Simpsons
+    assert cast.count('Dan Castellaneta') == 1
+    assert cast.count('Julie Kavner') == 1
+    assert cast.count('Yeardley Smith') == 1
+    assert cast.count('Nancy Cartwright') == 1
+    assert cast.count('Harry Shearer') == 1
+
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_countries'),

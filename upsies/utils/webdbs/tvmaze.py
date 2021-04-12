@@ -5,7 +5,7 @@ API for tvmaze.com
 import functools
 import json
 
-from ... import errors
+from ... import errors, utils
 from .. import html, http
 from ..types import ReleaseType
 from . import common
@@ -72,7 +72,7 @@ class TvmazeApi(WebDbApiBase):
         cast = show.get('_embedded', {}).get('cast', ())
         return tuple(
             common.Person(item['person']['name'], item['person'].get('url', ''))
-            for item in cast
+            for item in utils.deduplicate(cast, key=lambda item: item['person']['name'])
         )
 
     async def countries(self, id):
