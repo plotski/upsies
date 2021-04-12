@@ -783,7 +783,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         re.compile(r'(?i:dvd-?rip)') : 'DVDRip',
         re.compile(r'(?i:web-?dl)')  : 'WEB-DL',
         re.compile(r'(?i:web-?rip)') : 'WEBRip',
-        re.compile(r'(?i:web)')      : 'WEB',
+        re.compile(r'(?i:web)')      : 'WEB-DL',
     }
     # Look for "Hybrid" after year or season
     _hybrid_regex = re.compile(r'[ \.]hybrid[ \.]', flags=re.IGNORECASE)
@@ -799,18 +799,11 @@ class ReleaseInfo(collections.abc.MutableMapping):
             source = source[0]
 
         if source.lower() == 'web':
-            # guessit doesn't distinguish between WEB-DL and WEBRip
+            # guessit doesn't distinguish between WEB-DL and WEBRip. Get the
+            # source from the path.
             match = self._web_source_regex.search(self.release_name_params)
             if match:
                 source = match.group(1)
-
-            # Guess WEBRip and WEB-DL based on encoder
-            if source.lower() == 'web':
-                video_format = video.video_format(self._path)
-                if video_format in ('x264', 'x265'):
-                    source = 'WEBRip'
-                elif video_format in ('H.264', 'H.265'):
-                    source = 'WEB-DL'
 
         elif source == 'DVD':
             # Detect DVDRip

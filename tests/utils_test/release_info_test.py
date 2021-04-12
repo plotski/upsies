@@ -272,7 +272,7 @@ source_samples = (
     ('WEB-DL', 'WEB-DL'), ('WEBDL', 'WEB-DL'), ('web-dl', 'WEB-DL'), ('webdl', 'WEB-DL'),
     ('WEBRip', 'WEBRip'), ('WEBRIP', 'WEBRip'), ('web-rip', 'WEBRip'), ('webrip', 'WEBRip'),
     ('WEB-DL Remux', 'WEB-DL'), ('Remux WEB-DL', 'WEB-DL'), ('WEBRip Remux', 'WEBRip'), ('Remux WEBRip', 'WEBRip'),
-    ('WEB', 'WEB'), ('Web', 'WEB'), ('web', 'WEB'),
+    ('WEB', 'WEB-DL'), ('Web', 'WEB-DL'), ('web', 'WEB-DL'),
     ('DVD', 'DVD'), ('DVD9', 'DVD9'), ('DVD5', 'DVD5'),
     # An episode title can contain another source and guessit doesn't have a
     # problem with both "WEB" and "Blu-ray" as a source.
@@ -282,23 +282,6 @@ source_samples = (
 )
 @pytest.mark.parametrize('source, exp_source', source_samples)
 def test_source(source, exp_source):
-    release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
-    expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984',
-                'resolution': '1080p', 'service': '', 'source': exp_source,
-                'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}
-    assert_info(release_name, **expected)
-
-
-source_from_encoder_samples = (
-    ('WEB', 'x264', 'WEBRip'),
-    ('Web', 'x265', 'WEBRip'),
-    ('web', 'H.264', 'WEB-DL'),
-    ('WEB', 'H.265', 'WEB-DL'),
-    ('WEB', '', 'WEB'),
-)
-@pytest.mark.parametrize('source, video_format, exp_source', source_from_encoder_samples)
-def test_source_from_encoder(source, video_format, exp_source, mocker):
-    mocker.patch('upsies.utils.video.video_format', Mock(return_value=video_format))
     release_name = f'The Foo 1984 1080p {source} DTS-ASDF'
     expected = {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '1984',
                 'resolution': '1080p', 'service': '', 'source': exp_source,
