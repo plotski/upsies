@@ -35,7 +35,7 @@ class JobWidgetBase(abc.ABC):
                 ),
                 # Result
                 ConditionalContainer(
-                    filter=Condition(lambda: self.job.output),
+                    filter=Condition(lambda: self.job.is_finished),
                     content=self.output_widget,
                 ),
                 # Additional info that isn't part of the job's main result
