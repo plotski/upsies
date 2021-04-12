@@ -960,6 +960,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def post_data(self):
+        _log.debug('Is scene release: %r', self.scene_check_job.is_scene_release)
         if self.is_movie_release:
             post_data = {
                 'submit': 'true',
