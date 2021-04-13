@@ -724,6 +724,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     _edition_translation = {
         re.compile(r'(?i:director\'s cut)') : 'DC',
     }
+    _edition_regex = re.compile(r'(?:[ \.]|^)((?i:proper|repack\d*))(?:[ \.]|$)')
 
     def _get_edition(self):
         edition = _as_list(self._guess, 'edition')
@@ -732,10 +733,13 @@ class ReleaseInfo(collections.abc.MutableMapping):
                 if regex.search(edition[i]):
                     edition[i] = edition_fixed
 
-        others = _as_list(self._guess, 'other')
-        if 'Proper' in others:
-            edition.append('Proper')
-        if 'Dual Audio' in others:
+        # guessit doesn't distinguish between REPACK, PROPER, etc
+        match = self._edition_regex.search(self.release_name_params)
+        if match:
+            edition.append(match.group(1).capitalize())
+
+        guessit_other = _as_list(self._guess, 'other')
+        if 'Dual Audio' in guessit_other:
             edition.append('Dual Audio')
 
         return edition

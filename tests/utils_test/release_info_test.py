@@ -246,6 +246,8 @@ def test_title_and_alternative_title(release_name, expected):
 
 edition_samples = (
     ('The Foo 2000 1080p PROPER BluRay DTS x264-ASDF', {'edition': ['Proper']}),
+    ('The Foo 2000 Repack 1080p BluRay DTS x264-ASDF', {'edition': ['Repack']}),
+    ('The Foo 2000 1080p Repack2 BluRay DTS x264-ASDF', {'edition': ['Repack2']}),
     ('The Foo 2000 1080p Dual Audio BluRay DTS x264-ASDF', {'edition': ['Dual Audio']}),
     ('The Foo 2000 EXTENDED 1080p BluRay DTS x264-ASDF', {'edition': ['Extended']}),
     ('The Foo 2000 DC Uncut 1080p BluRay DTS x264-ASDF', {'edition': ["DC", 'Uncut']}),
