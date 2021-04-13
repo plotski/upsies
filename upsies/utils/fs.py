@@ -76,6 +76,25 @@ def projectdir(content_path):
     return path
 
 
+def mkdir(path):
+    """
+    Create directory and its parents
+
+    Existing directories are ignored.
+
+    :raise ContentError: if directory creation fails
+    """
+    try:
+        os.makedirs(path, exist_ok=True)
+    except OSError as e:
+        if e.strerror:
+            raise errors.ContentError(f'{path}: {e.strerror}')
+        else:
+            raise errors.ContentError(f'{path}: {e}')
+    else:
+        assert_dir_usable(path)
+
+
 def basename(path):
     """
     Return last segment in `path`

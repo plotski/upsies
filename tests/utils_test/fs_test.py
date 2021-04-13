@@ -108,45 +108,47 @@ def test_tmpdir_removes_redundant_temp_dir(mkdtemp_mock, tmp_path):
     assert not os.path.exists(mkdtemp_mock.return_value)
 
 
-projectdir_test_cases = (
-    ('path/to/foo', 'foo.upsies'),
-    ('path/to/foo/', 'foo.upsies'),
-    ('path/to//foo/', 'foo.upsies'),
-    ('path/to//foo//', 'foo.upsies'),
-    (None, '.'),
+@pytest.mark.parametrize(
+    argnames='content_path, base, exp_projectdir',
+    argvalues=(
+        ('path/to/foo', None, 'default_tmpdir/foo.upsies'),
+        ('path/to//foo', None, 'default_tmpdir/foo.upsies'),
+        ('path/to/foo/', None, 'default_tmpdir/foo.upsies'),
+        ('path/to/foo', 'my/tmpdir', 'my/tmpdir/foo.upsies'),
+        (None, None, '.'),
+        (None, 'my/tmpdir', '.'),
+        ('', None, '.'),
+        ('', 'my/tmpdir', '.'),
+    ),
 )
-
-@pytest.mark.parametrize('content_path, exp_path', projectdir_test_cases)
-@patch('upsies.utils.fs.assert_dir_usable')
-def test_projectdir_does_not_exist(assert_dir_usable_mock, tmp_path, content_path, exp_path):
+@patch('upsies.utils.fs.mkdir')
+@patch('upsies.utils.fs.tmpdir')
+def test_projectdir(tmpdir_mock, mkdir_mock, tmp_path, content_path, base, exp_projectdir):
+    tmpdir_mock.return_value = base or 'default_tmpdir'
     fs.projectdir.cache_clear()
-    cwd = os.getcwd()
-    os.chdir(tmp_path)
-    try:
-        path = fs.projectdir(content_path)
-        assert path == exp_path
-        assert os.path.exists(path)
-        assert os.access(path, os.R_OK | os.W_OK | os.X_OK)
-    finally:
-        os.chdir(cwd)
+    path = fs.projectdir(content_path, base=base)
+    assert path == exp_projectdir
+    if base:
+        mkdir_mock.call_args_list == [call(base), call(path)]
+    else:
+        tmpdir_mock.call_args_list == [call(base), call(path)]
 
-@pytest.mark.parametrize('content_path, exp_path', projectdir_test_cases)
+
+@patch('os.makedirs')
 @patch('upsies.utils.fs.assert_dir_usable')
-def test_projectdir_exists(assert_dir_usable_mock, tmp_path, content_path, exp_path):
-    fs.projectdir.cache_clear()
-    cwd = os.getcwd()
-    os.chdir(tmp_path)
-    if exp_path != '.':
-        os.mkdir(exp_path)
-    assert os.path.exists(tmp_path / exp_path)
-    try:
-        path = fs.projectdir(content_path)
-        assert path == exp_path
-        assert os.path.exists(path)
-        assert os.access(path, os.R_OK | os.W_OK | os.X_OK)
-    finally:
-        os.rmdir(tmp_path / exp_path)
-        os.chdir(cwd)
+def test_mkdir(assert_dir_usable_mock, makedirs_mock):
+    fs.mkdir('path/to/dir')
+    makedirs_mock.call_args_list == [call('path/to/dir')]
+    assert_dir_usable_mock.call_args_list == [call('path/to/dir')]
+
+@patch('os.makedirs')
+@patch('upsies.utils.fs.assert_dir_usable')
+def test_mkdir_catches_makedirs_error(assert_dir_usable_mock, makedirs_mock):
+    makedirs_mock.side_effect = OSError('No way')
+    with pytest.raises(errors.ContentError, match=rf'^path/to/dir: No way'):
+        fs.mkdir('path/to/dir')
+    makedirs_mock.call_args_list == [call('path/to/dir')]
+    assert_dir_usable_mock.call_args_list == []
 
 
 def test_basename():
