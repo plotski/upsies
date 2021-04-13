@@ -5,6 +5,8 @@
   * New command: scene-search: List scene release names
   * New command: scene-check: Identify release as scene and check if it was
     altered
+  * New option: config.main.tmp_directory specifies where *.upsies directories
+    are put (default: /tmp/upsies or equivalent per OS)
   * release-name: Don't accept release name if any obligatory information is
     unknown.
   * Better video resolution detection
