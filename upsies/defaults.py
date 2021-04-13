@@ -1,6 +1,12 @@
 from . import trackers
 
 defaults = {
+    'config': {
+        'main': {
+            'tmp_directory': '',  # Default to utils.fs.tmpdir()
+        },
+    },
+
     'trackers': {
         tracker.name: tracker.TrackerConfig()
         for tracker in trackers.trackers()

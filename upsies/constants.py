@@ -6,6 +6,9 @@ import os
 
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 
+CONFIG_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'config.ini')
+"""Path to general configuration file"""
+
 TRACKERS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'trackers.ini')
 """Path to trackers configuration file"""
 

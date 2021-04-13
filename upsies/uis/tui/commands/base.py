@@ -10,7 +10,7 @@ import sys
 import textwrap
 
 from .... import (__description__, __project_name__, __version__, constants,
-                  defaults, errors)
+                  defaults, errors, utils)
 from ....utils import configfiles
 
 import logging  # isort:skip
@@ -78,6 +78,9 @@ class CommandBase(abc.ABC):
     _argparser.add_argument('--debug', '-d',
                             metavar='FILE',
                             help='Write debugging messages to FILE')
+    _argparser.add_argument('--config-file', '-f',
+                            help='General configuration file path',
+                            default=constants.CONFIG_FILEPATH)
     _argparser.add_argument('--trackers-file', '-t',
                             help='Tracker configuration file path',
                             default=constants.TRACKERS_FILEPATH)
@@ -210,6 +213,7 @@ class CommandBase(abc.ABC):
         # Read config files
         try:
             config = configfiles.ConfigFiles(defaults=defaults.defaults)
+            config.read('config', filepath=main_args.config_file, ignore_missing=True)
             config.read('trackers', filepath=main_args.trackers_file, ignore_missing=True)
             config.read('clients', filepath=main_args.clients_file, ignore_missing=True)
         except errors.ConfigError as e:
