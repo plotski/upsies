@@ -30,7 +30,7 @@ class mediainfo(CommandBase):
     def jobs(self):
         return (
             jobs.mediainfo.MediainfoJob(
-                home_directory=utils.fs.projectdir(self.args.CONTENT),
+                home_directory=self.home_directory,
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.CONTENT,
             ),

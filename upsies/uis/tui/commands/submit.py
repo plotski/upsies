@@ -42,7 +42,7 @@ class submit(CommandBase):
     @utils.cached_property
     def jobs(self):
         submit_job = jobs.submit.SubmitJob(
-            home_directory=utils.fs.projectdir(self.args.CONTENT),
+            home_directory=self.home_directory,
             ignore_cache=self.args.ignore_cache,
             tracker=self.tracker,
             tracker_jobs=self.tracker_jobs,
@@ -88,7 +88,7 @@ class submit(CommandBase):
             bittorrent_client=self._get_btclient(),
             torrent_destination=self._get_torrent_destination(),
             common_job_args={
-                'home_directory': utils.fs.projectdir(self.args.CONTENT),
+                'home_directory': self.home_directory,
                 'ignore_cache': self.args.ignore_cache,
             },
             cli_args=self.args,

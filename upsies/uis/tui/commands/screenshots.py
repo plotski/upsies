@@ -40,7 +40,7 @@ class screenshots(CommandBase):
     @utils.cached_property
     def screenshots_job(self):
         return jobs.screenshots.ScreenshotsJob(
-            home_directory=utils.fs.projectdir(self.args.CONTENT),
+            home_directory=self.home_directory,
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
             timestamps=self.args.timestamps,
@@ -51,7 +51,7 @@ class screenshots(CommandBase):
     def upload_screenshots_job(self):
         if self.args.upload_to:
             imghost_job = jobs.imghost.ImageHostJob(
-                home_directory=utils.fs.projectdir(self.args.CONTENT),
+                home_directory=self.home_directory,
                 ignore_cache=self.args.ignore_cache,
                 imghost=utils.imghosts.imghost(
                     name=self.args.upload_to,

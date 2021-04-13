@@ -82,7 +82,7 @@ class torrent_create(CommandBase):
     @utils.cached_property
     def create_torrent_job(self):
         return jobs.torrent.CreateTorrentJob(
-            home_directory=utils.fs.projectdir(self.args.CONTENT),
+            home_directory=self.home_directory,
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
             tracker=trackers.tracker(
@@ -96,7 +96,7 @@ class torrent_create(CommandBase):
     def add_torrent_job(self):
         if self.args.add_to:
             add_torrent_job = jobs.torrent.AddTorrentJob(
-                home_directory=utils.fs.projectdir(self.args.CONTENT),
+                home_directory=self.home_directory,
                 ignore_cache=self.args.ignore_cache,
                 client=utils.btclients.client(
                     name=self.args.add_to,
@@ -114,7 +114,7 @@ class torrent_create(CommandBase):
     def copy_torrent_job(self):
         if self.args.copy_to:
             copy_torrent_job = jobs.torrent.CopyTorrentJob(
-                home_directory=utils.fs.projectdir(self.args.CONTENT),
+                home_directory=self.home_directory,
                 ignore_cache=self.args.ignore_cache,
                 destination=self.args.copy_to,
             )

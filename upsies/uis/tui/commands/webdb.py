@@ -36,7 +36,7 @@ class webdb_search(CommandBase):
     def jobs(self):
         return (
             jobs.webdb.SearchWebDbJob(
-                home_directory=utils.fs.projectdir(self.args.RELEASE),
+                home_directory=self.home_directory,
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.RELEASE,
                 db=utils.webdbs.webdb(self.args.DB),
