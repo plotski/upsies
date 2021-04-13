@@ -249,3 +249,24 @@ class CommandBase(abc.ABC):
     def config(self):
         """Config file options as :class:`~.configfiles.ConfigFiles` object"""
         return self._config
+
+    @property
+    def home_directory(self):
+        """
+        Passed as `home_directory` argument to :class:`.jobs.base.JobBase` instances
+        that are instantiated by this class
+
+        The default implementation passes the ``CONTENT`` or ``RELEASE``
+        argument ``config.main.tmp_directory`` to :func:`.fs.projectdir`.
+        """
+        if hasattr(self.args, 'CONTENT'):
+            content_path = self.args.CONTENT
+        elif hasattr(self.args, 'RELEASE'):
+            content_path = self.args.RELEASE
+        else:
+            raise NotImplementedError('You must implement your own home_directory property.')
+
+        return utils.fs.projectdir(
+            content_path=content_path,
+            base=self.config['config']['main']['tmp_directory'],
+        )
