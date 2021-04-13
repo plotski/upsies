@@ -804,19 +804,8 @@ class BbTrackerJobs(TrackerJobsBase):
         ]
 
         if self.is_series_release:
-            # Screenshots
-            await self.upload_screenshots_job.wait()
-            screenshot_urls = self.get_job_output(self.upload_screenshots_job)
-            screenshots_bbcode = '\n\n'.join(f'[img={u}]' for u in screenshot_urls)
-            parts.append(
-                '[quote]\n'
-                f'[align=center]{screenshots_bbcode}[/align]\n'
-                '[/quote]'
-            )
-
-            # Mediainfo
-            await self.mediainfo_job.wait()
-            parts.append(f'[mediainfo]{self.get_job_output(self.mediainfo_job)[0]}[/mediainfo]\n')
+            parts.append(await self.format_description_series_screenshots())
+            parts.append(await self.format_description_series_mediainfo())
 
         parts.append(self.promotion)
         return ''.join(parts)
@@ -960,6 +949,24 @@ class BbTrackerJobs(TrackerJobsBase):
             return (f'[b]Actor{"s" if len(actors) > 1 else ""}[/b]: '
                     + ', '.join(actors_links))
 
+    async def format_description_series_screenshots(self):
+        screenshots_bbcode_parts = ['\n\n']  # Spacer
+        await self.upload_screenshots_job.wait()
+        screenshot_urls = self.get_job_output(self.upload_screenshots_job)
+        for url in screenshot_urls:
+            screenshots_bbcode_parts.append(f'[img={url}]')
+        screenshots_bbcode = ''.join(screenshots_bbcode_parts)
+        return (
+            '[quote]\n'
+            f'[align=center]{screenshots_bbcode}[/align]\n'
+            '[/quote]'
+        )
+
+    async def format_description_series_mediainfo(self):
+        await self.mediainfo_job.wait()
+        mediainfo = self.get_job_output(self.mediainfo_job, slice=0)
+        return f'[mediainfo]{mediainfo}[/mediainfo]\n'
+
     # Web form data
 
     def get_job_output(self, job, slice=slice(None, None)):
@@ -978,7 +985,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def torrent_filepath(self):
-        return self.get_job_output(self.create_torrent_job)[0]
+        return self.get_job_output(self.create_torrent_job, slice=0)
 
     @property
     def post_data(self):
