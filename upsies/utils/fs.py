@@ -55,23 +55,25 @@ def tmpdir():
 
 
 @functools.lru_cache(maxsize=None)
-def projectdir(content_path):
+def projectdir(content_path, base=None):
     """
     Return path to existing directory in which jobs put their files and cache
 
     :param str content_path: Path to torrent content
 
-    :raise RuntimeError: if `content_path` exists and is not a directory or has
+    :raise ContentError: if `content_path` exists and is not a directory or has
         insufficient permissions
     """
     if content_path:
-        path = basename(content_path)
-        path += '.upsies'
+        if not base:
+            base = tmpdir()
+        else:
+            mkdir(base)
+        path = os.path.join(base, basename(content_path) + '.upsies')
     else:
         path = '.'
     if not os.path.exists(path):
-        os.mkdir(path)
-    assert_dir_usable(path)
+        mkdir(path)
     _log.debug('Using project directory: %r', path)
     return path
 
