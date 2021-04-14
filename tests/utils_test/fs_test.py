@@ -145,7 +145,7 @@ def test_mkdir(assert_dir_usable_mock, makedirs_mock):
 @patch('upsies.utils.fs.assert_dir_usable')
 def test_mkdir_catches_makedirs_error(assert_dir_usable_mock, makedirs_mock):
     makedirs_mock.side_effect = OSError('No way')
-    with pytest.raises(errors.ContentError, match=rf'^path/to/dir: No way'):
+    with pytest.raises(errors.ContentError, match=r'^path/to/dir: No way'):
         fs.mkdir('path/to/dir')
     makedirs_mock.call_args_list == [call('path/to/dir')]
     assert_dir_usable_mock.call_args_list == []
