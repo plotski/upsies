@@ -68,8 +68,14 @@ class SceneQuery:
             ``resolution``, ``source``, ``video_codec`` and ``group``.
         """
         info = dict(release)
+
         # Replace H.264/5 with H264/5
         info['video_codec'] = re.sub(r'\.', '', info['video_codec'])
+
+        # Replace WEB-DL with WEB
+        if info.get('source') == 'WEB-DL':
+            info['source'] = 'WEB'
+
         # Group and episodes are handled separately
         needed_keys = [k for k in common.get_needed_keys(info)
                        if k not in ('group', 'episodes')]
