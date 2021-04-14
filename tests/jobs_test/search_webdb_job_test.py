@@ -65,7 +65,7 @@ def test_SearchWebDbJob_label(job):
 
 
 def test_SearchWebDbJob_cache_id(job):
-    assert job.cache_id == ('foodb', 'foo')
+    assert job.cache_id == 'foo'
 
 
 def test_SearchWebDbJob_query(job):
