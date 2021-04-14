@@ -293,3 +293,35 @@ def file_tree(tree, _parents_is_last=()):
             lines.append(file_tree(node, _parents_is_last=sub_parents_is_last))
 
     return '\n'.join(lines)
+
+
+_parse_size_regex = re.compile(r'^(\d+(?:\.\d+|)) ?([a-zA-Z]{,3})$')
+_parse_size_multipliers = {
+    '': 1,
+    'k': 1000,
+    'M': 1000**2,
+    'G': 1000**3,
+    'T': 1000**4,
+    'P': 1000**5,
+    'Ki': 1024,
+    'Mi': 1024**2,
+    'Gi': 1024**3,
+    'Ti': 1024**4,
+    'Pi': 1024**5,
+}
+
+def parse_size(string):
+    match = _parse_size_regex.search(string)
+    if not match:
+        raise ValueError(f'Invalid size: {string}')
+    else:
+        number = match.group(1)
+        unit = match.group(2)
+        if unit and unit[-1].upper() == 'B':
+            unit = unit[:-1]
+        try:
+            multiplier = _parse_size_multipliers[unit]
+        except KeyError:
+            raise ValueError(f'Invalid unit: {unit}')
+        else:
+            return float(number) * multiplier
