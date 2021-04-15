@@ -374,10 +374,9 @@ root
     ),
 )
 @pytest.mark.parametrize('unit', ('', 'b', 'B'))
-def test_parse_size_valid_string(number, space, prefix, multiplier, unit):
-    bytes = fs.parse_size(f'{number}{space}{prefix}{unit}')
-    print('got:', bytes)
-    assert bytes == float(number) * multiplier
+def test_Bytes_valid_string(number, space, prefix, multiplier, unit):
+    bytes = fs.Bytes(f'{number}{space}{prefix}{unit}')
+    assert bytes == int(float(number) * multiplier)
 
 @pytest.mark.parametrize(
     argnames='string, exp_msg',
@@ -388,6 +387,6 @@ def test_parse_size_valid_string(number, space, prefix, multiplier, unit):
         ('10 Mx', 'Invalid unit: Mx'),
     ),
 )
-def test_parse_size_invalid_string(string, exp_msg):
+def test_Bytes_invalid_string(string, exp_msg):
     with pytest.raises(ValueError, match=rf'^{exp_msg}$'):
-        fs.parse_size(string)
+        fs.Bytes(string)

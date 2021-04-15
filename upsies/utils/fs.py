@@ -295,8 +295,8 @@ def file_tree(tree, _parents_is_last=()):
     return '\n'.join(lines)
 
 
-_parse_size_regex = re.compile(r'^(\d+(?:\.\d+|)) ?([a-zA-Z]{,3})$')
-_parse_size_multipliers = {
+_bytes_regex = re.compile(r'^(\d+(?:\.\d+|)) ?([a-zA-Z]{,3})$')
+_bytes_multipliers = {
     '': 1,
     'k': 1000,
     'M': 1000**2,
@@ -310,18 +310,28 @@ _parse_size_multipliers = {
     'Pi': 1024**5,
 }
 
-def parse_size(string):
-    match = _parse_size_regex.search(string)
-    if not match:
-        raise ValueError(f'Invalid size: {string}')
-    else:
-        number = match.group(1)
-        unit = match.group(2)
-        if unit and unit[-1].upper() == 'B':
-            unit = unit[:-1]
-        try:
-            multiplier = _parse_size_multipliers[unit]
-        except KeyError:
-            raise ValueError(f'Invalid unit: {unit}')
+class Bytes(int):
+    """:class:`int` subclass that interprets units and unit prefixes"""
+
+    @classmethod
+    def from_string(cls, string):
+        match = _bytes_regex.search(string)
+        if not match:
+            raise ValueError(f'Invalid size: {string}')
         else:
-            return float(number) * multiplier
+            number = match.group(1)
+            unit = match.group(2)
+            if unit and unit[-1].upper() == 'B':
+                unit = unit[:-1]
+            try:
+                multiplier = _bytes_multipliers[unit]
+            except KeyError:
+                raise ValueError(f'Invalid unit: {unit}')
+            else:
+                return cls(int(float(number) * multiplier))
+
+    def __new__(cls, value):
+        if isinstance(value, str):
+            return cls.from_string(value)
+        else:
+            return super().__new__(cls, value)
