@@ -134,6 +134,53 @@ def test_projectdir(tmpdir_mock, mkdir_mock, tmp_path, content_path, base, exp_p
         tmpdir_mock.call_args_list == [call(base), call(path)]
 
 
+def test_prune_empty_directories(tmp_path):
+    (tmp_path / 'foo' / 'a' / '1').mkdir(parents=True)
+    (tmp_path / 'foo' / 'a' / '2').mkdir(parents=True)
+    (tmp_path / 'foo' / 'b').write_text('yes, this is b')
+    (tmp_path / 'bar' / 'x').mkdir(parents=True)
+    (tmp_path / 'bar' / 'y' / 'z' / '1').mkdir(parents=True)
+    (tmp_path / 'bar' / 'y' / 'z' / '1' / 'c').write_text('yes, this is c')
+    (tmp_path / 'bar' / 'y' / 'z' / '2').mkdir(parents=True)
+    (tmp_path / 'baz').mkdir(parents=True)
+    fs.prune_empty_directories(tmp_path)
+    assert os.path.exists(tmp_path)
+    assert os.path.isdir(tmp_path)
+    tree = sorted(
+        os.path.join(dirpath, filename)
+        for dirpath, dirnames, filenames in os.walk(tmp_path)
+        for filename in filenames
+    )
+    assert tree == [
+        f'{tmp_path}/bar/y/z/1/c',
+        f'{tmp_path}/foo/b',
+    ]
+
+def test_prune_empty_directories_encounters_OSError(tmp_path):
+    try:
+        (tmp_path / 'bar' / 'x').mkdir(parents=True)
+        (tmp_path / 'foo' / 'a' / '1').mkdir(parents=True)
+        (tmp_path / 'foo' / 'a' / '2').mkdir(parents=True, mode=0o000)
+        (tmp_path / 'foo' / 'a' / '3').mkdir(parents=True)
+        (tmp_path / 'foo' / 'b').mkdir(parents=True)
+        with pytest.raises(RuntimeError, match=rf'{tmp_path}/foo/a/2: Failed to prune: Permission denied'):
+            fs.prune_empty_directories(tmp_path)
+        tree = sorted(
+            os.path.join(dirpath, dirname)
+            for dirpath, dirnames, filenames in os.walk(tmp_path)
+            for dirname in dirnames
+        )
+        assert sorted(tree) == [
+            f'{tmp_path}/bar',
+            f'{tmp_path}/foo',
+            f'{tmp_path}/foo/a',
+            f'{tmp_path}/foo/a/2',
+            f'{tmp_path}/foo/a/3',
+        ]
+    finally:
+        os.chmod(tmp_path / 'foo' / 'a' / '2', 0o700)
+
+
 @patch('os.makedirs')
 @patch('upsies.utils.fs.assert_dir_usable')
 def test_mkdir(assert_dir_usable_mock, makedirs_mock):

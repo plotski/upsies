@@ -78,6 +78,21 @@ def projectdir(content_path, base=None):
     return path
 
 
+def prune_empty_directories(path):
+    """Remove empty subdirectories recursively"""
+    for dirpath, dirnames, _ in sorted(os.walk(path, topdown=False)):
+        for dirname in sorted(dirnames):
+            subdirpath = os.path.join(dirpath, dirname)
+            try:
+                if not os.listdir(subdirpath):
+                    os.rmdir(subdirpath)
+            except OSError as e:
+                if e.strerror:
+                    raise RuntimeError(f'{subdirpath}: Failed to prune: {e.strerror}')
+                else:
+                    raise RuntimeError(f'{subdirpath}: Failed to prune: {e}')
+
+
 def mkdir(path):
     """
     Create directory and its parents
