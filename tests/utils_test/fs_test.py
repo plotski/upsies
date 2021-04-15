@@ -1,3 +1,4 @@
+import itertools
 import os
 from pathlib import Path
 from unittest.mock import call, patch
@@ -132,6 +133,53 @@ def test_projectdir(tmpdir_mock, mkdir_mock, tmp_path, content_path, base, exp_p
         mkdir_mock.call_args_list == [call(base), call(path)]
     else:
         tmpdir_mock.call_args_list == [call(base), call(path)]
+
+
+def test_limit_directory_size(tmp_path):
+    for dirname1 in ('a', 'b', 'c'):
+        for dirname2 in ('d', 'e', 'f'):
+            (tmp_path / dirname1 / dirname2).mkdir(parents=True)
+            (tmp_path / dirname1 / dirname2 / 'y').write_text('x' * 100)
+            (tmp_path / dirname1 / dirname2 / 'empty').mkdir()
+        (tmp_path / dirname1 / 'z').write_text('x' * 1000)
+        (tmp_path / dirname1 / 'empty').mkdir()
+
+    atime = 0
+    atime_iter = itertools.cycle((5, 10, 20, 30, 60))
+    for dirname2 in ('e', 'd', 'f'):
+        for dirname1 in ('b', 'a', 'c'):
+            os.utime(tmp_path / dirname1 / dirname2 / 'y', (atime, atime))
+            atime += next(atime_iter)
+            os.utime(tmp_path / dirname1 / 'z', (atime, atime))
+            atime += next(atime_iter)
+
+    def get_files():
+        return sorted(
+            (
+                os.path.join(dirpath, filename)
+                for dirpath, dirnames, filenames in os.walk(tmp_path)
+                for filename in filenames
+            ),
+            key=lambda filepath: os.stat(filepath).st_atime,
+        )
+
+    orig_files = get_files()
+
+    # No pruning necessary
+    fs.limit_directory_size(tmp_path, max_total_size=3900)
+    assert get_files() == orig_files
+
+    # Prune oldest file
+    fs.limit_directory_size(tmp_path, max_total_size=3800)
+    assert get_files() == orig_files[1:]
+
+    # Prune multiple files
+    fs.limit_directory_size(tmp_path, max_total_size=3000)
+    assert get_files() == orig_files[8:]
+
+    # Prune all files
+    fs.limit_directory_size(tmp_path, max_total_size=0)
+    assert get_files() == []
 
 
 def test_prune_empty_directories(tmp_path):

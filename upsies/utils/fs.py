@@ -78,6 +78,40 @@ def projectdir(content_path, base=None):
     return path
 
 
+def limit_directory_size(path, max_total_size):
+    """
+    Delete oldest files (by access time) until maximum size is not exceeded
+
+    :func:`prune_empty_directories` is also called with `path`.
+
+    :param path: Path to directory
+    :param max_total_size: Maximum combined size of all files in `path` and its
+        subdirectories
+    """
+    def size(path):
+        return sum(file_size(f) for f in file_list(path))
+
+    # This should return mtime if file system was mounted with noatime.
+    def atime(filepath):
+        statinfo = os.stat(filepath)
+        return statinfo.st_atime
+
+    # Remove oldest file until `path` size is small enough
+    while size(path) > max_total_size:
+        files = sorted(file_list(path), key=atime)
+        if files:
+            try:
+                os.unlink(files[0])
+            except OSError as e:
+                if e.strerror:
+                    raise RuntimeError(f'{files[0]}: Failed to prune: {e.strerror}')
+                else:
+                    raise RuntimeError(f'{files[0]}: Failed to prune: {e}')
+                break
+
+    prune_empty_directories(path)
+
+
 def prune_empty_directories(path):
     """Remove empty subdirectories recursively"""
     for dirpath, dirnames, _ in sorted(os.walk(path, topdown=False)):
