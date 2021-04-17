@@ -60,6 +60,8 @@ def projectdir(content_path, base=None):
     Return path to existing directory in which jobs put their files and cache
 
     :param str content_path: Path to torrent content
+    :param str base: Location of the project directory; defaults to
+        :func:`tmpdir`
 
     :raise ContentError: if `content_path` exists and is not a directory or has
         insufficient permissions
