@@ -4,7 +4,7 @@ Entry point
 
 import sys
 
-from ... import __homepage__, errors
+from ... import __homepage__, cleanup, errors
 from . import commands
 from .ui import UI
 
@@ -21,6 +21,7 @@ def _main(args=None):
         ui = UI()
         cmd = commands.run(args)
         exit_code = ui.run(cmd.jobs_active)
+        cleanup.cleanup(cmd.config)
 
     # TUI was terminated by user prematurely
     except errors.CancelledError as e:
@@ -53,5 +54,4 @@ def _main(args=None):
             final_job = cmd.jobs_active[-1]
             if final_job.output:
                 print('\n'.join(final_job.output))
-
         return exit_code

@@ -3,7 +3,6 @@ HTTP methods with caching
 """
 
 import asyncio
-import atexit
 import collections
 import hashlib
 import json
@@ -30,11 +29,12 @@ _client = httpx.AsyncClient(
     timeout=60,
 )
 
-def _close_client():
+
+def close():
+    """Close the client session"""
     _log.debug('Closing client: %r', _client)
     asyncio.get_event_loop().run_until_complete(_client.aclose())
     _log.debug('Closed client: %r', _client)
-atexit.register(_close_client)
 
 
 async def get(url, headers={}, params={}, auth=None,
