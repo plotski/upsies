@@ -30,6 +30,14 @@ _client = httpx.AsyncClient(
 )
 
 
+cache_directory = None
+"""
+Where to store cached requests
+
+If this is a falsy value, use :func:`~.fs.tmpdir`.
+"""
+
+
 def close():
     """Close the client session"""
     _log.debug('Closing client: %r', _client)
@@ -337,7 +345,7 @@ def _cache_file(method, url, params={}):
         params_str = ''
 
     return os.path.join(
-        fs.tmpdir(),
+        cache_directory or fs.tmpdir(),
         make_filename(method, url, params_str),
     )
 

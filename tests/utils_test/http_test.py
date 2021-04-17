@@ -561,7 +561,7 @@ async def test_request_catches_HTTPError(method, mock_cache, mocker):
 
 @pytest.mark.asyncio
 async def test_get_performs_only_one_identical_request_at_the_same_time(httpserver, mocker, tmp_path):
-    mocker.patch('upsies.utils.fs.tmpdir', return_value=str(tmp_path))
+    mocker.patch.object(http, 'cache_directory', str(tmp_path))
 
     class Handler(RequestHandler):
         def handle(self, request):
@@ -600,7 +600,7 @@ async def test_get_performs_only_one_identical_request_at_the_same_time(httpserv
 
 @pytest.mark.asyncio
 async def test_post_request_performs_only_one_identical_request_at_the_same_time(httpserver, mocker, tmp_path):
-    mocker.patch('upsies.utils.fs.tmpdir', return_value=str(tmp_path))
+    mocker.patch.object(http, 'cache_directory', str(tmp_path))
 
     class Handler(RequestHandler):
         def handle(self, request):
@@ -749,14 +749,14 @@ def test_get_fileobj_returns_fileobj(tmp_path):
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 def test_cache_file_without_params(method, mocker):
-    mocker.patch('upsies.utils.fs.tmpdir', return_value='/tmp/foo')
+    mocker.patch.object(http, 'cache_directory', '/tmp/foo')
     url = 'http://localhost:123/foo/bar'
     exp_cache_file = f'/tmp/foo/{method.upper()}.http:__localhost:123_foo_bar'
     assert http._cache_file(method, url) == exp_cache_file
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 def test_cache_file_with_params(method, mocker):
-    mocker.patch('upsies.utils.fs.tmpdir', return_value='/tmp/foo')
+    mocker.patch.object(http, 'cache_directory', '/tmp/foo')
     url = 'http://localhost:123'
     params = {'foo': 'a b c', 'bar': 12}
     exp_cache_file = f'/tmp/foo/{method.upper()}.http:__localhost:123?foo=a+b+c&bar=12'
@@ -764,7 +764,7 @@ def test_cache_file_with_params(method, mocker):
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 def test_cache_file_with_very_long_params(method, mocker):
-    mocker.patch('upsies.utils.fs.tmpdir', return_value='/tmp/foo')
+    mocker.patch.object(http, 'cache_directory', '/tmp/foo')
     url = 'http://localhost:123'
     params = {'foo': 'a b c ' * 100, 'bar': 12}
     exp_cache_file = (
@@ -772,6 +772,14 @@ def test_cache_file_with_very_long_params(method, mocker):
         f'[HASH:{http._semantic_hash(params)}]'
     )
     assert http._cache_file(method, url, params=params) == exp_cache_file
+
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+def test_cache_file_defaults_to_fs_tmpdir(method, mocker):
+    assert not http.cache_directory
+    mocker.patch('upsies.utils.fs.tmpdir', return_value='/tmp/bar')
+    url = 'http://localhost:123'
+    exp_cache_file = f'/tmp/bar/{method.upper()}.http:__localhost:123'
+    assert http._cache_file(method, url) == exp_cache_file
 
 
 def test_from_cache_cannot_read_cache_file(mocker):
