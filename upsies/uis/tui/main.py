@@ -4,7 +4,7 @@ Entry point
 
 import sys
 
-from ... import __homepage__, cleanup, errors
+from ... import __homepage__, application_setup, application_shutdown, errors
 from . import commands
 from .ui import UI
 
@@ -20,8 +20,9 @@ def _main(args=None):
     try:
         ui = UI()
         cmd = commands.run(args)
+        application_setup(cmd.config)
         exit_code = ui.run(cmd.jobs_active)
-        cleanup.cleanup(cmd.config)
+        application_shutdown(cmd.config)
 
     # TUI was terminated by user prematurely
     except errors.CancelledError as e:
