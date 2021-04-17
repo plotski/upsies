@@ -5,6 +5,7 @@ Abstract base class for commands
 import abc
 import argparse
 import collections
+import os
 import re
 import sys
 import textwrap
@@ -258,15 +259,33 @@ class CommandBase(abc.ABC):
 
         The default implementation passes the ``CONTENT`` or ``RELEASE``
         argument ``config.main.tmp_directory`` to :func:`.fs.projectdir`.
+
+        If no ``CONTENT`` or ``RELEASE`` argument exists, return
+        ``config.main.tmp_directory`` directly.
         """
         if hasattr(self.args, 'CONTENT'):
             content_path = self.args.CONTENT
         elif hasattr(self.args, 'RELEASE'):
             content_path = self.args.RELEASE
         else:
-            raise NotImplementedError('You must implement your own home_directory property.')
+            return self.config['config']['main']['tmp_directory']
 
         return utils.fs.projectdir(
             content_path=content_path,
             base=self.config['config']['main']['tmp_directory'],
         )
+
+    @property
+    def cache_directory(self):
+        """
+        Passed as `cache_directory` argument to :class:`.jobs.base.JobBase`
+        instances that are instantiated by this class
+
+        The default implementation appends ``.cache`` to :attr:`home_directory`
+        if the ``CONTENT`` or ``RELEASE`` argument exists and returns
+        ``config.main.tmp_directory`` otherwise.
+        """
+        if hasattr(self.args, 'CONTENT') or hasattr(self.args, 'RELEASE'):
+            return os.path.join(self.home_directory, '.cache')
+        else:
+            return self.config['config']['main']['tmp_directory']

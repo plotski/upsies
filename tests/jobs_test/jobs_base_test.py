@@ -41,47 +41,50 @@ class FooJob(JobBase):
 
 @pytest.fixture
 def job(tmp_path):
-    return FooJob(home_directory=tmp_path, ignore_cache=False)
+    return FooJob(home_directory=tmp_path, cache_directory=tmp_path, ignore_cache=False)
 
 
 def test_home_directory_property(tmp_path):
-    job = FooJob(home_directory=tmp_path, ignore_cache=False)
-    assert job.home_directory == str(tmp_path)
-    assert isinstance(job.home_directory, str)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
+    assert job.home_directory == tmp_path
+
+def test_cache_directory_property(tmp_path):
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path / 'bar')
+    assert job.cache_directory == tmp_path / 'bar'
 
 def test_ignore_cache_property(tmp_path):
-    assert FooJob(home_directory=tmp_path, ignore_cache=False).ignore_cache is False
-    assert FooJob(home_directory=tmp_path, ignore_cache=True).ignore_cache is True
-    assert FooJob(home_directory=tmp_path, ignore_cache='').ignore_cache is False
-    assert FooJob(home_directory=tmp_path, ignore_cache=1).ignore_cache is True
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, ignore_cache=False).ignore_cache is False
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, ignore_cache=True).ignore_cache is True
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, ignore_cache='').ignore_cache is False
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, ignore_cache=1).ignore_cache is True
 
 def test_hidden_property(tmp_path):
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, hidden=False).hidden is False
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, hidden=True).hidden is True
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, hidden='').hidden is False
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, hidden=1).hidden is True
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, hidden=False).hidden is False
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, hidden=True).hidden is True
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, hidden='').hidden is False
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, hidden=1).hidden is True
 
 def test_autostart_property(tmp_path):
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, autostart=False).autostart is False
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, autostart=True).autostart is True
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, autostart='').autostart is False
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, autostart=1).autostart is True
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, autostart=False).autostart is False
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, autostart=True).autostart is True
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, autostart='').autostart is False
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, autostart=1).autostart is True
 
 def test_is_enabled_property(tmp_path):
     condition = Mock()
-    job = FooJob(home_directory=tmp_path, ignore_cache=False, condition=condition)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path, condition=condition)
     condition.return_value = 0
     assert job.is_enabled is False
     condition.return_value = 'yes'
     assert job.is_enabled is True
 
 def test_kwargs_property(tmp_path):
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, foo='a').kwargs.get('foo') == 'a'
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, foo='a').kwargs.get('bar') is None
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, bar='b').kwargs.get('bar') == 'b'
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, bar='b').kwargs.get('foo') is None
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, foo='a', bar='b').kwargs.get('foo') == 'a'
-    assert FooJob(home_directory=tmp_path, ignore_cache=False, foo='a', bar='b').kwargs.get('bar') == 'b'
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, foo='a').kwargs.get('foo') == 'a'
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, foo='a').kwargs.get('bar') is None
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, bar='b').kwargs.get('bar') == 'b'
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, bar='b').kwargs.get('foo') is None
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, foo='a', bar='b').kwargs.get('foo') == 'a'
+    assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, foo='a', bar='b').kwargs.get('bar') == 'b'
 
 def test_signal_property(job):
     assert isinstance(job.signal, signal.Signal)
@@ -93,17 +96,21 @@ def test_initialize_is_called_after_object_creation(job):
     assert job.initialize_was_called
 
 
-def test_callbacks_argument(job):
+def test_callbacks_argument(tmp_path):
     class BarJob(FooJob):
         def initialize(self):
             self.signal.add('greeted')
 
     cb = Mock()
-    job = BarJob(callbacks={
-        'output': cb.output,
-        'finished': cb.finished,
-        'greeted': (cb.hello, cb.hey),
-    })
+    job = BarJob(
+        home_directory=tmp_path,
+        cache_directory=tmp_path,
+        callbacks={
+            'output': cb.output,
+            'finished': cb.finished,
+            'greeted': (cb.hello, cb.hey),
+        },
+    )
     assert cb.output in job.signal.signals['output']
     assert cb.finished in job.signal.signals['finished']
     assert cb.hello in job.signal.signals['greeted']
@@ -125,7 +132,7 @@ def test_start_reads_cache_from_previous_job(tmp_path):
         def _read_cache(self):
             return True
 
-    job = BarJob(home_directory=tmp_path, ignore_cache=False)
+    job = BarJob(home_directory=tmp_path, cache_directory=tmp_path)
     job.start()
     assert not hasattr(job, 'execute_was_called')
     assert job.is_finished is True
@@ -135,7 +142,7 @@ def test_start_finishes_if_reading_from_cache_fails(tmp_path):
         def _read_cache(self):
             raise RuntimeError('I found god')
 
-    job = BarJob(home_directory=tmp_path, ignore_cache=False)
+    job = BarJob(home_directory=tmp_path, cache_directory=tmp_path)
     with pytest.raises(RuntimeError, match=r'I found god'):
         job.start()
     assert job.is_finished is True
@@ -163,7 +170,7 @@ async def test_wait_returns_when_finish_is_called(tmp_path):
             await super().wait()
             self.calls.append('wait() returned')
 
-    job = BarJob(home_directory=tmp_path, ignore_cache=False)
+    job = BarJob(home_directory=tmp_path, cache_directory=tmp_path)
     job.start()
     await job.wait()
     assert list(job.calls) == ['finish() called', 'wait() returned']
@@ -439,7 +446,7 @@ def test_write_cache_does_nothing_if_cache_file_property_is_falsy(cache_file_val
     class BarJob(FooJob):
         cache_file = cache_file_value
 
-    job = BarJob(home_directory=tmp_path, ignore_cache=False)
+    job = BarJob(home_directory=tmp_path, cache_directory=tmp_path)
     job.send('Foo')
     job.finish()
     open_mock = mocker.patch('upsies.jobs.base.open')
@@ -470,7 +477,7 @@ def test_write_cache_writes_signal_emissions(tmp_path, mocker):
         def execute(self):
             pass
 
-    job = BarJob(home_directory=tmp_path)
+    job = BarJob(home_directory=tmp_path, cache_directory=tmp_path)
     job.send('Foo')
     job.start()
     job.finish()
@@ -512,7 +519,7 @@ async def test_cache_is_properly_written_when_repeating_command(tmp_path):
             return super()._read_cache()
 
     for i in range(5):
-        job = BarJob(home_directory=tmp_path, ignore_cache=False)
+        job = BarJob(home_directory=tmp_path, cache_directory=tmp_path)
         assert job.is_finished is False
         assert job.output == ()
         job.start()
@@ -525,7 +532,7 @@ async def test_cache_is_properly_written_when_repeating_command(tmp_path):
 
 @pytest.mark.parametrize('ignore_cache', (False, None, 0, ''))
 def test_read_cache_does_nothing_if_ignore_cache_is_falsy(ignore_cache, tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path, ignore_cache=ignore_cache)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path, ignore_cache=ignore_cache)
     open_mock = mocker.patch('upsies.jobs.base.open')
     assert job._read_cache() is False
     assert open_mock.call_args_list == []
@@ -535,7 +542,7 @@ def test_read_cache_does_nothing_if_cache_file_is_falsy(cache_file_value, tmp_pa
     class BarJob(FooJob):
         cache_file = cache_file_value
 
-    job = FooJob(home_directory=tmp_path, ignore_cache=False)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     open_mock = mocker.patch('upsies.jobs.base.open')
     assert job._read_cache() is False
     assert open_mock.call_args_list == []
@@ -566,81 +573,65 @@ def test_read_cache_replays_signal_emissions(job, mocker):
     assert replay_mock.call_args_list == [call('emissions mock')]
 
 
-def test_cache_directory_with_default_home_directory(job, mocker):
-    tmpdir_mock = mocker.patch('upsies.utils.fs.tmpdir')
-    job = FooJob(ignore_cache=False)
-    assert job.cache_directory is tmpdir_mock.return_value
-
-def test_cache_directory_with_custom_home_directory(job, mocker, tmp_path):
-    mocker.patch('upsies.utils.fs.tmpdir')
-    job = FooJob(home_directory=tmp_path, ignore_cache=False)
-    assert job.cache_directory == os.path.join(tmp_path, '.cache')
-    assert os.path.exists(job.cache_directory)
-    assert os.path.isdir(job.cache_directory)
-    with open(os.path.join(job.cache_directory, 'foo'), 'w') as f:
-        f.write('writable')
-    assert open(os.path.join(job.cache_directory, 'foo'), 'r').read() == 'writable'
-
-
 def test_cache_file_when_cache_id_is_None(tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value=None))
     assert job.cache_file is None
 
 @pytest.mark.parametrize('cache_id_value', ('', {}, ()), ids=lambda v: repr(v))
 def test_cache_file_when_cache_id_is_falsy(cache_id_value, tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value=cache_id_value))
-    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.json')
+    assert job.cache_file == str(tmp_path / f'{job.name}.json')
 
 def test_cache_file_when_cache_id_is_too_long(tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     job._max_filename_len = 20
     too_long = ''.join(str(n) for n in range(50))
     mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value=too_long))
     mocker.patch.object(type(job), '_cache_id_as_string', Mock(return_value=too_long))
-    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.0123…4849.json')
+    assert job.cache_file == str(tmp_path / f'{job.name}.0123…4849.json')
 
 def test_cache_file_when_cache_id_is_not_too_long(tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value='something'))
-    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.something.json')
+    assert job.cache_file == str(tmp_path / f'{job.name}.something.json')
 
 def test_cache_file_masks_illegal_characters(tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value='hey you there'))
     mocker.patch('upsies.utils.fs.sanitize_filename', side_effect=lambda path: path.replace(' ', '#'))
-    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.hey#you#there.json')
+    assert job.cache_file == str(tmp_path / f'{job.name}.hey#you#there.json')
 
 
 def test_cache_id(tmp_path):
-    job = FooJob(home_directory=tmp_path)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     assert job.cache_id == ''
 
 
-def test_cache_id_as_string_when_cache_id_is_nonstring(tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+def test_cache_id_as_string_when_cache_id_is_nonstring(mocker, tmp_path):
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     assert job._cache_id_as_string(123) == '123'
 
-def test_cache_id_as_string_when_cache_id_is_nonstring_iterable(tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+def test_cache_id_as_string_when_cache_id_is_nonstring_iterable(mocker, tmp_path):
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     assert job._cache_id_as_string((1, 2, 3)) == '1,2,3'
 
 @pytest.mark.parametrize('value', (object(), print, lambda: None), ids=lambda v: str(v))
-def test_cache_id_as_string_when_cache_id_is_mapping_with_nonstringable_key(value, tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+def test_cache_id_as_string_when_cache_id_is_mapping_with_nonstringable_key(value, mocker, tmp_path):
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     with pytest.raises(RuntimeError, match=rf'^{re.escape(str(type(value)))} has no string representation$'):
         job._cache_id_as_string({1: 'foo', value: 'bar', 3: 'baz'})
 
 @pytest.mark.parametrize('value', (object(), print, lambda: None), ids=lambda v: str(v))
-def test_cache_id_as_string_when_cache_id_is_mapping_with_nonstringable_value(value, tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+def test_cache_id_as_string_when_cache_id_is_mapping_with_nonstringable_value(value, mocker, tmp_path):
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     with pytest.raises(RuntimeError, match=rf'^{re.escape(str(type(value)))} has no string representation$'):
         job._cache_id_as_string({1: 'foo', 2: value, 3: 'baz'})
 
 @pytest.mark.parametrize('value', (object(), print, lambda: None), ids=lambda v: str(v))
-def test_cache_id_as_string_when_cache_id_is_sequence_with_nonstringable_item(value, tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+def test_cache_id_as_string_when_cache_id_is_sequence_with_nonstringable_item(value, mocker, tmp_path):
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     with pytest.raises(RuntimeError, match=rf'^{re.escape(str(type(value)))} has no string representation$'):
         job._cache_id_as_string((1, value, 3))
 
@@ -654,13 +645,13 @@ def test_cache_id_as_string_normalizes_existing_paths(tmp_path):
     orig_cwd = os.getcwd()
     os.chdir(tmp_path)
     try:
-        job1 = FooJob(home_directory=tmp_path)
-        job2 = FooJob(home_directory=tmp_path)
+        job1 = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
+        job2 = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
         assert job1._cache_id_as_string(abs_path) == job2._cache_id_as_string(rel_path)
     finally:
         os.chdir(orig_cwd)
 
 def test_cache_id_as_string_normalizes_multibyte_characters(tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path)
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value='kožušček'))
-    assert job.cache_file == str(tmp_path / '.cache' / f'{job.name}.kozuscek.json')
+    assert job.cache_file == str(tmp_path / f'{job.name}.kozuscek.json')

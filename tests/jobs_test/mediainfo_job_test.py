@@ -8,6 +8,7 @@ from upsies.jobs.mediainfo import MediainfoJob
 def test_cache_id(tmp_path):
     mi = MediainfoJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         content_path='mock/path',
     )
     assert mi.cache_id == 'path'
@@ -18,6 +19,7 @@ def test_execute_gets_mediainfo(mediainfo_mock, tmp_path):
     mediainfo_mock.return_value = 'mock mediainfo output'
     mi = MediainfoJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )
@@ -39,6 +41,7 @@ def test_execute_catches_ContentError(mediainfo_mock, tmp_path):
     mediainfo_mock.side_effect = errors.ContentError('Ouch')
     mi = MediainfoJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=True,
         content_path='mock/path',
     )

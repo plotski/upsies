@@ -19,6 +19,7 @@ class AsyncMock(Mock):
 def job(tmp_path, tracker, tracker_jobs):
     return SubmitJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         tracker=tracker,
         tracker_jobs=tracker_jobs,
@@ -92,6 +93,7 @@ async def test_initialize_creates_jobs_after_upload(tmp_path, tracker, tracker_j
     )
     SubmitJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         tracker=tracker,
         tracker_jobs=tracker_jobs,
@@ -105,6 +107,7 @@ async def test_initialize_starts_jobs_after_upload_on_output(tmp_path, tracker, 
     )
     job = SubmitJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         tracker=tracker,
         tracker_jobs=tracker_jobs,
@@ -292,6 +295,7 @@ async def test_None_and_disabled_are_filtered_from_jobs_attributes(attrname, tmp
     )
     job = SubmitJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         tracker=tracker,
         tracker_jobs=tracker_jobs,

@@ -37,6 +37,7 @@ class release_name(CommandBase):
     def release_name_job(self):
         return jobs.release_name.ReleaseNameJob(
             home_directory=self.home_directory,
+            cache_directory=self.cache_directory,
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.RELEASE,
         )
@@ -47,6 +48,7 @@ class release_name(CommandBase):
         # an ID first. IMDb seems to be best.
         return jobs.webdb.SearchWebDbJob(
             home_directory=self.home_directory,
+            cache_directory=self.cache_directory,
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.RELEASE,
             db=utils.webdbs.webdb('imdb'),

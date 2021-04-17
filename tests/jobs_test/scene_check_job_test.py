@@ -17,10 +17,11 @@ class AsyncMock(Mock):
 
 
 @pytest.fixture
-async def make_SceneCheckJob(tmp_path):
+def make_SceneCheckJob(tmp_path):
     def make_SceneCheckJob(content_path=tmp_path, ignore_cache=False):
         return SceneCheckJob(
             home_directory=tmp_path,
+            cache_directory=tmp_path,
             ignore_cache=ignore_cache,
             content_path=content_path,
         )

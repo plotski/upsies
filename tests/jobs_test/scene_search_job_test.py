@@ -18,6 +18,7 @@ async def make_SceneSearchJob(tmp_path):
     def make_SceneSearchJob(content_path=tmp_path, ignore_cache=False):
         return SceneSearchJob(
             home_directory=tmp_path,
+            cache_directory=tmp_path,
             ignore_cache=ignore_cache,
             content_path=content_path,
         )

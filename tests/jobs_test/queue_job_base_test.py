@@ -28,7 +28,7 @@ class FooJob(QueueJobBase):
 @pytest.fixture
 @pytest.mark.asyncio
 async def qjob(tmp_path):
-    qjob = FooJob(home_directory=tmp_path, ignore_cache=False)
+    qjob = FooJob(home_directory=tmp_path, cache_directory=tmp_path, ignore_cache=False)
     yield qjob
     if inspect.isawaitable(qjob._read_queue_task):
         qjob.finish()
@@ -42,7 +42,7 @@ def test_QueueJobBase_is_JobBase_subclass(qjob):
 def test_enqueue_argument_is_empty(mocker, tmp_path):
     mocker.patch('upsies.jobs.base.QueueJobBase.enqueue')
     mocker.patch('upsies.jobs.base.QueueJobBase.finalize')
-    qjob = FooJob(enqueue=(), home_directory=tmp_path, ignore_cache=False)
+    qjob = FooJob(home_directory=tmp_path, cache_directory=tmp_path, enqueue=())
     assert qjob._enqueue_args == ()
     assert qjob.enqueue.call_args_list == []
     assert qjob.finalize.call_args_list == []
@@ -51,7 +51,7 @@ def test_enqueue_argument_is_not_empty(mocker, tmp_path):
     mocks = Mock()
     mocker.patch('upsies.jobs.base.QueueJobBase.enqueue', mocks.enqueue)
     mocker.patch('upsies.jobs.base.QueueJobBase.finish', mocks.finish)
-    qjob = FooJob(enqueue=(1, 2, 3), home_directory=tmp_path, ignore_cache=False)
+    qjob = FooJob(home_directory=tmp_path, cache_directory=tmp_path, enqueue=(1, 2, 3))
     assert qjob._enqueue_args == (1, 2, 3)
     assert mocks.mock_calls == []
 
@@ -62,7 +62,7 @@ def test_execute_with_enqueue_argument(mocker, tmp_path):
     mocker.patch('upsies.jobs.base.QueueJobBase.finalize', mocks.finalize)
     mocker.patch('upsies.jobs.base.QueueJobBase._read_queue', Mock())
     mocker.patch('asyncio.ensure_future')
-    qjob = FooJob(enqueue=(1, 2, 3), home_directory=tmp_path, ignore_cache=False)
+    qjob = FooJob(home_directory=tmp_path, cache_directory=tmp_path, enqueue=(1, 2, 3))
     assert qjob._read_queue_task is None
     qjob.execute()
     assert qjob._read_queue.call_args_list == [call()]
@@ -81,7 +81,7 @@ def test_execute_without_enqueue_argument(mocker, tmp_path):
     mocker.patch('upsies.jobs.base.QueueJobBase.finalize', mocks.finalize)
     mocker.patch('upsies.jobs.base.QueueJobBase._read_queue', Mock())
     mocker.patch('asyncio.ensure_future')
-    qjob = FooJob(home_directory=tmp_path, ignore_cache=False)
+    qjob = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     assert qjob._read_queue_task is None
     qjob.execute()
     assert qjob._read_queue.call_args_list == [call()]
@@ -108,7 +108,7 @@ async def test_read_queue_breaks_if_job_is_finished(mocker, tmp_path):
     mocker.patch('upsies.jobs.base.QueueJobBase.is_finished', PropertyMock(
         side_effect=(False, True, True, True),
     ))
-    qjob = FooJob(home_directory=tmp_path, ignore_cache=False)
+    qjob = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     mocker.patch.object(qjob, 'handle_input', AsyncMock())
     qjob._queue.put_nowait('a')
     qjob._queue.put_nowait('b')

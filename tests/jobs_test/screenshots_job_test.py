@@ -315,6 +315,7 @@ def job(tmp_path, mocker):
     mocker.patch('upsies.utils.daemon.DaemonProcess', DaemonProcess_mock)
     return ScreenshotsJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         content_path='some/path',
         timestamps=(120,),
@@ -323,13 +324,13 @@ def job(tmp_path, mocker):
 
 
 def test_cache_id(tmp_path):
-    job = ScreenshotsJob(home_directory=tmp_path, content_path='some/path')
+    job = ScreenshotsJob(home_directory=tmp_path, cache_directory=tmp_path, content_path='some/path')
     assert job.cache_id == ('path',)
-    job = ScreenshotsJob(home_directory=tmp_path, content_path='some/path', timestamps=(1, 2, 3))
+    job = ScreenshotsJob(home_directory=tmp_path, cache_directory=tmp_path, content_path='some/path', timestamps=(1, 2, 3))
     assert job.cache_id == ('path', (1, 2, 3))
-    job = ScreenshotsJob(home_directory=tmp_path, content_path='some/path', count=4)
+    job = ScreenshotsJob(home_directory=tmp_path, cache_directory=tmp_path, content_path='some/path', count=4)
     assert job.cache_id == ('path', 4)
-    job = ScreenshotsJob(home_directory=tmp_path, content_path='some/path', timestamps=(1, 2), count=4)
+    job = ScreenshotsJob(home_directory=tmp_path, cache_directory=tmp_path, content_path='some/path', timestamps=(1, 2), count=4)
     assert job.cache_id == ('path', (1, 2), 4)
 
 
@@ -337,6 +338,7 @@ def test_cache_id(tmp_path):
 def test_ScreenshotsJob_initialize(DaemonProcess_mock, tmp_path):
     job = ScreenshotsJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         content_path='some/path',
         timestamps=(120,),

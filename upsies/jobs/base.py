@@ -21,8 +21,8 @@ class JobBase(abc.ABC):
     """
     Base class for all jobs
 
-    :param str home_directory: Directory that is used to store files and cache
-        output
+    :param str home_directory: Directory that is used to store created files
+    :param str cache_directory: Directory that is used to cache output
     :param str ignore_cache: Whether cached output and previously created files
         should not be re-used
     :param bool hidden: Whether to hide the job's output in the UI
@@ -56,12 +56,15 @@ class JobBase(abc.ABC):
 
     @property
     def home_directory(self):
-        """
-        Directory that is used to store files
-
-        Cached output is stored in a subdirectory called ".output".
-        """
+        """Directory that is used to store files, e.g. generated images"""
         return self._home_directory
+
+    @cached_property
+    def cache_directory(self):
+        """Path to existing directory that stores :attr:`cache_file`"""
+        if not os.path.exists(self._cache_directory):
+            os.makedirs(self._cache_directory)
+        return self._cache_directory
 
     @property
     def ignore_cache(self):
@@ -136,18 +139,11 @@ class JobBase(abc.ABC):
         """
         return self._signal
 
-    def __init__(self, *, home_directory=None, ignore_cache=False, hidden=False,
-                 autostart=True, condition=None, callbacks={}, **kwargs):
-        if home_directory:
-            # Custome home specific to some content. Store cache in hidden
-            # directory in there.
-            self._home_directory = str(home_directory)
-            self._cache_directory = os.path.join(self._home_directory, '.cache')
-        else:
-            # Default home, something like /tmp/upsies. We want to store output
-            # files and cache in the same directory.
-            self._home_directory = fs.tmpdir()
-            self._cache_directory = self.home_directory
+    def __init__(self, *, home_directory=None, cache_directory=None,
+                 ignore_cache=False, hidden=False, autostart=True,
+                 condition=None, callbacks={}, **kwargs):
+        self._home_directory = home_directory if home_directory else fs.tmpdir()
+        self._cache_directory = cache_directory if cache_directory else fs.tmpdir()
         self._ignore_cache = bool(ignore_cache)
         self._hidden = bool(hidden)
         self._autostart = bool(autostart)
@@ -487,13 +483,6 @@ class JobBase(abc.ABC):
         :return: See :attr:`Signal.emissions`
         """
         return pickle.loads(emissions_serialized)
-
-    @cached_property
-    def cache_directory(self):
-        """Path to existing directory that stores cache files"""
-        if not os.path.exists(self._cache_directory):
-            os.makedirs(self._cache_directory)
-        return self._cache_directory
 
     _max_filename_len = 255
 

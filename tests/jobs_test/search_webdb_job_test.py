@@ -48,6 +48,7 @@ def job(foodb, tmp_path, mocker):
     mocker.patch('upsies.jobs.webdb._InfoUpdater', Mock(return_value=Mock(wait=AsyncMock())))
     job = webdb.SearchWebDbJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         db=foodb,
         content_path='path/to/foo',
@@ -76,6 +77,7 @@ def test_SearchWebDbJob_initialize_creates_searcher(tmp_path, mocker, foodb):
     Searcher_mock = mocker.patch('upsies.jobs.webdb._Searcher', Mock())
     job = webdb.SearchWebDbJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         db=foodb,
         content_path='path/to/foo',
@@ -108,6 +110,7 @@ def test_SearchWebDbJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
     )
     job = webdb.SearchWebDbJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         db=foodb,
         content_path='path/to/foo',
@@ -143,6 +146,7 @@ def test_SearchWebDbJob_make_update_info_func(tmp_path, mocker, foodb):
     mocker.patch('upsies.jobs.webdb.SearchWebDbJob._update_info')
     job = webdb.SearchWebDbJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         db=foodb,
         content_path='path/to/foo',

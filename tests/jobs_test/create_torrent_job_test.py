@@ -115,6 +115,7 @@ def tracker():
 def test_CreateTorrentJob_cache_id(tmp_path, tracker):
     job = CreateTorrentJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
         tracker=tracker,
@@ -125,6 +126,7 @@ def test_CreateTorrentJob_cache_id(tmp_path, tracker):
 def test_CreateTorrentJob_initialize(tracker, tmp_path):
     job = CreateTorrentJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
         tracker=tracker,
@@ -139,6 +141,7 @@ def test_CreateTorrentJob_initialize(tracker, tmp_path):
 def job(tmp_path, tracker):
     return CreateTorrentJob(
         home_directory=tmp_path,
+        cache_directory=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
         tracker=tracker,

@@ -162,8 +162,8 @@ def test_get_info_from_cache_fails_to_decode_json(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_upload_gets_info_from_upload_request():
-    ih = make_TestImageHost(mock_cache=True)
+async def test_upload_gets_info_from_upload_request(tmp_path):
+    ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
     ih._get_info_from_cache_mock.return_value = None
     ih._upload_mock.return_value = {
         'url': 'http://foo.bar',
@@ -181,8 +181,8 @@ async def test_upload_gets_info_from_upload_request():
     assert image.more == 'info'
 
 @pytest.mark.asyncio
-async def test_upload_gets_info_from_cache():
-    ih = make_TestImageHost(mock_cache=True)
+async def test_upload_gets_info_from_cache(tmp_path):
+    ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
     ih._get_info_from_cache_mock.return_value = {
         'url': 'http://foo.bar',
         'more': 'info',
@@ -196,8 +196,8 @@ async def test_upload_gets_info_from_cache():
     assert image.more == 'info'
 
 @pytest.mark.asyncio
-async def test_upload_is_missing_url():
-    ih = make_TestImageHost(mock_cache=True)
+async def test_upload_is_missing_url(tmp_path):
+    ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
     ih._get_info_from_cache_mock.return_value = None
     ih._upload_mock.return_value = {
         'foo': 'http://foo.bar',
@@ -208,8 +208,8 @@ async def test_upload_is_missing_url():
         await ih.upload('path/to/foo.png')
 
 @pytest.mark.asyncio
-async def test_upload_with_cache_set_to_False():
-    ih = make_TestImageHost(mock_cache=True)
+async def test_upload_with_cache_set_to_False(tmp_path):
+    ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
     ih._get_info_from_cache_mock.return_value = {
         'url': 'http://foo.bar',
         'more': 'info',

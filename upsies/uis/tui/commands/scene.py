@@ -24,6 +24,7 @@ class scene_search(CommandBase):
         return (
             jobs.scene.SceneSearchJob(
                 home_directory=self.home_directory,
+                cache_directory=self.cache_directory,
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.RELEASE,
             ),
@@ -47,6 +48,7 @@ class scene_check(CommandBase):
         return (
             jobs.scene.SceneCheckJob(
                 home_directory=self.home_directory,
+                cache_directory=self.cache_directory,
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.RELEASE,
             ),

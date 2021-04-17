@@ -16,31 +16,38 @@ class AsyncMock(Mock):
         return self().__await__()
 
 
-def test_name():
-    job = CustomJob(name='foo', label='Foo', worker=AsyncMock())
+@pytest.fixture
+def make_CustomJob(tmp_path):
+    def make_CustomJob(**kwargs):
+        return CustomJob(home_directory=tmp_path, cache_directory=tmp_path, **kwargs)
+    return make_CustomJob
+
+
+def test_name(make_CustomJob):
+    job = make_CustomJob(name='foo', label='Foo', worker=AsyncMock())
     assert job.name == 'foo'
 
 
-def test_label():
-    job = CustomJob(name='foo', label='Foo', worker=AsyncMock())
+def test_label(make_CustomJob):
+    job = make_CustomJob(name='foo', label='Foo', worker=AsyncMock())
     assert job.label == 'Foo'
 
 
-def test_initialize():
+def test_initialize(make_CustomJob):
     worker = AsyncMock()
-    job = CustomJob(name='foo', label='Foo', worker=worker)
+    job = make_CustomJob(name='foo', label='Foo', worker=worker)
     assert job._worker is worker
     assert job._task is None
 
 
 @pytest.mark.asyncio
-async def test_execute(mocker):
+async def test_execute(mocker, make_CustomJob):
     async def worker(job):
         assert isinstance(job, CustomJob)
         worker_calls.append('called')
 
     worker_calls = []
-    job = CustomJob(name='foo', label='Foo', worker=worker)
+    job = make_CustomJob(name='foo', label='Foo', worker=worker)
     mocker.patch.object(job, '_handle_worker_done')
     job.execute()
     await job._task
@@ -49,17 +56,17 @@ async def test_execute(mocker):
 
 
 @pytest.mark.asyncio
-async def test_CancelledError_from_worker_is_ignored():
+async def test_CancelledError_from_worker_is_ignored(make_CustomJob):
     worker = AsyncMock(side_effect=asyncio.CancelledError())
-    job = CustomJob(name='foo', label='Foo', worker=worker)
+    job = make_CustomJob(name='foo', label='Foo', worker=worker)
     job.execute()
     # Does not raise CancelledError
     await job._task
 
 @pytest.mark.asyncio
-async def test_other_exceptions_from_worker_are_caught(mocker):
+async def test_other_exceptions_from_worker_are_caught(mocker, make_CustomJob):
     worker = AsyncMock(side_effect=ValueError('ouch'))
-    job = CustomJob(name='foo', label='Foo', worker=worker)
+    job = make_CustomJob(name='foo', label='Foo', worker=worker)
     job.execute()
     mocker.patch.object(job, 'exception')
     with pytest.raises(ValueError, match=r'^ouch$'):
@@ -76,17 +83,17 @@ async def test_other_exceptions_from_worker_are_caught(mocker):
     ids=lambda v: str(v),
 )
 @pytest.mark.asyncio
-async def test_return_value_from_worker_is_output(return_value, exp_output, mocker):
+async def test_return_value_from_worker_is_output(return_value, exp_output, mocker, make_CustomJob):
     worker = AsyncMock(return_value=return_value)
-    job = CustomJob(name='foo', label='Foo', worker=worker)
+    job = make_CustomJob(name='foo', label='Foo', worker=worker)
     job.execute()
     await job.wait()
     assert job.output == exp_output
 
 
 @pytest.mark.asyncio
-async def test_wait_before_job_was_executed(mocker):
-    job = CustomJob(name='foo', label='Foo', worker=AsyncMock())
+async def test_wait_before_job_was_executed(mocker, make_CustomJob):
+    job = make_CustomJob(name='foo', label='Foo', worker=AsyncMock())
     assert job._task is None
     job.finish()
     await job.wait()
@@ -94,8 +101,8 @@ async def test_wait_before_job_was_executed(mocker):
     assert job.is_finished
 
 @pytest.mark.asyncio
-async def test_wait_after_job_was_executed(mocker):
-    job = CustomJob(name='foo', label='Foo', worker=lambda job: asyncio.sleep(10))
+async def test_wait_after_job_was_executed(mocker, make_CustomJob):
+    job = make_CustomJob(name='foo', label='Foo', worker=lambda job: asyncio.sleep(10))
     job.execute()
     # Allow worker to start
     await asyncio.sleep(0)
@@ -107,17 +114,17 @@ async def test_wait_after_job_was_executed(mocker):
 
 
 @pytest.mark.asyncio
-async def test_finish_before_job_was_executed(mocker):
-    job = CustomJob(name='foo', label='Foo', worker=AsyncMock())
+async def test_finish_before_job_was_executed(mocker, make_CustomJob):
+    job = make_CustomJob(name='foo', label='Foo', worker=AsyncMock())
     assert job._task is None
     job.finish()
     assert job._task is None
     assert job.is_finished
 
 @pytest.mark.asyncio
-async def test_finish_after_job_was_executed(mocker):
+async def test_finish_after_job_was_executed(mocker, make_CustomJob):
     worker = asyncio.ensure_future(asyncio.sleep(100))
-    job = CustomJob(name='foo', label='Foo', worker=lambda job: worker)
+    job = make_CustomJob(name='foo', label='Foo', worker=lambda job: worker)
     job.execute()
     # Allow worker to start
     await asyncio.sleep(0)

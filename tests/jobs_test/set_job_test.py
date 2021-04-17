@@ -22,37 +22,44 @@ def config_mock(dct):
     )
 
 
-def test_cache_id():
-    job = SetJob(config=config_mock({'foo': 'bar'}))
+@pytest.fixture
+def make_SetJob(tmp_path):
+    def make_SetJob(**kwargs):
+        return SetJob(home_directory=tmp_path, cache_directory=tmp_path, **kwargs)
+    return make_SetJob
+
+
+def test_cache_id(make_SetJob):
+    job = make_SetJob(config=config_mock({'foo': 'bar'}))
     assert job.cache_id is None
 
 
-def test_output_is_hidden():
-    job = SetJob(config=config_mock({'foo': 'bar'}))
+def test_output_is_hidden(make_SetJob):
+    job = make_SetJob(config=config_mock({'foo': 'bar'}))
     assert job.hidden is True
 
 
-def test_execute_finishes():
-    job = SetJob(config=config_mock({'foo': 'bar'}))
+def test_execute_finishes(make_SetJob):
+    job = make_SetJob(config=config_mock({'foo': 'bar'}))
     assert not job.is_finished
     job.execute()
     assert job.is_finished
 
 
-def test_no_arguments(mocker):
+def test_no_arguments(mocker, make_SetJob):
     mocker.patch('upsies.jobs.config.SetJob._display_option')
     cfg = config_mock({'foo': '1', 'bar': '2', 'baz': '3'})
-    job = SetJob(config=cfg)
+    job = make_SetJob(config=cfg)
     job.execute()
     assert job._display_option.call_args_list == [call('foo'), call('bar'), call('baz')]
 
 
 @pytest.mark.parametrize('option', ('foo', 'bar', 'baz'))
-def test_arguments_option(option, mocker):
+def test_arguments_option(option, mocker, make_SetJob):
     mocker.patch('upsies.jobs.config.SetJob._display_option')
     values = {'foo': '1', 'bar': '2', 'baz': '3'}
     cfg = config_mock(values)
-    job = SetJob(config=cfg, option=option)
+    job = make_SetJob(config=cfg, option=option)
     job.execute()
     assert cfg.reset.call_args_list == []
     assert cfg.write.call_args_list == []
@@ -60,11 +67,11 @@ def test_arguments_option(option, mocker):
     assert dict(cfg) == values
 
 @pytest.mark.parametrize('option', ('foo', 'bar', 'baz'))
-def test_arguments_option_and_value(option, mocker):
+def test_arguments_option_and_value(option, mocker, make_SetJob):
     mocker.patch('upsies.jobs.config.SetJob._display_option')
     values = {'foo': '1', 'bar': '2', 'baz': '3'}
     cfg = config_mock(values)
-    job = SetJob(config=cfg, option=option, value='hello')
+    job = make_SetJob(config=cfg, option=option, value='hello')
     job.execute()
     assert cfg.reset.call_args_list == []
     assert cfg.write.call_args_list == [call(option)]
@@ -72,39 +79,39 @@ def test_arguments_option_and_value(option, mocker):
     assert dict(cfg) == {**values, option: 'hello'}
 
 @pytest.mark.parametrize('option', ('foo', 'bar', 'baz'))
-def test_arguments_option_and_reset(option, mocker):
+def test_arguments_option_and_reset(option, mocker, make_SetJob):
     mocker.patch('upsies.jobs.config.SetJob._display_option')
     values = {'foo': '1', 'bar': '2', 'baz': '3'}
     cfg = config_mock(values)
-    job = SetJob(config=cfg, option=option, reset=True)
+    job = make_SetJob(config=cfg, option=option, reset=True)
     job.execute()
     assert cfg.reset.call_args_list == [call(option)]
     assert cfg.write.call_args_list == [call(option)]
     assert job._display_option.call_args_list == [call(option)]
     assert dict(cfg) == values
 
-def test_arguments_reset(mocker):
+def test_arguments_reset(mocker, make_SetJob):
     mocker.patch('upsies.jobs.config.SetJob._display_option')
     values = {'foo': '1', 'bar': '2', 'baz': '3'}
     cfg = config_mock(values)
-    job = SetJob(config=cfg, reset=True)
+    job = make_SetJob(config=cfg, reset=True)
     job.execute()
     assert cfg.reset.call_args_list == [call('foo'), call('bar'), call('baz')]
     assert cfg.write.call_args_list == [call('foo'), call('bar'), call('baz')]
     assert job._display_option.call_args_list == [call('foo'), call('bar'), call('baz')]
     assert dict(cfg) == values
 
-def test_arguments_value():
+def test_arguments_value(make_SetJob):
     with pytest.raises(RuntimeError, match=r'^Argument "value" needs argument "option"\.$'):
-        SetJob(config=config_mock({'foo': 'bar'}), value='foo')
+        make_SetJob(config=config_mock({'foo': 'bar'}), value='foo')
 
-def test_arguments_value_and_reset():
+def test_arguments_value_and_reset(make_SetJob):
     with pytest.raises(RuntimeError, match=r'^Arguments "value" and "reset" are mutually exclusive\.$'):
-        SetJob(config=config_mock({'foo': 'bar'}), value='foo', reset=True)
+        make_SetJob(config=config_mock({'foo': 'bar'}), value='foo', reset=True)
 
-def test_arguments_option_and_value_and_reset():
+def test_arguments_option_and_value_and_reset(make_SetJob):
     with pytest.raises(RuntimeError, match=r'^Arguments "value" and "reset" are mutually exclusive\.$'):
-        SetJob(config=config_mock({'foo': 'bar'}), value='foo', reset=True)
+        make_SetJob(config=config_mock({'foo': 'bar'}), value='foo', reset=True)
 
 
 @pytest.mark.parametrize(
@@ -116,12 +123,12 @@ def test_arguments_option_and_value_and_reset():
     ),
     ids=lambda v: str(v),
 )
-def test_ConfigError_is_handled(mode, kwargs, mocker):
+def test_ConfigError_is_handled(mode, kwargs, mocker, make_SetJob):
     mocker.patch('upsies.jobs.config.SetJob._display_option')
     mocker.patch(f'upsies.jobs.config.SetJob.{mode}', side_effect=errors.ConfigError('no!'))
     values = {'foo': '1', 'bar': '2', 'baz': '3'}
     cfg = config_mock(values)
-    job = SetJob(config=cfg, **kwargs)
+    job = make_SetJob(config=cfg, **kwargs)
     job.execute()
     assert job.errors == (errors.ConfigError('no!'),)
     assert job.is_finished
@@ -143,7 +150,7 @@ def test_ConfigError_is_handled(mode, kwargs, mocker):
     ),
     ids=lambda v: str(v),
 )
-def test_display_option(name, value, exp_output):
-    job = SetJob(config=config_mock({name: value}))
+def test_display_option(name, value, exp_output, make_SetJob):
+    job = make_SetJob(config=config_mock({name: value}))
     job.execute()
     assert job.output == (exp_output,)

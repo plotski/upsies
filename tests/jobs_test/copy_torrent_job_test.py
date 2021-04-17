@@ -10,6 +10,7 @@ async def make_CopyTorrentJob(tmp_path):
     def make_CopyTorrentJob(destination, enqueue=()):
         return CopyTorrentJob(
             home_directory=tmp_path,
+            cache_directory=tmp_path,
             ignore_cache=False,
             destination=destination,
             enqueue=enqueue,

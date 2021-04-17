@@ -28,6 +28,8 @@ class upload_images(CommandBase):
     def jobs(self):
         return (
             jobs.imghost.ImageHostJob(
+                home_directory=self.home_directory,
+                cache_directory=self.cache_directory,
                 ignore_cache=self.args.ignore_cache,
                 imghost=utils.imghosts.imghost(
                     name=self.args.IMAGEHOST,

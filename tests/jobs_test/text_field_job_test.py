@@ -16,21 +16,27 @@ class AsyncMock(Mock):
         return self().__await__()
 
 
-def test_name_property():
-    job = TextFieldJob(name='foo', label='Foo')
+@pytest.fixture
+def make_TextFieldJob(tmp_path):
+    def make_TextFieldJob(**kwargs):
+        return TextFieldJob(home_directory=tmp_path, cache_directory=tmp_path, **kwargs)
+    return make_TextFieldJob
+
+def test_name_property(make_TextFieldJob):
+    job = make_TextFieldJob(name='foo', label='Foo')
     assert job.name == 'foo'
 
 
-def test_label_property():
-    job = TextFieldJob(name='foo', label='Foo')
+def test_label_property(make_TextFieldJob):
+    job = make_TextFieldJob(name='foo', label='Foo')
     assert job.label == 'Foo'
 
 
 @pytest.mark.parametrize('read_only', (True, False))
-def test_text_property(read_only):
-    job = TextFieldJob(name='foo', label='Foo', text='0',
-                       validator=Mock(side_effect=ValueError('No likey')),
-                       read_only=read_only)
+def test_text_property(read_only, make_TextFieldJob):
+    job = make_TextFieldJob(name='foo', label='Foo', text='0',
+                            validator=Mock(side_effect=ValueError('No likey')),
+                            read_only=read_only)
     cb = Mock()
     job.signal.register('dialog_updated', cb)
     assert job.text == '0'
@@ -43,8 +49,8 @@ def test_text_property(read_only):
     assert cb.call_args_list == [call(job), call(job)]
 
 
-def test_obscured_property():
-    job = TextFieldJob(name='foo', label='Foo', obscured=True)
+def test_obscured_property(make_TextFieldJob):
+    job = make_TextFieldJob(name='foo', label='Foo', obscured=True)
     cb = Mock()
     job.signal.register('dialog_updated', cb)
     assert job.obscured is True
@@ -54,8 +60,8 @@ def test_obscured_property():
     assert cb.call_args_list == [call(job)]
 
 
-def test_read_only_property():
-    job = TextFieldJob(name='foo', label='Foo', read_only=True)
+def test_read_only_property(make_TextFieldJob):
+    job = make_TextFieldJob(name='foo', label='Foo', read_only=True)
     cb = Mock()
     job.signal.register('dialog_updated', cb)
     assert job.read_only is True
@@ -65,9 +71,9 @@ def test_read_only_property():
     assert cb.call_args_list == [call(job)]
 
 
-def test_send_valid_text():
+def test_send_valid_text(make_TextFieldJob):
     validator = Mock()
-    job = TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
+    job = make_TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
     assert validator.call_args_list == []
     job.send('baz')
     assert validator.call_args_list == [call('baz')]
@@ -76,9 +82,9 @@ def test_send_valid_text():
     assert job.exit_code == 0
     assert job.output == ('baz',)
 
-def test_finish_with_invalid_text():
+def test_finish_with_invalid_text(make_TextFieldJob):
     validator = Mock(side_effect=ValueError('Nope'))
-    job = TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
+    job = make_TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
     assert validator.call_args_list == []
     job.send('baz')
     assert validator.call_args_list == [call('baz')]
@@ -90,12 +96,12 @@ def test_finish_with_invalid_text():
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
 @pytest.mark.asyncio
-async def test_fetch_text_sets_read_only_while_fetching(finish_on_success):
+async def test_fetch_text_sets_read_only_while_fetching(finish_on_success, make_TextFieldJob):
     async def fetcher(job):
         assert job.read_only
         assert job.text == 'Loading...'
 
-    job = TextFieldJob(name='foo', label='Foo', text='bar')
+    job = make_TextFieldJob(name='foo', label='Foo', text='bar')
     assert not job.read_only
     await job.fetch_text(fetcher(job), finish_on_success=finish_on_success)
     assert not job.read_only
@@ -107,9 +113,9 @@ async def test_fetch_text_sets_read_only_while_fetching(finish_on_success):
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
 @pytest.mark.asyncio
-async def test_fetch_text_catches_fatal_error(finish_on_success):
+async def test_fetch_text_catches_fatal_error(finish_on_success, make_TextFieldJob):
     fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))
-    job = TextFieldJob(name='foo', label='Foo')
+    job = make_TextFieldJob(name='foo', label='Foo')
     assert not job.is_finished
     await job.fetch_text(fetcher, default_text='default text', finish_on_success=finish_on_success, error_is_fatal=True)
     assert job.text == 'default text'
@@ -120,9 +126,9 @@ async def test_fetch_text_catches_fatal_error(finish_on_success):
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
 @pytest.mark.asyncio
-async def test_fetch_text_catches_nonfatal_error(finish_on_success):
+async def test_fetch_text_catches_nonfatal_error(finish_on_success, make_TextFieldJob):
     fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))
-    job = TextFieldJob(name='foo', label='Foo')
+    job = make_TextFieldJob(name='foo', label='Foo')
     assert not job.is_finished
     await job.fetch_text(fetcher, default_text='default text', finish_on_success=finish_on_success, error_is_fatal=False)
     assert job.text == 'default text'
@@ -133,9 +139,9 @@ async def test_fetch_text_catches_nonfatal_error(finish_on_success):
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
 @pytest.mark.asyncio
-async def test_fetch_text_finishes_job(finish_on_success):
+async def test_fetch_text_finishes_job(finish_on_success, make_TextFieldJob):
     fetcher = AsyncMock(return_value='fetched text')
-    job = TextFieldJob(name='foo', label='Foo')
+    job = make_TextFieldJob(name='foo', label='Foo')
     assert not job.is_finished
     await job.fetch_text(fetcher, finish_on_success=finish_on_success)
     assert job.is_finished is finish_on_success

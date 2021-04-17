@@ -31,6 +31,7 @@ class mediainfo(CommandBase):
         return (
             jobs.mediainfo.MediainfoJob(
                 home_directory=self.home_directory,
+                cache_directory=self.cache_directory,
                 ignore_cache=self.args.ignore_cache,
                 content_path=self.args.CONTENT,
             ),

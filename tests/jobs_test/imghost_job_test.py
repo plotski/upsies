@@ -20,13 +20,14 @@ def imghost(tmp_path):
         name = 'testhost'
         upload = AsyncMock()
         _upload = 'not an abstract base method'
-    return TestImageHost()
+    return TestImageHost(cache_directory=tmp_path)
 
 @pytest.fixture
 async def make_ImageHostJob(tmp_path, imghost):
     def make_ImageHostJob(home_directory=tmp_path, images_total=0, enqueue=()):
         return ImageHostJob(
             home_directory=home_directory,
+            cache_directory=tmp_path,
             ignore_cache=False,
             imghost=imghost,
             images_total=images_total,
@@ -42,8 +43,6 @@ def test_cache_id(make_ImageHostJob):
 
 def test_cache_directory_of_imghost(make_ImageHostJob, tmp_path):
     job = make_ImageHostJob()
-    assert job._imghost.cache_directory is job.cache_directory
-    job = make_ImageHostJob(home_directory=tmp_path)
     assert job._imghost.cache_directory is job.cache_directory
 
 

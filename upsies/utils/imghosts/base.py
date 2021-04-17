@@ -22,7 +22,7 @@ class ImageHostBase(abc.ABC):
     """
 
     def __init__(self, cache_directory=None):
-        self._cache_dir = cache_directory or fs.tmpdir()
+        self._cache_dir = cache_directory if cache_directory else fs.tmpdir()
 
     @property
     @abc.abstractmethod
