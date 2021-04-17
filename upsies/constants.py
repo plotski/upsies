@@ -4,7 +4,11 @@ Fixed values that do not change during runtime
 
 import os
 
+from xdg.BaseDirectory import xdg_cache_home as XDG_CACHE_HOME
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
+
+CACHE_DIRPATH = os.path.join(XDG_CACHE_HOME, 'upsies')
+"""Path cache directory"""
 
 CONFIG_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'config.ini')
 """Path to general configuration file"""
