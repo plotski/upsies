@@ -112,27 +112,23 @@ def test_tmpdir_removes_redundant_temp_dir(mkdtemp_mock, tmp_path):
 @pytest.mark.parametrize(
     argnames='content_path, base, exp_projectdir',
     argvalues=(
-        ('path/to/foo', None, 'default_tmpdir/foo.upsies'),
-        ('path/to//foo', None, 'default_tmpdir/foo.upsies'),
-        ('path/to/foo/', None, 'default_tmpdir/foo.upsies'),
-        ('path/to/foo', 'my/tmpdir', 'my/tmpdir/foo.upsies'),
+        ('path/to/foo', None, 'default_path/foo.upsies'),
+        ('path/to//foo', None, 'default_path/foo.upsies'),
+        ('path/to/foo/', None, 'default_path/foo.upsies'),
+        ('path/to/foo', 'my/path', 'my/path/foo.upsies'),
         (None, None, '.'),
-        (None, 'my/tmpdir', '.'),
+        (None, 'my/path', '.'),
         ('', None, '.'),
-        ('', 'my/tmpdir', '.'),
+        ('', 'my/path', '.'),
     ),
 )
 @patch('upsies.utils.fs.mkdir')
-@patch('upsies.utils.fs.tmpdir')
-def test_projectdir(tmpdir_mock, mkdir_mock, tmp_path, content_path, base, exp_projectdir):
-    tmpdir_mock.return_value = base or 'default_tmpdir'
+def test_projectdir(mkdir_mock, tmp_path, mocker, content_path, base, exp_projectdir):
+    mocker.patch('upsies.constants.CACHE_DIRPATH', base or 'default_path')
     fs.projectdir.cache_clear()
     path = fs.projectdir(content_path, base=base)
     assert path == exp_projectdir
-    if base:
-        mkdir_mock.call_args_list == [call(base), call(path)]
-    else:
-        tmpdir_mock.call_args_list == [call(base), call(path)]
+    mkdir_mock.call_args_list == [call(base), call(path)]
 
 
 def test_limit_directory_size(tmp_path):

@@ -6,7 +6,7 @@ import functools
 import os
 import re
 
-from .. import __project_name__, errors
+from .. import __project_name__, constants, errors
 from . import LazyModule, os_family, string
 
 import logging  # isort:skip
@@ -68,9 +68,7 @@ def projectdir(content_path, base=None):
     """
     if content_path:
         if not base:
-            base = tmpdir()
-        else:
-            mkdir(base)
+            base = constants.CACHE_DIRPATH
         path = os.path.join(base, basename(content_path) + '.upsies')
     else:
         path = '.'
