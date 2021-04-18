@@ -893,7 +893,7 @@ class BbTrackerJobs(TrackerJobsBase):
         tvmaze_id = await self.get_tvmaze_id()
         if tvmaze_id:
             status = await self.tvmaze.status(tvmaze_id)
-            if status:
+            if status == 'Ended':
                 return f'[b]Status[/b]: {status}'
 
     async def format_description_countries(self):
