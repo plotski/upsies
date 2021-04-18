@@ -950,12 +950,12 @@ class BbTrackerJobs(TrackerJobsBase):
                     + ', '.join(actors_links))
 
     async def format_description_series_screenshots(self):
-        screenshots_bbcode_parts = ['\n\n']  # Spacer
+        screenshots_bbcode_parts = []  # Spacer
         await self.upload_screenshots_job.wait()
         screenshot_urls = self.get_job_output(self.upload_screenshots_job)
         for url in screenshot_urls:
             screenshots_bbcode_parts.append(f'[img={url}]')
-        screenshots_bbcode = ''.join(screenshots_bbcode_parts)
+        screenshots_bbcode = '\n\n'.join(screenshots_bbcode_parts)
         return (
             '[quote]\n'
             f'[align=center]{screenshots_bbcode}[/align]\n'
