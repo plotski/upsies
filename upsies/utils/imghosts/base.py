@@ -6,6 +6,7 @@ import abc
 import json
 import os
 
+from ... import constants
 from .. import fs
 from . import common
 
@@ -17,12 +18,12 @@ class ImageHostBase(abc.ABC):
     """
     Base class for image uploaders
 
-    :param str cache_dir: Where to store URLs in JSON files; defaults to the
-        return value of :func:`.utils.fs.tmpdir`
+    :param str cache_dir: Where to store URLs in JSON files; defaults to
+        :attr:`.constants.CACHE_DIRPATH`
     """
 
     def __init__(self, cache_directory=None):
-        self._cache_dir = cache_directory if cache_directory else fs.tmpdir()
+        self.cache_directory = cache_directory if cache_directory else constants.CACHE_DIRPATH
 
     @property
     @abc.abstractmethod
@@ -88,6 +89,7 @@ class ImageHostBase(abc.ABC):
             raise RuntimeError(f'Unable to write cache {cache_file}: {e}')
 
         try:
+            fs.mkdir(fs.dirname(cache_file))
             with open(cache_file, 'w') as f:
                 f.write(json_string)
         except (OSError, TypeError, ValueError) as e:
@@ -99,7 +101,7 @@ class ImageHostBase(abc.ABC):
         # unique. This is usually the case when we're uploading screenshots. If
         # image is not in our cache_dir, use the absolute path as a unique
         # identifier.
-        if os.path.dirname(image_path) == self._cache_dir:
+        if fs.dirname(image_path) == self._cache_dir:
             image_path = os.path.basename(image_path)
         else:
             image_path = os.path.abspath(image_path)

@@ -43,10 +43,10 @@ def make_TestImageHost(**kwargs):
     return TestImageHost(**kwargs)
 
 
-@patch('upsies.utils.fs.tmpdir')
-def test_cache_directory_property(tmpdir_mock, tmp_path):
+def test_cache_directory_property(mocker, tmp_path):
+    mocker.patch('upsies.constants.CACHE_DIRPATH', 'mock/cache/path')
     imghost = make_TestImageHost()
-    assert imghost.cache_directory is tmpdir_mock.return_value
+    assert imghost.cache_directory == 'mock/cache/path'
     imghost = make_TestImageHost(cache_directory=tmp_path)
     assert imghost.cache_directory is tmp_path
     imghost.cache_directory = 'path/to/foo'
@@ -61,9 +61,8 @@ def test_cache_directory_property(tmpdir_mock, tmp_path):
     ),
 )
 @pytest.mark.parametrize('image_dir', (None, 'some/relative/path', '/absolute/path'))
-@patch('upsies.utils.fs.tmpdir')
-def test_cache_file_uses_cache_dir_argument(tmpdir_mock, image_dir, cache_dir, exp_cache_dir):
-    tmpdir_mock.return_value = exp_cache_dir
+def test_cache_file_uses_cache_directory_argument(mocker, image_dir, cache_dir, exp_cache_dir):
+    mocker.patch('upsies.constants.CACHE_DIRPATH', exp_cache_dir)
     imghost = make_TestImageHost(cache_directory=cache_dir)
     image_name = 'foo.png'
     exp_cache_name = f'{image_name}.{imghost.name}.json'
@@ -82,19 +81,22 @@ def test_cache_file_uses_cache_dir_argument(tmpdir_mock, image_dir, cache_dir, e
     assert imghost._cache_file(image_path) == exp_cache_file
 
 
-def test_store_info_to_cache_succeeds(tmp_path):
+def test_store_info_to_cache_succeeds(mocker, tmp_path):
+    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir')
     imghost = make_TestImageHost(cache_directory=tmp_path)
     imghost._store_info_to_cache(
         image_path=os.path.join(tmp_path, 'foo.png'),
         info={'this': 'and that'},
     )
+    assert mkdir_mock.call_args_list == [call(str(tmp_path))]
     cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     cache_content = open(cache_file, 'r').read()
     assert cache_content == ('{\n'
                              '    "this": "and that"\n'
                              '}\n')
 
-def test_store_info_to_cache_fails_to_write(tmp_path):
+def test_store_info_to_cache_fails_to_write(mocker, tmp_path):
+    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir')
     imghost = make_TestImageHost(cache_directory=tmp_path)
     cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
     os.chmod(tmp_path, 0o000)
@@ -104,9 +106,10 @@ def test_store_info_to_cache_fails_to_write(tmp_path):
                 image_path=os.path.join(tmp_path, 'foo.png'),
                 info={'this': 'and that'},
             )
+        assert not os.path.exists(cache_file)
+        assert mkdir_mock.call_args_list == [call(str(tmp_path))]
     finally:
         os.chmod(tmp_path, 0o700)
-        assert not os.path.exists(cache_file)
 
 def test_store_info_to_cache_fails_to_encode_json(tmp_path):
     imghost = make_TestImageHost(cache_directory=tmp_path)
