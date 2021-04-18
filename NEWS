@@ -6,7 +6,9 @@
   * New command: scene-check: Identify release as scene and check if it was
     altered
   * New option: config.main.tmp_directory specifies where *.upsies directories
-    are put (default: /tmp/upsies or equivalent per OS)
+    and other cache files are put (default: ~/.cache/upsies)
+  * New option: config.main.max_tmp_size specifies the maximum size of
+    config.main.tmp_directory before old files are removed
   * release-name: Don't accept release name if any obligatory information is
     unknown.
   * Better video resolution detection
