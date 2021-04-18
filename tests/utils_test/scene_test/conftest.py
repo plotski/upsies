@@ -20,8 +20,8 @@ def disable_http_requests(pytestconfig, module_mocker):
 # See tests/conftest.py for the data_dir fixture.
 @pytest.fixture(scope='session')
 def store_response(data_dir):
-    tmpdir = os.path.join(data_dir, 'scene')
-    if not os.path.exists(tmpdir):
-        os.mkdir(tmpdir)
-    with patch('upsies.utils.fs.tmpdir', Mock(return_value=tmpdir)):
+    cache_dir = os.path.join(data_dir, 'scene')
+    if not os.path.exists(cache_dir):
+        os.mkdir(cache_dir)
+    with patch('upsies.constants.CACHE_DIRPATH', cache_dir):
         yield
