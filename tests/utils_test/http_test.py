@@ -774,9 +774,8 @@ def test_cache_file_with_very_long_params(method, mocker):
     assert http._cache_file(method, url, params=params) == exp_cache_file
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
-def test_cache_file_defaults_to_fs_tmpdir(method, mocker):
-    assert not http.cache_directory
-    mocker.patch('upsies.utils.fs.tmpdir', return_value='/tmp/bar')
+def test_cache_file_defaults_to_CACHE_DIRPATH(method, mocker):
+    mocker.patch('upsies.constants.CACHE_DIRPATH', '/tmp/bar')
     url = 'http://localhost:123'
     exp_cache_file = f'/tmp/bar/{method.upper()}.http:__localhost:123'
     assert http._cache_file(method, url) == exp_cache_file
@@ -796,16 +795,27 @@ def test_from_cache_can_read_cache_file(mocker):
     assert filehandle.read.call_args_list == [call(), call()]
 
 
+def test_to_cache_cannot_create_cache_directory(mocker):
+    open_mock = mocker.patch('builtins.open')
+    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir', side_effect=OSError('No'))
+    with pytest.raises(RuntimeError, match=r'^Unable to write cache file mock/path: No$'):
+        http._to_cache('mock/path', 'data')
+    assert mkdir_mock.call_args_list == [call('mock')]
+
 def test_to_cache_cannot_write_cache_file(mocker):
     open_mock = mocker.patch('builtins.open')
+    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir')
     filehandle = open_mock.return_value.__enter__.return_value
     filehandle.write.side_effect = OSError('No')
     with pytest.raises(RuntimeError, match=r'^Unable to write cache file mock/path: No$'):
         http._to_cache('mock/path', 'data')
+    assert mkdir_mock.call_args_list == [call('mock')]
 
 def test_to_cache_can_write_cache_file(mocker):
     open_mock = mocker.patch('builtins.open')
+    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir')
     filehandle = open_mock.return_value.__enter__.return_value
     assert http._to_cache('mock/path', 'data') is None
     assert open_mock.call_args_list == [call('mock/path', 'wb')]
     assert filehandle.write.call_args_list == [call('data')]
+    assert mkdir_mock.call_args_list == [call('mock')]

@@ -10,7 +10,7 @@ import os
 
 import httpx
 
-from .. import __project_name__, __version__, errors
+from .. import __project_name__, __version__, constants, errors
 from . import fs
 
 import logging  # isort:skip
@@ -34,7 +34,7 @@ cache_directory = None
 """
 Where to store cached requests
 
-If this is a falsy value, use :func:`~.fs.tmpdir`.
+If this is set to a falsy value, default to :attr:`~.constants.CACHE_DIRPATH`.
 """
 
 
@@ -302,6 +302,7 @@ def _get_fileobj(filepath):
 
 def _to_cache(cache_file, bytes):
     try:
+        fs.mkdir(fs.dirname(cache_file))
         with open(cache_file, 'wb') as f:
             f.write(bytes)
     except OSError as e:
@@ -345,7 +346,7 @@ def _cache_file(method, url, params={}):
         params_str = ''
 
     return os.path.join(
-        cache_directory or fs.tmpdir(),
+        cache_directory or constants.CACHE_DIRPATH,
         make_filename(method, url, params_str),
     )
 
