@@ -6,7 +6,7 @@ import functools
 import os
 import re
 
-from .. import __project_name__, constants, errors
+from .. import constants, errors
 from . import LazyModule, os_family, string
 
 import logging  # isort:skip

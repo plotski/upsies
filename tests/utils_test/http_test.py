@@ -796,7 +796,7 @@ def test_from_cache_can_read_cache_file(mocker):
 
 
 def test_to_cache_cannot_create_cache_directory(mocker):
-    open_mock = mocker.patch('builtins.open')
+    mocker.patch('builtins.open')
     mkdir_mock = mocker.patch('upsies.utils.fs.mkdir', side_effect=OSError('No'))
     with pytest.raises(RuntimeError, match=r'^Unable to write cache file mock/path: No$'):
         http._to_cache('mock/path', 'data')

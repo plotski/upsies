@@ -5,7 +5,7 @@ from unittest.mock import call, patch
 
 import pytest
 
-from upsies import __project_name__, errors
+from upsies import errors
 from upsies.utils import fs
 
 
