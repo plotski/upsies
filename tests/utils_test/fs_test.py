@@ -71,44 +71,6 @@ def test_assert_dir_usable_with_unexecutable_directory(tmp_path):
         os.chmod(path, mode=0o700)
 
 
-@patch('upsies.utils.fs.assert_dir_usable')
-@patch('tempfile.mkdtemp')
-def test_tmpdir_creates_our_temporary_directory(mkdtemp_mock, assert_dir_usable_mock, tmp_path):
-    fs.tmpdir.cache_clear()
-    mkdtemp_dir = tmp_path / 'undesired_directory_name'
-    mkdtemp_dir.mkdir()
-    mkdtemp_mock.return_value = str(mkdtemp_dir)
-    dirpath = fs.tmpdir()
-    assert dirpath == str(tmp_path / __project_name__)
-    assert mkdtemp_mock.call_args_list == [call()]
-    assert assert_dir_usable_mock.call_args_list == [call(dirpath)]
-
-@patch('upsies.utils.fs.assert_dir_usable')
-@patch('tempfile.mkdtemp')
-def test_tmpdir_handles_existing_path(mkdtemp_mock, assert_dir_usable_mock, tmp_path):
-    fs.tmpdir.cache_clear()
-    mkdtemp_dir = tmp_path / 'undesired_directory_name'
-    mkdtemp_dir.mkdir()
-    existing_tmpdir = tmp_path / __project_name__
-    existing_tmpdir.mkdir()
-    mkdtemp_mock.return_value = str(mkdtemp_dir)
-    dirpath = fs.tmpdir()
-    assert dirpath == str(tmp_path / __project_name__)
-    assert mkdtemp_mock.call_args_list == [call()]
-    assert assert_dir_usable_mock.call_args_list == [call(dirpath)]
-
-@patch('tempfile.mkdtemp')
-def test_tmpdir_removes_redundant_temp_dir(mkdtemp_mock, tmp_path):
-    fs.tmpdir.cache_clear()
-    mkdtemp_dir = tmp_path / 'undesired_directory_name'
-    mkdtemp_dir.mkdir()
-    existing_tmpdir = tmp_path / __project_name__
-    existing_tmpdir.mkdir()
-    mkdtemp_mock.return_value = str(mkdtemp_dir)
-    fs.tmpdir()
-    assert not os.path.exists(mkdtemp_mock.return_value)
-
-
 @pytest.mark.parametrize(
     argnames='content_path, base, exp_projectdir',
     argvalues=(

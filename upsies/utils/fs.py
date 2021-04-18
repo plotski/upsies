@@ -40,21 +40,6 @@ def assert_dir_usable(path):
 
 
 @functools.lru_cache(maxsize=None)
-def tmpdir():
-    """Return path to existing temporary directory in /tmp/ or similar location"""
-    tmpdir_ = tempfile.mkdtemp()
-    parent_path = os.path.dirname(tmpdir_)
-    tmpdir = os.path.join(parent_path, __project_name__)
-    if os.path.exists(tmpdir):
-        os.rmdir(tmpdir_)
-    else:
-        os.rename(tmpdir_, tmpdir)
-    assert_dir_usable(tmpdir)
-    _log.debug('Using temporary directory: %r', tmpdir)
-    return tmpdir
-
-
-@functools.lru_cache(maxsize=None)
 def projectdir(content_path, base=None):
     """
     Return path to existing directory in which jobs put their files and cache
