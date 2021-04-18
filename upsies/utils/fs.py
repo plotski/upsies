@@ -116,17 +116,19 @@ def limit_directory_size(path, max_total_size):
 
 def prune_empty_directories(path):
     """Remove empty subdirectories recursively"""
-    for dirpath, dirnames, _ in sorted(os.walk(path, topdown=False)):
-        for dirname in sorted(dirnames):
-            subdirpath = os.path.join(dirpath, dirname)
-            try:
+    try:
+        for dirpath, dirnames, _ in os.walk(path, topdown=False):
+            for dirname in dirnames:
+                subdirpath = os.path.join(dirpath, dirname)
                 if not os.listdir(subdirpath):
                     os.rmdir(subdirpath)
-            except OSError as e:
-                if e.strerror:
-                    raise RuntimeError(f'{subdirpath}: Failed to prune: {e.strerror}')
-                else:
-                    raise RuntimeError(f'{subdirpath}: Failed to prune: {e}')
+        if not os.listdir(path):
+            os.rmdir(path)
+    except OSError as e:
+        if e.strerror:
+            raise RuntimeError(f'{subdirpath}: Failed to prune: {e.strerror}')
+        else:
+            raise RuntimeError(f'{subdirpath}: Failed to prune: {e}')
 
 
 def mkdir(path):

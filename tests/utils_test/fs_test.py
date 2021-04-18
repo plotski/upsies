@@ -194,15 +194,31 @@ def test_prune_empty_directories(tmp_path):
     fs.prune_empty_directories(tmp_path)
     assert os.path.exists(tmp_path)
     assert os.path.isdir(tmp_path)
-    tree = sorted(
-        os.path.join(dirpath, filename)
-        for dirpath, dirnames, filenames in os.walk(tmp_path)
-        for filename in filenames
-    )
-    assert tree == [
+    tree = []
+    for dirpath, dirnames, filenames in os.walk(tmp_path):
+        for dirname in dirnames:
+            tree.append(os.path.join(dirpath, dirname))
+        for filename in filenames:
+            tree.append(os.path.join(dirpath, filename))
+    assert sorted(tree) == [
+        f'{tmp_path}/bar',
+        f'{tmp_path}/bar/y',
+        f'{tmp_path}/bar/y/z',
+        f'{tmp_path}/bar/y/z/1',
         f'{tmp_path}/bar/y/z/1/c',
+        f'{tmp_path}/foo',
         f'{tmp_path}/foo/b',
     ]
+
+def test_prune_empty_directories_prunes_root_directory(tmp_path):
+    (tmp_path / 'foo' / 'a' / '1').mkdir(parents=True)
+    (tmp_path / 'foo' / 'a' / '2').mkdir(parents=True)
+    (tmp_path / 'bar' / 'x').mkdir(parents=True)
+    (tmp_path / 'bar' / 'y' / 'z' / '1').mkdir(parents=True)
+    (tmp_path / 'bar' / 'y' / 'z' / '2').mkdir(parents=True)
+    (tmp_path / 'baz').mkdir(parents=True)
+    fs.prune_empty_directories(tmp_path)
+    assert not os.path.exists(tmp_path)
 
 def test_prune_empty_directories_encounters_OSError(tmp_path):
     try:
@@ -213,17 +229,20 @@ def test_prune_empty_directories_encounters_OSError(tmp_path):
         (tmp_path / 'foo' / 'b').mkdir(parents=True)
         with pytest.raises(RuntimeError, match=rf'{tmp_path}/foo/a/2: Failed to prune: Permission denied'):
             fs.prune_empty_directories(tmp_path)
-        tree = sorted(
-            os.path.join(dirpath, dirname)
-            for dirpath, dirnames, filenames in os.walk(tmp_path)
-            for dirname in dirnames
-        )
+        tree = []
+        for dirpath, dirnames, filenames in os.walk(tmp_path):
+            for dirname in dirnames:
+                tree.append(os.path.join(dirpath, dirname))
+            for filename in filenames:
+                tree.append(os.path.join(dirpath, filename))
         assert sorted(tree) == [
             f'{tmp_path}/bar',
+            f'{tmp_path}/bar/x',
             f'{tmp_path}/foo',
             f'{tmp_path}/foo/a',
+            f'{tmp_path}/foo/a/1',
             f'{tmp_path}/foo/a/2',
-            f'{tmp_path}/foo/a/3',
+            f'{tmp_path}/foo/b',
         ]
     finally:
         os.chmod(tmp_path / 'foo' / 'a' / '2', 0o700)
