@@ -11,6 +11,7 @@ import re
 
 import unidecode
 
+from .. import constants
 from ..utils import cached_property, fs, signal
 
 import logging  # isort:skip
@@ -142,8 +143,8 @@ class JobBase(abc.ABC):
     def __init__(self, *, home_directory=None, cache_directory=None,
                  ignore_cache=False, hidden=False, autostart=True,
                  condition=None, callbacks={}, **kwargs):
-        self._home_directory = home_directory if home_directory else fs.tmpdir()
-        self._cache_directory = cache_directory if cache_directory else fs.tmpdir()
+        self._home_directory = home_directory if home_directory else '.'
+        self._cache_directory = cache_directory if cache_directory else constants.CACHE_DIRPATH
         self._ignore_cache = bool(ignore_cache)
         self._hidden = bool(hidden)
         self._autostart = bool(autostart)
