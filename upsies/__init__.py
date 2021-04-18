@@ -13,7 +13,7 @@ def application_setup(config):
     :param config: :class:`~.configfiles.ConfigFiles` instance
     """
     from .utils import http
-    http.cache_directory = config['config']['main']['tmp_directory']
+    http.cache_directory = config['config']['main']['cache_directory']
 
 
 def application_shutdown(config):
@@ -25,6 +25,6 @@ def application_shutdown(config):
     from .utils import fs, http
     http.close()
     fs.limit_directory_size(
-        path=config['config']['main']['tmp_directory'],
-        max_total_size=config['config']['main']['max_tmp_size'],
+        path=config['config']['main']['cache_directory'],
+        max_total_size=config['config']['main']['max_cache_size'],
     )

@@ -3,8 +3,8 @@ from . import constants, trackers, utils
 defaults = {
     'config': {
         'main': {
-            'tmp_directory': constants.CACHE_DIRPATH,
-            'max_tmp_size': utils.fs.Bytes.from_string('20 MB'),
+            'cache_directory': constants.CACHE_DIRPATH,
+            'max_cache_size': utils.fs.Bytes.from_string('20 MB'),
         },
     },
 

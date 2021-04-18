@@ -258,21 +258,21 @@ class CommandBase(abc.ABC):
         that are instantiated by this class
 
         The default implementation passes the ``CONTENT`` or ``RELEASE``
-        argument ``config.main.tmp_directory`` to :func:`.fs.projectdir`.
+        argument and ``config.main.cache_directory`` to :func:`.fs.projectdir`.
 
         If no ``CONTENT`` or ``RELEASE`` argument exists, return
-        ``config.main.tmp_directory`` directly.
+        ``config.main.cache_directory`` directly.
         """
         if hasattr(self.args, 'CONTENT'):
             content_path = self.args.CONTENT
         elif hasattr(self.args, 'RELEASE'):
             content_path = self.args.RELEASE
         else:
-            return self.config['config']['main']['tmp_directory']
+            return self.config['config']['main']['cache_directory']
 
         return utils.fs.projectdir(
             content_path=content_path,
-            base=self.config['config']['main']['tmp_directory'],
+            base=self.config['config']['main']['cache_directory'],
         )
 
     @property
@@ -283,9 +283,9 @@ class CommandBase(abc.ABC):
 
         The default implementation appends ``.cache`` to :attr:`home_directory`
         if the ``CONTENT`` or ``RELEASE`` argument exists and returns
-        ``config.main.tmp_directory`` otherwise.
+        ``config.main.cache_directory`` otherwise.
         """
         if hasattr(self.args, 'CONTENT') or hasattr(self.args, 'RELEASE'):
             return os.path.join(self.home_directory, '.cache')
         else:
-            return self.config['config']['main']['tmp_directory']
+            return self.config['config']['main']['cache_directory']
