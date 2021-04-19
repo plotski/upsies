@@ -144,8 +144,7 @@ class SceneQuery:
                             _log.debug('Adding episode from season pack: %r', result)
                             matches.append(result)
                         else:
-                            # Remove episode from release name to create season pack name
-                            season_pack = re.sub(r'\b(S\d{2,})E\d{2,}\b', r'\1', result)
+                            season_pack = self._create_season_pack_name(result)
                             _log.debug('Adding season pack: %r', season_pack)
                             matches.append(season_pack)
                     elif wanted_episodes is not None:
@@ -155,6 +154,24 @@ class SceneQuery:
                                 break
 
             return sorted_and_deduped(matches)
+
+    @staticmethod
+    def _create_season_pack_name(release_name):
+        # Remove episode from release name to create season pack name
+        season_pack = re.sub(r'\b(S\d{2,})E\d{2,}\b', r'\1', release_name)
+
+        # Remove episode title
+        release_info = release.ReleaseInfo(release_name)
+        if release_info['episode_title']:
+            # Escape special characters in each word and
+            # join words with "space or period" regex
+            episode_title_regex = r'[ \.]{1,}'.join(
+                re.escape(word)
+                for word in release_info['episode_title'].split()
+            )
+            season_pack = re.sub(rf'\b{episode_title_regex}\W', '', season_pack)
+
+        return season_pack
 
     @property
     def keywords(self):
