@@ -461,7 +461,7 @@ class ReleaseName(collections.abc.Mapping):
                 return unidecode.unidecode(title.casefold())
 
             title_normalized = normalize_title(self.title)
-            same_titles = tuple(f'{r.title} ({r.year})' for r in results
+            same_titles = tuple(f'{r.title} year={r.year} id={r.id}' for r in results
                                 if normalize_title(r.title) == title_normalized)
             if len(same_titles) >= 2:
                 _log.debug('Found multiple search results for %r: %r', query, same_titles)
