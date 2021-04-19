@@ -112,6 +112,10 @@ class CommandBase(abc.ABC):
     This is a :class:`dict` in which keys are option names or flags
     (e.g. ``"PATH"`` or ``("--path", "-p")`` and each value is a :class:`dict`
     with keyword arguments for :meth:`argparse.ArgumentParser.add_argument`.
+
+    Additionally, you may specify a ``group`` in each keyword argument
+    dictionary. Arguments with the same ``group`` value are mutually exclusive,
+    meaning the user can only specify one of them.
     """
 
     subcommands = {}
