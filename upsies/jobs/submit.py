@@ -105,6 +105,7 @@ class SubmitJob(JobBase):
         # When all jobs are finished, check again if all jobs are finished. This
         # is necessary because each job can can enable or disable other jobs and
         # self.jobs_before_upload can return a different set of jobs every time.
+        # We assume that nothing changes once all jobs are finished.
         jobs_before_upload = self.jobs_before_upload
         while not all(job.is_finished for job in jobs_before_upload):
             _log.debug('Waiting for jobs before upload: %r', [j.name for j in jobs_before_upload])
