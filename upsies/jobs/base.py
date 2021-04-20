@@ -428,7 +428,7 @@ class JobBase(abc.ABC):
         """
         if self.output and self.exit_code == 0 and self.cache_file and self._is_executed:
             emissions_serialized = self._serialize_for_cache(self.signal.emissions)
-            _log.debug('%s: Caching emitted signals: %r', self.name, emissions_serialized)
+            _log.debug('%s: Caching emitted signals: %r', self.name, self.signal.emissions)
             try:
                 with open(self.cache_file, 'wb') as f:
                     f.write(emissions_serialized)
@@ -459,9 +459,9 @@ class JobBase(abc.ABC):
                 else:
                     raise RuntimeError(f'Unable to read cache {self.cache_file}: {e}')
             else:
-                emissions_serialized = self._deserialize_from_cache(emissions_serialized)
-                _log.debug('%s: Replaying cached signals: %r', self.name, emissions_serialized)
-                self.signal.replay(emissions_serialized)
+                emissions_deserialized = self._deserialize_from_cache(emissions_serialized)
+                _log.debug('%s: Replaying cached signals: %r', self.name, emissions_deserialized)
+                self.signal.replay(emissions_deserialized)
                 return True
         return False
 
