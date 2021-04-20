@@ -190,7 +190,7 @@ class UI:
     async def _terminate_jobs(self, callback=None):
         _log.debug('Waiting for jobs before exiting')
         self._finish_jobs()
-        for jobinfo in self._jobs.values():
+        for jobinfo in self._enabled_jobs:
             if not jobinfo.job.is_finished:
                 _log.debug('Waiting for %r', jobinfo.job.name)
                 await jobinfo.job.wait()
@@ -199,7 +199,7 @@ class UI:
             callback()
 
     def _finish_jobs(self):
-        for jobinfo in self._jobs.values():
+        for jobinfo in self._enabled_jobs:
             if not jobinfo.job.is_finished:
                 _log.debug('Finishing %s', jobinfo.job.name)
                 jobinfo.job.finish()
@@ -210,7 +210,7 @@ class UI:
             return self._exception
         else:
             # First exception from jobs
-            for jobinfo in self._jobs.values():
+            for jobinfo in self._enabled_jobs:
                 if jobinfo.job.raised:
                     _log.debug('Exception from %s: %r', jobinfo.job.name, jobinfo.job.raised)
                     return jobinfo.job.raised

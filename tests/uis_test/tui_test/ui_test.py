@@ -330,16 +330,18 @@ async def test_exit_calls_terminate_jobs(mocker):
 async def test_terminate_jobs(callback, mocker):
     ui = UI()
     ui._jobs = {
-        'a': SimpleNamespace(job=Mock(is_finished=False, wait=AsyncMock())),
-        'b': SimpleNamespace(job=Mock(is_finished=True, wait=AsyncMock())),
-        'c': SimpleNamespace(job=Mock(is_finished=False, wait=AsyncMock())),
+        'a': SimpleNamespace(job=Mock(is_finished=False, is_enabled=False, wait=AsyncMock())),
+        'b': SimpleNamespace(job=Mock(is_finished=True, is_enabled=False, wait=AsyncMock())),
+        'c': SimpleNamespace(job=Mock(is_finished=False, is_enabled=True, wait=AsyncMock())),
+        'd': SimpleNamespace(job=Mock(is_finished=True, is_enabled=True, wait=AsyncMock())),
     }
     mocker.patch.object(ui, '_finish_jobs', Mock())
     await ui._terminate_jobs(callback=callback)
     assert ui._finish_jobs.call_args_list == [call()]
-    assert ui._jobs['a'].job.wait.call_args_list == [call()]
+    assert ui._jobs['a'].job.wait.call_args_list == []
     assert ui._jobs['b'].job.wait.call_args_list == []
     assert ui._jobs['c'].job.wait.call_args_list == [call()]
+    assert ui._jobs['d'].job.wait.call_args_list == []
     if callback:
         assert callback.call_args_list == [call()]
 
@@ -347,13 +349,13 @@ async def test_terminate_jobs(callback, mocker):
 def test_finish_jobs():
     ui = UI()
     ui._jobs = {
-        'a': SimpleNamespace(job=Mock(is_finished=False)),
-        'b': SimpleNamespace(job=Mock(is_finished=True)),
-        'c': SimpleNamespace(job=Mock(is_finished=False)),
-        'd': SimpleNamespace(job=Mock(is_finished=True)),
+        'a': SimpleNamespace(job=Mock(is_finished=False, is_enabled=False)),
+        'b': SimpleNamespace(job=Mock(is_finished=True, is_enabled=False)),
+        'c': SimpleNamespace(job=Mock(is_finished=False, is_enabled=True)),
+        'd': SimpleNamespace(job=Mock(is_finished=True, is_enabled=True)),
     }
     ui._finish_jobs()
-    assert ui._jobs['a'].job.finish.call_args_list == [call()]
+    assert ui._jobs['a'].job.finish.call_args_list == []
     assert ui._jobs['b'].job.finish.call_args_list == []
     assert ui._jobs['c'].job.finish.call_args_list == [call()]
     assert ui._jobs['d'].job.finish.call_args_list == []
@@ -363,32 +365,35 @@ def test_get_exception_from_loop_exception_handler():
     ui = UI()
     ui._exception = ValueError('asdf')
     ui._jobs = {
-        'a': SimpleNamespace(job=Mock(raised=ValueError('foo'))),
-        'b': SimpleNamespace(job=Mock(raised=None)),
-        'c': SimpleNamespace(job=Mock(raised=ValueError('bar'))),
+        'a': SimpleNamespace(job=Mock(raised=ValueError('foo'), is_enabled=False)),
+        'b': SimpleNamespace(job=Mock(raised=None, is_enabled=False)),
+        'c': SimpleNamespace(job=Mock(raised=ValueError('bar'), is_enabled=True)),
+        'd': SimpleNamespace(job=Mock(raised=None, is_enabled=True)),
     }
     exc = ui._get_exception()
     assert isinstance(exc, ValueError)
     assert str(exc) == 'asdf'
 
-def test_get_exception_from_first_failed_job():
+def test_get_exception_from_first_failed_enabled_job():
     ui = UI()
     ui._exception = None
     ui._jobs = {
-        'a': SimpleNamespace(job=Mock(raised=ValueError('foo'))),
-        'b': SimpleNamespace(job=Mock(raised=None)),
-        'c': SimpleNamespace(job=Mock(raised=ValueError('bar'))),
+        'a': SimpleNamespace(job=Mock(raised=ValueError('foo'), is_enabled=False)),
+        'b': SimpleNamespace(job=Mock(raised=None, is_enabled=False)),
+        'c': SimpleNamespace(job=Mock(raised=ValueError('bar'), is_enabled=True)),
+        'd': SimpleNamespace(job=Mock(raised=None, is_enabled=True)),
     }
     exc = ui._get_exception()
     assert isinstance(exc, ValueError)
-    assert str(exc) == 'foo'
+    assert str(exc) == 'bar'
 
 def test_get_exception_returns_None_if_no_exception_raised():
     ui = UI()
     ui._exception = None
     ui._jobs = {
-        'a': SimpleNamespace(job=Mock(raised=None)),
-        'b': SimpleNamespace(job=Mock(raised=None)),
-        'c': SimpleNamespace(job=Mock(raised=None)),
+        'a': SimpleNamespace(job=Mock(raised=None, is_enabled=False)),
+        'b': SimpleNamespace(job=Mock(raised=None, is_enabled=False)),
+        'c': SimpleNamespace(job=Mock(raised=None, is_enabled=True)),
+        'd': SimpleNamespace(job=Mock(raised=None, is_enabled=True)),
     }
     assert ui._get_exception() is None
