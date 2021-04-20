@@ -20,6 +20,19 @@ class BbTracker(TrackerBase):
     name = 'bb'
     label = 'bB'
 
+    argument_definitions = {
+        ('--movie-title',): {
+            'group': 'single-job',
+            'help': 'Only generate movie title',
+            'action': 'store_true',
+        },
+        ('--series-title',): {
+            'group': 'single-job',
+            'help': 'Only generate series title',
+            'action': 'store_true',
+        },
+    }
+
     TrackerConfig = BbTrackerConfig
     TrackerJobs = BbTrackerJobs
 
