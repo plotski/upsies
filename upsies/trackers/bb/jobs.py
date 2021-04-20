@@ -154,6 +154,13 @@ class BbTrackerJobs(TrackerJobsBase):
             return False
         return super().submission_ok
 
+    @property
+    def jobs_after_upload(self):
+        """`()` if any :attr:`user_jobs` are given"""
+        if self.user_jobs:
+            _log.debug('No jobs_after_upload because of CLI jobs: %r', [j.name for j in self.user_jobs])
+            return ()
+        return super().jobs_after_upload
 
     @cached_property
     def jobs_before_upload(self):
