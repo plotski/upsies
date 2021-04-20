@@ -127,7 +127,25 @@ class BbTrackerJobs(TrackerJobsBase):
                 if result:
                     return result
 
-    # Generic jobs
+    # Jobs
+
+    _cli_jobs_map = {
+        'movie_title': ('imdb_job', 'movie_title_job'),
+        'series_title': ('tvmaze_job', 'series_title_job',),
+    }
+
+    @cached_property
+    def user_jobs(self):
+        """
+        Jobs that are singled out by the user (e.g. via a CLI argument) or `None`
+
+        No other jobs should be executed.
+        """
+        for argument, job_names in self._cli_jobs_map.items():
+            if getattr(self.cli_args, argument, None):
+                _log.debug('No submission because of argument: %r', argument)
+                return [getattr(self, job_name) for job_name in job_names]
+
 
     @cached_property
     def jobs_before_upload(self):
