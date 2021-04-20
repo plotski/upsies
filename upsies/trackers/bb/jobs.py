@@ -146,6 +146,14 @@ class BbTrackerJobs(TrackerJobsBase):
                 _log.debug('No submission because of argument: %r', argument)
                 return [getattr(self, job_name) for job_name in job_names]
 
+    @property
+    def submission_ok(self):
+        """`False` if any :attr:`user_jobs` are given"""
+        if self.user_jobs:
+            _log.debug('No submission because of CLI jobs: %r', [j.name for j in self.user_jobs])
+            return False
+        return super().submission_ok
+
 
     @cached_property
     def jobs_before_upload(self):

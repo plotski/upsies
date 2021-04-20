@@ -57,6 +57,7 @@ def tracker_jobs(btclient, tracker):
 
         jobs_before_upload = PropertyMock()
         jobs_after_upload = PropertyMock()
+        submission_ok = PropertyMock(return_value=True)
 
     return TestTrackerJobs()
 
