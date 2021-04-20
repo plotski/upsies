@@ -164,11 +164,18 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def jobs_before_upload(self):
+        # Detecting movie/series is impossible to do right and disastrous if it
+        # fails, so we always ask the user before doing anything else.
+        jobs = [self.release_type_job]
+
+        if self.user_jobs:
+            jobs.extend(self.user_jobs)
+            return jobs
+
         # Return all possible jobs and disable/enable them on a condition based
         # on self.is_movie|series_release.
-        return (
+        jobs.extend((
             # Generic jobs
-            self.release_type_job,
             self.mediainfo_job,
             self.create_torrent_job,
             self.screenshots_job,
@@ -195,7 +202,9 @@ class BbTrackerJobs(TrackerJobsBase):
             self.series_poster_job,
             self.series_tags_job,
             self.series_description_job,
-        )
+        ))
+
+        return jobs
 
     @cached_property
     def release_type_job(self):
