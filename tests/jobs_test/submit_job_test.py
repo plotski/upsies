@@ -284,3 +284,9 @@ async def test_None_and_disabled_are_filtered_from_jobs_attributes(attrname, tmp
         tracker_jobs=tracker_jobs,
     )
     assert getattr(job, attrname) == (foo_job, baz_job)
+
+
+@pytest.mark.parametrize('submission_ok, exp_hidden', ((False, True), (True, False)))
+def test_hidden_property(submission_ok, exp_hidden, job, mocker):
+    mocker.patch.object(type(job._tracker_jobs), 'submission_ok', PropertyMock(return_value=submission_ok))
+    assert job.hidden is exp_hidden

@@ -157,3 +157,17 @@ class SubmitJob(JobBase):
         """
         return tuple(job for job in self._tracker_jobs.jobs_after_upload
                      if job and job.is_enabled)
+
+    @property
+    def hidden(self):
+        """
+        Hide this job if :attr:`~.base.TrackerJobsBase.submission_ok` is falsy
+
+        This allows jobs to prevent submission.
+
+        It also should mean this job is hidden until the submission happens
+        because :attr:`~.base.TrackerJobsBase.submission_ok` should be falsy
+        until all :attr:`~.base.TrackerJobsBase.jobs_before_upload` finished
+        successfully.
+        """
+        return not self._tracker_jobs.submission_ok
