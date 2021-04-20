@@ -290,3 +290,20 @@ async def test_None_and_disabled_are_filtered_from_jobs_attributes(attrname, tmp
 def test_hidden_property(submission_ok, exp_hidden, job, mocker):
     mocker.patch.object(type(job._tracker_jobs), 'submission_ok', PropertyMock(return_value=submission_ok))
     assert job.hidden is exp_hidden
+
+
+@pytest.mark.parametrize(
+    argnames='submission_ok, jobs, exp_final_job',
+    argvalues=(
+        (True, (), None),
+        (False, (Mock(is_finished=True), Mock(is_finished=False), Mock(is_finished=True)), None),
+        (False, (Mock(is_finished=True, id='a'), Mock(is_finished=True, id='b'), Mock(is_finished=True, id='c')), 'c'),
+    ),
+)
+def test_final_job_before_upload_property(submission_ok, jobs, exp_final_job, job, mocker):
+    mocker.patch.object(type(job._tracker_jobs), 'submission_ok', PropertyMock(return_value=submission_ok))
+    mocker.patch.object(type(job), 'jobs_before_upload', PropertyMock(return_value=jobs))
+    if not exp_final_job:
+        assert job.final_job_before_upload is None
+    else:
+        assert job.final_job_before_upload.id == exp_final_job

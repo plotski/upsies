@@ -171,3 +171,21 @@ class SubmitJob(JobBase):
         successfully.
         """
         return not self._tracker_jobs.submission_ok
+
+    @property
+    def final_job_before_upload(self):
+        """
+        If submission is prevented by :attr:`~.base.TrackerJobsBase.submission_ok`
+        return the last item of
+        :attr:`~.base.TrackerJobsBase.jobs_before_upload` if all jobs are
+        finished
+
+        Return `None` if :attr:`~.base.TrackerJobsBase.submission_ok` is truthy
+        or the final job cannot be determined at the moment.
+        """
+        if not self._tracker_jobs.submission_ok:
+            jobs = self.jobs_before_upload
+            # Because jobs can enable/disable each other, we can't know the
+            # final job until all jobs are finished.
+            if jobs and all(job.is_finished for job in jobs):
+                return jobs[-1]
