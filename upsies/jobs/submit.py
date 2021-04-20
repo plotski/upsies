@@ -198,3 +198,12 @@ class SubmitJob(JobBase):
             return final_job_before_upload.output
         else:
             return super().output
+
+    @property
+    def exit_code(self):
+        """Exit code of this job or :attr:`final_job_before_upload` if it is not `None`"""
+        final_job_before_upload = self.final_job_before_upload
+        if final_job_before_upload:
+            return final_job_before_upload.exit_code
+        else:
+            return super().exit_code
