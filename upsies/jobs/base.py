@@ -215,7 +215,7 @@ class JobBase(abc.ABC):
         if cache_was_read:
             self.finish()
         else:
-            _log.debug('Executing %r', self)
+            _log.debug('Executing job: %s', self.name)
             self._is_executed = True
             self.execute()
 
