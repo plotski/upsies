@@ -174,32 +174,14 @@ async def test_run_jobs_waits_for_jobs_until_all_are_finished(job, mocker):
     assert jobs['b'].wait_calls == 1
     assert jobs['c'].wait_calls == 3
 
+@pytest.mark.parametrize('submission_ok, exp_calls', ((True, [call()]), (False, [])))
 @pytest.mark.asyncio
-async def test_run_jobs_submits_if_all_jobs_succeeded(job, mocker):
+async def test_run_jobs_submits_if_submission_ok(submission_ok, exp_calls, job, mocker):
     mocker.patch.object(job, '_submit', AsyncMock())
-    mocker.patch.object(type(job), 'jobs_before_upload', PropertyMock(return_value=(
-        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
-        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
-        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
-    )))
+    mocker.patch.object(type(job._tracker_jobs), 'submission_ok', PropertyMock(return_value=submission_ok))
     assert not job.is_finished
     await job._run_jobs()
-    assert job._submit.call_args_list == [call()]
-    assert job.is_finished
-
-@pytest.mark.parametrize('job_index', (0, 1, 2))
-@pytest.mark.asyncio
-async def test_run_jobs_does_not_submit_if_any_job_fails(job_index, job, mocker):
-    mocker.patch.object(job, '_submit', AsyncMock())
-    mocker.patch.object(type(job), 'jobs_before_upload', PropertyMock(return_value=(
-        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
-        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
-        Mock(wait=AsyncMock(), exit_code=0, is_finished=True),
-    )))
-    job.jobs_before_upload[job_index].exit_code = 1
-    assert not job.is_finished
-    await job._run_jobs()
-    assert job._submit.call_args_list == []
+    assert job._submit.call_args_list == exp_calls
     assert job.is_finished
 
 

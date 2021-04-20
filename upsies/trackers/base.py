@@ -179,6 +179,28 @@ class TrackerJobsBase(abc.ABC):
             self.copy_torrent_job,
         )
 
+    @property
+    def submission_ok(self):
+        """
+        Whether the created metadata should be submitted
+
+        The base class implementation simply returns `True` if all
+        :attr:`jobs_before_upload` have an :attr:`~.base.JobBase.exit_code` of
+        ``0`` or a falsy :attr:`~.base.JobBase.is_enabled` value.
+
+        Subclasses should always call the parent class implementation to ensure
+        all metadata was created successfully.
+        """
+        enabled_jobs_before_upload = tuple(
+            job for job in self.jobs_before_upload
+            if job.is_enabled
+        )
+        return (
+            bool(enabled_jobs_before_upload)
+            and all(job.exit_code == 0
+                    for job in enabled_jobs_before_upload)
+        )
+
     @cached_property
     def create_torrent_job(self):
         """:class:`~.jobs.torrent.CreateTorrentJob` instance"""

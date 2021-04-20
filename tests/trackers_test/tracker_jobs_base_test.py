@@ -90,6 +90,25 @@ def test_jobs_after_upload(mocker):
     )
 
 
+@pytest.mark.parametrize(
+    argnames='jobs_before_upload, exp_submission_ok',
+    argvalues=(
+        ((Mock(exit_code=0, is_enabled=True), Mock(exit_code=0, is_enabled=True), Mock(exit_code=0, is_enabled=True)), True),
+        ((Mock(exit_code=0, is_enabled=True), Mock(exit_code=0, is_enabled=True), Mock(exit_code=1, is_enabled=True)), False),
+        ((Mock(exit_code=0, is_enabled=True), Mock(exit_code=1, is_enabled=True), Mock(exit_code=0, is_enabled=True)), False),
+        ((Mock(exit_code=1, is_enabled=True), Mock(exit_code=0, is_enabled=True), Mock(exit_code=0, is_enabled=True)), False),
+        ((Mock(exit_code=1, is_enabled=False), Mock(exit_code=0, is_enabled=True), Mock(exit_code=0, is_enabled=True)), True),
+        ((Mock(exit_code=0, is_enabled=False), Mock(exit_code=1, is_enabled=False), Mock(exit_code=0, is_enabled=True)), True),
+        ((Mock(exit_code=0, is_enabled=False), Mock(exit_code=0, is_enabled=False), Mock(exit_code=1, is_enabled=False)), False),
+        ((Mock(exit_code=0, is_enabled=False), Mock(exit_code=0, is_enabled=False), Mock(exit_code=0, is_enabled=False)), False),
+    ),
+)
+def test_submission_ok(jobs_before_upload, exp_submission_ok, mocker):
+    tracker_jobs = make_TestTrackerJobs()
+    mocker.patch.object(type(tracker_jobs), 'jobs_before_upload', PropertyMock(return_value=jobs_before_upload))
+    assert tracker_jobs.submission_ok == exp_submission_ok
+
+
 def test_create_torrent_job(mocker):
     CreateTorrentJob_mock = mocker.patch('upsies.jobs.torrent.CreateTorrentJob')
     tracker_jobs = make_TestTrackerJobs(

@@ -113,8 +113,8 @@ class SubmitJob(JobBase):
             jobs_before_upload = self.jobs_before_upload
         _log.debug('Done waiting for jobs before upload: %r', [j.name for j in jobs_before_upload])
 
-        # Only submit if all jobs were successful
-        if all(job.exit_code == 0 for job in jobs_before_upload):
+        # Don't submit if self._tracker_jobs thinks that's a bad idea.
+        if self._tracker_jobs.submission_ok:
             await self._submit()
         self.finish()
 
