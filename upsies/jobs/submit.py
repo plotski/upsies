@@ -189,3 +189,12 @@ class SubmitJob(JobBase):
             # final job until all jobs are finished.
             if jobs and all(job.is_finished for job in jobs):
                 return jobs[-1]
+
+    @property
+    def output(self):
+        """Output of this job or :attr:`final_job_before_upload` if it is not `None`"""
+        final_job_before_upload = self.final_job_before_upload
+        if final_job_before_upload:
+            return final_job_before_upload.output
+        else:
+            return super().output

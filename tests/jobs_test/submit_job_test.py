@@ -307,3 +307,17 @@ def test_final_job_before_upload_property(submission_ok, jobs, exp_final_job, jo
         assert job.final_job_before_upload is None
     else:
         assert job.final_job_before_upload.id == exp_final_job
+
+
+@pytest.mark.parametrize(
+    argnames='own_output, final_job_before_upload, exp_output',
+    argvalues=(
+        (('torrent url',), None, ('torrent url',)),
+        (('torrent url',), Mock(output=('description',)), ('description',)),
+    ),
+)
+def test_output_property(own_output, final_job_before_upload, exp_output, job, mocker):
+    parent_class = type(job).mro()[1]
+    mocker.patch.object(parent_class, 'output', PropertyMock(return_value=own_output))
+    mocker.patch.object(type(job), 'final_job_before_upload', PropertyMock(return_value=final_job_before_upload))
+    assert job.output is exp_output
