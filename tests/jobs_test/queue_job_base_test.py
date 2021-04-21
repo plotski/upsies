@@ -32,7 +32,10 @@ async def qjob(tmp_path):
     yield qjob
     if inspect.isawaitable(qjob._read_queue_task):
         qjob.finish()
-        await qjob.wait()
+        try:
+            await qjob.wait()
+        except BaseException:
+            pass
 
 
 def test_QueueJobBase_is_JobBase_subclass(qjob):
@@ -109,6 +112,7 @@ async def test_read_queue_breaks_if_job_is_finished(mocker, tmp_path):
         side_effect=(False, True, True, True),
     ))
     qjob = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
+    qjob.start()
     mocker.patch.object(qjob, 'handle_input', AsyncMock())
     qjob._queue.put_nowait('a')
     qjob._queue.put_nowait('b')
@@ -124,12 +128,11 @@ async def test_read_queue_handles_exception_from_handle_input(qjob, mocker):
     mocker.patch.object(qjob, 'handle_input', AsyncMock(
         side_effect=TypeError('argh'),
     ))
+    qjob.start()
     qjob._queue.put_nowait('a')
     await qjob._read_queue()
     assert qjob._queue.empty()
-    assert qjob.handle_input.call_args_list == [
-        call('a'),
-    ]
+    assert qjob.handle_input.call_args_list == [call('a')]
     with pytest.raises(TypeError, match='^argh$'):
         await qjob.wait()
 
@@ -158,13 +161,14 @@ async def test_finalize(qjob):
 
 @pytest.mark.asyncio
 async def test_finish_without_running_read_queue_task(qjob):
+    qjob.start()
     assert not qjob.is_finished
     qjob.finish()
     assert qjob.is_finished
 
 @pytest.mark.asyncio
 async def test_finish_with_running_read_queue_task(qjob):
-    qjob.execute()
+    qjob.start()
     assert not qjob.is_finished
     qjob.finish()
     assert qjob.is_finished
@@ -174,18 +178,18 @@ async def test_finish_with_running_read_queue_task(qjob):
 async def test_wait_without_running_read_queue_task(qjob):
     assert qjob._read_queue_task is None
     assert not qjob.is_finished
-    asyncio.get_event_loop().call_soon(qjob.finish())
+    asyncio.get_event_loop().call_soon(qjob.start)
+    asyncio.get_event_loop().call_soon(qjob.finish)
     await qjob.wait()
     assert qjob.is_finished
     assert qjob.errors == ()
-    assert qjob._read_queue_task is None
 
 @pytest.mark.asyncio
 async def test_wait_awaits_read_queue_task(qjob):
-    qjob.execute()
+    qjob.start()
     assert qjob._read_queue_task is not None
     assert not qjob.is_finished
-    asyncio.get_event_loop().call_soon(qjob.finalize())
+    asyncio.get_event_loop().call_soon(qjob.finalize)
     await qjob.wait()
     assert qjob.is_finished
     assert qjob.errors == ()
@@ -193,12 +197,12 @@ async def test_wait_awaits_read_queue_task(qjob):
 
 @pytest.mark.asyncio
 async def test_wait_handles_CancelledError_from_read_queue_task(qjob):
-    qjob.execute()
+    qjob.start()
     assert qjob._read_queue_task is not None
     for i in range(1000):
         qjob.enqueue(i)
     assert not qjob.is_finished
-    asyncio.get_event_loop().call_soon(qjob.finish())
+    asyncio.get_event_loop().call_soon(qjob.finish)
     await qjob.wait()
     assert qjob.is_finished
     assert qjob.exit_code == 1
