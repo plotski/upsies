@@ -330,18 +330,26 @@ async def test_exit_calls_terminate_jobs(mocker):
 async def test_terminate_jobs(callback, mocker):
     ui = UI()
     ui._jobs = {
-        'a': SimpleNamespace(job=Mock(is_finished=False, is_enabled=False, wait=AsyncMock())),
-        'b': SimpleNamespace(job=Mock(is_finished=True, is_enabled=False, wait=AsyncMock())),
-        'c': SimpleNamespace(job=Mock(is_finished=False, is_enabled=True, wait=AsyncMock())),
-        'd': SimpleNamespace(job=Mock(is_finished=True, is_enabled=True, wait=AsyncMock())),
+        'a': SimpleNamespace(job=Mock(is_started=False, is_finished=False, is_enabled=False, wait=AsyncMock())),
+        'b': SimpleNamespace(job=Mock(is_started=False, is_finished=False, is_enabled=True, wait=AsyncMock())),
+        'c': SimpleNamespace(job=Mock(is_started=False, is_finished=True, is_enabled=False, wait=AsyncMock())),
+        'd': SimpleNamespace(job=Mock(is_started=False, is_finished=True, is_enabled=True, wait=AsyncMock())),
+        'e': SimpleNamespace(job=Mock(is_started=True, is_finished=False, is_enabled=False, wait=AsyncMock())),
+        'f': SimpleNamespace(job=Mock(is_started=True, is_finished=False, is_enabled=True, wait=AsyncMock())),
+        'g': SimpleNamespace(job=Mock(is_started=True, is_finished=True, is_enabled=False, wait=AsyncMock())),
+        'h': SimpleNamespace(job=Mock(is_started=True, is_finished=True, is_enabled=True, wait=AsyncMock())),
     }
     mocker.patch.object(ui, '_finish_jobs', Mock())
     await ui._terminate_jobs(callback=callback)
     assert ui._finish_jobs.call_args_list == [call()]
     assert ui._jobs['a'].job.wait.call_args_list == []
     assert ui._jobs['b'].job.wait.call_args_list == []
-    assert ui._jobs['c'].job.wait.call_args_list == [call()]
+    assert ui._jobs['c'].job.wait.call_args_list == []
     assert ui._jobs['d'].job.wait.call_args_list == []
+    assert ui._jobs['e'].job.wait.call_args_list == []
+    assert ui._jobs['f'].job.wait.call_args_list == [call()]
+    assert ui._jobs['g'].job.wait.call_args_list == []
+    assert ui._jobs['h'].job.wait.call_args_list == []
     if callback:
         assert callback.call_args_list == [call()]
 

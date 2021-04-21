@@ -191,7 +191,7 @@ class UI:
         _log.debug('Waiting for jobs before exiting')
         self._finish_jobs()
         for jobinfo in self._enabled_jobs:
-            if not jobinfo.job.is_finished:
+            if jobinfo.job.is_started and not jobinfo.job.is_finished:
                 _log.debug('Waiting for %r', jobinfo.job.name)
                 await jobinfo.job.wait()
                 _log.debug('Waiting for %r', jobinfo.job.name)
