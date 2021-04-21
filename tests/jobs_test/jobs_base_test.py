@@ -185,49 +185,58 @@ async def test_wait_returns_when_finish_is_called(tmp_path):
     assert list(job.calls) == ['finish() called', 'wait() returned']
 
 
+@pytest.mark.parametrize(
+    argnames='is_started, is_finished, is_enabled, exp_finished',
+    argvalues=(
+        (True, True, True, False),
+        (True, True, False, False),
+        (True, False, True, True),
+        (False, True, True, False),
+        (True, False, False, False),
+        (False, False, True, False),
+        (False, True, False, False),
+        (False, False, False, False),
+    ),
+)
 @pytest.mark.asyncio
-async def test_finish_finishes(job):
-    assert job.is_finished is False
-    job.start()
-    assert job.is_finished is False
-    job.finish()
-    assert job.is_finished is True
+async def test_finish(is_started, is_finished, is_enabled, exp_finished, job, mocker):
+    mocker.patch.object(type(job), 'is_started', PropertyMock(return_value=is_started))
+    mocker.patch.object(type(job), 'is_finished', PropertyMock(return_value=is_finished))
+    mocker.patch.object(type(job), 'is_enabled', PropertyMock(return_value=is_enabled))
 
-@pytest.mark.asyncio
-async def test_finish_emits_finished_signal(job):
-    job.start()
     cb = Mock()
     job.signal.register('finished', cb)
-    for _ in range(3):
-        job.finish()
-        assert cb.call_args_list == [call(job)]
-
-@pytest.mark.asyncio
-async def test_finish_writes_cache(job, mocker):
     mocker.patch.object(job, '_write_cache')
-    job.start()
-    for i in range(3):
-        job.finish()
-        assert job._write_cache.call_args_list == [call()]
-
-@pytest.mark.asyncio
-async def test_finish_cancels_added_tasks(job):
     job._tasks = [
         Mock(done=Mock(return_value=False)),
         Mock(done=Mock(return_value=True)),
         Mock(done=Mock(return_value=False)),
     ]
+
     job.start()
-    for task in job._tasks:
-        assert task.done.call_args_list == []
-        assert task.cancel.call_args_list == []
-    for i in range(3):
+
+    for i in range(1):
         job.finish()
-        for task in job._tasks:
-            assert task.done.call_args_list == [call()]
-        assert job._tasks[0].cancel.call_args_list == [call()]
-        assert job._tasks[1].cancel.call_args_list == []
-        assert job._tasks[2].cancel.call_args_list == [call()]
+        if exp_finished:
+            assert cb.call_args_list == [call(job)]
+
+            for task in job._tasks:
+                assert task.done.call_args_list == [call()]
+            assert job._tasks[0].cancel.call_args_list == [call()]
+            assert job._tasks[1].cancel.call_args_list == []
+            assert job._tasks[2].cancel.call_args_list == [call()]
+
+            assert job._write_cache.call_args_list == [call()]
+        else:
+            assert cb.call_args_list == []
+
+            for task in job._tasks:
+                assert task.done.call_args_list == []
+            assert job._tasks[0].cancel.call_args_list == []
+            assert job._tasks[1].cancel.call_args_list == []
+            assert job._tasks[2].cancel.call_args_list == []
+
+            assert job._write_cache.call_args_list == []
 
 
 @pytest.mark.asyncio
@@ -247,17 +256,20 @@ def test_exit_code_is_None_if_job_is_not_finished(job):
     assert job.exit_code is not None
 
 def test_exit_code_is_0_if_output_is_not_empty(job):
+    job.start()
     job.send('foo')
     job.finish()
     assert job.output == ('foo',)
     assert job.exit_code == 0
 
 def test_exit_code_is_1_if_output_is_empty(job):
+    job.start()
     job.finish()
     assert job.output == ()
     assert job.exit_code == 1
 
 def test_exit_code_is_1_if_errors_were_sent(job):
+    job.start()
     job.send('foo')
     job.error('bar')
     job.finish()
@@ -299,12 +311,14 @@ def test_send_fills_output_property(job, mocker):
 
 
 def test_output(job):
+    job.start()
     assert job.output == ()
     job._output = ['foo', 'bar', 'baz']
     assert job.output == ('foo', 'bar', 'baz')
 
 
 def test_info(job):
+    job.start()
     cb = Mock()
     job.signal.register('info', cb)
     assert job.info == ''
@@ -315,6 +329,7 @@ def test_info(job):
 
 
 def test_warn(job):
+    job.start()
     assert job.warnings == ()
     job.warn('foo')
     assert job.warnings == ('foo',)
@@ -325,11 +340,13 @@ def test_warn(job):
     assert job.warnings == ('foo', 'bar')
 
 def test_warnings(job):
+    job.start()
     assert job.warnings == ()
     job._warnings = ['a', 'b', 'c']
     assert job.warnings == ('a', 'b', 'c')
 
 def test_clear_warnings_on_unfinished_job(job):
+    job.start()
     job.clear_warnings()
     assert job.warnings == ()
     job.warn('foo')
@@ -338,6 +355,7 @@ def test_clear_warnings_on_unfinished_job(job):
     assert job.warnings == ()
 
 def test_clear_warnings_on_finished_job(job):
+    job.start()
     job.warn('foo')
     assert job.warnings == ('foo',)
     job.finish()
@@ -346,6 +364,7 @@ def test_clear_warnings_on_finished_job(job):
 
 
 def test_errors(job):
+    job.start()
     assert job.errors == ()
     job._errors = ['foo', 'bar', 'baz']
     assert job.errors == ('foo', 'bar', 'baz')
@@ -386,6 +405,7 @@ def test_error_fills_errors_property(job, mocker):
 
 @pytest.mark.asyncio
 async def test_exception_on_finished_job(job):
+    job.start()
     job.finish()
     job.exception(TypeError('Sorry, not my type.'))
     assert job.is_finished
@@ -395,6 +415,7 @@ async def test_exception_on_finished_job(job):
 
 @pytest.mark.asyncio
 async def test_exception_sets_exception_that_is_raised_by_wait(job):
+    job.start()
     job.exception(TypeError('Sorry, not my type.'))
     for _ in range(5):
         with pytest.raises(TypeError, match=r'^Sorry, not my type\.$'):
@@ -404,6 +425,7 @@ async def test_exception_sets_exception_that_is_raised_by_wait(job):
 
 @pytest.mark.asyncio
 async def test_exception_finishes_job(job):
+    job.start()
     assert not job.is_finished
     job.exception(TypeError('Sorry, not my type.'))
     assert job.is_finished
@@ -411,6 +433,7 @@ async def test_exception_finishes_job(job):
 
 @pytest.mark.asyncio
 async def test_added_task_returns_return_value(job, mocker):
+    job.start()
     coro = AsyncMock(return_value='foo')
     job.add_task(coro)
     assert await job._tasks[0] == 'foo'
@@ -419,6 +442,7 @@ async def test_added_task_returns_return_value(job, mocker):
 
 @pytest.mark.asyncio
 async def test_added_task_passes_return_value_to_callback(job, mocker):
+    job.start()
     callback = Mock()
     coro = AsyncMock(return_value='foo')
     job.add_task(coro, callback=callback)
@@ -429,6 +453,7 @@ async def test_added_task_passes_return_value_to_callback(job, mocker):
 
 @pytest.mark.asyncio
 async def test_added_task_catches_exceptions(job, mocker):
+    job.start()
     callback = Mock()
     coro = AsyncMock(side_effect=TypeError('foo'))
     job.add_task(coro, callback=callback)
@@ -441,6 +466,7 @@ async def test_added_task_catches_exceptions(job, mocker):
 @pytest.mark.parametrize('finish_when_done', (False, True))
 @pytest.mark.asyncio
 async def test_added_task_ignores_CancelledError(finish_when_done, job, mocker):
+    job.start()
     callback = Mock()
     coro = AsyncMock(side_effect=asyncio.CancelledError())
     job.add_task(coro, callback=callback, finish_when_done=finish_when_done)

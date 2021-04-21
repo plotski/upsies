@@ -254,13 +254,13 @@ class JobBase(abc.ABC):
 
         :attr:`is_finished` is `True` after this method was called.
 
-        Calling this method multiple times simultaneously is safe.
+        Calling this method from multiple coroutines simultaneously is safe.
 
         Subclasses must call the parent's method (``super().finish()``).
 
         This method does not block.
         """
-        if not self.is_finished:
+        if self.is_started and not self.is_finished and self.is_enabled:
             for task in self._tasks:
                 if not task.done():
                     task.cancel()
