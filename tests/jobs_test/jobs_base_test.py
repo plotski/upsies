@@ -476,36 +476,24 @@ async def test_added_task_ignores_CancelledError(finish_when_done, job, mocker):
     assert callback.call_args_list == []
 
 
-@pytest.mark.parametrize('cache_file_value', (None, ''))
-def test_write_cache_does_nothing_if_cache_file_property_is_falsy(cache_file_value, tmp_path, mocker):
-    class BarJob(FooJob):
-        cache_file = cache_file_value
-
-    job = BarJob(home_directory=tmp_path, cache_directory=tmp_path)
-    job.send('Foo')
-    job.finish()
+@pytest.mark.parametrize(
+    argnames='output, exit_code, cache_file, is_executed',
+    argvalues=(
+        ((), 0, 'path/to/cache_file', True),
+        (('output',), 1, 'path/to/cache_file', True),
+        (('output',), 0, '', True),
+        (('output',), 0, None, True),
+        (('output',), 1, 'path/to/cache_file', False),
+    ),
+)
+def test_write_cache_does_nothing(output, exit_code, cache_file, is_executed, job, mocker):
+    mocker.patch.object(type(job), 'output', PropertyMock(return_value=output))
+    mocker.patch.object(type(job), 'exit_code', PropertyMock(return_value=exit_code))
+    mocker.patch.object(type(job), 'cache_file', PropertyMock(return_value=cache_file))
+    mocker.patch.object(job, '_is_executed', is_executed)
     open_mock = mocker.patch('upsies.jobs.base.open')
     job._write_cache()
     assert open_mock.call_args_list == []
-
-def test_write_cache_does_nothing_if_output_is_empty(job, mocker):
-    job.finish()
-    assert job.output == ()
-    job._write_cache()
-    assert not os.path.exists(job.cache_file)
-
-def test_write_cache_does_nothing_if_exit_code_is_nonzero(job):
-    job.error('Bar!')
-    job.finish()
-    assert job.exit_code != 0
-    job._write_cache()
-    assert not os.path.exists(job.cache_file)
-
-def test_write_cache_does_nothing_if_job_was_not_executed(job):
-    job.error('Bar!')
-    job.finish()
-    job._write_cache()
-    assert not os.path.exists(job.cache_file)
 
 def test_write_cache_writes_signal_emissions(tmp_path, mocker):
     class BarJob(FooJob):
@@ -565,24 +553,20 @@ async def test_cache_is_properly_written_when_repeating_command(tmp_path):
         assert job.read_output_cache_counter == 1
 
 
-@pytest.mark.parametrize('ignore_cache', (False, None, 0, ''))
-def test_read_cache_does_nothing_if_ignore_cache_is_falsy(ignore_cache, tmp_path, mocker):
-    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path, ignore_cache=ignore_cache)
-    open_mock = mocker.patch('upsies.jobs.base.open')
-    assert job._read_cache() is False
-    assert open_mock.call_args_list == []
-
-@pytest.mark.parametrize('cache_file_value', (None, ''))
-def test_read_cache_does_nothing_if_cache_file_is_falsy(cache_file_value, tmp_path, mocker):
-    class BarJob(FooJob):
-        cache_file = cache_file_value
-
-    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
-    open_mock = mocker.patch('upsies.jobs.base.open')
-    assert job._read_cache() is False
-    assert open_mock.call_args_list == []
-
-def test_read_cache_does_nothing_if_cache_file_does_not_exist(job, mocker):
+@pytest.mark.parametrize(
+    argnames='ignore_cache, cache_file, cache_file_exists',
+    argvalues=(
+        (True, 'path/to/cache_file', True),
+        (1, 'path/to/cache_file', True),
+        (False, '', True),
+        (False, None, True),
+        (1, 'path/to/cache_file', False),
+    ),
+)
+def test_read_cache_does_nothing(ignore_cache, cache_file, cache_file_exists, job, mocker):
+    mocker.patch.object(job, '_ignore_cache', ignore_cache)
+    mocker.patch.object(type(job), 'cache_file', PropertyMock(return_value=cache_file))
+    mocker.patch('os.path.exists', Mock(return_value=cache_file_exists))
     open_mock = mocker.patch('upsies.jobs.base.open')
     assert job._read_cache() is False
     assert open_mock.call_args_list == []
