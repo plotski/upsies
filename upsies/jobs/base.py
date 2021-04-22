@@ -159,7 +159,7 @@ class JobBase(abc.ABC):
         self._ignore_cache = bool(ignore_cache)
         self._hidden = bool(hidden)
         self._autostart = bool(autostart)
-        self._condition = condition or (lambda: True)
+        self.condition = condition or (lambda: True)
         self._is_started = False
         self._is_executed = False
         self._exception = None
