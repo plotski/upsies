@@ -32,6 +32,36 @@ def test_TrackerJobs_attribute():
     assert BbTracker.TrackerJobs is BbTrackerJobs
 
 
+def test_argument_definitions():
+    assert BbTracker.argument_definitions == {
+        ('--title', '-t'): {
+            'group': 'single-job',
+            'help': 'Only generate title',
+            'action': 'store_true',
+        },
+        ('--description', '-d'): {
+            'group': 'single-job',
+            'help': 'Only generate description',
+            'action': 'store_true',
+        },
+        ('--poster', '-p'): {
+            'group': 'single-job',
+            'help': 'Only generate poster URL',
+            'action': 'store_true',
+        },
+        ('--release-info', '-i'): {
+            'group': 'single-job',
+            'help': 'Only generate release info',
+            'action': 'store_true',
+        },
+        ('--tags', '-g'): {
+            'group': 'single-job',
+            'help': 'Only generate tags',
+            'action': 'store_true',
+        },
+    }
+
+
 @pytest.mark.asyncio
 async def test_login_succeeds(mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())

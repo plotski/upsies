@@ -21,14 +21,29 @@ class BbTracker(TrackerBase):
     label = 'bB'
 
     argument_definitions = {
-        ('--movie-title',): {
+        ('--title', '-t'): {
             'group': 'single-job',
-            'help': 'Only generate movie title',
+            'help': 'Only generate title',
             'action': 'store_true',
         },
-        ('--series-title',): {
+        ('--description', '-d'): {
             'group': 'single-job',
-            'help': 'Only generate series title',
+            'help': 'Only generate description',
+            'action': 'store_true',
+        },
+        ('--poster', '-p'): {
+            'group': 'single-job',
+            'help': 'Only generate poster URL',
+            'action': 'store_true',
+        },
+        ('--release-info', '-i'): {
+            'group': 'single-job',
+            'help': 'Only generate release info',
+            'action': 'store_true',
+        },
+        ('--tags', '-g'): {
+            'group': 'single-job',
+            'help': 'Only generate tags',
             'action': 'store_true',
         },
     }
