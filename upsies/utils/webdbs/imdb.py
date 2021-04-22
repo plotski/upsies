@@ -76,11 +76,12 @@ class ImdbApi(WebDbApiBase):
 
     async def cast(self, id):
         soup = await self._get_soup(f'title/{id}')
-        cast_tag = soup.find(class_='cast_list')
         cast = []
-        tr_tags = cast_tag.find_all('tr')
-        for tr_tag in tr_tags:
-            cast.extend(self._get_persons(tr_tag))
+        cast_tag = soup.find(class_='cast_list')
+        if cast_tag:
+            tr_tags = cast_tag.find_all('tr')
+            for tr_tag in tr_tags:
+                cast.extend(self._get_persons(tr_tag))
         return tuple(cast)
 
     async def countries(self, id):

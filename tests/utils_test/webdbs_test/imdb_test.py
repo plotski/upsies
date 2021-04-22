@@ -324,6 +324,8 @@ async def test_search_result_year(query, exp_year, api, store_response):
         ('tt5440238', (('Taylor Schilling', 'https://imdb.com/name/nm2279940'),
                        ('Natasha Lyonne', 'https://imdb.com/name/nm0005169'),
                        ('Uzo Aduba', 'https://imdb.com/name/nm2499064'))),
+        # No cast list
+        ('tt0896516', ()),
     ),
     ids=lambda value: str(value),
 )
