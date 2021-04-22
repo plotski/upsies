@@ -50,9 +50,13 @@ def _main(args=None):
         return 1
 
     else:
-        # Print last job's output to stdout for use in output redirection
+        # Print last job's output to stdout for use in output redirection.
+        # Ignore disabled jobs.
         if exit_code == 0:
-            final_job = cmd.jobs_active[-1]
-            if final_job.output:
-                print('\n'.join(final_job.output))
+            for j in reversed(cmd.jobs_active):
+                if j.is_enabled:
+                    if j.output:
+                        print('\n'.join(j.output))
+                    break
+
         return exit_code
