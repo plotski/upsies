@@ -192,10 +192,10 @@ async def test_wait_returns_when_finish_is_called(tmp_path):
         (True, True, False, False),
         (True, False, True, True),
         (False, True, True, False),
-        (True, False, False, False),
-        (False, False, True, False),
+        (True, False, False, True),
+        (False, False, True, True),
         (False, True, False, False),
-        (False, False, False, False),
+        (False, False, False, True),
     ),
 )
 @pytest.mark.asyncio

@@ -260,7 +260,7 @@ class JobBase(abc.ABC):
 
         This method does not block.
         """
-        if self.is_started and not self.is_finished and self.is_enabled:
+        if not self.is_finished:
             for task in self._tasks:
                 if not task.done():
                     task.cancel()
