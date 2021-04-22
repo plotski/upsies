@@ -79,6 +79,16 @@ def test_autostart_property(tmp_path):
     assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, autostart='').autostart is False
     assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, autostart=1).autostart is True
 
+def test_condition_property(tmp_path):
+    a, b = Mock(), Mock()
+    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path, condition=a)
+    assert job.condition is a
+    job.condition = b
+    assert job.condition is not a
+    assert job.condition is b
+    with pytest.raises(TypeError, match=r"Not callable: 'foo'"):
+        job.condition = 'foo'
+
 def test_is_enabled_property(tmp_path):
     condition = Mock()
     job = FooJob(home_directory=tmp_path, cache_directory=tmp_path, condition=condition)

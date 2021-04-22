@@ -90,6 +90,17 @@ class JobBase(abc.ABC):
         return self._autostart
 
     @property
+    def condition(self):
+        """Callable that gets no arguments and is called by :attr:`is_enabled`"""
+        return self._condition
+
+    @condition.setter
+    def condition(self, function):
+        if not callable(function):
+            raise TypeError(f'Not callable: {function!r}')
+        self._condition = function
+
+    @property
     def is_enabled(self):
         """
         Return value of `condition` as :class:`bool`
