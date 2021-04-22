@@ -46,18 +46,6 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.release_type_job.choice in (release.ReleaseType.season,
                                                 release.ReleaseType.episode)
 
-    def condition_is_movie_release(self):
-        return self.is_movie_release
-
-    def condition_is_season_release(self):
-        return self.is_season_release
-
-    def condition_is_episode_release(self):
-        return self.is_episode_release
-
-    def condition_is_series_release(self):
-        return self.is_series_release
-
     @property
     def season(self):
         """Season number or `None`"""
@@ -134,51 +122,24 @@ class BbTrackerJobs(TrackerJobsBase):
 
     # Jobs
 
-    _cli_jobs_map = {
-        'movie_title': ('imdb_job', 'movie_title_job'),
-        'series_title': ('tvmaze_job', 'series_title_job',),
-    }
-
-    @cached_property
-    def user_jobs(self):
-        """
-        Jobs that are singled out by the user (e.g. via a CLI argument) or `None`
-
-        No other jobs should be executed.
-        """
-        for argument, job_names in self._cli_jobs_map.items():
-            if getattr(self.cli_args, argument, None):
-                _log.debug('No submission because of argument: %r', argument)
-                return [getattr(self, job_name) for job_name in job_names]
-
-    @property
-    def submission_ok(self):
-        """`False` if any :attr:`user_jobs` are given"""
-        if self.user_jobs:
-            return False
-        return super().submission_ok
-
-    @property
-    def jobs_after_upload(self):
-        """`()` if any :attr:`user_jobs` are given"""
-        if self.user_jobs:
-            return ()
-        return super().jobs_after_upload
-
     @cached_property
     def jobs_before_upload(self):
-        # Detecting movie/series is impossible to do right and disastrous if it
-        # fails, so we always ask the user before doing anything else.
-        jobs = [self.release_type_job]
+        # Turn generic jobs from parent class into conditional jobs.
+        all_release_types = (release.ReleaseType.movie, release.ReleaseType.series, release.ReleaseType.episode)
+        generic_job_attributes = ('mediainfo_job', 'create_torrent_job',
+                                  'screenshots_job', 'upload_screenshots_job',
+                                  'scene_check_job', 'add_torrent_job',
+                                  'copy_torrent_job')
+        for job_attr in generic_job_attributes:
+            job = getattr(self, job_attr, None)
+            if job:
+                job.condition = self.make_job_condition(job_attr, *all_release_types)
 
-        if self.user_jobs:
-            jobs.extend(self.user_jobs)
-            return jobs
-
-        # Return all possible jobs and disable/enable them on a condition based
-        # on self.is_movie|series_release.
-        jobs.extend((
+        # Return all possible jobs and disable/enable them via JobBase's
+        # "condition" argument.
+        return (
             # Generic jobs
+            self.release_type_job,
             self.mediainfo_job,
             self.create_torrent_job,
             self.screenshots_job,
@@ -205,9 +166,59 @@ class BbTrackerJobs(TrackerJobsBase):
             self.series_poster_job,
             self.series_tags_job,
             self.series_description_job,
-        ))
+        )
 
-        return jobs
+    def make_job_condition(self, job_attr, *release_types):
+        """
+        Return :attr:`~.base.JobBase.condition` for jobs
+
+        :param str job_attr: Name of the job attribute this condition is for
+        """
+        def condition():
+            if self.release_type in release_types:
+                # Job is appropriate for release type
+                if not self.monojob_attributes:
+                    # No jobs where singled out via CLI arguments or other
+                    # means; all appropriate jobs are enabled
+                    return True
+                elif job_attr in self.monojob_attributes:
+                    # This particular job was singled out by the user;
+                    # all other jobs are disabled
+                    return True
+            return False
+        return condition
+
+    @property
+    def monojob_attributes(self):
+        """
+        Sequence of attributes (e.g. "movie_poster_job") that were singled out by
+        the user
+        """
+        if self.is_movie_release:
+            if getattr(self.cli_args, 'title', False):
+                return ('imdb_job', 'movie_title_job')
+            elif getattr(self.cli_args, 'description', False):
+                return ('imdb_job', 'movie_description_job')
+            elif getattr(self.cli_args, 'poster', False):
+                return ('imdb_job', 'movie_poster_job')
+            elif getattr(self.cli_args, 'release_info', False):
+                return ('movie_release_info_job',)
+            elif getattr(self.cli_args, 'tags', False):
+                return ('imdb_job', 'movie_tags_job')
+
+        elif self.is_series_release:
+            if getattr(self.cli_args, 'title', False) or getattr(self.cli_args, 'release_info', False):
+                # Series title and release_info are combined
+                return ('tvmaze_job', 'series_title_job')
+            elif getattr(self.cli_args, 'description', False):
+                return ('tvmaze_job', 'mediainfo_job', 'screenshots_job',
+                        'upload_screenshots_job', 'series_description_job')
+            elif getattr(self.cli_args, 'poster', False):
+                return ('tvmaze_job', 'series_poster_job')
+            elif getattr(self.cli_args, 'tags', False):
+                return ('tvmaze_job', 'series_tags_job')
+
+        return ()
 
     @cached_property
     def release_type_job(self):
@@ -229,7 +240,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def imdb_job(self):
         """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
         return jobs.webdb.SearchWebDbJob(
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('imdb_job', release.ReleaseType.movie),
             content_path=self.content_path,
             db=self.imdb,
             **self.common_job_args,
@@ -241,7 +252,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='movie-title',
             label='Title',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_title_job', release.ReleaseType.movie),
             validator=self.movie_title_validator,
             **self.common_job_args,
         )
@@ -267,7 +278,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='movie-year',
             label='Year',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_year_job', release.ReleaseType.movie),
             text=self.release_name.year,
             validator=self.movie_year_validator,
             **self.common_job_args,
@@ -292,7 +303,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.make_choices_job(
             name='movie-resolution',
             label='Resolution',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_resolution_job', release.ReleaseType.movie),
             autodetect_value=self.release_info_resolution,
             autofinish=True,
             options=(
@@ -315,7 +326,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.make_choices_job(
             name='movie-source',
             label='Source',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_source_job', release.ReleaseType.movie),
             autodetect_value=self.release_name.source,
             autofinish=True,
             options=(
@@ -347,7 +358,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.make_choices_job(
             name='movie-audio-codec',
             label='Audio Codec',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_audio_codec_job', release.ReleaseType.movie),
             autodetect_value=self.release_info_audio_format,
             autofinish=True,
             options=(
@@ -370,7 +381,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.make_choices_job(
             name='movie-video-codec',
             label='Video Codec',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_video_codec_job', release.ReleaseType.movie),
             autodetect_value=self.release_name.video_format,
             autofinish=True,
             options=(
@@ -391,7 +402,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.make_choices_job(
             name='movie-container',
             label='Container',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_container_job', release.ReleaseType.movie),
             autodetect_value=fs.file_extension(video.first_video(self.content_path)),
             autofinish=True,
             options=(
@@ -410,7 +421,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='movie-release-info',
             label='Release Info',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_release_info_job', release.ReleaseType.movie),
             text=self.get_movie_release_info(),
             **self.common_job_args,
         )
@@ -421,7 +432,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.custom.CustomJob(
             name='movie-poster',
             label='Poster',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_poster_job', release.ReleaseType.movie),
             worker=self.movie_get_poster_url,
             **self.common_job_args,
         )
@@ -435,7 +446,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='movie-tags',
             label='Tags',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_tags_job', release.ReleaseType.movie),
             validator=self.movie_tags_validator,
             **self.common_job_args,
         )
@@ -459,7 +470,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='movie-description',
             label='Description',
-            condition=self.condition_is_movie_release,
+            condition=self.make_job_condition('movie_description_job', release.ReleaseType.movie),
             validator=self.movie_description_validator,
             **self.common_job_args,
         )
@@ -483,7 +494,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def tvmaze_job(self):
         """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
         return jobs.webdb.SearchWebDbJob(
-            condition=self.condition_is_series_release,
+            condition=self.make_job_condition('tvmaze_job', release.ReleaseType.season, release.ReleaseType.episode),
             content_path=self.content_path,
             db=self.tvmaze,
             **self.common_job_args,
@@ -495,7 +506,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='series-title',
             label='Title',
-            condition=self.condition_is_series_release,
+            condition=self.make_job_condition('series_title_job', release.ReleaseType.season, release.ReleaseType.episode),
             validator=self.series_title_validator,
             **self.common_job_args,
         )
@@ -524,7 +535,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.custom.CustomJob(
             name='series-poster',
             label='Poster',
-            condition=self.condition_is_series_release,
+            condition=self.make_job_condition('series_poster_job', release.ReleaseType.season, release.ReleaseType.episode),
             worker=self.series_get_poster_url,
             **self.common_job_args,
         )
@@ -538,7 +549,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='series-tags',
             label='Tags',
-            condition=self.condition_is_series_release,
+            condition=self.make_job_condition('series_tags_job', release.ReleaseType.season, release.ReleaseType.episode),
             validator=self.series_tags_validator,
             **self.common_job_args,
         )
@@ -562,7 +573,7 @@ class BbTrackerJobs(TrackerJobsBase):
         return jobs.dialog.TextFieldJob(
             name='series-description',
             label='Description',
-            condition=self.condition_is_series_release,
+            condition=self.make_job_condition('series_description_job', release.ReleaseType.season, release.ReleaseType.episode),
             validator=self.series_description_validator,
             **self.common_job_args,
         )
@@ -1013,6 +1024,17 @@ class BbTrackerJobs(TrackerJobsBase):
         return f'[mediainfo]{mediainfo}[/mediainfo]\n'
 
     # Web form data
+
+    @property
+    def submission_ok(self):
+        """
+        `False` if :attr:`monojob_attributes` is truthy, parent implementation
+        otherwise
+        """
+        if self.monojob_attributes:
+            return False
+        else:
+            return super().submission_ok
 
     def get_job_output(self, job, slice=slice(None, None)):
         if not job.is_finished:
