@@ -55,6 +55,12 @@ def test_release_name(bb_tracker_jobs, mocker):
     assert ReleaseName_mock.call_args_list == [call('path/to/content')]
 
 
+def test_release_type(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice',
+                        PropertyMock(return_value='foo'))
+    assert bb_tracker_jobs.release_type == 'foo'
+
+
 def test_is_movie_release(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
                         PropertyMock(return_value=Mock(choice=utils.types.ReleaseType.movie)))

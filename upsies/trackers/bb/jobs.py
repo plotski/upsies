@@ -25,6 +25,11 @@ class BbTrackerJobs(TrackerJobsBase):
         return release.ReleaseName(self.content_path)
 
     @property
+    def release_type(self):
+        """:class:`~.types.ReleaseType` enum"""
+        return self.release_type_job.choice
+
+    @property
     def is_movie_release(self):
         return self.release_type_job.choice is release.ReleaseType.movie
 
