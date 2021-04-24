@@ -292,7 +292,6 @@ class TextFieldJob(JobBase):
         to :meth:`warn` and do not finish. Otherwise, pass `output` to
         :meth:`~.base.JobBase.send` and :meth:`~.base.JobBase.finish` this job.
         """
-        _log.debug('%r: Sending %r', self.name, output)
         try:
             self._validator(output)
         except ValueError as e:
