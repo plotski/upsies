@@ -14,7 +14,7 @@ def test_defaults():
         'add-to'     : '',
         'copy-to'    : '',
         'exclude'    : [
-            r'\.(?i:nfo|txt|jpg|jpeg|png|sfv)$',
+            r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample|extra|bonus|feature)',
         ],
     }
