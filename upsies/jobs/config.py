@@ -84,6 +84,10 @@ class SetJob(JobBase):
 
     def _display_option(self, option):
         if utils.is_sequence(self._config[option]):
-            self.send(f'{option} = {" ".join(str(v) for v in self._config[option])}')
+            values = '\n  '.join(str(v) for v in self._config[option])
+            if values:
+                self.send(f'{option} =\n  ' + values)
+            else:
+                self.send(f'{option} =')
         else:
             self.send(f'{option} = {self._config[option]}')

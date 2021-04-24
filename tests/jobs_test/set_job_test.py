@@ -145,8 +145,9 @@ def test_ConfigError_is_handled(mode, kwargs, mocker, make_SetJob):
         ('foo', 'asdf', 'foo = asdf'),
         ('bar', 'a sd f', 'bar = a sd f'),
         ('baz', 123, 'baz = 123'),
-        ('foo', ['a', 'b', 'c'], 'foo = a b c'),
-        ('foo', [1, 2, 3, 'd'], 'foo = 1 2 3 d'),
+        ('foo', ['a', 'b', 'c'], 'foo =\n  a\n  b\n  c'),
+        ('foo', [1, 2, 3, 'd'], 'foo =\n  1\n  2\n  3\n  d'),
+        ('foo', [], 'foo ='),
     ),
     ids=lambda v: str(v),
 )
