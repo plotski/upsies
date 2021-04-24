@@ -320,7 +320,7 @@ def test_output_property(own_output, final_job_before_upload, exp_output, job, m
     parent_class = type(job).mro()[1]
     mocker.patch.object(parent_class, 'output', PropertyMock(return_value=own_output))
     mocker.patch.object(type(job), 'final_job_before_upload', PropertyMock(return_value=final_job_before_upload))
-    assert job.output is exp_output
+    assert job.output == exp_output
 
 
 @pytest.mark.parametrize(
@@ -334,4 +334,4 @@ def test_exit_code_property(own_exit_code, final_job_before_upload, exp_exit_cod
     parent_class = type(job).mro()[1]
     mocker.patch.object(parent_class, 'exit_code', PropertyMock(return_value=own_exit_code))
     mocker.patch.object(type(job), 'final_job_before_upload', PropertyMock(return_value=final_job_before_upload))
-    assert job.exit_code is exp_exit_code
+    assert job.exit_code == exp_exit_code
