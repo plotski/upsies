@@ -212,23 +212,24 @@ class JobBase(abc.ABC):
         :raise RuntimeError: if this method is called multiple times or if
             reading from cache file fails unexpectedly
         """
-        if self._is_started:
-            raise RuntimeError('start() was already called')
-        else:
-            self._is_started = True
+        if self.is_enabled:
+            if self._is_started:
+                raise RuntimeError('start() was already called')
+            else:
+                self._is_started = True
 
-        try:
-            cache_was_read = self._read_cache()
-        except BaseException:
-            self.finish()
-            raise
+            try:
+                cache_was_read = self._read_cache()
+            except BaseException:
+                self.finish()
+                raise
 
-        if cache_was_read:
-            self.finish()
-        else:
-            _log.debug('Executing job: %s', self.name)
-            self._is_executed = True
-            self.execute()
+            if cache_was_read:
+                self.finish()
+            else:
+                _log.debug('Executing job: %s', self.name)
+                self._is_executed = True
+                self.execute()
 
     @property
     def is_started(self):

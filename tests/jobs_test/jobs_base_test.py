@@ -136,7 +136,14 @@ def test_callbacks_argument(tmp_path):
     assert cb.hey in job.signal.signals['greeted']
 
 
-def test_start_sets_is_started_property(job):
+def test_start_does_nothing_if_job_is_not_enabled(job):
+    job.condition = lambda: False
+    assert job.is_enabled is False
+    assert job.is_started is False
+    job.start()
+    assert job.is_started is False
+
+def test_start_sets_started_property(job):
     assert job.is_started is False
     job.start()
     assert job.is_started is True
