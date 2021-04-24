@@ -494,17 +494,17 @@ async def test_added_task_ignores_CancelledError(finish_when_done, job, mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='output, exit_code, cache_file, is_executed',
+    argnames='emissions, exit_code, cache_file, is_executed',
     argvalues=(
         ((), 0, 'path/to/cache_file', True),
-        (('output',), 1, 'path/to/cache_file', True),
-        (('output',), 0, '', True),
-        (('output',), 0, None, True),
-        (('output',), 1, 'path/to/cache_file', False),
+        ((('output', {'args': ('foo',), 'kwargs': {'bar': 'baz'}}),), 1, 'path/to/cache_file', True),
+        ((('output', {'args': ('foo',), 'kwargs': {'bar': 'baz'}}),), 0, '', True),
+        ((('output', {'args': ('foo',), 'kwargs': {'bar': 'baz'}}),), 0, None, True),
+        ((('output', {'args': ('foo',), 'kwargs': {'bar': 'baz'}}),), 1, 'path/to/cache_file', False),
     ),
 )
-def test_write_cache_does_nothing(output, exit_code, cache_file, is_executed, job, mocker):
-    mocker.patch.object(type(job), 'output', PropertyMock(return_value=output))
+def test_write_cache_does_nothing(emissions, exit_code, cache_file, is_executed, job, mocker):
+    mocker.patch.object(type(job.signal), 'emissions', PropertyMock(return_value=emissions))
     mocker.patch.object(type(job), 'exit_code', PropertyMock(return_value=exit_code))
     mocker.patch.object(type(job), 'cache_file', PropertyMock(return_value=cache_file))
     mocker.patch.object(job, '_is_executed', is_executed)
@@ -535,9 +535,10 @@ def test_write_cache_writes_signal_emissions(tmp_path, mocker):
 )
 def test_write_cache_fails_to_write_cache_file(exception, error, job, mocker):
     open_mock = mocker.patch('upsies.jobs.base.open', side_effect=exception)
-    job.start()
-    job.finish()
-    job._output = ['foo']
+    mocker.patch.object(type(job.signal), 'emissions', PropertyMock(return_value='emissions mock'))
+    mocker.patch.object(type(job), 'exit_code', PropertyMock(return_value=0))
+    mocker.patch.object(type(job), 'cache_file', PropertyMock(return_value='path/to/cache'))
+    mocker.patch.object(job, '_is_executed', True)
     with pytest.raises(RuntimeError, match=(rf'^Unable to write cache '
                                             rf'{re.escape(job.cache_file)}: {error}$')):
         job._write_cache()

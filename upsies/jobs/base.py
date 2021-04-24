@@ -438,7 +438,7 @@ class JobBase(abc.ABC):
 
         :raise RuntimeError: if writing :attr:`cache_file` fails
         """
-        if self.output and self.exit_code == 0 and self.cache_file and self._is_executed:
+        if self.signal.emissions and self.exit_code == 0 and self.cache_file and self._is_executed:
             emissions_serialized = self._serialize_for_cache(self.signal.emissions)
             _log.debug('%s: Caching emitted signals: %r', self.name, self.signal.emissions)
             try:
