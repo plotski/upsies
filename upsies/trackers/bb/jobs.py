@@ -708,7 +708,6 @@ class BbTrackerJobs(TrackerJobsBase):
 
     async def get_poster_url(self, poster_job, poster_url_getter):
         # Get original poster URL (e.g. "http://imdb.com/...jpg")
-        poster_job.info = 'Waiting for ID'
         poster_url = await poster_url_getter()
         if not poster_url:
             self.error('Failed to find poster')
