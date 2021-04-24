@@ -7,6 +7,17 @@ from . import argtypes
 from .base import CommandBase
 
 
+def _make_pretty_option_list():
+    lines = []
+    for option in defaults.option_paths():
+        option_type = defaults.option_type(option)
+        if option_type is not str:
+            lines.append(f'{option} ({option_type.__name__.lower()})')
+        else:
+            lines.append(option)
+    return '\n  '.join(lines)
+
+
 class set(CommandBase):
     """
     Change or show configuration file options
@@ -17,13 +28,17 @@ class set(CommandBase):
     second segment is the section name in that file. The third segment is the
     option name.
 
-    List values must be given as multiple arguments. If non-list values are
-    given as multiple arguments, they are concatenated with single spaces.
+    List values are given as one argument per list item. If non-list values are
+    given as multiple arguments, they are concatenated with single spaces. In
+    the INI file, list items are delimited by one line break and one or more
+    spaces (e.g. "\\n    ").
+
+    Bytes values can handle units like "kB", "MB", "GiB", etc.
     """
 
     names = ('set',)
 
-    description = ('options:\n  ' + '\n  '.join(o for o in defaults.option_paths()))
+    description = 'options:\n  ' + _make_pretty_option_list()
 
     argument_definitions = {
         'OPTION': {

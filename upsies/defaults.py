@@ -44,3 +44,8 @@ def option_paths():
         return tuple(sorted(paths))
 
     return _get_option_paths(defaults)
+
+
+def option_type(option_path):
+    filename, section, option = option_path.split('.', maxsplit=2)
+    return type(defaults[filename][section][option])
