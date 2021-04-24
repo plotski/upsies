@@ -473,8 +473,9 @@ class JobBase(abc.ABC):
             else:
                 emissions_deserialized = self._deserialize_from_cache(emissions_serialized)
                 _log.debug('%s: Replaying cached signals: %r', self.name, emissions_deserialized)
-                self.signal.replay(emissions_deserialized)
-                return True
+                if emissions_deserialized:
+                    self.signal.replay(emissions_deserialized)
+                    return True
         return False
 
     def _serialize_for_cache(self, emissions):

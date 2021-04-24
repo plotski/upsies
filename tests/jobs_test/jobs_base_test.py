@@ -609,6 +609,12 @@ def test_read_cache_replays_signal_emissions(job, mocker):
     assert job._read_cache() is True
     assert replay_mock.call_args_list == [call('emissions mock')]
 
+def test_read_cache_ignores_empty_signal_emission_cache(job, mocker):
+    open(job.cache_file, 'wb').write(job._serialize_for_cache(''))
+    replay_mock = mocker.patch.object(type(job.signal), 'replay')
+    assert job._read_cache() is False
+    assert replay_mock.call_args_list == []
+
 
 def test_cache_file_when_cache_id_is_None(tmp_path, mocker):
     job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
