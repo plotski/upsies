@@ -160,13 +160,17 @@ class SceneCheckJob(JobBase):
             if not results:
                 _log.debug('No search results: %r', self._content_path)
                 self._handle_scene_check_result(types.SceneCheckResult.unknown, exceptions=())
-            elif len(results) == 1:
-                _log.debug('Autopicking only search result: %r', results[0])
-                release_name = results[0]
-                await self._verify_release(release_name)
+            # Autopick if release name is in search results
             elif self._release_name in results:
                 _log.debug('Autopicking from search results: %r', self._release_name)
                 await self._verify_release(self._release_name)
+            # Autopick single result if we know it's a scene release. If there
+            # is missing information (e.g. no group), is_scene_release() returns
+            # SceneCheckResult.unknown and we ask the user.
+            elif len(results) == 1 and is_scene_release is types.SceneCheckResult.true:
+                release_name = results[0]
+                _log.debug('Autopicking only search result: %r', release_name)
+                await self._verify_release(release_name)
             else:
                 _log.debug('Asking for release name: %r', results)
                 self.signal.emit('ask_release_name', results)

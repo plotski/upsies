@@ -115,14 +115,20 @@ async def test_find_release_name_finds_no_results(is_scene_release, make_SceneCh
     ]
     assert job._verify_release.call_args_list == []
 
-@pytest.mark.parametrize('is_scene_release', (SceneCheckResult.true, SceneCheckResult.unknown))
+@pytest.mark.parametrize(
+    argnames='search_result, is_scene_release, exp_ask_release_name_calls, exp_verify_release_calls',
+    argvalues=(
+        ('Mock.Release.Foo-BAR', SceneCheckResult.true, [], [call('Mock.Release.Foo-BAR')]),
+        ('Mock.Release.Foo-BAR', SceneCheckResult.unknown, [call(('Mock.Release.Foo-BAR',))], []),
+    ),
+)
 @pytest.mark.asyncio
-async def test_find_release_name_finds_single_result(is_scene_release, make_SceneCheckJob, mocker):
+async def test_find_release_name_finds_single_result(search_result, is_scene_release, exp_ask_release_name_calls, exp_verify_release_calls, make_SceneCheckJob, mocker):
     is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock(
         return_value=is_scene_release,
     ))
     search_mock = mocker.patch('upsies.utils.scene.search', AsyncMock(
-        return_value=('Mock.Release.Foo-BAR',),
+        return_value=(search_result,),
     ))
     mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result')
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock())
@@ -132,11 +138,9 @@ async def test_find_release_name_finds_single_result(is_scene_release, make_Scen
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert search_mock.call_args_list == [call(SceneQuery('foo'), only_existing_releases=False)]
-    assert ask_release_name.call_args_list == []
     assert job._handle_scene_check_result.call_args_list == []
-    assert job._verify_release.call_args_list == [
-        call('Mock.Release.Foo-BAR'),
-    ]
+    assert ask_release_name.call_args_list == exp_ask_release_name_calls
+    assert job._verify_release.call_args_list == exp_verify_release_calls
 
 @pytest.mark.parametrize('is_scene_release', (SceneCheckResult.true, SceneCheckResult.unknown))
 @pytest.mark.asyncio
