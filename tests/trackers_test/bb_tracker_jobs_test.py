@@ -1011,6 +1011,20 @@ def test_release_info_commentary(has_commentary, exp_text, bb_tracker_jobs, mock
 
 
 @pytest.mark.parametrize(
+    argnames='source, exp_source',
+    argvalues=(
+        ('WEB-DL', 'WEB-DL'),
+        ('BluRay', 'BluRay'),
+        ('WEBRip', 'WebRip'),
+    ),
+)
+def test_release_info_source(source, exp_source, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'source',
+                        PropertyMock(return_value=source))
+    assert bb_tracker_jobs.release_info_source == exp_source
+
+
+@pytest.mark.parametrize(
     argnames='source, exp_text',
     argvalues=(
         ('WEB-DL', None),
@@ -1025,17 +1039,21 @@ def test_release_info_remux(source, exp_text, bb_tracker_jobs, mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='width, height, resolution, exp_text',
+    argnames='width, height, frame_rate, resolution, exp_text',
     argvalues=(
-        (700, 460, '123p', '123p'),
-        (699, 460, '123p', '123p'),
-        (700, 459, '123p', '123p'),
-        (699, 459, '123p', 'SD'),
+        (700, 460, 0, '123p', '123p'),
+        (699, 460, 0, '123p', '123p'),
+        (700, 459, 0, '123p', '123p'),
+        (699, 459, 0, '123p', 'SD'),
+        (1000, 1000, 25, '576p', '576p PAL'),
+        (1000, 1000, 25, '480p', '480p'),
+        (1000, 1000, 24, '576p', '576p'),
     ),
 )
-def test_release_info_resolution(width, height, resolution, exp_text, bb_tracker_jobs, mocker):
+def test_release_info_resolution(width, height, frame_rate, resolution, exp_text, bb_tracker_jobs, mocker):
     mocker.patch('upsies.utils.video.width', return_value=width)
     mocker.patch('upsies.utils.video.height', return_value=height)
+    mocker.patch('upsies.utils.video.frame_rate', return_value=frame_rate)
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'resolution',
                         PropertyMock(return_value=resolution))
     assert bb_tracker_jobs.release_info_resolution == exp_text
