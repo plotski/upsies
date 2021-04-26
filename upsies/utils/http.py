@@ -25,10 +25,6 @@ _default_headers = {
 # requests concurrently without bugging the server.
 _request_locks = collections.defaultdict(lambda: asyncio.Lock())
 
-_client = httpx.AsyncClient(
-    timeout=60,
-)
-
 
 cache_directory = None
 """
@@ -36,13 +32,6 @@ Where to store cached requests
 
 If this is set to a falsy value, default to :attr:`~.constants.CACHE_DIRPATH`.
 """
-
-
-def close():
-    """Close the client session"""
-    _log.debug('Closing client: %r', _client)
-    asyncio.get_event_loop().run_until_complete(_client.aclose())
-    _log.debug('Closed client: %r', _client)
 
 
 async def get(url, headers={}, params={}, auth=None,
@@ -193,60 +182,59 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
         raise ValueError(f'Invalid method: {method}')
 
     headers = {**_default_headers, **headers}
-    request = _client.build_request(
-        method=str(method),
-        headers=headers,
-        url=str(url),
-        params=params,
-        data=data,
-        files=_open_files(files),
-    )
+    async with httpx.AsyncClient(timeout=60) as client:
+        request = client.build_request(
+            method=str(method),
+            headers=headers,
+            url=str(url),
+            params=params,
+            data=data,
+            files=_open_files(files),
+        )
 
-    if not user_agent:
-        del request.headers['User-Agent']
+        if not user_agent:
+            del request.headers['User-Agent']
 
-    # Block when requesting the same URL simultaneously
-    request_lock_key = (request.url, await request.aread())
-    # _log.debug('Request lock key: %r', request_lock_key)
-    request_lock = _request_locks[request_lock_key]
-    async with request_lock:
-        if cache:
-            cache_file = _cache_file(method, url, params)
-            result = _from_cache(cache_file)
-            if result is not None:
-                return result
+        # Block when requesting the same URL simultaneously
+        request_lock_key = (request.url, await request.aread())
+        request_lock = _request_locks[request_lock_key]
+        async with request_lock:
+            if cache:
+                cache_file = _cache_file(method, url, params)
+                result = _from_cache(cache_file)
+                if result is not None:
+                    return result
 
-        _log.debug('%s: %r: %r', method, url, params)
-        try:
-            response = await _client.send(
-                request=request,
-                auth=auth,
-                allow_redirects=allow_redirects,
-            )
+            _log.debug('%s: %r: %r', method, url, await request.aread())
             try:
-                response.raise_for_status()
-            except httpx.HTTPStatusError:
-                raise errors.RequestError(
-                    f'{url}: {response.text}',
+                response = await client.send(
+                    request=request,
+                    auth=auth,
+                    allow_redirects=allow_redirects,
+                )
+                try:
+                    response.raise_for_status()
+                except httpx.HTTPStatusError:
+                    raise errors.RequestError(
+                        f'{url}: {response.text}',
+                        headers=response.headers,
+                        status_code=response.status_code,
+                    )
+            except httpx.TimeoutException:
+                raise errors.RequestError(f'{url}: Timeout')
+            except httpx.HTTPError as e:
+                _log.debug(f'Unexpected HTTP error: {e!r}')
+                raise errors.RequestError(f'{url}: {e}')
+            else:
+                if cache:
+                    cache_file = _cache_file(method, url, params)
+                    _to_cache(cache_file, response.content)
+                return Result(
+                    text=response.text,
+                    bytes=response.content,
                     headers=response.headers,
                     status_code=response.status_code,
                 )
-        except httpx.TimeoutException:
-            raise errors.RequestError(f'{url}: Timeout')
-        except httpx.HTTPError as e:
-            _log.debug(f'Unexpected HTTP error: {e!r}')
-            raise errors.RequestError(f'{url}: {e}')
-        else:
-            if cache:
-                cache_file = _cache_file(method, url, params)
-                _to_cache(cache_file, response.content)
-            return Result(
-                text=response.text,
-                bytes=response.content,
-                headers=response.headers,
-                status_code=response.status_code,
-            )
-
 
 def _open_files(files):
     """
