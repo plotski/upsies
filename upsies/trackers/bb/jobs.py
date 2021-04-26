@@ -643,6 +643,11 @@ class BbTrackerJobs(TrackerJobsBase):
             return 'PROPER'
 
     @property
+    def release_info_repack(self):
+        if 'Repack' in self.release_name.edition:
+            return 'REPACK'
+
+    @property
     def release_info_hdr10(self):
         if video.is_hdr10(self.content_path):
             return 'HDR10'
@@ -697,6 +702,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_audio_format,
             fs.file_extension(video.first_video(self.content_path)).upper(),
             self.release_info_proper,
+            self.release_info_repack,
             self.release_info_resolution,
             self.release_info_hdr10,
             self.release_info_dual_audio,
@@ -807,6 +813,7 @@ class BbTrackerJobs(TrackerJobsBase):
         info.extend((
             self.release_info_remux,
             self.release_info_proper,
+            self.release_info_repack,
         ))
 
         for name in fs.file_and_parent(self.content_path):

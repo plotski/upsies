@@ -1074,6 +1074,20 @@ def test_release_info_proper(edition, exp_text, bb_tracker_jobs, mocker):
 
 
 @pytest.mark.parametrize(
+    argnames='edition, exp_text',
+    argvalues=(
+        ((), None),
+        (('Repack',), 'REPACK'),
+        (('foo', 'Repack', 'bar'), 'REPACK'),
+    ),
+)
+def test_release_info_repack(edition, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'edition',
+                        PropertyMock(return_value=edition))
+    assert bb_tracker_jobs.release_info_repack == exp_text
+
+
+@pytest.mark.parametrize(
     argnames='is_hdr10, exp_text',
     argvalues=(
         (False, None),
