@@ -124,12 +124,12 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def jobs_before_upload(self):
-        # Turn generic jobs from parent class into conditional jobs.
+        # Turn generic jobs from parent class into conditional jobs. Do not make
+        # all generic jobs conditional; e.g. scene_check_job should always run.
         all_release_types = (release.ReleaseType.movie, release.ReleaseType.series, release.ReleaseType.episode)
         generic_job_attributes = ('mediainfo_job', 'create_torrent_job',
                                   'screenshots_job', 'upload_screenshots_job',
-                                  'scene_check_job', 'add_torrent_job',
-                                  'copy_torrent_job')
+                                  'add_torrent_job', 'copy_torrent_job')
         for job_attr in generic_job_attributes:
             job = getattr(self, job_attr, None)
             if job:

@@ -284,7 +284,6 @@ async def test_jobs_before_upload(bb_tracker_jobs, mocker):
         call('create_torrent_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
         call('screenshots_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
         call('upload_screenshots_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
-        call('scene_check_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
         call('add_torrent_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
         call('copy_torrent_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
         call('imdb_job', ReleaseType.movie),
