@@ -166,6 +166,8 @@ class BbTracker(TrackerBase):
         if announce_url_tag:
             _log.debug('%s: Announce URL: %s', self.name, announce_url_tag['value'])
             return announce_url_tag['value']
+        else:
+            _log.debug('%s: Failed to find announce URL in %s', self.name, doc.prettify())
 
     async def upload(self, tracker_jobs):
         _log.debug('Uploading %r', tracker_jobs.post_data)
