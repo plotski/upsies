@@ -13,15 +13,6 @@ from upsies import __project_name__, __version__, errors
 from upsies.utils import http
 
 
-# Workaround for RuntimeError: Task <Task ...> got Future <Future pending> attached to a different loop
-# https://github.com/pytest-dev/pytest-asyncio/issues/38#issuecomment-264418154
-@pytest.fixture(scope='session')
-def event_loop(request):
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
 @pytest.fixture
 def mock_cache(mocker):
     parent = Mock(
@@ -546,7 +537,7 @@ async def test_request_catches_TimeoutException(method, mock_cache, mocker):
         message='Some error',
         request='mock request',
     )
-    mocker.patch('httpx.AsyncClient.send', AsyncMock(side_effect=exc))
+    mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
     with pytest.raises(errors.RequestError, match=rf'^{url}: Timeout$') as excinfo:
         await http._request(method=method, url=url)
@@ -560,7 +551,7 @@ async def test_request_catches_HTTPError(method, mock_cache, mocker):
         message='Some error',
         request='mock request',
     )
-    mocker.patch('httpx.AsyncClient.send', AsyncMock(side_effect=exc))
+    mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
     with pytest.raises(errors.RequestError, match=rf'^{url}: Some error$') as excinfo:
         await http._request(method=method, url=url)
