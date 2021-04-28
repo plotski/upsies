@@ -257,6 +257,10 @@ edition_samples = (
                                                                    'source': 'Hybrid BluRay'}),
     ('The Foo Extended 2000 1080p Hybrid Uncut BluRay DTS x264-ASDF', {'edition': ['Extended', 'Uncut'],
                                                                        'source': 'Hybrid BluRay'}),
+    # TODO: Enable this test when guessit supports it.
+    #       https://github.com/guessit-io/guessit/pull/697
+    # ('The Foo 2000 Criterion Collection 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion'],
+    #                                                                   'source': 'BluRay'}),
 )
 @pytest.mark.parametrize('release_name, exp_values', edition_samples)
 def test_edition(release_name, exp_values):
