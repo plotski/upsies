@@ -95,9 +95,19 @@ you can also do that with `pipx`_.
 For ``pipx --version >= 0.15.0.0``
     .. code:: sh
 
-       $ pipx install 'git+https://github.com/plotski/upsies'
+       $ # Initial installation
+       $ pipx install 'git+git://github.com/plotski/upsies.git'
+       $ # Upgrade existing installation to current commit
+       $ pipx install 'git+git://github.com/plotski/upsies.git' --force
+       $ # Install specific commit
+       $ pipx install 'git+git://github.com/plotski/upsies.git@<COMMIT HASH>' --force
 
 For ``pipx --version < 0.15.0.0``
     .. code:: sh
 
-       $ pipx install upsies --spec 'git+https://github.com/plotski/upsies.git#egg=upsies'
+       $ # Initial installation
+       $ pipx install upsies --spec 'git+git://github.com/plotski/upsies.git#egg=upsies'
+       $ # Upgrade existing installation to current commit
+       $ pipx install upsies --spec 'git+git://github.com/plotski/upsies.git#egg=upsies' --force
+       $ # Install specific commit
+       $ pipx install upsies --spec 'git+git://github.com/plotski/upsies.git@<COMMIT HASH>#egg=upsies' --force
