@@ -59,7 +59,7 @@ class TrackerJobsBase(abc.ABC):
     Subclasses that need to run background tasks (e.g. with
     :func:`asyncio.ensure_future`) should attach a callback to them with
     :meth:`~.asyncio.Task.add_done_callback` that catches expected exceptions
-    and pass them to :meth:`warn`, :meth:`error` or :meth:`exception.
+    and pass them to :meth:`warn`, :meth:`error` or :meth:`exception`.
 
     This base class defines general-purpose jobs that can be used by subclasses
     by returning them in their :attr:`jobs_before_upload` or
