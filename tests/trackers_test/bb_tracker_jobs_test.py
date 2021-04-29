@@ -1412,3 +1412,60 @@ async def test_get_series_poster_url(tvmaze_id, poster_url, exp_return_value, bb
     mocker.patch.object(bb_tracker_jobs.tvmaze, 'poster_url', AsyncMock(return_value=poster_url))
     poster_url = await bb_tracker_jobs.get_series_poster_url()
     assert poster_url == exp_return_value
+
+
+@pytest.mark.asyncio
+async def test_get_tags_for_movie(bb_tracker_jobs, mocker):
+    webdb = Mock(
+        keywords=AsyncMock(return_value=('comedy', 'hörrór')),
+        directors=AsyncMock(return_value=('Jim J. Jackson', "Émile 'E' Jaques")),
+        creators=AsyncMock(return_value=('Jim-Beam Bam',)),
+        cast=AsyncMock(return_value=('Foo', 'Bar', 'Baz')),
+    )
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    tags = await bb_tracker_jobs.get_tags(webdb, 'mock id')
+    assert tags == 'comedy,horror,jim.j.jackson,emile.e.jaques,foo,bar,baz'
+    assert webdb.keywords.call_args_list == [call('mock id')]
+    assert webdb.directors.call_args_list == [call('mock id')]
+    assert webdb.creators.call_args_list == []
+    assert webdb.cast.call_args_list == [call('mock id')]
+
+@pytest.mark.asyncio
+async def test_get_tags_for_series(bb_tracker_jobs, mocker):
+    webdb = Mock(
+        keywords=AsyncMock(return_value=('comedy', 'hörrór')),
+        directors=AsyncMock(return_value=('Jim J. Jackson', "Émile 'E' Jaques")),
+        creators=AsyncMock(return_value=('Jim-Beam Bam',)),
+        cast=AsyncMock(return_value=('Foo', 'Bar', 'Baz')),
+    )
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=True))
+    tags = await bb_tracker_jobs.get_tags(webdb, 'mock id')
+    assert tags == 'comedy,horror,jim.beam.bam,foo,bar,baz'
+    assert webdb.keywords.call_args_list == [call('mock id')]
+    assert webdb.directors.call_args_list == []
+    assert webdb.creators.call_args_list == [ call('mock id')]
+    assert webdb.cast.call_args_list == [call('mock id')]
+
+@pytest.mark.asyncio
+async def test_get_tags_is_not_longer_than_200_characters(bb_tracker_jobs, mocker):
+    webdb = Mock(
+        keywords=AsyncMock(return_value=()),
+        directors=AsyncMock(return_value=()),
+        creators=AsyncMock(return_value=()),
+        cast=AsyncMock(return_value=('Mark Hamill', 'Harrison Ford', 'Carrie Fisher', 'Peter Cushing',
+                                     'Alec Guinness', 'Anthony Daniels', 'Kenny Baker', 'Peter Mayhew',
+                                     'David Prowse', 'Phil Brown', 'Shelagh Fraser', 'Jack Purvis',
+                                     'Alex McCrindle', 'Eddie Byrne', 'Drewe Henley',
+                                     'Denis Lawson', 'Garrick Hagon', 'Jack Klaff', 'William Hootkins',
+                                     'Angus MacInnes', 'Jeremy Sinden', 'Graham Ashley', 'Don Henderson',
+                                     'Richard LeParmentier', 'Leslie Schofield')),
+    )
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    tags = await bb_tracker_jobs.get_tags(webdb, 'mock id')
+    assert tags == ('mark.hamill,harrison.ford,carrie.fisher,peter.cushing,'
+                    'alec.guinness,anthony.daniels,kenny.baker,peter.mayhew,'
+                    'david.prowse,phil.brown,shelagh.fraser,jack.purvis,alex.mccrindle,'
+                    'eddie.byrne,drewe.henley')
