@@ -1147,3 +1147,109 @@ async def test_get_movie_title(bb_tracker_jobs, mocker):
     movie_title = await bb_tracker_jobs.get_movie_title('imdb id')
     assert movie_title == 'Title AKA Tilte'
     assert bb_tracker_jobs.release_name.fetch_info.call_args_list == [call('imdb id')]
+
+
+@pytest.mark.parametrize(
+    argnames='tvmaze_id, imdb_id, exp_fetch_info_calls',
+    argvalues=(
+        ('tvmaze id', 'imdb id', [call('imdb id')]),
+        ('tvmaze id', '', []),
+        ('tvmaze id', None, []),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_series_title_and_release_info_calls_fetch_info(tvmaze_id, imdb_id, exp_fetch_info_calls, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock(return_value=imdb_id))
+    await bb_tracker_jobs.get_series_title_and_release_info(tvmaze_id)
+    assert bb_tracker_jobs.tvmaze.imdb_id.call_args_list == [call(tvmaze_id)]
+    assert bb_tracker_jobs.release_name.fetch_info.call_args_list == exp_fetch_info_calls
+
+@pytest.mark.parametrize('year_required', (True, False))
+@pytest.mark.asyncio
+async def test_get_series_title_and_release_info_title_with_aka_and_year(year_required, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock())
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'title_with_aka',
+                        PropertyMock(return_value='Title AKA Tilte'))
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'year_required',
+                        PropertyMock(return_value=year_required))
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'year',
+                        PropertyMock(return_value='2015'))
+    title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
+    if year_required:
+        assert title.startswith('Title AKA Tilte (2015) [UNKNOWN')
+    else:
+        assert title.startswith('Title AKA Tilte [UNKNOWN')
+
+@pytest.mark.parametrize(
+    argnames='is_season_release, season, exp_season_in_string',
+    argvalues=(
+        (True, 5, True),
+        (True, '', False),
+        (True, None, False),
+        (False, 5, False),
+        (False, '', False),
+        (False, None, False),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_series_title_and_release_info_season(is_season_release, season, exp_season_in_string, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock())
+    mocker.patch.object(type(bb_tracker_jobs), 'is_season_release', PropertyMock(return_value=is_season_release))
+    mocker.patch.object(type(bb_tracker_jobs), 'season', PropertyMock(return_value=season))
+    title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
+    if exp_season_in_string:
+        assert ' - Season 5 [UNKNOWN' in title
+    else:
+        assert ' - Season 5 [UNKNOWN' not in title
+
+@pytest.mark.parametrize(
+    argnames='is_episode_release, episodes, exp_episode_in_string',
+    argvalues=(
+        (True, utils.release.Episodes.from_string('S05E10'), True),
+        (True, '', False),
+        (True, None, False),
+        (False, utils.release.Episodes.from_string('S05E10'), False),
+        (False, '', False),
+        (False, None, False),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_series_title_and_release_info_episode(is_episode_release, episodes, exp_episode_in_string, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock())
+    mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=is_episode_release))
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'episodes', PropertyMock(return_value=episodes))
+    title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
+    if exp_episode_in_string:
+        assert ' S05E10 [UNKNOWN' in title
+    else:
+        assert ' S05E10 [UNKNOWN' not in title
+
+@pytest.mark.asyncio
+async def test_get_series_title_and_release_info_has_release_info(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock())
+    mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'episodes', PropertyMock(return_value=False))
+
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_remux', PropertyMock(return_value='REMUX'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_source', PropertyMock(return_value='BluRay'))
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'video_format', PropertyMock(return_value='x264'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_10bit', PropertyMock(return_value='10bit'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_audio_format', PropertyMock(return_value='E-AC-3'))
+    mocker.patch('upsies.utils.fs.file_extension', return_value='mkv')
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_proper', PropertyMock(return_value='PROPER'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_repack', PropertyMock(return_value='REPACK'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_resolution', PropertyMock(return_value='1080p'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_hdr10', PropertyMock(return_value='HDR10'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_dual_audio', PropertyMock(return_value='Dual Audio'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_commentary', PropertyMock(return_value='w. Commentary'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_subtitles', PropertyMock(return_value='w. Subtitles'))
+
+    title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
+    assert title.endswith('[REMUX / BluRay / x264 / 10bit / E-AC-3 / MKV / '
+                          'PROPER / REPACK / 1080p / HDR10 / Dual Audio / '
+                          'w. Commentary / w. Subtitles]')
