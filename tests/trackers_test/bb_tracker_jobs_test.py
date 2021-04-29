@@ -1137,3 +1137,13 @@ def test_release_info_audio_format(audio_format, exp_text, bb_tracker_jobs, mock
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'audio_format',
                         PropertyMock(return_value=audio_format))
     assert bb_tracker_jobs.release_info_audio_format == exp_text
+
+
+@pytest.mark.asyncio
+async def test_get_movie_title(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'title_with_aka',
+                        PropertyMock(return_value='Title AKA Tilte'))
+    movie_title = await bb_tracker_jobs.get_movie_title('imdb id')
+    assert movie_title == 'Title AKA Tilte'
+    assert bb_tracker_jobs.release_name.fetch_info.call_args_list == [call('imdb id')]
