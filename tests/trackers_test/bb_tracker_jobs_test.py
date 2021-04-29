@@ -1,10 +1,11 @@
+import os
 import re
 from types import SimpleNamespace
 from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
-from upsies import __homepage__, __project_name__, __version__, utils
+from upsies import __homepage__, __project_name__, __version__, errors, utils
 from upsies.trackers import bb
 from upsies.utils.types import ReleaseType
 
@@ -1253,3 +1254,129 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
     assert title.endswith('[REMUX / BluRay / x264 / 10bit / E-AC-3 / MKV / '
                           'PROPER / REPACK / 1080p / HDR10 / Dual Audio / '
                           'w. Commentary / w. Subtitles]')
+
+
+@pytest.mark.asyncio
+async def test_get_poster_url_fails_to_get_poster_poster_url(bb_tracker_jobs, mocker):
+    poster_url_getter = AsyncMock(return_value=None)
+    error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
+    download_mock = mocker.patch('upsies.utils.http.download', AsyncMock(return_value='path/to/poster.jpg'))
+    exists_mock = mocker.patch('os.path.exists')
+    getsize_mock = mocker.patch('os.path.getsize', return_value=0)
+    resize_mock = mocker.patch('upsies.utils.image.resize', return_value='path/to/resized.jpg')
+    upload_mock = mocker.patch.object(bb_tracker_jobs.image_host, 'upload', AsyncMock(return_value='http://real.poster.jpg'))
+    poster_job = Mock()
+    await bb_tracker_jobs.get_poster_url(poster_job, poster_url_getter)
+    assert error_mock.call_args_list == [call('Failed to find poster')]
+    assert download_mock.call_args_list == []
+    assert exists_mock.call_args_list == []
+    assert getsize_mock.call_args_list == []
+    assert resize_mock.call_args_list == []
+    assert upload_mock.call_args_list == []
+    assert poster_job.send.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_get_poster_url_fails_to_download_poster(bb_tracker_jobs, mocker):
+    poster_url_getter = AsyncMock(return_value='http://original.poster.url.jpg')
+    error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
+    download_mock = mocker.patch('upsies.utils.http.download', AsyncMock(side_effect=errors.RequestError('nope')))
+    exists_mock = mocker.patch('os.path.exists')
+    getsize_mock = mocker.patch('os.path.getsize', return_value=0)
+    resize_mock = mocker.patch('upsies.utils.image.resize', return_value='path/to/resized.jpg')
+    upload_mock = mocker.patch.object(bb_tracker_jobs.image_host, 'upload', AsyncMock(return_value='http://real.poster.jpg'))
+    poster_job = Mock(home_directory='path/to/job')
+    await bb_tracker_jobs.get_poster_url(poster_job, poster_url_getter)
+    assert error_mock.call_args_list == [call(f'Poster download failed: nope')]
+    assert download_mock.call_args_list == [call(poster_url_getter.return_value, 'path/to/job/poster.bb.jpg')]
+    assert exists_mock.call_args_list == []
+    assert getsize_mock.call_args_list == []
+    assert resize_mock.call_args_list == []
+    assert upload_mock.call_args_list == []
+    assert poster_job.send.call_args_list == []
+
+@pytest.mark.parametrize(
+    argnames='exists, size, exp_error',
+    argvalues=(
+        (False, 0, True),
+        (False, 123, True),
+        (True, 0, True),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_poster_url_fails_to_store_poster_properly(exists, size, exp_error, bb_tracker_jobs, mocker):
+    poster_url_getter = AsyncMock(return_value='http://original.poster.url.jpg')
+    error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
+    download_mock = mocker.patch('upsies.utils.http.download', AsyncMock(return_value='path/to/poster.jpg'))
+    exists_mock = mocker.patch('os.path.exists', return_value=exists)
+    getsize_mock = mocker.patch('os.path.getsize', return_value=size)
+    resize_mock = mocker.patch('upsies.utils.image.resize', return_value='path/to/resized.jpg')
+    upload_mock = mocker.patch.object(bb_tracker_jobs.image_host, 'upload', AsyncMock(return_value='http://real.poster.jpg'))
+    poster_job = Mock(home_directory='path/to/job')
+    await bb_tracker_jobs.get_poster_url(poster_job, poster_url_getter)
+    assert error_mock.call_args_list == [call(f'Poster download failed: http://original.poster.url.jpg')]
+    assert download_mock.call_args_list == [call(poster_url_getter.return_value, 'path/to/job/poster.bb.jpg')]
+    assert exists_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
+    if exists:
+        assert getsize_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
+    else:
+        assert getsize_mock.call_args_list == []
+    assert resize_mock.call_args_list == []
+    assert upload_mock.call_args_list == []
+    assert poster_job.send.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_get_poster_url_fails_to_resize_poster(bb_tracker_jobs, mocker):
+    poster_url_getter = AsyncMock(return_value='http://original.poster.url.jpg')
+    error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
+    download_mock = mocker.patch('upsies.utils.http.download', AsyncMock(return_value='path/to/poster.jpg'))
+    exists_mock = mocker.patch('os.path.exists', return_value=True)
+    getsize_mock = mocker.patch('os.path.getsize', return_value=123)
+    resize_mock = mocker.patch('upsies.utils.image.resize', side_effect=errors.ImageResizeError('nope'))
+    upload_mock = mocker.patch.object(bb_tracker_jobs.image_host, 'upload', AsyncMock(return_value='http://real.poster.jpg'))
+    poster_job = Mock(home_directory='path/to/job')
+    await bb_tracker_jobs.get_poster_url(poster_job, poster_url_getter)
+    assert error_mock.call_args_list == [call(f'Poster resizing failed: nope')]
+    assert download_mock.call_args_list == [call(poster_url_getter.return_value, 'path/to/job/poster.bb.jpg')]
+    assert exists_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
+    assert getsize_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
+    assert resize_mock.call_args_list == [call('path/to/job/poster.bb.jpg', width=300)]
+    assert upload_mock.call_args_list == []
+    assert poster_job.send.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_get_poster_url_fails_to_reupload_poster(bb_tracker_jobs, mocker):
+    poster_url_getter = AsyncMock(return_value='http://original.poster.url.jpg')
+    error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
+    download_mock = mocker.patch('upsies.utils.http.download', AsyncMock(return_value='path/to/poster.jpg'))
+    exists_mock = mocker.patch('os.path.exists', return_value=True)
+    getsize_mock = mocker.patch('os.path.getsize', return_value=123)
+    resize_mock = mocker.patch('upsies.utils.image.resize', return_value='path/to/resized.jpg')
+    upload_mock = mocker.patch.object(bb_tracker_jobs.image_host, 'upload', AsyncMock(side_effect=errors.RequestError('nope')))
+    poster_job = Mock(home_directory='path/to/job')
+    await bb_tracker_jobs.get_poster_url(poster_job, poster_url_getter)
+    assert error_mock.call_args_list == [call(f'Poster upload failed: nope')]
+    assert download_mock.call_args_list == [call(poster_url_getter.return_value, 'path/to/job/poster.bb.jpg')]
+    assert exists_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
+    assert getsize_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
+    assert resize_mock.call_args_list == [call('path/to/job/poster.bb.jpg', width=300)]
+    assert upload_mock.call_args_list == [call('path/to/resized.jpg')]
+    assert poster_job.send.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_get_poster_url_succeeds(bb_tracker_jobs, mocker):
+    poster_url_getter = AsyncMock(return_value='http://original.poster.url.jpg')
+    error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
+    download_mock = mocker.patch('upsies.utils.http.download', AsyncMock(return_value='path/to/poster.jpg'))
+    exists_mock = mocker.patch('os.path.exists', return_value=True)
+    getsize_mock = mocker.patch('os.path.getsize', return_value=123)
+    resize_mock = mocker.patch('upsies.utils.image.resize', return_value='path/to/resized.jpg')
+    upload_mock = mocker.patch.object(bb_tracker_jobs.image_host, 'upload', AsyncMock(return_value='http://real.poster.jpg'))
+    poster_job = Mock(home_directory='path/to/job')
+    await bb_tracker_jobs.get_poster_url(poster_job, poster_url_getter)
+    assert error_mock.call_args_list == []
+    assert download_mock.call_args_list == [call(poster_url_getter.return_value, 'path/to/job/poster.bb.jpg')]
+    assert exists_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
+    assert getsize_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
+    assert resize_mock.call_args_list == [call('path/to/job/poster.bb.jpg', width=300)]
+    assert upload_mock.call_args_list == [call('path/to/resized.jpg')]
+    assert poster_job.send.call_args_list == [call('http://real.poster.jpg')]
