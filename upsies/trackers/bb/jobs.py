@@ -817,13 +817,16 @@ class BbTrackerJobs(TrackerJobsBase):
         ))
 
         for name in fs.file_and_parent(self.content_path):
-            match = re.search(r'[ \.](\d+)th[ \.]Anniversary[ \.]', name)
+            match = re.search(r'(?i:[ \.](?:(\d+)th[ \.]|)Anniversary[ \.])', name)
             if match:
-                info.append(f'{match.group(1)}th Anniversary Edition')
+                if match.group(1):
+                    info.append(f'{match.group(1)}th Anniversary Edition')
+                else:
+                    info.append('Anniversary Edition')
 
-            if re.search(r'[ \.](?i:4k[ \.]REMASTER)', name):
+            if re.search(r'[ \.](?i:4k[ \.]remaster)', name):
                 info.append('4k Remaster')
-            elif re.search(r'[ \.](?i:remastered)[ \.]', name):
+            elif re.search(r'[ \.](?i:remaster(ed|))[ \.]', name):
                 info.append('Remastered')
 
         for ed, ed_ in (('DC', "Director's Cut"),
