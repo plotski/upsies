@@ -1380,3 +1380,19 @@ async def test_get_poster_url_succeeds(bb_tracker_jobs, mocker):
     assert resize_mock.call_args_list == [call('path/to/job/poster.bb.jpg', width=300)]
     assert upload_mock.call_args_list == [call('path/to/resized.jpg')]
     assert poster_job.send.call_args_list == [call('http://real.poster.jpg')]
+
+
+@pytest.mark.parametrize(
+    argnames='imdb_id, poster_url, exp_return_value',
+    argvalues=(
+        (None, None, None),
+        ('tt12345', None, None),
+        ('tt12345', 'http://poster.url', 'http://poster.url'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_movie_poster_url(imdb_id, poster_url, exp_return_value, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', return_value=imdb_id)
+    mocker.patch.object(bb_tracker_jobs.imdb, 'poster_url', AsyncMock(return_value=poster_url))
+    poster_url = await bb_tracker_jobs.get_movie_poster_url()
+    assert poster_url == exp_return_value
