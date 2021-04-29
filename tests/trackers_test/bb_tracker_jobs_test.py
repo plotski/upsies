@@ -1469,3 +1469,98 @@ async def test_get_tags_is_not_longer_than_200_characters(bb_tracker_jobs, mocke
                     'alec.guinness,anthony.daniels,kenny.baker,peter.mayhew,'
                     'david.prowse,phil.brown,shelagh.fraser,jack.purvis,alex.mccrindle,'
                     'eddie.byrne,drewe.henley')
+
+
+@pytest.mark.parametrize(
+    argnames='release_info_resolution, exp_pal',
+    argvalues=(
+        ('576p PAL', '576p PAL'),
+        ('576p', None),
+        ('PAL', None),
+        ('480p PAL', None),
+    ),
+)
+def test_get_movie_release_info_includes_576p_PAL(release_info_resolution, exp_pal, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_resolution', PropertyMock(return_value=release_info_resolution))
+    release_info = bb_tracker_jobs.get_movie_release_info()
+    release_info = [item.strip() for item in release_info.strip('[] ').split('/')]
+    if exp_pal:
+        assert '576p PAL' in release_info
+    else:
+        assert '576p PAL' not in release_info
+
+def test_get_movie_release_info_includes_remux_proper_repack(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_remux', PropertyMock(return_value='REMUX'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_proper', PropertyMock(return_value='PROPER'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_repack', PropertyMock(return_value='REPACK'))
+    release_info = bb_tracker_jobs.get_movie_release_info()
+    release_info = [item.strip() for item in release_info.strip('[] ').split('/')]
+    assert 'REMUX' in release_info
+    assert 'PROPER' in release_info
+    assert 'REPACK' in release_info
+
+@pytest.mark.parametrize(
+    argnames='release_name, exp_anniversary',
+    argvalues=(
+        ('Foo.2000.10th.Anniversary.Edition.BluRay.720p.DTS.5.1.x264-ASDF', '10th Anniversary Edition'),
+        ('Foo.2000.15TH.anniversary.edition.BluRay.720p.DTS.5.1.x264-ASDF', '15th Anniversary Edition'),
+        ('Foo.2000.ANNIVERSARY.EDITION.BluRay.720p.DTS.5.1.x264-ASDF', 'Anniversary Edition'),
+    ),
+)
+def test_get_movie_release_info_includes_anniversary_edition(release_name, exp_anniversary, bb_tracker_jobs, mocker, tmp_path):
+    content_path = tmp_path / f'{release_name}.mkv'
+    content_path.write_text('teh data')
+    mocker.patch.object(type(bb_tracker_jobs), 'content_path', PropertyMock(return_value=str(content_path)))
+    release_info = bb_tracker_jobs.get_movie_release_info()
+    release_info = [item.strip() for item in release_info.strip('[] ').split('/')]
+    assert exp_anniversary in release_info
+
+@pytest.mark.parametrize(
+    argnames='release_name, exp_remaster',
+    argvalues=(
+        ('Foo.2000.Remaster.BluRay.720p.DTS.5.1.x264-ASDF', 'Remastered'),
+        ('Foo.2000.Remastered.BluRay.720p.DTS.5.1.x264-ASDF', 'Remastered'),
+        ('Foo.2000.4k.Remaster.BluRay.720p.DTS.5.1.x264-ASDF', '4k Remaster'),
+        ('Foo.2000.4k.Remastered.BluRay.720p.DTS.5.1.x264-ASDF', '4k Remaster'),
+    ),
+)
+def test_get_movie_release_info_includes_remaster(release_name, exp_remaster, bb_tracker_jobs, mocker, tmp_path):
+    content_path = tmp_path / f'{release_name}.mkv'
+    content_path.write_text('teh data')
+    mocker.patch.object(type(bb_tracker_jobs), 'content_path', PropertyMock(return_value=str(content_path)))
+    release_info = bb_tracker_jobs.get_movie_release_info()
+    release_info = [item.strip() for item in release_info.strip('[] ').split('/')]
+    assert exp_remaster in release_info
+
+@pytest.mark.parametrize(
+    argnames='edition, exp_edition',
+    argvalues=(
+        ('DC', "Director's Cut"),
+        ('Extended', 'Extended Edition'),
+        ('Uncensored', 'Uncut'),
+        ('Uncut', 'Uncut'),
+        ('Unrated', 'Unrated'),
+        ('Criterion', 'Criterion Collection'),
+        ('Special', 'Special Edition'),
+        ('Limited', 'Limited'),
+    ),
+)
+def test_get_movie_release_info_includes_edition(edition, exp_edition, bb_tracker_jobs, mocker, tmp_path):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'edition', PropertyMock(return_value=(edition,)))
+    release_info = bb_tracker_jobs.get_movie_release_info()
+    release_info = [item.strip() for item in release_info.strip('[] ').split('/')]
+    assert exp_edition in release_info
+
+def test_get_movie_release_info_includes_other_release_info(bb_tracker_jobs, mocker, tmp_path):
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_dual_audio', PropertyMock(return_value='Dual Audio'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_hdr10', PropertyMock(return_value='HDR10'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_10bit', PropertyMock(return_value='10-bit'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_commentary', PropertyMock(return_value='w. Commentary'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_subtitles', PropertyMock(return_value='w. Subtitles'))
+    release_info = bb_tracker_jobs.get_movie_release_info()
+    release_info = [item.strip() for item in release_info.strip('[] ').split('/')]
+    assert 'Dual Audio' in release_info
+    assert 'HDR10' in release_info
+    assert '10-bit' in release_info
+    assert 'w. Commentary' in release_info
+    assert 'w. Subtitles' in release_info
