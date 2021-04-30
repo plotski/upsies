@@ -1788,3 +1788,59 @@ async def test_format_description_episode_summary_ignores_RequestError(bb_tracke
     assert bb_tracker_jobs.tvmaze.episode.call_args_list == [
         call(id='mock tvmaze id', season='12', episode='34'),
     ]
+
+
+@pytest.mark.parametrize(
+    argnames='imdb_id, tvmaze_id, imdb_rating, tvmaze_rating',
+    argvalues=(
+        (None, None, None, None),
+        ('mock imdb id', None, 5, 7),
+        (None, 'mock tvmaze id', 5, 7),
+        ('mock imdb id', 'mock tvmaze id', 5, 7),
+        ('mock imdb id', 'mock tvmaze id', 5, None),
+        ('mock imdb id', 'mock tvmaze id', None, 7),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_webdbs(tvmaze_id, imdb_id, tvmaze_rating, imdb_rating, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', AsyncMock(return_value=tvmaze_id))
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value=imdb_id))
+    mocker.patch.object(type(bb_tracker_jobs), 'imdb', PropertyMock(return_value=Mock(
+        label='IMDb',
+        rating_max=10.0,
+        url=AsyncMock(return_value='http://link.to.imdb'),
+        rating=AsyncMock(return_value=imdb_rating),
+    )))
+    mocker.patch.object(type(bb_tracker_jobs), 'tvmaze', PropertyMock(return_value=Mock(
+        label='TVmaze',
+        rating_max=1000.0,
+        url=AsyncMock(return_value='http://link.to.tvmaze'),
+        rating=AsyncMock(return_value=tvmaze_rating),
+    )))
+    star_rating_mock = mocker.patch('upsies.utils.string.star_rating', return_value='***')
+    text = await bb_tracker_jobs.format_description_webdbs()
+    assert bb_tracker_jobs.get_tvmaze_id.call_args_list == [call()]
+    assert bb_tracker_jobs.get_imdb_id.call_args_list == [call()]
+    if imdb_id:
+        assert bb_tracker_jobs.imdb.url.call_args_list == [call(imdb_id)]
+        assert bb_tracker_jobs.imdb.rating.call_args_list == [call(imdb_id)]
+        exp_line = '[b]IMDb[/b]: [url=http://link.to.imdb]mock imdb id[/url]'
+        if imdb_rating:
+            assert call(imdb_rating, max_rating=10.0) in star_rating_mock.call_args_list
+            exp_line += f' | {imdb_rating}/10 [color=#ffff00]***[/color]'
+        else:
+            assert call(imdb_rating, max_rating=10.0) not in star_rating_mock.call_args_list
+        assert exp_line in text.split('\n')
+    if tvmaze_id:
+        assert bb_tracker_jobs.tvmaze.url.call_args_list == [call(tvmaze_id)]
+        assert bb_tracker_jobs.tvmaze.rating.call_args_list == [call(tvmaze_id)]
+        exp_line = '[b]TVmaze[/b]: [url=http://link.to.tvmaze]mock tvmaze id[/url]'
+        if tvmaze_rating:
+            assert call(tvmaze_rating, max_rating=1000.0) in star_rating_mock.call_args_list
+            exp_line += f' | {tvmaze_rating}/1000 [color=#ffff00]***[/color]'
+        else:
+            assert call(tvmaze_rating, max_rating=1000.0) not in star_rating_mock.call_args_list
+        assert exp_line in text.split('\n')
+
+    if not tvmaze_id and not imdb_id:
+        assert text == ''
