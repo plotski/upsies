@@ -1731,3 +1731,60 @@ async def test_format_description_summary(summary, episode_summary, exp_summary,
         assert bb_tracker_jobs.format_description_episode_summary.call_args_list == [call()]
     else:
         assert bb_tracker_jobs.format_description_episode_summary.call_args_list == []
+
+
+@pytest.mark.parametrize(
+    argnames='tvmaze_id, episode',
+    argvalues=(
+        (None, {}),
+        ('mock tvmaze id',
+         {'url': 'http://mock.episode.url', 'title': 'Episode Title', 'season': 10, 'episode': 4,
+          'date': '2000-01-02',
+          'summary': 'Episode Summary'}),
+        ('mock tvmaze id',
+         {'url': 'http://mock.episode.url', 'title': 'Episode Title', 'season': 10, 'episode': 4,
+          'date': '2000-01-02'}),
+        ('mock tvmaze id',
+         {'url': 'http://mock.episode.url', 'title': 'Episode Title', 'season': 10, 'episode': 4}),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_episode_summary(tvmaze_id, episode, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', AsyncMock(return_value=tvmaze_id))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'episode', AsyncMock(return_value=episode))
+    mocker.patch.object(type(bb_tracker_jobs), 'season', PropertyMock(return_value=episode.get('season')))
+    mocker.patch.object(type(bb_tracker_jobs), 'episode', PropertyMock(return_value=episode.get('episode')))
+    summary = await bb_tracker_jobs.format_description_episode_summary()
+    if episode:
+        exp_summary = (
+            f'[url={episode["url"]}]{episode["title"]}[/url]'
+            ' - '
+            f'Season {episode["season"]}, Episode {episode["episode"]}'
+        )
+        if episode.get('date'):
+            exp_summary += f' - [size=2]{episode["date"]}[/size]'
+        if episode.get('summary'):
+            exp_summary += f'\n\n[spoiler]\n{episode["summary"]}[/spoiler]'
+    else:
+        exp_summary = None
+    assert summary == exp_summary
+    assert bb_tracker_jobs.get_tvmaze_id.call_args_list == [call()]
+    if tvmaze_id:
+        assert bb_tracker_jobs.tvmaze.episode.call_args_list == [
+            call(id=tvmaze_id, season=episode['season'], episode=episode['episode']),
+        ]
+    else:
+        assert bb_tracker_jobs.tvmaze.episode.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_format_description_episode_summary_ignores_RequestError(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', AsyncMock(return_value='mock tvmaze id'))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'episode', AsyncMock(side_effect=errors.RequestError('nope')))
+    mocker.patch.object(type(bb_tracker_jobs), 'season', PropertyMock(return_value='12'))
+    mocker.patch.object(type(bb_tracker_jobs), 'episode', PropertyMock(return_value='34'))
+    summary = await bb_tracker_jobs.format_description_episode_summary()
+    assert summary is None
+    assert bb_tracker_jobs.get_tvmaze_id.call_args_list == [call()]
+    assert bb_tracker_jobs.tvmaze.episode.call_args_list == [
+        call(id='mock tvmaze id', season='12', episode='34'),
+    ]
