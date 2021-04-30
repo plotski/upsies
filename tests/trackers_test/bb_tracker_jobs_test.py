@@ -1,4 +1,3 @@
-import os
 import re
 from types import SimpleNamespace
 from unittest.mock import Mock, PropertyMock, call
@@ -1429,7 +1428,7 @@ async def test_get_poster_url_fails_to_download_poster(bb_tracker_jobs, mocker):
     upload_mock = mocker.patch.object(bb_tracker_jobs.image_host, 'upload', AsyncMock(return_value='http://real.poster.jpg'))
     poster_job = Mock(home_directory='path/to/job')
     await bb_tracker_jobs.get_poster_url(poster_job, poster_url_getter)
-    assert error_mock.call_args_list == [call(f'Poster download failed: nope')]
+    assert error_mock.call_args_list == [call('Poster download failed: nope')]
     assert download_mock.call_args_list == [call(poster_url_getter.return_value, 'path/to/job/poster.bb.jpg')]
     assert exists_mock.call_args_list == []
     assert getsize_mock.call_args_list == []
@@ -1456,7 +1455,7 @@ async def test_get_poster_url_fails_to_store_poster_properly(exists, size, exp_e
     upload_mock = mocker.patch.object(bb_tracker_jobs.image_host, 'upload', AsyncMock(return_value='http://real.poster.jpg'))
     poster_job = Mock(home_directory='path/to/job')
     await bb_tracker_jobs.get_poster_url(poster_job, poster_url_getter)
-    assert error_mock.call_args_list == [call(f'Poster download failed: http://original.poster.url.jpg')]
+    assert error_mock.call_args_list == [call('Poster download failed: http://original.poster.url.jpg')]
     assert download_mock.call_args_list == [call(poster_url_getter.return_value, 'path/to/job/poster.bb.jpg')]
     assert exists_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
     if exists:
@@ -1478,7 +1477,7 @@ async def test_get_poster_url_fails_to_resize_poster(bb_tracker_jobs, mocker):
     upload_mock = mocker.patch.object(bb_tracker_jobs.image_host, 'upload', AsyncMock(return_value='http://real.poster.jpg'))
     poster_job = Mock(home_directory='path/to/job')
     await bb_tracker_jobs.get_poster_url(poster_job, poster_url_getter)
-    assert error_mock.call_args_list == [call(f'Poster resizing failed: nope')]
+    assert error_mock.call_args_list == [call('Poster resizing failed: nope')]
     assert download_mock.call_args_list == [call(poster_url_getter.return_value, 'path/to/job/poster.bb.jpg')]
     assert exists_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
     assert getsize_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
@@ -1497,7 +1496,7 @@ async def test_get_poster_url_fails_to_reupload_poster(bb_tracker_jobs, mocker):
     upload_mock = mocker.patch.object(bb_tracker_jobs.image_host, 'upload', AsyncMock(side_effect=errors.RequestError('nope')))
     poster_job = Mock(home_directory='path/to/job')
     await bb_tracker_jobs.get_poster_url(poster_job, poster_url_getter)
-    assert error_mock.call_args_list == [call(f'Poster upload failed: nope')]
+    assert error_mock.call_args_list == [call('Poster upload failed: nope')]
     assert download_mock.call_args_list == [call(poster_url_getter.return_value, 'path/to/job/poster.bb.jpg')]
     assert exists_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
     assert getsize_mock.call_args_list == [call('path/to/job/poster.bb.jpg')]
@@ -1588,7 +1587,7 @@ async def test_get_tags_for_series(bb_tracker_jobs, mocker):
     assert tags == 'comedy,horror,jim.beam.bam,foo,bar,baz'
     assert webdb.keywords.call_args_list == [call('mock id')]
     assert webdb.directors.call_args_list == []
-    assert webdb.creators.call_args_list == [ call('mock id')]
+    assert webdb.creators.call_args_list == [call('mock id')]
     assert webdb.cast.call_args_list == [call('mock id')]
 
 @pytest.mark.asyncio
