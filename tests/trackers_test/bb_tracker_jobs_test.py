@@ -1640,3 +1640,62 @@ def test_get_movie_release_info(bb_tracker_jobs, mocker):
         mocker.patch.object(type(bb_tracker_jobs), k, PropertyMock(return_value=v))
     release_info = bb_tracker_jobs.get_movie_release_info()
     assert release_info == ' / '.join(infos.values())
+
+
+@pytest.mark.asyncio
+async def test_get_description_for_movie(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_summary', AsyncMock(return_value='summary'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_webdbs', AsyncMock(return_value='info from webdbs'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_year', AsyncMock(return_value='year'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_status', AsyncMock(return_value='status'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_countries', AsyncMock(return_value='countries'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_runtime', AsyncMock(return_value='runtime'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(return_value='directors'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(return_value='cast'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(return_value='series screenshots'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(return_value='series mediainfo'))
+    description = await bb_tracker_jobs.get_description()
+    assert description == (
+        'summary'
+        '[quote]'
+        'info from webdbs\n'
+        'year\n'
+        'status\n'
+        'countries\n'
+        'runtime\n'
+        'directors\n'
+        'cast'
+        '[/quote]'
+    ) + bb_tracker_jobs.promotion
+
+@pytest.mark.asyncio
+async def test_get_description_for_series(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=True))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_summary', AsyncMock(return_value='summary'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_webdbs', AsyncMock(return_value='info from webdbs'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_year', AsyncMock(return_value='year'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_status', AsyncMock(return_value='status'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_countries', AsyncMock(return_value='countries'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_runtime', AsyncMock(return_value='runtime'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(return_value='creators'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(return_value='cast'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(return_value='series screenshots'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(return_value='series mediainfo'))
+    description = await bb_tracker_jobs.get_description()
+    assert description == (
+        'summary'
+        '[quote]'
+        'info from webdbs\n'
+        'year\n'
+        'status\n'
+        'countries\n'
+        'runtime\n'
+        'creators\n'
+        'cast'
+        '[/quote]'
+        'series screenshots'
+        'series mediainfo'
+    ) + bb_tracker_jobs.promotion
