@@ -1699,3 +1699,35 @@ async def test_get_description_for_series(bb_tracker_jobs, mocker):
         'series screenshots'
         'series mediainfo'
     ) + bb_tracker_jobs.promotion
+
+
+@pytest.mark.parametrize(
+    argnames='summary, episode_summary, is_episode_release, season, episode, exp_summary',
+    argvalues=(
+        ('', '', False, None, None, None),
+        ('', 'Episode summary', True, '1', '2', None),
+        ('A true story.', '', False, None, None, '[quote]A true story.[/quote]'),
+        ('A true story.', 'Episode summary', True, '1', '2', '[quote]A true story.\n\nEpisode summary[/quote]'),
+        ('A true story.', '', True, '1', '2', '[quote]A true story.[/quote]'),
+        ('A true story.', 'Episode summary', True, '1', None, '[quote]A true story.[/quote]'),
+        ('A true story.', 'Episode summary', True, None, '2', '[quote]A true story.[/quote]'),
+        ('A true story.', 'Episode summary', False, '1', '2', '[quote]A true story.[/quote]'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_summary(summary, episode_summary, exp_summary,
+                                          is_episode_release, season, episode, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=summary))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_episode_summary', AsyncMock(return_value=episode_summary))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=is_episode_release))
+    mocker.patch.object(type(bb_tracker_jobs), 'season', PropertyMock(return_value=season))
+    mocker.patch.object(type(bb_tracker_jobs), 'episode', PropertyMock(return_value=episode))
+    summary = await bb_tracker_jobs.format_description_summary()
+    assert summary == exp_summary
+    assert bb_tracker_jobs.try_webdbs.call_args_list == [
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'summary'),
+    ]
+    if summary and is_episode_release and season and episode:
+        assert bb_tracker_jobs.format_description_episode_summary.call_args_list == [call()]
+    else:
+        assert bb_tracker_jobs.format_description_episode_summary.call_args_list == []
