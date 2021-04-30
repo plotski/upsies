@@ -466,7 +466,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_description_job(self):
-        self.imdb_job.signal.register('output', self.movie_description_imdb_id_handler)
+        self.imdb_job.signal.register('finished', self.fill_in_movie_description)
         return jobs.dialog.TextFieldJob(
             name='movie-description',
             label='Description',
@@ -480,8 +480,8 @@ class BbTrackerJobs(TrackerJobsBase):
         if not text:
             raise ValueError(f'Invalid description: {text}')
 
-    def movie_description_imdb_id_handler(self, imdb_id):
-        coro = self.get_description(self.imdb, imdb_id)
+    def fill_in_movie_description(self, _):
+        coro = self.get_description()
         task = self.movie_description_job.fetch_text(
             coro=coro,
             finish_on_success=True,
@@ -569,7 +569,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def series_description_job(self):
-        self.tvmaze_job.signal.register('output', self.series_description_tvmaze_id_handler)
+        self.tvmaze_job.signal.register('finished', self.fill_in_series_description)
         return jobs.dialog.TextFieldJob(
             name='series-description',
             label='Description',
@@ -583,8 +583,8 @@ class BbTrackerJobs(TrackerJobsBase):
         if not text:
             raise ValueError(f'Invalid description: {text}')
 
-    def series_description_tvmaze_id_handler(self, tvmaze_id):
-        coro = self.get_description(self.tvmaze, tvmaze_id)
+    def fill_in_series_description(self, _):
+        coro = self.get_description()
         task = self.series_description_job.fetch_text(
             coro=coro,
             finish_on_success=True,
@@ -889,7 +889,7 @@ class BbTrackerJobs(TrackerJobsBase):
         )
         return ' / '.join(i for i in info if i)
 
-    async def get_description(self, webdb, id):
+    async def get_description(self):
         info_table = await asyncio.gather(
             self.format_description_webdbs(),
             self.format_description_year(),

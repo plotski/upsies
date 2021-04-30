@@ -729,7 +729,7 @@ def test_movie_description_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.movie_description_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.movie_description_imdb_id_handler,
+        'finished', bb_tracker_jobs.fill_in_movie_description,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='movie-description',
@@ -759,14 +759,14 @@ def test_movie_description_validator(description, exp_error, bb_tracker_jobs, mo
         with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
             bb_tracker_jobs.movie_description_validator(description)
 
-def test_movie_description_imdb_id_handler(bb_tracker_jobs, mocker):
+def test_fill_in_movie_description(bb_tracker_jobs, mocker):
     mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_description', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_description_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_description_job, 'add_task', Mock())
 
-    bb_tracker_jobs.movie_description_imdb_id_handler('tt0123')
+    bb_tracker_jobs.fill_in_movie_description('ignored mock job')
 
-    assert bb_tracker_jobs.get_description.call_args_list == [call(bb_tracker_jobs.imdb, 'tt0123')]
+    assert bb_tracker_jobs.get_description.call_args_list == [call()]
     assert bb_tracker_jobs.movie_description_job.fetch_text.call_args_list == [call(
         coro=bb_tracker_jobs.get_description.return_value,
         finish_on_success=True,
@@ -934,7 +934,7 @@ def test_series_description_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.series_description_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.tvmaze_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.series_description_tvmaze_id_handler,
+        'finished', bb_tracker_jobs.fill_in_series_description,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='series-description',
@@ -964,14 +964,14 @@ def test_series_description_validator(description, exp_error, bb_tracker_jobs, m
         with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
             bb_tracker_jobs.series_description_validator(description)
 
-def test_series_description_tvmaze_id_handler(bb_tracker_jobs, mocker):
+def test_fill_in_series_description(bb_tracker_jobs, mocker):
     mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_description', Mock())
     mocker.patch.object(bb_tracker_jobs.series_description_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.series_description_job, 'add_task', Mock())
 
-    bb_tracker_jobs.series_description_tvmaze_id_handler('tt0123')
+    bb_tracker_jobs.fill_in_series_description('ignored mock job')
 
-    assert bb_tracker_jobs.get_description.call_args_list == [call(bb_tracker_jobs.tvmaze, 'tt0123')]
+    assert bb_tracker_jobs.get_description.call_args_list == [call()]
     assert bb_tracker_jobs.series_description_job.fetch_text.call_args_list == [call(
         coro=bb_tracker_jobs.get_description.return_value,
         finish_on_success=True,
