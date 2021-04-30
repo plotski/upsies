@@ -638,6 +638,12 @@ class BbTrackerJobs(TrackerJobsBase):
         return self.release_name.resolution
 
     @property
+    def release_info_576p_PAL(self):
+        """Return "576p PAL" if release is 576p and PAL or `None`"""
+        if self.release_info_resolution == '576p PAL':
+            return '576p PAL'
+
+    @property
     def release_info_proper(self):
         if 'Proper' in self.release_name.edition:
             return 'PROPER'
@@ -669,6 +675,64 @@ class BbTrackerJobs(TrackerJobsBase):
         if 'Atmos' in audio_format:
             return 'Atmos'
         return audio_format
+
+    @property
+    def release_info_uncensored(self):
+        if 'Uncensored' in self.release_name.edition:
+            return 'Uncensored'
+
+    @property
+    def release_info_uncut(self):
+        if 'Uncut' in self.release_name.edition:
+            return 'Uncut'
+
+    @property
+    def release_info_unrated(self):
+        if 'Unrated' in self.release_name.edition:
+            return 'Unrated'
+
+    @property
+    def release_info_remastered(self):
+        for name in fs.file_and_parent(self.content_path):
+            if re.search(r'[ \.](?i:4k[ \.]remaster)', name):
+                return '4k Remaster'
+            elif re.search(r'[ \.](?i:remaster(ed|))[ \.]', name):
+                return 'Remastered'
+
+    @property
+    def release_info_directors_cut(self):
+        if 'DC' in self.release_name.edition:
+            return "Director's Cut"
+
+    @property
+    def release_info_extended_edition(self):
+        if 'Extended' in self.release_name.edition:
+            return 'Extended Edition'
+
+    @property
+    def release_info_anniversary_edition(self):
+        for name in fs.file_and_parent(self.content_path):
+            match = re.search(r'(?i:[ \.](?:(\d+)th[ \.]|)Anniversary[ \.])', name)
+            if match:
+                if match.group(1):
+                    return f'{match.group(1)}th Anniversary Edition'
+                else:
+                    return 'Anniversary Edition'
+
+    @property
+    def release_info_criterion_edition(self):
+        if 'Criterion' in self.release_name.edition:
+            return 'Criterion Edition'
+
+    @property
+    def release_info_special_edition(self):
+        if 'Special' in self.release_name.edition:
+            return 'Special Edition'
+
+    @property
+    def release_info_limited_edition(self):
+        if 'Limited' in self.release_name.edition:
+            return 'Limited'
 
     # Metadata generators
 
@@ -802,52 +866,27 @@ class BbTrackerJobs(TrackerJobsBase):
         return tags_string
 
     def get_movie_release_info(self):
-        info = []
-
-        # Rule 3.6.2 - 576p PAL encodes with a stored resolution of at least
-        #              700px wide and/or 560px tall should be labelled "480p"
-        #              with "576p PAL" noted in the Release Info field
-        if self.release_info_resolution == '576p PAL':
-            info.append(self.release_info_resolution)
-
-        info.extend((
+        info = (
+            self.release_info_576p_PAL,
             self.release_info_remux,
             self.release_info_proper,
             self.release_info_repack,
-        ))
-
-        for name in fs.file_and_parent(self.content_path):
-            match = re.search(r'(?i:[ \.](?:(\d+)th[ \.]|)Anniversary[ \.])', name)
-            if match:
-                if match.group(1):
-                    info.append(f'{match.group(1)}th Anniversary Edition')
-                else:
-                    info.append('Anniversary Edition')
-
-            if re.search(r'[ \.](?i:4k[ \.]remaster)', name):
-                info.append('4k Remaster')
-            elif re.search(r'[ \.](?i:remaster(ed|))[ \.]', name):
-                info.append('Remastered')
-
-        for ed, ed_ in (('DC', "Director's Cut"),
-                        ('Extended', 'Extended Edition'),
-                        ('Uncensored', 'Uncut'),
-                        ('Uncut', 'Uncut'),
-                        ('Unrated', 'Unrated'),
-                        ('Criterion', 'Criterion Collection'),
-                        ('Special', 'Special Edition'),
-                        ('Limited', 'Limited')):
-            if ed in self.release_name.edition:
-                info.append(ed_)
-
-        info.extend((
+            self.release_info_uncensored,
+            self.release_info_uncut,
+            self.release_info_unrated,
+            self.release_info_remastered,
+            self.release_info_directors_cut,
+            self.release_info_extended_edition,
+            self.release_info_anniversary_edition,
+            self.release_info_criterion_edition,
+            self.release_info_special_edition,
+            self.release_info_limited_edition,
             self.release_info_dual_audio,
             self.release_info_hdr10,
             self.release_info_10bit,
             self.release_info_commentary,
             self.release_info_subtitles,
-        ))
-
+        )
         return ' / '.join(i for i in info if i)
 
     async def get_description(self, webdb, id):
