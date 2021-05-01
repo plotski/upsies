@@ -1818,8 +1818,10 @@ async def test_format_description_webdbs(tvmaze_id, imdb_id, tvmaze_rating, imdb
     )))
     star_rating_mock = mocker.patch('upsies.utils.string.star_rating', return_value='***')
     text = await bb_tracker_jobs.format_description_webdbs()
+
     assert bb_tracker_jobs.get_tvmaze_id.call_args_list == [call()]
     assert bb_tracker_jobs.get_imdb_id.call_args_list == [call()]
+
     if imdb_id:
         assert bb_tracker_jobs.imdb.url.call_args_list == [call(imdb_id)]
         assert bb_tracker_jobs.imdb.rating.call_args_list == [call(imdb_id)]
@@ -1830,6 +1832,7 @@ async def test_format_description_webdbs(tvmaze_id, imdb_id, tvmaze_rating, imdb
         else:
             assert call(imdb_rating, max_rating=10.0) not in star_rating_mock.call_args_list
         assert exp_line in text.split('\n')
+
     if tvmaze_id:
         assert bb_tracker_jobs.tvmaze.url.call_args_list == [call(tvmaze_id)]
         assert bb_tracker_jobs.tvmaze.rating.call_args_list == [call(tvmaze_id)]
@@ -1843,3 +1846,119 @@ async def test_format_description_webdbs(tvmaze_id, imdb_id, tvmaze_rating, imdb
 
     if not tvmaze_id and not imdb_id:
         assert text == ''
+
+
+@pytest.mark.parametrize(
+    argnames='imdb_id, year, exp_text',
+    argvalues=(
+        (None, None, None),
+        ('mock imdb id', None, None),
+        ('mock imdb id', '2000', '[b]Year[/b]: 2000'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_year_for_movie(imdb_id, year, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value=imdb_id))
+    mocker.patch.object(bb_tracker_jobs.imdb, 'year', AsyncMock(return_value=year))
+    text = await bb_tracker_jobs.format_description_year()
+    assert text == exp_text
+    assert bb_tracker_jobs.get_imdb_id.call_args_list == [call()]
+    if imdb_id:
+        assert bb_tracker_jobs.imdb.year.call_args_list == [call(imdb_id)]
+    else:
+        assert bb_tracker_jobs.imdb.year.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_format_description_year_for_movie_ignores_RequestError_from_get_imdb_id(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(side_effect=errors.RequestError('nope')))
+    mocker.patch.object(bb_tracker_jobs.imdb, 'year', AsyncMock(return_value='2030'))
+    text = await bb_tracker_jobs.format_description_year()
+    assert text is None
+    assert bb_tracker_jobs.get_imdb_id.call_args_list == [call()]
+    assert bb_tracker_jobs.imdb.year.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_format_description_year_for_movie_ignores_RequestError_from_year_getter(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value='mock imdb id'))
+    mocker.patch.object(bb_tracker_jobs.imdb, 'year', AsyncMock(side_effect=errors.RequestError('nope')))
+    text = await bb_tracker_jobs.format_description_year()
+    assert text is None
+    assert bb_tracker_jobs.get_imdb_id.call_args_list == [call()]
+    assert bb_tracker_jobs.imdb.year.call_args_list == [call('mock imdb id')]
+
+@pytest.mark.parametrize(
+    argnames='tvmaze_id, season, episode, year, exp_text',
+    argvalues=(
+        (None, None, {}, None, None),
+        ('mock tvmaze id', None, {}, None, None),
+        ('mock tvmaze id', '5', {}, None, None),
+        ('mock tvmaze id', None, {}, '2035', '[b]Year[/b]: 2035'),
+        ('mock tvmaze id', '5', {}, '2035', '[b]Year[/b]: 2035'),
+        ('mock tvmaze id', '5', {'date': '2034-10-29'}, '2034', '[b]Year[/b]: 2034'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_year_for_series(tvmaze_id, season, episode, year, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'season', PropertyMock(return_value=season))
+    mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', AsyncMock(return_value=tvmaze_id))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'year', AsyncMock(return_value=year))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'episode', AsyncMock(return_value=episode))
+    text = await bb_tracker_jobs.format_description_year()
+    assert text == exp_text
+    assert bb_tracker_jobs.get_tvmaze_id.call_args_list == [call()]
+    if tvmaze_id:
+        if season:
+            assert bb_tracker_jobs.tvmaze.episode.call_args_list == [call(id=tvmaze_id, season=season, episode=1)]
+        else:
+            assert bb_tracker_jobs.tvmaze.year.call_args_list == [call(tvmaze_id)]
+    else:
+        assert bb_tracker_jobs.tvmaze.year.call_args_list == []
+        assert bb_tracker_jobs.tvmaze.episode.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_format_description_year_for_series_ignores_RequestError_from_get_tvmaze_id(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'season', PropertyMock(return_value='3'))
+    mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', AsyncMock(side_effect=errors.RequestError('nope')))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'year', AsyncMock(return_value='2023'))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'episode', AsyncMock(return_value={'date': '2009-05-01'}))
+    text = await bb_tracker_jobs.format_description_year()
+    assert text is None
+
+@pytest.mark.asyncio
+async def test_format_description_year_for_series_ignores_RequestError_from_year_getter(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'season', PropertyMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', AsyncMock(return_value='mock tvmaze id'))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'year', AsyncMock(side_effect=errors.RequestError('nope')))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'episode', AsyncMock(return_value=None))
+    text = await bb_tracker_jobs.format_description_year()
+    assert text is None
+
+@pytest.mark.asyncio
+async def test_format_description_year_for_series_ignores_RequestError_from_episode_getter(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'season', PropertyMock(return_value='3'))
+    mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', AsyncMock(return_value='mock tvmaze id'))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'year', AsyncMock(return_value='2023'))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'episode', AsyncMock(side_effect=errors.RequestError('nope')))
+    text = await bb_tracker_jobs.format_description_year()
+    assert text is None
+
+@pytest.mark.asyncio
+async def test_format_description_year_for_exotic_type(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    text = await bb_tracker_jobs.format_description_year()
+    assert text is None

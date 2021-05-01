@@ -974,24 +974,26 @@ class BbTrackerJobs(TrackerJobsBase):
 
     async def format_description_year(self):
         year = None
+        try:
+            if self.is_movie_release:
+                imdb_id = await self.get_imdb_id()
+                if imdb_id:
+                    year = await self.imdb.year(imdb_id)
 
-        if self.is_movie_release:
-            imdb_id = await self.get_imdb_id()
-            if imdb_id:
-                year = await self.imdb.year(imdb_id)
-
-        elif self.is_series_release:
-            tvmaze_id = await self.get_tvmaze_id()
-            if tvmaze_id:
-                if self.season:
-                    episode = await self.tvmaze.episode(id=tvmaze_id, season=self.season, episode=1)
-                    if episode.get('date'):
-                        year = episode['date'].split('-')[0]
-                else:
-                    year = await self.tvmaze.year(tvmaze_id)
-
-        if year:
-            return f'[b]Year[/b]: {year}'
+            elif self.is_series_release:
+                tvmaze_id = await self.get_tvmaze_id()
+                if tvmaze_id:
+                    if self.season:
+                        episode = await self.tvmaze.episode(id=tvmaze_id, season=self.season, episode=1)
+                        if episode.get('date'):
+                            year = episode['date'].split('-')[0]
+                    if not year:
+                        year = await self.tvmaze.year(tvmaze_id)
+        except errors.RequestError:
+            pass
+        else:
+            if year:
+                return f'[b]Year[/b]: {year}'
 
     async def format_description_status(self):
         tvmaze_id = await self.get_tvmaze_id()
