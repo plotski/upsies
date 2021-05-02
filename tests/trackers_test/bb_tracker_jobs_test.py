@@ -1962,3 +1962,25 @@ async def test_format_description_year_for_exotic_type(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
     text = await bb_tracker_jobs.format_description_year()
     assert text is None
+
+
+@pytest.mark.parametrize(
+    argnames='tvmaze_id, status, exp_text',
+    argvalues=(
+        (None, None, None),
+        ('mock tvmaze id', None, None),
+        ('mock tvmaze id', 'Running', None),
+        ('mock tvmaze id', 'Ended', '[b]Status[/b]: Ended'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_status(tvmaze_id, status, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', AsyncMock(return_value=tvmaze_id))
+    mocker.patch.object(bb_tracker_jobs.tvmaze, 'status', AsyncMock(return_value=status))
+    text = await bb_tracker_jobs.format_description_status()
+    assert text == exp_text
+    assert bb_tracker_jobs.get_tvmaze_id.call_args_list == [call()]
+    if tvmaze_id:
+        assert bb_tracker_jobs.tvmaze.status.call_args_list == [call(tvmaze_id)]
+    else:
+        assert bb_tracker_jobs.tvmaze.status.call_args_list == []
