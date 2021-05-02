@@ -1984,3 +1984,21 @@ async def test_format_description_status(tvmaze_id, status, exp_text, bb_tracker
         assert bb_tracker_jobs.tvmaze.status.call_args_list == [call(tvmaze_id)]
     else:
         assert bb_tracker_jobs.tvmaze.status.call_args_list == []
+
+
+@pytest.mark.parametrize(
+    argnames='countries, exp_text',
+    argvalues=(
+        ((), None),
+        (('Foo',), '[b]Country[/b]: Foo'),
+        (('Foo', 'Bar'), '[b]Countries[/b]: Foo, Bar'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_countries(countries, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=countries))
+    text = await bb_tracker_jobs.format_description_countries()
+    assert text == exp_text
+    assert bb_tracker_jobs.try_webdbs.call_args_list == [
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'countries'),
+    ]
