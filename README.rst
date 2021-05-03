@@ -4,7 +4,7 @@ scripts. It is written in pure Python and is designed to be friendly to users
 and useful for Python developers.
 
 .. figure:: docs/demo.svg
-   :align: left
+   :align: center
 
    ``dummy`` is a no-op tracker and client. Every tracker defines a custom set
    of jobs that generate the metadata needed for submission.
