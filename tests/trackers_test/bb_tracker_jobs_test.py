@@ -2250,3 +2250,12 @@ async def test_get_job_attribute(job, attribute, exp_error, exp_value, bb_tracke
     else:
         value = bb_tracker_jobs.get_job_attribute(job, attribute)
         assert value == exp_value
+
+
+@pytest.mark.asyncio
+async def test_torrent_filepath(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_job_output', return_value='path/to/torrent')
+    assert bb_tracker_jobs.torrent_filepath == 'path/to/torrent'
+    assert bb_tracker_jobs.get_job_output.call_args_list == [
+        call(bb_tracker_jobs.create_torrent_job, slice=0),
+    ]
