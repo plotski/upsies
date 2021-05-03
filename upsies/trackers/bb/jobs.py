@@ -308,17 +308,17 @@ class BbTrackerJobs(TrackerJobsBase):
             autodetect_value=self.release_info_resolution,
             autofinish=True,
             options=(
-                ('4320p', '2160p', re.compile(r'4320p')),
-                ('2160p', '2160p', re.compile(r'2160p')),
-                ('1080p', '1080p', re.compile(r'1080p')),
-                ('1080i', '1080i', re.compile(r'1080i')),
-                ('720p', '720p', re.compile(r'720p')),
-                ('720i', '720i', re.compile(r'720i')),
-                ('576p', '480p', re.compile(r'576p')),
-                ('576i', '480i', re.compile(r'576i')),
-                ('480p', '480p', re.compile(r'480p')),
-                ('480i', '480i', re.compile(r'480i')),
-                ('SD', 'SD', re.compile(r'SD')),
+                {'label': '4320p', 'value': '2160p', 'regex': re.compile(r'4320p')},
+                {'label': '2160p', 'value': '2160p', 'regex': re.compile(r'2160p')},
+                {'label': '1080p', 'value': '1080p', 'regex': re.compile(r'1080p')},
+                {'label': '1080i', 'value': '1080i', 'regex': re.compile(r'1080i')},
+                {'label': '720p', 'value': '720p', 'regex': re.compile(r'720p')},
+                {'label': '720i', 'value': '720i', 'regex': re.compile(r'720i')},
+                {'label': '576p', 'value': '480p', 'regex': re.compile(r'576p')},
+                {'label': '576i', 'value': '480i', 'regex': re.compile(r'576i')},
+                {'label': '480p', 'value': '480p', 'regex': re.compile(r'480p')},
+                {'label': '480i', 'value': '480i', 'regex': re.compile(r'480i')},
+                {'label': 'SD', 'value': 'SD', 'regex': re.compile(r'SD')},
             ),
         )
 
@@ -331,26 +331,26 @@ class BbTrackerJobs(TrackerJobsBase):
             autodetect_value=self.release_name.source,
             autofinish=True,
             options=(
-                ('BluRay', 'BluRay', re.compile('^BluRay')),  # BluRay or BluRay Remux
-                # ('BluRay 3D', ' ', re.compile('^ $')),
-                # ('BluRay RC', ' ', re.compile('^ $')),
-                # ('CAM', ' ', re.compile('^ $')),
-                ('DVD5', 'DVD5', re.compile('^DVD5$')),
-                ('DVD9', 'DVD9', re.compile('^DVD9$')),
-                ('DVDRip', 'DVDRip', re.compile('^DVDRip$')),
-                # ('DVDSCR', ' ', re.compile('^ $')),
-                ('HD-DVD', 'HD-DVD', re.compile('^HD-DVD$')),
-                # ('HDRip', ' ', re.compile('^ $')),
-                ('HDTV', 'HDTV', re.compile('^HDTV$')),
-                # ('PDTV', ' ', re.compile('^ $')),
-                # ('R5', ' ', re.compile('^ $')),
-                # ('SDTV', ' ', re.compile('^ $')),
-                # ('TC', ' ', re.compile('^ $')),
-                # ('TeleSync', ' ', re.compile('^ $')),
-                # ('VHSRip', ' ', re.compile('^ $')),
-                # ('VODRip', ' ', re.compile('^ $')),
-                ('WEB-DL', 'WEB-DL', re.compile('^WEB-DL$')),
-                ('WEBRip', 'WebRip', re.compile('^WEBRip$')),
+                {'label': 'BluRay', 'value': 'BluRay', 'regex': re.compile('^BluRay')},  # BluRay or BluRay Remux
+                # {'label': 'BluRay 3D', 'value': ' ', 'regex': re.compile('^ $')},
+                # {'label': 'BluRay RC', 'value': ' ', 'regex': re.compile('^ $')},
+                # {'label': 'CAM', 'value': ' ', 'regex': re.compile('^ $')},
+                {'label': 'DVD5', 'value': 'DVD5', 'regex': re.compile('^DVD5$')},
+                {'label': 'DVD9', 'value': 'DVD9', 'regex': re.compile('^DVD9$')},
+                {'label': 'DVDRip', 'value': 'DVDRip', 'regex': re.compile('^DVDRip$')},
+                # {'label': 'DVDSCR', 'value': ' ', 'regex': re.compile('^ $')},
+                {'label': 'HD-DVD', 'value': 'HD-DVD', 'regex': re.compile('^HD-DVD$')},
+                # {'label': 'HDRip', 'value': ' ', 'regex': re.compile('^ $')},
+                {'label': 'HDTV', 'value': 'HDTV', 'regex': re.compile('^HDTV$')},
+                # {'label': 'PDTV', 'value': ' ', 'regex': re.compile('^ $')},
+                # {'label': 'R5', 'value': ' ', 'regex': re.compile('^ $')},
+                # {'label': 'SDTV', 'value': ' ', 'regex': re.compile('^ $')},
+                # {'label': 'TC', 'value': ' ', 'regex': re.compile('^ $')},
+                # {'label': 'TeleSync', 'value': ' ', 'regex': re.compile('^ $')},
+                # {'label': 'VHSRip', 'value': ' ', 'regex': re.compile('^ $')},
+                # {'label': 'VODRip', 'value': ' ', 'regex': re.compile('^ $')},
+                {'label': 'WEB-DL', 'value': 'WEB-DL', 'regex': re.compile('^WEB-DL$')},
+                {'label': 'WEBRip', 'value': 'WebRip', 'regex': re.compile('^WEBRip$')},
             ),
         )
 
@@ -363,17 +363,17 @@ class BbTrackerJobs(TrackerJobsBase):
             autodetect_value=self.release_info_audio_format,
             autofinish=True,
             options=(
-                ('AAC', 'AAC', re.compile(r'^AAC$')),
-                ('AC-3', 'AC-3', re.compile(r'^(?:E-|)AC-3$')),   # AC-3, E-AC-3
-                ('DTS', 'DTS', re.compile(r'^DTS(?!-HD)')),       # DTS, DTS-ES
-                ('DTS-HD', 'DTS-HD', re.compile(r'^DTS-HD\b')),   # DTS-HD, DTS-HD MA
-                ('DTS:X', 'DTS:X', re.compile(r'^DTS:X$')),
-                ('Dolby Atmos', 'Atmos', re.compile(r'Atmos')),
-                ('FLAC', 'FLAC', re.compile(r'^FLAC$')),
-                ('MP3', 'MP3', re.compile(r'^MP3$')),
-                # ('PCM', 'PCM', re.compile(r'^$')),
-                ('TrueHD', 'True-HD', re.compile(r'TrueHD')),
-                ('Vorbis', 'Vorbis', re.compile(r'^Vorbis$')),
+                {'label': 'AAC', 'value': 'AAC', 'regex': re.compile(r'^AAC$')},
+                {'label': 'AC-3', 'value': 'AC-3', 'regex': re.compile(r'^(?:E-|)AC-3$')},   # AC-3, E-AC-3
+                {'label': 'DTS', 'value': 'DTS', 'regex': re.compile(r'^DTS(?!-HD)')},       # DTS, DTS-ES
+                {'label': 'DTS-HD', 'value': 'DTS-HD', 'regex': re.compile(r'^DTS-HD\b')},   # DTS-HD, DTS-HD MA
+                {'label': 'DTS:X', 'value': 'DTS:X', 'regex': re.compile(r'^DTS:X$')},
+                {'label': 'Dolby Atmos', 'value': 'Atmos', 'regex': re.compile(r'Atmos')},
+                {'label': 'FLAC', 'value': 'FLAC', 'regex': re.compile(r'^FLAC$')},
+                {'label': 'MP3', 'value': 'MP3', 'regex': re.compile(r'^MP3$')},
+                # {'label': 'PCM', 'value': 'PCM', 'regex': re.compile(r'^$')},
+                {'label': 'TrueHD', 'value': 'True-HD', 'regex': re.compile(r'TrueHD')},
+                {'label': 'Vorbis', 'value': 'Vorbis', 'regex': re.compile(r'^Vorbis$')},
             ),
         )
 
@@ -386,15 +386,15 @@ class BbTrackerJobs(TrackerJobsBase):
             autodetect_value=self.release_name.video_format,
             autofinish=True,
             options=(
-                ('x264', 'x264', re.compile(r'x264')),
-                ('x265', 'x265', re.compile(r'x265')),
-                ('XviD', 'XVid', re.compile(r'(?i:XviD)')),
-                # ('MPEG-2', 'MPEG-2', re.compile(r'')),
-                # ('WMV-HD', 'WMV-HD', re.compile(r'')),
-                # ('DivX', 'DivX', re.compile(r'')),
-                ('H.264', 'H.264', re.compile(r'H.264')),
-                ('H.265', 'H.265', re.compile(r'H.265')),
-                # ('VC-1', 'VC-1', re.compile(r'')),
+                {'label': 'x264', 'value': 'x264', 'regex': re.compile(r'x264')},
+                {'label': 'x265', 'value': 'x265', 'regex': re.compile(r'x265')},
+                {'label': 'XviD', 'value': 'XVid', 'regex': re.compile(r'(?i:XviD)')},
+                # {'label': 'MPEG-2', 'value': 'MPEG-2', 'regex': re.compile(r'')},
+                # {'label': 'WMV-HD', 'value': 'WMV-HD', 'regex': re.compile(r'')},
+                # {'label': 'DivX', 'value': 'DivX', 'regex': re.compile(r'')},
+                {'label': 'H.264', 'value': 'H.264', 'regex': re.compile(r'H.264')},
+                {'label': 'H.265', 'value': 'H.265', 'regex': re.compile(r'H.265')},
+                # {'label': 'VC-1', 'value': 'VC-1', 'regex': re.compile(r'')},
             ),
         )
 
@@ -407,13 +407,13 @@ class BbTrackerJobs(TrackerJobsBase):
             autodetect_value=fs.file_extension(video.first_video(self.content_path)),
             autofinish=True,
             options=(
-                ('AVI', 'AVI', re.compile(r'(?i:AVI)')),
-                ('MKV', 'MKV', re.compile('(?i:MKV)')),
-                ('MP4', 'MP4', re.compile(r'(?i:MP4)')),
-                ('TS', 'TS', re.compile(r'(?i:TS)')),
-                ('VOB', 'VOB', re.compile(r'(?i:VOB)')),
-                ('WMV', 'WMV', re.compile(r'(?i:WMV)')),
-                ('m2ts', 'm2ts', re.compile(r'(?i:m2ts)')),
+                {'label': 'AVI', 'value': 'AVI', 'regex': re.compile(r'(?i:AVI)')},
+                {'label': 'MKV', 'value': 'MKV', 'regex': re.compile('(?i:MKV)')},
+                {'label': 'MP4', 'value': 'MP4', 'regex': re.compile(r'(?i:MP4)')},
+                {'label': 'TS', 'value': 'TS', 'regex': re.compile(r'(?i:TS)')},
+                {'label': 'VOB', 'value': 'VOB', 'regex': re.compile(r'(?i:VOB)')},
+                {'label': 'WMV', 'value': 'WMV', 'regex': re.compile(r'(?i:WMV)')},
+                {'label': 'm2ts', 'value': 'm2ts', 'regex': re.compile(r'(?i:m2ts)')},
             ),
         )
 
@@ -1151,8 +1151,8 @@ class BbTrackerJobs(TrackerJobsBase):
 
     # Other stuff
 
-    def make_choices_job(self, name, label, autodetect_value, options,
-                         condition=None, autofinish=False):
+    def make_choices_job(self, name, label,  options, condition=None,
+                         autodetect_value=None, autofinish=False):
         """
         Return :class:`~.jobs.dialog.ChoiceJob` instance
 
@@ -1170,13 +1170,13 @@ class BbTrackerJobs(TrackerJobsBase):
         """
         focused = None
         choices = []
-        for text, value, regex in options:
-            if not focused and regex.search(autodetect_value):
-                choices.append((f'{text} (autodetected)', value))
+        for option in options:
+            if not focused and option['regex'].search(autodetect_value):
+                choices.append((f'{option["label"]} (autodetected)', option['value']))
                 focused = choices[-1]
                 autofinish = autofinish and True
             else:
-                choices.append((text, value))
+                choices.append((option['label'], option['value']))
 
         job = jobs.dialog.ChoiceJob(
             name=name,
