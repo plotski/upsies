@@ -1053,17 +1053,18 @@ class BbTrackerJobs(TrackerJobsBase):
             return (f'[b]Cast[/b]: ' + ', '.join(actors_links))
 
     async def format_description_series_screenshots(self):
-        screenshots_bbcode_parts = []  # Spacer
+        screenshots_bbcode_parts = []
         await self.upload_screenshots_job.wait()
         screenshot_urls = self.get_job_output(self.upload_screenshots_job)
-        for url in screenshot_urls:
-            screenshots_bbcode_parts.append(f'[img={url}]')
-        screenshots_bbcode = '\n\n'.join(screenshots_bbcode_parts)
-        return (
-            '[quote]\n'
-            f'[align=center]{screenshots_bbcode}[/align]\n'
-            '[/quote]'
-        )
+        if screenshot_urls:
+            for url in screenshot_urls:
+                screenshots_bbcode_parts.append(f'[img={url}]')
+            screenshots_bbcode = '\n\n'.join(screenshots_bbcode_parts)
+            return (
+                '[quote]\n'
+                f'[align=center]{screenshots_bbcode}[/align]\n'
+                '[/quote]'
+            )
 
     async def format_description_series_mediainfo(self):
         await self.mediainfo_job.wait()

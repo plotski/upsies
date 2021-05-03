@@ -2136,3 +2136,28 @@ async def test_format_description_cast(actors, exp_text, bb_tracker_jobs, mocker
     mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=actors))
     text = await bb_tracker_jobs.format_description_cast()
     assert text == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='screenshot_urls, exp_text',
+    argvalues=(
+        ((), None),
+        (('http://screenshot1.url',),
+         ('[quote]\n[align=center]'
+          '[img=http://screenshot1.url]'
+          '[/align]\n[/quote]')),
+        (('http://screenshot1.url', 'http://screenshot2.url'),
+         ('[quote]\n[align=center]'
+          '[img=http://screenshot1.url]\n\n'
+          '[img=http://screenshot2.url]'
+          '[/align]\n[/quote]')),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_series_screenshots(screenshot_urls, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs.upload_screenshots_job, 'wait', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs, 'get_job_output', return_value=screenshot_urls)
+    text = await bb_tracker_jobs.format_description_series_screenshots()
+    assert text == exp_text
+    assert bb_tracker_jobs.upload_screenshots_job.wait.call_args_list == [call()]
+    assert bb_tracker_jobs.get_job_output.call_args_list == [call(bb_tracker_jobs.upload_screenshots_job)]
