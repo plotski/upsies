@@ -2232,3 +2232,21 @@ async def test_get_job_output(job, slice, exp_error, exp_output, bb_tracker_jobs
     else:
         output = bb_tracker_jobs.get_job_output(job, slice)
         assert output == exp_output
+
+
+@pytest.mark.parametrize(
+    argnames='job, attribute, exp_error, exp_value',
+    argvalues=(
+        (Mock(is_finished=False, foo='bar'), 'foo', 'Unfinished job: asdf', ''),
+        (Mock(is_finished=True, foo='bar'), 'foo', None, 'bar'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_job_attribute(job, attribute, exp_error, exp_value, bb_tracker_jobs, mocker):
+    job.configure_mock(name='asdf')
+    if exp_error:
+        with pytest.raises(RuntimeError, match=rf'^{re.escape(exp_error)}$'):
+            bb_tracker_jobs.get_job_attribute(job, attribute)
+    else:
+        value = bb_tracker_jobs.get_job_attribute(job, attribute)
+        assert value == exp_value
