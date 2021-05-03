@@ -1106,7 +1106,6 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def post_data(self):
-        _log.debug('Is scene release: %r', self.scene_check_job.is_scene_release)
         if self.is_movie_release:
             post_data = {
                 'submit': 'true',
@@ -1138,12 +1137,12 @@ class BbTrackerJobs(TrackerJobsBase):
                 'desc': self.get_job_output(self.series_description_job, slice=0),
                 'image': self.get_job_output(self.series_poster_job, slice=0),
             }
-            if self.scene_check_job.is_scene_release:
+            if self.get_job_attribute(self.scene_check_job, 'is_scene_release'):
                 post_data['scene'] = '1'
             return post_data
 
         else:
-            raise RuntimeError(f'Weird release type: {self.release_type_job.choice}')
+            raise RuntimeError(f'Weird release type: {self.release_type_job.choice!r}')
 
     @property
     def post_data_screenshot_urls(self):

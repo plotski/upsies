@@ -2261,6 +2261,123 @@ async def test_torrent_filepath(bb_tracker_jobs, mocker):
     ]
 
 
+@pytest.mark.parametrize('is_scene_release', (True, False))
+@pytest.mark.asyncio
+async def test_post_data_for_movie(is_scene_release, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'post_data_screenshot_urls', PropertyMock(
+        return_value={'screenshot1': 'http://foo', 'screenshot2': 'http://bar'}))
+
+    def mock_get_job_output(job, slice):
+        if job is bb_tracker_jobs.movie_title_job:
+            assert slice == 0 ; return 'title value'
+        if job is bb_tracker_jobs.movie_year_job:
+            assert slice == 0 ; return 'year value'
+        if job is bb_tracker_jobs.movie_release_info_job:
+            assert slice == 0 ; return 'release_info value'
+        if job is bb_tracker_jobs.movie_tags_job:
+            assert slice == 0 ; return 'tags value'
+        if job is bb_tracker_jobs.movie_description_job:
+            assert slice == 0 ; return 'description value'
+        if job is bb_tracker_jobs.mediainfo_job:
+            assert slice == 0 ; return 'mediainfo value'
+        if job is bb_tracker_jobs.movie_poster_job:
+            assert slice == 0 ; return 'poster value'
+        raise AssertionError(f'Job was not supposed to get involved: {job!r}')
+
+    def mock_get_job_attribute(job, attr):
+        if job is bb_tracker_jobs.movie_source_job:
+            assert attr == 'choice' ; return 'source value'
+        if job is bb_tracker_jobs.movie_video_codec_job:
+            assert attr == 'choice' ; return 'video_codec value'
+        if job is bb_tracker_jobs.movie_audio_codec_job:
+            assert attr == 'choice' ; return 'audio_codec value'
+        if job is bb_tracker_jobs.movie_container_job:
+            assert attr == 'choice' ; return 'container value'
+        if job is bb_tracker_jobs.movie_resolution_job:
+            assert attr == 'choice' ; return 'resolution value'
+        if job is bb_tracker_jobs.scene_check_job:
+            assert attr == 'is_scene_release'
+            return '1' if is_scene_release else None
+        raise AssertionError(f'Job was not supposed to get involved: {job!r}')
+
+    mocker.patch.object(bb_tracker_jobs, 'get_job_output', mock_get_job_output)
+    mocker.patch.object(bb_tracker_jobs, 'get_job_attribute', mock_get_job_attribute)
+
+    exp_post_data = {
+        'submit': 'true',
+        'type': 'Movies',
+        'title': 'title value',
+        'year': 'year value',
+        'source': 'source value',
+        'videoformat': 'video_codec value',
+        'audioformat': 'audio_codec value',
+        'container': 'container value',
+        'resolution': 'resolution value',
+        'remaster_title': 'release_info value',
+        'tags': 'tags value',
+        'desc': 'description value',
+        'release_desc': 'mediainfo value',
+        'image': 'poster value',
+        'screenshot1': 'http://foo',
+        'screenshot2': 'http://bar',
+    }
+    if is_scene_release:
+        exp_post_data['scene'] = '1'
+    post_data = bb_tracker_jobs.post_data
+    assert post_data == exp_post_data
+
+@pytest.mark.parametrize('is_scene_release', (True, False))
+@pytest.mark.asyncio
+async def test_post_data_for_series(is_scene_release, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'post_data_screenshot_urls', PropertyMock(
+        return_value={'screenshot1': 'http://foo', 'screenshot2': 'http://bar'}))
+
+    def mock_get_job_output(job, slice):
+        if job is bb_tracker_jobs.series_title_job:
+            assert slice == 0 ; return 'title value'
+        if job is bb_tracker_jobs.series_tags_job:
+            assert slice == 0 ; return 'tags value'
+        if job is bb_tracker_jobs.series_description_job:
+            assert slice == 0 ; return 'description value'
+        if job is bb_tracker_jobs.series_poster_job:
+            assert slice == 0 ; return 'poster value'
+        raise AssertionError(f'Job was not supposed to get involved: {job!r}')
+
+    def mock_get_job_attribute(job, attr):
+        if job is bb_tracker_jobs.scene_check_job:
+            assert attr == 'is_scene_release'
+            return '1' if is_scene_release else None
+        raise AssertionError(f'Job was not supposed to get involved: {job!r}')
+
+    mocker.patch.object(bb_tracker_jobs, 'get_job_output', mock_get_job_output)
+    mocker.patch.object(bb_tracker_jobs, 'get_job_attribute', mock_get_job_attribute)
+
+    exp_post_data = {
+        'submit': 'true',
+        'type': 'TV',
+        'title': 'title value',
+        'tags': 'tags value',
+        'desc': 'description value',
+        'image': 'poster value',
+    }
+    if is_scene_release:
+        exp_post_data['scene'] = '1'
+    post_data = bb_tracker_jobs.post_data
+    assert post_data == exp_post_data
+
+@pytest.mark.asyncio
+async def test_post_data_for_unknown_release_type(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice', PropertyMock(return_value='foo'))
+    with pytest.raises(RuntimeError, match="Weird release type: 'foo'"):
+        bb_tracker_jobs.post_data
+
+
 @pytest.mark.asyncio
 async def test_post_data_screenshot_urls(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'get_job_output', return_value=('http://foo', 'http://bar'))
