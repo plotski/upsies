@@ -1036,7 +1036,7 @@ class BbTrackerJobs(TrackerJobsBase):
     async def format_description_directors(self):
         directors = await self.try_webdbs((self.imdb, self.tvmaze), 'directors')
         if directors:
-            directors_links = [ self._format_person(director) for director in directors]
+            directors_links = [self._format_person(director) for director in directors]
             return (f'[b]Director{"s" if len(directors) > 1 else ""}[/b]: '
                     + ', '.join(directors_links))
 
@@ -1051,7 +1051,7 @@ class BbTrackerJobs(TrackerJobsBase):
         actors = await self.try_webdbs((self.tvmaze, self.imdb), 'cast')
         if actors:
             actors_links = [self._format_person(actor) for actor in actors]
-            return (f'[b]Cast[/b]: ' + ', '.join(actors_links))
+            return ('[b]Cast[/b]: ' + ', '.join(actors_links))
 
     async def format_description_series_screenshots(self):
         screenshots_bbcode_parts = []
@@ -1151,7 +1151,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     # Other stuff
 
-    def make_choices_job(self, name, label,  options, condition=None,
+    def make_choices_job(self, name, label, options, condition=None,
                          autodetect_value=None, autofinish=False):
         """
         Return :class:`~.jobs.dialog.ChoiceJob` instance

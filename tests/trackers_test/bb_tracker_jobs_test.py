@@ -2271,32 +2271,32 @@ async def test_post_data_for_movie(is_scene_release, bb_tracker_jobs, mocker):
 
     def mock_get_job_output(job, slice):
         if job is bb_tracker_jobs.movie_title_job:
-            assert slice == 0 ; return 'title value'
+            assert slice == 0 ; return 'title value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_year_job:
-            assert slice == 0 ; return 'year value'
+            assert slice == 0 ; return 'year value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_release_info_job:
-            assert slice == 0 ; return 'release_info value'
+            assert slice == 0 ; return 'release_info value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_tags_job:
-            assert slice == 0 ; return 'tags value'
+            assert slice == 0 ; return 'tags value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_description_job:
-            assert slice == 0 ; return 'description value'
+            assert slice == 0 ; return 'description value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.mediainfo_job:
-            assert slice == 0 ; return 'mediainfo value'
+            assert slice == 0 ; return 'mediainfo value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_poster_job:
-            assert slice == 0 ; return 'poster value'
+            assert slice == 0 ; return 'poster value'  # noqa: E702 multiple statements on one line
         raise AssertionError(f'Job was not supposed to get involved: {job!r}')
 
     def mock_get_job_attribute(job, attr):
         if job is bb_tracker_jobs.movie_source_job:
-            assert attr == 'choice' ; return 'source value'
+            assert attr == 'choice' ; return 'source value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_video_codec_job:
-            assert attr == 'choice' ; return 'video_codec value'
+            assert attr == 'choice' ; return 'video_codec value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_audio_codec_job:
-            assert attr == 'choice' ; return 'audio_codec value'
+            assert attr == 'choice' ; return 'audio_codec value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_container_job:
-            assert attr == 'choice' ; return 'container value'
+            assert attr == 'choice' ; return 'container value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_resolution_job:
-            assert attr == 'choice' ; return 'resolution value'
+            assert attr == 'choice' ; return 'resolution value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.scene_check_job:
             assert attr == 'is_scene_release'
             return '1' if is_scene_release else None
@@ -2338,13 +2338,13 @@ async def test_post_data_for_series(is_scene_release, bb_tracker_jobs, mocker):
 
     def mock_get_job_output(job, slice):
         if job is bb_tracker_jobs.series_title_job:
-            assert slice == 0 ; return 'title value'
+            assert slice == 0 ; return 'title value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.series_tags_job:
-            assert slice == 0 ; return 'tags value'
+            assert slice == 0 ; return 'tags value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.series_description_job:
-            assert slice == 0 ; return 'description value'
+            assert slice == 0 ; return 'description value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.series_poster_job:
-            assert slice == 0 ; return 'poster value'
+            assert slice == 0 ; return 'poster value'  # noqa: E702 multiple statements on one line
         raise AssertionError(f'Job was not supposed to get involved: {job!r}')
 
     def mock_get_job_attribute(job, attr):
@@ -2398,7 +2398,7 @@ async def test_post_data_screenshot_urls(bb_tracker_jobs, mocker):
         ('8', [('8k (autodetected)', 8000), ('9k', 9000), ('10k', 10000)], ('8k (autodetected)', 8000)),
         ('9', [('8k', 8000), ('9k (autodetected)', 9000), ('10k', 10000)], ('9k (autodetected)', 9000)),
         ('10', [('8k', 8000), ('9k', 9000), ('10k (autodetected)', 10000)], ('10k (autodetected)', 10000)),
-   ),
+    ),
 )
 @pytest.mark.asyncio
 async def test_make_choices_job(autodetect_value, exp_choices, exp_focused,
@@ -2427,6 +2427,6 @@ async def test_make_choices_job(autodetect_value, exp_choices, exp_focused,
         foo='bar',
     )]
     if autofinish and exp_focused:
-        assert ChoiceJob_mock.return_value.choice == exp_focused
+        assert job.choice == exp_focused
     else:
-        assert ChoiceJob_mock.return_value.choice is None
+        assert job.choice is None
