@@ -1535,7 +1535,7 @@ async def test_get_poster_url_succeeds(bb_tracker_jobs, mocker):
 )
 @pytest.mark.asyncio
 async def test_get_movie_poster_url(imdb_id, poster_url, exp_return_value, bb_tracker_jobs, mocker):
-    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', return_value=imdb_id)
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value=imdb_id))
     mocker.patch.object(bb_tracker_jobs.imdb, 'poster_url', AsyncMock(return_value=poster_url))
     poster_url = await bb_tracker_jobs.get_movie_poster_url()
     assert poster_url == exp_return_value
@@ -1551,7 +1551,7 @@ async def test_get_movie_poster_url(imdb_id, poster_url, exp_return_value, bb_tr
 )
 @pytest.mark.asyncio
 async def test_get_series_poster_url(tvmaze_id, poster_url, exp_return_value, bb_tracker_jobs, mocker):
-    mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', return_value=tvmaze_id)
+    mocker.patch.object(bb_tracker_jobs, 'get_tvmaze_id', AsyncMock(return_value=tvmaze_id))
     mocker.patch.object(bb_tracker_jobs.tvmaze, 'poster_url', AsyncMock(return_value=poster_url))
     poster_url = await bb_tracker_jobs.get_series_poster_url()
     assert poster_url == exp_return_value
