@@ -2161,3 +2161,21 @@ async def test_format_description_series_screenshots(screenshot_urls, exp_text, 
     assert text == exp_text
     assert bb_tracker_jobs.upload_screenshots_job.wait.call_args_list == [call()]
     assert bb_tracker_jobs.get_job_output.call_args_list == [call(bb_tracker_jobs.upload_screenshots_job)]
+
+
+@pytest.mark.parametrize(
+    argnames='mediainfo, exp_text',
+    argvalues=(
+        (None, None),
+        ('', None),
+        ('mock mediainfo', '[mediainfo]mock mediainfo[/mediainfo]\n'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_series_mediainfo(mediainfo, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs.mediainfo_job, 'wait', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs, 'get_job_output', return_value=mediainfo)
+    text = await bb_tracker_jobs.format_description_series_mediainfo()
+    assert text == exp_text
+    assert bb_tracker_jobs.mediainfo_job.wait.call_args_list == [call()]
+    assert bb_tracker_jobs.get_job_output.call_args_list == [call(bb_tracker_jobs.mediainfo_job, slice=0)]

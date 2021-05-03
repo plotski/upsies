@@ -1069,7 +1069,8 @@ class BbTrackerJobs(TrackerJobsBase):
     async def format_description_series_mediainfo(self):
         await self.mediainfo_job.wait()
         mediainfo = self.get_job_output(self.mediainfo_job, slice=0)
-        return f'[mediainfo]{mediainfo}[/mediainfo]\n'
+        if mediainfo:
+            return f'[mediainfo]{mediainfo}[/mediainfo]\n'
 
     # Web form data
 
