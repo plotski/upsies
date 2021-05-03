@@ -2079,3 +2079,22 @@ async def test_format_description_runtime_for_unknown_type(bb_tracker_jobs, mock
     mocker.patch.object(type(bb_tracker_jobs), 'is_season_release', PropertyMock(return_value=False))
     text = await bb_tracker_jobs.format_description_runtime()
     assert text is None
+
+
+@pytest.mark.parametrize(
+    argnames='directors, exp_text',
+    argvalues=(
+        ((), None),
+        (('Ridley Lynch',), '[b]Director[/b]: Ridley Lynch'),
+        (('Ridley Lynch', 'Jackson Tarkovsky'), '[b]Directors[/b]: Ridley Lynch, Jackson Tarkovsky'),
+        ((Mock(__str__=Mock(return_value='Ridley Lynch'), url='http://url/to/Ridley_Lynch'),
+          Mock(__str__=Mock(return_value='Jackson Tarkovsky'), url='http://url/to/Jackson_Tarkovsky')),
+         ('[b]Directors[/b]: [url=http://url/to/Ridley_Lynch]Ridley Lynch[/url], '
+          '[url=http://url/to/Jackson_Tarkovsky]Jackson Tarkovsky[/url]')),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_directors(directors, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=directors))
+    text = await bb_tracker_jobs.format_description_directors()
+    assert text == exp_text

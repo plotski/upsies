@@ -1025,13 +1025,17 @@ class BbTrackerJobs(TrackerJobsBase):
             return None
         return f'[b]Runtime[/b]: {timestamp.pretty(runtime)}'
 
+    @staticmethod
+    def _format_person(person):
+        if hasattr(person, 'url') and person.url:
+            return f'[url={person.url}]{person}[/url]'
+        else:
+            return str(person)
+
     async def format_description_directors(self):
         directors = await self.try_webdbs((self.imdb, self.tvmaze), 'directors')
         if directors:
-            directors_links = [
-                f'[url={director.url}]{director}[/url]' if director.url else director
-                for director in directors
-            ]
+            directors_links = [ self._format_person(director) for director in directors]
             return (f'[b]Director{"s" if len(directors) > 1 else ""}[/b]: '
                     + ', '.join(directors_links))
 
