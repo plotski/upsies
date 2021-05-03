@@ -2117,3 +2117,22 @@ async def test_format_description_creators(creators, exp_text, bb_tracker_jobs, 
     mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=creators))
     text = await bb_tracker_jobs.format_description_creators()
     assert text == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='actors, exp_text',
+    argvalues=(
+        ((), None),
+        (('Wayne Spencer',), '[b]Cast[/b]: Wayne Spencer'),
+        (('Wayne Spencer', 'Rufus Weaver'), '[b]Cast[/b]: Wayne Spencer, Rufus Weaver'),
+        ((Mock(__str__=Mock(return_value='Wayne Spencer'), url='http://url/to/Wayne_Spencer'),
+          Mock(__str__=Mock(return_value='Rufus Weaver'), url='http://url/to/Rufus_Weaver')),
+         ('[b]Cast[/b]: [url=http://url/to/Wayne_Spencer]Wayne Spencer[/url], '
+          '[url=http://url/to/Rufus_Weaver]Rufus Weaver[/url]')),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_cast(actors, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=actors))
+    text = await bb_tracker_jobs.format_description_cast()
+    assert text == exp_text

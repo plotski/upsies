@@ -1049,12 +1049,8 @@ class BbTrackerJobs(TrackerJobsBase):
     async def format_description_cast(self):
         actors = await self.try_webdbs((self.tvmaze, self.imdb), 'cast')
         if actors:
-            actors_links = [
-                f'[url={actor.url}]{actor}[/url]' if actor.url else actor
-                for actor in actors
-            ]
-            return (f'[b]Actor{"s" if len(actors) > 1 else ""}[/b]: '
-                    + ', '.join(actors_links))
+            actors_links = [self._format_person(actor) for actor in actors]
+            return (f'[b]Cast[/b]: ' + ', '.join(actors_links))
 
     async def format_description_series_screenshots(self):
         screenshots_bbcode_parts = []  # Spacer
