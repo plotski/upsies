@@ -1,3 +1,4 @@
+import builtins
 import re
 from types import SimpleNamespace
 from unittest.mock import Mock, PropertyMock, call
@@ -2195,3 +2196,39 @@ async def test_submission_ok(monojob_attributes, parent_ok, exp_ok, bb_tracker_j
     mocker.patch.object(type(bb_tracker_jobs), 'monojob_attributes', PropertyMock(return_value=monojob_attributes))
     ok = bb_tracker_jobs.submission_ok
     assert ok == exp_ok
+
+
+@pytest.mark.parametrize(
+    argnames='job, slice, exp_error, exp_output',
+    argvalues=(
+        (Mock(is_finished=False, output=('foo', 'bar', 'baz')),
+         None,
+         'Unfinished job: asdf',
+         ()),
+        (Mock(is_finished=True, output=('foo', 'bar', 'baz')),
+         None,
+         None,
+         ('foo', 'bar', 'baz')),
+        (Mock(is_finished=True, output=('foo', 'bar', 'baz')),
+         1,
+         None,
+         'bar'),
+        (Mock(is_finished=True, output=('foo', 'bar', 'baz')),
+         builtins.slice(1, 3),
+         None,
+         ('bar', 'baz')),
+        (Mock(is_finished=True, output=('foo', 'bar', 'baz')),
+         10,
+         "Job finished with insufficient output: asdf: ('foo', 'bar', 'baz')",
+         ()),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_job_output(job, slice, exp_error, exp_output, bb_tracker_jobs, mocker):
+    job.configure_mock(name='asdf')
+    if exp_error:
+        with pytest.raises(RuntimeError, match=rf'^{re.escape(exp_error)}$'):
+            bb_tracker_jobs.get_job_output(job, slice)
+    else:
+        output = bb_tracker_jobs.get_job_output(job, slice)
+        assert output == exp_output

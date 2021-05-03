@@ -3,6 +3,7 @@
 """
 
 import asyncio
+import builtins
 import os
 import re
 
@@ -1085,11 +1086,11 @@ class BbTrackerJobs(TrackerJobsBase):
         else:
             return super().submission_ok
 
-    def get_job_output(self, job, slice=slice(None, None)):
+    def get_job_output(self, job, slice=None):
         if not job.is_finished:
             raise RuntimeError(f'Unfinished job: {job.name}')
         try:
-            return job.output[slice]
+            return job.output[slice or builtins.slice(None, None)]
         except IndexError:
             raise RuntimeError(f'Job finished with insufficient output: {job.name}: {job.output}')
 
