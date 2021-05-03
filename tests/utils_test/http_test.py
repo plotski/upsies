@@ -164,7 +164,7 @@ def test_Result_repr():
 @pytest.mark.asyncio
 async def test_request_with_invalid_url(mock_cache):
     url = r'http://:/foo:bar'
-    with pytest.raises(errors.RequestError, match=rf'^{re.escape(url)}: Missing hostname in URL\.$') as excinfo:
+    with pytest.raises(errors.RequestError, match=rf"^{re.escape(url)}: Unsupported URL protocol ''$") as excinfo:
         await http._request('GET', url)
     assert excinfo.value.status_code is None
 
@@ -301,10 +301,10 @@ async def test_request_sends_params(method, mock_cache, httpserver):
     assert result == 'have this'
     assert isinstance(result, http.Result)
 
+@pytest.mark.parametrize('data', (b'raw bytes', 'string'))
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
-async def test_request_sends_data(method, mock_cache, httpserver):
-    data = b'bleepbloop'
+async def test_request_sends_data(method, data, mock_cache, httpserver):
     httpserver.expect_request(
         uri='/foo',
         method=method,
@@ -547,10 +547,7 @@ async def test_request_catches_TimeoutException(method, mock_cache, mocker):
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
 async def test_request_catches_HTTPError(method, mock_cache, mocker):
-    exc = httpx.HTTPError(
-        message='Some error',
-        request='mock request',
-    )
+    exc = httpx.HTTPError('Some error')
     mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
     with pytest.raises(errors.RequestError, match=rf'^{url}: Some error$') as excinfo:

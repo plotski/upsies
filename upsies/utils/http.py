@@ -192,14 +192,19 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
 
+    if isinstance(data, (bytes, str)):
+        payload = {'content': data}
+    else:
+        payload = {'data': data}
+
     headers = {**_default_headers, **headers}
     request = _client.build_request(
         method=str(method),
         headers=headers,
         url=str(url),
         params=params,
-        data=data,
         files=_open_files(files),
+        **payload,
     )
 
     if not user_agent:
