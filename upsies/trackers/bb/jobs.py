@@ -1042,10 +1042,7 @@ class BbTrackerJobs(TrackerJobsBase):
     async def format_description_creators(self):
         creators = await self.try_webdbs((self.tvmaze, self.imdb), 'creators')
         if creators:
-            creators_links = [
-                f'[url={creator.url}]{creator}[/url]' if creator.url else creator
-                for creator in creators
-            ]
+            creators_links = [self._format_person(creator) for creator in creators]
             return (f'[b]Creator{"s" if len(creators) > 1 else ""}[/b]: '
                     + ', '.join(creators_links))
 

@@ -2098,3 +2098,22 @@ async def test_format_description_directors(directors, exp_text, bb_tracker_jobs
     mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=directors))
     text = await bb_tracker_jobs.format_description_directors()
     assert text == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='creators, exp_text',
+    argvalues=(
+        ((), None),
+        (('Joss Harmon',), '[b]Creator[/b]: Joss Harmon'),
+        (('Joss Harmon', 'Mitch Nolan'), '[b]Creators[/b]: Joss Harmon, Mitch Nolan'),
+        ((Mock(__str__=Mock(return_value='Joss Harmon'), url='http://url/to/Joss_Harmon'),
+          Mock(__str__=Mock(return_value='Mitch Nolan'), url='http://url/to/Mitch_Nolan')),
+         ('[b]Creators[/b]: [url=http://url/to/Joss_Harmon]Joss Harmon[/url], '
+          '[url=http://url/to/Mitch_Nolan]Mitch Nolan[/url]')),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_creators(creators, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=creators))
+    text = await bb_tracker_jobs.format_description_creators()
+    assert text == exp_text
