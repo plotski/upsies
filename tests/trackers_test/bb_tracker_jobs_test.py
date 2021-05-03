@@ -2179,3 +2179,19 @@ async def test_format_description_series_mediainfo(mediainfo, exp_text, bb_track
     assert text == exp_text
     assert bb_tracker_jobs.mediainfo_job.wait.call_args_list == [call()]
     assert bb_tracker_jobs.get_job_output.call_args_list == [call(bb_tracker_jobs.mediainfo_job, slice=0)]
+
+
+@pytest.mark.parametrize(
+    argnames='monojob_attributes, parent_ok, exp_ok',
+    argvalues=(
+        ((), 'parent value', 'parent value'),
+        (('foo',), 'parent value', False),
+    ),
+)
+@pytest.mark.asyncio
+async def test_submission_ok(monojob_attributes, parent_ok, exp_ok, bb_tracker_jobs, mocker):
+    parent_submission_ok = mocker.patch('upsies.trackers.base.TrackerJobsBase.submission_ok', new_callable=PropertyMock)
+    parent_submission_ok.return_value = parent_ok
+    mocker.patch.object(type(bb_tracker_jobs), 'monojob_attributes', PropertyMock(return_value=monojob_attributes))
+    ok = bb_tracker_jobs.submission_ok
+    assert ok == exp_ok
