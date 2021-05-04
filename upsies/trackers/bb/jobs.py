@@ -1089,8 +1089,10 @@ class BbTrackerJobs(TrackerJobsBase):
     def get_job_output(self, job, slice=None):
         if not job.is_finished:
             raise RuntimeError(f'Unfinished job: {job.name}')
+        if slice is None:
+            slice = builtins.slice(None, None)
         try:
-            return job.output[slice or builtins.slice(None, None)]
+            return job.output[slice]
         except IndexError:
             raise RuntimeError(f'Job finished with insufficient output: {job.name}: {job.output}')
 
