@@ -3,6 +3,43 @@ import pytest
 from upsies.utils import types
 
 
+@pytest.mark.parametrize('number', ('0', '1', '10', '11.5', '11.05', '99', '9999'))
+@pytest.mark.parametrize('space', ('', ' '))
+@pytest.mark.parametrize(
+    argnames='prefix, multiplier',
+    argvalues=(
+        ('', 1),
+        ('k', 1000),
+        ('M', 1000**2),
+        ('G', 1000**3),
+        ('T', 1000**4),
+        ('P', 1000**5),
+        ('Ki', 1024),
+        ('Mi', 1024**2),
+        ('Gi', 1024**3),
+        ('Ti', 1024**4),
+        ('Pi', 1024**5),
+    ),
+)
+@pytest.mark.parametrize('unit', ('', 'b', 'B'))
+def test_Bytes_from_valid_string(number, space, prefix, multiplier, unit):
+    bytes = types.Bytes(f'{number}{space}{prefix}{unit}')
+    assert bytes == int(float(number) * multiplier)
+
+@pytest.mark.parametrize(
+    argnames='string, exp_msg',
+    argvalues=(
+        ('foo', 'Invalid size: foo'),
+        ('10x', 'Invalid unit: x'),
+        ('10kx', 'Invalid unit: kx'),
+        ('10 Mx', 'Invalid unit: Mx'),
+    ),
+)
+def test_Bytes_from_invalid_string(string, exp_msg):
+    with pytest.raises(ValueError, match=rf'^{exp_msg}$'):
+        types.Bytes(string)
+
+
 @pytest.mark.parametrize(
     argnames=('name', 'bool_value'),
     argvalues=(

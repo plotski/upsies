@@ -4,7 +4,7 @@ defaults = {
     'config': {
         'main': {
             'cache_directory': constants.CACHE_DIRPATH,
-            'max_cache_size': utils.fs.Bytes.from_string('20 MB'),
+            'max_cache_size': utils.types.Bytes.from_string('20 MB'),
         },
     },
 
