@@ -49,6 +49,37 @@ class Bytes(int):
         else:
             return super().__new__(cls, value)
 
+    def __str__(self):
+        decimal_multipliers = (
+            (prefix, multiplier)
+            for prefix, multiplier in reversed(self._multipliers.items())
+            if len(prefix) == 1
+        )
+        binary_multipliers = (
+            (prefix, multiplier)
+            for prefix, multiplier in reversed(self._multipliers.items())
+            if len(prefix) == 2
+        )
+
+        def get_string(multipliers):
+            for prefix, multiplier in multipliers:
+                if self >= multiplier:
+                    return f'{self / multiplier:.2f}'.rstrip('0').rstrip('.') + f' {prefix}B'
+            return f'{int(self)} B'
+
+        def number_of_decimal_places(number):
+            string = str(''.join(c for c in str(number) if c in '1234567890.'))
+            if '.' in string:
+                return len(string.split('.', maxsplit=1)[1])
+            else:
+                return 0
+
+        decimal_string = get_string(decimal_multipliers)
+        binary_string = get_string(binary_multipliers)
+        sorted_strings = sorted((decimal_string, binary_string),
+                                key=number_of_decimal_places)
+        return sorted_strings[0]
+
 
 class ReleaseType(enum.Enum):
     """

@@ -39,6 +39,32 @@ def test_Bytes_from_invalid_string(string, exp_msg):
     with pytest.raises(ValueError, match=rf'^{exp_msg}$'):
         types.Bytes(string)
 
+@pytest.mark.parametrize(
+    argnames='number, exp_string',
+    argvalues=(
+        (0, '0 B'),
+        (1, '1 B'),
+        (10, '10 B'),
+        (999, '999 B'),
+        (1000, '1 kB'),
+        (1001, '1 kB'),
+        (1000 * 1.5, '1.5 kB'),
+        (1000 * 1.75, '1.75 kB'),
+        (1000 * 1.799, '1.8 kB'),
+        (1023, '1023 B'),
+        (1024, '1 KiB'),
+        (1025, '1 KiB'),
+        (1024 * 1.5, '1.5 KiB'),
+        (1024 * 1.75, '1.79 kB'),
+        (1024 * 1.799, '1.8 KiB'),
+        (1000**2, '1 MB'), (1000**3, '1 GB'), (1000**4, '1 TB'), (1000**5, '1 PB'),
+        (1024**2, '1 MiB'), (1024**3, '1 GiB'), (1024**4, '1 TiB'), (1024**5, '1 PiB'),
+    ),
+)
+def test_Bytes_as_string(number, exp_string):
+    string = str(types.Bytes(number))
+    assert string == exp_string
+
 
 @pytest.mark.parametrize(
     argnames=('name', 'bool_value'),
