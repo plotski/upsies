@@ -52,12 +52,12 @@ class Bytes(int):
     def __str__(self):
         decimal_multipliers = (
             (prefix, multiplier)
-            for prefix, multiplier in reversed(self._multipliers.items())
+            for prefix, multiplier in reversed(tuple(self._multipliers.items()))
             if len(prefix) == 1
         )
         binary_multipliers = (
             (prefix, multiplier)
-            for prefix, multiplier in reversed(self._multipliers.items())
+            for prefix, multiplier in reversed(tuple(self._multipliers.items()))
             if len(prefix) == 2
         )
 
