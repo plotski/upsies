@@ -21,7 +21,7 @@ from upsies.utils import types
         ('Pi', 1024**5),
     ),
 )
-@pytest.mark.parametrize('unit', ('', 'b', 'B'))
+@pytest.mark.parametrize('unit', ('', 'B'))
 def test_Bytes_from_valid_string(number, space, prefix, multiplier, unit):
     bytes = types.Bytes(f'{number}{space}{prefix}{unit}')
     assert bytes == int(float(number) * multiplier)

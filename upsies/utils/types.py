@@ -34,7 +34,7 @@ class Bytes(int):
         else:
             number = match.group(1)
             unit = match.group(2)
-            if unit and unit[-1].upper() == 'B':
+            if unit and unit[-1] == 'B':
                 unit = unit[:-1]
             try:
                 multiplier = cls._multipliers[unit]
