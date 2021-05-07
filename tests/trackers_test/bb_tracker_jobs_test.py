@@ -1557,6 +1557,34 @@ async def test_get_series_poster_url(tvmaze_id, poster_url, exp_return_value, bb
     assert poster_url == exp_return_value
 
 
+def test_get_movie_release_info(bb_tracker_jobs, mocker):
+    infos = {
+        'release_info_576p_PAL': '576p PAL',
+        'release_info_remux': 'REMUX',
+        'release_info_proper': 'PROPER',
+        'release_info_repack': 'REPACK',
+        'release_info_uncensored': 'Uncensored',
+        'release_info_uncut': 'Uncut',
+        'release_info_unrated': 'Unrated',
+        'release_info_remastered': 'Remastered',
+        'release_info_directors_cut': "Director's Cut",
+        'release_info_extended_edition': 'Extended Edution',
+        'release_info_anniversary_edition': 'Anniversary',
+        'release_info_criterion_edition': 'Criterion Edition',
+        'release_info_special_edition': 'Special Edition',
+        'release_info_limited_edition': 'Limited',
+        'release_info_dual_audio': 'Dual Audio',
+        'release_info_hdr10': 'HDR10',
+        'release_info_10bit': '10-bit',
+        'release_info_commentary': 'w. Commentary',
+        'release_info_subtitles': 'w. Subtitles',
+    }
+    for k, v in infos.items():
+        mocker.patch.object(type(bb_tracker_jobs), k, PropertyMock(return_value=v))
+    release_info = bb_tracker_jobs.get_movie_release_info()
+    assert release_info == ' / '.join(infos.values())
+
+
 @pytest.mark.asyncio
 async def test_get_tags_for_movie(bb_tracker_jobs, mocker):
     webdb = Mock(
@@ -1612,34 +1640,6 @@ async def test_get_tags_is_not_longer_than_200_characters(bb_tracker_jobs, mocke
                     'alec.guinness,anthony.daniels,kenny.baker,peter.mayhew,'
                     'david.prowse,phil.brown,shelagh.fraser,jack.purvis,alex.mccrindle,'
                     'eddie.byrne,drewe.henley')
-
-
-def test_get_movie_release_info(bb_tracker_jobs, mocker):
-    infos = {
-        'release_info_576p_PAL': '576p PAL',
-        'release_info_remux': 'REMUX',
-        'release_info_proper': 'PROPER',
-        'release_info_repack': 'REPACK',
-        'release_info_uncensored': 'Uncensored',
-        'release_info_uncut': 'Uncut',
-        'release_info_unrated': 'Unrated',
-        'release_info_remastered': 'Remastered',
-        'release_info_directors_cut': "Director's Cut",
-        'release_info_extended_edition': 'Extended Edution',
-        'release_info_anniversary_edition': 'Anniversary',
-        'release_info_criterion_edition': 'Criterion Edition',
-        'release_info_special_edition': 'Special Edition',
-        'release_info_limited_edition': 'Limited',
-        'release_info_dual_audio': 'Dual Audio',
-        'release_info_hdr10': 'HDR10',
-        'release_info_10bit': '10-bit',
-        'release_info_commentary': 'w. Commentary',
-        'release_info_subtitles': 'w. Subtitles',
-    }
-    for k, v in infos.items():
-        mocker.patch.object(type(bb_tracker_jobs), k, PropertyMock(return_value=v))
-    release_info = bb_tracker_jobs.get_movie_release_info()
-    assert release_info == ' / '.join(infos.values())
 
 
 @pytest.mark.asyncio

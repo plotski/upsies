@@ -824,6 +824,30 @@ class BbTrackerJobs(TrackerJobsBase):
             _log.debug('Poster URL for %r: %r', tvmaze_id, poster_url)
             return poster_url
 
+    def get_movie_release_info(self):
+        info = (
+            self.release_info_576p_PAL,
+            self.release_info_remux,
+            self.release_info_proper,
+            self.release_info_repack,
+            self.release_info_uncensored,
+            self.release_info_uncut,
+            self.release_info_unrated,
+            self.release_info_remastered,
+            self.release_info_directors_cut,
+            self.release_info_extended_edition,
+            self.release_info_anniversary_edition,
+            self.release_info_criterion_edition,
+            self.release_info_special_edition,
+            self.release_info_limited_edition,
+            self.release_info_dual_audio,
+            self.release_info_hdr10,
+            self.release_info_10bit,
+            self.release_info_commentary,
+            self.release_info_subtitles,
+        )
+        return ' / '.join(i for i in info if i)
+
     async def get_tags(self, webdb, id):
         def normalize_tags(strings):
             normalized = []
@@ -865,30 +889,6 @@ class BbTrackerJobs(TrackerJobsBase):
             tags_string = assemble(tags)
 
         return tags_string
-
-    def get_movie_release_info(self):
-        info = (
-            self.release_info_576p_PAL,
-            self.release_info_remux,
-            self.release_info_proper,
-            self.release_info_repack,
-            self.release_info_uncensored,
-            self.release_info_uncut,
-            self.release_info_unrated,
-            self.release_info_remastered,
-            self.release_info_directors_cut,
-            self.release_info_extended_edition,
-            self.release_info_anniversary_edition,
-            self.release_info_criterion_edition,
-            self.release_info_special_edition,
-            self.release_info_limited_edition,
-            self.release_info_dual_audio,
-            self.release_info_hdr10,
-            self.release_info_10bit,
-            self.release_info_commentary,
-            self.release_info_subtitles,
-        )
-        return ' / '.join(i for i in info if i)
 
     async def get_description(self):
         info_table = await asyncio.gather(
