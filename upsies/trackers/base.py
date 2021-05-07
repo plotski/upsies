@@ -20,7 +20,6 @@ class TrackerConfigBase(dict):
     """
 
     _defaults = {
-        'announce'   : '',
         'source'     : '',
         'exclude'    : [],
         'add-to'     : '',
