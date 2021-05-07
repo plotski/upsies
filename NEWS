@@ -1,4 +1,4 @@
-2021-??-?? 0.?.?
+2021-05-07 0.3.0
   * Added support for tracker: bB
   * Renamed command: create-torrent -> torrent-create
   * Renamed command: add-torrent -> torrent-add
