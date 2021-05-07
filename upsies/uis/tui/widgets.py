@@ -105,7 +105,7 @@ class InputField:
 
     @text.setter
     def text(self, text):
-        self.buffer.set_document(Document(text), bypass_readonly=True)
+        self.set_text(text)
 
     def set_text(self, text, ignore_callback=False):
         if ignore_callback:
