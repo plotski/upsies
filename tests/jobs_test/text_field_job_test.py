@@ -92,7 +92,7 @@ def test_send_valid_text(make_TextFieldJob):
     assert job.exit_code == 0
     assert job.output == ('baz',)
 
-def test_finish_with_invalid_text(make_TextFieldJob):
+def test_send_invalid_text(make_TextFieldJob):
     validator = Mock(side_effect=ValueError('Nope'))
     job = make_TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
     assert validator.call_args_list == []
