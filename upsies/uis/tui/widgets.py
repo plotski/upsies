@@ -17,6 +17,8 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.dimension import Dimension
 from prompt_toolkit.utils import get_cwidth
 
+from . import utils
+
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
@@ -32,6 +34,7 @@ class TextField:
         self._text = text
         self._width = width
         self._height = height
+        self._throbber = utils.Throbber(callback=self.set_text)
         self.container = Window(
             content=FormattedTextControl(lambda: self.text),
             width=width,
@@ -69,6 +72,15 @@ class TextField:
         else:
             self._text = text
         get_app().invalidate()
+
+    @property
+    def is_loading(self):
+        """Whether an activity indicator is displayed"""
+        return self._throbber.active
+
+    @is_loading.setter
+    def is_loading(self, is_loading):
+        self._throbber.active = is_loading
 
     def __pt_container__(self):
         return self.container
