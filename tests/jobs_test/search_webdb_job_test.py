@@ -231,11 +231,21 @@ def test_SearchWebDbJob_no_search_results(job):
     assert cb.call_args_list == [call(results)]
 
 
-def test_SearchWebDbJob_update_info(job):
+def test_SearchWebDbJob_update_info_emits_info_updating_signal(job):
     cb = Mock()
-    job.signal.register('info_updated', cb)
+    job.signal.register('info_updating', cb.info_updating)
+    job.signal.register('info_updated', cb.info_updated)
+    job._update_info('The Key', Ellipsis)
+    assert cb.info_updating.call_args_list == [call('The Key')]
+    assert cb.info_updated.call_args_list == []
+
+def test_SearchWebDbJob_update_info_emits_info_updated_signal(job):
+    cb = Mock()
+    job.signal.register('info_updating', cb.info_updating)
+    job.signal.register('info_updated', cb.info_updated)
     job._update_info('The Key', 'The Info')
-    assert cb.call_args_list == [call('The Key', 'The Info')]
+    assert cb.info_updating.call_args_list == []
+    assert cb.info_updated.call_args_list == [call('The Key', 'The Info')]
 
 
 def test_SearchWebDbJob_result_focused(job):
@@ -568,7 +578,7 @@ async def test_UpdateInfoThread_call_callback_gets_value_from_value_getter(info_
         callback=mocks.callback,
     )
     assert mocks.mock_calls == [
-        call.callback('Loading...'),
+        call.callback(Ellipsis),
         call.sleep_mock(info_updater._delay_between_updates),
         call.value_getter(),
         call.callback('The Value'),
@@ -611,7 +621,7 @@ async def test_UpdateInfoThread_call_callback_handles_RequestError(info_updater,
         cache_key=('id', 'key'),
     )
     assert mocks.mock_calls == [
-        call.callback('Loading...'),
+        call.callback(Ellipsis),
         call.sleep_mock(info_updater._delay_between_updates),
         call.value_getter(),
         call.callback(''),

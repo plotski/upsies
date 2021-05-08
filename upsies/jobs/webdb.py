@@ -31,6 +31,12 @@ class SearchWebDbJob(JobBase):
             available. Registered callbacks get `True` for "search started" or
             `False` for "search ended" as a positional argument.
 
+        ``info_updating``
+            Emitted when an attempt to fetch additional information is made.
+            Registered callbacks get the name of an attribute of a
+            :class:`~.utils.webdbs.common.SearchResult` object that returns a
+            coroutine function as a positional argument.
+
         ``info_updated``
             Emitted when additional information is available. Registered
             callbacks are called for each piece of information and get ``key``
@@ -74,6 +80,7 @@ class SearchWebDbJob(JobBase):
 
         self.signal.add('search_results')
         self.signal.add('searching_status')
+        self.signal.add('info_updating')
         self.signal.add('info_updated')
 
         self._searcher = _Searcher(
@@ -102,7 +109,10 @@ class SearchWebDbJob(JobBase):
         return lambda value: self._update_info(key, value)
 
     def _update_info(self, attr, value):
-        self.signal.emit('info_updated', attr, value)
+        if value is Ellipsis:
+            self.signal.emit('info_updating', attr)
+        else:
+            self.signal.emit('info_updated', attr, value)
 
     def execute(self):
         """Search for initial query"""
@@ -310,7 +320,8 @@ class _InfoUpdater:
         if cached_value is not None:
             callback(cached_value)
         else:
-            callback('Loading...')
+            # Indicate "Loading..." status
+            callback(Ellipsis)
             await asyncio.sleep(self._delay_between_updates)
             try:
                 value = await value_getter()
