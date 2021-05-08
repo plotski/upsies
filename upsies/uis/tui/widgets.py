@@ -47,6 +47,9 @@ class TextField:
 
     @text.setter
     def text(self, text):
+        self.set_text(text)
+
+    def set_text(self, text):
         if isinstance(self._width, int) and self._width > 1:
             width = self._width
             if isinstance(self._height, int):
