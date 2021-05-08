@@ -1,3 +1,4 @@
+from prompt_toolkit.application import get_app
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import (DynamicContainer, HSplit, VSplit,
                                               Window)
@@ -5,7 +6,7 @@ from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.utils import get_cwidth
 
 from ....utils import browser, cached_property, webdbs
-from .. import widgets
+from .. import utils, widgets
 from . import JobWidgetBase
 
 import logging  # isort:skip
@@ -174,10 +175,11 @@ class SearchWebDbJobWidget(JobWidgetBase):
 class _SearchResults(DynamicContainer):
     def __init__(self, results=(), width=40):
         self.results = results
-        self._is_searching = False
         self._year_width = 4
         self._type_width = 6
         self._title_width = width - self._year_width - self._type_width - 2
+        self._throbber = utils.Throbber(callback=self._throbber_callback)
+        self._throbber_string = '...'
         super().__init__(
             lambda: Window(
                 content=FormattedTextControl(self._get_text_fragments, focusable=False),
@@ -189,11 +191,11 @@ class _SearchResults(DynamicContainer):
 
     @property
     def is_searching(self):
-        return self._is_searching
+        return self._throbber.active
 
     @is_searching.setter
     def is_searching(self, value):
-        self._is_searching = bool(value)
+        self._throbber.active = bool(value)
 
     @property
     def results(self):
@@ -225,9 +227,13 @@ class _SearchResults(DynamicContainer):
     def select_last(self):
         self._focused_index = len(self._results) - 1
 
+    def _throbber_callback(self, string):
+        self._throbber_string = string
+        get_app().invalidate()
+
     def _get_text_fragments(self):
-        if self._is_searching:
-            return [('class:dialog.search.results', 'Searching...')]
+        if self.is_searching:
+            return [('class:dialog.search.results', self._throbber_string)]
         elif not self._results:
             return 'No results'
 
