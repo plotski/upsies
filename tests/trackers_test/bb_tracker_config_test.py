@@ -8,7 +8,6 @@ def test_defaults():
         'base_url'   : base64.b64decode('aHR0cHM6Ly9iYWNvbmJpdHMub3Jn').decode('ascii'),
         'username'   : '',
         'password'   : '',
-        'announce'   : '',
         'source'     : 'bB',
         'image_host' : 'imgbox',
         'add-to'     : '',
