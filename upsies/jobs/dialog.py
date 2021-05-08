@@ -200,6 +200,10 @@ class TextFieldJob(JobBase):
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
+        ``dialog_updating``
+            Emitted when :meth:`fetch_text`` is called to indicate activity.
+            Registered callbacks get the job instance as a positional argument.
+
         ``dialog_updated``
             Emitted when any property is set. Registered callbacks get the job
             instance as a positional argument.
@@ -278,6 +282,7 @@ class TextFieldJob(JobBase):
         self._name = str(name)
         self._label = str(label)
         self._validator = validator or (lambda _: None)
+        self.signal.add('dialog_updating')
         self.signal.add('dialog_updated')
         self.signal.add('accepted')
         self.text = text
@@ -315,7 +320,7 @@ class TextFieldJob(JobBase):
             :meth:`warn`
         """
         self.read_only = True
-        self.text = 'Loading...'
+        self.signal.emit('dialog_updating', self)
         try:
             # Try to set text field value, e.g. from IMDb
             text = await coro

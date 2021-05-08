@@ -38,37 +38,47 @@ def test_text_property(read_only, make_TextFieldJob):
                             validator=Mock(side_effect=ValueError('No likey')),
                             read_only=read_only)
     cb = Mock()
-    job.signal.register('dialog_updated', cb)
+    job.signal.register('dialog_updating', cb.dialog_updating)
+    job.signal.register('dialog_updated', cb.dialog_updated)
     assert job.text == '0'
-    assert cb.call_args_list == []
+    assert cb.dialog_updating.call_args_list == []
+    assert cb.dialog_updated.call_args_list == []
     job.text = 123
     assert job.text == '123'
-    assert cb.call_args_list == [call(job)]
+    assert cb.dialog_updating.call_args_list == []
+    assert cb.dialog_updated.call_args_list == [call(job)]
     job.text = 'foo'
     assert job.text == 'foo'
-    assert cb.call_args_list == [call(job), call(job)]
+    assert cb.dialog_updating.call_args_list == []
+    assert cb.dialog_updated.call_args_list == [call(job), call(job)]
 
 
 def test_obscured_property(make_TextFieldJob):
     job = make_TextFieldJob(name='foo', label='Foo', obscured=True)
     cb = Mock()
-    job.signal.register('dialog_updated', cb)
+    job.signal.register('dialog_updating', cb.dialog_updating)
+    job.signal.register('dialog_updated', cb.dialog_updated)
     assert job.obscured is True
-    assert cb.call_args_list == []
+    assert cb.dialog_updating.call_args_list == []
+    assert cb.dialog_updated.call_args_list == []
     job.obscured = 0
     assert job.obscured is False
-    assert cb.call_args_list == [call(job)]
+    assert cb.dialog_updating.call_args_list == []
+    assert cb.dialog_updated.call_args_list == [call(job)]
 
 
 def test_read_only_property(make_TextFieldJob):
     job = make_TextFieldJob(name='foo', label='Foo', read_only=True)
     cb = Mock()
-    job.signal.register('dialog_updated', cb)
+    job.signal.register('dialog_updating', cb.dialog_updating)
+    job.signal.register('dialog_updated', cb.dialog_updated)
     assert job.read_only is True
-    assert cb.call_args_list == []
+    assert cb.dialog_updating.call_args_list == []
+    assert cb.dialog_updated.call_args_list == []
     job.read_only = ''
     assert job.read_only is False
-    assert cb.call_args_list == [call(job)]
+    assert cb.dialog_updating.call_args_list == []
+    assert cb.dialog_updated.call_args_list == [call(job)]
 
 
 def test_send_valid_text(make_TextFieldJob):
@@ -99,12 +109,16 @@ def test_finish_with_invalid_text(make_TextFieldJob):
 async def test_fetch_text_sets_read_only_while_fetching(finish_on_success, make_TextFieldJob):
     async def fetcher(job):
         assert job.read_only
-        assert job.text == 'Loading...'
+        assert cb.dialog_updating.call_args_list == [call(job)]
 
+    cb = Mock()
     job = make_TextFieldJob(name='foo', label='Foo', text='bar')
+    job.signal.register('dialog_updating', cb.dialog_updating)
     assert not job.read_only
+    assert cb.dialog_updating.call_args_list == []
     await job.fetch_text(fetcher(job), finish_on_success=finish_on_success)
     assert not job.read_only
+    assert cb.dialog_updating.call_args_list == [call(job)]
     assert job.is_finished is finish_on_success
     if finish_on_success:
         assert job.exit_code == 0
