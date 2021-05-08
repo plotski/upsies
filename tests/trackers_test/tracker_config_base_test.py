@@ -11,7 +11,6 @@ def test_no_arguments():
             'baz': 'asdf',
         }
     assert TestTrackerConfig() == {
-        'announce': '',
         'source': '',
         'exclude': [],
         'add-to': '',
@@ -30,7 +29,6 @@ def test_arguments_overload_defaults():
             'baz': 'asdf',
         }
     assert TestTrackerConfig({'bar': 'hello', 'foo': '2', 'source': '123'}) == {
-        'announce': '',
         'source': '123',
         'exclude': [],
         'add-to': '',
