@@ -9,14 +9,18 @@ _log = logging.getLogger(__name__)
 class ReleaseNameJobWidget(JobWidgetBase):
     def setup(self):
         self._input = widgets.InputField(
-            text='Loading...',
             style='class:dialog.text',
             on_accepted=self._handle_approved_release_name,
             read_only=True,
         )
+        self.job.signal.register('release_name_updating', self._start_throbber)
         self.job.signal.register('release_name_updated', self._set_input)
 
+    def _start_throbber(self):
+        self._input.is_loading = True
+
     def _set_input(self, release_name):
+        self._input.is_loading = False
         self._input.read_only = False
         self._input.text = self._get_release_name_string(release_name)
         self.invalidate()
