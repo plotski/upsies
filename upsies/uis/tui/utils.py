@@ -17,11 +17,11 @@ class Throbber:
     :param bool active: Whether the throbber is throbbing right away
     """
 
-    def __init__(self, *, callback, states=('⠷', '⠯', '⠟', '⠻', '⠽', '⠾'),
+    def __init__(self, *, callback=None, states=('⠷', '⠯', '⠟', '⠻', '⠽', '⠾'),
                  interval=0.1, active=False):
         self._iterator = itertools.cycle(states)
         self._interval = float(interval)
-        self._callback = callback
+        self._callback = callback or None
         self.active = active
 
     @property
@@ -38,8 +38,12 @@ class Throbber:
         else:
             self._active = False
 
+    @property
+    def next_state(self):
+        return next(self._iterator)
+
     def _iterate(self):
         if self.active:
-            state = next(self._iterator)
-            self._callback(state)
+            if self._callback:
+                self._callback(self.next_state)
             asyncio.get_event_loop().call_later(self._interval, self._iterate)
