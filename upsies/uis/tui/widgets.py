@@ -91,6 +91,7 @@ class InputField:
 
     def __init__(self, text='', width=None, extend_width=True, read_only=False,
                  on_accepted=None, on_changed=None, style=''):
+        self._throbber = utils.Throbber(callback=self.set_text, interval=0.1)
         self.read_only = read_only
         self.on_accepted = on_accepted
         self.buffer = Buffer(
@@ -139,6 +140,15 @@ class InputField:
     @read_only.setter
     def read_only(self, read_only):
         self._read_only = bool(read_only)
+
+    @property
+    def is_loading(self):
+        """Whether an activity indicator is displayed"""
+        return self._throbber.active
+
+    @is_loading.setter
+    def is_loading(self, is_loading):
+        self._throbber.active = is_loading
 
     def __pt_container__(self):
         return self.container
