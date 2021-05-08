@@ -5,6 +5,7 @@ Custom TUI widgets
 import collections
 import textwrap
 
+from prompt_toolkit.application import get_app
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.document import Document
 from prompt_toolkit.filters import Condition
@@ -67,6 +68,7 @@ class TextField:
             ) for paragraph in paragraphs)
         else:
             self._text = text
+        get_app().invalidate()
 
     def __pt_container__(self):
         return self.container
