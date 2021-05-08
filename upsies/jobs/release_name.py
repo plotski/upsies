@@ -18,6 +18,10 @@ class ReleaseNameJob(JobBase):
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
+        ``release_name_updating``
+            Emitted when :meth:`~.ReleaseName.fetch_info` is called. Registered
+            callbacks get no arguments.
+
         ``release_name_updated``
             Emitted after :meth:`~.ReleaseName.fetch_info` updated the release
             name. Registered callbacks get a :class:`~.release.ReleaseName`
@@ -50,6 +54,7 @@ class ReleaseNameJob(JobBase):
         """
         self._content_path = content_path
         self._release_name = release.ReleaseName(content_path)
+        self.signal.add('release_name_updating')
         self.signal.add('release_name_updated')
         self.signal.add('release_name')
 
@@ -72,11 +77,13 @@ class ReleaseNameJob(JobBase):
 
     def fetch_info(self, *args, **kwargs):
         """
-        Synchronous wrapper around :meth:`.ReleaseName.fetch_info` that emits the
-        ``release_name_updated`` signal
+        Synchronous wrapper around :meth:`.ReleaseName.fetch_info` that emits
+        ``release_name_updating`` before the info is fetched and
+        ``release_name_updated`` afterwards.
 
         All arguments are passed on to :meth:`.ReleaseName.fetch_info`.
         """
+        self.signal.emit('release_name_updating')
         task = asyncio.ensure_future(
             self.release_name.fetch_info(*args, **kwargs),
         )
