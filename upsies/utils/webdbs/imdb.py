@@ -87,11 +87,17 @@ class ImdbApi(WebDbApiBase):
     async def countries(self, id):
         soup = await self._get_soup(f'title/{id}')
         details_tag = soup.find(id='titleDetails')
-        countries_tag = details_tag.find(string='Country:').parent.parent
-        countries = []
-        for country_tag in countries_tag.find_all('a'):
-            countries.append(''.join(country_tag.stripped_strings))
-        return tuple(countries)
+        if details_tag:
+            tag = details_tag.find(string='Country:')
+            if tag:
+                tag = tag.parent
+                if tag:
+                    tag = tag.parent
+                    countries = []
+                    for country_tag in tag.find_all('a'):
+                        countries.append(''.join(country_tag.stripped_strings))
+                    return tuple(countries)
+        return ()
 
     async def creators(self, id):
         soup = await self._get_soup(f'title/{id}')
