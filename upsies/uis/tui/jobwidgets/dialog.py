@@ -37,9 +37,14 @@ class TextFieldJobWidget(JobWidgetBase):
             style='class:dialog.text',
             on_accepted=self._handle_accepted,
         )
+        self.job.signal.register('dialog_updating', self._handle_dialog_updating)
         self.job.signal.register('dialog_updated', self._handle_dialog_updated)
 
+    def _handle_dialog_updating(self, job):
+        self._input_field.is_loading = True
+
     def _handle_dialog_updated(self, job):
+        self._input_field.is_loading = False
         self._input_field.read_only = job.read_only
         self._input_field.text = job.text
         self.invalidate()
