@@ -1,5 +1,5 @@
 from ....utils import cached_property
-from .. import widgets
+from .. import utils, widgets
 from . import JobWidgetBase
 
 import logging  # isort:skip
@@ -9,8 +9,20 @@ _log = logging.getLogger(__name__)
 class CreateTorrentJobWidget(JobWidgetBase):
     def setup(self):
         self._progress = widgets.ProgressBar()
+        self._throbber = utils.Throbber(callback=self.handle_throbber_state)
+        self.job.signal.register('announce_url', self.handle_announce_url)
         self.job.signal.register('progress_update', self.handle_progress_update)
         self.job.signal.register('finished', lambda _: self.invalidate())
+
+    def handle_throbber_state(self, state):
+        self.job.info = f'Getting announce URL {state}'
+        self.invalidate()
+
+    def handle_announce_url(self, announce_url):
+        if announce_url is Ellipsis:
+            self._throbber.active = True
+        else:
+            self._throbber.active = False
 
     def handle_progress_update(self, percent_done):
         self._progress.percent = percent_done
