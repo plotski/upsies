@@ -20,10 +20,17 @@ class CreateTorrentJob(base.JobBase):
     This job adds the following signals to the :attr:`~.JobBase.signal`
     attribute:
 
+        ``announce_url``
+
+            Emitted before and after successful announce URL retrieval.
+            Registered callbacks get an :class:`Ellipsis` to indicate the
+            retrieval attempt and the announce URL if the attempt was
+            successful.
+
         ``progress_update``
-            Emitted in roughly equal intervals to provide creation progress.
-            Registered callbacks get a `float` between 0.0 and 100.0 as a
-            positional argument.
+            Emitted in roughly equal intervals to provide torrent creation
+            progress. Registered callbacks get a `float` between 0.0 and 100.0
+            as a positional argument.
     """
 
     name = 'torrent'
@@ -48,6 +55,7 @@ class CreateTorrentJob(base.JobBase):
             f'{fs.basename(content_path)}.{tracker.name.lower()}.torrent',
         )
         self.signal.add('progress_update')
+        self.signal.add('announce_url')
         self._torrent_process = None
 
     def execute(self):
@@ -55,13 +63,15 @@ class CreateTorrentJob(base.JobBase):
         self.add_task(self._get_announce_url())
 
     async def _get_announce_url(self):
-        self.info = 'Getting announce URL...'
+        self.info = f'Getting announce URL'
+        self.signal.emit('announce_url', Ellipsis)
         try:
             await self._tracker.login()
             announce_url = await self._tracker.get_announce_url()
         except errors.RequestError as e:
             self.error(e, finish=True)
         else:
+            self.signal.emit('announce_url', announce_url)
             self._create_torrent_process(announce_url)
         finally:
             self.info = ''
