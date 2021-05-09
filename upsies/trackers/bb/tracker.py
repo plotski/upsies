@@ -199,6 +199,18 @@ class BbTracker(TrackerBase):
                 if error_msg:
                     raise errors.RequestError(f'Upload failed: {error_msg}')
 
+            # Try to find different type of error message
+            # (e.g. "The exact same torrent file already exists on the site!")
+            error_header_tag = doc.find('h2', string=re.compile(r'^\s*Error\s*$'))
+            if error_header_tag:
+                parent_tag = error_header_tag.parent
+                if parent_tag:
+                    error_msg_tag = parent_tag.find('p')
+                    if error_msg_tag:
+                        error_msg = error_msg_tag.string.strip()
+                        if error_msg:
+                            raise errors.RequestError(f'Upload failed: {error_msg}')
+
             # Unable to find error message
             html.dump(response, 'upload.html')
             raise RuntimeError('Failed to find error message. See upload.html.')

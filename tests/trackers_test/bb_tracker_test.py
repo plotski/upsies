@@ -448,18 +448,25 @@ async def test_upload_makes_expected_request(mocker):
     )]
 
 @pytest.mark.parametrize('headers', ({'Location': 'somewhere.php'}, {}))
+@pytest.mark.parametrize(
+    argnames='page, exp_message',
+    argvalues=(
+        pytest.param(
+            'upload.error1',
+            r'This is a red error message!',
+            id='upload.error1',
+        ),
+        pytest.param(
+            'upload.error2',
+            r'The exact same torrent file already exists on the site!',
+            id='upload.error2',
+        ),
+    ),
+)
 @pytest.mark.asyncio
-async def test_upload_is_redirected_to_unexpected_page(headers, mocker):
+async def test_upload_finds_error_error_message(page, exp_message, headers, get_html_page, mocker):
     response = Result(
-        text='''
-        <html>
-        <body>
-        <p style="color: red;text-align:center;">
-            This is the error message
-        </p>
-        </body>
-        </html>
-        ''',
+        text=get_html_page('bb', page),
         bytes=b'not relevant',
         headers=headers,
     )
@@ -470,7 +477,7 @@ async def test_upload_is_redirected_to_unexpected_page(headers, mocker):
         },
     )
     tracker_jobs_mock = Mock()
-    with pytest.raises(errors.RequestError, match=r'^Upload failed: This is the error message$'):
+    with pytest.raises(errors.RequestError, match=rf'^Upload failed: {exp_message}$'):
         await tracker.upload(tracker_jobs_mock)
 
 @pytest.mark.asyncio
