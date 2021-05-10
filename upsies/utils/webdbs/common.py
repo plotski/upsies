@@ -29,22 +29,28 @@ class Query:
         return ' '.join(title.casefold().strip().split())
 
     def __init__(self, title, year=None, type=ReleaseType.unknown):
-        self._type = ReleaseType(type)
-        self._title = str(title)
+        self.type = type
+        self.title = title
         self._title_normalized = self._normalize_title(self._title)
-        self._year = None if year is None else str(year)
-        if self._year is not None and not 1800 < int(self._year) < 2100:
-            raise ValueError(f'Invalid year: {self._year}')
+        self.year = year
 
     @property
     def type(self):
         """:class:`~.types.ReleaseType` value"""
         return self._type
 
+    @type.setter
+    def type(self, type):
+        self._type = ReleaseType(type)
+
     @property
     def title(self):
         """Name of the movie or TV series"""
         return self._title
+
+    @title.setter
+    def title(self, title):
+        self._title = str(title)
 
     @property
     def title_normalized(self):
@@ -55,6 +61,21 @@ class Query:
     def year(self):
         """Year of release"""
         return self._year
+
+    @year.setter
+    def year(self, year):
+        if year is None:
+            self._year = None
+        else:
+            try:
+                year_int = int(year)
+            except (TypeError, ValueError):
+                raise ValueError(f'Invalid year: {year}')
+            else:
+                if not 1800 < year_int < 2100:
+                    raise ValueError(f'Invalid year: {year}')
+                else:
+                    self._year = str(year_int)
 
     _types = {
         ReleaseType.movie: ('movie', 'film'),

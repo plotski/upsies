@@ -12,12 +12,11 @@ def test_Query_title():
 def test_Query_year():
     assert webdbs.Query('The Title', year='2000').year == '2000'
     assert webdbs.Query('The Title', year=2000).year == '2000'
+    assert webdbs.Query('The Title', year=2000.5).year == '2000'
     with pytest.raises(ValueError, match=r'^Invalid year: 1000$'):
         webdbs.Query('The Title', year=1000)
     with pytest.raises(ValueError, match=r'^Invalid year: 3000$'):
         webdbs.Query('The Title', year='3000')
-    with pytest.raises(ValueError, match=r'invalid literal for int\(\)'):
-        webdbs.Query('The Title', year=2000.5)
 
 @pytest.mark.parametrize('typ', list(ReleaseType) + [str(t) for t in ReleaseType], ids=lambda v: repr(v))
 def test_Query_valid_type(typ):
