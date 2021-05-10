@@ -63,7 +63,7 @@ class CreateTorrentJob(base.JobBase):
         self.add_task(self._get_announce_url())
 
     async def _get_announce_url(self):
-        self.info = f'Getting announce URL'
+        self.info = 'Getting announce URL'
         self.signal.emit('announce_url', Ellipsis)
         try:
             await self._tracker.login()
