@@ -72,6 +72,7 @@ class SearchWebDbJobWidget(JobWidgetBase):
         if query_text != self._old_query_text:
             self._old_query_text = self._widgets['query'].text
             self.job.search(webdbs.Query.from_string(query_text))
+            self._widgets['query'].set_text(str(self.job.query))
         else:
             # The same query was accepted twice without changing it.
             # Select focused search result.
