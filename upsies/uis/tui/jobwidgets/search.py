@@ -16,6 +16,7 @@ _log = logging.getLogger(__name__)
 class SearchWebDbJobWidget(JobWidgetBase):
     def setup(self):
         right_column_width = 40
+        self._old_query_text = str(self.job.query)
         self._widgets = {
             'id' : widgets.TextField(width=15, style='class:dialog.search.info'),
             'query' : widgets.InputField(
@@ -67,9 +68,10 @@ class SearchWebDbJobWidget(JobWidgetBase):
         self.job.signal.register('info_updated', self.handle_info_updated)
 
     def handle_query(self, buffer):
-        new_query = webdbs.Query.from_string(self._widgets['query'].text)
-        if new_query != self.job.query:
-            self.job.search(new_query)
+        query_text = self._widgets['query'].text
+        if query_text != self._old_query_text:
+            self._old_query_text = self._widgets['query'].text
+            self.job.search(webdbs.Query.from_string(query_text))
         else:
             # The same query was accepted twice without changing it.
             # Select focused search result.
