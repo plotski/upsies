@@ -70,7 +70,8 @@ def test_Query_inequality(a, b):
         (webdbs.Query('The Title'), 'The Title'),
         (webdbs.Query('The Title', type=ReleaseType.movie), 'The Title type:movie'),
         (webdbs.Query('The Title', type=ReleaseType.series), 'The Title type:season'),
-        (webdbs.Query('The Title', type=ReleaseType.movie, year='2010'), 'The Title year:2010 type:movie'),
+        (webdbs.Query('The Title', type=ReleaseType.movie, year='2010'), 'The Title type:movie year:2010'),
+        (webdbs.Query('The Title', year='2010', type=ReleaseType.movie), 'The Title year:2010 type:movie'),
     ),
     ids=lambda value: str(value),
 )

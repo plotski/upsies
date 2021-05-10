@@ -28,11 +28,17 @@ class Query:
     def _normalize_title(title):
         return ' '.join(title.casefold().strip().split())
 
-    def __init__(self, title, year=None, type=ReleaseType.unknown):
-        self.type = type
+    _kwarg_defaults = {
+        'year': None,
+        'type': ReleaseType.unknown,
+    }
+
+    def __init__(self, title, **kwargs):
         self.title = title
-        self._title_normalized = self._normalize_title(self._title)
-        self.year = year
+        self.type = kwargs.get('type', self._kwarg_defaults['type'])
+        self.year = kwargs.get('year', self._kwarg_defaults['year'])
+        self._title_normalized = self._normalize_title(self.title)
+        self._kwargs_order = tuple(kwargs)
 
     @property
     def type(self):
@@ -130,8 +136,8 @@ class Query:
                 kwargs[kw] = value
             else:
                 title.append(part)
-
-        return cls(title=' '.join(title), **kwargs)
+        kwargs['title'] = ' '.join(title)
+        return cls(**kwargs)
 
     @classmethod
     def from_path(cls, path):
@@ -161,10 +167,10 @@ class Query:
 
     def __str__(self):
         parts = [self.title]
-        if self.year:
-            parts.append(f'year:{self.year}')
-        if self.type is not ReleaseType.unknown:
-            parts.append(f'type:{self.type}')
+        for attr in self._kwargs_order:
+            value = getattr(self, attr)
+            if value:
+                parts.append(f'{attr}:{value}')
         return ' '.join(parts)
 
     def __repr__(self):
