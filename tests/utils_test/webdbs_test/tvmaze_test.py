@@ -19,6 +19,13 @@ def api():
     return tvmaze.TvmazeApi()
 
 
+def test_sanitize_query(api):
+    q = Query('The Foo', type='movie', year='2000')
+    assert api.sanitize_query(q) == Query('The Foo', type='unknown', year='2000')
+    with pytest.raises(TypeError, match=r'^Not a Query instance: 123$'):
+        api.sanitize_query(123)
+
+
 @pytest.mark.asyncio
 async def test_search_returns_empty_list_if_title_is_empty(api, store_response):
     assert await api.search(Query('', year='2009')) == []

@@ -5,6 +5,8 @@ Abstract base class for online databases
 import abc
 import asyncio
 
+from .common import Query
+
 
 class WebDbApiBase(abc.ABC):
     """
@@ -23,6 +25,17 @@ class WebDbApiBase(abc.ABC):
     @abc.abstractmethod
     def label(self):
         """User-facing name of this DB"""
+
+    def sanitize_query(self, query):
+        """
+        Modify :class:`~.common.Query` for specific DB
+
+        See :meth:`.TvmazeApi.sanitize_query` for an example.
+        """
+        if not isinstance(query, Query):
+            raise TypeError(f'Not a Query instance: {query!r}')
+        else:
+            return query
 
     @abc.abstractmethod
     async def search(self, query):

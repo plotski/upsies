@@ -3,6 +3,7 @@ from unittest.mock import Mock, call
 import pytest
 
 from upsies.utils.webdbs.base import WebDbApiBase
+from upsies.utils.webdbs.common import Query
 
 
 class AsyncMock(Mock):
@@ -39,9 +40,16 @@ def webdb():
     return TestApi()
 
 
-def test__attributes(webdb):
+def test_attributes(webdb):
     assert webdb.name == 'foo'
     assert webdb.label == 'Foo'
+
+
+def test_sanitize_query(webdb):
+    q = Query('The Foo', type='movie', year='2000')
+    assert webdb.sanitize_query(q) == q
+    with pytest.raises(TypeError, match=r'^Not a Query instance: 123$'):
+        webdb.sanitize_query(123)
 
 
 @pytest.mark.asyncio

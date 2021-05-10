@@ -27,6 +27,12 @@ class TvmazeApi(WebDbApiBase):
         super().__init__(*args, **kwargs)
         self._imdb = ImdbApi()
 
+    def sanitize_query(self, query):
+        """Set :attr:`~.common.Query.type` to :attr:`~.types.ReleaseType.unknown`"""
+        query = super().sanitize_query(query)
+        query.type = ReleaseType.unknown
+        return query
+
     async def search(self, query):
         _log.debug('Searching TVmaze for %s', query)
         if not query.title or query.type is ReleaseType.movie:
