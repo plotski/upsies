@@ -125,13 +125,17 @@ class InputField:
     def text(self, text):
         self.set_text(text)
 
-    def set_text(self, text, ignore_callback=False):
+    def set_text(self, text, ignore_callback=False, preserve_cursor_position=True):
+        if preserve_cursor_position:
+            curpos = self.buffer.cursor_position
         if ignore_callback:
             handlers = self.buffer.on_text_changed._handlers
             self.buffer.on_text_changed._handlers = []
         self.buffer.set_document(Document(text), bypass_readonly=True)
         if ignore_callback:
             self.buffer.on_text_changed._handlers = handlers
+        if preserve_cursor_position:
+            self.buffer.cursor_position = curpos
 
     @property
     def read_only(self):
