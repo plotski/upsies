@@ -23,6 +23,7 @@ def foodb(mocker):
     class TestDb(WebDbApiBase):
         name = 'foodb'
         label = 'FooDB'
+        sanitize_query = Mock()
         search = AsyncMock()
         cast = AsyncMock()
         creators = AsyncMock()
@@ -69,8 +70,18 @@ def test_SearchWebDbJob_cache_id(job):
     assert job.cache_id == 'foo'
 
 
-def test_SearchWebDbJob_query(job):
-    assert isinstance(job.query, Query)
+def test_SearchWebDbJob_query(tmp_path, foodb):
+    foodb.sanitize_query.return_value = 'mock query'
+    job = webdb.SearchWebDbJob(
+        home_directory=tmp_path,
+        cache_directory=tmp_path,
+        db=foodb,
+        content_path='path/to/foo',
+    )
+    assert job.query == 'mock query'
+    assert foodb.sanitize_query.call_args_list == [
+        call(Query.from_path('path/to/foo')),
+    ]
 
 
 def test_SearchWebDbJob_initialize_creates_searcher(tmp_path, mocker, foodb):
@@ -183,23 +194,22 @@ def test_SearchWebDbJob_finish(job):
     assert job._info_updater.cancel.call_args_list == [call()]
 
 
-def test_SearchWebDbJob_search_before_finished(job):
+def test_SearchWebDbJob_search_before_finished(job, mocker):
+    mocker.patch.object(job._searcher, 'search')
+    mocker.patch.object(job._db, 'sanitize_query')
     job.search('foo')
-    assert job._searcher.search.call_args_list == [call(Query(title='foo'))]
+    assert job._searcher.search.call_args_list == [call(job._db.sanitize_query.return_value)]
+    assert job._db.sanitize_query.call_args_list == [call(Query.from_string('foo'))]
+    assert job.query is job._db.sanitize_query.return_value
 
-def test_SearchWebDbJob_search_after_finished(job):
+def test_SearchWebDbJob_search_after_finished(job, mocker):
+    mocker.patch.object(job._searcher, 'search')
+    mocker.patch.object(job._db, 'sanitize_query')
     job.finish()
     job.search('foo')
     assert job._searcher.search.call_args_list == []
-
-def test_SearchWebDbJob_search_updates_query_property(job):
-    job.search('Foo')
-    assert job.query == Query(title='Foo')
-    job.search('BAR')
-    assert job.query == Query(title='BAR')
-    job.finish()
-    job.search('baZ')
-    assert job.query == Query(title='BAR')
+    assert job._db.sanitize_query.call_args_list == []
+    assert job.query is not job._db.sanitize_query.return_value
 
 
 def test_SearchWebDbJob_searching_status(job):

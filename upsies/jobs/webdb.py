@@ -75,7 +75,7 @@ class SearchWebDbJob(JobBase):
         assert isinstance(db, webdbs.WebDbApiBase), f'Not a WebDbApiBase: {db!r}'
         self._db = db
         self._content_path = content_path
-        self._query = webdbs.Query.from_path(content_path)
+        self._query = self._db.sanitize_query(webdbs.Query.from_path(content_path))
         self._is_searching = False
 
         self.signal.add('search_results')
@@ -138,7 +138,7 @@ class SearchWebDbJob(JobBase):
     def search(self, query):
         """Make a new search request after cancelling any currently ongoing request"""
         if not self.is_finished:
-            self._query = webdbs.Query.from_string(query)
+            self._query = self._db.sanitize_query(webdbs.Query.from_string(query))
             self._searcher.search(self._query)
             self.clear_warnings()
 
