@@ -29,6 +29,10 @@ def test_equality(cls):
         pass
 
 
+def test_RequestError_url():
+    e = errors.RequestError('foo', url='http://foo')
+    assert e.url == 'http://foo'
+
 def test_RequestError_headers():
     e = errors.RequestError('foo', headers={'a': 1, 'b': 2})
     assert e.headers == {'a': 1, 'b': 2}
@@ -36,6 +40,10 @@ def test_RequestError_headers():
 def test_RequestError_status_code():
     e = errors.RequestError('foo', status_code=123)
     assert e.status_code == 123
+
+def test_RequestError_text():
+    e = errors.RequestError('foo', text='Error 404')
+    assert e.text == 'Error 404'
 
 
 def test_SubprocessError():

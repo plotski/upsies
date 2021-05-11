@@ -45,10 +45,17 @@ class ProcessError(UpsiesError):
 
 class RequestError(UpsiesError):
     """Network request failed"""
-    def __init__(self, msg, headers={}, status_code=None):
+    def __init__(self, msg, url='', headers={}, status_code=None, text=''):
         super().__init__(msg)
+        self._url = url
         self._headers = headers
         self._status_code = status_code
+        self._text = text
+
+    @property
+    def url(self):
+        """URL that produced this exception"""
+        return self._url
 
     @property
     def headers(self):
@@ -59,6 +66,11 @@ class RequestError(UpsiesError):
     def status_code(self):
         """HTTP status code (e.g. 404) or `None`"""
         return self._status_code
+
+    @property
+    def text(self):
+        """Response string if available"""
+        return self._text
 
 
 class ScreenshotError(UpsiesError):
