@@ -17,7 +17,7 @@ class Query:
     Search query for databases like IMDb
 
     :param str title: Name of the movie or TV series
-    :param str type: :class:`~.types.ReleaseType` enum or one of its value names
+    :param type: :class:`~.types.ReleaseType` enum or one of its value names
     :param year: Year of release
     :type year: str or int
 
