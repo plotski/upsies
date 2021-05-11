@@ -2,6 +2,8 @@
 HTML parsing
 """
 
+import re
+
 from .. import errors
 from . import LazyModule
 
@@ -33,3 +35,10 @@ def dump(html, filepath):
             f.write(html.prettify())
         else:
             f.write(parse(str(html)).prettify())
+
+
+def as_text(html):
+    """Strip HTML tags from string and return text without markup"""
+    text = parse(html).get_text()
+    text = re.sub(r'(\s)\s+', r'\1', text, flags=re.MULTILINE).strip()
+    return text
