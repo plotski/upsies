@@ -360,6 +360,7 @@ async def test_search_result_parser_failure(api):
                        ('Uzo Aduba', 'https://imdb.com/name/nm2499064'))),
         # No cast list
         ('tt0896516', ()),
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -386,6 +387,7 @@ async def test_cast(id, exp_cast, api, store_response):
         ('tt1733785', ('Sweden', 'Denmark', 'Germany')),  # The Bridge (series)
         ('tt0348914', ('USA',)),  # Deadwood (series)
         ('tt0556307', ('USA',)),  # Deadwood - S02E04 (episode)
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -406,6 +408,7 @@ async def test_countries(id, exp_countries, api, store_response):
         ('tt6560040', (('Delinda Jacobs', 'https://imdb.com/name/nm3064398'),)),  # The Forest (TV mini-series)
         ('tt2372162', (('Jenji Kohan', 'https://imdb.com/name/nm0463176'),)),  # Orange Is the New Black (series)
         ('tt5440238', ()),  # Orange Is the New Black - S07E01 (episode)
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -433,6 +436,7 @@ async def test_creators(id, exp_creators, api, store_response):
         ('tt6560040', ()),  # The Forest (TV mini-series)
         ('tt2372162', ()),  # Orange Is the New Black (series)
         ('tt5440238', (('Michael Trim', 'https://imdb.com/name/nm0872841'),)),  # Orange Is the New Black - S07E01 (episode)
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -459,6 +463,7 @@ async def test_directors(id, exp_directors, api, store_response):
         ('tt6560040', ('crime', 'drama')),  # The Forest (mini series)
         ('tt0348914', ('crime', 'drama', 'history')),  # Deadwood (series)
         ('tt0556307', ('crime', 'drama', 'history')),  # Deadwood - S02E04 (episode)
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -478,7 +483,8 @@ async def test_keywords(id, exp_keywords, api, store_response):
         ('tt3472226', 'https://m.media-amazon.com/images/M/MV5BMjQwMjU2ODU5NF5BMl5BanBnXkFtZTgwNTU1NjM4NTE@._V1_.jpg'),  # Kung Fury (Short)
         ('tt6560040', 'https://m.media-amazon.com/images/M/MV5BMzY5NThkOWItN2I1OC00MzQ2LThlYjktMGExYTk2YzM1ZGRmXkEyXkFqcGdeQXVyODEyMzI2OTE@._V1_.jpg'),  # The Forest (mini series)
         ('tt0348914', 'https://m.media-amazon.com/images/M/MV5BNDJhMjUzMDYtNzc4MS00Nzk2LTkyMGQtN2M5NTczYTZmYmY5XkEyXkFqcGdeQXVyMzU3MTc5OTE@._V1_.jpg'),  # Deadwood (series)
-        ('tt0556307', None),  # Deadwood - S02E04 (episode)
+        ('tt0556307', ''),  # Deadwood - S02E04 (episode)
+        (None, ''),
     ),
     ids=lambda value: str(value),
 )
@@ -499,6 +505,7 @@ async def test_poster_url(id, exp_poster_url, api, store_response):
         ('tt6560040', 7.3),  # The Forest (mini series)
         ('tt0348914', 8.6),  # Deadwood (series)
         ('tt0556307', 8.4),  # Deadwood - S02E04 (episode)
+        (None, None),
     ),
     ids=lambda value: str(value),
 )
@@ -536,6 +543,7 @@ async def test_rating(id, exp_rating, api, store_response):
         # Links in summary
         ('tt0200849', ('In the 1950s, an adolescent Werner Herzog was transfixed by a '
                        'film performance of the young Klaus Kinski.')),  # Mein liebster Feind
+        (None, ''),
     ),
     ids=lambda value: str(value)[:30] or '<empty>',
 )
@@ -567,6 +575,7 @@ async def test_summary(id, exp_summary, api, store_response):
         ('tt3286052', "The Blackcoat's Daughter", 'February'),
         ('tt6560040', 'The Forest', 'La forêt'),
         ('tt6616260', 'Deadwind', 'Karppi'),
+        (None, '', ''),
     ),
     ids=lambda value: str(value),
 )
@@ -588,6 +597,7 @@ async def test_title_english_original(id, exp_title_english, exp_title_original,
         ('tt6560040', ReleaseType.season),   # The Forest (mini series)
         ('tt0348914', ReleaseType.season),   # Deadwood (series)
         ('tt0556307', ReleaseType.episode),  # Deadwood - S02E04 (episode)
+        (None, ReleaseType.unknown),
     ),
     ids=lambda value: str(value),
 )
@@ -599,6 +609,7 @@ async def test_type(id, exp_type, api, store_response):
 @pytest.mark.asyncio
 async def test_url(api):
     assert await api.url('foo') == api._url_base + '/title/foo'
+    assert await api.url(None) == ''
 
 
 @pytest.mark.parametrize(
@@ -612,6 +623,7 @@ async def test_url(api):
         ('tt6560040', '2017'),  # The Forest (mini series)
         ('tt0348914', '2004'),  # Deadwood (series)
         ('tt0556307', '2005'),  # Deadwood - S02E04 (episode)
+        (None, ''),
     ),
     ids=lambda value: str(value),
 )

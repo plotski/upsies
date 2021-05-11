@@ -96,141 +96,155 @@ class ImdbApi(WebDbApiBase):
         return tuple(persons)
 
     async def cast(self, id):
-        soup = await self._get_soup(f'title/{id}')
         cast = []
-        cast_tag = soup.find(class_='cast_list')
-        if cast_tag:
-            tr_tags = cast_tag.find_all('tr')
-            for tr_tag in tr_tags:
-                cast.extend(self._get_persons(tr_tag))
+        if id:
+            soup = await self._get_soup(f'title/{id}')
+            cast_tag = soup.find(class_='cast_list')
+            if cast_tag:
+                tr_tags = cast_tag.find_all('tr')
+                for tr_tag in tr_tags:
+                    cast.extend(self._get_persons(tr_tag))
         return tuple(cast)
 
     async def countries(self, id):
-        soup = await self._get_soup(f'title/{id}')
-        details_tag = soup.find(id='titleDetails')
-        if details_tag:
-            tag = details_tag.find(string='Country:')
-            if tag:
-                tag = tag.parent
+        countries = []
+        if id:
+            soup = await self._get_soup(f'title/{id}')
+            details_tag = soup.find(id='titleDetails')
+            if details_tag:
+                tag = details_tag.find(string='Country:')
                 if tag:
                     tag = tag.parent
-                    countries = []
-                    for country_tag in tag.find_all('a'):
-                        countries.append(''.join(country_tag.stripped_strings))
-                    return tuple(countries)
-        return ()
+                    if tag:
+                        tag = tag.parent
+                        countries = []
+                        for country_tag in tag.find_all('a'):
+                            countries.append(''.join(country_tag.stripped_strings))
+        return tuple(countries)
 
     async def creators(self, id):
-        soup = await self._get_soup(f'title/{id}')
         creators = []
-        for tag in soup.find_all(class_='credit_summary_item'):
-            strings = tuple(tag.stripped_strings)
-            if 'Creator:' in strings or 'Creators:' in strings:
-                creators.extend(self._get_persons(tag))
+        if id:
+            soup = await self._get_soup(f'title/{id}')
+            creators = []
+            for tag in soup.find_all(class_='credit_summary_item'):
+                strings = tuple(tag.stripped_strings)
+                if 'Creator:' in strings or 'Creators:' in strings:
+                    creators.extend(self._get_persons(tag))
         return tuple(creators)
 
     async def directors(self, id):
-        soup = await self._get_soup(f'title/{id}')
         directors = []
-        for tag in soup.find_all(class_='credit_summary_item'):
-            strings = tuple(tag.stripped_strings)
-            if 'Director:' in strings or 'Directors:' in strings:
-                directors.extend(self._get_persons(tag))
+        if id:
+            soup = await self._get_soup(f'title/{id}')
+            for tag in soup.find_all(class_='credit_summary_item'):
+                strings = tuple(tag.stripped_strings)
+                if 'Director:' in strings or 'Directors:' in strings:
+                    directors.extend(self._get_persons(tag))
         return tuple(directors)
 
     async def keywords(self, id):
-        soup = await self._get_soup(f'title/{id}')
-        subtext_tag = soup.find(class_='subtext')
-        if subtext_tag:
-            genre_links = subtext_tag.find_all('a', href=re.compile(r'/search/title\?genres='))
-            return tuple(
-                link.string.lower().strip()
-                for link in genre_links
-            )
+        if id:
+            soup = await self._get_soup(f'title/{id}')
+            subtext_tag = soup.find(class_='subtext')
+            if subtext_tag:
+                genre_links = subtext_tag.find_all('a', href=re.compile(r'/search/title\?genres='))
+                return tuple(
+                    link.string.lower().strip()
+                    for link in genre_links
+                )
         return ()
 
     async def poster_url(self, id):
-        soup = await self._get_soup(f'title/{id}')
-        poster_tag = soup.find(class_='poster')
-        if poster_tag:
-            link_tag = poster_tag.find('a')
-            if link_tag and link_tag.get('href'):
-                soup = await self._get_soup(link_tag['href'])
-                img_tags = [
-                    tag
-                    for tag in soup.find_all('img', class_=re.compile(r'^MediaViewerImagestyles__PortraitImage'))
-                    if 'peek' not in tag['class']
-                ]
-                if img_tags:
-                    url = img_tags[0].get('src')
-                    if url:
-                        return url
+        if id:
+            soup = await self._get_soup(f'title/{id}')
+            poster_tag = soup.find(class_='poster')
+            if poster_tag:
+                link_tag = poster_tag.find('a')
+                if link_tag and link_tag.get('href'):
+                    soup = await self._get_soup(link_tag['href'])
+                    img_tags = [
+                        tag
+                        for tag in soup.find_all('img', class_=re.compile(r'^MediaViewerImagestyles__PortraitImage'))
+                        if 'peek' not in tag['class']
+                    ]
+                    if img_tags:
+                        url = img_tags[0].get('src')
+                        if url:
+                            return url
+        return ''
 
     rating_min = 0.0
     rating_max = 10.0
 
     async def rating(self, id):
-        soup = await self._get_soup(f'title/{id}')
-        rating_tag = soup.find(itemprop='ratingValue')
-        if rating_tag:
-            try:
-                return float(rating_tag.string)
-            except (ValueError, TypeError):
-                pass
+        if id:
+            soup = await self._get_soup(f'title/{id}')
+            rating_tag = soup.find(itemprop='ratingValue')
+            if rating_tag:
+                try:
+                    return float(rating_tag.string)
+                except (ValueError, TypeError):
+                    pass
+        return None
 
     async def summary(self, id):
-        soup = await self._get_soup(f'title/{id}')
-        storyline_tag = soup.find(id='titleStoryLine')
-        try:
-            summary_tag = storyline_tag.div.p.span
-        except AttributeError:
-            pass
-        else:
-            if summary_tag:
-                return ''.join(summary_tag.strings).strip()
+        if id:
+            soup = await self._get_soup(f'title/{id}')
+            storyline_tag = soup.find(id='titleStoryLine')
+            try:
+                summary_tag = storyline_tag.div.p.span
+            except AttributeError:
+                pass
+            else:
+                if summary_tag:
+                    return ''.join(summary_tag.strings).strip()
         return ''
 
     async def title_english(self, id, allow_empty=True):
-        akas = await self._get_akas(id)
-        original_title = akas.get('(original title)', '')
-        for key, english_title in akas.items():
-            for regex in self._english_akas_keys:
-                if regex.search(key):
-                    # _log.debug('Interesting English title: %r -> %r', key, english_title)
-                    if not allow_empty:
-                        # _log.debug('Forcing first match: %r', english_title)
-                        return english_title
-                    if not self._titles_are_similar(english_title, original_title):
-                        # _log.debug('English title: %r', english_title)
-                        # _log.debug('Original title: %r', original_title)
-                        return english_title
-                    # else:
-                    #     _log.debug('Similar to original title %r: %r', original_title, english_title)
+        if id:
+            akas = await self._get_akas(id)
+            original_title = akas.get('(original title)', '')
+            for key, english_title in akas.items():
+                for regex in self._english_akas_keys:
+                    if regex.search(key):
+                        # _log.debug('Interesting English title: %r -> %r', key, english_title)
+                        if not allow_empty:
+                            # _log.debug('Forcing first match: %r', english_title)
+                            return english_title
+                        if not self._titles_are_similar(english_title, original_title):
+                            # _log.debug('English title: %r', english_title)
+                            # _log.debug('Original title: %r', original_title)
+                            return english_title
+                        # else:
+                        #     _log.debug('Similar to original title %r: %r', original_title, english_title)
         return ''
 
     async def title_original(self, id):
-        akas = await self._get_akas(id)
-        original_title = akas.get('(original title)', '')
-        english_title = await self.title_english(id, allow_empty=False)
-        if original_title:
-            if not self._titles_are_similar(original_title, english_title):
-                # _log.debug('Original title: %r', original_title)
-                # _log.debug('English title: %r', english_title)
-                return original_title
-            # else:
-            #     _log.debug('Similar to English title %r: %r', english_title, original_title)
-        else:
-            # Default to getting title from link to main page
-            # _log.debug('No original title in AKAs found')
-            soup = await self._get_soup(f'title/{id}/releaseinfo')
-            title_tag = soup.find(class_='subpage_title_block__right-column')
-            if title_tag:
-                a_tag = title_tag.find('a', href=re.compile(r'/title/tt'))
-                if a_tag:
-                    return a_tag.string
+        if id:
+            akas = await self._get_akas(id)
+            original_title = akas.get('(original title)', '')
+            english_title = await self.title_english(id, allow_empty=False)
+            if original_title:
+                if not self._titles_are_similar(original_title, english_title):
+                    # _log.debug('Original title: %r', original_title)
+                    # _log.debug('English title: %r', english_title)
+                    return original_title
+                # else:
+                #     _log.debug('Similar to English title %r: %r', english_title, original_title)
+            else:
+                # Default to getting title from link to main page
+                # _log.debug('No original title in AKAs found')
+                soup = await self._get_soup(f'title/{id}/releaseinfo')
+                title_tag = soup.find(class_='subpage_title_block__right-column')
+                if title_tag:
+                    a_tag = title_tag.find('a', href=re.compile(r'/title/tt'))
+                    if a_tag:
+                        return a_tag.string
 
-        _log.debug('Defaulting to English title: %r', english_title)
-        return english_title
+            _log.debug('Defaulting to English title: %r', english_title)
+            return english_title
+        return ''
 
     def _titles_are_similar(self, a, b):
         """Whether normalized `a` contains normalized `b` or vice versa"""
@@ -286,55 +300,59 @@ class ImdbApi(WebDbApiBase):
         return akas
 
     async def type(self, id):
-        soup = await self._get_soup(f'title/{id}')
-        subtext_tag = soup.find(class_='subtext')
-        if subtext_tag:
-            # reversed() because interesting info is on the right side
-            subtexts = ''.join(subtext_tag.stripped_strings).lower().split('|')
-            genres = [genre.string.lower() for genre in subtext_tag.find_all(
-                'a', href=re.compile(r'/search/title\?genres='))]
-            if 'episode' in subtexts[-1]:
-                return ReleaseType.episode
-            elif 'tv series' in subtexts[-1]:
-                return ReleaseType.season
-            elif 'tv mini-series' in subtexts[-1]:
-                return ReleaseType.season
-            elif 'tv short' in subtexts[-1]:
-                return ReleaseType.movie
-            elif 'short' in genres:
-                return ReleaseType.movie
-            elif 'video' in subtexts[-1].split(' '):
-                return ReleaseType.movie
-            elif 'tv movie' in subtexts[-1]:
-                return ReleaseType.movie
-            elif re.search(r'^\d+ [a-z]+ \d{4}', subtexts[-1]):
-                return ReleaseType.movie
+        if id:
+            soup = await self._get_soup(f'title/{id}')
+            subtext_tag = soup.find(class_='subtext')
+            if subtext_tag:
+                # reversed() because interesting info is on the right side
+                subtexts = ''.join(subtext_tag.stripped_strings).lower().split('|')
+                genres = [genre.string.lower() for genre in subtext_tag.find_all(
+                    'a', href=re.compile(r'/search/title\?genres='))]
+                if 'episode' in subtexts[-1]:
+                    return ReleaseType.episode
+                elif 'tv series' in subtexts[-1]:
+                    return ReleaseType.season
+                elif 'tv mini-series' in subtexts[-1]:
+                    return ReleaseType.season
+                elif 'tv short' in subtexts[-1]:
+                    return ReleaseType.movie
+                elif 'short' in genres:
+                    return ReleaseType.movie
+                elif 'video' in subtexts[-1].split(' '):
+                    return ReleaseType.movie
+                elif 'tv movie' in subtexts[-1]:
+                    return ReleaseType.movie
+                elif re.search(r'^\d+ [a-z]+ \d{4}', subtexts[-1]):
+                    return ReleaseType.movie
         return ReleaseType.unknown
 
     async def url(self, id):
-        return f'{self._url_base.rstrip("/")}/title/{id}'
+        if id:
+            return f'{self._url_base.rstrip("/")}/title/{id}'
+        return ''
 
     async def year(self, id):
-        soup = await self._get_soup(f'title/{id}')
+        if id:
+            soup = await self._get_soup(f'title/{id}')
 
-        # Movies
-        year_tag = soup.find(id='titleYear')
-        if year_tag:
-            return ''.join(year_tag.stripped_strings).strip('()')
+            # Movies
+            year_tag = soup.find(id='titleYear')
+            if year_tag:
+                return ''.join(year_tag.stripped_strings).strip('()')
 
-        # Series
-        subtext_tag = soup.find(class_='subtext')
-        if subtext_tag:
-            # reversed() because year is on the very right
-            for tag in reversed(subtext_tag.find_all()):
-                text = ''.join(tag.stripped_strings)
-                # Looking for one of these:
-                #   - "TV Mini-Series (<YEAR>)"
-                #   - "TV Series (<YEAR>–<year>)" (the "–" is an EN DASH / U+2013)
-                #   - "<day> <month> <YEAR>"
-                match = re.search(r'\b(\d{4})\b', text)
-                if match:
-                    return match.group(1)
+            # Series
+            subtext_tag = soup.find(class_='subtext')
+            if subtext_tag:
+                # reversed() because year is on the very right
+                for tag in reversed(subtext_tag.find_all()):
+                    text = ''.join(tag.stripped_strings)
+                    # Looking for one of these:
+                    #   - "TV Mini-Series (<YEAR>)"
+                    #   - "TV Series (<YEAR>–<year>)" (the "–" is an EN DASH / U+2013)
+                    #   - "<day> <month> <YEAR>"
+                    match = re.search(r'\b(\d{4})\b', text)
+                    if match:
+                        return match.group(1)
 
         return ''
 
