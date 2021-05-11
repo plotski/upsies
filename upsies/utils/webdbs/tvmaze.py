@@ -35,29 +35,34 @@ class TvmazeApi(WebDbApiBase):
 
     async def search(self, query):
         _log.debug('Searching TVmaze for %s', query)
-        if not query.title or query.type is ReleaseType.movie:
+
+        if query.id:
+            show = await self._get_show(query.id)
+            return [_TvmazeSearchResult(show=show, tvmaze_api=self)]
+
+        elif not query.title or query.type is ReleaseType.movie:
             return []
 
-        url = f'{self._url_base}/search/shows'
-        params = {'q': query.title_normalized}
-
-        results_str = await http.get(url, params=params, cache=True)
-        try:
-            items = json.loads(results_str)
-            assert isinstance(items, list)
-        except (ValueError, TypeError, AssertionError):
-            raise errors.RequestError(f'Unexpected search response: {results_str}')
         else:
-            results = [_TvmazeSearchResult(show=item['show'], tvmaze_api=self)
-                       for item in items]
-            # The API doesn't allow us to search for a specific year
-            if query.year:
-                results_in_year = []
-                for result in results:
-                    if str(result.year) == query.year:
-                        results_in_year.append(result)
-                return results_in_year
-            return results
+            url = f'{self._url_base}/search/shows'
+            params = {'q': query.title_normalized}
+            results_str = await http.get(url, params=params, cache=True)
+            try:
+                items = json.loads(results_str)
+                assert isinstance(items, list)
+            except (ValueError, TypeError, AssertionError):
+                raise errors.RequestError(f'Unexpected search response: {results_str}')
+            else:
+                results = [_TvmazeSearchResult(show=item['show'], tvmaze_api=self)
+                           for item in items]
+                # The API doesn't allow us to search for a specific year
+                if query.year:
+                    results_in_year = []
+                    for result in results:
+                        if str(result.year) == query.year:
+                            results_in_year.append(result)
+                    return results_in_year
+                return results
 
     async def _get_json(self, url):
         response = await http.get(url, cache=True)

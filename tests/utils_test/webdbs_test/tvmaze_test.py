@@ -27,6 +27,22 @@ def test_sanitize_query(api):
 
 
 @pytest.mark.asyncio
+async def test_search_handles_id_in_query(api, store_response):
+    results = await api.search(Query(id=35256))
+    assert len(results) == 1
+    assert (await results[0].cast())[:3] == ('Son Ye Jin', 'Jung Hae In', 'Jang So Yun')
+    assert results[0].countries == ['Korea, Republic of']
+    assert results[0].id == 35256
+    assert results[0].keywords == ('drama', 'romance')
+    assert results[0].summary.startswith('Yoon Jin Ah is a single woman in her 30s who works')
+    assert results[0].title == 'Something in the Rain'
+    assert await results[0].title_english() == 'Something in the Rain'
+    assert await results[0].title_original() == 'Bap Jal Sajuneun Yeppeun Nuna'
+    assert results[0].type == ReleaseType.season
+    assert results[0].url == 'https://www.tvmaze.com/shows/35256/something-in-the-rain'
+    assert results[0].year == '2018'
+
+@pytest.mark.asyncio
 async def test_search_returns_empty_list_if_title_is_empty(api, store_response):
     assert await api.search(Query('', year='2009')) == []
 
