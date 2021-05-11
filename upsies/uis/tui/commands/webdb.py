@@ -16,6 +16,17 @@ class webdb_search(CommandBase):
 
     The focused search result can be opened in the default web browser with
     ``Alt-Enter``.
+
+    Search results can be narrowed down with the following parameters:
+
+      - year:YYYY
+        Only return results with a specific release year.
+
+      - type:series|movie
+        Only return movies or series.
+
+      - id:ID
+        Search for a specific, known ID.
     """
 
     names = ('id',)
