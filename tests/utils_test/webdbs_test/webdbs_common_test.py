@@ -16,6 +16,8 @@ def test_Query_year():
         webdbs.Query('The Title', year=1000)
     with pytest.raises(ValueError, match=r'^Invalid year: 3000$'):
         webdbs.Query('The Title', year='3000')
+    with pytest.raises(ValueError, match=r'^Invalid year: foo$'):
+        webdbs.Query('The Title', year='foo')
 
 @pytest.mark.parametrize('typ', list(ReleaseType) + [str(t) for t in ReleaseType], ids=lambda v: repr(v))
 def test_Query_valid_type(typ):
