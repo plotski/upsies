@@ -306,6 +306,22 @@ async def test_search_result_year(query, exp_year, api, store_response):
     results = await api.search(query)
     assert results[0].year == exp_year
 
+@pytest.mark.asyncio
+async def test_search_result_parser_failure(api):
+    result = imdb._ImdbSearchResult(imdb_api=api)
+    assert result.cast == ()
+    assert await result.countries() == ()
+    assert result.director == ''
+    assert result.id == ''
+    assert result.keywords == ()
+    assert result.summary == ''
+    assert result.title == ''
+    assert await result.title_english() == ''
+    assert await result.title_original() == ''
+    assert result.type == ReleaseType.series
+    assert result.url == ''
+    assert result.year == ''
+
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_cast'),

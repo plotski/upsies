@@ -369,10 +369,6 @@ class _ImdbSearchResult(common.SearchResult):
         else:
             return ()
 
-    def _get_id(self, soup):
-        href = soup.find('a').get('href')
-        return re.sub(r'^.*/([t0-9]+)/.*$', r'\1', href)
-
     def _get_director(self, soup):
         people = soup.find(string=re.compile(r'Director?.*'))
         if people:
@@ -382,16 +378,29 @@ class _ImdbSearchResult(common.SearchResult):
         else:
             return ''
 
+    def _get_id(self, soup):
+        a_tag = soup.find('a')
+        if a_tag:
+            href = a_tag.get('href')
+            return re.sub(r'^.*/([t0-9]+)/.*$', r'\1', href)
+        return ''
+
     def _get_keywords(self, soup):
         try:
             keywords = soup.find(class_='genre').string.strip()
         except AttributeError:
             keywords = ''
-        return tuple(kw.strip().casefold() for kw in keywords.split(','))
+        if keywords:
+            return tuple(kw.strip().casefold() for kw in keywords.split(','))
+        else:
+            return ()
 
     def _get_summary(self, soup):
+        summary = ''
+
         tags = soup.find_all(class_='text-muted')
-        summary = (tags[2].string or '').strip()
+        if len(tags) >= 3:
+            summary = (tags[2].string or '').strip()
 
         # Look for "See full summary" link. Preceding text is summary.
         if not summary:
@@ -401,10 +410,15 @@ class _ImdbSearchResult(common.SearchResult):
                 if summary_tag:
                     summary = ''.join(summary_tag.strings)
                     summary = re.sub(r'See full summary.*', '', summary).strip()
+
         return summary
 
     def _get_title(self, soup):
-        return soup.find('a').string.strip()
+        _log.debug('Getting title from %r', type(soup))
+        a_tag = soup.find('a')
+        if a_tag:
+            return a_tag.string.strip()
+        return ''
 
     def _get_type(self, soup):
         if soup.find(string=re.compile(r'Directors?:')):
@@ -414,7 +428,9 @@ class _ImdbSearchResult(common.SearchResult):
 
     def _get_url(self, soup):
         id = self._get_id(soup)
-        return f'{ImdbApi._url_base}/title/{id}'
+        if id:
+            return f'{ImdbApi._url_base}/title/{id}'
+        return ''
 
     def _get_year(self, soup):
         try:
