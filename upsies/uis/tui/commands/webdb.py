@@ -35,7 +35,7 @@ class webdb_search(CommandBase):
     @utils.cached_property
     def jobs(self):
         return (
-            jobs.webdb.SearchWebDbJob(
+            jobs.webdb.WebDbSearchJob(
                 home_directory=self.home_directory,
                 cache_directory=self.cache_directory,
                 ignore_cache=self.args.ignore_cache,

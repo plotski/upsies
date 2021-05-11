@@ -279,15 +279,15 @@ def test_release_name_job_is_singleton(mocker):
 
 
 def test_imdb_job(mocker):
-    SearchWebDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchWebDbJob')
+    WebDbSearchJob_mock = mocker.patch('upsies.jobs.webdb.WebDbSearchJob')
     mocker.patch('upsies.jobs.release_name.ReleaseNameJob')
     webdb_mock = mocker.patch('upsies.utils.webdbs.webdb')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
-    assert tracker_jobs.imdb_job is SearchWebDbJob_mock.return_value
-    assert SearchWebDbJob_mock.call_args_list == [
+    assert tracker_jobs.imdb_job is WebDbSearchJob_mock.return_value
+    assert WebDbSearchJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
             db=webdb_mock.return_value,
@@ -301,7 +301,7 @@ def test_imdb_job(mocker):
     ]
 
 def test_imdb_job_is_singleton(mocker):
-    mocker.patch('upsies.jobs.webdb.SearchWebDbJob', side_effect=(Mock(), Mock()))
+    mocker.patch('upsies.jobs.webdb.WebDbSearchJob', side_effect=(Mock(), Mock()))
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
@@ -310,14 +310,14 @@ def test_imdb_job_is_singleton(mocker):
 
 
 def test_tmdb_job(mocker):
-    SearchWebDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchWebDbJob')
+    WebDbSearchJob_mock = mocker.patch('upsies.jobs.webdb.WebDbSearchJob')
     webdb_mock = mocker.patch('upsies.utils.webdbs.webdb')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
-    assert tracker_jobs.tmdb_job is SearchWebDbJob_mock.return_value
-    assert SearchWebDbJob_mock.call_args_list == [
+    assert tracker_jobs.tmdb_job is WebDbSearchJob_mock.return_value
+    assert WebDbSearchJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
             db=webdb_mock.return_value,
@@ -328,7 +328,7 @@ def test_tmdb_job(mocker):
     assert webdb_mock.call_args_list == [call('tmdb')]
 
 def test_tmdb_job_is_singleton(mocker):
-    mocker.patch('upsies.jobs.webdb.SearchWebDbJob', side_effect=(Mock(), Mock()))
+    mocker.patch('upsies.jobs.webdb.WebDbSearchJob', side_effect=(Mock(), Mock()))
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
@@ -337,14 +337,14 @@ def test_tmdb_job_is_singleton(mocker):
 
 
 def test_tvmaze_job(mocker):
-    SearchWebDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchWebDbJob')
+    WebDbSearchJob_mock = mocker.patch('upsies.jobs.webdb.WebDbSearchJob')
     webdb_mock = mocker.patch('upsies.utils.webdbs.webdb')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
-    assert tracker_jobs.tvmaze_job is SearchWebDbJob_mock.return_value
-    assert SearchWebDbJob_mock.call_args_list == [
+    assert tracker_jobs.tvmaze_job is WebDbSearchJob_mock.return_value
+    assert WebDbSearchJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
             db=webdb_mock.return_value,
@@ -355,7 +355,7 @@ def test_tvmaze_job(mocker):
     assert webdb_mock.call_args_list == [call('tvmaze')]
 
 def test_tvmaze_job_is_singleton(mocker):
-    mocker.patch('upsies.jobs.webdb.SearchWebDbJob', side_effect=(Mock(), Mock()))
+    mocker.patch('upsies.jobs.webdb.WebDbSearchJob', side_effect=(Mock(), Mock()))
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},

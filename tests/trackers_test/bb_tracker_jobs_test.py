@@ -382,9 +382,9 @@ def test_release_type_job(bb_tracker_jobs, mocker):
 
 def test_imdb_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
-    SearchWebDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchWebDbJob')
-    assert bb_tracker_jobs.imdb_job is SearchWebDbJob_mock.return_value
-    assert SearchWebDbJob_mock.call_args_list == [call(
+    WebDbSearchJob_mock = mocker.patch('upsies.jobs.webdb.WebDbSearchJob')
+    assert bb_tracker_jobs.imdb_job is WebDbSearchJob_mock.return_value
+    assert WebDbSearchJob_mock.call_args_list == [call(
         condition=bb_tracker_jobs.make_job_condition.return_value,
         content_path=bb_tracker_jobs.content_path,
         db=bb_tracker_jobs.imdb,
@@ -778,9 +778,9 @@ def test_fill_in_movie_description(bb_tracker_jobs, mocker):
 
 def test_tvmaze_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
-    SearchWebDbJob_mock = mocker.patch('upsies.jobs.webdb.SearchWebDbJob')
-    assert bb_tracker_jobs.tvmaze_job is SearchWebDbJob_mock.return_value
-    assert SearchWebDbJob_mock.call_args_list == [call(
+    WebDbSearchJob_mock = mocker.patch('upsies.jobs.webdb.WebDbSearchJob')
+    assert bb_tracker_jobs.tvmaze_job is WebDbSearchJob_mock.return_value
+    assert WebDbSearchJob_mock.call_args_list == [call(
         condition=bb_tracker_jobs.make_job_condition.return_value,
         content_path=bb_tracker_jobs.content_path,
         db=bb_tracker_jobs.tvmaze,

@@ -14,7 +14,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class SearchWebDbJob(JobBase):
+class WebDbSearchJob(JobBase):
     """
     Ask user to select a specific search result from an internet database
 

@@ -256,8 +256,8 @@ class TrackerJobsBase(abc.ABC):
 
     @cached_property
     def imdb_job(self):
-        """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
-        imdb_job = jobs.webdb.SearchWebDbJob(
+        """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
+        imdb_job = jobs.webdb.WebDbSearchJob(
             content_path=self.content_path,
             db=webdbs.webdb('imdb'),
             **self.common_job_args,
@@ -268,8 +268,8 @@ class TrackerJobsBase(abc.ABC):
 
     @cached_property
     def tmdb_job(self):
-        """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
-        return jobs.webdb.SearchWebDbJob(
+        """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
+        return jobs.webdb.WebDbSearchJob(
             content_path=self.content_path,
             db=webdbs.webdb('tmdb'),
             **self.common_job_args,
@@ -277,8 +277,8 @@ class TrackerJobsBase(abc.ABC):
 
     @cached_property
     def tvmaze_job(self):
-        """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
-        return jobs.webdb.SearchWebDbJob(
+        """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
+        return jobs.webdb.WebDbSearchJob(
             content_path=self.content_path,
             db=webdbs.webdb('tvmaze'),
             **self.common_job_args,

@@ -46,7 +46,7 @@ class release_name(CommandBase):
     def imdb_job(self):
         # To be able to fetch the original title, year, etc, we need to ask for
         # an ID first. IMDb seems to be best.
-        return jobs.webdb.SearchWebDbJob(
+        return jobs.webdb.WebDbSearchJob(
             home_directory=self.home_directory,
             cache_directory=self.cache_directory,
             ignore_cache=self.args.ignore_cache,

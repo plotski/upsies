@@ -47,7 +47,7 @@ def foodb(mocker):
 def job(foodb, tmp_path, mocker):
     mocker.patch('upsies.jobs.webdb._Searcher', Mock(return_value=Mock(wait=AsyncMock())))
     mocker.patch('upsies.jobs.webdb._InfoUpdater', Mock(return_value=Mock(wait=AsyncMock())))
-    job = webdb.SearchWebDbJob(
+    job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
         ignore_cache=False,
@@ -58,21 +58,21 @@ def job(foodb, tmp_path, mocker):
     return job
 
 
-def test_SearchWebDbJob_name(job):
+def test_WebDbSearchJob_name(job):
     assert job.name == 'foodb-id'
 
 
-def test_SearchWebDbJob_label(job):
+def test_WebDbSearchJob_label(job):
     assert job.label == 'FooDB ID'
 
 
-def test_SearchWebDbJob_cache_id(job):
+def test_WebDbSearchJob_cache_id(job):
     assert job.cache_id == 'foo'
 
 
-def test_SearchWebDbJob_query(tmp_path, foodb):
+def test_WebDbSearchJob_query(tmp_path, foodb):
     foodb.sanitize_query.return_value = 'mock query'
-    job = webdb.SearchWebDbJob(
+    job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
         db=foodb,
@@ -84,9 +84,9 @@ def test_SearchWebDbJob_query(tmp_path, foodb):
     ]
 
 
-def test_SearchWebDbJob_initialize_creates_searcher(tmp_path, mocker, foodb):
+def test_WebDbSearchJob_initialize_creates_searcher(tmp_path, mocker, foodb):
     Searcher_mock = mocker.patch('upsies.jobs.webdb._Searcher', Mock())
-    job = webdb.SearchWebDbJob(
+    job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
         ignore_cache=False,
@@ -102,10 +102,10 @@ def test_SearchWebDbJob_initialize_creates_searcher(tmp_path, mocker, foodb):
         searching_callback=job._handle_searching_status,
     )]
 
-def test_SearchWebDbJob_initialize_creates_info_updater(tmp_path, mocker, foodb):
+def test_WebDbSearchJob_initialize_creates_info_updater(tmp_path, mocker, foodb):
     InfoUpdater_mock = mocker.patch('upsies.jobs.webdb._InfoUpdater', Mock())
     make_update_info_func_mock = mocker.patch(
-        'upsies.jobs.webdb.SearchWebDbJob._make_update_info_func',
+        'upsies.jobs.webdb.WebDbSearchJob._make_update_info_func',
         Mock(
             side_effect=(
                 'id func',
@@ -119,7 +119,7 @@ def test_SearchWebDbJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
             ),
         )
     )
-    job = webdb.SearchWebDbJob(
+    job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
         ignore_cache=False,
@@ -153,9 +153,9 @@ def test_SearchWebDbJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
     ]
 
 
-def test_SearchWebDbJob_make_update_info_func(tmp_path, mocker, foodb):
-    mocker.patch('upsies.jobs.webdb.SearchWebDbJob._update_info')
-    job = webdb.SearchWebDbJob(
+def test_WebDbSearchJob_make_update_info_func(tmp_path, mocker, foodb):
+    mocker.patch('upsies.jobs.webdb.WebDbSearchJob._update_info')
+    job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
         ignore_cache=False,
@@ -169,14 +169,14 @@ def test_SearchWebDbJob_make_update_info_func(tmp_path, mocker, foodb):
     assert job._update_info.call_args_list == [call('key', 'value 1'), call('key', 'value 2')]
 
 
-def test_SearchWebDbJob_execute_does_initial_search(job):
+def test_WebDbSearchJob_execute_does_initial_search(job):
     assert job._searcher.search.call_args_list == []
     job.execute()
     assert job._searcher.search.call_args_list == [call(job.query)]
 
 
 @pytest.mark.asyncio
-async def test_SearchWebDbJob_wait(job):
+async def test_WebDbSearchJob_wait(job):
     assert job._searcher.wait.call_args_list == []
     assert job._info_updater.wait.call_args_list == []
     asyncio.get_event_loop().call_soon(job.finish)
@@ -186,7 +186,7 @@ async def test_SearchWebDbJob_wait(job):
     assert job._info_updater.wait.call_args_list == [call()]
 
 
-def test_SearchWebDbJob_finish(job):
+def test_WebDbSearchJob_finish(job):
     job._searcher = Mock()
     job._info_updater = Mock()
     job.finish()
@@ -194,7 +194,7 @@ def test_SearchWebDbJob_finish(job):
     assert job._info_updater.cancel.call_args_list == [call()]
 
 
-def test_SearchWebDbJob_search_before_finished(job, mocker):
+def test_WebDbSearchJob_search_before_finished(job, mocker):
     mocker.patch.object(job._searcher, 'search')
     mocker.patch.object(job._db, 'sanitize_query')
     job.search('foo')
@@ -202,7 +202,7 @@ def test_SearchWebDbJob_search_before_finished(job, mocker):
     assert job._db.sanitize_query.call_args_list == [call(Query.from_string('foo'))]
     assert job.query is job._db.sanitize_query.return_value
 
-def test_SearchWebDbJob_search_after_finished(job, mocker):
+def test_WebDbSearchJob_search_after_finished(job, mocker):
     mocker.patch.object(job._searcher, 'search')
     mocker.patch.object(job._db, 'sanitize_query')
     job.finish()
@@ -212,7 +212,7 @@ def test_SearchWebDbJob_search_after_finished(job, mocker):
     assert job.query is not job._db.sanitize_query.return_value
 
 
-def test_SearchWebDbJob_searching_status(job):
+def test_WebDbSearchJob_searching_status(job):
     cb = Mock()
     job.signal.register('searching_status', cb)
     assert job.is_searching is False
@@ -224,7 +224,7 @@ def test_SearchWebDbJob_searching_status(job):
     assert cb.call_args_list == [call(True), call(False)]
 
 
-def test_SearchWebDbJob_search_results(job):
+def test_WebDbSearchJob_search_results(job):
     results = ('foo', 'bar', 'baz')
     cb = Mock()
     job.signal.register('search_results', cb)
@@ -232,7 +232,7 @@ def test_SearchWebDbJob_search_results(job):
     assert job._info_updater.set_result.call_args_list == [call(results[0])]
     assert cb.call_args_list == [call(results)]
 
-def test_SearchWebDbJob_no_search_results(job):
+def test_WebDbSearchJob_no_search_results(job):
     results = ()
     cb = Mock()
     job.signal.register('search_results', cb)
@@ -241,7 +241,7 @@ def test_SearchWebDbJob_no_search_results(job):
     assert cb.call_args_list == [call(results)]
 
 
-def test_SearchWebDbJob_update_info_emits_info_updating_signal(job):
+def test_WebDbSearchJob_update_info_emits_info_updating_signal(job):
     cb = Mock()
     job.signal.register('info_updating', cb.info_updating)
     job.signal.register('info_updated', cb.info_updated)
@@ -249,7 +249,7 @@ def test_SearchWebDbJob_update_info_emits_info_updating_signal(job):
     assert cb.info_updating.call_args_list == [call('The Key')]
     assert cb.info_updated.call_args_list == []
 
-def test_SearchWebDbJob_update_info_emits_info_updated_signal(job):
+def test_WebDbSearchJob_update_info_emits_info_updated_signal(job):
     cb = Mock()
     job.signal.register('info_updating', cb.info_updating)
     job.signal.register('info_updated', cb.info_updated)
@@ -258,18 +258,18 @@ def test_SearchWebDbJob_update_info_emits_info_updated_signal(job):
     assert cb.info_updated.call_args_list == [call('The Key', 'The Info')]
 
 
-def test_SearchWebDbJob_result_focused(job):
+def test_WebDbSearchJob_result_focused(job):
     job.result_focused('The Result')
     assert job._info_updater.set_result.call_args_list == [call('The Result')]
 
 
-def test_SearchWebDbJob_result_selected(job):
+def test_WebDbSearchJob_result_selected(job):
     assert not job.is_finished
     job.result_selected(Mock(id='mock id'))
     assert job.is_finished
     assert job.output == ('mock id',)
 
-def test_SearchWebDbJob_result_selected_while_searching(job):
+def test_WebDbSearchJob_result_selected_while_searching(job):
     assert not job.is_finished
     job._is_searching = True
     job.result_selected(Mock(id='mock id'))

@@ -13,7 +13,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class SearchWebDbJobWidget(JobWidgetBase):
+class WebDbSearchJobWidget(JobWidgetBase):
     def setup(self):
         right_column_width = 40
         self._old_query_text = str(self.job.query)

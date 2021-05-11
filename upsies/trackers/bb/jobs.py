@@ -239,8 +239,8 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def imdb_job(self):
-        """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
-        return jobs.webdb.SearchWebDbJob(
+        """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
+        return jobs.webdb.WebDbSearchJob(
             condition=self.make_job_condition('imdb_job', release.ReleaseType.movie),
             content_path=self.content_path,
             db=self.imdb,
@@ -493,8 +493,8 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def tvmaze_job(self):
-        """:class:`~.jobs.webdb.SearchWebDbJob` instance"""
-        return jobs.webdb.SearchWebDbJob(
+        """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
+        return jobs.webdb.WebDbSearchJob(
             condition=self.make_job_condition('tvmaze_job', release.ReleaseType.season, release.ReleaseType.episode),
             content_path=self.content_path,
             db=self.tvmaze,
