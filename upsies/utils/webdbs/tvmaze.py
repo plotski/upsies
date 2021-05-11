@@ -204,18 +204,18 @@ class TvmazeApi(WebDbApiBase):
 class _TvmazeSearchResult(common.SearchResult):
     def __init__(self, *, show, tvmaze_api):
         return super().__init__(
-            id=show['id'],
-            title=show['name'],
-            type=ReleaseType.series,
-            url=show['url'],
-            year=_get_year(show),
             cast=functools.partial(tvmaze_api.cast, show['id']),
             countries=_get_countries(show),
             director='',
+            id=show['id'],
             keywords=_get_keywords(show),
             summary=_get_summary(show),
+            title=show['name'],
             title_english=functools.partial(tvmaze_api.title_english, show['id']),
             title_original=functools.partial(tvmaze_api.title_original, show['id']),
+            type=ReleaseType.series,
+            url=show['url'],
+            year=_get_year(show),
         )
 
 
