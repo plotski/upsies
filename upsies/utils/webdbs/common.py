@@ -20,6 +20,7 @@ class Query:
     :param type: :class:`~.types.ReleaseType` enum or one of its value names
     :param year: Year of release
     :type year: str or int
+    :param str id: Known ID for a specific DB
 
     :raise ValueError: if an invalid argument is passed
     """
@@ -31,12 +32,14 @@ class Query:
     _kwarg_defaults = {
         'year': None,
         'type': ReleaseType.unknown,
+        'id': None,
     }
 
-    def __init__(self, title, **kwargs):
+    def __init__(self, title='', **kwargs):
         self.title = title
         self.type = kwargs.get('type', self._kwarg_defaults['type'])
         self.year = kwargs.get('year', self._kwarg_defaults['year'])
+        self.id = kwargs.get('id', self._kwarg_defaults['id'])
         self._title_normalized = self._normalize_title(self.title)
         self._kwargs_order = tuple(kwargs)
 
@@ -83,6 +86,15 @@ class Query:
                 else:
                     self._year = str(year_int)
 
+    @property
+    def id(self):
+        """Known ID for a specific DB"""
+        return self._id
+
+    @id.setter
+    def id(self, id):
+        self._id = None if id is None else str(id)
+
     _types = {
         ReleaseType.movie: ('movie', 'film'),
         ReleaseType.season: ('season', 'series', 'tv', 'show', 'tvshow'),
@@ -92,6 +104,7 @@ class Query:
     _kw_regex = {
         'year': r'year:(\d{4})',
         'type': rf'type:({"|".join(_known_types)})',
+        'id': r'id:(\S+)',
     }
 
     @classmethod
@@ -102,9 +115,10 @@ class Query:
         The returned :class:`Query` is case-insensitive and has any superfluous
         whitespace removed.
 
-        Keyword arguments are extracted by looking for ``"year:YEAR"`` and
-        ``"type:TYPE"`` in `query` where ``YEAR`` is a four-digit number and
-        ``TYPE`` is something like "movie", "film", "tv", etc.
+        Keyword arguments are extracted by looking for ``"year:YEAR"``,
+        ``"type:TYPE"`` and ``"id:ID"`` in `query` where ``YEAR`` is a
+        four-digit number, ``TYPE`` is something like "movie", "film", "tv", etc
+        and ``ID`` is a known ID for the DB this query is meant for.
         """
         def get_kwarg(string):
             for kw, regex in cls._kw_regex.items():
@@ -119,6 +133,8 @@ class Query:
                         return 'type', ReleaseType.episode
                     elif kw == 'year':
                         return 'year', value
+                    elif kw == 'id':
+                        return 'id', value
             return None, None
 
         # Extract "key:value" pairs (e.g. "year:2015")
@@ -130,7 +146,8 @@ class Query:
                 kwargs[kw] = value
             else:
                 title.append(part)
-        kwargs['title'] = ' '.join(title)
+        if title:
+            kwargs['title'] = ' '.join(title)
         return cls(**kwargs)
 
     @classmethod
@@ -155,25 +172,30 @@ class Query:
                 self.title_normalized == other.title_normalized
                 and self.year == other.year
                 and self.type is other.type
+                and self.id == other.id
             )
         else:
             return NotImplemented
 
     def __str__(self):
-        parts = [self.title]
-        for attr in self._kwargs_order:
-            value = getattr(self, attr)
-            if value:
-                parts.append(f'{attr}:{value}')
-        return ' '.join(parts)
+        if self.id:
+            return f'id:{self.id}'
+        else:
+            parts = [self.title]
+            for attr in self._kwargs_order:
+                value = getattr(self, attr)
+                if value:
+                    parts.append(f'{attr}:{value}')
+            return ' '.join(parts)
 
     def __repr__(self):
         kwargs = ', '.join(
             f'{k}={v!r}'
             for k, v in (('title', self.title),
                          ('year', self.year),
-                         ('type', self.type))
-            if v not in (None, ReleaseType.unknown)
+                         ('type', self.type),
+                         ('id', self.id))
+            if v
         )
         return f'{type(self).__name__}({kwargs})'
 

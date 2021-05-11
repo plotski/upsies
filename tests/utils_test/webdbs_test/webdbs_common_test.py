@@ -5,8 +5,7 @@ from upsies.utils.types import ReleaseType
 
 
 def test_Query_title():
-    with pytest.raises(TypeError):
-        webdbs.Query()
+    assert webdbs.Query().title == ''
     assert webdbs.Query('The Title').title == 'The Title'
 
 def test_Query_year():
@@ -25,6 +24,11 @@ def test_Query_valid_type(typ):
 def test_Query_invalid_type():
     with pytest.raises(ValueError, match=r"^'foo' is not a valid ReleaseType$"):
         webdbs.Query('The Title', type='foo')
+
+def test_Query_id():
+    assert webdbs.Query('The Title', id='12345').id == '12345'
+    assert webdbs.Query('The Title', id=12345).id == '12345'
+    assert webdbs.Query('The Title', id='tt12345').id == 'tt12345'
 
 @pytest.mark.parametrize(
     argnames=('a', 'b'),
@@ -52,6 +56,7 @@ def test_Query_equality(a, b):
     argnames=('a', 'b'),
     argvalues=(
         (webdbs.Query('The Title'), webdbs.Query('The Title 2')),
+        (webdbs.Query(id=123), webdbs.Query(id=124)),
         (webdbs.Query('The Title', year='2000'), webdbs.Query('The Title', year='2001')),
         (webdbs.Query('The Title', type=ReleaseType.movie), webdbs.Query('The Title', type=ReleaseType.series)),
         (webdbs.Query('The Title', type=ReleaseType.series, year=2000), webdbs.Query('The Title', type=ReleaseType.movie, year=2000)),
@@ -72,6 +77,7 @@ def test_Query_inequality(a, b):
         (webdbs.Query('The Title', type=ReleaseType.series), 'The Title type:season'),
         (webdbs.Query('The Title', type=ReleaseType.movie, year='2010'), 'The Title type:movie year:2010'),
         (webdbs.Query('The Title', year='2010', type=ReleaseType.movie), 'The Title year:2010 type:movie'),
+        (webdbs.Query('The Title', id='123', year='2010', type=ReleaseType.movie), 'id:123'),
     ),
     ids=lambda value: str(value),
 )
@@ -94,6 +100,9 @@ def test_Query_as_string(query, exp_string):
         ('The Title type:tv', webdbs.Query('The Title', type=ReleaseType.series)),
         ('The Title type:show', webdbs.Query('The Title', type=ReleaseType.series)),
         ('The Title type:tvshow', webdbs.Query('The Title', type=ReleaseType.series)),
+        ('The Title id:foo', webdbs.Query('The Title', id='foo')),
+        ('id:foo', webdbs.Query(id='foo')),
+        ('id:foo year:2005', webdbs.Query(id='foo', year='2005')),
     ),
     ids=lambda v: str(v),
 )
@@ -136,6 +145,8 @@ def test_Query_from_path(path, exp_query):
          "Query(title='The Title', year='1999')"),
         (webdbs.Query('The Title', type=ReleaseType.season, year='1999'),
          "Query(title='The Title', year='1999', type=ReleaseType.season)"),
+        (webdbs.Query('The Title', type=ReleaseType.season, year='1999', id='123'),
+         "Query(title='The Title', year='1999', type=ReleaseType.season, id='123')"),
     ),
     ids=lambda value: str(value),
 )
