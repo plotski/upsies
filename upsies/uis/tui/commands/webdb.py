@@ -11,8 +11,8 @@ class webdb_search(CommandBase):
     """
     Search online database like IMDb to get an ID
 
-    Pressing ``Enter`` searches for the current query. Pressing ``Enter`` again without
-    changing the query selects the focused search result.
+    Pressing ``Enter`` searches for the current query. Pressing ``Enter`` again
+    without changing the query selects the focused search result.
 
     The focused search result can be opened in the default web browser with
     ``Alt-Enter``.
