@@ -11,7 +11,7 @@ import os
 import httpx
 
 from .. import __project_name__, __version__, constants, errors
-from . import fs
+from . import fs, html
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -232,7 +232,9 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
                 response.raise_for_status()
             except httpx.HTTPStatusError:
                 raise errors.RequestError(
-                    f'{url}: {response.text}',
+                    f'{url}: {html.as_text(response.text)}',
+                    url=url,
+                    text=response.text,
                     headers=response.headers,
                     status_code=response.status_code,
                 )

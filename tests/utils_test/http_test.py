@@ -512,7 +512,7 @@ async def test_request_catches_HTTP_error_status(method, mock_cache, httpserver)
         uri='/foo',
         method=method,
     ).respond_with_data(
-        'Dave is not here',
+        '<html>  Dave is not   here\n</html> ',
         status=404,
         headers={'foo': 'bar'},
     )
@@ -520,6 +520,9 @@ async def test_request_catches_HTTP_error_status(method, mock_cache, httpserver)
         await http._request(method=method, url=url)
     assert excinfo.value.status_code == 404
     assert excinfo.value.headers['foo'] == 'bar'
+    assert excinfo.value.url == url
+    assert excinfo.value.text == '<html>  Dave is not   here\n</html> '
+
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
