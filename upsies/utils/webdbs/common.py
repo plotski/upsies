@@ -106,12 +106,6 @@ class Query:
         ``"type:TYPE"`` in `query` where ``YEAR`` is a four-digit number and
         ``TYPE`` is something like "movie", "film", "tv", etc.
         """
-        # Normalize query:
-        #   - Case-insensitive
-        #   - Remove leading/trailing white space
-        #   - Deduplicate white space
-        query = ' '.join(str(query).strip().split())
-
         def get_kwarg(string):
             for kw, regex in cls._kw_regex.items():
                 match = re.search(f'^{regex}$', part)
@@ -130,7 +124,7 @@ class Query:
         # Extract "key:value" pairs (e.g. "year:2015")
         title = []
         kwargs = {}
-        for part in query.split():
+        for part in str(query).strip().split():
             kw, value = get_kwarg(part)
             if (kw, value) != (None, None):
                 kwargs[kw] = value
