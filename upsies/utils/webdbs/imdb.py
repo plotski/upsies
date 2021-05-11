@@ -45,21 +45,42 @@ class ImdbApi(WebDbApiBase):
 
     async def search(self, query):
         _log.debug('Searching IMDb for %s', query)
-        if not query.title:
+
+        if query.id:
+            _log.debug('Getting ID: %r', query.id)
+            return [_ImdbSearchResult(
+                imdb_api=self,
+                cast=await self.cast(query.id),
+                countries=await self.countries(query.id),
+                director=await self.directors(query.id),
+                id=query.id,
+                keywords=await self.keywords(query.id),
+                summary=await self.summary(query.id),
+                title=await self.title_english(query.id) or await self.title_original(query.id),
+                title_english=await self.title_english(query.id),
+                title_original=await self.title_original(query.id),
+                type=await self.type(query.id),
+                url=await self.url(query.id),
+                year=await self.year(query.id),
+            )]
+
+        elif not query.title:
             return []
 
-        path = 'search/title/'
-        params = {'title': query.title_normalized}
-        if query.type is not ReleaseType.unknown:
-            params['title_type'] = self._title_types[query.type]
-        if query.year is not None:
-            params['release_date'] = f'{query.year}-01-01,{query.year}-12-31'
+        else:
+            path = 'search/title/'
+            params = {'title': query.title_normalized if not query.id else query.id}
+            _log.debug('PARAMS: %r', params)
+            if query.type is not ReleaseType.unknown:
+                params['title_type'] = self._title_types[query.type]
+            if query.year is not None:
+                params['release_date'] = f'{query.year}-01-01,{query.year}-12-31'
 
-        soup = await self._get_soup(path, params=params)
-        items = soup.find_all('div', class_='lister-item-content')
-        results = [_ImdbSearchResult(soup=item, imdb_api=self)
-                   for item in items]
-        return results
+            soup = await self._get_soup(path, params=params)
+            items = soup.find_all('div', class_='lister-item-content')
+            results = [_ImdbSearchResult(soup=item, imdb_api=self)
+                       for item in items]
+            return results
 
     _person_url_path_regex = re.compile(r'(/name/nm\d+)')
 
@@ -319,21 +340,25 @@ class ImdbApi(WebDbApiBase):
 
 
 class _ImdbSearchResult(common.SearchResult):
-    def __init__(self, *, soup, imdb_api):
-        id = self._get_id(soup)
+    def __init__(self, *, imdb_api, soup=None, cast=None, countries=None,
+                 director=None, id=None, keywords=None, summary=None, title=None,
+                 title_english=None, title_original=None, type=None, url=None,
+                 year=None):
+        soup = soup or html.parse('')
+        id = id or self._get_id(soup)
         return super().__init__(
-            cast=self._get_cast(soup),
-            countries=functools.partial(imdb_api.countries, id),
-            director=self._get_director(soup),
-            id=self._get_id(soup),
-            keywords=self._get_keywords(soup),
-            summary=self._get_summary(soup),
-            title=self._get_title(soup),
-            title_english=functools.partial(imdb_api.title_english, id),
-            title_original=functools.partial(imdb_api.title_original, id),
-            type=self._get_type(soup),
-            url=self._get_url(soup),
-            year=self._get_year(soup),
+            cast=cast or self._get_cast(soup),
+            countries=countries or functools.partial(imdb_api.countries, id),
+            director=director or self._get_director(soup),
+            id=id or self._get_id(soup),
+            keywords=keywords or self._get_keywords(soup),
+            summary=summary or self._get_summary(soup),
+            title=title or self._get_title(soup),
+            title_english=title_english or functools.partial(imdb_api.title_english, id),
+            title_original=title_original or functools.partial(imdb_api.title_original, id),
+            type=type or self._get_type(soup),
+            url=url or self._get_url(soup),
+            year=year or self._get_year(soup),
         )
 
     def _get_cast(self, soup):

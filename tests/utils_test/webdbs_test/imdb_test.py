@@ -20,6 +20,24 @@ def api():
 
 
 @pytest.mark.asyncio
+async def test_search_handles_id_in_query(api, store_response):
+    results = await api.search(Query(id='tt3286052'))
+    assert len(results) == 1
+    assert results[0].cast[:3] == ('Emma Roberts', 'Kiernan Shipka', 'Lucy Boynton')
+    assert results[0].countries == ('Canada',)
+    assert results[0].director == ('Oz Perkins',)
+    assert results[0].id == 'tt3286052'
+    assert results[0].keywords == ('horror', 'mystery', 'thriller')
+    assert results[0].summary.startswith('Two Catholic schoolgirls Kat (Kiernan Shipka) and Rose')
+    assert results[0].title == "The Blackcoat's Daughter"
+    assert results[0].title_english == "The Blackcoat's Daughter"
+    assert results[0].title_original == 'February'
+    assert results[0].type == ReleaseType.movie
+    assert results[0].url == 'https://imdb.com/title/tt3286052'
+    assert results[0].year == '2015'
+
+
+@pytest.mark.asyncio
 async def test_search_returns_empty_list_if_title_is_empty(api, store_response):
     assert await api.search(Query('', year='2009')) == []
 
