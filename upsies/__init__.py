@@ -1,7 +1,7 @@
 __project_name__ = 'upsies'
 __description__ = 'Media metadata aggregator'
 __homepage__ = 'https://upsies.readthedocs.io'
-__version__ = '0.4.0a0'
+__version__ = '0.4.0a1'
 __author__ = 'plotski'
 __author_email__ = 'plotski@example.org'
 
