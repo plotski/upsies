@@ -102,17 +102,14 @@ class TmdbApi(WebDbApiBase):
         return tuple(directors)
 
     async def keywords(self, id):
-        soup = await self._get_soup(id)
-        keywords = soup.find(class_='keywords')
-        if not keywords:
-            return ()
-        else:
-            keywords = list(keywords.stripped_strings)
-            if keywords[0] == 'Keywords':
-                keywords.pop(0)
-            if 'No keywords have been added.' in keywords:
-                keywords.clear()
-            return tuple(keywords)
+        keywords = ()
+        if id:
+            soup = await self._get_soup(id)
+            genres_tag = soup.find(class_='genres')
+            if genres_tag:
+                keywords = (k.lower() for k in genres_tag.stripped_strings
+                            if k != ',')
+        return tuple(keywords)
 
     async def poster_url(self, id):
         soup = await self._get_soup(id)

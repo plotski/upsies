@@ -117,10 +117,10 @@ async def test_search_result_director(api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_keywords'),
     argvalues=(
-        (Query('The Blues Brothers', year=1980), ('blues', 'music')),
-        (Query('February', year=2017), ('winter', 'loneliness', 'possession')),
-        (Query('Deadwood', year=2004), ('wild west', 'saloon')),
-        (Query('Farang', year=2017), ()),
+        (Query('The Blues Brothers', year=1980), ('music', 'comedy', 'action', 'crime')),
+        (Query('February', year=2017), ('horror', 'thriller')),
+        (Query('Deadwood', year=2004), ('crime', 'drama', 'western')),
+        (Query('Farang', year=2017), ('drama',)),
     ),
     ids=lambda value: str(value),
 )
@@ -310,12 +310,10 @@ async def test_directors(id, exp_directors, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_keywords'),
     argvalues=(
-        ('movie/525', ('blues', 'music')),
-        ('movie/334536', ('winter', 'loneliness', 'possession')),
-        ('tv/1406', ('wild west', 'saloon')),
-        ('tv/74802', ('murder', 'nordic noir')),
-        ('tv/66260', ()),
-        ('movie/3405', ()),
+        ('movie/525', ('music', 'comedy', 'action', 'crime')),
+        ('movie/334536', ('horror', 'thriller')),
+        ('tv/1406', ('crime', 'drama', 'western')),
+        ('tv/74802', ('drama', 'crime')),
     ),
     ids=lambda value: str(value),
 )
