@@ -105,9 +105,9 @@ class TvmazeApi(WebDbApiBase):
     async def directors(self, id):
         return ()
 
-    async def keywords(self, id):
+    async def genres(self, id):
         show = await self._get_show(id)
-        return _get_keywords(show)
+        return _get_genres(show)
 
     async def poster_url(self, id, season=None):
         """
@@ -212,8 +212,8 @@ class _TvmazeSearchResult(common.SearchResult):
             cast=functools.partial(tvmaze_api.cast, show['id']),
             countries=_get_countries(show),
             directors=(),
+            genres=_get_genres(show),
             id=show['id'],
-            keywords=_get_keywords(show),
             summary=_get_summary(show),
             title=show['name'],
             title_english=functools.partial(tvmaze_api.title_english, show['id']),
@@ -241,7 +241,7 @@ def _get_year(show):
     else:
         return ''
 
-def _get_keywords(show):
+def _get_genres(show):
     genres = show.get('genres', None)
     if genres:
         return tuple(str(g).lower() for g in genres)

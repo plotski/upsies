@@ -165,7 +165,7 @@ def test_SearchResult_with_all_info():
         'title' : 'Foo',
         'title_original' : 'Le Foo',
         'title_english' : 'Fucking Foo',
-        'keywords' : ('foo', 'some bar'),
+        'genres' : ('foo', 'some bar'),
         'cast' : ('This Guy', 'That Dude'),
         'summary' : 'I dunno.',
         'countries' : ['Antarctica'],

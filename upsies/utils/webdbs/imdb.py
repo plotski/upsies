@@ -53,8 +53,8 @@ class ImdbApi(WebDbApiBase):
                 cast=functools.partial(self.cast, query.id),
                 countries=functools.partial(self.countries, query.id),
                 directors=functools.partial(self.directors, query.id),
+                genres=functools.partial(self.genres, query.id),
                 id=query.id,
-                keywords=functools.partial(self.keywords, query.id),
                 summary=functools.partial(self.summary, query.id),
                 title=await self.title_english(query.id),
                 title_english=functools.partial(self.title_english, query.id),
@@ -143,7 +143,7 @@ class ImdbApi(WebDbApiBase):
                     directors.extend(self._get_persons(tag))
         return tuple(directors)
 
-    async def keywords(self, id):
+    async def genres(self, id):
         if id:
             soup = await self._get_soup(f'title/{id}')
             subtext_tag = soup.find(class_='subtext')
@@ -359,7 +359,7 @@ class ImdbApi(WebDbApiBase):
 
 class _ImdbSearchResult(common.SearchResult):
     def __init__(self, *, imdb_api, soup=None, cast=None, countries=None,
-                 directors=None, id=None, keywords=None, summary=None, title=None,
+                 directors=None, id=None, genres=None, summary=None, title=None,
                  title_english=None, title_original=None, type=None, url=None,
                  year=None):
         soup = soup or html.parse('')
@@ -368,8 +368,8 @@ class _ImdbSearchResult(common.SearchResult):
             cast=cast or self._get_cast(soup),
             countries=countries or functools.partial(imdb_api.countries, id),
             directors=directors or self._get_directors(soup),
+            genres=genres or self._get_genres(soup),
             id=id or self._get_id(soup),
-            keywords=keywords or self._get_keywords(soup),
             summary=summary or self._get_summary(soup),
             title=title or self._get_title(soup),
             title_english=title_english or functools.partial(imdb_api.title_english, id),
@@ -403,13 +403,13 @@ class _ImdbSearchResult(common.SearchResult):
             return re.sub(r'^.*/([t0-9]+)/.*$', r'\1', href)
         return ''
 
-    def _get_keywords(self, soup):
+    def _get_genres(self, soup):
         try:
-            keywords = soup.find(class_='genre').string.strip()
+            genres = soup.find(class_='genre').string.strip()
         except AttributeError:
-            keywords = ''
-        if keywords:
-            return tuple(kw.strip().casefold() for kw in keywords.split(','))
+            genres = ''
+        if genres:
+            return tuple(g.strip().casefold() for g in genres.split(','))
         else:
             return ()
 

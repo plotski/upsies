@@ -872,7 +872,7 @@ class BbTrackerJobs(TrackerJobsBase):
             )
 
         # Gather tags
-        tags = list(await webdb.keywords(id))
+        tags = list(await webdb.genres(id))
         if self.is_movie_release:
             tags.extend(await webdb.directors(id))
         elif self.is_series_release:

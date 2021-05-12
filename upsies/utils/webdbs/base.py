@@ -64,8 +64,8 @@ class WebDbApiBase(abc.ABC):
         """Return list of director names (usually empty for series)"""
 
     @abc.abstractmethod
-    async def keywords(self, id):
-        """Return list of keywords, e.g. genres"""
+    async def genres(self, id):
+        """Return list of genres"""
 
     @abc.abstractmethod
     async def poster_url(self, id):

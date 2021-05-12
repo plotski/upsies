@@ -22,7 +22,7 @@ class TestApi(WebDbApiBase):
     creators = AsyncMock()
     cast = AsyncMock()
     countries = AsyncMock()
-    keywords = AsyncMock()
+    genres = AsyncMock()
     poster_url = AsyncMock()
     rating_min = 0.0
     rating_max = 10.0
@@ -55,16 +55,16 @@ def test_sanitize_query(webdb):
 @pytest.mark.asyncio
 async def test_gather(webdb):
     webdb.cast.return_value = 'mock cast'
-    webdb.keywords.return_value = ['mock genre one', 'mock genre two']
+    webdb.genres.return_value = ['mock genre one', 'mock genre two']
     webdb.summary.return_value = 'mock summary'
     webdb.title_english.return_value = 'mock title_english'
     webdb.title_original.return_value = 'mock title_original'
     webdb.type.return_value = 'mock type'
     webdb.year.return_value = 'mock year'
-    assert await webdb.gather('mock id', 'type', 'year', 'cast', 'keywords') == {
+    assert await webdb.gather('mock id', 'type', 'year', 'cast', 'genres') == {
         'cast': 'mock cast',
         'id': 'mock id',
-        'keywords': ['mock genre one', 'mock genre two'],
+        'genres': ['mock genre one', 'mock genre two'],
         'type': 'mock type',
         'year': 'mock year',
     }

@@ -44,8 +44,8 @@ class TmdbApi(WebDbApiBase):
                 tmdb_api=self,
                 cast=functools.partial(self.cast, query.id),
                 directors=functools.partial(self.directors, query.id),
+                genres=functools.partial(self.genres, query.id),
                 id=query.id,
-                keywords=functools.partial(self.keywords, query.id),
                 summary=functools.partial(self.summary, query.id),
                 title=await self.title_english(query.id),
                 title_english=functools.partial(self.title_english, query.id),
@@ -123,15 +123,15 @@ class TmdbApi(WebDbApiBase):
                     directors.extend(self._get_persons(profile))
         return tuple(directors)
 
-    async def keywords(self, id):
-        keywords = ()
+    async def genres(self, id):
+        genres = ()
         if id:
             soup = await self._get_soup(id)
             genres_tag = soup.find(class_='genres')
             if genres_tag:
-                keywords = (k.lower() for k in genres_tag.stripped_strings
+                genres = (k.lower() for k in genres_tag.stripped_strings
                             if k != ',')
-        return tuple(keywords)
+        return tuple(genres)
 
     async def poster_url(self, id):
         if id:
@@ -217,7 +217,7 @@ class TmdbApi(WebDbApiBase):
 
 class _TmdbSearchResult(common.SearchResult):
     def __init__(self, *, tmdb_api, soup=None, cast=None, countries=None,
-                 directors=None, id=None, keywords=None, summary=None, title=None,
+                 directors=None, id=None, genres=None, summary=None, title=None,
                  title_english=None, title_original=None, type=None, url=None,
                  year=None):
         soup = soup or html.parse('')
@@ -227,7 +227,7 @@ class _TmdbSearchResult(common.SearchResult):
             countries=countries or (),
             directors=directors or functools.partial(tmdb_api.directors, id),
             id=id,
-            keywords=keywords or functools.partial(tmdb_api.keywords, id),
+            genres=genres or functools.partial(tmdb_api.genres, id),
             summary=summary or functools.partial(tmdb_api.summary, id),
             title=title or self._get_title(soup),
             title_english=title_english or functools.partial(tmdb_api.title_english, id),

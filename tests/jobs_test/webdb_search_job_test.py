@@ -29,7 +29,7 @@ def foodb(mocker):
         creators = AsyncMock()
         countries = AsyncMock()
         directors = AsyncMock()
-        keywords = AsyncMock()
+        genres = AsyncMock()
         poster_url = AsyncMock()
         rating = AsyncMock()
         rating_min = 0
@@ -112,7 +112,7 @@ def test_WebDbSearchJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
                 'summary func',
                 'title_original func',
                 'title_english func',
-                'keywords func',
+                'genres func',
                 'directors func',
                 'cast func',
                 'countries func',
@@ -135,7 +135,7 @@ def test_WebDbSearchJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
             'summary': 'summary func',
             'title_original': 'title_original func',
             'title_english': 'title_english func',
-            'keywords': 'keywords func',
+            'genres': 'genres func',
             'directors': 'directors func',
             'cast': 'cast func',
             'countries': 'countries func',
@@ -146,7 +146,7 @@ def test_WebDbSearchJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
         call('summary'),
         call('title_original'),
         call('title_english'),
-        call('keywords'),
+        call('genres'),
         call('directors'),
         call('cast'),
         call('countries'),

@@ -28,7 +28,7 @@ async def test_search_handles_id_in_query(api, store_response):
     assert results[0].countries == ()
     assert await results[0].directors() == ('John Landis',)
     assert results[0].id == 'movie/525'
-    assert await results[0].keywords() == ('music', 'comedy', 'action', 'crime')
+    assert await results[0].genres() == ('music', 'comedy', 'action', 'crime')
     assert (await results[0].summary()).startswith('Jake Blues, just released from prison')
     assert results[0].title == 'The Blues Brothers'
     assert await results[0].title_english() == 'The Blues Brothers'
@@ -140,7 +140,7 @@ async def test_search_result_directors(query, exp_directors, api, store_response
 
 
 @pytest.mark.parametrize(
-    argnames=('query', 'exp_keywords'),
+    argnames=('query', 'exp_genres'),
     argvalues=(
         (Query('The Blues Brothers', year=1980), ('music', 'comedy', 'action', 'crime')),
         (Query('February', year=2017), ('horror', 'thriller')),
@@ -150,14 +150,14 @@ async def test_search_result_directors(query, exp_directors, api, store_response
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_search_result_keywords(query, exp_keywords, api, store_response):
+async def test_search_result_genres(query, exp_genres, api, store_response):
     results = await api.search(query)
-    keywords = await results[0].keywords()
-    if exp_keywords:
-        for kw in exp_keywords:
-            assert kw in keywords
+    genres = await results[0].genres()
+    if exp_genres:
+        for kw in exp_genres:
+            assert kw in genres
     else:
-        assert not keywords
+        assert not genres
 
 
 @pytest.mark.parametrize(
@@ -278,7 +278,7 @@ async def test_search_result_parser_failure(api):
     assert result.countries == ()
     assert await result.directors() == ()
     assert result.id == ''
-    assert await result.keywords() == ()
+    assert await result.genres() == ()
     assert await result.summary() == ''
     assert result.title == ''
     assert await result.title_english() == ''
@@ -367,7 +367,7 @@ async def test_directors(id, exp_directors, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames=('id', 'exp_keywords'),
+    argnames=('id', 'exp_genres'),
     argvalues=(
         ('movie/525', ('music', 'comedy', 'action', 'crime')),
         ('movie/334536', ('horror', 'thriller')),
@@ -378,13 +378,13 @@ async def test_directors(id, exp_directors, api, store_response):
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_keywords(id, exp_keywords, api, store_response):
-    keywords = await api.keywords(id)
-    if exp_keywords:
-        for member in exp_keywords:
-            assert member in keywords
+async def test_genres(id, exp_genres, api, store_response):
+    genres = await api.genres(id)
+    if exp_genres:
+        for member in exp_genres:
+            assert member in genres
     else:
-        assert not keywords
+        assert not genres
 
 
 @pytest.mark.parametrize(

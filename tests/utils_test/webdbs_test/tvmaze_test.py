@@ -33,7 +33,7 @@ async def test_search_handles_id_in_query(api, store_response):
     assert (await results[0].cast())[:3] == ('Son Ye Jin', 'Jung Hae In', 'Jang So Yun')
     assert results[0].countries == ['Korea, Republic of']
     assert results[0].id == 35256
-    assert results[0].keywords == ('drama', 'romance')
+    assert results[0].genres == ('drama', 'romance')
     assert results[0].summary.startswith('Yoon Jin Ah is a single woman in her 30s who works')
     assert results[0].title == 'Something in the Rain'
     assert await results[0].title_english() == 'Something in the Rain'
@@ -156,7 +156,7 @@ async def test_search_result_directors(api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames=('title', 'exp_keywords'),
+    argnames=('title', 'exp_genres'),
     argvalues=(
         ('Star Wars: Clone Wars', ('action', 'science-fiction')),
         ('Something in the Rain', ('drama', 'romance')),
@@ -164,11 +164,11 @@ async def test_search_result_directors(api, store_response):
     ),
 )
 @pytest.mark.asyncio
-async def test_search_result_keywords(title, exp_keywords, api, store_response):
+async def test_search_result_genres(title, exp_genres, api, store_response):
     results = await api.search(Query(title))
     results_dict = {r.title: r for r in results}
-    for kw in exp_keywords:
-        assert kw in results_dict[title].keywords
+    for kw in exp_genres:
+        assert kw in results_dict[title].genres
 
 
 @pytest.mark.parametrize(
@@ -344,7 +344,7 @@ async def test_directors(id, exp_directors, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames=('id', 'exp_keywords'),
+    argnames=('id', 'exp_genres'),
     argvalues=(
         (1259, ('action', 'science-fiction')),
         (35256, ('drama', 'romance')),
@@ -352,10 +352,10 @@ async def test_directors(id, exp_directors, api, store_response):
     ),
 )
 @pytest.mark.asyncio
-async def test_keywords(id, exp_keywords, api, store_response):
-    keywords = await api.keywords(id)
-    for kw in exp_keywords:
-        assert kw in keywords
+async def test_genres(id, exp_genres, api, store_response):
+    genres = await api.genres(id)
+    for kw in exp_genres:
+        assert kw in genres
 
 
 @pytest.mark.parametrize(
