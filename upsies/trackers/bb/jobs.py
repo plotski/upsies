@@ -760,7 +760,6 @@ class BbTrackerJobs(TrackerJobsBase):
 
         # "[Source / VideoCodec / AudioCodec / Container / Resolution( / ...)]"
         info = [
-            self.release_info_remux,
             self.release_info_source,
             self.release_name.video_format,
             self.release_info_10bit,
@@ -771,6 +770,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_resolution,
             self.release_info_hdr10,
             self.release_info_dual_audio,
+            self.release_info_remux,
             self.release_info_commentary,
             self.release_info_subtitles,
         ]

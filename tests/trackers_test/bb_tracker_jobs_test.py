@@ -1394,9 +1394,9 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_subtitles', PropertyMock(return_value='w. Subtitles'))
 
     title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
-    assert title.endswith('[REMUX / BluRay / x264 / 10bit / E-AC-3 / MKV / '
+    assert title.endswith('[BluRay / x264 / 10bit / E-AC-3 / MKV / '
                           'PROPER / REPACK / 1080p / HDR10 / Dual Audio / '
-                          'w. Commentary / w. Subtitles]')
+                          'REMUX / w. Commentary / w. Subtitles]')
 
 
 @pytest.mark.asyncio
