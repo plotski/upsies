@@ -432,7 +432,6 @@ class _ImdbSearchResult(common.SearchResult):
         return summary
 
     def _get_title(self, soup):
-        _log.debug('Getting title from %r', type(soup))
         a_tag = soup.find('a')
         if a_tag:
             return a_tag.string.strip()
