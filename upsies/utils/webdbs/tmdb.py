@@ -137,7 +137,7 @@ class TmdbApi(WebDbApiBase):
             genres_tag = soup.find(class_='genres')
             if genres_tag:
                 genres = (k.lower() for k in genres_tag.stripped_strings
-                            if k != ',')
+                          if k != ',')
         return tuple(genres)
 
     async def poster_url(self, id):
@@ -272,7 +272,7 @@ class _TmdbSearchResult(common.SearchResult):
         return ''
 
     def _get_type(self, soup):
-        a_tag =soup.find('a', class_='result')
+        a_tag = soup.find('a', class_='result')
         if a_tag:
             href = a_tag.get('href')
             if href:
