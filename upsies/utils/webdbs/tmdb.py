@@ -39,21 +39,28 @@ class TmdbApi(WebDbApiBase):
         _log.debug('Searching TMDb for %s', query)
 
         if query.id:
-            _log.debug('Getting ID: %r', query.id)
-            return [_TmdbSearchResult(
-                tmdb_api=self,
-                cast=functools.partial(self.cast, query.id),
-                directors=functools.partial(self.directors, query.id),
-                genres=functools.partial(self.genres, query.id),
-                id=query.id,
-                summary=functools.partial(self.summary, query.id),
-                title=await self.title_english(query.id),
-                title_english=functools.partial(self.title_english, query.id),
-                title_original=functools.partial(self.title_original, query.id),
-                type=ReleaseType.unknown,
-                url=await self.url(query.id),
-                year=await self.year(query.id),
-            )]
+            async def generate_result(id):
+                _log.debug('Getting ID: %r', id)
+                return _TmdbSearchResult(
+                    tmdb_api=self,
+                    cast=functools.partial(self.cast, id),
+                    directors=functools.partial(self.directors, id),
+                    genres=functools.partial(self.genres, id),
+                    id=id,
+                    summary=functools.partial(self.summary, id),
+                    title=await self.title_english(id),
+                    title_english=functools.partial(self.title_english, id),
+                    title_original=functools.partial(self.title_original, id),
+                    type=ReleaseType.unknown,
+                    url=await self.url(id),
+                    year=await self.year(id),
+                )
+
+            if re.search(r'\b(?:movie|tv)\b', query.id):
+                return [await generate_result(query.id)]
+            else:
+                return [await generate_result(f'movie/{query.id}'),
+                        await generate_result(f'tv/{query.id}')]
 
         elif not query.title:
             return []

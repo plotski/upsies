@@ -37,6 +37,13 @@ async def test_search_handles_id_in_query(api, store_response):
     assert results[0].url == 'http://themoviedb.org/movie/525'
     assert results[0].year == '1980'
 
+@pytest.mark.asyncio
+async def test_search_handles_non_unique_id_in_query(api, store_response):
+    results = await api.search(Query(id='525'))
+    assert len(results) == 2
+    assert results[0].id == 'movie/525'
+    assert results[1].id == 'tv/525'
+
 
 @pytest.mark.asyncio
 async def test_search_returns_empty_list_if_title_is_empty(api, store_response):
