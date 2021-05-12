@@ -37,27 +37,46 @@ class TmdbApi(WebDbApiBase):
 
     async def search(self, query):
         _log.debug('Searching TMDb for %s', query)
-        if not query.title:
+
+        if query.id:
+            _log.debug('Getting ID: %r', query.id)
+            return [_TmdbSearchResult(
+                tmdb_api=self,
+                cast=functools.partial(self.cast, query.id),
+                director=functools.partial(self.directors, query.id),
+                id=query.id,
+                keywords=functools.partial(self.keywords, query.id),
+                summary=functools.partial(self.summary, query.id),
+                title=await self.title_english(query.id),
+                title_english=functools.partial(self.title_english, query.id),
+                title_original=functools.partial(self.title_original, query.id),
+                type=ReleaseType.unknown,
+                url=await self.url(query.id),
+                year=await self.year(query.id),
+            )]
+
+        elif not query.title:
             return []
 
-        params = {'query': query.title_normalized}
-        if query.year is not None:
-            params['query'] += f' y:{query.year}'
-
-        if query.type is ReleaseType.movie:
-            soup = await self._get_soup('/search/movie', params=params)
-        elif query.type in (ReleaseType.season, ReleaseType.episode):
-            soup = await self._get_soup('/search/tv', params=params)
         else:
-            soup = await self._get_soup('/search', params=params)
+            params = {'query': query.title_normalized}
+            if query.year is not None:
+                params['query'] += f' y:{query.year}'
 
-        # When search for year, unmatching results are included but hidden.
-        for tag in soup.find_all('div', class_='hide'):
-            tag.clear()
+            if query.type is ReleaseType.movie:
+                soup = await self._get_soup('/search/movie', params=params)
+            elif query.type in (ReleaseType.season, ReleaseType.episode):
+                soup = await self._get_soup('/search/tv', params=params)
+            else:
+                soup = await self._get_soup('/search', params=params)
 
-        items = soup.find_all('div', class_='card')
-        return [_TmdbSearchResult(soup=item, tmdb_api=self)
-                for item in items]
+            # When search for year, unmatching results are included but hidden.
+            for tag in soup.find_all('div', class_='hide'):
+                tag.clear()
+
+            items = soup.find_all('div', class_='card')
+            return [_TmdbSearchResult(soup=item, tmdb_api=self)
+                    for item in items]
 
     _person_url_path_regex = re.compile(r'(/person/\d+[-a-z]+)')
 
@@ -197,45 +216,57 @@ class TmdbApi(WebDbApiBase):
 
 
 class _TmdbSearchResult(common.SearchResult):
-    def __init__(self, *, soup, tmdb_api):
-        id = self._get_id(soup)
+    def __init__(self, *, tmdb_api, soup=None, cast=None, countries=None,
+                 director=None, id=None, keywords=None, summary=None, title=None,
+                 title_english=None, title_original=None, type=None, url=None,
+                 year=None):
+        soup = soup or html.parse('')
+        id = id or self._get_id(soup)
         return super().__init__(
+            cast=cast or functools.partial(tmdb_api.cast, id),
+            countries=countries or (),
+            director=director or functools.partial(tmdb_api.directors, id),
             id=id,
-            title=self._get_title(soup),
-            type=self._get_type(soup),
-            url=self._get_url(soup),
-            year=self._get_year(soup),
-            cast=functools.partial(tmdb_api.cast, id),
-            countries=[],
-            director='',
-            keywords=functools.partial(tmdb_api.keywords, id),
-            summary=functools.partial(tmdb_api.summary, id),
-            title_english='',
-            title_original='',
+            keywords=keywords or functools.partial(tmdb_api.keywords, id),
+            summary=summary or functools.partial(tmdb_api.summary, id),
+            title=title or self._get_title(soup),
+            title_english=title_english or functools.partial(tmdb_api.title_english, id),
+            title_original=title_original or functools.partial(tmdb_api.title_original, id),
+            type=type or self._get_type(soup),
+            url=url or self._get_url(soup),
+            year=year or self._get_year(soup),
         )
 
     def _get_id(self, soup):
-        href = soup.find('a', class_='result').get('href')
-        return re.sub(r'^.*/((?:movie|tv)/[0-9]+).*?$', r'\1', href)
+        a_tag = soup.find('a', class_='result')
+        if a_tag:
+            href = a_tag.get('href')
+            return re.sub(r'^.*/((?:movie|tv)/[0-9]+).*?$', r'\1', href)
+        return ''
 
     def _get_url(self, soup):
-        href = soup.find('a', class_='result').get('href')
-        if href.startswith('http'):
-            return href
-        elif href.startswith('/'):
-            return f'{TmdbApi._url_base}{href}'
-        else:
-            return f'{TmdbApi._url_base}/{href}'
+        a_tag = soup.find('a', class_='result')
+        if a_tag:
+            href = a_tag.get('href')
+            if href.startswith('http'):
+                return href
+            elif href.startswith('/'):
+                return f'{TmdbApi._url_base}{href}'
+            elif href:
+                return f'{TmdbApi._url_base}/{href}'
+        return ''
 
     def _get_type(self, soup):
-        href = soup.find('a', class_='result').get('href')
-        tmdb_type = re.sub(r'(?:^|/)(\w+)/.*$', r'\1', href)
-        if tmdb_type == 'movie':
-            return ReleaseType.movie
-        elif tmdb_type == 'tv':
-            return ReleaseType.series
-        else:
-            return ReleaseType.unknown
+        a_tag =soup.find('a', class_='result')
+        if a_tag:
+            href = a_tag.get('href')
+            if href:
+                tmdb_type = re.sub(r'(?:^|/)(\w+)/.*$', r'\1', href)
+                if tmdb_type == 'movie':
+                    return ReleaseType.movie
+                elif tmdb_type == 'tv':
+                    return ReleaseType.series
+        return ReleaseType.unknown
 
     def _get_title(self, soup):
         header = soup.select('.result > h2')

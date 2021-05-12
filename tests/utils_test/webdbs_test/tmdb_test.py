@@ -21,6 +21,24 @@ def api():
 
 
 @pytest.mark.asyncio
+async def test_search_handles_id_in_query(api, store_response):
+    results = await api.search(Query(id='movie/525'))
+    assert len(results) == 1
+    assert (await results[0].cast())[:3] == ('Dan Aykroyd', 'John Belushi', 'James Brown')
+    assert results[0].countries == ()
+    assert await results[0].director() == ('John Landis',)
+    assert results[0].id == 'movie/525'
+    assert await results[0].keywords() == ('music', 'comedy', 'action', 'crime')
+    assert (await results[0].summary()).startswith('Jake Blues, just released from prison')
+    assert results[0].title == 'The Blues Brothers'
+    assert await results[0].title_english() == 'The Blues Brothers'
+    assert await results[0].title_original() == 'The Blues Brothers'
+    assert results[0].type == ReleaseType.unknown
+    assert results[0].url == 'http://themoviedb.org/movie/525'
+    assert results[0].year == '1980'
+
+
+@pytest.mark.asyncio
 async def test_search_returns_empty_list_if_title_is_empty(api, store_response):
     assert await api.search(Query('', year='2009')) == []
 
@@ -107,11 +125,18 @@ async def test_search_result_id(query, exp_id, api, store_response):
     assert results[0].id == exp_id
 
 
+@pytest.mark.parametrize(
+    argnames=('query', 'exp_director'),
+    argvalues=(
+        (Query('The Blues Brothers', year=1980), ('John Landis',)),
+        (Query('Deadwood', year=2004), ()),
+    ),
+    ids=lambda value: str(value),
+)
 @pytest.mark.asyncio
-async def test_search_result_director(api, store_response):
-    results = await api.search(Query('Star Wars'))
-    for result in results:
-        assert result.director == ''
+async def test_search_result_director(query, exp_director, api, store_response):
+    results = await api.search(query)
+    assert await results[0].director() == exp_director
 
 
 @pytest.mark.parametrize(
@@ -171,18 +196,33 @@ async def test_search_result_title(query, exp_title, api, store_response):
     assert exp_title in titles
 
 
+@pytest.mark.parametrize(
+    argnames=('query', 'exp_title_english'),
+    argvalues=(
+        (Query('The Blues Brothers', year=1980), 'The Blues Brothers'),
+        (Query('Deadwood', year=2004), 'Deadwood'),
+    ),
+    ids=lambda value: str(value),
+)
 @pytest.mark.asyncio
-async def test_search_result_title_english(api, store_response):
-    results = await api.search(Query('Karppi'))
-    for result in results:
-        assert result.title_english == ''
+async def test_search_result_title_english(query, exp_title_english, api, store_response):
+    results = await api.search(query)
+    assert await results[0].title_english() == exp_title_english
 
 
+@pytest.mark.parametrize(
+    argnames=('query', 'exp_title_original'),
+    argvalues=(
+        (Query('The Blues Brothers', year=1980), 'The Blues Brothers'),
+        (Query('Deadwind', year=2018), 'Karppi'),
+        (Query('Anyone Can Play', year=1968), 'Le dolce signore'),
+    ),
+    ids=lambda value: str(value),
+)
 @pytest.mark.asyncio
-async def test_search_result_title_original(api, store_response):
-    results = await api.search(Query('Karppi'))
-    for result in results:
-        assert result.title_original == ''
+async def test_search_result_title_original(query, exp_title_original, api, store_response):
+    results = await api.search(query)
+    assert await results[0].title_original() == exp_title_original
 
 
 @pytest.mark.parametrize(
@@ -230,6 +270,22 @@ async def test_search_result_year(query, exp_title, exp_year, api, store_respons
     results = await api.search(query)
     results_dict = {r.title: r for r in results}
     assert results_dict[exp_title].year == exp_year
+
+@pytest.mark.asyncio
+async def test_search_result_parser_failure(api):
+    result = tmdb._TmdbSearchResult(tmdb_api=api)
+    assert await result.cast() == ()
+    assert result.countries == ()
+    assert await result.director() == ()
+    assert result.id == ''
+    assert await result.keywords() == ()
+    assert await result.summary() == ''
+    assert result.title == ''
+    assert await result.title_english() == ''
+    assert await result.title_original() == ''
+    assert result.type == ReleaseType.unknown
+    assert result.url == ''
+    assert result.year == ''
 
 
 @pytest.mark.parametrize(
