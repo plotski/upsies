@@ -45,7 +45,7 @@ class WebDbSearchJobWidget(JobWidgetBase):
                 width=right_column_width,
                 height=2,
             ),
-            'director' : widgets.TextField(
+            'directors' : widgets.TextField(
                 style='class:dialog.search.info',
                 width=right_column_width,
                 height=1,
@@ -123,7 +123,7 @@ class WebDbSearchJobWidget(JobWidgetBase):
                 HSplit([
                     widgets.VLabel('Summary', w['summary'], style='class:dialog.search.label'),
                     widgets.VLabel('Keywords', w['keywords'], style='class:dialog.search.label'),
-                    widgets.VLabel('Director', w['director'], style='class:dialog.search.label'),
+                    widgets.VLabel('Director', w['directors'], style='class:dialog.search.label'),
                     widgets.VLabel('Cast', w['cast'], style='class:dialog.search.label'),
                     widgets.VLabel('Country', w['countries'], style='class:dialog.search.label'),
                 ]),

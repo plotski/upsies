@@ -43,7 +43,7 @@ class TmdbApi(WebDbApiBase):
             return [_TmdbSearchResult(
                 tmdb_api=self,
                 cast=functools.partial(self.cast, query.id),
-                director=functools.partial(self.directors, query.id),
+                directors=functools.partial(self.directors, query.id),
                 id=query.id,
                 keywords=functools.partial(self.keywords, query.id),
                 summary=functools.partial(self.summary, query.id),
@@ -217,7 +217,7 @@ class TmdbApi(WebDbApiBase):
 
 class _TmdbSearchResult(common.SearchResult):
     def __init__(self, *, tmdb_api, soup=None, cast=None, countries=None,
-                 director=None, id=None, keywords=None, summary=None, title=None,
+                 directors=None, id=None, keywords=None, summary=None, title=None,
                  title_english=None, title_original=None, type=None, url=None,
                  year=None):
         soup = soup or html.parse('')
@@ -225,7 +225,7 @@ class _TmdbSearchResult(common.SearchResult):
         return super().__init__(
             cast=cast or functools.partial(tmdb_api.cast, id),
             countries=countries or (),
-            director=director or functools.partial(tmdb_api.directors, id),
+            directors=directors or functools.partial(tmdb_api.directors, id),
             id=id,
             keywords=keywords or functools.partial(tmdb_api.keywords, id),
             summary=summary or functools.partial(tmdb_api.summary, id),

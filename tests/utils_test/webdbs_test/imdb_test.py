@@ -25,7 +25,7 @@ async def test_search_handles_id_in_query(api, store_response):
     assert len(results) == 1
     assert (await results[0].cast())[:3] == ('Emma Roberts', 'Kiernan Shipka', 'Lucy Boynton')
     assert await results[0].countries() == ('Canada',)
-    assert await results[0].director() == ('Oz Perkins',)
+    assert await results[0].directors() == ('Oz Perkins',)
     assert results[0].id == 'tt3286052'
     assert await results[0].keywords() == ('horror', 'mystery', 'thriller')
     assert (await results[0].summary()).startswith('Two Catholic schoolgirls Kat (Kiernan Shipka) and Rose')
@@ -161,19 +161,19 @@ async def test_search_result_id(query, exp_id, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames=('query', 'exp_director'),
+    argnames=('query', 'exp_directors'),
     argvalues=(
-        (Query('star wars', type=ReleaseType.movie, year=1977), 'George Lucas'),
-        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), 'Álex de la Iglesia'),
-        (Query('The Forest', type=ReleaseType.series, year=2017), ''),
-        (Query('Karppi', type=ReleaseType.series, year=2018), ''),
+        (Query('star wars', type=ReleaseType.movie, year=1977), ('George Lucas',)),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ('Álex de la Iglesia',)),
+        (Query('The Forest', type=ReleaseType.series, year=2017), ()),
+        (Query('Karppi', type=ReleaseType.series, year=2018), ()),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_search_result_director(query, exp_director, api, store_response):
+async def test_search_result_directors(query, exp_directors, api, store_response):
     results = await api.search(query)
-    assert results[0].director == exp_director
+    assert results[0].directors == exp_directors
 
 
 @pytest.mark.parametrize(
@@ -311,7 +311,7 @@ async def test_search_result_parser_failure(api):
     result = imdb._ImdbSearchResult(imdb_api=api)
     assert result.cast == ()
     assert await result.countries() == ()
-    assert result.director == ''
+    assert result.directors == ()
     assert result.id == ''
     assert result.keywords == ()
     assert result.summary == ''

@@ -26,7 +26,7 @@ async def test_search_handles_id_in_query(api, store_response):
     assert len(results) == 1
     assert (await results[0].cast())[:3] == ('Dan Aykroyd', 'John Belushi', 'James Brown')
     assert results[0].countries == ()
-    assert await results[0].director() == ('John Landis',)
+    assert await results[0].directors() == ('John Landis',)
     assert results[0].id == 'movie/525'
     assert await results[0].keywords() == ('music', 'comedy', 'action', 'crime')
     assert (await results[0].summary()).startswith('Jake Blues, just released from prison')
@@ -126,7 +126,7 @@ async def test_search_result_id(query, exp_id, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames=('query', 'exp_director'),
+    argnames=('query', 'exp_directors'),
     argvalues=(
         (Query('The Blues Brothers', year=1980), ('John Landis',)),
         (Query('Deadwood', year=2004), ()),
@@ -134,9 +134,9 @@ async def test_search_result_id(query, exp_id, api, store_response):
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_search_result_director(query, exp_director, api, store_response):
+async def test_search_result_directors(query, exp_directors, api, store_response):
     results = await api.search(query)
-    assert await results[0].director() == exp_director
+    assert await results[0].directors() == exp_directors
 
 
 @pytest.mark.parametrize(
@@ -276,7 +276,7 @@ async def test_search_result_parser_failure(api):
     result = tmdb._TmdbSearchResult(tmdb_api=api)
     assert await result.cast() == ()
     assert result.countries == ()
-    assert await result.director() == ()
+    assert await result.directors() == ()
     assert result.id == ''
     assert await result.keywords() == ()
     assert await result.summary() == ''

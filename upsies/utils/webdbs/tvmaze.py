@@ -211,7 +211,7 @@ class _TvmazeSearchResult(common.SearchResult):
         return super().__init__(
             cast=functools.partial(tvmaze_api.cast, show['id']),
             countries=_get_countries(show),
-            director='',
+            directors=(),
             id=show['id'],
             keywords=_get_keywords(show),
             summary=_get_summary(show),

@@ -99,7 +99,7 @@ class WebDbSearchJob(JobBase):
                 'title_original': self._make_update_info_func('title_original'),
                 'title_english': self._make_update_info_func('title_english'),
                 'keywords': self._make_update_info_func('keywords'),
-                'director': self._make_update_info_func('director'),
+                'directors': self._make_update_info_func('directors'),
                 'cast': self._make_update_info_func('cast'),
                 'countries': self._make_update_info_func('countries'),
             },

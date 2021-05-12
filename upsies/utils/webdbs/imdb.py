@@ -52,7 +52,7 @@ class ImdbApi(WebDbApiBase):
                 imdb_api=self,
                 cast=functools.partial(self.cast, query.id),
                 countries=functools.partial(self.countries, query.id),
-                director=functools.partial(self.directors, query.id),
+                directors=functools.partial(self.directors, query.id),
                 id=query.id,
                 keywords=functools.partial(self.keywords, query.id),
                 summary=functools.partial(self.summary, query.id),
@@ -359,7 +359,7 @@ class ImdbApi(WebDbApiBase):
 
 class _ImdbSearchResult(common.SearchResult):
     def __init__(self, *, imdb_api, soup=None, cast=None, countries=None,
-                 director=None, id=None, keywords=None, summary=None, title=None,
+                 directors=None, id=None, keywords=None, summary=None, title=None,
                  title_english=None, title_original=None, type=None, url=None,
                  year=None):
         soup = soup or html.parse('')
@@ -367,7 +367,7 @@ class _ImdbSearchResult(common.SearchResult):
         return super().__init__(
             cast=cast or self._get_cast(soup),
             countries=countries or functools.partial(imdb_api.countries, id),
-            director=director or self._get_director(soup),
+            directors=directors or self._get_directors(soup),
             id=id or self._get_id(soup),
             keywords=keywords or self._get_keywords(soup),
             summary=summary or self._get_summary(soup),
@@ -387,14 +387,14 @@ class _ImdbSearchResult(common.SearchResult):
         else:
             return ()
 
-    def _get_director(self, soup):
+    def _get_directors(self, soup):
         people = soup.find(string=re.compile(r'Director?.*'))
         if people:
             director = people.parent.find('a')
             if director:
-                return director.string.strip()
+                return (director.string.strip(),)
         else:
-            return ''
+            return ()
 
     def _get_id(self, soup):
         a_tag = soup.find('a')

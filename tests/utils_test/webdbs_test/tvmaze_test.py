@@ -149,10 +149,10 @@ async def test_search_result_id(title, exp_id, api, store_response):
 
 
 @pytest.mark.asyncio
-async def test_search_result_director(api, store_response):
+async def test_search_result_directors(api, store_response):
     results = await api.search(Query('Star Wars'))
     for result in results:
-        assert result.director == ''
+        assert result.directors == ()
 
 
 @pytest.mark.parametrize(
