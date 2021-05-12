@@ -51,7 +51,7 @@ class TmdbApi(WebDbApiBase):
                     title=await self.title_english(id),
                     title_english=functools.partial(self.title_english, id),
                     title_original=functools.partial(self.title_original, id),
-                    type=ReleaseType.unknown,
+                    type=await self.type(id),
                     url=await self.url(id),
                     year=await self.year(id),
                 )
@@ -204,7 +204,15 @@ class TmdbApi(WebDbApiBase):
         return await self.title_english(id)
 
     async def type(self, id):
-        raise NotImplementedError('Type lookup is not implemented for TMDb')
+        if id:
+            soup = await self._get_soup(id)
+            network_tag = soup.find('bdi', string=re.compile(r'^Networks?$'))
+            if network_tag:
+                return ReleaseType.series
+            else:
+                return ReleaseType.movie
+        else:
+            return ReleaseType.unknown
 
     async def url(self, id):
         if id:

@@ -33,7 +33,7 @@ async def test_search_handles_id_in_query(api, store_response):
     assert results[0].title == 'The Blues Brothers'
     assert await results[0].title_english() == 'The Blues Brothers'
     assert await results[0].title_original() == 'The Blues Brothers'
-    assert results[0].type == ReleaseType.unknown
+    assert results[0].type == ReleaseType.movie
     assert results[0].url == 'http://themoviedb.org/movie/525'
     assert results[0].year == '1980'
 
@@ -474,11 +474,21 @@ async def test_title_original(id, exp_title_english, exp_title_original, api, st
     assert title_original == exp_title_original
 
 
-@pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_type'),
+    argvalues=(
+        ('movie/525', ReleaseType.movie),
+        ('tv/525', ReleaseType.series),
+        ('tv/1406', ReleaseType.series),
+        ('movie/1406', ReleaseType.movie),
+        (None, ReleaseType.unknown),
+    ),
+    ids=lambda value: str(value),
+)
 @pytest.mark.asyncio
-async def test_type(id, api, store_response):
-    with pytest.raises(NotImplementedError, match=r'^Type lookup is not implemented for TMDb$'):
-        await api.type(id)
+async def test_type(id, exp_type, api, store_response):
+    type = await api.type(id)
+    assert type is exp_type
 
 
 @pytest.mark.parametrize(
