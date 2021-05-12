@@ -243,6 +243,7 @@ async def test_search_result_year(query, exp_title, exp_year, api, store_respons
                      ('Ian McShane', 'http://themoviedb.org/person/6972-ian-mcshane'))),
         ('tv/74802', (('Pihla Viitala', 'http://themoviedb.org/person/93564-pihla-viitala'),
                       ('Tommi Korpela', 'http://themoviedb.org/person/93004-tommi-korpela'))),
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -271,6 +272,7 @@ async def test_countries(id, api, store_response):
         ('movie/334536', ()),
         ('tv/1406', (('David Milch', 'http://themoviedb.org/person/151295-david-milch'),)),
         ('tv/74802', (('Rike Jokela', 'http://themoviedb.org/person/140497-rike-jokela'),)),
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -293,6 +295,7 @@ async def test_creators(id, exp_creators, api, store_response):
         ('movie/334536', (('Oz Perkins', 'http://themoviedb.org/person/90609-oz-perkins'),)),
         ('tv/1406', ()),
         ('tv/74802', ()),
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -314,6 +317,7 @@ async def test_directors(id, exp_directors, api, store_response):
         ('movie/334536', ('horror', 'thriller')),
         ('tv/1406', ('crime', 'drama', 'western')),
         ('tv/74802', ('drama', 'crime')),
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -328,21 +332,22 @@ async def test_keywords(id, exp_keywords, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames='id',
+    argnames='id, exp_url',
     argvalues=(
-        'movie/525',
-        'movie/334536',
-        'tv/1406',
-        'tv/74802',
-        'tv/66260',
-        'movie/3405',
+        ('movie/525', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg'),
+        ('movie/334536', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/1XClORu9OKD0uiHqDcBy3mXr5mZ.jpg'),
+        ('tv/1406', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/4Yp35DVbVOAWkfQUIQ7pbh3u0aN.jpg'),
+        ('tv/74802', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/cUKqWS2v7D6DVKQze2Iz2netwRH.jpg'),
+        ('tv/66260', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/hlOWMr80oB0uNbp3eUYxUoCrwfJ.jpg'),
+        ('movie/3405', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/gRGUKC7ESamF1yrV6HdriuKaKxN.jpg'),
+        (None, ''),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_poster_url(id, api, store_response):
+async def test_poster_url(id, exp_url, api, store_response):
     poster_url = await api.poster_url(id)
-    assert re.search(r'^https?://themoviedb\.org/[a-zA-Z0-9/_]+\.jpg$', poster_url)
+    assert poster_url == exp_url
 
 
 @pytest.mark.parametrize(
@@ -354,6 +359,7 @@ async def test_poster_url(id, api, store_response):
         ('tv/74802', 68.0),
         ('tv/66260', 89.0),
         ('movie/3405', 5.0),
+        (None, None),
     ),
     ids=lambda value: str(value),
 )
@@ -372,6 +378,7 @@ async def test_rating(id, exp_rating, api, store_response):
         ('tv/74802', 'the body of a young woman on a construction site'),
         ('tv/66260', ''),
         ('movie/3405', ''),
+        (None, ''),
     ),
     ids=lambda value: str(value),
 )
@@ -402,9 +409,18 @@ async def test_type(id, api, store_response):
         await api.type(id)
 
 
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_url'),
+    argvalues=(
+        ('movie/525', f'{tmdb.TmdbApi._url_base}/movie/525'),
+        ('/tv/1406', f'{tmdb.TmdbApi._url_base}/tv/1406'),
+        (None, ''),
+    ),
+    ids=lambda value: str(value),
+)
 @pytest.mark.asyncio
-async def test_url(api):
-    assert await api.url('foo/123') == api._url_base + '/foo/123'
+async def test_url(id, exp_url, api):
+    assert await api.url(id) == exp_url
 
 
 @pytest.mark.parametrize(
@@ -414,6 +430,7 @@ async def test_url(api):
         ('movie/334536', '2017'),
         ('tv/1406', '2004'),
         ('tv/74802', '2018'),
+        (None, ''),
     ),
     ids=lambda value: str(value),
 )

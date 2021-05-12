@@ -73,32 +73,35 @@ class TmdbApi(WebDbApiBase):
         return tuple(persons)
 
     async def cast(self, id):
-        soup = await self._get_soup(id)
-        cards = soup.select('.people > .card')
         cast = []
-        for card in cards:
-            cast.extend(self._get_persons(card))
+        if id:
+            soup = await self._get_soup(id)
+            cards = soup.select('.people > .card')
+            for card in cards:
+                cast.extend(self._get_persons(card))
         return tuple(cast)
 
     async def countries(self, id):
         raise NotImplementedError('Country lookup is not implemented for TMDb')
 
     async def creators(self, id):
-        soup = await self._get_soup(id)
-        profiles = soup.select('.people > .profile')
         creators = []
-        for profile in profiles:
-            if profile.find('p', text=re.compile(r'(?i:Creator)')):
-                creators.extend(self._get_persons(profile))
+        if id:
+            soup = await self._get_soup(id)
+            profiles = soup.select('.people > .profile')
+            for profile in profiles:
+                if profile.find('p', text=re.compile(r'(?i:Creator)')):
+                    creators.extend(self._get_persons(profile))
         return tuple(creators)
 
     async def directors(self, id):
-        soup = await self._get_soup(id)
-        profiles = soup.select('.people > .profile')
         directors = []
-        for profile in profiles:
-            if profile.find('p', text=re.compile(r'(?i:Director)')):
-                directors.extend(self._get_persons(profile))
+        if id:
+            soup = await self._get_soup(id)
+            profiles = soup.select('.people > .profile')
+            for profile in profiles:
+                if profile.find('p', text=re.compile(r'(?i:Director)')):
+                    directors.extend(self._get_persons(profile))
         return tuple(directors)
 
     async def keywords(self, id):
@@ -112,25 +115,28 @@ class TmdbApi(WebDbApiBase):
         return tuple(keywords)
 
     async def poster_url(self, id):
-        soup = await self._get_soup(id)
-        img_tag = soup.find('img', class_='poster')
-        if img_tag:
-            srcs = img_tag.get('data-srcset')
-            if srcs:
-                path = srcs.split()[0]
-                return f'{self._url_base.rstrip("/")}/{path.lstrip("/")}'
+        if id:
+            soup = await self._get_soup(id)
+            img_tag = soup.find('img', class_='poster')
+            if img_tag:
+                srcs = img_tag.get('data-srcset')
+                if srcs:
+                    path = srcs.split()[0]
+                    return f'{self._url_base.rstrip("/")}/{path.lstrip("/")}'
+        return ''
 
     rating_min = 0.0
     rating_max = 100.0
 
     async def rating(self, id):
-        soup = await self._get_soup(id)
-        rating_tag = soup.find(class_='user_score_chart')
-        if rating_tag:
-            try:
-                return float(rating_tag['data-percent'])
-            except (ValueError, TypeError):
-                pass
+        if id:
+            soup = await self._get_soup(id)
+            rating_tag = soup.find(class_='user_score_chart')
+            if rating_tag:
+                try:
+                    return float(rating_tag['data-percent'])
+                except (ValueError, TypeError):
+                    pass
 
     _no_overview_texts = (
         "We don't have an overview",
@@ -138,11 +144,13 @@ class TmdbApi(WebDbApiBase):
     )
 
     async def summary(self, id):
-        soup = await self._get_soup(id)
-        overview = ''.join(soup.find('div', class_='overview').stripped_strings)
-        if any(text in overview for text in self._no_overview_texts):
-            overview = ''
-        return overview
+        if id:
+            soup = await self._get_soup(id)
+            overview = ''.join(soup.find('div', class_='overview').stripped_strings)
+            if any(text in overview for text in self._no_overview_texts):
+                overview = ''
+            return overview
+        return ''
 
     async def title_english(self, id):
         raise NotImplementedError('English title lookup is not implemented for TMDb')
@@ -156,16 +164,19 @@ class TmdbApi(WebDbApiBase):
         raise NotImplementedError('Type lookup is not implemented for TMDb')
 
     async def url(self, id):
-        return f'{self._url_base.rstrip("/")}/{id}'
+        if id:
+            return f'{self._url_base.rstrip("/")}/{id.strip("/")}'
+        return ''
 
     async def year(self, id):
-        soup = await self._get_soup(id)
-        year = ''.join(soup.find(class_='release_date').stripped_strings).strip('()')
-        _log.debug(year)
-        if len(year) == 4 and year.isdigit():
-            return year
-        else:
-            return ''
+        if id:
+            soup = await self._get_soup(id)
+            release_date_tag = soup.find(class_='release_date')
+            if release_date_tag:
+                year = ''.join(release_date_tag.stripped_strings).strip('()')
+                if len(year) == 4 and year.isdigit():
+                    return year
+        return ''
 
 
 class _TmdbSearchResult(common.SearchResult):
