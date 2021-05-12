@@ -163,9 +163,19 @@ class TmdbApi(WebDbApiBase):
         return ''
 
     async def title_original(self, id):
-        # TODO: Original title is supported
-        # https://www.themoviedb.org/movie/3405-le-dolce-signore
-        raise NotImplementedError('Original title lookup is not implemented for TMDb')
+        if id:
+            soup = await self._get_soup(id)
+            title_tag = soup.find(string=re.compile(r'Original (?:Title|Name)'))
+            if title_tag:
+                try:
+                    parent_tag = title_tag.parent.parent
+                except AttributeError:
+                    pass
+                else:
+                    strings = tuple(parent_tag.stripped_strings)
+                    if len(strings) >= 2:
+                        return strings[1]
+        return await self.title_english(id)
 
     async def type(self, id):
         raise NotImplementedError('Type lookup is not implemented for TMDb')

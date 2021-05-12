@@ -389,29 +389,26 @@ async def test_summary(id, exp_summary, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames=('id', 'exp_title_english'),
+    argnames=('id', 'exp_title_english', 'exp_title_original'),
     argvalues=(
-        ('movie/525', 'The Blues Brothers'),
-        ('movie/334536', "The Blackcoat's Daughter"),
-        ('tv/1406', 'Deadwood'),
-        ('tv/74802', 'Deadwind'),
-        ('tv/66260', 'Lost & Found Music Studios'),
-        ('movie/3405', 'Anyone Can Play'),
-        (None, ''),
+        ('movie/11841', 'The 36th Chamber of Shaolin', '少林三十六房'),
+        ('movie/334536', "The Blackcoat's Daughter", "The Blackcoat's Daughter"),
+        ('movie/3405', 'Anyone Can Play', 'Le dolce signore'),
+        ('movie/525', 'The Blues Brothers', 'The Blues Brothers'),
+        ('movie/22156', 'The Nest', 'Nid de guêpes'),
+        ('tv/1406', 'Deadwood', 'Deadwood'),
+        ('tv/66260', 'Lost & Found Music Studios', 'Lost & Found Music Studios'),
+        ('tv/74802', 'Deadwind', 'Karppi'),
+        (None, '', ''),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_title_english(id, exp_title_english, api, store_response):
-    title = await api.title_english(id)
-    assert title == exp_title_english
-
-
-@pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))
-@pytest.mark.asyncio
-async def test_title_original(id, api, store_response):
-    with pytest.raises(NotImplementedError, match=r'^Original title lookup is not implemented for TMDb$'):
-        await api.title_original(id)
+async def test_title_original(id, exp_title_english, exp_title_original, api, store_response):
+    title_english = await api.title_english(id)
+    assert title_english == exp_title_english
+    title_original = await api.title_original(id)
+    assert title_original == exp_title_original
 
 
 @pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))
