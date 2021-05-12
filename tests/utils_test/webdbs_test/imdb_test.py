@@ -49,7 +49,7 @@ async def test_search_returns_list_of_SearchResults(api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames=('query', 'exp_top_title'),
+    argnames=('query', 'exp_title'),
     argvalues=(
         (Query('Blues Brothers', year=1980), 'The Blues Brothers'),
         (Query('Blues Brothers', year='1998'), 'Blues Brothers 2000'),
@@ -61,10 +61,10 @@ async def test_search_returns_list_of_SearchResults(api, store_response):
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_search_for_year(query, exp_top_title, api, store_response):
+async def test_search_for_year(query, exp_title, api, store_response):
     results = await api.search(query)
-    if exp_top_title:
-        assert results[0].title == exp_top_title
+    if exp_title:
+        assert results[0].title == exp_title
     else:
         assert not results
 
@@ -216,7 +216,7 @@ async def test_search_result_summary(query, exp_summary, api, store_response):
 
 
 @pytest.mark.parametrize(
-    argnames=('query', 'exp_top_title'),
+    argnames=('query', 'exp_title'),
     argvalues=(
         (Query('Blues Brothers', year=1980), 'The Blues Brothers'),
         (Query('Blues Brothers', year=1998), 'Blues Brothers 2000'),
@@ -226,9 +226,9 @@ async def test_search_result_summary(query, exp_summary, api, store_response):
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_search_result_title(query, exp_top_title, api, store_response):
+async def test_search_result_title(query, exp_title, api, store_response):
     results = await api.search(query)
-    assert results[0].title == exp_top_title
+    assert results[0].title == exp_title
 
 
 @pytest.mark.parametrize(
@@ -263,7 +263,7 @@ async def test_search_result_title_english_original(query, exp_title_english, ex
 
 
 @pytest.mark.parametrize(
-    argnames=('query', 'exp_top_type'),
+    argnames=('query', 'exp_type'),
     argvalues=(
         (Query('Blues Brothers', year=1980), ReleaseType.movie),
         (Query('Blues Brothers', year=1998), ReleaseType.movie),
@@ -274,9 +274,9 @@ async def test_search_result_title_english_original(query, exp_title_english, ex
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
-async def test_search_result_type(query, exp_top_type, api, store_response):
+async def test_search_result_type(query, exp_type, api, store_response):
     results = await api.search(query)
-    assert results[0].type == exp_top_type
+    assert results[0].type == exp_type
 
 
 @pytest.mark.parametrize(
