@@ -89,7 +89,7 @@ async def test_search_result_cast(query, exp_cast, api, store_response):
 async def test_search_result_countries(api, store_response):
     results = await api.search(Query('Star Wars'))
     for result in results:
-        assert result.countries == []
+        assert result.countries == ()
 
 
 @pytest.mark.parametrize(
