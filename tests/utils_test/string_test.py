@@ -34,3 +34,13 @@ def test_pretty_bytes():
 def test_star_rating(ratings, exp_string):
     for rating in ratings:
         assert string.star_rating(rating) == exp_string
+
+
+def test_remove_prefix():
+    assert string.remove_prefix('com.domain.www', 'com.') == 'domain.www'
+    assert string.remove_prefix('com.domain.www', 'moc.') == 'com.domain.www'
+
+
+def test_remove_suffix():
+    assert string.remove_suffix('www.domain.com', '.com') == 'www.domain'
+    assert string.remove_suffix('www.domain.com', '.moc') == 'www.domain.com'

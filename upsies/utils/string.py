@@ -3,6 +3,7 @@ String formatting and parsing
 """
 
 import math
+import sys
 
 _byte_units = {
     'PiB': 1024 ** 5,
@@ -35,3 +36,24 @@ def star_rating(rating, max_rating=10):
         middle = '\u2605'  # Full star
     right = '\u2606' * (math.ceil(max_rating - rating) - 1)
     return f'{left}{middle}{right}'
+
+
+if sys.version_info >= (3, 9, 0):
+    def remove_prefix(string, prefix):
+        return string.removeprefix(prefix)
+
+    def remove_suffix(string, suffix):
+        return string.removesuffix(suffix)
+
+else:
+    def remove_prefix(string, prefix):
+        if string.startswith(prefix):
+            return string[len(prefix):]
+        else:
+            return string
+
+    def remove_suffix(string, suffix):
+        if string.endswith(suffix):
+            return string[:-len(suffix)]
+        else:
+            return string
