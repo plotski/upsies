@@ -153,7 +153,14 @@ class TmdbApi(WebDbApiBase):
         return ''
 
     async def title_english(self, id):
-        raise NotImplementedError('English title lookup is not implemented for TMDb')
+        if id:
+            soup = await self._get_soup(id)
+            title_tag = soup.find(class_='title')
+            if title_tag:
+                title_parts = list(title_tag.stripped_strings)
+                if title_parts:
+                    return title_parts[0]
+        return ''
 
     async def title_original(self, id):
         # TODO: Original title is supported

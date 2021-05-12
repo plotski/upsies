@@ -388,11 +388,23 @@ async def test_summary(id, exp_summary, api, store_response):
     assert exp_summary in summary
 
 
-@pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))
+@pytest.mark.parametrize(
+    argnames=('id', 'exp_title_english'),
+    argvalues=(
+        ('movie/525', 'The Blues Brothers'),
+        ('movie/334536', "The Blackcoat's Daughter"),
+        ('tv/1406', 'Deadwood'),
+        ('tv/74802', 'Deadwind'),
+        ('tv/66260', 'Lost & Found Music Studios'),
+        ('movie/3405', 'Anyone Can Play'),
+        (None, ''),
+    ),
+    ids=lambda value: str(value),
+)
 @pytest.mark.asyncio
-async def test_title_english(id, api, store_response):
-    with pytest.raises(NotImplementedError, match=r'^English title lookup is not implemented for TMDb$'):
-        await api.title_english(id)
+async def test_title_english(id, exp_title_english, api, store_response):
+    title = await api.title_english(id)
+    assert title == exp_title_english
 
 
 @pytest.mark.parametrize(argnames='id', argvalues=('movie/525', 'movie/334536', 'tv/1406', 'tv/74802'))
