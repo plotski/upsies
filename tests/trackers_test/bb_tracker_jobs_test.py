@@ -1562,7 +1562,6 @@ async def test_get_series_poster_url(tvmaze_id, poster_url, exp_return_value, bb
 def test_get_movie_release_info(bb_tracker_jobs, mocker):
     infos = {
         'release_info_576p_PAL': '576p PAL',
-        'release_info_remux': 'REMUX',
         'release_info_proper': 'PROPER',
         'release_info_repack': 'REPACK',
         'release_info_uncensored': 'Uncensored',
@@ -1578,6 +1577,7 @@ def test_get_movie_release_info(bb_tracker_jobs, mocker):
         'release_info_dual_audio': 'Dual Audio',
         'release_info_hdr10': 'HDR10',
         'release_info_10bit': '10-bit',
+        'release_info_remux': 'REMUX',
         'release_info_commentary': 'w. Commentary',
         'release_info_subtitles': 'w. Subtitles',
     }

@@ -827,7 +827,6 @@ class BbTrackerJobs(TrackerJobsBase):
     def get_movie_release_info(self):
         info = (
             self.release_info_576p_PAL,
-            self.release_info_remux,
             self.release_info_proper,
             self.release_info_repack,
             self.release_info_uncensored,
@@ -843,6 +842,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_dual_audio,
             self.release_info_hdr10,
             self.release_info_10bit,
+            self.release_info_remux,
             self.release_info_commentary,
             self.release_info_subtitles,
         )
