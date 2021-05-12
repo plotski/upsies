@@ -612,7 +612,7 @@ class BbTrackerJobs(TrackerJobsBase):
         if self.release_name.source == 'WEBRip':
             return 'WebRip'
         else:
-            return self.release_name.source
+            return string.remove_suffix(self.release_name.source, 'Remux').strip()
 
     @property
     def release_info_remux(self):

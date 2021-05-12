@@ -1014,7 +1014,9 @@ def test_release_info_commentary(has_commentary, exp_text, bb_tracker_jobs, mock
     argnames='source, exp_source',
     argvalues=(
         ('WEB-DL', 'WEB-DL'),
+        ('WEB-DL Remux', 'WEB-DL'),
         ('BluRay', 'BluRay'),
+        ('BluRay Remux', 'BluRay'),
         ('WEBRip', 'WebRip'),
     ),
 )
