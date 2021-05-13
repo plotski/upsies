@@ -1,3 +1,8 @@
+2021-??-?? 0.?.?
+  * id: Added support for "id:..." query in case search results are incomplete.
+  * NBL: Mention --ignore-dupes in relevant error message.
+
+
 2021-05-07 0.3.0
   * Fixed: "Connection reset by peer"
   * Added support for tracker: bB
