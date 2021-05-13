@@ -424,7 +424,7 @@ def test_movie_title_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.movie_title_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.movie_title_imdb_id_handler,
+        'output', bb_tracker_jobs.fill_in_movie_title,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='movie-title',
@@ -454,14 +454,14 @@ def test_movie_title_validator(title, exp_error, bb_tracker_jobs, mocker):
         with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
             bb_tracker_jobs.movie_title_validator(title)
 
-def test_movie_title_imdb_id_handler(bb_tracker_jobs, mocker):
+def test_fill_in_movie_title(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'release_name',
                         PropertyMock(title_with_aka='The Title AKA Teh Tilte'))
     mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_movie_title', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_title_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_title_job, 'add_task', Mock())
 
-    bb_tracker_jobs.movie_title_imdb_id_handler('tt0123')
+    bb_tracker_jobs.fill_in_movie_title('tt0123')
 
     assert bb_tracker_jobs.get_movie_title.call_args_list == [call('tt0123')]
     assert bb_tracker_jobs.movie_title_job.fetch_text.call_args_list == [call(
@@ -480,7 +480,7 @@ def test_movie_year_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.movie_year_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.movie_year_imdb_id_handler,
+        'output', bb_tracker_jobs.fill_in_movie_year,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='movie-year',
@@ -500,13 +500,13 @@ def test_movie_year_validator(bb_tracker_jobs, mocker):
     bb_tracker_jobs.movie_year_validator('2015')
     assert bb_tracker_jobs.release_name.year == '2015'
 
-def test_movie_year_imdb_id_handler(bb_tracker_jobs, mocker):
+def test_fill_in_movie_year(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'release_name', PropertyMock(year='2014'))
     mocker.patch.object(bb_tracker_jobs.imdb, 'year', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_year_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_year_job, 'add_task', Mock())
 
-    bb_tracker_jobs.movie_year_imdb_id_handler('tt0123')
+    bb_tracker_jobs.fill_in_movie_year('tt0123')
 
     assert bb_tracker_jobs.imdb.year.call_args_list == [call('tt0123')]
     assert bb_tracker_jobs.movie_year_job.fetch_text.call_args_list == [call(
@@ -701,7 +701,7 @@ def test_movie_tags_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.movie_tags_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.movie_tags_imdb_id_handler,
+        'output', bb_tracker_jobs.fill_in_movie_tags,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='movie-tags',
@@ -731,12 +731,12 @@ def test_movie_tags_validator(tags, exp_error, bb_tracker_jobs, mocker):
         with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
             bb_tracker_jobs.movie_tags_validator(tags)
 
-def test_movie_tags_imdb_id_handler(bb_tracker_jobs, mocker):
+def test_fill_in_movie_tags(bb_tracker_jobs, mocker):
     mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_tags', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_tags_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_tags_job, 'add_task', Mock())
 
-    bb_tracker_jobs.movie_tags_imdb_id_handler('tt0123')
+    bb_tracker_jobs.fill_in_movie_tags('tt0123')
 
     assert bb_tracker_jobs.get_tags.call_args_list == [call()]
     assert bb_tracker_jobs.movie_tags_job.fetch_text.call_args_list == [call(
@@ -822,7 +822,7 @@ def test_series_title_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.series_title_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.tvmaze_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.series_title_tvmaze_id_handler,
+        'output', bb_tracker_jobs.fill_in_series_title,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='series-title',
@@ -854,14 +854,14 @@ def test_series_title_validator(title, exp_error, bb_tracker_jobs, mocker):
         with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
             bb_tracker_jobs.series_title_validator(title)
 
-def test_series_title_tvmaze_id_handler(bb_tracker_jobs, mocker):
+def test_fill_in_series_title(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'release_name',
                         PropertyMock(title_with_aka_and_year='The Title S01 [foo / bar / baz]'))
     mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_series_title_and_release_info', Mock())
     mocker.patch.object(bb_tracker_jobs.series_title_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.series_title_job, 'add_task', Mock())
 
-    bb_tracker_jobs.series_title_tvmaze_id_handler('tt0123')
+    bb_tracker_jobs.fill_in_series_title('tt0123')
 
     assert bb_tracker_jobs.get_series_title_and_release_info.call_args_list == [call('tt0123')]
     assert bb_tracker_jobs.series_title_job.fetch_text.call_args_list == [call(
@@ -906,7 +906,7 @@ def test_series_tags_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.series_tags_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.tvmaze_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.series_tags_tvmaze_id_handler,
+        'output', bb_tracker_jobs.fill_in_series_tags,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='series-tags',
@@ -936,12 +936,12 @@ def test_series_tags_validator(tags, exp_error, bb_tracker_jobs, mocker):
         with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
             bb_tracker_jobs.series_tags_validator(tags)
 
-def test_series_tags_tvmaze_id_handler(bb_tracker_jobs, mocker):
+def test_fill_in_series_tags(bb_tracker_jobs, mocker):
     mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_tags', Mock())
     mocker.patch.object(bb_tracker_jobs.series_tags_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.series_tags_job, 'add_task', Mock())
 
-    bb_tracker_jobs.series_tags_tvmaze_id_handler('tt0123')
+    bb_tracker_jobs.fill_in_series_tags('tt0123')
 
     assert bb_tracker_jobs.get_tags.call_args_list == [call()]
     assert bb_tracker_jobs.series_tags_job.fetch_text.call_args_list == [call(

@@ -252,7 +252,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_title_job(self):
-        self.imdb_job.signal.register('output', self.movie_title_imdb_id_handler)
+        self.imdb_job.signal.register('output', self.fill_in_movie_title)
         return jobs.dialog.TextFieldJob(
             name='movie-title',
             label='Title',
@@ -266,7 +266,7 @@ class BbTrackerJobs(TrackerJobsBase):
         if not text:
             raise ValueError(f'Invalid title: {text}')
 
-    def movie_title_imdb_id_handler(self, imdb_id):
+    def fill_in_movie_title(self, imdb_id):
         default_text = self.release_name.title_with_aka
         coro = self.get_movie_title(imdb_id)
         task = self.movie_title_job.fetch_text(
@@ -278,7 +278,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_year_job(self):
-        self.imdb_job.signal.register('output', self.movie_year_imdb_id_handler)
+        self.imdb_job.signal.register('output', self.fill_in_movie_year)
         return jobs.dialog.TextFieldJob(
             name='movie-year',
             label='Year',
@@ -292,7 +292,7 @@ class BbTrackerJobs(TrackerJobsBase):
         # Raises ValueError if not a valid year
         self.release_name.year = text
 
-    def movie_year_imdb_id_handler(self, imdb_id):
+    def fill_in_movie_year(self, imdb_id):
         default_text = self.release_name.year
         coro = self.imdb.year(imdb_id)
         task = self.movie_year_job.fetch_text(
@@ -446,7 +446,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_tags_job(self):
-        self.imdb_job.signal.register('output', self.movie_tags_imdb_id_handler)
+        self.imdb_job.signal.register('output', self.fill_in_movie_tags)
         return jobs.dialog.TextFieldJob(
             name='movie-tags',
             label='Tags',
@@ -460,7 +460,7 @@ class BbTrackerJobs(TrackerJobsBase):
         if not text:
             raise ValueError(f'Invalid tags: {text}')
 
-    def movie_tags_imdb_id_handler(self, imdb_id):
+    def fill_in_movie_tags(self, imdb_id):
         coro = self.get_tags()
         task = self.movie_tags_job.fetch_text(
             coro=coro,
@@ -506,7 +506,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def series_title_job(self):
-        self.tvmaze_job.signal.register('output', self.series_title_tvmaze_id_handler)
+        self.tvmaze_job.signal.register('output', self.fill_in_series_title)
         return jobs.dialog.TextFieldJob(
             name='series-title',
             label='Title',
@@ -523,7 +523,7 @@ class BbTrackerJobs(TrackerJobsBase):
         if unknown:
             raise ValueError(f'Failed to autodetect: {unknown}')
 
-    def series_title_tvmaze_id_handler(self, tvmaze_id):
+    def fill_in_series_title(self, tvmaze_id):
         coro = self.get_series_title_and_release_info(tvmaze_id)
         default_text = self.release_name.title_with_aka_and_year
         task = self.series_title_job.fetch_text(
@@ -549,7 +549,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def series_tags_job(self):
-        self.tvmaze_job.signal.register('output', self.series_tags_tvmaze_id_handler)
+        self.tvmaze_job.signal.register('output', self.fill_in_series_tags)
         return jobs.dialog.TextFieldJob(
             name='series-tags',
             label='Tags',
@@ -563,7 +563,7 @@ class BbTrackerJobs(TrackerJobsBase):
         if not text:
             raise ValueError(f'Invalid tags: {text}')
 
-    def series_tags_tvmaze_id_handler(self, tvmaze_id):
+    def fill_in_series_tags(self, tvmaze_id):
         coro = self.get_tags()
         task = self.series_tags_job.fetch_text(
             coro=coro,
