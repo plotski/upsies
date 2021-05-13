@@ -775,7 +775,6 @@ class BbTrackerJobs(TrackerJobsBase):
 
             # Special formats
             self.release_info_remux,
-            self.release_info_576p_PAL,
             self.release_info_hdr10,
             self.release_info_10bit,
 

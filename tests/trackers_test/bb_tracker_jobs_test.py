@@ -1438,7 +1438,7 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
     title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
     exp_info = ('[BluRay / x264 / E-AC-3 / MKV / 1080p / '
                 'PROPER / REPACK / '
-                'REMUX / 576p PAL / HDR10 / 10-bit / '
+                'REMUX / HDR10 / 10-bit / '
                 "Uncensored / Uncut / Unrated / Remastered / Director's Cut / "
                 'Extended Edition / Anniversary Edition / Criterion Edition / Special Edition / Limited / '
                 'Dual Audio / w. Commentary / w. Subtitles]')
