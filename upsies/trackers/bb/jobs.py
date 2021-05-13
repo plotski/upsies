@@ -458,7 +458,7 @@ class BbTrackerJobs(TrackerJobsBase):
             raise ValueError(f'Invalid tags: {text}')
 
     def movie_tags_imdb_id_handler(self, imdb_id):
-        coro = self.get_tags(self.imdb, imdb_id)
+        coro = self.get_tags()
         task = self.movie_tags_job.fetch_text(
             coro=coro,
             finish_on_success=True,
@@ -561,7 +561,7 @@ class BbTrackerJobs(TrackerJobsBase):
             raise ValueError(f'Invalid tags: {text}')
 
     def series_tags_tvmaze_id_handler(self, tvmaze_id):
-        coro = self.get_tags(self.tvmaze, tvmaze_id)
+        coro = self.get_tags()
         task = self.series_tags_job.fetch_text(
             coro=coro,
             finish_on_success=True,
@@ -874,7 +874,7 @@ class BbTrackerJobs(TrackerJobsBase):
         )
         return ' / '.join(i for i in info if i)
 
-    async def get_tags(self, webdb, id):
+    async def get_tags(self):
         def normalize_tags(strings):
             normalized = []
             for s in strings:
@@ -897,13 +897,17 @@ class BbTrackerJobs(TrackerJobsBase):
                 for item in seq
             )
 
+        # For movies, TVmaze ID is None and tvmaze is ignored.
+        # For series, IMDb might have information TVmaze is missing.
+        webdbs = (self.tvmaze, self.imdb)
+
         # Gather tags
-        tags = list(await webdb.genres(id))
+        tags = list(await self.try_webdbs(webdbs, 'genres'))
         if self.is_movie_release:
-            tags.extend(await webdb.directors(id))
+            tags.extend(await self.try_webdbs(webdbs, 'directors'))
         elif self.is_series_release:
-            tags.extend(await webdb.creators(id))
-        tags.extend(await webdb.cast(id))
+            tags.extend(await self.try_webdbs(webdbs, 'creators'))
+        tags.extend(await self.try_webdbs(webdbs, 'cast'))
 
         # Replace spaces, non-ASCII characters, etc
         tags = normalize_tags(tags)

@@ -713,7 +713,7 @@ def test_movie_tags_imdb_id_handler(bb_tracker_jobs, mocker):
 
     bb_tracker_jobs.movie_tags_imdb_id_handler('tt0123')
 
-    assert bb_tracker_jobs.get_tags.call_args_list == [call(bb_tracker_jobs.imdb, 'tt0123')]
+    assert bb_tracker_jobs.get_tags.call_args_list == [call()]
     assert bb_tracker_jobs.movie_tags_job.fetch_text.call_args_list == [call(
         coro=bb_tracker_jobs.get_tags.return_value,
         finish_on_success=True,
@@ -918,7 +918,7 @@ def test_series_tags_tvmaze_id_handler(bb_tracker_jobs, mocker):
 
     bb_tracker_jobs.series_tags_tvmaze_id_handler('tt0123')
 
-    assert bb_tracker_jobs.get_tags.call_args_list == [call(bb_tracker_jobs.tvmaze, 'tt0123')]
+    assert bb_tracker_jobs.get_tags.call_args_list == [call()]
     assert bb_tracker_jobs.series_tags_job.fetch_text.call_args_list == [call(
         coro=bb_tracker_jobs.get_tags.return_value,
         finish_on_success=True,
@@ -1615,59 +1615,64 @@ def test_get_movie_release_info(bb_tracker_jobs, mocker):
 
 @pytest.mark.asyncio
 async def test_get_tags_for_movie(bb_tracker_jobs, mocker):
-    webdb = Mock(
-        genres=AsyncMock(return_value=('comedy', 'hörrór')),
-        directors=AsyncMock(return_value=('Jim J. Jackson', "Émile 'E' Jaques")),
-        creators=AsyncMock(return_value=('Jim-Beam Bam',)),
-        cast=AsyncMock(return_value=('Foo', 'Bar', 'Baz')),
-    )
     mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=True))
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
-    tags = await bb_tracker_jobs.get_tags(webdb, 'mock id')
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(side_effect=(
+        # Genres
+        ('comedy', 'hörrór'),
+        # Directors
+        ('Jim J. Jackson', "Émile 'E' Jaques"),
+        # Cast
+        ('Foo', 'Bar', 'BaZ'),
+    )))
+    tags = await bb_tracker_jobs.get_tags()
     assert tags == 'comedy,horror,jim.j.jackson,emile.e.jaques,foo,bar,baz'
-    assert webdb.genres.call_args_list == [call('mock id')]
-    assert webdb.directors.call_args_list == [call('mock id')]
-    assert webdb.creators.call_args_list == []
-    assert webdb.cast.call_args_list == [call('mock id')]
+    assert bb_tracker_jobs.try_webdbs.call_args_list == [
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'genres'),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'directors'),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'cast'),
+    ]
 
 @pytest.mark.asyncio
 async def test_get_tags_for_series(bb_tracker_jobs, mocker):
-    webdb = Mock(
-        genres=AsyncMock(return_value=('comedy', 'hörrór')),
-        directors=AsyncMock(return_value=('Jim J. Jackson', "Émile 'E' Jaques")),
-        creators=AsyncMock(return_value=('Jim-Beam Bam',)),
-        cast=AsyncMock(return_value=('Foo', 'Bar', 'Baz')),
-    )
     mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=True))
-    tags = await bb_tracker_jobs.get_tags(webdb, 'mock id')
-    assert tags == 'comedy,horror,jim.beam.bam,foo,bar,baz'
-    assert webdb.genres.call_args_list == [call('mock id')]
-    assert webdb.directors.call_args_list == []
-    assert webdb.creators.call_args_list == [call('mock id')]
-    assert webdb.cast.call_args_list == [call('mock id')]
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(side_effect=(
+        # Genres
+        ('comedy', 'hörrór'),
+        # Creators
+        ('Jim J. Jackson', "Émile 'E' Jaques"),
+        # Cast
+        ('Foo', 'Bar', 'BaZ'),
+    )))
+    tags = await bb_tracker_jobs.get_tags()
+    assert tags == 'comedy,horror,jim.j.jackson,emile.e.jaques,foo,bar,baz'
+    assert bb_tracker_jobs.try_webdbs.call_args_list == [
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'genres'),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'creators'),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'cast'),
+    ]
 
 @pytest.mark.asyncio
 async def test_get_tags_is_not_longer_than_200_characters(bb_tracker_jobs, mocker):
-    webdb = Mock(
-        genres=AsyncMock(return_value=()),
-        directors=AsyncMock(return_value=()),
-        creators=AsyncMock(return_value=()),
-        cast=AsyncMock(return_value=('Mark Hamill', 'Harrison Ford', 'Carrie Fisher', 'Peter Cushing',
-                                     'Alec Guinness', 'Anthony Daniels', 'Kenny Baker', 'Peter Mayhew',
-                                     'David Prowse', 'Phil Brown', 'Shelagh Fraser', 'Jack Purvis',
-                                     'Alex McCrindle', 'Eddie Byrne', 'Drewe Henley',
-                                     'Denis Lawson', 'Garrick Hagon', 'Jack Klaff', 'William Hootkins',
-                                     'Angus MacInnes', 'Jeremy Sinden', 'Graham Ashley', 'Don Henderson',
-                                     'Richard LeParmentier', 'Leslie Schofield')),
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(side_effect=(
+        # Genres
+        ('comedy', 'hörrór', 'drama', 'science-fiction', 'romance', 'action', 'thriller', 'documentary'),
+        # Cast
+        ('Mark Hamill', 'Harrison Ford', 'Carrie Fisher', 'Peter Cushing',
+         'Alec Guinness', 'Anthony Daniels', 'Kenny Baker', 'Peter Mayhew',
+         'David Prowse', 'Phil Brown', 'Shelagh Fraser', 'Jack Purvis',
+         'Alex McCrindle', 'Eddie Byrne', 'Drewe Henley', 'Denis Lawson',
+         'Garrick Hagon', 'Jack Klaff', 'William Hootkins', 'Angus MacInnes'),
+    )))
+    tags = await bb_tracker_jobs.get_tags()
+    assert tags == (
+        'comedy,horror,drama,science.fiction,romance,action,thriller,documentary,'
+        'mark.hamill,harrison.ford,carrie.fisher,peter.cushing,alec.guinness,'
+        'anthony.daniels,kenny.baker,peter.mayhew,david.prowse'
     )
-    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
-    tags = await bb_tracker_jobs.get_tags(webdb, 'mock id')
-    assert tags == ('mark.hamill,harrison.ford,carrie.fisher,peter.cushing,'
-                    'alec.guinness,anthony.daniels,kenny.baker,peter.mayhew,'
-                    'david.prowse,phil.brown,shelagh.fraser,jack.purvis,alex.mccrindle,'
-                    'eddie.byrne,drewe.henley')
 
 
 @pytest.mark.asyncio
