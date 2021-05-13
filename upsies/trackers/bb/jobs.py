@@ -758,19 +758,38 @@ class BbTrackerJobs(TrackerJobsBase):
         elif self.is_episode_release:
             title.append(str(self.release_name.episodes))
 
-        # "[Source / VideoCodec / AudioCodec / Container / Resolution( / ...)]"
         info = [
+            # [Source / VideoCodec / AudioCodec / Container / Resolution]
             self.release_info_source,
             self.release_name.video_format,
-            self.release_info_10bit,
             self.release_info_audio_format,
             fs.file_extension(video.first_video(self.content_path)).upper(),
+            self.release_info_resolution,
+
+            # Scene tags
             self.release_info_proper,
             self.release_info_repack,
-            self.release_info_resolution,
-            self.release_info_hdr10,
-            self.release_info_dual_audio,
+
+            # Special formats
             self.release_info_remux,
+            self.release_info_576p_PAL,
+            self.release_info_hdr10,
+            self.release_info_10bit,
+
+            # Editions
+            self.release_info_uncensored,
+            self.release_info_uncut,
+            self.release_info_unrated,
+            self.release_info_remastered,
+            self.release_info_directors_cut,
+            self.release_info_extended_edition,
+            self.release_info_anniversary_edition,
+            self.release_info_criterion_edition,
+            self.release_info_special_edition,
+            self.release_info_limited_edition,
+
+            # Features
+            self.release_info_dual_audio,
             self.release_info_commentary,
             self.release_info_subtitles,
         ]
@@ -826,9 +845,17 @@ class BbTrackerJobs(TrackerJobsBase):
 
     def get_movie_release_info(self):
         info = (
-            self.release_info_576p_PAL,
+            # Scene tags
             self.release_info_proper,
             self.release_info_repack,
+
+            # Special formats
+            self.release_info_remux,
+            self.release_info_576p_PAL,
+            self.release_info_hdr10,
+            self.release_info_10bit,
+
+            # Editions
             self.release_info_uncensored,
             self.release_info_uncut,
             self.release_info_unrated,
@@ -839,10 +866,9 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_criterion_edition,
             self.release_info_special_edition,
             self.release_info_limited_edition,
+
+            # Features
             self.release_info_dual_audio,
-            self.release_info_hdr10,
-            self.release_info_10bit,
-            self.release_info_remux,
             self.release_info_commentary,
             self.release_info_subtitles,
         )

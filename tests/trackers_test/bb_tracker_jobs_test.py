@@ -1381,24 +1381,43 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
     mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=False))
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'episodes', PropertyMock(return_value=False))
 
-    mocker.patch.object(type(bb_tracker_jobs), 'release_info_remux', PropertyMock(return_value='REMUX'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_source', PropertyMock(return_value='BluRay'))
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'video_format', PropertyMock(return_value='x264'))
-    mocker.patch.object(type(bb_tracker_jobs), 'release_info_10bit', PropertyMock(return_value='10bit'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_audio_format', PropertyMock(return_value='E-AC-3'))
     mocker.patch('upsies.utils.fs.file_extension', return_value='mkv')
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_resolution', PropertyMock(return_value='1080p'))
+
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_proper', PropertyMock(return_value='PROPER'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_repack', PropertyMock(return_value='REPACK'))
-    mocker.patch.object(type(bb_tracker_jobs), 'release_info_resolution', PropertyMock(return_value='1080p'))
+
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_remux', PropertyMock(return_value='REMUX'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_576p_PAL', PropertyMock(return_value='576p PAL'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_hdr10', PropertyMock(return_value='HDR10'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_10bit', PropertyMock(return_value='10-bit'))
+
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_uncensored', PropertyMock(return_value='Uncensored'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_uncut', PropertyMock(return_value='Uncut'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_unrated', PropertyMock(return_value='Unrated'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_remastered', PropertyMock(return_value='Remastered'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_directors_cut', PropertyMock(return_value="Director's Cut"))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_extended_edition', PropertyMock(return_value='Extended Edition'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_anniversary_edition', PropertyMock(return_value='Anniversary Edition'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_criterion_edition', PropertyMock(return_value='Criterion Edition'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_special_edition', PropertyMock(return_value='Special Edition'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_limited_edition', PropertyMock(return_value='Limited'))
+
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_dual_audio', PropertyMock(return_value='Dual Audio'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_commentary', PropertyMock(return_value='w. Commentary'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_subtitles', PropertyMock(return_value='w. Subtitles'))
 
     title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
-    assert title.endswith('[BluRay / x264 / 10bit / E-AC-3 / MKV / '
-                          'PROPER / REPACK / 1080p / HDR10 / Dual Audio / '
-                          'REMUX / w. Commentary / w. Subtitles]')
+    exp_info = ('[BluRay / x264 / E-AC-3 / MKV / 1080p / '
+                'PROPER / REPACK / '
+                'REMUX / 576p PAL / HDR10 / 10-bit / '
+                "Uncensored / Uncut / Unrated / Remastered / Director's Cut / "
+                'Extended Edition / Anniversary Edition / Criterion Edition / Special Edition / Limited / '
+                'Dual Audio / w. Commentary / w. Subtitles]')
+    assert title.endswith(exp_info)
 
 
 @pytest.mark.asyncio
@@ -1561,23 +1580,30 @@ async def test_get_series_poster_url(tvmaze_id, poster_url, exp_return_value, bb
 
 def test_get_movie_release_info(bb_tracker_jobs, mocker):
     infos = {
-        'release_info_576p_PAL': '576p PAL',
+        # Scene tags
         'release_info_proper': 'PROPER',
         'release_info_repack': 'REPACK',
+
+        # Special formats
+        'release_info_remux': 'REMUX',
+        'release_info_576p_PAL': '576p PAL',
+        'release_info_hdr10': 'HDR10',
+        'release_info_10bit': '10-bit',
+
+        # Editions
         'release_info_uncensored': 'Uncensored',
         'release_info_uncut': 'Uncut',
         'release_info_unrated': 'Unrated',
         'release_info_remastered': 'Remastered',
         'release_info_directors_cut': "Director's Cut",
-        'release_info_extended_edition': 'Extended Edution',
-        'release_info_anniversary_edition': 'Anniversary',
+        'release_info_extended_edition': 'Extended Edition',
+        'release_info_anniversary_edition': 'Anniversary Edition',
         'release_info_criterion_edition': 'Criterion Edition',
         'release_info_special_edition': 'Special Edition',
         'release_info_limited_edition': 'Limited',
+
+        # Features
         'release_info_dual_audio': 'Dual Audio',
-        'release_info_hdr10': 'HDR10',
-        'release_info_10bit': '10-bit',
-        'release_info_remux': 'REMUX',
         'release_info_commentary': 'w. Commentary',
         'release_info_subtitles': 'w. Subtitles',
     }
