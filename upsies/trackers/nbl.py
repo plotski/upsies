@@ -220,7 +220,12 @@ class NblTracker(base.TrackerBase):
             # Try to find error message
             error = doc.find(id='messagebar')
             if error and error.string:
-                raise errors.RequestError(f'Upload failed: {error.string}')
+                _log.debug('NBL error: %r', doc)
+                if 'torrent contained one or more possible dupes' in error.string:
+                    msg = f'{error.string}\nUse --ignore-dupes to enforce the upload.'
+                else:
+                    msg = error.string
+                raise errors.RequestError(f'Upload failed: {msg}')
             else:
                 html.dump(str(response), 'upload.html')
                 raise RuntimeError('Failed to find error message. See upload.html for more information.')

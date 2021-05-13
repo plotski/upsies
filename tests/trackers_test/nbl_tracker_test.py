@@ -1,3 +1,4 @@
+import re
 from unittest.mock import Mock, call, patch
 
 import bs4
@@ -435,16 +436,25 @@ async def test_upload_succeeds(category, exp_category_code, ignore_dupes, exp_da
         'multipart/form-data': exp_form_data,
     }]
 
+@pytest.mark.parametrize(
+    argnames='message, exp_error',
+    argvalues=(
+        ('Something went wrong', 'Upload failed: Something went wrong'),
+        ('The torrent contained one or more possible dupes. Please check carefully!',
+         ('Upload failed: The torrent contained one or more possible dupes. Please check carefully!\n'
+          'Use --ignore-dupes to enforce the upload.')),
+    ),
+)
 @pytest.mark.asyncio
-async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
+async def test_upload_finds_error_message(message, exp_error, tmp_path, mocker, httpserver):
     html_dump_mock = mocker.patch('upsies.utils.html.dump')
 
     httpserver.expect_request(
         uri='/upload.php',
         method='POST',
-    ).respond_with_data('''
+    ).respond_with_data(f'''
         <html>
-            <div id="messagebar">Something went wrong</div>
+            <div id="messagebar">{message}</div>
         </html>
     ''')
 
@@ -467,7 +477,7 @@ async def test_upload_finds_error_message(tmp_path, mocker, httpserver):
         tvmaze_job=Mock(output=('12345',)),
         category_job=Mock(output=('Season',)),
     )
-    with pytest.raises(errors.RequestError, match=r'^Upload failed: Something went wrong$'):
+    with pytest.raises(errors.RequestError, match=rf'^{re.escape(exp_error)}$'):
         await tracker.upload(tracker_jobs_mock)
     assert html_dump_mock.call_args_list == []
 
