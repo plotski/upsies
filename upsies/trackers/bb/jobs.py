@@ -120,6 +120,9 @@ class BbTrackerJobs(TrackerJobsBase):
                 result = await result_getter(id)
                 if result:
                     return result
+        # Default to return value from final webdb, e.g. empty string, empty
+        # list, etc.
+        return result
 
     # Jobs
 

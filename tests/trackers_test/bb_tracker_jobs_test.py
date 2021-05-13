@@ -245,6 +245,31 @@ async def test_try_webdbs(bb_tracker_jobs, mocker):
     assert db3.get_result.call_args_list == [call('456')]
     assert db4.get_result.call_args_list == []
 
+@pytest.mark.asyncio
+async def test_try_webdbs_defaults_to_result_from_last_webdb(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_db1_id', AsyncMock(return_value=None), create=True)
+    mocker.patch.object(bb_tracker_jobs, 'get_db2_id', AsyncMock(return_value='123'), create=True)
+    mocker.patch.object(bb_tracker_jobs, 'get_db3_id', AsyncMock(return_value='456'), create=True)
+    mocker.patch.object(bb_tracker_jobs, 'get_db4_id', AsyncMock(return_value='789'), create=True)
+    db1 = Mock()
+    db2 = Mock()
+    db3 = Mock()
+    db4 = Mock()
+    db1.configure_mock(name='db1', get_result=AsyncMock(return_value='db1 result'))
+    db2.configure_mock(name='db2', get_result=AsyncMock(return_value=None))
+    db3.configure_mock(name='db3', get_result=AsyncMock(return_value=()))
+    db4.configure_mock(name='db4', get_result=AsyncMock(return_value={}))
+    return_value = await bb_tracker_jobs.try_webdbs((db1, db2, db3, db4), 'get_result')
+    assert return_value == {}
+    assert bb_tracker_jobs.get_db1_id.call_args_list == [call()]
+    assert bb_tracker_jobs.get_db2_id.call_args_list == [call()]
+    assert bb_tracker_jobs.get_db3_id.call_args_list == [call()]
+    assert bb_tracker_jobs.get_db4_id.call_args_list == [call()]
+    assert db1.get_result.call_args_list == []
+    assert db2.get_result.call_args_list == [call('123')]
+    assert db3.get_result.call_args_list == [call('456')]
+    assert db4.get_result.call_args_list == [call('789')]
+
 
 @pytest.mark.asyncio
 async def test_jobs_before_upload(bb_tracker_jobs, mocker):
