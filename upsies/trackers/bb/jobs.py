@@ -442,7 +442,7 @@ class BbTrackerJobs(TrackerJobsBase):
         )
 
     async def movie_get_poster_url(self, poster_job):
-        return await self.get_poster_url(poster_job, self.get_movie_poster_url)
+        return await self.get_resized_poster_url(poster_job, self.get_movie_poster_url)
 
     @cached_property
     def movie_tags_job(self):
@@ -545,7 +545,7 @@ class BbTrackerJobs(TrackerJobsBase):
         )
 
     async def series_get_poster_url(self, poster_job):
-        return await self.get_poster_url(poster_job, self.get_series_poster_url)
+        return await self.get_resized_poster_url(poster_job, self.get_series_poster_url)
 
     @cached_property
     def series_tags_job(self):
@@ -798,12 +798,44 @@ class BbTrackerJobs(TrackerJobsBase):
         info_string = ' / '.join(i for i in info if i)
         return ' '.join(title) + f' [{info_string}]'
 
-    async def get_poster_url(self, poster_job, poster_url_getter):
-        # Get original poster URL (e.g. "http://imdb.com/...jpg")
-        poster_url = await poster_url_getter()
-        if not poster_url:
-            self.error('Failed to find poster')
+    async def get_resized_poster_url(self, poster_job, poster_url_getter):
+        poster_path = await self.get_poster_file(poster_job, poster_url_getter)
+        if not poster_path:
+            self.error('Provide a poster file or URL with the --poster-file option.')
         else:
+            # Resize poster
+            try:
+                resized_poster_path = image.resize(poster_path, width=300)
+            except errors.ImageResizeError as e:
+                self.error(f'Poster resizing failed: {e}')
+            else:
+                _log.debug('Poster resized: %r', resized_poster_path)
+                # Upload poster to self.image_host
+                poster_job.info = f'Uploading poster to {self.image_host.name}'
+                try:
+                    return await self.image_host.upload(resized_poster_path)
+                except errors.RequestError as e:
+                    self.error(f'Poster upload failed: {e}')
+                finally:
+                    poster_job.info = ''
+
+    async def get_poster_file(self, poster_job, poster_url_getter):
+        if self.cli_args.poster_file:
+            # Get poster from CLI argument
+            if re.search(r'^[a-z]+://', self.cli_args.poster_file):
+                # CLI argument is URL
+                poster_url = self.cli_args.poster_file
+            else:
+                # CLI argument is file path
+                return self.cli_args.poster_file
+        else:
+            # Get poster URL from webdb (e.g. "https://imdb.com/...jpg")
+            poster_url = await poster_url_getter()
+
+        if not poster_url:
+            self.error('Failed to find poster URL.')
+        else:
+            # Download poster
             poster_job.info = f'Downloading poster: {poster_url}'
             poster_path = os.path.join(poster_job.home_directory, 'poster.bb.jpg')
             try:
@@ -811,25 +843,7 @@ class BbTrackerJobs(TrackerJobsBase):
             except errors.RequestError as e:
                 self.error(f'Poster download failed: {e}')
             else:
-                if not os.path.exists(poster_path) or not os.path.getsize(poster_path) > 0:
-                    self.error(f'Poster download failed: {poster_url}')
-                else:
-                    # Resize poster
-                    try:
-                        resized_poster_path = image.resize(poster_path, width=300)
-                    except errors.ImageResizeError as e:
-                        self.error(f'Poster resizing failed: {e}')
-                    else:
-                        _log.debug('Poster resized: %r', resized_poster_path)
-                        # Upload poster to self.image_host
-                        poster_job.info = f'Uploading poster to {self.image_host.name}'
-                        try:
-                            real_poster_url = await self.image_host.upload(resized_poster_path)
-                        except errors.RequestError as e:
-                            self.error(f'Poster upload failed: {e}')
-                        else:
-                            poster_job.info = ''
-                            poster_job.send(real_poster_url)
+                return poster_path
 
     async def get_movie_poster_url(self):
         imdb_id = await self.get_imdb_id()

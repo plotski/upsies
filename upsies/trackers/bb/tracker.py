@@ -21,6 +21,9 @@ class BbTracker(TrackerBase):
     label = 'bB'
 
     argument_definitions = {
+        ('--poster-file',): {
+            'help': 'Path or URL to poster image',
+        },
         ('--title', '-t'): {
             'group': 'single-job',
             'help': 'Only generate title',
