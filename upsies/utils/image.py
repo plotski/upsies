@@ -89,7 +89,24 @@ def _make_resize_cmd(image_file, dimensions, resized_file):
         f'file:{resized_file}',
     )
 
-def resize(image_file, width=None, height=None):
+def resize(image_file, width=None, height=None, target_file=None):
+    """
+    Resize image, preserve aspect ratio
+
+    :param image_file: Path to source image
+    :param width: Desired image width in pixels or `None`
+    :param height: Desired image height in pixels or `None`
+    :param target_file: Path to resized image or `None` to generate a path from
+        `image_file`, `width` and `height`
+
+    If `width` and `height` are falsy (the default) return `image_file` if
+    `target_file` is falsy or copy `image_file` to `target_file` and return
+    `target_file`.
+
+    :raise ImageResizeError: if resizing fails
+
+    :return: Path to resized image
+    """
     try:
         utils.fs.assert_file_readable(image_file)
     except errors.ContentError as e:
@@ -101,29 +118,40 @@ def resize(image_file, width=None, height=None):
         raise errors.ImageResizeError(f'Height must be greater than zero: {height}')
     elif width and height:
         dimensions = f'w={int(width)}:h={int(height)}'
-        extension = f'.{width}x{height}.'
+        extension = f'.width={width},height={height}.'
     elif width:
         dimensions = f'w={int(width)}:h=-1'
-        extension = f'.{width}x-1.'
+        extension = f'.width={width}.'
     elif height:
         dimensions = f'w=-1:h={int(height)}'
-        extension = f'.-1x{height}.'
+        extension = f'.height={height}.'
     else:
-        return image_file
+        if target_file:
+            import shutil
+            try:
+                return str(shutil.copy2(image_file, target_file))
+            except OSError as e:
+                msg = e.strerror if e.strerror else str(e)
+                raise errors.ImageResizeError(
+                    f'Failed to copy {image_file} to {target_file}: {msg}'
+                )
+        else:
+            return str(image_file)
 
-    target_path = (
-        utils.fs.strip_extension(image_file)
-        + extension
-        + utils.fs.file_extension(image_file)
-    )
+    if not target_file:
+        target_file = (
+            utils.fs.strip_extension(image_file)
+            + extension
+            + utils.fs.file_extension(image_file)
+        )
     _log.debug('Resizing to %r: %r', dimensions, image_file)
-    _log.debug('Resize target: %r', target_path)
+    _log.debug('Resize target: %r', target_file)
 
-    cmd = _make_resize_cmd(image_file, dimensions, target_path)
+    cmd = _make_resize_cmd(image_file, dimensions, target_file)
     output = utils.subproc.run(cmd, ignore_errors=True, join_stderr=True)
-    if not os.path.exists(target_path):
+    if not os.path.exists(target_file):
         raise errors.ImageResizeError(
             f'{image_file}: Failed to resize: {output}'
         )
     else:
-        return target_path
+        return str(target_file)

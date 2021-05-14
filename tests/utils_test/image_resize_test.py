@@ -1,3 +1,4 @@
+import os
 from unittest.mock import call
 
 import pytest
@@ -31,33 +32,67 @@ def test_resize_with_invalid_height(mocker):
     with pytest.raises(errors.ImageResizeError, match=r'^Height must be greater than zero: -1$'):
         image.resize('a.jpg', 20, -1)
 
+@pytest.mark.parametrize('extension', ('jpg', 'png'))
+@pytest.mark.parametrize('target_file', (None, 'b'))
 @pytest.mark.parametrize(
-    argnames='image_file, width, height, exp_args',
+    argnames='width, height',
     argvalues=(
-        ('a.jpg', 10, 20,
-         ['-y', '-loglevel', 'level+error', '-i', 'file:a.jpg', '-vf', 'scale=w=10:h=20', 'file:a.10x20.jpg']),
-        ('a.jpg', 10, None,
-         ['-y', '-loglevel', 'level+error', '-i', 'file:a.jpg', '-vf', 'scale=w=10:h=-1', 'file:a.10x-1.jpg']),
-        ('a.jpg', None, 20,
-         ['-y', '-loglevel', 'level+error', '-i', 'file:a.jpg', '-vf', 'scale=w=-1:h=20', 'file:a.-1x20.jpg']),
-        ('a.jpg', None, None,
-         []),
+        (10, 20),
+        (10, None),
+        (None, 20),
+        (None, None),
     ),
     ids=lambda v: str(v),
 )
-def test_resize_with_valid_dimensions(image_file, width, height, exp_args, mocker):
+def test_resize_with_valid_dimensions(width, height, target_file, extension, mocker, tmp_path):
     mocker.patch('upsies.utils.fs.assert_file_readable')
     mocker.patch('upsies.utils.image._ffmpeg_executable', return_value='ffmpeg')
     run_mock = mocker.patch('upsies.utils.subproc.run')
     mocker.patch('os.path.exists', return_value=True)
-    resized_image = image.resize(image_file, width, height)
-    if exp_args:
-        assert resized_image == f'a.{width or -1}x{height or -1}.jpg'
-        exp_cmd = tuple(['ffmpeg'] + exp_args)
-        assert run_mock.call_args_list == [call(exp_cmd, ignore_errors=True, join_stderr=True)]
+    image_file = tmp_path / f'a.{extension}'
+    image_file.write_bytes(b'image data')
+    if target_file:
+        target_file = str(tmp_path / f'{target_file}.{extension}')
+    resized_file = image.resize(image_file, width, height, target_file)
+
+    assert os.path.exists(resized_file)
+
+    if target_file:
+        exp_target_file = target_file
+    elif width and height:
+        exp_target_file = str(tmp_path / f'a.width={width},height={height}.{extension}')
+    elif width:
+        exp_target_file = str(tmp_path / f'a.width={width}.{extension}')
+    elif height:
+        exp_target_file = str(tmp_path / f'a.height={height}.{extension}')
     else:
-        assert resized_image == 'a.jpg'
+        exp_target_file = str(tmp_path / f'a.{extension}')
+    assert resized_file == exp_target_file
+
+    if width and height:
+        exp_ffmpeg_cmd = ('ffmpeg', '-y', '-loglevel', 'level+error', '-i', f'file:{image_file}',
+                          '-vf', f'scale=w={width}:h={height}', f'file:{resized_file}')
+    elif width:
+        exp_ffmpeg_cmd = ('ffmpeg', '-y', '-loglevel', 'level+error', '-i', f'file:{image_file}',
+                          '-vf', f'scale=w={width}:h=-1', f'file:{resized_file}')
+    elif height:
+        exp_ffmpeg_cmd = ('ffmpeg', '-y', '-loglevel', 'level+error', '-i', f'file:{image_file}',
+                          '-vf', f'scale=w=-1:h={height}', f'file:{resized_file}')
+    else:
+        exp_ffmpeg_cmd = None
+    if exp_ffmpeg_cmd:
+        assert run_mock.call_args_list == [call(exp_ffmpeg_cmd, ignore_errors=True, join_stderr=True)]
+    else:
         assert run_mock.call_args_list == []
+
+def test_resize_with_unwritable_target_file(mocker):
+    mocker.patch('upsies.utils.fs.assert_file_readable')
+    mocker.patch('upsies.utils.image._ffmpeg_executable', return_value='ffmpeg')
+    run_mock = mocker.patch('upsies.utils.subproc.run')
+    exp_error = 'Failed to copy image/does/not/exist.jpg to /path/does/not/exist/: No such file or directory'
+    with pytest.raises(errors.ImageResizeError, match=rf'^{exp_error}$'):
+        image.resize('image/does/not/exist.jpg', None, None, '/path/does/not/exist/')
+    assert run_mock.call_args_list == []
 
 
 def test_resize_with_failed_ffmpeg_command(mocker):
