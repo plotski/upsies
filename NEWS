@@ -1,6 +1,8 @@
 2021-??-?? 0.?.?
   * id: Added support for "id:..." query in case search results are incomplete.
   * NBL: Mention --ignore-dupes in relevant error message.
+  * bB: New --poster-file argument in case no poster is not found.
+  * bB: Fixed order of release info.
 
 
 2021-05-07 0.3.0
