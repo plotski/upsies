@@ -45,6 +45,7 @@ def screenshot(video_file, timestamp, screenshot_file, overwrite=False):
     :param bool overwrite: Whether to overwrite `screenshot_file` if it exists
 
     :raise ScreenshotError: if something goes wrong
+    :return: Path to screenshot file
     """
     try:
         utils.fs.assert_file_readable(video_file)
