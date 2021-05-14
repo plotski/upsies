@@ -118,7 +118,7 @@ class WebDbSearchJob(JobBase):
         """Search for initial query"""
         # It is important NOT to do this in initialize() because the window
         # between initialize() and execute() is used to register callbacks.
-        self._searcher.search(self._query)
+        self.search(self._query)
 
     async def wait(self):
         """Wait for any running internal coroutines"""

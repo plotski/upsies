@@ -169,10 +169,11 @@ def test_WebDbSearchJob_make_update_info_func(tmp_path, mocker, foodb):
     assert job._update_info.call_args_list == [call('key', 'value 1'), call('key', 'value 2')]
 
 
-def test_WebDbSearchJob_execute_does_initial_search(job):
-    assert job._searcher.search.call_args_list == []
+def test_WebDbSearchJob_execute_does_initial_search(job, mocker):
+    mocker.patch.object(job, 'search')
+    assert job.search.call_args_list == []
     job.execute()
-    assert job._searcher.search.call_args_list == [call(job.query)]
+    assert job.search.call_args_list == [call(job.query)]
 
 
 @pytest.mark.asyncio
