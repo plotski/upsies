@@ -32,20 +32,20 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def is_movie_release(self):
-        return self.release_type_job.choice is release.ReleaseType.movie
+        return self.release_type is release.ReleaseType.movie
 
     @property
     def is_season_release(self):
-        return self.release_type_job.choice is release.ReleaseType.season
+        return self.release_type is release.ReleaseType.season
 
     @property
     def is_episode_release(self):
-        return self.release_type_job.choice is release.ReleaseType.episode
+        return self.release_type is release.ReleaseType.episode
 
     @property
     def is_series_release(self):
-        return self.release_type_job.choice in (release.ReleaseType.season,
-                                                release.ReleaseType.episode)
+        return self.release_type in (release.ReleaseType.season,
+                                     release.ReleaseType.episode)
 
     @property
     def season(self):
@@ -1190,7 +1190,7 @@ class BbTrackerJobs(TrackerJobsBase):
             return post_data
 
         else:
-            raise RuntimeError(f'Weird release type: {self.release_type_job.choice!r}')
+            raise RuntimeError(f'Weird release type: {self.release_type!r}')
 
     @property
     def post_data_screenshot_urls(self):

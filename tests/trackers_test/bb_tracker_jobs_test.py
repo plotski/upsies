@@ -80,40 +80,32 @@ def test_release_type(bb_tracker_jobs, mocker):
 
 
 def test_is_movie_release(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
-                        PropertyMock(return_value=Mock(choice=utils.types.ReleaseType.movie)))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_type', PropertyMock(return_value=utils.types.ReleaseType.movie))
     assert bb_tracker_jobs.is_movie_release is True
     for value in (None, utils.types.ReleaseType.series, utils.types.ReleaseType.episode):
-        mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
-                            PropertyMock(return_value=Mock(choice=value)))
+        mocker.patch.object(type(bb_tracker_jobs), 'release_type', PropertyMock(return_value=value))
         assert bb_tracker_jobs.is_movie_release is False
 
 def test_is_season_release(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
-                        PropertyMock(return_value=Mock(choice=utils.types.ReleaseType.season)))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_type', PropertyMock(return_value=utils.types.ReleaseType.season))
     assert bb_tracker_jobs.is_season_release is True
     for value in (None, utils.types.ReleaseType.movie, utils.types.ReleaseType.episode):
-        mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
-                            PropertyMock(return_value=Mock(choice=value)))
+        mocker.patch.object(type(bb_tracker_jobs), 'release_type', PropertyMock(return_value=value))
         assert bb_tracker_jobs.is_season_release is False
 
 def test_is_episode_release(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
-                        PropertyMock(return_value=Mock(choice=utils.types.ReleaseType.episode)))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_type', PropertyMock(return_value=utils.types.ReleaseType.episode))
     assert bb_tracker_jobs.is_episode_release is True
     for value in (None, utils.types.ReleaseType.movie, utils.types.ReleaseType.season):
-        mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
-                            PropertyMock(return_value=Mock(choice=value)))
+        mocker.patch.object(type(bb_tracker_jobs), 'release_type', PropertyMock(return_value=value))
         assert bb_tracker_jobs.is_episode_release is False
 
 def test_is_series_release(bb_tracker_jobs, mocker):
     for value in (utils.types.ReleaseType.season, utils.types.ReleaseType.episode):
-        mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
-                            PropertyMock(return_value=Mock(choice=value)))
+        mocker.patch.object(type(bb_tracker_jobs), 'release_type', PropertyMock(return_value=value))
         assert bb_tracker_jobs.is_series_release is True
     for value in (None, utils.types.ReleaseType.movie):
-        mocker.patch.object(type(bb_tracker_jobs), 'release_type_job',
-                            PropertyMock(return_value=Mock(choice=value)))
+        mocker.patch.object(type(bb_tracker_jobs), 'release_type', PropertyMock(return_value=value))
         assert bb_tracker_jobs.is_series_release is False
 
 
@@ -2444,7 +2436,7 @@ async def test_post_data_for_series(is_scene_release, bb_tracker_jobs, mocker):
 async def test_post_data_for_unknown_release_type(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice', PropertyMock(return_value='foo'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_type', PropertyMock(return_value='foo'))
     with pytest.raises(RuntimeError, match="Weird release type: 'foo'"):
         bb_tracker_jobs.post_data
 
