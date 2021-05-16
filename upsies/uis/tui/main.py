@@ -29,7 +29,7 @@ def _main(args=None):
         print(e, file=sys.stderr)
         return 1
 
-    except errors.DependencyError as e:
+    except (errors.DependencyError, errors.ContentError) as e:
         print(e, file=sys.stderr)
         return 1
 
