@@ -13,7 +13,7 @@ _log = logging.getLogger(__name__)
 subprocess = LazyModule(module='subprocess', namespace=globals())
 shlex = LazyModule(module='shlex', namespace=globals())
 
-_run_output_cache = {}
+_command_output_cache = {}
 
 
 def run(argv, ignore_errors=False, join_stderr=False, cache=False):
@@ -34,8 +34,8 @@ def run(argv, ignore_errors=False, join_stderr=False, cache=False):
     :rtype: str
     """
     argv = tuple(str(arg) for arg in argv)
-    if cache and argv in _run_output_cache:
-        stdout, stderr = _run_output_cache[argv]
+    if cache and argv in _command_output_cache:
+        stdout, stderr = _command_output_cache[argv]
     else:
         fh_stdout = subprocess.PIPE
         if join_stderr:
@@ -57,7 +57,7 @@ def run(argv, ignore_errors=False, join_stderr=False, cache=False):
         else:
             stdout, stderr = proc.stdout, proc.stderr
             if cache:
-                _run_output_cache[argv] = (stdout, stderr)
+                _command_output_cache[argv] = (stdout, stderr)
     if stderr and not ignore_errors:
         raise errors.ProcessError(stderr)
     return stdout
