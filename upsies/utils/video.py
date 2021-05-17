@@ -17,8 +17,10 @@ _log = logging.getLogger(__name__)
 
 if os_family() == 'windows':
     _mediainfo_executable = 'mediainfo.exe'
+    _ffprobe_executable = 'ffprobe.exe'
 else:
     _mediainfo_executable = 'mediainfo'
+    _ffprobe_executable = 'ffprobe'
 
 
 def _run_mediainfo(video_file_path, *args):
@@ -53,6 +55,7 @@ def mediainfo(path):
     return text.replace(parent_dir + os.sep, '')
 
 
+@functools.lru_cache(maxsize=None)
 def duration(path):
     """
     Return video duration in seconds (float)
@@ -67,6 +70,25 @@ def duration(path):
     return _duration(first_video(path))
 
 def _duration(video_file_path):
+    try:
+        return _duration_from_ffprobe(video_file_path)
+    except (RuntimeError, errors.DependencyError, errors.ProcessError):
+        return _duration_from_mediainfo(video_file_path)
+
+def _duration_from_ffprobe(video_file_path):
+    cmd = (
+        _ffprobe_executable,
+        '-v', 'error', '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        make_ffmpeg_input(video_file_path),
+    )
+    length = subproc.run(cmd, ignore_errors=True)
+    try:
+        return float(length.strip())
+    except ValueError:
+        raise RuntimeError(f'Unexpected output from {cmd}: {length!r}')
+
+def _duration_from_mediainfo(video_file_path):
     tracks = _tracks(video_file_path)
     try:
         return float(tracks.get('General')[0]['Duration'])

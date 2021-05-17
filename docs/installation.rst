@@ -15,7 +15,8 @@ Dependencies
 
 * `Python <https://www.python.org/>`_ 3.6 or higher
 * `mediainfo <https://mediaarea.net/en/MediaInfo>`_
-* `ffmpeg <https://ffmpeg.org/>`_ (optional; only for creating screenshots)
+* `ffmpeg <https://ffmpeg.org/>`_ (optional: screenshot creation)
+* `ffprobe <https://ffmpeg.org/>`_ (optional: faster video duration detection)
 
 Installing Current Release
 --------------------------
