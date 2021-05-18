@@ -31,6 +31,7 @@ class TmdbApi(WebDbApiBase):
             url=f'{self._url_base}/{path.lstrip("/")}',
             params=params,
             cache=True,
+            user_agent='Mozilla/5.0 (compatible; MSIE 8.0; Windows NT 6.3; Win64; x64)',
         )
         self._soup_cache[cache_id] = html.parse(text)
         return self._soup_cache[cache_id]
