@@ -134,9 +134,9 @@ class ChoiceJob(JobBase):
 
         Setting this property finishes the job.
 
-        While :attr:`output` contains the user-readable string (first item of
-        the chosen item in :attr:`choices`), this is the object attached to it
-        (second item).
+        While :attr:`~.base.JobBase.output` contains the user-readable string
+        (first item of the chosen item in :attr:`choices`), this is the object
+        attached to it (second item).
 
         This property can be set to an index in :attr:`choices`, an item in
         :attr:`choices` or the first or second item of an item in
