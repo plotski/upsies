@@ -349,19 +349,35 @@ class TrackerJobsBase(abc.ABC):
         :param name: See :class:`~.jobs.dialog.ChoiceJob`
         :param label: See :class:`~.jobs.dialog.ChoiceJob`
         :param autodetected: Autodetected choice
-        :param options: Sequence of :class:`dict`-like objects with the keys
-            ``label`` (what the user sees), ``value`` (what is available via the
-            :attr:`~.dialog.ChoiceJob.choice` attribute of the returned object)
-            and ``regex`` (if this matches `autodetected`, autofocus this
-            option)
+
+        :param options: Sequence of :class:`dict`-like objects with the
+            following keys:
+
+            - ``label``: User-facing value
+
+            - ``value``: Internal value that is made available via the
+              :attr:`~.dialog.ChoiceJob.choice` attribute of the returned object
+
+            - ``match`` (Optional): Callable that gets `autodetected`; if its return value
+              is truthy, this option is autofocused
+
+            - ``regex`` (Optional): Regular expression; if this matches `autodetected`,
+              this option is autofocused
+
         :param condition: See :attr:`~.base.JobBase.condition`
         :param bool autofinish: Whether to choose the autodetected value with no
             user-interaction
         """
+        def is_autodetected(option):
+            regex = option.get('regex')
+            match = option.get('match')
+            return (regex and regex.search(autodetected)
+                    or match and match(autodetected))
+
         focused = None
         choices = []
         for option in options:
-            if not focused and option['regex'].search(autodetected):
+            if not focused and is_autodetected(option):
                 choices.append((f'{option["label"]} (autodetected)', option['value']))
                 focused = choices[-1]
                 autofinish = autofinish and True
