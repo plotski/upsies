@@ -505,6 +505,51 @@ def test_scene_check_job_is_singleton(mocker):
     assert tracker_jobs.scene_check_job is tracker_jobs.scene_check_job
 
 
+@pytest.mark.parametrize('autofinish', (True, False), ids=lambda v: 'autofinish' if v else 'no autofinish')
+@pytest.mark.parametrize(
+    argnames='autodetected, exp_choices, exp_focused',
+    argvalues=(
+        ('5', [('8k', 8000), ('9k', 9000), ('10k', 10000)], None),
+        ('8', [('8k (autodetected)', 8000), ('9k', 9000), ('10k', 10000)], ('8k (autodetected)', 8000)),
+        ('9', [('8k', 8000), ('9k (autodetected)', 9000), ('10k', 10000)], ('9k (autodetected)', 9000)),
+        ('10', [('8k', 8000), ('9k', 9000), ('10k (autodetected)', 10000)], ('10k (autodetected)', 10000)),
+    ),
+)
+@pytest.mark.asyncio
+async def test_make_choice_job(autodetected, exp_choices, exp_focused, autofinish, mocker):
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+    )
+    mocker.patch.object(type(tracker_jobs), 'common_job_args', PropertyMock(return_value={'foo': 'bar'}))
+    ChoiceJob_mock = mocker.patch('upsies.jobs.dialog.ChoiceJob')
+    ChoiceJob_mock.return_value.choice = None
+    job = tracker_jobs.make_choice_job(
+        name='foo',
+        label='Foo',
+        options=(
+            {'label': '8k', 'value': 8000, 'regex': re.compile(r'8')},
+            {'label': '9k', 'value': 9000, 'regex': re.compile(r'9')},
+            {'label': '10k', 'value': 10000, 'regex': re.compile(r'10')},
+        ),
+        autodetected=autodetected,
+        autofinish=autofinish,
+        condition='mock condition',
+    )
+    assert ChoiceJob_mock.call_args_list == [call(
+        name='foo',
+        label='Foo',
+        condition='mock condition',
+        choices=exp_choices,
+        focused=exp_focused,
+        foo='bar',
+    )]
+    if autofinish and exp_focused:
+        assert job.choice == exp_focused
+    else:
+        assert job.choice is None
+
+
 @pytest.mark.parametrize(
     argnames='job, slice, exp_error, exp_output',
     argvalues=(

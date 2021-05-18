@@ -303,11 +303,11 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_resolution_job(self):
-        return self.make_choices_job(
+        return self.make_choice_job(
             name='movie-resolution',
             label='Resolution',
             condition=self.make_job_condition('movie_resolution_job', release.ReleaseType.movie),
-            autodetect_value=self.release_info_resolution,
+            autodetected=self.release_info_resolution,
             autofinish=True,
             options=(
                 {'label': '4320p', 'value': '2160p', 'regex': re.compile(r'4320p')},
@@ -326,11 +326,11 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_source_job(self):
-        return self.make_choices_job(
+        return self.make_choice_job(
             name='movie-source',
             label='Source',
             condition=self.make_job_condition('movie_source_job', release.ReleaseType.movie),
-            autodetect_value=self.release_name.source,
+            autodetected=self.release_name.source,
             autofinish=True,
             options=(
                 {'label': 'BluRay', 'value': 'BluRay', 'regex': re.compile('^BluRay')},  # BluRay or BluRay Remux
@@ -358,11 +358,11 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_audio_codec_job(self):
-        return self.make_choices_job(
+        return self.make_choice_job(
             name='movie-audio-codec',
             label='Audio Codec',
             condition=self.make_job_condition('movie_audio_codec_job', release.ReleaseType.movie),
-            autodetect_value=self.release_info_audio_format,
+            autodetected=self.release_info_audio_format,
             autofinish=True,
             options=(
                 {'label': 'AAC', 'value': 'AAC', 'regex': re.compile(r'^AAC$')},
@@ -381,11 +381,11 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_video_codec_job(self):
-        return self.make_choices_job(
+        return self.make_choice_job(
             name='movie-video-codec',
             label='Video Codec',
             condition=self.make_job_condition('movie_video_codec_job', release.ReleaseType.movie),
-            autodetect_value=self.release_name.video_format,
+            autodetected=self.release_name.video_format,
             autofinish=True,
             options=(
                 {'label': 'x264', 'value': 'x264', 'regex': re.compile(r'x264')},
@@ -402,11 +402,11 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_container_job(self):
-        return self.make_choices_job(
+        return self.make_choice_job(
             name='movie-container',
             label='Container',
             condition=self.make_job_condition('movie_container_job', release.ReleaseType.movie),
-            autodetect_value=fs.file_extension(video.first_video(self.content_path)),
+            autodetected=fs.file_extension(video.first_video(self.content_path)),
             autofinish=True,
             options=(
                 {'label': 'AVI', 'value': 'AVI', 'regex': re.compile(r'(?i:AVI)')},
@@ -1179,44 +1179,3 @@ class BbTrackerJobs(TrackerJobsBase):
     def post_data_screenshot_urls(self):
         urls = self.get_job_output(self.upload_screenshots_job)
         return {f'screenshot{i}': url for i, url in enumerate(urls, start=1)}
-
-    # Other stuff
-
-    def make_choices_job(self, name, label, options, condition=None,
-                         autodetect_value=None, autofinish=False):
-        """
-        Return :class:`~.jobs.dialog.ChoiceJob` instance
-
-        :param name: See :class:`~.jobs.dialog.ChoiceJob`
-        :param label: See :class:`~.jobs.dialog.ChoiceJob`
-        :param autodetect_value: Autodetected choice
-        :param options: Sequence of `(label, value, regex)` tuples. `label` is
-            presented to the user and `value` is available via
-            :attr:`~.jobs.dialog.ChoiceJob.choice` when this job is
-            finished. The first `regex` that matches `autodetect_value` is
-            visually marked as "autodetected" for the user.
-        :param condition: See ``condition`` for :class:`~.base.JobBase`
-        :param bool autofinish: Whether to choose the autodetected value with no
-            user-interaction
-        """
-        focused = None
-        choices = []
-        for option in options:
-            if not focused and option['regex'].search(autodetect_value):
-                choices.append((f'{option["label"]} (autodetected)', option['value']))
-                focused = choices[-1]
-                autofinish = autofinish and True
-            else:
-                choices.append((option['label'], option['value']))
-
-        job = jobs.dialog.ChoiceJob(
-            name=name,
-            label=label,
-            condition=condition,
-            choices=choices,
-            focused=focused,
-            **self.common_job_args,
-        )
-        if autofinish and focused:
-            job.choice = focused
-        return job

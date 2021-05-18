@@ -341,6 +341,45 @@ class TrackerJobsBase(abc.ABC):
             **self.common_job_args,
         )
 
+    def make_choice_job(self, name, label, options, condition=None,
+                        autodetected=None, autofinish=False):
+        """
+        Return :class:`~.jobs.dialog.ChoiceJob` instance
+
+        :param name: See :class:`~.jobs.dialog.ChoiceJob`
+        :param label: See :class:`~.jobs.dialog.ChoiceJob`
+        :param autodetected: Autodetected choice
+        :param options: Sequence of :class:`dict`-like objects with the keys
+            ``label`` (what the user sees), ``value`` (what is available via the
+            :attr:`~.dialog.ChoiceJob.choice` attribute of the returned object)
+            and ``regex`` (if this matches `autodetected`, autofocus this
+            option)
+        :param condition: See :attr:`~.base.JobBase.condition`
+        :param bool autofinish: Whether to choose the autodetected value with no
+            user-interaction
+        """
+        focused = None
+        choices = []
+        for option in options:
+            if not focused and option['regex'].search(autodetected):
+                choices.append((f'{option["label"]} (autodetected)', option['value']))
+                focused = choices[-1]
+                autofinish = autofinish and True
+            else:
+                choices.append((option['label'], option['value']))
+
+        job = jobs.dialog.ChoiceJob(
+            name=name,
+            label=label,
+            condition=condition,
+            choices=choices,
+            focused=focused,
+            **self.common_job_args,
+        )
+        if autofinish and focused:
+            job.choice = focused
+        return job
+
     def get_job_output(self, job, slice=None):
         """
         Helper method for getting output from job

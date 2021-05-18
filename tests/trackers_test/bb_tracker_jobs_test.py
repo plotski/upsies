@@ -512,13 +512,13 @@ def test_fill_in_movie_year(bb_tracker_jobs, mocker):
 
 def test_movie_resolution_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
-    mocker.patch.object(bb_tracker_jobs, 'make_choices_job')
-    assert bb_tracker_jobs.movie_resolution_job is bb_tracker_jobs.make_choices_job.return_value
-    assert bb_tracker_jobs.make_choices_job.call_args_list == [call(
+    mocker.patch.object(bb_tracker_jobs, 'make_choice_job')
+    assert bb_tracker_jobs.movie_resolution_job is bb_tracker_jobs.make_choice_job.return_value
+    assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
         name='movie-resolution',
         label='Resolution',
         condition=bb_tracker_jobs.make_job_condition.return_value,
-        autodetect_value=bb_tracker_jobs.release_info_resolution,
+        autodetected=bb_tracker_jobs.release_info_resolution,
         autofinish=True,
         options=(
             {'label': '4320p', 'value': '2160p', 'regex': re.compile(r'4320p')},
@@ -539,13 +539,13 @@ def test_movie_resolution_job(bb_tracker_jobs, mocker):
 
 def test_movie_source_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
-    mocker.patch.object(bb_tracker_jobs, 'make_choices_job')
-    assert bb_tracker_jobs.movie_source_job is bb_tracker_jobs.make_choices_job.return_value
-    assert bb_tracker_jobs.make_choices_job.call_args_list == [call(
+    mocker.patch.object(bb_tracker_jobs, 'make_choice_job')
+    assert bb_tracker_jobs.movie_source_job is bb_tracker_jobs.make_choice_job.return_value
+    assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
         name='movie-source',
         label='Source',
         condition=bb_tracker_jobs.make_job_condition.return_value,
-        autodetect_value=bb_tracker_jobs.release_name.source,
+        autodetected=bb_tracker_jobs.release_name.source,
         autofinish=True,
         options=(
             {'label': 'BluRay', 'value': 'BluRay', 'regex': re.compile('^BluRay')},  # BluRay or BluRay Remux
@@ -575,13 +575,13 @@ def test_movie_source_job(bb_tracker_jobs, mocker):
 
 def test_movie_audio_codec_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
-    mocker.patch.object(bb_tracker_jobs, 'make_choices_job')
-    assert bb_tracker_jobs.movie_audio_codec_job is bb_tracker_jobs.make_choices_job.return_value
-    assert bb_tracker_jobs.make_choices_job.call_args_list == [call(
+    mocker.patch.object(bb_tracker_jobs, 'make_choice_job')
+    assert bb_tracker_jobs.movie_audio_codec_job is bb_tracker_jobs.make_choice_job.return_value
+    assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
         name='movie-audio-codec',
         label='Audio Codec',
         condition=bb_tracker_jobs.make_job_condition.return_value,
-        autodetect_value=bb_tracker_jobs.release_info_audio_format,
+        autodetected=bb_tracker_jobs.release_info_audio_format,
         autofinish=True,
         options=(
             {'label': 'AAC', 'value': 'AAC', 'regex': re.compile(r'^AAC$')},
@@ -602,13 +602,13 @@ def test_movie_audio_codec_job(bb_tracker_jobs, mocker):
 
 def test_movie_video_codec_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
-    mocker.patch.object(bb_tracker_jobs, 'make_choices_job')
-    assert bb_tracker_jobs.movie_video_codec_job is bb_tracker_jobs.make_choices_job.return_value
-    assert bb_tracker_jobs.make_choices_job.call_args_list == [call(
+    mocker.patch.object(bb_tracker_jobs, 'make_choice_job')
+    assert bb_tracker_jobs.movie_video_codec_job is bb_tracker_jobs.make_choice_job.return_value
+    assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
         name='movie-video-codec',
         label='Video Codec',
         condition=bb_tracker_jobs.make_job_condition.return_value,
-        autodetect_value=bb_tracker_jobs.release_name.video_format,
+        autodetected=bb_tracker_jobs.release_name.video_format,
         autofinish=True,
         options=(
             {'label': 'x264', 'value': 'x264', 'regex': re.compile(r'x264')},
@@ -627,13 +627,13 @@ def test_movie_video_codec_job(bb_tracker_jobs, mocker):
 
 def test_movie_container_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
-    mocker.patch.object(bb_tracker_jobs, 'make_choices_job')
-    assert bb_tracker_jobs.movie_container_job is bb_tracker_jobs.make_choices_job.return_value
-    assert bb_tracker_jobs.make_choices_job.call_args_list == [call(
+    mocker.patch.object(bb_tracker_jobs, 'make_choice_job')
+    assert bb_tracker_jobs.movie_container_job is bb_tracker_jobs.make_choice_job.return_value
+    assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
         name='movie-container',
         label='Container',
         condition=bb_tracker_jobs.make_job_condition.return_value,
-        autodetect_value=utils.fs.file_extension(utils.video.first_video(bb_tracker_jobs.content_path)),
+        autodetected=utils.fs.file_extension(utils.video.first_video(bb_tracker_jobs.content_path)),
         autofinish=True,
         options=(
             {'label': 'AVI', 'value': 'AVI', 'regex': re.compile(r'(?i:AVI)')},
@@ -2388,45 +2388,3 @@ async def test_post_data_screenshot_urls(bb_tracker_jobs, mocker):
     assert bb_tracker_jobs.get_job_output.call_args_list == [
         call(bb_tracker_jobs.upload_screenshots_job),
     ]
-
-
-@pytest.mark.parametrize('autofinish', (True, False), ids=lambda v: 'autofinish' if v else 'no autofinish')
-@pytest.mark.parametrize(
-    argnames='autodetect_value, exp_choices, exp_focused',
-    argvalues=(
-        ('5', [('8k', 8000), ('9k', 9000), ('10k', 10000)], None),
-        ('8', [('8k (autodetected)', 8000), ('9k', 9000), ('10k', 10000)], ('8k (autodetected)', 8000)),
-        ('9', [('8k', 8000), ('9k (autodetected)', 9000), ('10k', 10000)], ('9k (autodetected)', 9000)),
-        ('10', [('8k', 8000), ('9k', 9000), ('10k (autodetected)', 10000)], ('10k (autodetected)', 10000)),
-    ),
-)
-@pytest.mark.asyncio
-async def test_make_choices_job(autodetect_value, exp_choices, exp_focused,
-                                autofinish, bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'common_job_args', PropertyMock(return_value={'foo': 'bar'}))
-    ChoiceJob_mock = mocker.patch('upsies.jobs.dialog.ChoiceJob')
-    ChoiceJob_mock.return_value.choice = None
-    job = bb_tracker_jobs.make_choices_job(
-        name='foo',
-        label='Foo',
-        options=(
-            {'label': '8k', 'value': 8000, 'regex': re.compile(r'8')},
-            {'label': '9k', 'value': 9000, 'regex': re.compile(r'9')},
-            {'label': '10k', 'value': 10000, 'regex': re.compile(r'10')},
-        ),
-        autodetect_value=autodetect_value,
-        autofinish=autofinish,
-        condition='mock condition',
-    )
-    assert ChoiceJob_mock.call_args_list == [call(
-        name='foo',
-        label='Foo',
-        condition='mock condition',
-        choices=exp_choices,
-        focused=exp_focused,
-        foo='bar',
-    )]
-    if autofinish and exp_focused:
-        assert job.choice == exp_focused
-    else:
-        assert job.choice is None
