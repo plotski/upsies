@@ -1,3 +1,5 @@
+import builtins
+import re
 from unittest.mock import Mock, PropertyMock, call
 
 import pytest
@@ -501,3 +503,51 @@ def test_scene_check_job_is_singleton(mocker):
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     assert tracker_jobs.scene_check_job is tracker_jobs.scene_check_job
+
+
+@pytest.mark.parametrize(
+    argnames='job, slice, exp_error, exp_output',
+    argvalues=(
+        (Mock(is_finished=False, output=('foo', 'bar', 'baz')),
+         None,
+         'Unfinished job: asdf',
+         ()),
+        (Mock(is_finished=True, output=('foo', 'bar', 'baz')),
+         None,
+         None,
+         ('foo', 'bar', 'baz')),
+        (Mock(is_finished=True, output=('foo', 'bar', 'baz')),
+         0,
+         None,
+         'foo'),
+        (Mock(is_finished=True, output=('foo', 'bar', 'baz')),
+         1,
+         None,
+         'bar'),
+        (Mock(is_finished=True, output=('foo', 'bar', 'baz')),
+         2,
+         None,
+         'baz'),
+        (Mock(is_finished=True, output=('foo', 'bar', 'baz')),
+         builtins.slice(1, 3),
+         None,
+         ('bar', 'baz')),
+        (Mock(is_finished=True, output=('foo', 'bar', 'baz')),
+         10,
+         "Job finished with insufficient output: asdf: ('foo', 'bar', 'baz')",
+         ()),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_job_output(job, slice, exp_error, exp_output, mocker):
+    job.configure_mock(name='asdf')
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+    )
+    if exp_error:
+        with pytest.raises(RuntimeError, match=rf'^{re.escape(exp_error)}$'):
+            tracker_jobs.get_job_output(job, slice)
+    else:
+        output = tracker_jobs.get_job_output(job, slice)
+        assert output == exp_output

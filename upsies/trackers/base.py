@@ -4,6 +4,7 @@ Abstract base class for tracker APIs
 
 import abc
 import argparse
+import builtins
 
 from .. import jobs
 from ..utils import cached_property, fs, signal, webdbs
@@ -339,6 +340,29 @@ class TrackerJobsBase(abc.ABC):
             content_path=self.content_path,
             **self.common_job_args,
         )
+
+    def get_job_output(self, job, slice=None):
+        """
+        Helper method for getting output from job
+
+        `job` must be finished.
+
+        :param job: :class:`~.jobs.base.JobBase` instance
+        :param slice: :class:`int` to get a specific item from `job`'s output,
+            `None` to return all output as a list or a :class:`slice` object
+
+        :raise RuntimeError: if `job` is not finished or getting `slice` from
+            :attr:`~.base.JobBase.output` raises an :class:`IndexError`
+        :return: :class:`list` or :class:`str`
+        """
+        if not job.is_finished:
+            raise RuntimeError(f'Unfinished job: {job.name}')
+        if slice is None:
+            slice = builtins.slice(None, None)
+        try:
+            return job.output[slice]
+        except IndexError:
+            raise RuntimeError(f'Job finished with insufficient output: {job.name}: {job.output}')
 
 
 class TrackerBase(abc.ABC):
