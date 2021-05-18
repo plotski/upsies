@@ -103,7 +103,7 @@ class JobBase(abc.ABC):
     @property
     def is_enabled(self):
         """
-        Return value of `condition` as :class:`bool`
+        Return value of :attr:`condition` as :class:`bool`
 
         If this value is `False`, this job must not be started nor included in
         the UI.
