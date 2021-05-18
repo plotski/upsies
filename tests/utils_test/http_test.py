@@ -417,12 +417,21 @@ async def test_request_does_not_send_auth(method, mock_cache, httpserver):
     assert result == 'have this'
     assert isinstance(result, http.Result)
 
+@pytest.mark.parametrize(
+    argnames='user_agent, exp_user_agent',
+    argvalues=(
+        (True, f'{__project_name__}/{__version__}'),
+        (False, None),
+        ('Mozilla/5.0 (compatible; MSIE 8.0; Windows NT 6.3; Win64; x64)',
+         'Mozilla/5.0 (compatible; MSIE 8.0; Windows NT 6.3; Win64; x64)'),
+    ),
+)
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
-async def test_request_sends_user_agent(method, mock_cache, httpserver):
+async def test_request_sends_user_agent(method, user_agent, exp_user_agent, mock_cache, httpserver):
     class Handler(RequestHandler):
         def handle(self, request):
-            assert request.headers.get('User-Agent') == f'{__project_name__}/{__version__}'
+            assert request.headers.get('User-Agent') == exp_user_agent
             return Response('have this')
 
     httpserver.expect_request(
@@ -434,29 +443,7 @@ async def test_request_sends_user_agent(method, mock_cache, httpserver):
     result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
-        user_agent=True,
-    )
-    assert result == 'have this'
-    assert isinstance(result, http.Result)
-
-@pytest.mark.parametrize('method', ('GET', 'POST'))
-@pytest.mark.asyncio
-async def test_request_does_not_send_user_agent(method, mock_cache, httpserver):
-    class Handler(RequestHandler):
-        def handle(self, request):
-            assert request.headers.get('User-Agent') is None
-            return Response('have this')
-
-    httpserver.expect_request(
-        uri='/foo',
-        method=method,
-    ).respond_with_handler(
-        Handler(),
-    )
-    result = await http._request(
-        method=method,
-        url=httpserver.url_for('/foo'),
-        user_agent=False,
+        user_agent=user_agent,
     )
     assert result == 'have this'
     assert isinstance(result, http.Result)

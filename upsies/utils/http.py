@@ -188,7 +188,6 @@ class Result(str):
 
 async def _request(method, url, headers={}, params={}, data={}, files={},
                    allow_redirects=True, cache=False, auth=None, user_agent=False):
-    assert isinstance(user_agent, bool)
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
 
@@ -207,7 +206,9 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
         **payload,
     )
 
-    if not user_agent:
+    if isinstance(user_agent, str):
+        request.headers['User-Agent'] = user_agent
+    elif not user_agent:
         del request.headers['User-Agent']
 
     # Block when requesting the same URL simultaneously
