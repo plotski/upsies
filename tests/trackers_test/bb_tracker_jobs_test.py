@@ -2252,24 +2252,6 @@ async def test_submission_ok(monojob_attributes, parent_ok, exp_ok, bb_tracker_j
     assert ok == exp_ok
 
 
-@pytest.mark.parametrize(
-    argnames='job, attribute, exp_error, exp_value',
-    argvalues=(
-        (Mock(is_finished=False, foo='bar'), 'foo', 'Unfinished job: asdf', ''),
-        (Mock(is_finished=True, foo='bar'), 'foo', None, 'bar'),
-    ),
-)
-@pytest.mark.asyncio
-async def test_get_job_attribute(job, attribute, exp_error, exp_value, bb_tracker_jobs, mocker):
-    job.configure_mock(name='asdf')
-    if exp_error:
-        with pytest.raises(RuntimeError, match=rf'^{re.escape(exp_error)}$'):
-            bb_tracker_jobs.get_job_attribute(job, attribute)
-    else:
-        value = bb_tracker_jobs.get_job_attribute(job, attribute)
-        assert value == exp_value
-
-
 @pytest.mark.asyncio
 async def test_torrent_filepath(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'get_job_output', return_value='path/to/torrent')

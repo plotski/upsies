@@ -364,6 +364,20 @@ class TrackerJobsBase(abc.ABC):
         except IndexError:
             raise RuntimeError(f'Job finished with insufficient output: {job.name}: {job.output}')
 
+    def get_job_attribute(self, job, attribute):
+        """
+        Helper method for getting an attribute from job
+
+        `job` must be finished.
+
+        :raise RuntimeError: if `job` is not finished
+        :raise AttributeError: if `attribute` is not an attribute of `job`
+        """
+        if not job.is_finished:
+            raise RuntimeError(f'Unfinished job: {job.name}')
+        else:
+            return getattr(job, attribute)
+
 
 class TrackerBase(abc.ABC):
     """

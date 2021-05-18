@@ -1131,12 +1131,6 @@ class BbTrackerJobs(TrackerJobsBase):
         else:
             return super().submission_ok
 
-    def get_job_attribute(self, job, attribute):
-        if not job.is_finished:
-            raise RuntimeError(f'Unfinished job: {job.name}')
-        else:
-            return getattr(job, attribute)
-
     @property
     def torrent_filepath(self):
         return self.get_job_output(self.create_torrent_job, slice=0)

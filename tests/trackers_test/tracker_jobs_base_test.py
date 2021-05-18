@@ -551,3 +551,25 @@ async def test_get_job_output(job, slice, exp_error, exp_output, mocker):
     else:
         output = tracker_jobs.get_job_output(job, slice)
         assert output == exp_output
+
+
+@pytest.mark.parametrize(
+    argnames='job, attribute, exp_error, exp_value',
+    argvalues=(
+        (Mock(is_finished=False, foo='bar'), 'foo', 'Unfinished job: asdf', ''),
+        (Mock(is_finished=True, foo='bar'), 'foo', None, 'bar'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_job_attribute(job, attribute, exp_error, exp_value, mocker):
+    job.configure_mock(name='asdf')
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+    )
+    if exp_error:
+        with pytest.raises(RuntimeError, match=rf'^{re.escape(exp_error)}$'):
+            tracker_jobs.get_job_attribute(job, attribute)
+    else:
+        value = tracker_jobs.get_job_attribute(job, attribute)
+        assert value == exp_value
