@@ -318,6 +318,8 @@ class BbTrackerJobs(TrackerJobsBase):
                 {'label': '720i', 'value': '720i', 'regex': re.compile(r'720i')},
                 {'label': '576p', 'value': '480p', 'regex': re.compile(r'576p')},
                 {'label': '576i', 'value': '480i', 'regex': re.compile(r'576i')},
+                {'label': '540p', 'value': '480p', 'regex': re.compile(r'540p')},
+                {'label': '540i', 'value': '480i', 'regex': re.compile(r'540i')},
                 {'label': '480p', 'value': '480p', 'regex': re.compile(r'480p')},
                 {'label': '480i', 'value': '480i', 'regex': re.compile(r'480i')},
                 {'label': 'SD', 'value': 'SD', 'regex': re.compile(r'SD')},
