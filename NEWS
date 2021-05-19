@@ -1,3 +1,8 @@
+2021-??-?? 0.?.?
+  * release-name: Go back to accepting anything, even with incomplete
+    information
+
+
 2021-05-17 0.3.1
   * id: Added support for "id:..." query in case search results are incomplete.
   * NBL: Mention --ignore-dupes in relevant error message.

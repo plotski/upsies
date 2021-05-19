@@ -30,12 +30,7 @@ class ReleaseNameJobWidget(JobWidgetBase):
         return release_name.format()
 
     def _handle_approved_release_name(self, _):
-        _log.debug('Approved release name: %r', self._input.text)
-        release_name = release.ReleaseName(self._input.text)
-        if release_name.is_complete:
-            self.job.release_name_selected(self._input.text)
-        else:
-            self._set_input(release_name)
+        self.job.release_name_selected(self._input.text)
 
     @cached_property
     def runtime_widget(self):
