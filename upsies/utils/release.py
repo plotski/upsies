@@ -602,8 +602,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
                 break
         else:
             # Guessit can parse multiple seasons/episodes to some degree
-            seasons = _as_list(guess, 'season')
-            episodes = _as_list(guess, 'episode')
+            seasons = _as_list(guess.get('season'))
+            episodes = _as_list(guess.get('episode'))
             string = []
             if seasons:
                 string.append(f'S{seasons[0]:02d}')
@@ -626,7 +626,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
                 else:
                     return ReleaseType.season
 
-        guessit_type = self._guess.get('type')
+        guessit_type = _as_string(self._guess.get('type'))
         if not guessit_type:
             return ReleaseType.unknown
         elif guessit_type == 'episode':
@@ -677,9 +677,9 @@ class ReleaseInfo(collections.abc.MutableMapping):
     @cached_property
     def _title_parts(self):
         # guessit splits AKA at " - ", so we re-join it
-        title_parts = [self._guess.get('title', '')]
+        title_parts = [_as_string(self._guess.get('title', ''))]
         if self._guess.get('alternative_title'):
-            title_parts.extend(_as_list(self._guess, 'alternative_title'))
+            title_parts.extend(_as_list(self._guess.get('alternative_title')))
         title = ' - '.join(title_parts)
         title_parts = self._title_aka_regex.split(title, maxsplit=1)
 
@@ -702,7 +702,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return self._title_parts['aka']
 
     def _get_year(self):
-        return str(self._guess.get('year') or '')
+        return _as_string(self._guess.get('year') or '')
 
     def _get_episodes(self):
         if 'episodes' not in self._guess:
@@ -719,7 +719,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         episodes.update(value)
 
     def _get_episode_title(self):
-        return str(self._guess.get('episode_title', ''))
+        return _as_string(self._guess.get('episode_title', ''))
 
     _edition_translation = {
         re.compile(r'(?i:director\'s cut)') : 'DC',
@@ -727,7 +727,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     _edition_regex = re.compile(r'(?:[ \.]|^)((?i:proper|repack\d*))(?:[ \.]|$)')
 
     def _get_edition(self):
-        edition = _as_list(self._guess, 'edition')
+        edition = _as_list(self._guess.get('edition'))
         for regex, edition_fixed in self._edition_translation.items():
             for i in range(len(edition)):
                 if regex.search(edition[i]):
@@ -738,14 +738,14 @@ class ReleaseInfo(collections.abc.MutableMapping):
         if match:
             edition.append(match.group(1).capitalize())
 
-        guessit_other = _as_list(self._guess, 'other')
+        guessit_other = _as_list(self._guess.get('other'))
         if 'Dual Audio' in guessit_other:
             edition.append('Dual Audio')
 
         return edition
 
     def _get_resolution(self):
-        return self._guess.get('screen_size', '')
+        return _as_string(self._guess.get('screen_size', ''))
 
     _streaming_service_regex = re.compile(r'[ \.]([A-Z]+)[ \.](?i:WEB-?(?:DL|Rip))(?:[ \.]|$)')
     _streaming_service_translation = {
@@ -759,7 +759,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
                     return abbrev
             return service
 
-        service = self._guess.get('streaming_service', '')
+        service = _as_string(self._guess.get('streaming_service', ''))
         if service:
             # guessit translates abbreviations to full names (NF -> Netflix),
             # but we want abbreviations. Use the same dictionary as guessit.
@@ -852,7 +852,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     }
 
     def _get_audio_codec(self):
-        audio_codec = self._guess.get('audio_codec')
+        audio_codec = _as_string(self._guess.get('audio_codec'))
         if not audio_codec:
             return ''
         else:
@@ -881,7 +881,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     _audio_channels_regex = re.compile(r'[ \.](\d\.\d)[ \.]')
 
     def _get_audio_channels(self):
-        audio_channels = self._guess.get('audio_channels', '')
+        audio_channels = _as_string(self._guess.get('audio_channels', ''))
         if not audio_channels:
             match = self._audio_channels_regex.search(self.release_name_params)
             if match:
@@ -892,7 +892,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     _x265_regex = re.compile(r'(?:^|[\. ])(?i:x265)(?:[\. -]|$)')
 
     def _get_video_codec(self):
-        video_codec = self._guess.get('video_codec', '')
+        video_codec = _as_string(self._guess.get('video_codec', ''))
         if video_codec == 'H.264':
             if self._x264_regex.search(self.release_name_params):
                 return 'x264'
@@ -904,7 +904,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return video_codec
 
     def _get_group(self):
-        return self._guess.get('release_group', '')
+        return _as_string(self._guess.get('release_group', ''))
 
     _has_commentary_regex = re.compile(r'[\. ](?i:plus[\. -]+comm|commentary)[\. -]')
 
@@ -1045,9 +1045,8 @@ class Episodes(dict):
         return ''.join(parts)
 
 
-def _as_list(guess, key):
-    value = guess.get(key, None)
-    if value is None:
+def _as_list(value):
+    if not value:
         return []
     elif isinstance(value, str):
         return [value]
@@ -1055,3 +1054,13 @@ def _as_list(guess, key):
         return list(value)
     else:
         return [value]
+
+def _as_string(value):
+    if not value:
+        return ''
+    elif isinstance(value, str):
+        return value
+    elif isinstance(value, list):
+        return ' '.join(value)
+    else:
+        return str(value)

@@ -478,7 +478,10 @@ def test_abbreviated_scene_filename(path, exp_release_name):
     ('The Foo - Season 02 - DVDRip.x264/Episode 3 - Something.mkv',
      {'type': ReleaseType.episode, 'title': 'The Foo', 'episodes': {'2': ('3',)},
       'source': 'DVDRip', 'video_codec': 'x264'}),
-
+    ('Real.Life.2015.1080p.AMZN.WEB-DL.DDP5.1.H.264-ASDF',
+     {'type': ReleaseType.movie, 'title': 'Real', 'year': '2015', 'resolution': '1080p',
+      'service': 'AMZN', 'source': 'WEB-DL', 'audio_codec': 'E-AC-3', 'audio_channels': '5.1',
+      'video_codec': 'H.264', 'group': 'ASDF'}),
 ))
 def test_special_case(release_name, expected):
     assert_info(release_name, **expected)
