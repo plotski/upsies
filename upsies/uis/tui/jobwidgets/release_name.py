@@ -1,4 +1,4 @@
-from ....utils import cached_property, release
+from ....utils import cached_property
 from .. import widgets
 from . import JobWidgetBase
 
