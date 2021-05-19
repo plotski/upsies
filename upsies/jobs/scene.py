@@ -133,7 +133,8 @@ class SceneCheckJob(JobBase):
         try:
             return await coro
         except errors.RequestError as e:
-            self.error(e, finish=True)
+            self.warn(e)
+            self.signal.emit('ask_is_scene_release', types.SceneCheckResult.unknown)
         except errors.SceneError as e:
             self.error(e, finish=True)
         except BaseException as e:

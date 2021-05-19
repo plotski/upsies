@@ -37,7 +37,6 @@ def test_cache_id(make_SceneCheckJob):
     argnames='exc, msg, exp_exc, exp_msg',
     argvalues=(
         (None, None, None, None),
-        (errors.RequestError, 'Foo', None, None),
         (errors.SceneError, 'Foo', None, None),
         (TypeError, 'Foo', TypeError, 'Foo'),
     ),
@@ -62,6 +61,19 @@ async def test_catch_errors(exc, msg, exp_exc, exp_msg, make_SceneCheckJob, mock
         await job.wait()
         assert job.errors == ((exc(msg),) if exc else ())
         assert job.is_finished
+
+@pytest.mark.asyncio
+async def test_catch_errors_warns_about_RequestError(make_SceneCheckJob, mocker):
+    async def coro():
+        raise errors.RequestError('teh interwebs borked!')
+
+    job = make_SceneCheckJob()
+    ask_is_scene_release_cb = Mock()
+    job.signal.register('ask_is_scene_release', ask_is_scene_release_cb)
+    await job._catch_errors(coro())
+    assert job.warnings == ('teh interwebs borked!',)
+    assert job.errors == ()
+    assert not job.is_finished
 
 
 @pytest.mark.asyncio
