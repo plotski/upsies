@@ -20,6 +20,12 @@ def run_async(awaitable):
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_tracks_returns_tracks(ReleaseInfo_mock, mocker):
+    mocker.patch('upsies.utils.video.tracks', return_value='mock tracks')
+    rn = ReleaseName('path/to/something')
+    assert rn._tracks() == 'mock tracks'
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='raised_exception, exp_exception, exp_message',
     argvalues=(
@@ -30,11 +36,16 @@ def run_async(awaitable):
     ids=lambda v: repr(v),
 )
 def test_tracks_raises(ReleaseInfo_mock, raised_exception, exp_exception, exp_message, mocker):
-    mocker.patch('upsies.utils.video.tracks', side_effect=raised_exception)
     rn = ReleaseName('path/to/something')
+    if raised_exception:
+        mocker.patch('upsies.utils.video.tracks', side_effect=raised_exception)
+    else:
+        mocker.patch('upsies.utils.video.tracks', return_value={})
     if exp_exception:
         with pytest.raises(exp_exception, match=rf'^{exp_message}$'):
             rn._tracks()
+    else:
+        assert rn._tracks() == {}
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
