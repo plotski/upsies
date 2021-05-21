@@ -280,6 +280,7 @@ source_samples = (
     ('WEB-DL Remux', 'WEB-DL'), ('Remux WEB-DL', 'WEB-DL'), ('WEBRip Remux', 'WEBRip'), ('Remux WEBRip', 'WEBRip'),
     ('WEB', 'WEB-DL'), ('Web', 'WEB-DL'), ('web', 'WEB-DL'),
     ('DVD', 'DVD'), ('DVD9', 'DVD9'), ('DVD5', 'DVD5'),
+    ('DVD Remux', 'DVD Remux'), ('Remux DVD', 'DVD Remux'),
     # An episode title can contain another source and guessit doesn't have a
     # problem with both "WEB" and "Blu-ray" as a source.
     ('WEB-DL tc', 'WEB-DL'), ('BluRay DVD', 'BluRay'),
