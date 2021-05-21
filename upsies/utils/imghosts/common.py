@@ -4,29 +4,38 @@ Anything implementation-independent
 
 class UploadedImage(str):
     """
-    Subclass of :class:`str` that holds arbitrary information from keyword
-    arguments as instance attributes
+    Subclass of :class:`str` that holds information from keyword arguments as
+    instance attributes
 
-    The instance itself is supposed to be the URL of an uploaded image. Keyword
-    arguments can be additional URLs (e.g. thumbnail URL, delete URL) or other
-    userful information.
+    The instance itself is supposed to be the URL of an uploaded image.
     """
 
-    def __new__(cls, url, **kwargs):
-        return super().__new__(cls, url)
+    def __new__(cls, url, thumbnail_url=None, delete_url=None, edit_url=None):
+        self = super().__new__(cls, url)
+        self._thumbnail_url = thumbnail_url
+        self._delete_url = delete_url
+        self._edit_url = edit_url
+        return self
 
-    def __init__(self, url, **kwargs):
-        self._info = kwargs
+    @property
+    def thumbnail_url(self):
+        return self._thumbnail_url
 
-    def __getattr__(self, name):
-        try:
-            return self._info[name]
-        except KeyError:
-            raise AttributeError(name)
+    @property
+    def delete_url(self):
+        return self._delete_url
+
+    @property
+    def edit_url(self):
+        return self._edit_url
 
     def __repr__(self):
-        kwargs = ', '.join(f'{k}={repr(v)}' for k, v in self._info.items())
+        kwargs = []
+        for name in ('thumbnail_url', 'delete_url', 'edit_url'):
+            value = getattr(self, name)
+            if value:
+                kwargs.append(f'{name}={repr(value)}')
         if kwargs:
-            return f'{type(self).__name__}({repr(str(self))}, {kwargs})'
+            return f'{type(self).__name__}({repr(str(self))}, {", ".join(kwargs)})'
         else:
             return f'{type(self).__name__}({repr(str(self))})'

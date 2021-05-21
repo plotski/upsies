@@ -39,6 +39,6 @@ class ImgboxImageHost(ImageHostBase):
         else:
             return {
                 'url': submission.image_url,
-                'thumb_url': submission.thumbnail_url,
+                'thumbnail_url': submission.thumbnail_url,
                 'edit_url': submission.edit_url,
             }
