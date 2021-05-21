@@ -215,6 +215,32 @@ def deduplicate(l, key=None):
     return deduped
 
 
+def as_groups(sequence, group_sizes, default=None):
+    """
+    Iterate over items from `iterable` in evenly sized groups
+
+    :params sequence: List of items to group
+    :params group_sizes: Sequence of group sizes; the one with the lowest number
+        of `default` items in the last group is picked automatically
+    :param default: Value to pad last group with if
+        ``len(iterable) % group_size != 0``
+    """
+    # Calculate group size that results in the least number of `default` values
+    # in the final group
+    gs_map = collections.defaultdict(lambda: [])
+    for gs in group_sizes:
+        # How many items from `iterable` are in the last group
+        overhang = len(sequence) % gs
+        # How many `default` values are in the last group
+        default_count = 0 if overhang == 0 else gs - overhang
+        gs_map[default_count].append(gs)
+
+    lowest_default_count = sorted(gs_map)[0]
+    group_size = max(gs_map[lowest_default_count])
+    args = [iter(sequence)] * group_size
+    yield from itertools.zip_longest(*args, fillvalue=default)
+
+
 from . import (browser, btclients, configfiles, daemon, fs, html, http, image,
                imghosts, iso, release, scene, signal, string, subproc,
                timestamp, torrent, types, video, webdbs)
