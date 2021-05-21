@@ -1,4 +1,6 @@
 2021-??-?? 0.?.?
+  * scene-search: Report HTTP request error properly
+  * scene-check: Ask user in case of HTTP request error
   * release-name: Go back to accepting anything, even with incomplete
     information
 
