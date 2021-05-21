@@ -23,4 +23,7 @@ class DummyImageHost(ImageHostBase):
         else:
             await asyncio.sleep(1.5)
             url = f'http://localhost/{os.path.basename(image_path)}'
-            return {'url': url}
+            return {
+                'url': url,
+                'thumbnail_url': f'{url}/thumbnail',
+            }
