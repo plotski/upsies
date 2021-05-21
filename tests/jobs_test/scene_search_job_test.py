@@ -72,6 +72,18 @@ def test_handle_results_catches_SceneError(make_SceneSearchJob):
     assert job.is_finished
     assert cb.call_args_list == []
 
+def test_handle_results_catches_RequestError(make_SceneSearchJob):
+    job = make_SceneSearchJob()
+    cb = Mock()
+    job.signal.register('search_results', cb)
+    task_mock = Mock(result=Mock(side_effect=errors.RequestError('no interwebs')))
+    job._handle_results(task_mock)
+    assert job.output == ()
+    assert job.errors == (errors.RequestError('no interwebs'),)
+    assert job.exit_code == 1
+    assert job.is_finished
+    assert cb.call_args_list == []
+
 def test_handle_results_handles_no_results(make_SceneSearchJob):
     job = make_SceneSearchJob()
     cb = Mock()
