@@ -509,6 +509,7 @@ def test_scene_check_job_is_singleton(mocker):
 @pytest.mark.parametrize(
     argnames='autodetected, exp_choices, exp_focused',
     argvalues=(
+        ('', [('8k', 8000), ('9k', 9000), ('10k', 10000)], None),
         ('5', [('8k', 8000), ('9k', 9000), ('10k', 10000)], None),
         ('8', [('8k (autodetected)', 8000), ('9k', 9000), ('10k', 10000)], ('8k (autodetected)', 8000)),
         ('9', [('8k', 8000), ('9k (autodetected)', 9000), ('10k', 10000)], ('9k (autodetected)', 9000)),
@@ -553,6 +554,7 @@ async def test_make_choice_job_with_regex_autofocus(autodetected, exp_choices, e
 @pytest.mark.parametrize(
     argnames='autodetected, exp_choices, exp_focused',
     argvalues=(
+        ('', [('8k', 8000), ('9k', 9000), ('10k', 10000)], None),
         ('5', [('8k', 8000), ('9k', 9000), ('10k', 10000)], None),
         ('8', [('8k (autodetected)', 8000), ('9k', 9000), ('10k', 10000)], ('8k (autodetected)', 8000)),
         ('9', [('8k', 8000), ('9k (autodetected)', 9000), ('10k', 10000)], ('9k (autodetected)', 9000)),

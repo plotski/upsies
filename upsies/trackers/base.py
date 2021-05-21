@@ -371,8 +371,12 @@ class TrackerJobsBase(abc.ABC):
         def is_autodetected(option):
             regex = option.get('regex')
             match = option.get('match')
-            return (regex and regex.search(autodetected)
-                    or match and match(autodetected))
+            if autodetected:
+                if regex and regex.search(str(autodetected)):
+                    return True
+                elif match and match(autodetected):
+                    return True
+            return False
 
         focused = None
         choices = []
