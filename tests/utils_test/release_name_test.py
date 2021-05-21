@@ -20,14 +20,6 @@ def run_async(awaitable):
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_tracks_is_called_during_instantiation(ReleaseInfo_mock, mocker):
-    mocker.patch.object(asyncio.get_event_loop(), 'run_in_executor')
-    rn = ReleaseName('path/to/something')
-    assert asyncio.get_event_loop().run_in_executor.call_args_list == [
-        call(None, rn._tracks),
-    ]
-
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='raised_exception, exp_exception, exp_message',
     argvalues=(
@@ -38,7 +30,6 @@ def test_tracks_is_called_during_instantiation(ReleaseInfo_mock, mocker):
     ids=lambda v: repr(v),
 )
 def test_tracks_raises(ReleaseInfo_mock, raised_exception, exp_exception, exp_message, mocker):
-    mocker.patch.object(asyncio.get_event_loop(), 'run_in_executor')
     mocker.patch('upsies.utils.video.tracks', side_effect=raised_exception)
     rn = ReleaseName('path/to/something')
     if exp_exception:
