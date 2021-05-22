@@ -25,6 +25,13 @@ def _is_string(value):
 def _any2string(value):
     return ' '.join(str(v) for v in value) if _is_list(value) else str(value)
 
+def _is_integer(value):
+    return isinstance(value, int)
+
+def _2integer(value):
+    return int(float(value))
+
+
 class ConfigFiles:
     """
     Combine multiple INI-style configuration files into nested dictionaries
@@ -63,17 +70,22 @@ class ConfigFiles:
         for section, filepath in files.items():
             self.read(section, filepath)
 
-    _converters = {
-        _is_list: _any2list,
-        _is_string: _any2string,
-    }
-
     def _build_types(self):
         def get_type(value):
-            for is_type, converter in self._converters.items():
-                if is_type(value):
-                    return converter
-            return type(value)
+            if _is_list(value):
+                return _any2list
+
+            elif _is_integer(value):
+                converter = _2integer
+
+            elif _is_string(value):
+                def converter(v, cls=type(value)):
+                    return cls(_any2string(v))
+
+            else:
+                converter = type(value)
+
+            return converter
 
         types = {}
         for section, subsections in self._defaults.items():

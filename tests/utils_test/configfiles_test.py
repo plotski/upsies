@@ -201,18 +201,45 @@ def test_init_reads_files(mocker):
 
 
 def test_build_types():
+    class Subclass(str):
+        pass
+
     d = ConfigFiles(defaults={
         'main': {'foo': {'a': 'x'},
-                 'bar': {'b': ['x'], (1, 2, 3): ('cee',)}},
+                 'bar': {'b': ['x'], (1, 2, 3): (25, 30.3)}},
         0: {'foo': {'x': ()},
-            None: {'y': 123, 'z': 123.5}},
+            None: {'x': 123, 'y': 1.23, 'z': Subclass('hello')}},
     })
-    assert d._build_types() == {
-        'main': {'foo': {'a': _any2string},
-                 'bar': {'b': _any2list, (1, 2, 3): _any2list}},
-        0: {'foo': {'x': _any2list},
-            None: {'y': int, 'z': float}},
-    }
+    types = d._build_types()
+
+    def my_assert(value, exp, type):
+        assert value == exp
+        assert isinstance(value, type)
+
+    my_assert(types['main']['foo']['a'](1), '1', str)
+
+    my_assert(types['main']['bar']['b']('asdf'), ['asdf'], list)
+    my_assert(types['main']['bar']['b']('a s  d\nf and   \n  bar'), ['a', 's', 'd', 'f', 'and', 'bar'], list)
+    my_assert(types['main']['bar']['b'](['a', 's', 'd\nf', 'and bar']), ['a', 's', 'd\nf', 'and bar'], list)
+
+    my_assert(types['main']['bar'][(1, 2, 3)](123), ['123'], list)
+    my_assert(types['main']['bar'][(1, 2, 3)]((123, 1.23)), [123, 1.23], list)
+
+    my_assert(types[0]['foo']['x'](()), [], list)
+    my_assert(types[0]['foo']['x'](('y ', ' z')), ['y ', ' z'], list)
+    my_assert(types[0]['foo']['x']('y  z'), ['y', 'z'], list)
+
+    my_assert(types[0][None]['x'](5), 5, int)
+    my_assert(types[0][None]['x'](5.3), 5, int)
+    my_assert(types[0][None]['x']('5'), 5, int)
+    my_assert(types[0][None]['x']('5.3'), 5, int)
+
+    my_assert(types[0][None]['y'](5), 5.0, float)
+    my_assert(types[0][None]['y'](5.3), 5.3, float)
+    my_assert(types[0][None]['y']('5.3'), 5.3, float)
+
+    my_assert(types[0][None]['z']('5.3'), '5.3', Subclass)
+    my_assert(types[0][None]['z']([5, 3]), '5 3', Subclass)
 
 
 def test_paths():
