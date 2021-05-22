@@ -3,6 +3,34 @@ import pytest
 from upsies.utils import types
 
 
+@pytest.mark.parametrize(
+    argnames='string, exp_bool',
+    argvalues=(
+        ('true', True), ('false', False),
+        ('yes', True), ('no', False),
+        ('1', True), ('0', False),
+        ('on', True), ('off', False),
+        ('yup', True), ('nope', False),
+        ('yay', True), ('nay', False), ('nah', False),
+    ),
+)
+def test_Bool_valid_values(string, exp_bool):
+    bool = types.Bool(string)
+    if exp_bool:
+        assert bool
+    else:
+        assert not bool
+    assert str(bool) == string
+
+@pytest.mark.parametrize(
+    argnames='string',
+    argvalues=('da', 'nyet'),
+)
+def test_Bool_invalid_values(string):
+    with pytest.raises(ValueError, match=rf'^Invalid boolean value: {string!r}$'):
+        types.Bool(string)
+
+
 @pytest.mark.parametrize('number', ('0', '1', '10', '11.5', '11.05', '99', '9999'))
 @pytest.mark.parametrize('space', ('', ' '))
 @pytest.mark.parametrize(

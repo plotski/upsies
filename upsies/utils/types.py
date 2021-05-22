@@ -8,6 +8,34 @@ import enum
 import re
 
 
+class Bool(str):
+    """
+    :class:`str` with boolean value
+
+    Truthy strings: ``true``, ``yes``, ``on``, ``1``
+    Falsy strings: ``false``, ``no``, ``off``, ``0``
+    """
+
+    _truthy = re.compile(r'^(?:true|yes|on|1|yup|yay)$', flags=re.IGNORECASE)
+    _falsy = re.compile(r'^(?:false|no|off|0|nope|nay|nah)$', flags=re.IGNORECASE)
+
+    def __new__(cls, value):
+        self = super().__new__(cls, value)
+        if cls._truthy.search(self):
+            self._bool = True
+        elif cls._falsy.search(self):
+            self._bool = False
+        else:
+            raise ValueError(f'Invalid boolean value: {value!r}')
+        return self
+
+    def __bool__(self):
+        return self._bool
+
+    def __repr__(self):
+        return f'{type(self).__name__}({super().__str__()!r})'
+
+
 class Bytes(int):
     """:class:`int` subclass that interprets units and unit prefixes"""
 
