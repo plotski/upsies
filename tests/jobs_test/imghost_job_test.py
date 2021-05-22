@@ -4,7 +4,7 @@ import pytest
 
 from upsies import errors
 from upsies.jobs.imghost import ImageHostJob
-from upsies.utils.imghosts import ImageHostBase
+from upsies.utils.imghosts import ImageHostBase, UploadedImage
 
 
 class AsyncMock(Mock):
@@ -81,7 +81,10 @@ def test_images_total_property(make_ImageHostJob):
 @pytest.mark.asyncio
 async def test_handle_input_sends_image_url(make_ImageHostJob):
     job = make_ImageHostJob(images_total=3)
-    job._imghost.upload.side_effect = ('http://foo', 'http://bar')
+    job._imghost.upload.side_effect = (
+        UploadedImage('http://foo', thumbnail_url='http://foo.tiny'),
+        UploadedImage('http://bar', thumbnail_url='http://bar.tiny'),
+    )
     assert job.images_uploaded == 0
 
     await job.handle_input('foo.jpg')
@@ -89,8 +92,10 @@ async def test_handle_input_sends_image_url(make_ImageHostJob):
         call('foo.jpg', cache=not job.ignore_cache),
     ]
     assert job.output == ('http://foo',)
-    assert job.errors == ()
+    assert job.uploaded_images == ('http://foo',)
+    assert [i.thumbnail_url for i in job.uploaded_images] == ['http://foo.tiny']
     assert job.images_uploaded == 1
+    assert job.errors == ()
 
     await job.handle_input('bar.jpg')
     assert job._imghost.upload.call_args_list == [
@@ -98,8 +103,9 @@ async def test_handle_input_sends_image_url(make_ImageHostJob):
         call('bar.jpg', cache=not job.ignore_cache),
     ]
     assert job.output == ('http://foo', 'http://bar')
-    assert job.errors == ()
+    assert [i.thumbnail_url for i in job.uploaded_images] == ['http://foo.tiny', 'http://bar.tiny']
     assert job.images_uploaded == 2
+    assert job.errors == ()
 
 @pytest.mark.asyncio
 async def test_handle_input_handles_RequestError(make_ImageHostJob):

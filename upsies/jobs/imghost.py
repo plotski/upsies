@@ -46,6 +46,7 @@ class ImageHostJob(QueueJobBase):
             imghost.cache_directory = self.cache_directory
             self._imghost = imghost
             self._images_uploaded = 0
+            self._uploaded_images = []
             if images_total > 0:
                 self.images_total = images_total
             else:
@@ -59,7 +60,9 @@ class ImageHostJob(QueueJobBase):
         else:
             _log.debug('Uploaded image: %r', info)
             self._images_uploaded += 1
-            self.send(info)
+            self._uploaded_images.append(info)
+            image_url = str(info)
+            self.send(image_url)
 
     @property
     def exit_code(self):
@@ -69,6 +72,16 @@ class ImageHostJob(QueueJobBase):
                 return 0
             else:
                 return 1
+
+    @property
+    def uploaded_images(self):
+        """
+        Sequence of :class:`~.imghosts.common.UploadedImage` objects
+
+        Use this property to get additional information like thumbnail URLs that
+        are not part of this job's :attr:`~.base.JobBase.output`.
+        """
+        return tuple(self._uploaded_images)
 
     @property
     def images_uploaded(self):
