@@ -93,6 +93,7 @@ class submit(CommandBase):
                 'cache_directory': self.cache_directory,
                 'ignore_cache': self.args.ignore_cache,
             },
+            config=self.tracker_config,
             cli_args=self.args,
         )
 

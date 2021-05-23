@@ -69,16 +69,22 @@ class TrackerJobsBase(abc.ABC):
     """
 
     def __init__(self, *, content_path, tracker, image_host, bittorrent_client,
-                 torrent_destination, common_job_args, cli_args=None):
+                 torrent_destination, common_job_args, config=None, cli_args=None):
         self._content_path = content_path
         self._tracker = tracker
         self._image_host = image_host
         self._bittorrent_client = bittorrent_client
         self._torrent_destination = torrent_destination
         self._common_job_args = common_job_args
+        self._config = config or {}
         self._cli_args = cli_args or argparse.Namespace()
         self._signal = signal.Signal('warning', 'error', 'exception')
         self._background_tasks = []
+
+    @property
+    def config(self):
+        """:attr:`~.TrackerBase.TrackerConfig` object from initialization argument"""
+        return self._config
 
     @property
     def cli_args(self):

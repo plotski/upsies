@@ -54,6 +54,8 @@ def test_arguments():
         'bittorrent_client': Mock(),
         'torrent_destination': Mock(),
         'common_job_args': Mock(),
+        'cli_args': Mock(),
+        'config': Mock(),
     }
     tracker_jobs = make_TestTrackerJobs(**kwargs)
     for k, v in kwargs.items():
