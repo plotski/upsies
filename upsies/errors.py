@@ -111,14 +111,6 @@ class SceneRenamedError(SceneError):
         """What the release name is"""
         return self._existing_name
 
-    @property
-    def url(self):
-        """URL to scene database for this release"""
-        from .utils import scene
-        db = scene.scenedb('srrdb')
-        if hasattr(db, 'release_url'):
-            return db.release_url(self._original_name)
-
 class SceneFileSizeError(SceneError):
     """Scene release file size differs from original release"""
     def __init__(self, filename, *, original_size, existing_size):

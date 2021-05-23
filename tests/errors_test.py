@@ -58,20 +58,6 @@ def test_SceneRenamedError_name_attributes():
     assert e.original_name == 'foo'
     assert e.existing_name == 'bar'
 
-def test_SceneRenamedError_url_attribute_without_release_url(mocker):
-    scenedb_mock = mocker.patch('upsies.utils.scene.scenedb')
-    del scenedb_mock.return_value.release_url
-    e = errors.SceneRenamedError(original_name='foo', existing_name='bar')
-    assert e.url is None
-
-def test_SceneRenamedError_url_attribute_with_release_url(mocker):
-    mocker.patch(
-        'upsies.utils.scene.scenedb',
-        return_value=Mock(release_url=Mock(return_value='http://foo')),
-    )
-    e = errors.SceneRenamedError(original_name='foo', existing_name='bar')
-    assert e.url == 'http://foo'
-
 
 def test_SceneFileSizeError(mocker):
     e = errors.SceneFileSizeError(
