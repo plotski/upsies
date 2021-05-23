@@ -47,7 +47,7 @@ async def test_upload_handles_success(tmp_path, mocker):
     assert upload_mock.call_args_list == [call('foo.png')]
     assert info == {
         'url': 'http://foo.url',
-        'thumb_url': 'http://foo.thumb.url',
+        'thumbnail_url': 'http://foo.thumb.url',
         'edit_url': 'http://foo.edit.url',
     }
 

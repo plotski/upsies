@@ -170,25 +170,36 @@ async def test_upload_gets_info_from_upload_request(tmp_path):
     ih._get_info_from_cache_mock.return_value = None
     ih._upload_mock.return_value = {
         'url': 'http://foo.bar',
-        'more': 'info',
+        'thumbnail_url': 'http://foo.bar/thumbnail',
+        'delete_url': 'http://foo.bar/delete',
+        'edit_url': 'http://foo.bar/edit',
     }
     image = await ih.upload('path/to/foo.png')
     assert ih._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
     assert ih._upload_mock.call_args_list == [call('path/to/foo.png')]
     assert ih._store_info_to_cache_mock.call_args_list == [call(
         'path/to/foo.png',
-        {'url': 'http://foo.bar', 'more': 'info'},
+        {
+            'url': 'http://foo.bar',
+            'thumbnail_url': 'http://foo.bar/thumbnail',
+            'delete_url': 'http://foo.bar/delete',
+            'edit_url': 'http://foo.bar/edit',
+        },
     )]
     assert isinstance(image, imghosts.UploadedImage)
     assert image == 'http://foo.bar'
-    assert image.more == 'info'
+    assert image.thumbnail_url == 'http://foo.bar/thumbnail'
+    assert image.delete_url == 'http://foo.bar/delete'
+    assert image.edit_url == 'http://foo.bar/edit'
 
 @pytest.mark.asyncio
 async def test_upload_gets_info_from_cache(tmp_path):
     ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
     ih._get_info_from_cache_mock.return_value = {
         'url': 'http://foo.bar',
-        'more': 'info',
+        'thumbnail_url': 'http://foo.bar.cached/thumbnail',
+        'delete_url': 'http://foo.bar.cached/delete',
+        'edit_url': 'http://foo.bar.cached/edit',
     }
     image = await ih.upload('path/to/foo.png')
     assert ih._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
@@ -196,16 +207,15 @@ async def test_upload_gets_info_from_cache(tmp_path):
     assert ih._store_info_to_cache_mock.call_args_list == []
     assert isinstance(image, imghosts.UploadedImage)
     assert image == 'http://foo.bar'
-    assert image.more == 'info'
+    assert image.thumbnail_url == 'http://foo.bar.cached/thumbnail'
+    assert image.delete_url == 'http://foo.bar.cached/delete'
+    assert image.edit_url == 'http://foo.bar.cached/edit'
 
 @pytest.mark.asyncio
 async def test_upload_is_missing_url(tmp_path):
     ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
     ih._get_info_from_cache_mock.return_value = None
-    ih._upload_mock.return_value = {
-        'foo': 'http://foo.bar',
-        'more': 'info',
-    }
+    ih._upload_mock.return_value = {}
     info_str = repr(ih._upload_mock.return_value)
     with pytest.raises(Exception, match=rf'^Missing "url" key in {re.escape(info_str)}$'):
         await ih.upload('path/to/foo.png')
@@ -215,19 +225,30 @@ async def test_upload_with_cache_set_to_False(tmp_path):
     ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
     ih._get_info_from_cache_mock.return_value = {
         'url': 'http://foo.bar',
-        'more': 'info',
+        'thumbnail_url': 'http://foo.bar.cached/thumbnail',
+        'delete_url': 'http://foo.bar.cached/delete',
+        'edit_url': 'http://foo.bar.cached/edit',
     }
     ih._upload_mock.return_value = {
-        'url': 'http://baz.png',
-        'more': 'other info',
+        'url': 'http://foo.bar',
+        'thumbnail_url': 'http://foo.bar/thumbnail',
+        'delete_url': 'http://foo.bar/delete',
+        'edit_url': 'http://foo.bar/edit',
     }
     image = await ih.upload('path/to/foo.png', cache=False)
     assert ih._get_info_from_cache_mock.call_args_list == []
     assert ih._upload_mock.call_args_list == [call('path/to/foo.png')]
     assert ih._store_info_to_cache_mock.call_args_list == [call(
         'path/to/foo.png',
-        {'url': 'http://baz.png', 'more': 'other info'},
+        {
+            'url': 'http://foo.bar',
+            'thumbnail_url': 'http://foo.bar/thumbnail',
+            'delete_url': 'http://foo.bar/delete',
+            'edit_url': 'http://foo.bar/edit',
+        },
     )]
     assert isinstance(image, imghosts.UploadedImage)
-    assert image == 'http://baz.png'
-    assert image.more == 'other info'
+    assert image == 'http://foo.bar'
+    assert image.thumbnail_url == 'http://foo.bar/thumbnail'
+    assert image.delete_url == 'http://foo.bar/delete'
+    assert image.edit_url == 'http://foo.bar/edit'
