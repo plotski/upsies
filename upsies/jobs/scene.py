@@ -152,7 +152,7 @@ class SceneCheckJob(JobBase):
         is_scene_release = await scene.is_scene_release(self._content_path)
         if is_scene_release is types.SceneCheckResult.false:
             _log.debug('Not a scene release: %r', self._content_path)
-            self._handle_scene_check_result(types.SceneCheckResult.false, exceptions=())
+            self._handle_scene_check_result(types.SceneCheckResult.false)
         else:
             # Find specific release name. If there are multiple search results,
             # ask the user to pick one.
@@ -160,7 +160,7 @@ class SceneCheckJob(JobBase):
             results = await scene.search(query, only_existing_releases=False)
             if not results:
                 _log.debug('No search results: %r', self._content_path)
-                self._handle_scene_check_result(types.SceneCheckResult.unknown, exceptions=())
+                self._handle_scene_check_result(types.SceneCheckResult.unknown)
             # Autopick if release name is in search results
             elif self._release_name in results:
                 _log.debug('Autopicking from search results: %r', self._release_name)
@@ -192,7 +192,7 @@ class SceneCheckJob(JobBase):
                 )
             )
         else:
-            self._handle_scene_check_result(types.SceneCheckResult.false, exceptions=())
+            self._handle_scene_check_result(types.SceneCheckResult.false)
 
     async def _verify_release(self, release_name):
         _log.debug('Verifying release: %r', release_name)

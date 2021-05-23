@@ -99,9 +99,7 @@ async def test_find_release_name_gets_nonscene_release(make_SceneCheckJob, mocke
     await job._find_release_name()
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert ask_release_name.call_args_list == []
-    assert job._handle_scene_check_result.call_args_list == [
-        call(SceneCheckResult.false, exceptions=()),
-    ]
+    assert job._handle_scene_check_result.call_args_list == [call(SceneCheckResult.false)]
     assert job._verify_release.call_args_list == []
 
 @pytest.mark.parametrize('is_scene_release', (SceneCheckResult.true, SceneCheckResult.unknown))
@@ -122,9 +120,7 @@ async def test_find_release_name_finds_no_results(is_scene_release, make_SceneCh
     assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert search_mock.call_args_list == [call(SceneQuery('foo'), only_existing_releases=False)]
     assert ask_release_name.call_args_list == []
-    assert job._handle_scene_check_result.call_args_list == [
-        call(SceneCheckResult.unknown, exceptions=()),
-    ]
+    assert job._handle_scene_check_result.call_args_list == [call(SceneCheckResult.unknown)]
     assert job._verify_release.call_args_list == []
 
 @pytest.mark.parametrize(
@@ -221,9 +217,7 @@ async def test_user_selected_release_name_without_release_name(make_SceneCheckJo
     asyncio.get_event_loop().call_soon(job.finish)
     await job.wait()
     assert job._verify_release.call_args_list == []
-    assert job._handle_scene_check_result.call_args_list == [
-        call(SceneCheckResult.false, exceptions=()),
-    ]
+    assert job._handle_scene_check_result.call_args_list == [call(SceneCheckResult.false)]
 
 
 @pytest.mark.asyncio
