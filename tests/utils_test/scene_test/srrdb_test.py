@@ -43,7 +43,3 @@ async def test_search_calls_http_get(group, api, mocker):
         call(f'{api._search_url}/{path}', cache=True),
     ]
     assert list(response) == ['Foo']
-
-
-def test_release_url(api):
-    assert api.release_url('Foo.bar-BAZ') == f'https://{api._url_base}/release/details/Foo.bar-BAZ'
