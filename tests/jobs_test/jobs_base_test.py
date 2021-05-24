@@ -67,14 +67,23 @@ def test_home_directory_property(path, exp_exception, tmp_path):
             assert os.path.exists(job.home_directory)
 
 
-def test_cache_directory_property(tmp_path):
-    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path / 'bar')
-    assert job.cache_directory == tmp_path / 'bar'
-
-def test_cache_directory_property_default(tmp_path, mocker):
+@pytest.mark.parametrize(
+    argnames='path',
+    argvalues=(
+        'path/to/cache',
+        '',
+        None,
+    ),
+)
+def test_cache_directory_property(path, tmp_path, mocker):
     mocker.patch('upsies.constants.CACHE_DIRPATH', 'mock/cache/path')
-    job = FooJob(home_directory=tmp_path)
-    assert job.cache_directory == 'mock/cache/path'
+    if not path:
+        job = FooJob()
+        assert job.cache_directory == 'mock/cache/path'
+    else:
+        job = FooJob(cache_directory=tmp_path / path)
+        assert job.cache_directory == tmp_path / path
+        assert os.path.exists(job.cache_directory)
 
 
 def test_ignore_cache_property(tmp_path):

@@ -69,9 +69,13 @@ class JobBase(abc.ABC):
 
     @cached_property
     def cache_directory(self):
-        """Path to existing directory that stores :attr:`cache_file`"""
+        """
+        Path to existing directory that stores :attr:`cache_file`
+
+        This directory is guaranteed to exist.
+        """
         if not os.path.exists(self._cache_directory):
-            os.makedirs(self._cache_directory)
+            fs.mkdir(self._cache_directory)
         return self._cache_directory
 
     @property
