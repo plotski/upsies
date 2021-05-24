@@ -154,7 +154,7 @@ class JobBase(abc.ABC):
     def __init__(self, *, home_directory=None, cache_directory=None,
                  ignore_cache=False, hidden=False, autostart=True,
                  condition=None, callbacks={}, **kwargs):
-        self._home_directory = home_directory if home_directory else '.'
+        self._home_directory = home_directory if home_directory else ''
         self._cache_directory = cache_directory if cache_directory else constants.CACHE_DIRPATH
         self._ignore_cache = bool(ignore_cache)
         self._hidden = bool(hidden)

@@ -50,7 +50,7 @@ def test_home_directory_property(tmp_path):
 
 def test_home_directory_property_default(tmp_path):
     job = FooJob(cache_directory=tmp_path)
-    assert job.home_directory == '.'
+    assert job.home_directory == ''
 
 def test_cache_directory_property(tmp_path):
     job = FooJob(home_directory=tmp_path, cache_directory=tmp_path / 'bar')
