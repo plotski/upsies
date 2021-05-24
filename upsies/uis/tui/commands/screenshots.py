@@ -35,12 +35,18 @@ class screenshots(CommandBase):
             'help': ('Case-insensitive name of image hosting service\n'
                      'Supported services: ' + ', '.join(utils.imghosts.imghost_names())),
         },
+        ('--output-directory', '-o'): {
+            'default': '',  # Current working directory
+            'metavar': 'PATH',
+            'help': ('Directory path where screenshots are written to '
+                     '(will be created on demand)'),
+        },
     }
 
     @utils.cached_property
     def screenshots_job(self):
         return jobs.screenshots.ScreenshotsJob(
-            home_directory=self.home_directory,
+            home_directory=self.args.output_directory,
             cache_directory=self.cache_directory,
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
