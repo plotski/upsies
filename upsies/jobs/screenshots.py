@@ -37,16 +37,7 @@ class ScreenshotsJob(JobBase):
 
     name = 'screenshots'
     label = 'Screenshots'
-
-    @property
-    def cache_id(self):
-        """Final segment of `content_path`"""
-        cache_id = [fs.basename(self._content_path)]
-        if self.kwargs.get('timestamps'):
-            cache_id.append(self.kwargs['timestamps'])
-        if self.kwargs.get('count'):
-            cache_id.append(self.kwargs['count'])
-        return tuple(cache_id)
+    cache_id = None
 
     def initialize(self, *, content_path, timestamps=(), count=0):
         """
