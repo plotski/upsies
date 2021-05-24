@@ -56,7 +56,11 @@ class CreateTorrentJob(base.JobBase):
 
     def execute(self):
         """Get announce URL from `tracker`, then execute torrent creation subprocess"""
-        self.add_task(self._get_announce_url())
+        if not self.ignore_cache and os.path.exists(self._torrent_path):
+            self._handle_torrent_created(self._torrent_path)
+            self.finish()
+        else:
+            self.add_task(self._get_announce_url())
 
     async def _get_announce_url(self):
         self.info = 'Getting announce URL'

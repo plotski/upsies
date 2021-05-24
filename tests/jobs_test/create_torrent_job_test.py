@@ -1,7 +1,7 @@
 import multiprocessing
 import os
 import time
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, PropertyMock, call, patch
 
 import pytest
 
@@ -147,13 +147,36 @@ def job(tmp_path, tracker):
         tracker=tracker,
     )
 
-
-def test_CreateTorrentJob_execute(job, mocker):
+@pytest.mark.parametrize(
+    argnames='ignore_cache, path_exists, exp_torrent_created',
+    argvalues=(
+        (False, False, True),
+        (False, True, False),
+        (True, False, True),
+        (True, True, True),
+    ),
+)
+def test_CreateTorrentJob_execute(ignore_cache, path_exists, exp_torrent_created, job, mocker, tmp_path):
     mocker.patch.object(job, 'add_task')
     mocker.patch.object(job, '_get_announce_url', Mock())
+    mocker.patch.object(job, '_handle_torrent_created', Mock())
+    mocker.patch.object(type(job), 'ignore_cache', PropertyMock(return_value=ignore_cache))
+
+    if path_exists:
+        (tmp_path / job._torrent_path).write_bytes(b'mock torrent data')
+
     job.execute()
-    assert job._get_announce_url.call_args_list == [call()]
-    assert job.add_task.call_args_list == [call(job._get_announce_url.return_value)]
+
+    if exp_torrent_created:
+        assert job.add_task.call_args_list == [call(job._get_announce_url.return_value)]
+        assert job._get_announce_url.call_args_list == [call()]
+        assert job._handle_torrent_created.call_args_list == []
+        assert not job.is_finished
+    else:
+        assert job.add_task.call_args_list == []
+        assert job._get_announce_url.call_args_list == []
+        assert job._handle_torrent_created.call_args_list == [call(job._torrent_path)]
+        assert job.is_finished
 
 
 @pytest.mark.asyncio
