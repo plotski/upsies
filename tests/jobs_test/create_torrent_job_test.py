@@ -219,7 +219,7 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_login
 
     assert job.info == ''
     announce_url = await job._get_announce_url()
-    assert announce_url == None
+    assert announce_url is None
     assert mocks.mock_calls == [
         call.announce_url_callback(Ellipsis),
         call.login(),
@@ -242,7 +242,7 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_get_a
 
     assert job.info == ''
     announce_url = await job._get_announce_url()
-    assert announce_url == None
+    assert announce_url is None
     assert mocks.mock_calls == [
         call.announce_url_callback(Ellipsis),
         call.login(),
