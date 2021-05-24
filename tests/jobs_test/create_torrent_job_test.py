@@ -156,64 +156,58 @@ def job(tmp_path, tracker):
         (True, True, True),
     ),
 )
-def test_CreateTorrentJob_execute(ignore_cache, path_exists, exp_torrent_created, job, mocker, tmp_path):
-    mocker.patch.object(job, 'add_task')
-    mocker.patch.object(job, '_get_announce_url', Mock())
+@pytest.mark.asyncio
+async def test_CreateTorrentJob_execute(ignore_cache, path_exists, exp_torrent_created, job, mocker, tmp_path):
+    mocker.patch.object(job, '_get_announce_url', AsyncMock())
     mocker.patch.object(job, '_handle_torrent_created', Mock())
+    mocker.patch.object(job, '_create_torrent_process', Mock())
     mocker.patch.object(type(job), 'ignore_cache', PropertyMock(return_value=ignore_cache))
 
     if path_exists:
         (tmp_path / job._torrent_path).write_bytes(b'mock torrent data')
 
     job.execute()
+    if hasattr(job, '_get_announce_url_task'):
+        await job._get_announce_url_task
 
     if exp_torrent_created:
-        assert job.add_task.call_args_list == [call(job._get_announce_url.return_value)]
         assert job._get_announce_url.call_args_list == [call()]
         assert job._handle_torrent_created.call_args_list == []
+        assert job._create_torrent_process.call_args_list == [call(job._get_announce_url.return_value)]
         assert not job.is_finished
     else:
-        assert job.add_task.call_args_list == []
         assert job._get_announce_url.call_args_list == []
         assert job._handle_torrent_created.call_args_list == [call(job._torrent_path)]
+        assert job._create_torrent_process.call_args_list == []
         assert job.is_finished
 
 
 @pytest.mark.asyncio
-async def test_CreateTorrentJob_get_announce_url_creates_torrent_process(job, mocker):
-    def create_torrent_process_mock(announce_url):
-        assert job.info == 'Getting announce URL'
-
+async def test_CreateTorrentJob_get_announce_url(job, mocker):
     mocks = AsyncMock(
-        create_torrent_process=Mock(side_effect=create_torrent_process_mock),
         get_announce_url=AsyncMock(return_value='http://announce.url'),
         announce_url_callback=Mock(),
     )
     mocker.patch.object(job._tracker, 'login', mocks.login)
     mocker.patch.object(job._tracker, 'logout', mocks.logout)
     mocker.patch.object(job._tracker, 'get_announce_url', mocks.get_announce_url)
-    mocker.patch.object(job, '_create_torrent_process', mocks.create_torrent_process)
     job.signal.register('announce_url', mocks.announce_url_callback)
 
     assert job.info == ''
-    await job._get_announce_url()
+    announce_url = await job._get_announce_url()
+    assert announce_url == mocks.get_announce_url.return_value
     assert mocks.mock_calls == [
         call.announce_url_callback(Ellipsis),
         call.login(),
         call.get_announce_url(),
         call.announce_url_callback('http://announce.url'),
-        call.create_torrent_process('http://announce.url'),
         call.logout(),
     ]
     assert job.info == ''
 
 @pytest.mark.asyncio
 async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_login(job, mocker):
-    def create_torrent_process_mock(announce_url):
-        assert job.info == 'Getting announce URL'
-
     mocks = AsyncMock(
-        create_torrent_process=Mock(side_effect=create_torrent_process_mock),
         get_announce_url=AsyncMock(return_value='http://announce.url'),
         login=AsyncMock(side_effect=errors.RequestError('connection failed')),
         announce_url_callback=Mock(),
@@ -221,11 +215,11 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_login
     mocker.patch.object(job._tracker, 'login', mocks.login)
     mocker.patch.object(job._tracker, 'logout', mocks.logout)
     mocker.patch.object(job._tracker, 'get_announce_url', mocks.get_announce_url)
-    mocker.patch.object(job, '_create_torrent_process', mocks.create_torrent_process)
     job.signal.register('announce_url', mocks.announce_url_callback)
 
     assert job.info == ''
-    await job._get_announce_url()
+    announce_url = await job._get_announce_url()
+    assert announce_url == None
     assert mocks.mock_calls == [
         call.announce_url_callback(Ellipsis),
         call.login(),
@@ -237,22 +231,18 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_login
 
 @pytest.mark.asyncio
 async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_get_announce_url(job, mocker):
-    def create_torrent_process_mock(announce_url):
-        assert job.info == 'Getting announce URL'
-
     mocks = AsyncMock(
-        create_torrent_process=Mock(side_effect=create_torrent_process_mock),
         get_announce_url=AsyncMock(side_effect=errors.RequestError('no url found')),
         announce_url_callback=Mock(),
     )
     mocker.patch.object(job._tracker, 'login', mocks.login)
     mocker.patch.object(job._tracker, 'logout', mocks.logout)
     mocker.patch.object(job._tracker, 'get_announce_url', mocks.get_announce_url)
-    mocker.patch.object(job, '_create_torrent_process', mocks.create_torrent_process)
     job.signal.register('announce_url', mocks.announce_url_callback)
 
     assert job.info == ''
-    await job._get_announce_url()
+    announce_url = await job._get_announce_url()
+    assert announce_url == None
     assert mocks.mock_calls == [
         call.announce_url_callback(Ellipsis),
         call.login(),
@@ -265,11 +255,7 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_get_a
 
 @pytest.mark.asyncio
 async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_logout(job, mocker):
-    def create_torrent_process_mock(announce_url):
-        assert job.info == 'Getting announce URL'
-
     mocks = AsyncMock(
-        create_torrent_process=Mock(side_effect=create_torrent_process_mock),
         get_announce_url=AsyncMock(return_value='http://announce.url'),
         logout=AsyncMock(side_effect=errors.RequestError('connection failed')),
         announce_url_callback=Mock(),
@@ -277,17 +263,16 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_logou
     mocker.patch.object(job._tracker, 'login', mocks.login)
     mocker.patch.object(job._tracker, 'logout', mocks.logout)
     mocker.patch.object(job._tracker, 'get_announce_url', mocks.get_announce_url)
-    mocker.patch.object(job, '_create_torrent_process', mocks.create_torrent_process)
     job.signal.register('announce_url', mocks.announce_url_callback)
 
     assert job.info == ''
-    await job._get_announce_url()
+    announce_url = await job._get_announce_url()
+    assert announce_url == mocks.get_announce_url.return_value
     assert mocks.mock_calls == [
         call.announce_url_callback(Ellipsis),
         call.login(),
         call.get_announce_url(),
         call.announce_url_callback('http://announce.url'),
-        call.create_torrent_process('http://announce.url'),
         call.logout(),
     ]
     assert job.warnings == ('connection failed',)
