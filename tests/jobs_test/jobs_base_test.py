@@ -44,13 +44,28 @@ def job(tmp_path):
     return FooJob(home_directory=tmp_path, cache_directory=tmp_path, ignore_cache=False)
 
 
-def test_home_directory_property(tmp_path):
-    job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
-    assert job.home_directory == tmp_path
+@pytest.mark.parametrize(
+    argnames='path, exp_exception',
+    argvalues=(
+        ('path/to/home', None),
+        ('', None),
+        (None, None),
+        ('/root/upsies/test', errors.ContentError('/root/upsies/test: Permission denied')),
+    ),
+)
+def test_home_directory_property(path, exp_exception, tmp_path):
+    if path is None:
+        job = FooJob()
+        assert job.home_directory == ''
+    else:
+        job = FooJob(home_directory=tmp_path / path)
+        if exp_exception:
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+                job.home_directory
+        else:
+            assert job.home_directory == tmp_path / path
+            assert os.path.exists(job.home_directory)
 
-def test_home_directory_property_default(tmp_path):
-    job = FooJob(cache_directory=tmp_path)
-    assert job.home_directory == ''
 
 def test_cache_directory_property(tmp_path):
     job = FooJob(home_directory=tmp_path, cache_directory=tmp_path / 'bar')
@@ -60,6 +75,7 @@ def test_cache_directory_property_default(tmp_path, mocker):
     mocker.patch('upsies.constants.CACHE_DIRPATH', 'mock/cache/path')
     job = FooJob(home_directory=tmp_path)
     assert job.cache_directory == 'mock/cache/path'
+
 
 def test_ignore_cache_property(tmp_path):
     assert FooJob(home_directory=tmp_path, cache_directory=tmp_path, ignore_cache=False).ignore_cache is False

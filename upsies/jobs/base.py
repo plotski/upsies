@@ -57,7 +57,14 @@ class JobBase(abc.ABC):
 
     @property
     def home_directory(self):
-        """Directory that is used to store files, e.g. generated images"""
+        """
+        Directory that is used to store files (e.g. generated images) or empty
+        string
+
+        This directory is guaranteed to exist.
+        """
+        if self._home_directory and not os.path.exists(self._home_directory):
+            fs.mkdir(self._home_directory)
         return self._home_directory
 
     @cached_property
