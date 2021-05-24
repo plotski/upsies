@@ -120,7 +120,7 @@ def test_CreateTorrentJob_cache_id(tmp_path, tracker):
         content_path='path/to/foo',
         tracker=tracker,
     )
-    assert job.cache_id == ('foo', 'AsdF')
+    assert job.cache_id is None
 
 
 def test_CreateTorrentJob_initialize(tracker, tmp_path):

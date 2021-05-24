@@ -35,11 +35,7 @@ class CreateTorrentJob(base.JobBase):
 
     name = 'torrent'
     label = 'Torrent'
-
-    @property
-    def cache_id(self):
-        """Final segment of `content_path` and tracker :attr:`~.TrackerBase.name`"""
-        return (fs.basename(self._content_path), self._tracker.name)
+    cache_id = None
 
     def initialize(self, *, tracker, content_path):
         """
