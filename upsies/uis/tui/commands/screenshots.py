@@ -38,8 +38,7 @@ class screenshots(CommandBase):
         ('--output-directory', '-o'): {
             'default': '',  # Current working directory
             'metavar': 'PATH',
-            'help': ('Directory path where screenshots are written to '
-                     '(will be created on demand)'),
+            'help': 'Directory where screenshots are put (created on demand)',
         },
     }
 
