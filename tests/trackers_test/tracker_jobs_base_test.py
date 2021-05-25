@@ -1,4 +1,5 @@
 import builtins
+import random
 import re
 from unittest.mock import Mock, PropertyMock, call
 
@@ -108,6 +109,9 @@ def test_jobs_after_upload(mocker):
     ),
 )
 def test_submission_ok(jobs_before_upload, exp_submission_ok, mocker):
+    # Randomly insert disabled job
+    jobs_before_upload = list(jobs_before_upload)
+    jobs_before_upload.insert(random.randint(0, len(jobs_before_upload)), None)
     tracker_jobs = make_TestTrackerJobs()
     mocker.patch.object(type(tracker_jobs), 'jobs_before_upload', PropertyMock(return_value=jobs_before_upload))
     assert tracker_jobs.submission_ok == exp_submission_ok

@@ -199,7 +199,7 @@ class TrackerJobsBase(abc.ABC):
         """
         enabled_jobs_before_upload = tuple(
             job for job in self.jobs_before_upload
-            if job.is_enabled
+            if job and job.is_enabled
         )
         return (
             bool(enabled_jobs_before_upload)
