@@ -202,6 +202,9 @@ class ConfigFiles:
             target = self._cfg
         target[key] = value
 
+    def __iter__(self):
+        return iter(self._cfg)
+
     def reset(self, path=()):
         """
         Set section, subsection or option to default value(s)

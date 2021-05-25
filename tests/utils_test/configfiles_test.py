@@ -570,6 +570,19 @@ def test_set_unknown_option():
     assert config['foo'] == {'bar': {'baz': 'asdf', 'qux': 123, 'asdf': [1, 2, 3]}}
 
 
+def test_iterating_over_ConfigFiles():
+    config = ConfigFiles(defaults={
+        'foo': {
+            'bar': {'baz': 'asdf'},
+            'this': {'that': 'arf'},
+        },
+        'hey': {
+            'you': {'there': ''},
+        },
+    })
+    assert tuple(config) == ('foo', 'hey')
+
+
 @pytest.mark.parametrize(
     argnames=('args', 'exp_args'),
     argvalues=(
