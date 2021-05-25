@@ -9,13 +9,16 @@ _log = logging.getLogger(__name__)
 class CreateTorrentJobWidget(JobWidgetBase):
     def setup(self):
         self._progress = widgets.ProgressBar()
-        self._throbber = utils.Throbber(callback=self.handle_throbber_state)
+        self._throbber = utils.Throbber(
+            callback=self.handle_throbber_state,
+            format='Getting announce URL {throbber}'
+        )
         self.job.signal.register('announce_url', self.handle_announce_url)
         self.job.signal.register('progress_update', self.handle_progress_update)
         self.job.signal.register('finished', lambda _: self.invalidate())
 
     def handle_throbber_state(self, state):
-        self.job.info = f'Getting announce URL {state}'
+        self.job.info = state
         self.invalidate()
 
     def handle_announce_url(self, announce_url):
