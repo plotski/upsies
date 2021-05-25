@@ -66,25 +66,25 @@ class BbTracker(TrackerBase):
 
     async def login(self):
         if not self.is_logged_in:
-            if not self.config.get('username'):
+            if not self.options.get('username'):
                 raise errors.RequestError('Login failed: No username configured')
-            elif not self.config.get('password'):
+            elif not self.options.get('password'):
                 raise errors.RequestError('Login failed: No password configured')
 
             login_url = urllib.parse.urljoin(
-                self.config['base_url'],
+                self.options['base_url'],
                 self._url_path['login'],
             )
 
             doc = html.parse('')
             while await self._work_around_login_bug(doc):
-                _log.debug('%s: Logging in as %r', self.name, self.config['username'])
+                _log.debug('%s: Logging in as %r', self.name, self.options['username'])
                 response = await http.post(
                     url=login_url,
                     user_agent=True,
                     data={
-                        'username': self.config['username'],
-                        'password': self.config['password'],
+                        'username': self.options['username'],
+                        'password': self.options['password'],
                         'login': 'Log In!',
                     },
                 )
@@ -150,7 +150,7 @@ class BbTracker(TrackerBase):
         if self.is_logged_in:
             _log.debug('%s: Logging out', self.name)
             logout_url = urllib.parse.urljoin(
-                self.config['base_url'],
+                self.options['base_url'],
                 self._url_path['logout'],
             )
             params = {'auth': self._auth_token}
@@ -159,7 +159,7 @@ class BbTracker(TrackerBase):
 
     async def get_announce_url(self):
         url = urllib.parse.urljoin(
-            self.config['base_url'],
+            self.options['base_url'],
             self._url_path['upload'],
         )
         _log.debug('%s: Getting announce URL from %s', self.name, url)
@@ -174,7 +174,7 @@ class BbTracker(TrackerBase):
 
     async def upload(self, tracker_jobs):
         _log.debug('Uploading %r', tracker_jobs.post_data)
-        upload_url = urllib.parse.urljoin(self.config['base_url'], self._url_path['upload'])
+        upload_url = urllib.parse.urljoin(self.options['base_url'], self._url_path['upload'])
         response = await http.post(
             url=upload_url,
             cache=False,
@@ -186,7 +186,7 @@ class BbTracker(TrackerBase):
 
         # Upload response should redirect to torrent page via "Location" header
         torrent_page_url = urllib.parse.urljoin(
-            self.config['base_url'],
+            self.options['base_url'],
             response.headers.get('Location', ''),
         )
         if urllib.parse.urlparse(torrent_page_url).path == self._url_path['torrent']:

@@ -42,7 +42,7 @@ class DummyTrackerJobs(base.TrackerJobsBase):
 
     @cached_property
     def category_job(self):
-        if not self.cli_args.skip_category:
+        if not self.options['skip_category']:
 
             def select_release_category(release_name):
                 _log.debug('Setting type: %r', release_name.type)
@@ -85,13 +85,13 @@ class DummyTracker(base.TrackerBase):
     TrackerConfig = DummyTrackerConfig
 
     async def login(self):
-        _log.debug('%s: Logging in with %r', self.name, self.config)
-        await asyncio.sleep(self.cli_args.delay)
+        _log.debug('%s: Logging in with %r', self.name, self.options)
+        await asyncio.sleep(self.options['delay'])
         self._is_logged_in = True
 
     async def logout(self):
         _log.debug('%s: Logging out', self.name)
-        await asyncio.sleep(self.cli_args.delay)
+        await asyncio.sleep(self.options['delay'])
         self._is_logged_in = False
 
     @property
@@ -100,7 +100,7 @@ class DummyTracker(base.TrackerBase):
 
     async def get_announce_url(self):
         _log.debug('%s: Getting announce URL', self.name)
-        await asyncio.sleep(self.cli_args.delay)
+        await asyncio.sleep(self.options['delay'])
         return 'http://localhost:123/f1dd15718/announce'
 
     async def upload(self, tracker_jobs):
@@ -109,5 +109,5 @@ class DummyTracker(base.TrackerBase):
         else:
             raise errors.RequestError('Torrent file was not created.')
         _log.debug('%s: Uploading %s', self.name, torrent_file)
-        await asyncio.sleep(self.cli_args.delay)
+        await asyncio.sleep(self.options['delay'])
         return f'http://localhost/{os.path.basename(torrent_file)}'

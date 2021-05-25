@@ -60,9 +60,14 @@ class submit(CommandBase):
         return self.args.subcommand.lower()
 
     @utils.cached_property
-    def tracker_config(self):
-        """Dictionary of :attr:`tracker_name` section in trackers configuration file"""
-        return self.config['trackers'][self.tracker_name]
+    def tracker_options(self):
+        """
+        :attr:`tracker_name` section in trackers configuration file combined with
+        CLI arguments where CLI arguments take precedence
+        """
+        config = self.config['trackers'][self.tracker_name]
+        cli_args = vars(self.args)
+        return {**config, **cli_args}
 
     @utils.cached_property
     def tracker(self):
@@ -72,8 +77,7 @@ class submit(CommandBase):
         """
         return trackers.tracker(
             name=self.tracker_name,
-            config=self.tracker_config,
-            cli_args=self.args,
+            options=self.tracker_options,
         )
 
     @utils.cached_property
@@ -83,6 +87,7 @@ class submit(CommandBase):
         of :mod:`.trackers`
         """
         return self.tracker.TrackerJobs(
+            options=self.tracker_options,
             content_path=self.args.CONTENT,
             tracker=self.tracker,
             image_host=self._get_imghost(),
@@ -93,12 +98,10 @@ class submit(CommandBase):
                 'cache_directory': self.cache_directory,
                 'ignore_cache': self.args.ignore_cache,
             },
-            config=self.tracker_config,
-            cli_args=self.args,
         )
 
     def _get_imghost(self):
-        imghost_name = self.tracker_config.get('image_host', None)
+        imghost_name = self.tracker_options.get('image_host', None)
         if imghost_name:
             return utils.imghosts.imghost(
                 name=imghost_name,
@@ -107,7 +110,7 @@ class submit(CommandBase):
 
     def _get_btclient(self):
         btclient_name = (getattr(self.args, 'add_to', None)
-                         or self.tracker_config.get('add-to', None)
+                         or self.tracker_options.get('add-to', None)
                          or None)
         if btclient_name:
             return utils.btclients.client(
@@ -117,5 +120,5 @@ class submit(CommandBase):
 
     def _get_torrent_destination(self):
         return (getattr(self.args, 'copy_to', None)
-                or self.tracker_config.get('copy-to', None)
+                or self.tracker_options.get('copy-to', None)
                 or None)

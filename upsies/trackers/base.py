@@ -3,7 +3,6 @@ Abstract base class for tracker APIs
 """
 
 import abc
-import argparse
 import builtins
 
 from .. import jobs
@@ -69,30 +68,26 @@ class TrackerJobsBase(abc.ABC):
     """
 
     def __init__(self, *, content_path, tracker, image_host, bittorrent_client,
-                 torrent_destination, common_job_args, config=None, cli_args=None):
+                 torrent_destination, common_job_args, options=None):
         self._content_path = content_path
         self._tracker = tracker
         self._image_host = image_host
         self._bittorrent_client = bittorrent_client
         self._torrent_destination = torrent_destination
         self._common_job_args = common_job_args
-        self._config = config or {}
-        self._cli_args = cli_args or argparse.Namespace()
+        self._options = options or {}
         self._signal = signal.Signal('warning', 'error', 'exception')
         self._background_tasks = []
 
     @property
-    def config(self):
-        """:attr:`~.TrackerBase.TrackerConfig` object from initialization argument"""
-        return self._config
+    def options(self):
+        """
+        Configuration options provided by the user
 
-    @property
-    def cli_args(self):
+        This is the :class:`dict`-like object from the initialization argument
+        of the same name.
         """
-        Command line arguments as :class:`argparse.Namespace` object from
-        initialization
-        """
-        return self._cli_args
+        return self._options
 
     @property
     def content_path(self):
@@ -304,7 +299,7 @@ class TrackerJobsBase(abc.ABC):
         """
         return jobs.screenshots.ScreenshotsJob(
             content_path=self.content_path,
-            count=getattr(self.cli_args, 'screenshots', None) or self.screenshots,
+            count=self.options.get('screenshots') or self.screenshots,
             **self.common_job_args,
         )
 
@@ -448,12 +443,9 @@ class TrackerBase(abc.ABC):
     """
     Base class for tracker-specific operations, e.g. uploading
 
-    :param config: User configuration options for this tracker,
+    :param options: User configuration options for this tracker,
         e.g. authentication details, announce URL, etc
-    :type config: :attr:`TrackerConfig`
-    :param cli_args: Command line arguments as defined by
-        :attr:`argument_defintions`
-    :type cli_args: :class:`argparse.Namespace`
+    :type options: :class:`dict`-like
     """
 
     @property
@@ -466,20 +458,11 @@ class TrackerBase(abc.ABC):
     def TrackerConfig(self):
         """Subclass of :class:`TrackerConfigBase`"""
 
-    def __init__(self, config=None, cli_args=None):
-        self._config = config or {}
-        self._cli_args = cli_args or argparse.Namespace()
+    def __init__(self, options=None):
+        self._options = options or {}
 
     argument_definitions = {}
     """CLI argument definitions (see :attr:`.CommandBase.argument_definitions`)"""
-
-    @property
-    def cli_args(self):
-        """
-        Command line arguments as :class:`argparse.Namespace` object from
-        initialization
-        """
-        return self._cli_args
 
     @property
     @abc.abstractmethod
@@ -492,9 +475,14 @@ class TrackerBase(abc.ABC):
         """User-facing tracker name abbreviation"""
 
     @property
-    def config(self):
-        """:attr:`~.TrackerBase.TrackerConfig` object from initialization argument"""
-        return self._config
+    def options(self):
+        """
+        Configuration options provided by the user
+
+        This is the :class:`dict`-like object from the initialization argument
+        of the same name.
+        """
+        return self._options
 
     @abc.abstractmethod
     async def login(self):

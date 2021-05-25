@@ -102,7 +102,7 @@ def tracker():
     tracker = Mock()
     tracker.configure_mock(
         name='AsdF',
-        config={
+        options={
             'source'   : 'AsdF',
             'exclude'  : ('a', 'b'),
         },
@@ -293,12 +293,12 @@ def test_CreateTorrentJob_create_torrent_process(job, mocker):
             'content_path' : 'path/to/foo',
             'torrent_path' : os.path.join(
                 job.home_directory,
-                f'foo.{job._tracker.config["source"].lower()}.torrent',
+                f'foo.{job._tracker.options["source"].lower()}.torrent',
             ),
             'overwrite'    : False,
             'announce'     : announce_url,
-            'source'       : job._tracker.config['source'],
-            'exclude'      : job._tracker.config['exclude'],
+            'source'       : job._tracker.options['source'],
+            'exclude'      : job._tracker.options['exclude'],
         },
         init_callback=job._handle_file_tree,
         info_callback=job._handle_progress_update,

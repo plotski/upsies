@@ -74,22 +74,22 @@ class NblTracker(base.TrackerBase):
 
     async def login(self):
         if not self.is_logged_in:
-            if not self.config.get('username'):
+            if not self.options.get('username'):
                 raise errors.RequestError('Login failed: No username configured')
-            elif not self.config.get('password'):
+            elif not self.options.get('password'):
                 raise errors.RequestError('Login failed: No password configured')
 
-            _log.debug('%s: Logging in as %r', self.name, self.config['username'])
+            _log.debug('%s: Logging in as %r', self.name, self.options['username'])
             login_url = urllib.parse.urljoin(
-                self.config['base_url'],
+                self.options['base_url'],
                 self._url_path['login'],
             )
             response = await http.post(
                 url=login_url,
                 user_agent=True,
                 data={
-                    'username': self.config['username'],
-                    'password': self.config['password'],
+                    'username': self.options['username'],
+                    'password': self.options['password'],
                     'twofa': '',
                     'login': 'Login',
                 },
@@ -131,9 +131,9 @@ class NblTracker(base.TrackerBase):
         if not logout_url or not logout_url.get('href'):
             raise RuntimeError('Failed to find logout URL')
         else:
-            _log.debug('%s: Logged in as %r', self.name, self.config['username'])
+            _log.debug('%s: Logged in as %r', self.name, self.options['username'])
             self._logout_url = urllib.parse.urljoin(
-                self.config['base_url'],
+                self.options['base_url'],
                 logout_url['href'],
             )
             _log.debug('%s: Logout URL: %s', self.name, self._logout_url)
@@ -154,7 +154,7 @@ class NblTracker(base.TrackerBase):
 
     async def get_announce_url(self):
         url = urllib.parse.urljoin(
-            self.config['base_url'],
+            self.options['base_url'],
             self._url_path['upload'],
         )
         _log.debug('%s: Getting announce URL from %s', self.name, url)
@@ -191,11 +191,11 @@ class NblTracker(base.TrackerBase):
             'fontfont': '-1',
             'fontsize': '-1',
         }
-        if getattr(self.cli_args, 'ignore_dupes', None):
+        if self.options.get('ignore_dupes'):
             post_data['ignoredupes'] = '1'
 
         upload_url = urllib.parse.urljoin(
-            self.config['base_url'],
+            self.options['base_url'],
             self._url_path['upload'],
         )
 
@@ -209,7 +209,7 @@ class NblTracker(base.TrackerBase):
 
         # Upload response should redirect to torrent page via "Location" header
         torrent_page_url = urllib.parse.urljoin(
-            self.config['base_url'],
+            self.options['base_url'],
             response.headers.get('Location', ''),
         )
         if urllib.parse.urlparse(torrent_page_url).path == self._url_path['torrent']:

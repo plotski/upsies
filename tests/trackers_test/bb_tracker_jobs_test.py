@@ -1,5 +1,4 @@
 import re
-from types import SimpleNamespace
 from unittest.mock import Mock, PropertyMock, call
 
 import pytest
@@ -56,7 +55,7 @@ def bb_tracker_jobs(imghost, btclient, tmp_path, mocker):
             'home_directory': str(tmp_path / 'home_directory'),
             'ignore_cache': True,
         },
-        cli_args=None,
+        options=None,
     )
 
     return bb_tracker_jobs
@@ -345,38 +344,38 @@ def test_make_job_condition(release_type, release_types, monojob_attributes, exp
 
 
 @pytest.mark.parametrize(
-    argnames='is_movie_release, is_series_release, cli_args, exp_monojobs',
+    argnames='is_movie_release, is_series_release, options, exp_monojobs',
     argvalues=(
-        (False, False, SimpleNamespace(title=True, description=False, poster=False, release_info=False, tags=False),
+        (False, False, {'title': True, 'description': False, 'poster': False, 'release_info': False, 'tags': False},
          ()),
-        (True, False, SimpleNamespace(title=True, description=False, poster=False, release_info=False, tags=False),
+        (True, False, {'title': True, 'description': False, 'poster': False, 'release_info': False, 'tags': False},
          ('imdb_job', 'movie_title_job')),
-        (True, False, SimpleNamespace(title=False, description=True, poster=False, release_info=False, tags=False),
+        (True, False, {'title': False, 'description': True, 'poster': False, 'release_info': False, 'tags': False},
          ('imdb_job', 'movie_description_job')),
-        (True, False, SimpleNamespace(title=False, description=False, poster=True, release_info=False, tags=False),
+        (True, False, {'title': False, 'description': False, 'poster': True, 'release_info': False, 'tags': False},
          ('imdb_job', 'movie_poster_job')),
-        (True, False, SimpleNamespace(title=False, description=False, poster=False, release_info=True, tags=False),
+        (True, False, {'title': False, 'description': False, 'poster': False, 'release_info': True, 'tags': False},
          ('movie_release_info_job',)),
-        (True, False, SimpleNamespace(title=False, description=False, poster=False, release_info=False, tags=True),
+        (True, False, {'title': False, 'description': False, 'poster': False, 'release_info': False, 'tags': True},
          ('imdb_job', 'movie_tags_job')),
-        (True, False, SimpleNamespace(), ()),
-        (False, True, SimpleNamespace(title=True, description=False, poster=False, release_info=False, tags=False),
+        (True, False, {}, ()),
+        (False, True, {'title': True, 'description': False, 'poster': False, 'release_info': False, 'tags': False},
          ('tvmaze_job', 'series_title_job')),
-        (False, True, SimpleNamespace(title=False, description=True, poster=False, release_info=False, tags=False),
+        (False, True, {'title': False, 'description': True, 'poster': False, 'release_info': False, 'tags': False},
          ('tvmaze_job', 'mediainfo_job', 'screenshots_job', 'upload_screenshots_job', 'series_description_job')),
-        (False, True, SimpleNamespace(title=False, description=False, poster=True, release_info=False, tags=False),
+        (False, True, {'title': False, 'description': False, 'poster': True, 'release_info': False, 'tags': False},
          ('tvmaze_job', 'series_poster_job')),
-        (False, True, SimpleNamespace(title=False, description=False, poster=False, release_info=True, tags=False),
+        (False, True, {'title': False, 'description': False, 'poster': False, 'release_info': True, 'tags': False},
          ('tvmaze_job', 'series_title_job')),
-        (False, True, SimpleNamespace(title=False, description=False, poster=False, release_info=False, tags=True),
+        (False, True, {'title': False, 'description': False, 'poster': False, 'release_info': False, 'tags': True},
          ('tvmaze_job', 'series_tags_job')),
-        (False, True, SimpleNamespace(), ()),
+        (False, True, {}, ()),
     ),
 )
-def test_monojob_attributes(is_movie_release, is_series_release, cli_args, exp_monojobs, bb_tracker_jobs, mocker):
+def test_monojob_attributes(is_movie_release, is_series_release, options, exp_monojobs, bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=is_movie_release))
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=is_series_release))
-    mocker.patch.object(type(bb_tracker_jobs), 'cli_args', PropertyMock(return_value=cli_args))
+    mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value=options))
     assert bb_tracker_jobs.monojob_attributes == exp_monojobs
 
 
@@ -1501,7 +1500,7 @@ async def test_get_resized_poster_url_succeeds(bb_tracker_jobs, mocker):
 
 @pytest.mark.asyncio
 async def test_get_poster_file_gets_poster_url_from_cli_argument(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'cli_args', Mock(poster_file='http://cli/poster.jpg'))
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster_file': 'http://cli/poster.jpg'})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock())
     poster_job = Mock(home_directory='path/to/job')
@@ -1514,7 +1513,7 @@ async def test_get_poster_file_gets_poster_url_from_cli_argument(bb_tracker_jobs
 
 @pytest.mark.asyncio
 async def test_get_poster_file_gets_poster_file_from_cli_argument(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'cli_args', Mock(poster_file='path/to/cli/poster.jpg'))
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster_file': 'path/to/cli/poster.jpg'})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock())
     poster_job = Mock(home_directory='path/to/job')
@@ -1527,7 +1526,7 @@ async def test_get_poster_file_gets_poster_file_from_cli_argument(bb_tracker_job
 
 @pytest.mark.asyncio
 async def test_get_poster_file_fails_to_get_poster_file_from_poster_url_getter(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'cli_args', Mock(poster_file=None))
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster_file': None})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock())
     poster_job = Mock(home_directory='path/to/job')
@@ -1540,7 +1539,7 @@ async def test_get_poster_file_fails_to_get_poster_file_from_poster_url_getter(b
 
 @pytest.mark.asyncio
 async def test_get_poster_file_fails_to_download_poster_from_cli_url(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'cli_args', Mock(poster_file='http://cli/poster.jpg'))
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster_file': 'http://cli/poster.jpg'})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock(
         side_effect=errors.RequestError('Failed to download'),
@@ -1555,7 +1554,7 @@ async def test_get_poster_file_fails_to_download_poster_from_cli_url(bb_tracker_
 
 @pytest.mark.asyncio
 async def test_get_poster_file_fails_to_download_poster_from_poster_url_getter(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'cli_args', Mock(poster_file=None))
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster_file': None})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock(
         side_effect=errors.RequestError('Failed to download'),

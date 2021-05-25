@@ -90,8 +90,8 @@ class torrent_create(CommandBase):
             content_path=self.args.CONTENT,
             tracker=trackers.tracker(
                 name=self.tracker_name,
-                config=self.config['trackers'][self.tracker_name],
-                cli_args=self.args,
+                options={**self.config['trackers'][self.tracker_name],
+                         **vars(self.args)},
             ),
         )
 

@@ -79,7 +79,7 @@ async def test_login_succeeds(mocker):
     ))
     sleep_mock = mocker.patch('asyncio.sleep', AsyncMock())
     tracker = BbTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://bb.local',
@@ -116,7 +116,7 @@ async def test_login_with_incomplete_login_credentials(credentials, exp_error, m
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     sleep_mock = mocker.patch('asyncio.sleep', AsyncMock())
     tracker = BbTracker(
-        config={**{'base_url': 'http://bb.local'}, **credentials}
+        options={**{'base_url': 'http://bb.local'}, **credentials}
     )
     assert not tracker.is_logged_in
     with pytest.raises(errors.RequestError, match=rf'^Login failed: {exp_error}$'):
@@ -139,7 +139,7 @@ async def test_login_fails_and_finds_error_message(mocker):
     ))
     sleep_mock = mocker.patch('asyncio.sleep', AsyncMock())
     tracker = BbTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://bb.local',
@@ -175,7 +175,7 @@ async def test_login_fails_and_does_not_find_error_message(mocker):
     sleep_mock = mocker.patch('asyncio.sleep', AsyncMock())
     mocker.patch('upsies.utils.html.dump')
     tracker = BbTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://bb.local',
@@ -232,7 +232,7 @@ async def test_login_bug_workaround_retries_login_successfully(mocker):
     ))
     sleep_mock = mocker.patch('asyncio.sleep', AsyncMock())
     tracker = BbTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://bb.local',
@@ -273,7 +273,7 @@ async def test_login_bug_workaround_exceeds_max_attempts(mocker):
     ))
     sleep_mock = mocker.patch('asyncio.sleep', AsyncMock())
     tracker = BbTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://bb.local',
@@ -387,7 +387,7 @@ def test_logged_in():
 async def test_logout(auth_token, mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = BbTracker(config={'base_url': 'http://bb.local'})
+    tracker = BbTracker(options={'base_url': 'http://bb.local'})
     if auth_token:
         tracker._auth_token = auth_token
     await tracker.logout()
@@ -413,7 +413,7 @@ async def test_get_announce_url_succeeds(mocker):
     ''',
     ))
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = BbTracker(config={'base_url': 'http://bb.local'})
+    tracker = BbTracker(options={'base_url': 'http://bb.local'})
     announce_url = await tracker.get_announce_url()
     assert announce_url == 'https://bb.local:123/d34db33f/announce'
     assert get_mock.call_args_list == [
@@ -425,7 +425,7 @@ async def test_get_announce_url_succeeds(mocker):
 async def test_get_announce_url_fails(mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(return_value='<html>foo</html> '))
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = BbTracker(config={'base_url': 'http://bb.local'})
+    tracker = BbTracker(options={'base_url': 'http://bb.local'})
     assert await tracker.get_announce_url() is None
     assert get_mock.call_args_list == [
         call('http://bb.local' + BbTracker._url_path['upload'], cache=False, user_agent=True),
@@ -437,7 +437,7 @@ async def test_get_announce_url_fails(mocker):
 async def test_upload_makes_expected_request(mocker):
     response = Result(text='', bytes=b'', headers={'Location': 'torrents.php?id=123'})
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
-    tracker = BbTracker(config={'base_url': 'http://bb.local'})
+    tracker = BbTracker(options={'base_url': 'http://bb.local'})
     tracker_jobs_mock = Mock()
     torrent_page_url = await tracker.upload(tracker_jobs_mock)
     assert torrent_page_url == 'http://bb.local/torrents.php?id=123'
@@ -475,7 +475,7 @@ async def test_upload_finds_error_error_message(page, exp_message, headers, get_
     )
     mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
     tracker = BbTracker(
-        config={
+        options={
             'base_url': 'http://bb.local',
         },
     )
@@ -499,7 +499,7 @@ async def test_upload_finds_empty_error_message(mocker):
     )
     html_dump_mock = mocker.patch('upsies.utils.html.dump')
     mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
-    tracker = BbTracker(config={'base_url': 'http://bb.local'})
+    tracker = BbTracker(options={'base_url': 'http://bb.local'})
     tracker_jobs_mock = Mock()
     with pytest.raises(RuntimeError, match=r'^Failed to find error message\. See upload\.html\.$'):
         await tracker.upload(tracker_jobs_mock)
@@ -518,7 +518,7 @@ async def test_upload_fails_to_find_error_message(mocker):
     )
     html_dump_mock = mocker.patch('upsies.utils.html.dump')
     mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
-    tracker = BbTracker(config={'base_url': 'http://bb.local'})
+    tracker = BbTracker(options={'base_url': 'http://bb.local'})
     tracker_jobs_mock = Mock()
     with pytest.raises(RuntimeError, match=r'^Failed to find error message\. See upload\.html\.$'):
         await tracker.upload(tracker_jobs_mock)

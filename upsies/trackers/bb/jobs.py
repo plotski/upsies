@@ -198,27 +198,27 @@ class BbTrackerJobs(TrackerJobsBase):
         the user
         """
         if self.is_movie_release:
-            if getattr(self.cli_args, 'title', False):
+            if self.options.get('title', False):
                 return ('imdb_job', 'movie_title_job')
-            elif getattr(self.cli_args, 'description', False):
+            elif self.options.get('description', False):
                 return ('imdb_job', 'movie_description_job')
-            elif getattr(self.cli_args, 'poster', False):
+            elif self.options.get('poster', False):
                 return ('imdb_job', 'movie_poster_job')
-            elif getattr(self.cli_args, 'release_info', False):
+            elif self.options.get('release_info', False):
                 return ('movie_release_info_job',)
-            elif getattr(self.cli_args, 'tags', False):
+            elif self.options.get('tags', False):
                 return ('imdb_job', 'movie_tags_job')
 
         elif self.is_series_release:
-            if getattr(self.cli_args, 'title', False) or getattr(self.cli_args, 'release_info', False):
+            if self.options.get('title', False) or self.options.get('release_info', False):
                 # Series title and release_info are combined
                 return ('tvmaze_job', 'series_title_job')
-            elif getattr(self.cli_args, 'description', False):
+            elif self.options.get('description', False):
                 return ('tvmaze_job', 'mediainfo_job', 'screenshots_job',
                         'upload_screenshots_job', 'series_description_job')
-            elif getattr(self.cli_args, 'poster', False):
+            elif self.options.get('poster', False):
                 return ('tvmaze_job', 'series_poster_job')
-            elif getattr(self.cli_args, 'tags', False):
+            elif self.options.get('tags', False):
                 return ('tvmaze_job', 'series_tags_job')
 
         return ()
@@ -821,14 +821,14 @@ class BbTrackerJobs(TrackerJobsBase):
                     poster_job.info = ''
 
     async def get_poster_file(self, poster_job, poster_url_getter):
-        if self.cli_args.poster_file:
+        if self.options.get('poster_file'):
             # Get poster from CLI argument
-            if re.search(r'^[a-z]+://', self.cli_args.poster_file):
+            if re.search(r'^[a-z]+://', self.options['poster_file']):
                 # CLI argument is URL
-                poster_url = self.cli_args.poster_file
+                poster_url = self.options['poster_file']
             else:
                 # CLI argument is file path
-                return self.cli_args.poster_file
+                return self.options['poster_file']
         else:
             # Get poster URL from webdb (e.g. "https://imdb.com/...jpg")
             poster_url = await poster_url_getter()

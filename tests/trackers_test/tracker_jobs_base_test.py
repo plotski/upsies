@@ -55,8 +55,7 @@ def test_arguments():
         'bittorrent_client': Mock(),
         'torrent_destination': Mock(),
         'common_job_args': Mock(),
-        'cli_args': Mock(),
-        'config': Mock(),
+        'options': {'mock': 'config'},
     }
     tracker_jobs = make_TestTrackerJobs(**kwargs)
     for k, v in kwargs.items():
@@ -372,19 +371,19 @@ def test_tvmaze_job_is_singleton(mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='cli_args, exp_screenshots',
+    argnames='options, exp_screenshots',
     argvalues=(
         (None, TrackerJobsBase.screenshots),
-        (Mock(screenshots=123), 123),
+        ({'screenshots': 123}, 123),
     ),
     ids=lambda v: str(v),
 )
-def test_screenshots_job(cli_args, exp_screenshots, mocker):
+def test_screenshots_job(options, exp_screenshots, mocker):
     ScreenshotsJob_mock = mocker.patch('upsies.jobs.screenshots.ScreenshotsJob')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
-        cli_args=cli_args,
+        options=options,
     )
     assert tracker_jobs.screenshots_job is ScreenshotsJob_mock.return_value
     assert ScreenshotsJob_mock.call_args_list == [

@@ -49,7 +49,7 @@ async def test_login_does_nothing_if_already_logged_in(mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://nbl.local',
@@ -81,7 +81,7 @@ async def test_login_with_incomplete_login_credentials(credentials, exp_error, m
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     tracker = NblTracker(
-        config={
+        options={
             **{
                 'base_url': 'http://nbl.local',
                 'announce': 'http://nbl.local/announce',
@@ -111,7 +111,7 @@ async def test_login_succeeds(mocker):
         ''',
     ))
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://nbl.local',
@@ -155,7 +155,7 @@ async def test_login_dumps_html_if_handling_response_fails(method_name, mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://nbl.local',
@@ -203,7 +203,7 @@ async def test_login_dumps_html_if_handling_response_fails(method_name, mocker):
 )
 def test_report_login_error(page, exp_message, get_html_page):
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://nbl.local',
@@ -221,7 +221,7 @@ def test_report_login_error(page, exp_message, get_html_page):
 
 def test_is_logged_in():
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://nbl.local',
@@ -256,7 +256,7 @@ async def test_logout(logout_url, auth_key, mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://nbl.local',
@@ -291,7 +291,7 @@ async def test_get_announce_url_succeeds(mocker):
     ))
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://nbl.local',
@@ -313,7 +313,7 @@ async def test_get_announce_url_fails(mocker):
     ))
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://nbl.local',
@@ -331,7 +331,7 @@ async def test_get_announce_url_fails(mocker):
 @pytest.mark.asyncio
 async def test_upload_without_being_logged_in(mocker):
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': 'http://nbl.local',
@@ -391,16 +391,14 @@ async def test_upload_succeeds(category, exp_category_code, ignore_dupes, exp_da
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': httpserver.url_for(''),
             'announce': 'http://nbl.local/announce',
             'exclude': 'some files',
+            'ignore_dupes': ignore_dupes,
         },
-        cli_args=Mock(
-            ignore_dupes=ignore_dupes,
-        ),
     )
     tracker._logout_url = 'logout.php'
     tracker._auth_key = 'mocked auth key'
@@ -461,7 +459,7 @@ async def test_upload_finds_error_message(message, exp_error, tmp_path, mocker, 
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': httpserver.url_for(''),
@@ -493,7 +491,7 @@ async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
     torrent_file = tmp_path / 'foo.torrent'
     torrent_file.write_bytes(b'mocked torrent metainfo')
     tracker = NblTracker(
-        config={
+        options={
             'username': 'bunny',
             'password': 'hunter2',
             'base_url': httpserver.url_for(''),

@@ -25,15 +25,10 @@ def make_TestTracker(**kwargs):
     return TestTracker(**kwargs)
 
 
-def test_config():
-    config = {'username': 'foo', 'password': 'bar'}
-    tracker = make_TestTracker(config=config)
-    assert tracker.config is config
-
-
-def test_cli_args():
-    tracker = make_TestTracker(cli_args='mock args')
-    assert tracker.cli_args == 'mock args'
+def test_options():
+    options = {'username': 'foo', 'password': 'bar'}
+    tracker = make_TestTracker(options=options)
+    assert tracker.options is options
 
 
 def test_argument_definitions():
