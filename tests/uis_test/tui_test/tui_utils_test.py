@@ -50,20 +50,21 @@ def test_Throbber_iterate_while_not_active(mocker):
 def test_Throbber_iterate_while_active(mocker):
     call_later_mock = mocker.patch.object(asyncio.get_event_loop(), 'call_later')
     cb = Mock()
-    throbber = utils.Throbber(callback=cb, interval=123, states=('a', 'b', 'c'), active=False)
+    throbber = utils.Throbber(callback=cb, interval=123, states=('a', 'b', 'c'),
+                              active=False, format='<{throbber}>')
     assert cb.call_args_list == []
     assert call_later_mock.call_args_list == []
     throbber.active = True
     assert cb.call_args_list == [
-        call('a'),
+        call('<a>'),
     ]
     assert call_later_mock.call_args_list == [
         call(123.0, throbber._iterate),
     ]
     throbber._iterate()
     assert cb.call_args_list == [
-        call('a'),
-        call('b'),
+        call('<a>'),
+        call('<b>'),
     ]
     assert call_later_mock.call_args_list == [
         call(123.0, throbber._iterate),
@@ -71,9 +72,9 @@ def test_Throbber_iterate_while_active(mocker):
     ]
     throbber._iterate()
     assert cb.call_args_list == [
-        call('a'),
-        call('b'),
-        call('c'),
+        call('<a>'),
+        call('<b>'),
+        call('<c>'),
     ]
     assert call_later_mock.call_args_list == [
         call(123.0, throbber._iterate),

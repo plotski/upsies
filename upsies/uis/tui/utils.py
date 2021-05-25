@@ -18,10 +18,11 @@ class Throbber:
     """
 
     def __init__(self, *, callback=None, states=('⠷', '⠯', '⠟', '⠻', '⠽', '⠾'),
-                 interval=0.1, active=False):
+                 interval=0.1, active=False, format='{throbber}'):
         self._iterator = itertools.cycle(states)
         self._interval = float(interval)
         self._callback = callback or None
+        self._format = format
         self.active = active
 
     @property
@@ -40,7 +41,7 @@ class Throbber:
 
     @property
     def next_state(self):
-        return next(self._iterator)
+        return self._format.format(throbber=next(self._iterator))
 
     def _iterate(self):
         if self.active:
