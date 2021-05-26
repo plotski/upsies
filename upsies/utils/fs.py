@@ -94,19 +94,33 @@ def limit_directory_size(path, max_total_size):
                 else:
                     raise RuntimeError(f'{files[0]}: Failed to prune: {e}')
 
-    prune_empty_directories(path)
+    prune_empty(path, directories=True)
 
 
-def prune_empty_directories(path):
-    """Remove empty subdirectories recursively"""
+def prune_empty(path, files=False, directories=True):
+    """
+    Remove empty subdirectories recursively
+
+    :param bool files: Whether to prune empty files
+    :param bool directories: Whether to prune empty directories
+    """
     try:
-        for dirpath, dirnames, _ in os.walk(path, topdown=False):
-            for dirname in dirnames:
-                subdirpath = os.path.join(dirpath, dirname)
-                if not os.listdir(subdirpath):
-                    os.rmdir(subdirpath)
-        if not os.listdir(path):
+        for dirpath, dirnames, filenames in os.walk(path, topdown=False):
+            if files:
+                for filename in filenames:
+                    filepath = os.path.join(dirpath, filename)
+                    if not file_size(filepath):
+                        os.unlink(filepath)
+
+            if directories:
+                for dirname in dirnames:
+                    subdirpath = os.path.join(dirpath, dirname)
+                    if not os.listdir(subdirpath):
+                        os.rmdir(subdirpath)
+
+        if directories and not os.listdir(path):
             os.rmdir(path)
+
     except OSError as e:
         if e.strerror:
             raise RuntimeError(f'{subdirpath}: Failed to prune: {e.strerror}')
