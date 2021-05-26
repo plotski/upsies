@@ -92,7 +92,6 @@ def limit_directory_size(path, max_total_size):
                     raise RuntimeError(f'{files[0]}: Failed to prune: {e.strerror}')
                 else:
                     raise RuntimeError(f'{files[0]}: Failed to prune: {e}')
-                break
 
     prune_empty_directories(path)
 
