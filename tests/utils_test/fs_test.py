@@ -1,5 +1,6 @@
 import itertools
 import os
+import time
 from pathlib import Path
 from unittest.mock import call, patch
 
@@ -370,6 +371,35 @@ def test_file_list_filters_by_extensions(tmp_path):
         str((tmp_path / 'a' / 'b' / 'c' / 'd' / 'd2.txt')),
         str((tmp_path / 'bar.jpg')),
         str((tmp_path / 'foo.txt')),
+    )
+
+def test_file_list_filters_by_age(tmp_path):
+    def write(filepath, age):
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        filepath.write_bytes(b'foo')
+        atime = time.time() - age
+        os.utime(filepath, times=(atime, atime))
+
+    write(tmp_path / 'a', 21)
+    write(tmp_path / 'b', 20)
+    write(tmp_path / 'c', 10)
+    write(tmp_path / 'd', 9)
+    write(tmp_path / '1' / 'a', 22)
+    write(tmp_path / '1' / 'b', 19)
+    write(tmp_path / '1' / 'c', 11)
+    write(tmp_path / '1' / 'd', 8)
+    write(tmp_path / '1' / '2' / 'a', 23)
+    write(tmp_path / '1' / '2' / 'b', 18)
+    write(tmp_path / '1' / '2' / 'c', 12)
+    write(tmp_path / '1' / '2' / 'd', 7)
+    files = fs.file_list(tmp_path, min_age=10, max_age=20)
+    assert files == (
+        str(tmp_path / '1' / '2' / 'b'),
+        str(tmp_path / '1' / '2' / 'c'),
+        str(tmp_path / '1' / 'b'),
+        str(tmp_path / '1' / 'c'),
+        str(tmp_path / 'b'),
+        str(tmp_path / 'c'),
     )
 
 def test_file_list_if_path_is_matching_nondirectory(tmp_path):

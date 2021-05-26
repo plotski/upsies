@@ -5,6 +5,7 @@ File system helpers
 import functools
 import os
 import re
+import time
 
 from .. import constants, errors
 from . import LazyModule, os_family, string
@@ -243,7 +244,7 @@ def file_size(path):
     return None
 
 
-def file_list(path, extensions=()):
+def file_list(path, extensions=(), min_age=None, max_age=None):
     """
     List naturally sorted files in `path` and any subdirectories
 
@@ -253,14 +254,23 @@ def file_list(path, extensions=()):
     Unreadable directories are ignored.
 
     :param str path: Path to a directory
-    :param str extensions: List of file extensions to include
+    :param str extensions: Exclude files without one of these extensions
+    :param min_age: Exclude files that are younger than this
+    :type min_age: int or float
+    :param max_age: Exclude files that are older than this
+    :type max_age: int or float
 
     :return: Tuple of file paths
     """
     extensions = tuple(str(e).casefold() for e in extensions)
 
     def ext_ok(filename):
-        return file_extension(filename).casefold() in extensions
+        return not extensions or file_extension(filename).casefold() in extensions
+
+    def age_ok(filepath, now=time.time()):
+        statinfo = os.stat(filepath)
+        age = round(now - statinfo.st_atime)
+        return (min_age or age) <= age <= (max_age or age)
 
     if not os.path.isdir(path):
         if ext_ok(path):
@@ -270,9 +280,10 @@ def file_list(path, extensions=()):
 
     files = []
     for root, dirnames, filenames in os.walk(path):
-        for filename in filenames:
-            if not extensions or ext_ok(filename):
-                files.append(os.path.join(root, filename))
+        for filename in sorted(filenames):
+            filepath = os.path.join(root, filename)
+            if ext_ok(filename) and age_ok(filepath):
+                files.append(filepath)
     return tuple(natsort.natsorted(files, key=str.casefold))
 
 
