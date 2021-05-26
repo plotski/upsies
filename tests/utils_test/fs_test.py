@@ -1,4 +1,3 @@
-import itertools
 import os
 import time
 from pathlib import Path
@@ -98,19 +97,31 @@ def test_limit_directory_size(tmp_path):
     for dirname1 in ('a', 'b', 'c'):
         for dirname2 in ('d', 'e', 'f'):
             (tmp_path / dirname1 / dirname2).mkdir(parents=True)
-            (tmp_path / dirname1 / dirname2 / 'y').write_text('x' * 100)
-            (tmp_path / dirname1 / dirname2 / 'empty').mkdir()
-        (tmp_path / dirname1 / 'z').write_text('x' * 1000)
-        (tmp_path / dirname1 / 'empty').mkdir()
+            (tmp_path / dirname1 / dirname2 / 'y').write_text('_' * 100)
+            (tmp_path / dirname1 / dirname2 / 'empty_file').write_text('')
+            (tmp_path / dirname1 / dirname2 / 'empty_dir').mkdir()
+        (tmp_path / dirname1 / 'z').write_text('_' * 1000)
+        (tmp_path / dirname1 / 'empty_file').write_text('')
+        (tmp_path / dirname1 / 'empty_dir').mkdir()
 
-    atime = 0
-    atime_iter = itertools.cycle((5, 10, 20, 30, 60))
-    for dirname2 in ('e', 'd', 'f'):
-        for dirname1 in ('b', 'a', 'c'):
-            os.utime(tmp_path / dirname1 / dirname2 / 'y', (atime, atime))
-            atime += next(atime_iter)
-            os.utime(tmp_path / dirname1 / 'z', (atime, atime))
-            atime += next(atime_iter)
+    now = time.time()
+    min_age = 125
+    max_age = 300
+    atime = now - max_age
+    age_diff = 5
+    for dirname1 in ('a', 'b', 'c'):
+        for dirname2 in ('d', 'e', 'f'):
+            for entry in ('y', 'empty_file', 'empty_dir'):
+                atime += age_diff
+                os.utime(tmp_path / dirname1 / dirname2 / entry, (atime, atime))
+        for entry in ('z', 'empty_file', 'empty_dir'):
+            atime += age_diff
+            os.utime(tmp_path / dirname1 / entry, (atime, atime))
+
+    (tmp_path / 'a' / 'd' / 'too_old').write_text('x')
+    os.utime(tmp_path / 'a' / 'd' / 'too_old', (now - max_age - 1, now - max_age - 1))
+    (tmp_path / 'c' / 'too_young').write_text('y')
+    os.utime(tmp_path / 'c' / 'too_young', (now - min_age + 1, now - min_age + 1))
 
     def get_files():
         return sorted(
@@ -118,27 +129,57 @@ def test_limit_directory_size(tmp_path):
                 os.path.join(dirpath, filename)
                 for dirpath, dirnames, filenames in os.walk(tmp_path)
                 for filename in filenames
+                if os.path.getsize(os.path.join(dirpath, filename))
             ),
             key=lambda filepath: os.stat(filepath).st_atime,
         )
 
+    def get_total_size():
+        return sum(os.path.getsize(f) for f in get_files())
+
+    def print_current_files():
+        for f in sorted(get_files(), key=lambda f: os.stat(f).st_atime):
+            print(f'{f:<72}', 'age:', round(now - os.stat(f).st_atime), 'size:', os.path.getsize(f))
+        print(' ' * 75, 'total size:', get_total_size())
+
     orig_files = get_files()
+    print('initial files:')
+    print_current_files()
 
     # No pruning necessary
-    fs.limit_directory_size(tmp_path, max_total_size=3900)
+    fs.limit_directory_size(tmp_path, max_total_size=3900, min_age=min_age, max_age=max_age)
+    print('after max_total_size=3900:')
+    print_current_files()
     assert get_files() == orig_files
+    assert get_total_size() == 3902
 
     # Prune oldest file
-    fs.limit_directory_size(tmp_path, max_total_size=3800)
-    assert get_files() == orig_files[1:]
+    fs.limit_directory_size(tmp_path, max_total_size=3800, min_age=min_age, max_age=max_age)
+    print('after max_total_size=3800:')
+    print_current_files()
+    assert get_files() == (
+        [orig_files[0]]  # too_old
+        + orig_files[2:]
+    )
+    assert get_total_size() == 3802
 
     # Prune multiple files
-    fs.limit_directory_size(tmp_path, max_total_size=3000)
-    assert get_files() == orig_files[8:]
+    fs.limit_directory_size(tmp_path, max_total_size=3000, min_age=min_age, max_age=max_age)
+    print('after max_total_size=3000:')
+    print_current_files()
+    assert get_files() == (
+        [orig_files[0]]  # too_old
+        + orig_files[5:]
+    )
+    assert get_total_size() == 2602
 
     # Prune all files
-    fs.limit_directory_size(tmp_path, max_total_size=0)
-    assert get_files() == []
+    fs.limit_directory_size(tmp_path, max_total_size=0, min_age=min_age, max_age=max_age)
+    assert get_files() == (
+        [orig_files[0]]     # too_old
+        + [orig_files[-1]]  # too_young
+    )
+    assert get_total_size() == 2
 
 
 def test_prune_empty_prunes_empty_files(tmp_path):

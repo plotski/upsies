@@ -64,18 +64,22 @@ def projectdir(content_path, base=None):
     return path
 
 
-def limit_directory_size(path, max_total_size):
+def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
     """
     Delete oldest files (by access time) until maximum size is not exceeded
 
-    :func:`prune_empty_directories` is also called with `path`.
+    Empty files and directories are always deleted.
 
     :param path: Path to directory
     :param max_total_size: Maximum combined size of all files in `path` and its
         subdirectories
+    :param min_age: Preserve files that are younger than this
+    :type min_age: int or float
+    :param max_age: Preserve files that are older than this
+    :type max_age: int or float
     """
-    def size(path):
-        return sum(file_size(f) for f in file_list(path))
+    def size(filepaths):
+        return sum(file_size(f) for f in filepaths)
 
     # This should return mtime if file system was mounted with noatime.
     def atime(filepath):
@@ -83,18 +87,20 @@ def limit_directory_size(path, max_total_size):
         return statinfo.st_atime
 
     # Remove oldest file until `path` size is small enough
-    while size(path) > max_total_size:
-        files = sorted(file_list(path), key=atime)
-        if files:
-            try:
-                os.unlink(files[0])
-            except OSError as e:
-                if e.strerror:
-                    raise RuntimeError(f'{files[0]}: Failed to prune: {e.strerror}')
-                else:
-                    raise RuntimeError(f'{files[0]}: Failed to prune: {e}')
+    filepaths = file_list(path, min_age=min_age, max_age=max_age)
+    while size(filepaths) > max_total_size:
+        oldest_file = sorted(filepaths, key=atime)[0]
+        try:
+            os.unlink(oldest_file)
+        except OSError as e:
+            if e.strerror:
+                raise RuntimeError(f'{oldest_file}: Failed to prune: {e.strerror}')
+            else:
+                raise RuntimeError(f'{oldest_file}: Failed to prune: {e}')
+        else:
+            filepaths = file_list(path, min_age=min_age, max_age=max_age)
 
-    prune_empty(path, directories=True)
+    prune_empty(path, files=True, directories=True)
 
 
 def prune_empty(path, files=False, directories=True):
