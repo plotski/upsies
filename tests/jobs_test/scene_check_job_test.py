@@ -251,11 +251,7 @@ def test_handle_scene_check_result_handles_SceneErrors(make_SceneCheckJob, mocke
         ),
     )
     assert job.warnings == (str(errors.SceneMissingInfoError('burr')),)
-    assert job.errors == (
-        errors.SceneError('foo'),
-        errors.SceneRenamedError(original_name='bar', existing_name='Bar'),
-        errors.SceneFileSizeError('baz', original_size=123, existing_size=456),
-    )
+    assert job.errors == (errors.SceneError('foo'),)
     assert ask_is_scene_release.call_args_list == []
     assert job.finalize.call_args_list == []
     assert job.is_finished

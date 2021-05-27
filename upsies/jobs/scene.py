@@ -49,7 +49,7 @@ class SceneSearchJob(JobBase):
         try:
             query = scene.SceneQuery.from_string(self._content_path)
         except errors.SceneError as e:
-            self.error(e, finish=True)
+            self.error(e)
         else:
             self._search_task = asyncio.ensure_future(
                 scene.search(query=query),
@@ -136,7 +136,7 @@ class SceneCheckJob(JobBase):
             self.warn(e)
             self.signal.emit('ask_is_scene_release', types.SceneCheckResult.unknown)
         except errors.SceneError as e:
-            self.error(e, finish=True)
+            self.error(e)
         except BaseException as e:
             self.exception(e)
 
@@ -205,13 +205,13 @@ class SceneCheckJob(JobBase):
     def _handle_scene_check_result(self, is_scene_release, exceptions=()):
         _log.debug('Handling result: %r: %r', is_scene_release, exceptions)
 
-        # Split exceptions into errors and warnings
-        serious_errors = [e for e in exceptions if not isinstance(e, errors.SceneMissingInfoError)]
         warnings = [e for e in exceptions if isinstance(e, errors.SceneMissingInfoError)]
-        for e in serious_errors:
-            self.error(e)
         for e in warnings:
             self.warn(e)
+
+        serious_errors = [e for e in exceptions if not isinstance(e, errors.SceneMissingInfoError)]
+        for e in serious_errors:
+            self.error(e)
 
         if serious_errors:
             self.finish()

@@ -349,17 +349,16 @@ class JobBase(abc.ABC):
         if not self.is_finished:
             self._warnings.clear()
 
-    def error(self, error, finish=False):
+    def error(self, error):
         """
-        Append `error` to :attr:`errors` and emit ``error`` signal
+        Append `error` to :attr:`errors`, emit ``error`` signal and :meth:`finish`
+        this job
 
-        :param bool finish: Whether to call :meth:`finish` after handling
-            `error`
+        Do nothing if this job is already finished.
         """
         if not self.is_finished:
-            if finish:
-                self.finish()
             self.signal.emit('error', error)
+            self.finish()
 
     @property
     def errors(self):

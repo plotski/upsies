@@ -71,7 +71,7 @@ class CreateTorrentJob(base.JobBase):
             await self._tracker.login()
             announce_url = await self._tracker.get_announce_url()
         except errors.RequestError as e:
-            self.error(e, finish=True)
+            self.error(e)
         else:
             self.signal.emit('announce_url', announce_url)
             return announce_url

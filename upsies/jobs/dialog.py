@@ -328,7 +328,7 @@ class TextFieldJob(JobBase):
             # Inform user about failure and allow them to make manual
             # adjustments to default text
             if error_is_fatal:
-                self.error(e, finish=True)
+                self.error(e)
             else:
                 self.warn(e)
             self.text = default_text

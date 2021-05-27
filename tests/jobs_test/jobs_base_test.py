@@ -411,38 +411,35 @@ def test_errors(job):
     job._errors = ['foo', 'bar', 'baz']
     assert job.errors == ('foo', 'bar', 'baz')
 
-def test_error_emits_error_signal(job, mocker):
+@pytest.mark.parametrize('error', ('foo', errors.ContentError('bar')))
+def test_error_emits_error_signal(error, job, mocker):
     mocker.patch.object(job.signal, 'emit')
     job.start()
     assert job.signal.emit.call_args_list == []
-    job.error('foo')
-    assert job.signal.emit.call_args_list == [call('error', 'foo')]
-    job.error(errors.ContentError('bar'))
-    assert job.signal.emit.call_args_list == [call('error', 'foo'),
-                                              call('error', errors.ContentError('bar'))]
+    job.error(error)
+    assert job.signal.emit.call_args_list == [call('error', error), call('finished', job)]
 
 def test_error_finishes_job(job, mocker):
     job.start()
     assert not job.is_finished
-    job.error('foo', finish=True)
+    job.error('foo')
     assert job.is_finished
 
 def test_error_on_finished_job(job, mocker):
     mocker.patch.object(job.signal, 'emit')
     job.start()
-    job.error('foo')
-    assert job.signal.emit.call_args_list == [call('error', 'foo')]
+    assert job.signal.emit.call_args_list == []
     job.finish()
-    job.error('bar')
-    assert job.signal.emit.call_args_list == [call('error', 'foo'), call('finished', job)]
+    assert job.signal.emit.call_args_list == [call('finished', job)]
+    job.error('foo')
+    assert job.signal.emit.call_args_list == [call('finished', job)]
 
-def test_error_fills_errors_property(job, mocker):
+@pytest.mark.parametrize('error', ('foo', errors.ContentError('bar')))
+def test_error_appends_to_errors_property(error, job, mocker):
     job.start()
     assert job.errors == ()
-    job.error('foo')
-    assert job.errors == ('foo',)
-    job.error(errors.ContentError('bar'))
-    assert job.errors == ('foo', errors.ContentError('bar'))
+    job.error(error)
+    assert job.errors == (error,)
 
 
 @pytest.mark.asyncio

@@ -101,7 +101,7 @@ async def test_handle_input_sends_source_path_on_failure(make_CopyTorrentJob, mo
     mocker.patch('shutil.copy2', side_effect=PermissionError('Permission denied'))
 
     await job.handle_input(filepath)
-    assert job.output == (str(filepath),)
+    assert job.output == ()
     assert job.errors == (f'Failed to copy {filepath} to {job._destination}: Permission denied',)
 
 @pytest.mark.asyncio
@@ -128,7 +128,6 @@ async def test_handle_input_sets_info_property_on_success(make_CopyTorrentJob, m
     await job.handle_input(filepath)
     assert infos == []
 
-
 @pytest.mark.asyncio
 async def test_handle_input_sets_info_property_on_failure(make_CopyTorrentJob, mocker, tmp_path):
     job = make_CopyTorrentJob(destination='foo')
@@ -140,6 +139,7 @@ async def test_handle_input_sets_info_property_on_failure(make_CopyTorrentJob, m
 
     infos = [
         'Copying foo.torrent',
+        '',
         '',
     ]
 

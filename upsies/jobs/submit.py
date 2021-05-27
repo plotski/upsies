@@ -134,7 +134,7 @@ class SubmitJob(JobBase):
                 await self._tracker.logout()
                 self.signal.emit('logged_out')
         except errors.RequestError as e:
-            self.error(e, finish=True)
+            self.error(e)
 
     @property
     def jobs_before_upload(self):

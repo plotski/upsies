@@ -111,6 +111,7 @@ async def test_handle_input_sets_info_property_on_failure(make_AddTorrentJob):
     infos = [
         'Adding foo.torrent',
         '',
+        '',
     ]
 
     def info_cb(_):

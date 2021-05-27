@@ -106,7 +106,7 @@ class ScreenshotsJob(JobBase):
         if isinstance(error, BaseException):
             self.exception(error)
         else:
-            self.error(error, finish=True)
+            self.error(error)
 
     @property
     def exit_code(self):
