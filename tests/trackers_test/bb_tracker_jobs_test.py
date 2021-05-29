@@ -464,9 +464,18 @@ def test_fill_in_movie_title(bb_tracker_jobs, mocker):
     )]
 
 
-def test_movie_year_job(bb_tracker_jobs, mocker):
+@pytest.mark.parametrize(
+    argnames='year, exp_text',
+    argvalues=(
+        ('2015', '2015'),
+        ('', ''),
+        ('UNKNOWN_YEAR', ''),
+    ),
+)
+def test_movie_year_job(year, exp_text, bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
     mocker.patch.object(bb_tracker_jobs, 'imdb_job')
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'year', PropertyMock(return_value=year))
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.movie_year_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
@@ -475,7 +484,7 @@ def test_movie_year_job(bb_tracker_jobs, mocker):
     assert TextFieldJob_mock.call_args_list == [call(
         name='movie-year',
         label='Year',
-        text=bb_tracker_jobs.release_name.year,
+        text=exp_text,
         condition=bb_tracker_jobs.make_job_condition.return_value,
         validator=bb_tracker_jobs.movie_year_validator,
         **bb_tracker_jobs.common_job_args,

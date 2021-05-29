@@ -278,11 +278,15 @@ class BbTrackerJobs(TrackerJobsBase):
     @cached_property
     def movie_year_job(self):
         self.imdb_job.signal.register('output', self.fill_in_movie_year)
+        if self.release_name.year == 'UNKNOWN_YEAR':
+            guessed_year = ''
+        else:
+            guessed_year = self.release_name.year
         return jobs.dialog.TextFieldJob(
             name='movie-year',
             label='Year',
             condition=self.make_job_condition('movie_year_job', release.ReleaseType.movie),
-            text=self.release_name.year,
+            text=guessed_year,
             validator=self.movie_year_validator,
             **self.common_job_args,
         )
