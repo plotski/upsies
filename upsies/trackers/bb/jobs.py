@@ -292,8 +292,11 @@ class BbTrackerJobs(TrackerJobsBase):
         )
 
     def movie_year_validator(self, text):
-        # Raises ValueError if not a valid year
+        # Raise ValueError if not a valid year
         self.release_name.year = text
+        # release_name.year is now "UNKNOWN_YEAR" if year is required but not known
+        if self.release_name.year == 'UNKNOWN_YEAR':
+            raise ValueError('Failed to autodetect year.')
 
     def fill_in_movie_year(self, imdb_id):
         default_text = self.release_name.year

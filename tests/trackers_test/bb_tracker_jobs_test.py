@@ -494,10 +494,23 @@ def test_movie_year_job(year, exp_text, bb_tracker_jobs, mocker):
         call('movie_year_job', ReleaseType.movie),
     ]
 
-def test_movie_year_validator(bb_tracker_jobs, mocker):
+@pytest.mark.parametrize(
+    argnames='year, exp_error',
+    argvalues=(
+        ('2015', ''),
+        ('', ''),
+        ('UNKNOWN_YEAR', 'Failed to autodetect year.'),
+    ),
+)
+def test_movie_year_validator(year, exp_error, bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'release_name')
-    bb_tracker_jobs.movie_year_validator('2015')
-    assert bb_tracker_jobs.release_name.year == '2015'
+    if exp_error:
+        with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+            bb_tracker_jobs.movie_year_validator(year)
+        assert bb_tracker_jobs.release_name.year == 'UNKNOWN_YEAR'
+    else:
+        bb_tracker_jobs.movie_year_validator('2015')
+        assert bb_tracker_jobs.release_name.year == '2015'
 
 def test_fill_in_movie_year(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'release_name', PropertyMock(year='2014'))
