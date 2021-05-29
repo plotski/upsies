@@ -305,14 +305,14 @@ class TextFieldJob(JobBase):
             super().send(output)
             super().finish()
 
-    async def fetch_text(self, coro, default_text='',
-                         finish_on_success=False, error_is_fatal=False):
+    async def fetch_text(self, coro, default_text=None, finish_on_success=False, error_is_fatal=False):
         """
         Get :attr:`text` from coroutine
 
         :param coro: Coroutine that returns the new :attr:`text`
         :param default_text: String to use if `coro` raises
-            :class:`~.errors.RequestError`
+            :class:`~.errors.RequestError` or `None` to keep the original
+            :attr:`text` in that case
         :param finish_on_success: Whether to call :meth:`finish` after setting
             :attr:`text` to `coro` return value
         :param error_is_fatal: Whether to call :meth:`error` and :meth:`finish`
@@ -331,7 +331,8 @@ class TextFieldJob(JobBase):
                 self.error(e)
             else:
                 self.warn(e)
-            self.text = default_text
+            if default_text is not None:
+                self.text = default_text
         else:
             # send() also finishes. This is important for reading from cache.
             if finish_on_success:

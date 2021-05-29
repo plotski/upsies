@@ -126,26 +126,28 @@ async def test_fetch_text_sets_read_only_while_fetching(finish_on_success, make_
         assert job.exit_code is None
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
+@pytest.mark.parametrize('default_text', (None, '', 'Default text'))
 @pytest.mark.asyncio
-async def test_fetch_text_catches_fatal_error(finish_on_success, make_TextFieldJob):
+async def test_fetch_text_catches_fatal_error(default_text, finish_on_success, make_TextFieldJob):
     fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))
-    job = make_TextFieldJob(name='foo', label='Foo')
+    job = make_TextFieldJob(name='foo', label='Foo', text='Original text')
     assert not job.is_finished
-    await job.fetch_text(fetcher, default_text='default text', finish_on_success=finish_on_success, error_is_fatal=True)
-    assert job.text == 'default text'
+    await job.fetch_text(fetcher, default_text=default_text, finish_on_success=finish_on_success, error_is_fatal=True)
+    assert job.text == ('Original text' if default_text is None else default_text)
     assert job.errors == (errors.RequestError('connection failed'),)
     assert job.warnings == ()
     assert job.is_finished is True
     assert job.exit_code == 0
 
 @pytest.mark.parametrize('finish_on_success', (True, False))
+@pytest.mark.parametrize('default_text', (None, '', 'Default text'))
 @pytest.mark.asyncio
-async def test_fetch_text_catches_nonfatal_error(finish_on_success, make_TextFieldJob):
+async def test_fetch_text_catches_nonfatal_error(default_text, finish_on_success, make_TextFieldJob):
     fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))
-    job = make_TextFieldJob(name='foo', label='Foo')
+    job = make_TextFieldJob(name='foo', label='Foo', text='Original text')
     assert not job.is_finished
-    await job.fetch_text(fetcher, default_text='default text', finish_on_success=finish_on_success, error_is_fatal=False)
-    assert job.text == 'default text'
+    await job.fetch_text(fetcher, default_text=default_text, finish_on_success=finish_on_success, error_is_fatal=False)
+    assert job.text == ('Original text' if default_text is None else default_text)
     assert job.errors == ()
     assert job.warnings == ('connection failed',)
     assert job.is_finished is False
