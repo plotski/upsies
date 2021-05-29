@@ -523,7 +523,6 @@ def test_fill_in_movie_year(bb_tracker_jobs, mocker):
     assert bb_tracker_jobs.imdb.year.call_args_list == [call('tt0123')]
     assert bb_tracker_jobs.movie_year_job.fetch_text.call_args_list == [call(
         coro=bb_tracker_jobs.imdb.year.return_value,
-        default_text=bb_tracker_jobs.release_name.year,
         finish_on_success=True,
     )]
     assert bb_tracker_jobs.movie_year_job.add_task.call_args_list == [call(

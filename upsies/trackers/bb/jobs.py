@@ -299,11 +299,9 @@ class BbTrackerJobs(TrackerJobsBase):
             raise ValueError('Failed to autodetect year.')
 
     def fill_in_movie_year(self, imdb_id):
-        default_text = self.release_name.year
         coro = self.imdb.year(imdb_id)
         task = self.movie_year_job.fetch_text(
             coro=coro,
-            default_text=default_text,
             finish_on_success=True,
         )
         self.movie_year_job.add_task(task)
