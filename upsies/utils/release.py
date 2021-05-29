@@ -14,6 +14,7 @@ import asyncio
 import collections
 import os
 import re
+import time
 
 import natsort
 import unidecode
@@ -184,7 +185,8 @@ class ReleaseName(collections.abc.Mapping):
             self._info['year'] = ''
         else:
             year = str(value)
-            if len(year) != 4 or not year.isdecimal() or not 1800 < int(year) < 2100:
+            current_year = int(time.strftime('%Y')) + 2
+            if len(year) != 4 or not year.isdecimal() or not 1880 <= int(year) <= current_year:
                 raise ValueError(f'Invalid year: {value}')
             self._info['year'] = year
 

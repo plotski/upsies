@@ -1,4 +1,6 @@
 import asyncio
+import re
+import time
 from unittest.mock import Mock, call, patch
 
 import pytest
@@ -214,18 +216,41 @@ def test_year_getter_with_series(ReleaseInfo_mock, type):
     assert ReleaseName('path/to/something').year == ''
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_year_setter(ReleaseInfo_mock):
+@pytest.mark.parametrize(
+    argnames='year, exp_year',
+    argvalues=(
+        ('1880', '1880'),
+        ('1990', '1990'),
+        ('2015', '2015'),
+        (time.strftime('%Y'), time.strftime('%Y')),
+        (int(time.strftime('%Y')) + 1, str(int(time.strftime('%Y')) + 1)),
+        (int(time.strftime('%Y')) + 2, str(int(time.strftime('%Y')) + 2)),
+        ('', ''),
+        (None, ''),
+    ),
+)
+def test_year_setter_with_valid_year(ReleaseInfo_mock, year, exp_year):
     rn = ReleaseName('path/to/something')
     assert rn.year == ''
-    rn.year = '1999'
-    assert rn.year == '1999'
-    for value in ('', 0, None):
-        rn.year = value
-        assert rn.year == ''
-    with pytest.raises(TypeError, match=r'^Not a number: \(2, 0, 2, 0\)$'):
-        rn.year = (2, 0, 2, 0)
-    with pytest.raises(ValueError, match=r'^Invalid year: 123$'):
-        rn.year = '123'
+    rn.year = year
+    assert rn.year == exp_year
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@pytest.mark.parametrize(
+    argnames='year, exp_exception, exp_message',
+    argvalues=(
+        ([], TypeError, 'Not a number: []'),
+        ('foo', ValueError, 'Invalid year: foo'),
+        ('1879', ValueError, 'Invalid year: 1879'),
+        (int(time.strftime('%Y')) + 3, ValueError, f'Invalid year: {int(time.strftime("%Y")) + 3}'),
+    ),
+)
+def test_year_setter_with_invalid_year(ReleaseInfo_mock, year, exp_exception, exp_message):
+    rn = ReleaseName('path/to/something')
+    assert rn.year == ''
+    with pytest.raises(exp_exception, match=rf'^{re.escape(exp_message)}$'):
+        rn.year = year
+
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
