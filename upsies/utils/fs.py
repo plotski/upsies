@@ -285,7 +285,7 @@ def file_list(path, extensions=(), min_age=None, max_age=None):
     If `path` is not a directory, it is returned as a single item in a list
     unless `extensions` are given and they don't match.
 
-    Unreadable directories are ignored.
+    Unreadable directories are excluded.
 
     :param str path: Path to a directory
     :param str extensions: Exclude files without one of these extensions

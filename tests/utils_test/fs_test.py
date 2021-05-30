@@ -515,6 +515,11 @@ def test_file_list_with_unreadable_subdirectory(tmp_path):
     finally:
         os.chmod(tmp_path / 'a' / 'b', 0o700)
 
+def test_file_list_with_nonexisting_path(tmp_path):
+    assert fs.file_list(tmp_path / 'does' / 'not' / 'exist') == (
+        str(tmp_path / 'does' / 'not' / 'exist'),
+    )
+
 
 def test_file_tree():
     tree = (
