@@ -107,31 +107,45 @@ def prune_empty(path, files=False, directories=True):
     """
     Remove empty subdirectories recursively
 
+    :param path: Path to directory
     :param bool files: Whether to prune empty files
     :param bool directories: Whether to prune empty directories
-    """
-    try:
-        for dirpath, dirnames, filenames in os.walk(path, topdown=False):
-            if files:
-                for filename in filenames:
-                    filepath = os.path.join(dirpath, filename)
-                    if not file_size(filepath):
-                        os.unlink(filepath)
 
-            if directories:
-                for dirname in dirnames:
-                    subdirpath = os.path.join(dirpath, dirname)
+    If `path` is not a directory, do nothing.
+    """
+    if not os.path.isdir(path):
+        return
+
+    def raise_error(e, path):
+        if e.strerror:
+            raise RuntimeError(f'{path}: Failed to prune: {e.strerror}')
+        else:
+            raise RuntimeError(f'{path}: Failed to prune: {e}')
+
+    for dirpath, dirnames, filenames in os.walk(path, topdown=False):
+        if files:
+            for filename in filenames:
+                filepath = os.path.join(dirpath, filename)
+                try:
+                    if file_size(filepath) <= 0:
+                        os.unlink(filepath)
+                except OSError as e:
+                    raise_error(e, filepath)
+
+        if directories:
+            for dirname in dirnames:
+                subdirpath = os.path.join(dirpath, dirname)
+                try:
                     if not os.listdir(subdirpath):
                         os.rmdir(subdirpath)
+                except OSError as e:
+                    raise_error(e, subdirpath)
 
+    try:
         if directories and not os.listdir(path):
             os.rmdir(path)
-
     except OSError as e:
-        if e.strerror:
-            raise RuntimeError(f'{subdirpath}: Failed to prune: {e.strerror}')
-        else:
-            raise RuntimeError(f'{subdirpath}: Failed to prune: {e}')
+        raise_error(e, path)
 
 
 def mkdir(path):

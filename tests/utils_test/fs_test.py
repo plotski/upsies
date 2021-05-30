@@ -1,3 +1,4 @@
+import errno
 import os
 import time
 from pathlib import Path
@@ -250,7 +251,7 @@ def test_prune_empty_prunes_empty_directories(tmp_path):
         f'{tmp_path}/foo/b',
     ]
 
-def test_prune_empty_directories_prunes_root_directory(tmp_path):
+def test_prune_empty_prunes_root_directory(tmp_path):
     (tmp_path / 'foo' / 'a' / '1').mkdir(parents=True)
     (tmp_path / 'foo' / 'a' / '2').mkdir(parents=True)
     (tmp_path / 'bar' / 'x').mkdir(parents=True)
@@ -260,32 +261,38 @@ def test_prune_empty_directories_prunes_root_directory(tmp_path):
     fs.prune_empty(tmp_path)
     assert not os.path.exists(tmp_path)
 
-def test_prune_empty_directories_encounters_OSError(tmp_path):
-    try:
-        (tmp_path / 'bar' / 'x').mkdir(parents=True)
-        (tmp_path / 'foo' / 'a' / '1').mkdir(parents=True)
-        (tmp_path / 'foo' / 'a' / '2').mkdir(parents=True, mode=0o000)
-        (tmp_path / 'foo' / 'a' / '3').mkdir(parents=True)
-        (tmp_path / 'foo' / 'b').mkdir(parents=True)
-        with pytest.raises(RuntimeError, match=rf'{tmp_path}/foo/a/2: Failed to prune: Permission denied'):
-            fs.prune_empty(tmp_path)
-        tree = []
-        for dirpath, dirnames, filenames in os.walk(tmp_path):
-            for dirname in dirnames:
-                tree.append(os.path.join(dirpath, dirname))
-            for filename in filenames:
-                tree.append(os.path.join(dirpath, filename))
-        assert sorted(tree) == [
-            f'{tmp_path}/bar',
-            f'{tmp_path}/bar/x',
-            f'{tmp_path}/foo',
-            f'{tmp_path}/foo/a',
-            f'{tmp_path}/foo/a/1',
-            f'{tmp_path}/foo/a/2',
-            f'{tmp_path}/foo/b',
-        ]
-    finally:
-        os.chmod(tmp_path / 'foo' / 'a' / '2', 0o700)
+@pytest.mark.parametrize('exc_args', ((os.strerror(errno.EACCES),), (errno.EACCES, os.strerror(errno.EACCES),)))
+@pytest.mark.parametrize(
+    argnames='error_function, kwargs, exp_subpath',
+    argvalues=(
+        ('upsies.utils.fs.file_size', {'files': True}, 'empty_file'),
+        ('os.unlink', {'files': True},  'empty_file'),
+        ('os.listdir', {'directories': True},  'empty_dir'),
+        ('os.rmdir', {'directories': True},  'empty_dir'),
+    ),
+    ids=lambda v: str(v),
+)
+def test_prune_empty_handles_OSError(error_function, kwargs, exp_subpath, exc_args, tmp_path, mocker):
+    mocker.patch(error_function, side_effect=OSError(*exc_args))
+    (tmp_path / 'empty_file').write_text('')
+    (tmp_path / 'empty_dir').mkdir()
+    with pytest.raises(RuntimeError, match=rf'{tmp_path}/{exp_subpath}: Failed to prune: Permission denied'):
+        fs.prune_empty(tmp_path, **kwargs)
+
+@pytest.mark.parametrize('exc_args', ((os.strerror(errno.EACCES),), (errno.EACCES, os.strerror(errno.EACCES),)))
+def test_prune_empty_handles_OSError_from_deleting_root_directory(exc_args, tmp_path, mocker):
+    mocker.patch('os.rmdir', side_effect=OSError(*exc_args))
+    with pytest.raises(RuntimeError, match=rf'{tmp_path}: Failed to prune: Permission denied'):
+        fs.prune_empty(tmp_path)
+
+def test_prune_empty_handles_nonexisting_path(tmp_path):
+    fs.prune_empty(tmp_path / 'does' / 'not' / 'exist')
+    assert not os.path.exists(tmp_path / 'does' / 'not' / 'exist')
+
+def test_prune_empty_handles_file_path(tmp_path):
+    (tmp_path / 'foo').write_text('not a directory')
+    fs.prune_empty(tmp_path / 'foo')
+    assert os.path.exists(tmp_path / 'foo')
 
 
 @patch('os.makedirs')
