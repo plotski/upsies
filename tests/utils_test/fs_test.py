@@ -270,9 +270,9 @@ def test_prune_empty_prunes_root_directory(tmp_path):
     argnames='error_function, kwargs, exp_subpath',
     argvalues=(
         ('upsies.utils.fs.file_size', {'files': True}, 'empty_file'),
-        ('os.unlink', {'files': True},  'empty_file'),
-        ('os.listdir', {'directories': True},  'empty_dir'),
-        ('os.rmdir', {'directories': True},  'empty_dir'),
+        ('os.unlink', {'files': True}, 'empty_file'),
+        ('os.listdir', {'directories': True}, 'empty_dir'),
+        ('os.rmdir', {'directories': True}, 'empty_dir'),
     ),
     ids=lambda v: str(v),
 )
