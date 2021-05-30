@@ -79,7 +79,8 @@ def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
     :type max_age: int or float
     """
     def size(filepaths):
-        return sum(file_size(f) for f in filepaths)
+        return sum(file_size(f) for f in filepaths
+                   if os.path.exists(f))
 
     # This should return mtime if file system was mounted with noatime.
     def atime(filepath):

@@ -182,6 +182,10 @@ def test_limit_directory_size(tmp_path):
     )
     assert get_total_size() == 2
 
+def test_limit_directory_size_with_nonexisting_path(tmp_path):
+    fs.limit_directory_size(tmp_path / 'does' / 'not' / 'exist', max_total_size=123)
+    assert not os.path.exists(tmp_path / 'does' / 'not' / 'exist')
+
 
 def test_prune_empty_prunes_empty_files(tmp_path):
     (tmp_path / 'bar' / 'x').mkdir(parents=True)
