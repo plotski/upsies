@@ -258,7 +258,7 @@ class SearchResult:
 class Person(str):
     """:class:`str` subclass with an `url` attribute"""
 
-    def __new__(cls, string, url=''):
-        obj = super().__new__(cls, string)
+    def __new__(cls, name, url=''):
+        obj = super().__new__(cls, name)
         obj.url = url
         return obj
