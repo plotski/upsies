@@ -354,7 +354,7 @@
       <ul class="media number_group">
         <li><a href="/movie/22156-nid-de-guepes/images/backdrops">Backdrops <span class="count">6</span></a></li>
         <li><a href="/movie/22156-nid-de-guepes/images/logos">Logos <span class="count">0</span></a></li>
-        <li><a href="/movie/22156-nid-de-guepes/images/posters">Posters <span class="count">8</span></a></li>
+        <li><a href="/movie/22156-nid-de-guepes/images/posters">Posters <span class="count">9</span></a></li>
         <li>
           Videos
 
@@ -842,7 +842,7 @@
                   <li class="active" dir="auto"><a id="popular" class="media_panel" href="#">Most Popular</a></li>
                   <li dir="auto"><a id="videos" class="media_panel" href="#">Videos <span>0</span></a></li>
                   <li dir="auto"><a id="backdrops" class="media_panel" href="#">Backdrops <span>6</span></a></li>
-                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>8</span></a></li>
+                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>9</span></a></li>
                   <li class="view_all"></li>
                 </ul>
               </div>
@@ -1609,7 +1609,7 @@
         </div>
       </nav>
 
-      <section>Build b7942aa (1366)</section>
+      <section>Build 3c60263 (1486)</section>
     </footer>
 
     
