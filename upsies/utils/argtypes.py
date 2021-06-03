@@ -71,7 +71,6 @@ def release(value):
 def scenedb(value):
     """Name of a scene release database from :mod:`~.utils.scene`"""
     from . import scene
-    from .. import errors
     if value in scene.scenedb_names():
         return value.lower()
     else:

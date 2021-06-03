@@ -365,11 +365,11 @@ class ImdbApi(WebDbApiBase):
                 elif 'tv movie' in subtext:
                     return ReleaseType.movie
                 elif (
-                        # Look for year (old website design)
-                        re.search(r'^\d+ [a-z]+ \d{4}', subtext) or
-                        # Look for year (new website design)
-                        re.search(r'^\d{4}', subtext)
-                     ):
+                    # Look for year (old website design)
+                    re.search(r'^\d+ [a-z]+ \d{4}', subtext)
+                    # Look for year (new website design)
+                    or re.search(r'^\d{4}', subtext)
+                ):
                     return ReleaseType.movie
 
         return ReleaseType.unknown
