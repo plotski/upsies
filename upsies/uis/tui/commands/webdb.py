@@ -3,7 +3,6 @@ Search online database like IMDb to get an ID
 """
 
 from .... import jobs, utils
-from . import argtypes
 from .base import CommandBase
 
 
@@ -33,12 +32,12 @@ class webdb_search(CommandBase):
 
     argument_definitions = {
         'DB': {
-            'type': argtypes.webdb,
+            'type': utils.argtypes.webdb,
             'help': ('Case-insensitive database name\n'
                      'Supported databases: ' + ', '.join(utils.webdbs.webdb_names())),
         },
         'RELEASE': {
-            'type': argtypes.release,
+            'type': utils.argtypes.release,
             'help': 'Release name or path to release content',
         },
     }

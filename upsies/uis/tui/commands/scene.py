@@ -3,7 +3,6 @@ Searching for and verifying scene release
 """
 
 from .... import jobs, utils
-from . import argtypes
 from .base import CommandBase
 
 
@@ -14,7 +13,7 @@ class scene_search(CommandBase):
 
     argument_definitions = {
         'RELEASE': {
-            'type': argtypes.release,
+            'type': utils.argtypes.release,
             'help': 'Release name or path to release content',
         },
     }
@@ -38,7 +37,7 @@ class scene_check(CommandBase):
 
     argument_definitions = {
         'RELEASE': {
-            'type': argtypes.release,
+            'type': utils.argtypes.release,
             'help': 'Release name or path to release content',
         },
     }

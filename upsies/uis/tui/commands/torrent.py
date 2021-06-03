@@ -3,7 +3,6 @@ Commands related to torrent files
 """
 
 from .... import jobs, trackers, utils
-from . import argtypes
 from .base import CommandBase
 
 
@@ -14,7 +13,7 @@ class torrent_add(CommandBase):
 
     argument_definitions = {
         'CLIENT': {
-            'type': argtypes.client,
+            'type': utils.argtypes.client,
             'help': ('Case-insensitive BitTorrent client name\n'
                      'Supported clients: ' + ', '.join(utils.btclients.client_names())),
         },
@@ -57,11 +56,11 @@ class torrent_create(CommandBase):
             # Default arguments for all tackers
             **{
                 'CONTENT': {
-                    'type': argtypes.content,
+                    'type': utils.argtypes.content,
                     'help': 'Path to release content',
                 },
                 ('--add-to', '-a'): {
-                    'type': argtypes.client,
+                    'type': utils.argtypes.client,
                     'metavar': 'CLIENT',
                     'help': ('Case-insensitive BitTorrent client name\n'
                              'Supported clients: ' + ', '.join(utils.btclients.client_names())),

@@ -5,7 +5,7 @@ from unittest.mock import call, patch
 import pytest
 
 from upsies import defaults, errors, trackers, utils
-from upsies.uis.tui.commands import argtypes
+from upsies.utils import argtypes
 
 
 @pytest.mark.parametrize('client', utils.btclients.client_names())
@@ -15,7 +15,7 @@ def test_client_valid_value(client):
     assert argtypes.client(client.capitalize()) == client
 
 def test_client_invalid_value():
-    with pytest.raises(ValueError, match=r'^Unsupported client: foo$'):
+    with pytest.raises(argparse.ArgumentTypeError, match=r'^Unsupported client: foo$'):
         argtypes.client('foo')
 
 
@@ -28,7 +28,7 @@ def test_client_invalid_value():
     ids=lambda v: str(v),
 )
 def test_content(path, path_exists, exp_exc, mocker):
-    release_mock = mocker.patch('upsies.uis.tui.commands.argtypes.release', return_value='release/path')
+    release_mock = mocker.patch('upsies.utils.argtypes.release', return_value='release/path')
     exists_mock = mocker.patch('os.path.exists', return_value=path_exists)
     if path_exists:
         assert argtypes.content(path) == release_mock.return_value
@@ -46,7 +46,7 @@ def test_imghost_valid_value(imghost):
     assert argtypes.imghost(imghost.capitalize()) == imghost
 
 def test_imghost_invalid_value():
-    with pytest.raises(ValueError, match=r'^Unsupported image hosting service: foo$'):
+    with pytest.raises(argparse.ArgumentTypeError, match=r'^Unsupported image hosting service: foo$'):
         argtypes.imghost('foo')
 
 
@@ -65,7 +65,7 @@ def test_integer_valid_value(value, exp_value):
 
 @pytest.mark.parametrize('value', ('one', (1, 2, 3)), ids=lambda v: repr(v))
 def test_integer_invalid_value(value):
-    with pytest.raises(ValueError, match=rf'^Not an integer: {re.escape(repr(value))}'):
+    with pytest.raises(argparse.ArgumentTypeError, match=rf'^Not an integer: {re.escape(repr(value))}'):
         argtypes.integer(value)
 
 
@@ -74,7 +74,7 @@ def test_option_valid_value(option):
     assert argtypes.option(option) == option
 
 def test_option_invalid_value():
-    with pytest.raises(ValueError, match=r'^Unknown option: foo$'):
+    with pytest.raises(argparse.ArgumentTypeError, match=r'^Unknown option: foo$'):
         argtypes.option('foo')
 
 
@@ -105,7 +105,7 @@ def test_scenedb_valid_value(scenedb):
     assert argtypes.scenedb(scenedb.capitalize()) == scenedb
 
 def test_scenedb_invalid_value():
-    with pytest.raises(ValueError, match=r'^Unsupported scene release database: foo$'):
+    with pytest.raises(argparse.ArgumentTypeError, match=r'^Unsupported scene release database: foo$'):
         argtypes.scenedb('foo')
 
 
@@ -118,7 +118,7 @@ def test_timestamp_valid_value(parse_mock):
 @pytest.mark.parametrize('exception', (ValueError, TypeError))
 def test_timestamp_invalid_value(parse_mock, exception):
     parse_mock.side_effect = exception('Message!')
-    with pytest.raises(ValueError, match=r'^Message!$'):
+    with pytest.raises(argparse.ArgumentTypeError, match=r'^Message!$'):
         argtypes.timestamp('foo')
 
 
@@ -129,7 +129,7 @@ def test_tracker_valid_value(tracker):
     assert argtypes.tracker(tracker.capitalize()) == tracker
 
 def test_tracker_invalid_value():
-    with pytest.raises(ValueError, match=r'^Unsupported tracker: foo$'):
+    with pytest.raises(argparse.ArgumentTypeError, match=r'^Unsupported tracker: foo$'):
         argtypes.tracker('foo')
 
 
@@ -140,5 +140,5 @@ def test_webdb_valid_value(webdb):
     assert argtypes.webdb(webdb.capitalize()) == webdb
 
 def test_webdb_invalid_value():
-    with pytest.raises(ValueError, match=r'^Unsupported database: foo$'):
+    with pytest.raises(argparse.ArgumentTypeError, match=r'^Unsupported database: foo$'):
         argtypes.webdb('foo')

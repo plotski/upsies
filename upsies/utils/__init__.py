@@ -241,6 +241,6 @@ def as_groups(sequence, group_sizes, default=None):
     yield from itertools.zip_longest(*args, fillvalue=default)
 
 
-from . import (browser, btclients, configfiles, daemon, fs, html, http, image,
-               imghosts, iso, release, scene, signal, string, subproc,
-               timestamp, torrent, types, video, webdbs)
+from . import (argtypes, browser, btclients, configfiles, daemon, fs, html,
+               http, image, imghosts, iso, release, scene, signal, string,
+               subproc, timestamp, torrent, types, video, webdbs)

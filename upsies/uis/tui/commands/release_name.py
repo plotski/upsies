@@ -3,7 +3,6 @@ Generate properly formatted release name
 """
 
 from .... import jobs, utils
-from . import argtypes
 from .base import CommandBase
 
 
@@ -24,7 +23,7 @@ class release_name(CommandBase):
 
     argument_definitions = {
         'RELEASE': {
-            'type': argtypes.release,
+            'type': utils.argtypes.release,
             'help': 'Release name or path to release content',
         },
     }

@@ -10,15 +10,14 @@ A custom error message can be provided by raising
 import argparse
 import os
 
-from .... import defaults, errors, trackers, utils
-
 
 def client(value):
     """Name of a BitTorrent client from :mod:`~.utils.btclients`"""
-    if value in utils.btclients.client_names():
+    from . import btclients
+    if value in btclients.client_names():
         return value.lower()
     else:
-        raise ValueError(f'Unsupported client: {value}')
+        raise argparse.ArgumentTypeError(f'Unsupported client: {value}')
 
 
 def content(value):
@@ -32,10 +31,11 @@ def content(value):
 
 def imghost(value):
     """Name of a image hosting service from :mod:`~.utils.imghosts`"""
-    if value in utils.imghosts.imghost_names():
+    from . import imghosts
+    if value in imghosts.imghost_names():
         return value.lower()
     else:
-        raise ValueError(f'Unsupported image hosting service: {value}')
+        raise argparse.ArgumentTypeError(f'Unsupported image hosting service: {value}')
 
 
 def integer(value):
@@ -43,22 +43,25 @@ def integer(value):
     try:
         return int(float(value))
     except (ValueError, TypeError):
-        raise ValueError(f'Not an integer: {value!r}')
+        raise argparse.ArgumentTypeError(f'Not an integer: {value!r}')
 
 
 def option(value):
     """Name of a configuration option"""
+    from .. import defaults
     if value in defaults.option_paths():
         return value.lower()
     else:
-        raise ValueError(f'Unknown option: {value}')
+        raise argparse.ArgumentTypeError(f'Unknown option: {value}')
 
 
 def release(value):
     """Same as :func:`content`, but doesn't have to exist"""
+    from .. import errors
+    from . import scene
     path = str(value)
     try:
-        utils.scene.assert_not_abbreviated_filename(path)
+        scene.assert_not_abbreviated_filename(path)
     except errors.SceneError as e:
         raise argparse.ArgumentTypeError(e)
     else:
@@ -67,31 +70,36 @@ def release(value):
 
 def scenedb(value):
     """Name of a scene release database from :mod:`~.utils.scene`"""
-    if value in utils.scene.scenedb_names():
+    from . import scene
+    from .. import errors
+    if value in scene.scenedb_names():
         return value.lower()
     else:
-        raise ValueError(f'Unsupported scene release database: {value}')
+        raise argparse.ArgumentTypeError(f'Unsupported scene release database: {value}')
 
 
 def timestamp(value):
     """See :func:`.timestamp.parse`"""
+    from . import timestamp
     try:
-        return utils.timestamp.parse(value)
-    except TypeError as e:
-        raise ValueError(e)
+        return timestamp.parse(value)
+    except (ValueError, TypeError) as e:
+        raise argparse.ArgumentTypeError(e)
 
 
 def tracker(value):
     """Name of a tracker from :mod:`~.trackers`"""
+    from .. import trackers
     if value in trackers.tracker_names():
         return value.lower()
     else:
-        raise ValueError(f'Unsupported tracker: {value}')
+        raise argparse.ArgumentTypeError(f'Unsupported tracker: {value}')
 
 
 def webdb(value):
     """Name of a movie/series database from :mod:`~.webdbs`"""
-    if value in utils.webdbs.webdb_names():
+    from . import webdbs
+    if value in webdbs.webdb_names():
         return value.lower()
     else:
-        raise ValueError(f'Unsupported database: {value}')
+        raise argparse.ArgumentTypeError(f'Unsupported database: {value}')
