@@ -28,7 +28,8 @@ async def test_search_handles_id_in_query(api, store_response):
     assert await results[0].directors() == ('Oz Perkins',)
     assert results[0].id == 'tt3286052'
     assert await results[0].genres() == ('horror', 'mystery', 'thriller')
-    assert (await results[0].summary()).startswith('Two Catholic schoolgirls Kat (Kiernan Shipka) and Rose')
+    assert await results[0].summary() == ('Two girls must battle a mysterious evil force '
+                                          'when they get left behind at their boarding school over winter break.')
     assert results[0].title == "The Blackcoat's Daughter"
     assert await results[0].title_english() == "The Blackcoat's Daughter"
     assert await results[0].title_original() == 'February'
@@ -201,7 +202,7 @@ async def test_search_result_genres(query, exp_genres, api, store_response):
         (Query('The Forest', type=ReleaseType.series, year=2017), 'Sixteen-year-old Jennifer disappears'),
         (Query('Deadwood', type=ReleaseType.series, year=2004), 'set in the late 1800s'),
         (Query('The Deadwood Coach', type=ReleaseType.movie, year=1924), ''),
-        (Query('Two Down', type=ReleaseType.movie, year=2015), 'Set in modern day London'),
+        (Query('Two Down', type=ReleaseType.movie, year=2015), "A young woman's world is turned upside down"),
         (Query('My Best Fiend', type=ReleaseType.movie, year=1999), 'In the 1950s, an adolescent Werner Herzog'),
     ),
     ids=lambda value: str(value),
@@ -327,9 +328,9 @@ async def test_search_result_parser_failure(api):
     argnames=('id', 'exp_cast'),
     argvalues=(
         # Blues Brothers (movie)
-        ('tt0080455', (('Tom Erhart', 'https://imdb.com/name/nm0258931'),
-                       ('Gerald Walling', 'https://imdb.com/name/nm0909212'),
-                       ('John Belushi', 'https://imdb.com/name/nm0000004'))),
+        ('tt0080455', (('John Belushi', 'https://imdb.com/name/nm0000004'),
+                       ('Dan Aykroyd', 'https://imdb.com/name/nm0000101'),
+                       ('Cab Calloway', 'https://imdb.com/name/nm0130572'))),
         # Wind in the Willows (TV movie)
         ('tt0192802', (('Alan Bennett', 'https://imdb.com/name/nm0003141'),
                        ('Michael Palin', 'https://imdb.com/name/nm0001589'),
@@ -352,8 +353,8 @@ async def test_search_result_parser_failure(api):
                        ('Alexia Barlier', 'https://imdb.com/name/nm1715145'))),
         # Orange Is the New Black (series)
         ('tt2372162', (('Taylor Schilling', 'https://imdb.com/name/nm2279940'),
-                       ('Kate Mulgrew', 'https://imdb.com/name/nm0000550'),
-                       ('Uzo Aduba', 'https://imdb.com/name/nm2499064'))),
+                       ('Danielle Brooks', 'https://imdb.com/name/nm5335029'),
+                       ('Taryn Manning', 'https://imdb.com/name/nm0543383'))),
         # Orange Is the New Black - S07E01 (episode)
         ('tt5440238', (('Taylor Schilling', 'https://imdb.com/name/nm2279940'),
                        ('Natasha Lyonne', 'https://imdb.com/name/nm0005169'),
@@ -372,7 +373,7 @@ async def test_cast(id, exp_cast, api, store_response):
     else:
         for person, (name, url) in zip_longest(cast, exp_cast):
             assert person == name
-            assert person.url == url
+            assert person.url.rstrip('/') == url.rstrip('/')
 
 
 @pytest.mark.parametrize(
@@ -407,6 +408,8 @@ async def test_countries(id, exp_countries, api, store_response):
         ('tt3472226', ()),  # Kung Fury (Short)
         ('tt6560040', (('Delinda Jacobs', 'https://imdb.com/name/nm3064398'),)),  # The Forest (TV mini-series)
         ('tt2372162', (('Jenji Kohan', 'https://imdb.com/name/nm0463176'),)),  # Orange Is the New Black (series)
+        ('tt0149460', (('David X. Cohen', 'https://imdb.com/name/nm0169326'),
+                       ('Matt Groening', 'https://imdb.com/name/nm0004981'))),  # Futurama
         ('tt5440238', ()),  # Orange Is the New Black - S07E01 (episode)
         (None, ()),
     ),
@@ -418,18 +421,17 @@ async def test_creators(id, exp_creators, api, store_response):
     if not creators:
         assert exp_creators == ()
     else:
-        for person, (name, url) in zip_longest(creators, exp_creators):
+        for person, (name, url) in zip_longest(creators, exp_creators, fillvalue=(None, None)):
             assert person == name
-            assert person.url == url
+            assert person.url.rstrip('/') == url.rstrip('/')
 
 
 @pytest.mark.parametrize(
     argnames=('id', 'exp_directors'),
     argvalues=(
         ('tt3286052', (('Oz Perkins', 'https://imdb.com/name/nm0674020'),)),  # February (movie)
-        # Wind in the Willows (TV movie)
         ('tt0192802', (('Dave Unwin', 'https://imdb.com/name/nm0881386'),
-                       ('Dennis Abey', 'https://imdb.com/name/nm0008688'))),
+                       ('Dennis Abey', 'https://imdb.com/name/nm0008688'))),  # Wind in the Willows (TV movie)
         ('tt0471711', (('Dwayne Carey-Hill', 'https://imdb.com/name/nm1401752'),)),  # Bender's Big Score (Video)
         ('tt0097270', (('Alan Clarke', 'https://imdb.com/name/nm0164639'),)),  # Elephant (TV Short)
         ('tt3472226', (('David Sandberg', 'https://imdb.com/name/nm6247887'),)),  # Kung Fury (Short)
@@ -446,9 +448,9 @@ async def test_directors(id, exp_directors, api, store_response):
     if not directors:
         assert exp_directors == ()
     else:
-        for person, (name, url) in zip_longest(directors, exp_directors):
+        for person, (name, url) in zip_longest(directors[:3], exp_directors, fillvalue=(None, None)):
             assert person == name
-            assert person.url == url
+            assert person.url.rstrip('/') == url.rstrip('/')
 
 
 @pytest.mark.parametrize(
@@ -502,7 +504,7 @@ async def test_poster_url(id, exp_poster_url, api, store_response):
         ('tt0471711', 7.7),  # Bender's Big Score (Video)
         ('tt0097270', 7.2),  # Elephant (TV movie)
         ('tt3472226', 8.0),  # Kung Fury (Short)
-        ('tt6560040', 7.3),  # The Forest (mini series)
+        ('tt6560040', 7.2),  # The Forest (mini series)
         ('tt0348914', 8.6),  # Deadwood (series)
         ('tt0556307', 8.4),  # Deadwood - S02E04 (episode)
         (None, None),
@@ -518,31 +520,44 @@ async def test_rating(id, exp_rating, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
-        ('tt0080455', ('After the release of Jake Blues from prison, he and brother Elwood '
-                       'go to visit "The Penguin", the last of the nuns who raised them '
-                       'in an orphanage.')),  # Blues Brothers (movie)
-        ('tt0192802', ('A mole, taken from the fever of spring, comes out of her den, starting '
-                       'a journey with a rat friend on the river and in the woods, where there '
-                       'is the den of the badger and where they spend the lethargy.')),  # Wind in the Willows (TV movie)
+        ('tt0080455', ('Jake Blues, just released from prison, puts together '
+                       'his old band to save the Catholic home where he and '
+                       'his brother Elwood were raised.')),  # Blues Brothers (movie)
+        ('tt0192802', ('When three close friends Mole, Ratty and Badger '
+                       'find out that the infamous Mr. Toad of Toad Hall '
+                       'has been up to no good, they must find him and change '
+                       'his ways for good.')),  # Wind in the Willows (TV movie)
         ('tt0471711', ('Planet Express sees a hostile takeover and Bender falls into the hands of '
                        'criminals where he is used to fulfill their schemes.')),  # Bender's Big Score (Video)
         ('tt0097270', ('A depiction of a series of violent killings in Northern Ireland '
                        'with no clue as to exactly who is responsible.')),  # Elephant (TV Short)
-        ('tt3472226', ('During an unfortunate series of events a friend of Kung Fury is assassinated '
-                       'by the most dangerous kung fu master criminal of all time; '
-                       'Adolf Hitler, a.k.a Kung Führer.')),  # Kung Fury (Short)
+        ('tt3472226', ('In 1985, Kung Fury, the toughest martial artist cop in Miami, '
+                       'goes back in time to kill the worst criminal of all time '
+                       '- Kung Führer, a.k.a. Adolf Hitler.')),  # Kung Fury (Short)
         ('tt6560040', ('Sixteen-year-old Jennifer disappears one night from her village '
                        'in the Ardennes. Captain Gaspard Deker leads the investigation with '
                        'local cop Virginie Musso, who knew the girl well. They are helped '
                        'by Eve, a lonely and mysterious woman.')),  # The Forest (TV mini-series)
-        ('tt0348914', ('The town of Deadwood, South Dakota in the weeks following the Custer massacre '
-                       'is a lawless sinkhole of crime and corruption.')),  # Deadwood (series)
-        ('tt0556307', ('Doc contemplates a procedure that could cure Swearengen '
-                       '- or kill him.')),  # Deadwood - S02E04 (episode)
+        ('tt0348914', ('A show set in the late 1800s, revolving around '
+                       'the characters of Deadwood, South Dakota; a town '
+                       'of deep corruption and crime.')),  # Deadwood (series)
+        ('tt0556307', ('Doc contemplates a procedure that could cure Swearengen - or kill him. '
+                       'Bullock attempts to settle into domesticity, while Sol gets a new '
+                       "student bookkeeper - Trixie. Alma cuts ties with Sofia's tutor, "
+                       'Miss Isringhausen. Joanie and Maddie argue over the business. The '
+                       "County Commissioner's arrival spawns rumors about the camp's future "
+                       'and legal ownership of the gold claims.')),  # Deadwood - S02E04 (episode)
         ('tt0014838', ''),  # The Deadwood Coach
         # Links in summary
         ('tt0200849', ('In the 1950s, an adolescent Werner Herzog was transfixed by a '
-                       'film performance of the young Klaus Kinski.')),  # Mein liebster Feind
+                       'film performance of the young Klaus Kinski. Years later, they would share '
+                       'an apartment where, in an unabated, forty-eight-hour fit of rage, Kinski '
+                       'completely destroyed the bathroom. From this chaos, a violent, love-hate, '
+                       'profoundly creative partnership was born. In 1972, Herzog cast Kinski in '
+                       'Aguirre, der Zorn Gottes (1972). Four more films would follow. In this '
+                       'personal documentary, Herzog traces the often violent ups and downs of '
+                       'their relationship, revisiting the various locations of their films and '
+                       'talking to the people they worked with.')),  # Mein liebster Feind
         (None, ''),
     ),
     ids=lambda value: str(value)[:30] or '<empty>',
@@ -550,7 +565,7 @@ async def test_rating(id, exp_rating, api, store_response):
 @pytest.mark.asyncio
 async def test_summary(id, exp_summary, api, store_response):
     summary = await api.summary(id)
-    assert summary.startswith(exp_summary)
+    assert summary == exp_summary
 
 
 @pytest.mark.parametrize(
@@ -588,10 +603,12 @@ async def test_title_english_original(id, exp_title_english, exp_title_original,
 @pytest.mark.parametrize(
     argnames=('id', 'exp_type'),
     argvalues=(
+        ('tt3286052', ReleaseType.movie),    # February AKA The Blackcoat's Daughter
+        ('tt0080455', ReleaseType.movie),    # Blues Brothers (movie)
         ('tt0080455', ReleaseType.movie),    # Blues Brothers (movie)
         ('tt0192802', ReleaseType.movie),    # Wind in the Willows (TV movie)
         ('tt0471711', ReleaseType.movie),    # Bender's Big Score (Video)
-        ('tt0097270', ReleaseType.movie),    # Elephant (TV Short)
+        ('tt0097270', ReleaseType.movie),    # Elephant (TV movie)
         ('tt3472226', ReleaseType.movie),    # Kung Fury (Short)
         ('tt0463986', ReleaseType.movie),    # The Feast (short)
         ('tt6560040', ReleaseType.season),   # The Forest (mini series)
@@ -623,6 +640,7 @@ async def test_url(api):
         ('tt6560040', '2017'),  # The Forest (mini series)
         ('tt0348914', '2004'),  # Deadwood (series)
         ('tt0556307', '2005'),  # Deadwood - S02E04 (episode)
+        ('tt0048918', '1956'),  # 1984 (movie)
         (None, ''),
     ),
     ids=lambda value: str(value),

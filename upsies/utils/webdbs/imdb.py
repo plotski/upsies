@@ -99,79 +99,90 @@ class ImdbApi(WebDbApiBase):
         cast = []
         if id:
             soup = await self._get_soup(f'title/{id}')
-            cast_tag = soup.find(class_='cast_list')
+            # New website
+            cast_tag = soup.find(class_='title-cast__grid')
+            if cast_tag is None:
+                # Old website
+                cast_tag = soup.find(class_='cast_list')
             if cast_tag:
-                tr_tags = cast_tag.find_all('tr')
-                for tr_tag in tr_tags:
-                    cast.extend(self._get_persons(tr_tag))
+                cast.extend(self._get_persons(cast_tag))
         return tuple(cast)
+
+    _country_translation = {
+        'United States': 'USA',
+        'United Kingdom': 'UK',
+    }
 
     async def countries(self, id):
         countries = []
         if id:
             soup = await self._get_soup(f'title/{id}')
-            details_tag = soup.find(id='titleDetails')
-            if details_tag:
-                tag = details_tag.find(string='Country:')
-                if tag:
-                    tag = tag.parent
-                    if tag:
-                        tag = tag.parent
-                        countries = []
-                        for country_tag in tag.find_all('a'):
-                            countries.append(''.join(country_tag.stripped_strings))
+            a_tags = soup.find_all(href=re.compile(r'/search/title.*?country_of_origin='))
+            for a_tag in a_tags:
+                country = ''.join(a_tag.stripped_strings)
+                countries.append(self._country_translation.get(country, country))
         return tuple(countries)
 
+    _creators_label_regex = re.compile('^Creators?:?$')
+
     async def creators(self, id):
-        creators = []
         if id:
             soup = await self._get_soup(f'title/{id}')
-            creators = []
-            for tag in soup.find_all(class_='credit_summary_item'):
-                strings = tuple(tag.stripped_strings)
-                if 'Creator:' in strings or 'Creators:' in strings:
-                    creators.extend(self._get_persons(tag))
-        return tuple(creators)
+            # Old website design
+            credits_tags = soup.find_all(class_='credit_summary_item')
+            if not credits_tags:
+                # New website design
+                credits_tags = soup.find_all(class_='ipc-metadata-list__item')
+            for tag in credits_tags:
+                if any(self._creators_label_regex.search(string)
+                       for string in tag.stripped_strings):
+                    return self._get_persons(tag)
+        return ()
+
+    _directors_label_regex = re.compile('^Directors?:?$')
 
     async def directors(self, id):
-        directors = []
         if id:
             soup = await self._get_soup(f'title/{id}')
-            for tag in soup.find_all(class_='credit_summary_item'):
-                strings = tuple(tag.stripped_strings)
-                if 'Director:' in strings or 'Directors:' in strings:
-                    directors.extend(self._get_persons(tag))
-        return tuple(directors)
+            # Old website design
+            credits_tags = soup.find_all(class_='credit_summary_item')
+            if not credits_tags:
+                # New website design
+                credits_tags = soup.find_all(class_='ipc-metadata-list__item')
+            for tag in credits_tags:
+                if any(self._directors_label_regex.search(string)
+                       for string in tag.stripped_strings):
+                    return self._get_persons(tag)
+        return ()
 
     async def genres(self, id):
         if id:
             soup = await self._get_soup(f'title/{id}')
-            subtext_tag = soup.find(class_='subtext')
-            if subtext_tag:
-                genre_links = subtext_tag.find_all('a', href=re.compile(r'/search/title\?genres='))
-                return tuple(
-                    link.string.lower().strip()
-                    for link in genre_links
-                )
+            # Old website design
+            parent_tag = soup.find(class_='subtext')
+            if not parent_tag:
+                # New website design
+                parent_tag = soup.find(class_=re.compile(r'^GenresAndPlot__ContentParent'))
+            if parent_tag:
+                genre_links = parent_tag.find_all('a', href=re.compile(r'/search/title\?.*genres='))
+                return tuple(link.string.lower().strip() for link in genre_links)
         return ()
 
     async def poster_url(self, id):
         if id:
             soup = await self._get_soup(f'title/{id}')
-            poster_tag = soup.find(class_='poster')
-            if poster_tag:
-                link_tag = poster_tag.find('a')
-                if link_tag and link_tag.get('href'):
-                    soup = await self._get_soup(link_tag['href'])
-                    img_tags = [
-                        tag
-                        for tag in soup.find_all('img', class_=re.compile(r'^MediaViewerImagestyles__PortraitImage'))
-                        if 'peek' not in tag['class']
-                    ]
-                    if img_tags:
-                        url = img_tags[0].get('src')
-                        if url:
-                            return url
+            a_tag = soup.find(href=re.compile(r'/title/tt\d+/mediaviewer/'))
+            if a_tag:
+                soup = await self._get_soup(a_tag['href'])
+                img_tags = [
+                    tag
+                    for tag in soup.find_all('img', class_=re.compile(r'^MediaViewerImagestyles__PortraitImage'))
+                    if 'peek' not in tag['class']
+                ]
+                if img_tags:
+                    url = img_tags[0].get('src')
+                    if url:
+                        return url
         return ''
 
     rating_min = 0.0
@@ -181,6 +192,8 @@ class ImdbApi(WebDbApiBase):
         if id:
             soup = await self._get_soup(f'title/{id}')
             rating_tag = soup.find(itemprop='ratingValue')
+            if not rating_tag:
+                rating_tag = soup.find(class_=re.compile(r'^AggregateRatingButton__RatingScore.*'))
             if rating_tag:
                 try:
                     return float(rating_tag.string)
@@ -191,14 +204,39 @@ class ImdbApi(WebDbApiBase):
     async def summary(self, id):
         if id:
             soup = await self._get_soup(f'title/{id}')
-            storyline_tag = soup.find(id='titleStoryLine')
+
+            # Get summary from the top
+            candidates = (
+                # Old website design
+                soup.find(class_='summary_text'),
+                # New website design
+                soup.find(class_=re.compile(r'GenresAndPlot__TextContainerBreakpointXL.*')),
+            )
+            for tag in candidates:
+                if tag:
+                    string = ''.join(tag.stripped_strings).strip()
+                    link_texts = ('See full summary»', 'Read all', 'Add a Plot»')
+                    if all(not string.endswith(text) for text in link_texts):
+                        return string
+
+            # Get summary from the "Storyline" section (old website design)
             try:
-                summary_tag = storyline_tag.div.p.span
+                tag = soup.find(id='titleStoryLine').div.p.span
             except AttributeError:
                 pass
             else:
-                if summary_tag:
-                    return ''.join(summary_tag.strings).strip()
+                # Remove "Written by [Author]" signature
+                return re.sub(r'\s*(?i:Written\s+by).*?$', '', ''.join(tag.strings)).strip()
+
+            # Get summary from the "Storyline" section (new website design)
+            try:
+                tag = soup.find(class_=re.compile(r'^Storyline__StorylineWrapper.*')).div.div.div
+            except AttributeError:
+                pass
+            else:
+                # Remove "—[Author]" signature
+                return re.sub(r'\s*—.*?$', '', ''.join(tag.strings)).strip()
+
         return ''
 
     async def title_english(self, id, allow_empty=True):
@@ -302,28 +340,38 @@ class ImdbApi(WebDbApiBase):
     async def type(self, id):
         if id:
             soup = await self._get_soup(f'title/{id}')
+
+            # Old website design
             subtext_tag = soup.find(class_='subtext')
             if subtext_tag:
                 # reversed() because interesting info is on the right side
-                subtexts = ''.join(subtext_tag.stripped_strings).lower().split('|')
-                genres = [genre.string.lower() for genre in subtext_tag.find_all(
-                    'a', href=re.compile(r'/search/title\?genres='))]
-                if 'episode' in subtexts[-1]:
+                subtext = ' '.join(reversed(tuple(subtext_tag.stripped_strings))).lower()
+
+            else:
+                # New website design
+                subtext_tag = soup.find(class_=re.compile(r'^TitleBlockMetaData__MetaDataList'))
+                if subtext_tag:
+                    subtext = ' '.join(subtext_tag.stripped_strings).lower()
+
+            if subtext:
+                if 'episode' in subtext:
                     return ReleaseType.episode
-                elif 'tv series' in subtexts[-1]:
+                elif 'tv series' in subtext:
                     return ReleaseType.season
-                elif 'tv mini-series' in subtexts[-1]:
+                elif re.search(r'tv mini[- ]series', subtext):
                     return ReleaseType.season
-                elif 'tv short' in subtexts[-1]:
+                elif subtext.endswith('video') or subtext.startswith('video'):
                     return ReleaseType.movie
-                elif 'short' in genres:
+                elif 'tv movie' in subtext:
                     return ReleaseType.movie
-                elif 'video' in subtexts[-1].split(' '):
+                elif (
+                        # Look for year (old website design)
+                        re.search(r'^\d+ [a-z]+ \d{4}', subtext) or
+                        # Look for year (new website design)
+                        re.search(r'^\d{4}', subtext)
+                     ):
                     return ReleaseType.movie
-                elif 'tv movie' in subtexts[-1]:
-                    return ReleaseType.movie
-                elif re.search(r'^\d+ [a-z]+ \d{4}', subtexts[-1]):
-                    return ReleaseType.movie
+
         return ReleaseType.unknown
 
     async def url(self, id):
@@ -335,24 +383,26 @@ class ImdbApi(WebDbApiBase):
         if id:
             soup = await self._get_soup(f'title/{id}')
 
-            # Movies
+            # Movies (old website design)
             year_tag = soup.find(id='titleYear')
             if year_tag:
                 return ''.join(year_tag.stripped_strings).strip('()')
 
-            # Series
+            # Series (old website design)
             subtext_tag = soup.find(class_='subtext')
             if subtext_tag:
-                # reversed() because year is on the very right
-                for tag in reversed(subtext_tag.find_all()):
-                    text = ''.join(tag.stripped_strings)
-                    # Looking for one of these:
-                    #   - "TV Mini-Series (<YEAR>)"
-                    #   - "TV Series (<YEAR>–<year>)" (the "–" is an EN DASH / U+2013)
-                    #   - "<day> <month> <YEAR>"
-                    match = re.search(r'\b(\d{4})\b', text)
-                    if match:
-                        return match.group(1)
+                # reversed() because interesting info is on the right side
+                subtext = ' '.join(reversed(tuple(subtext_tag.stripped_strings)))
+            else:
+                # Series (new website design)
+                subtext_tag = soup.find(class_=re.compile(r'^TitleBlock__TitleMetaDataContainer'))
+                if subtext_tag:
+                    subtext = ' '.join(subtext_tag.stripped_strings)
+
+            if subtext:
+                match = re.search(r'\b(\d{4})\b', subtext)
+                if match:
+                    return match.group(1)
 
         return ''
 
