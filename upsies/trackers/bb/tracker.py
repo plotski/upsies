@@ -2,6 +2,7 @@
 BbTracker class
 """
 
+import argparse
 import asyncio
 import re
 import urllib
@@ -16,6 +17,15 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
+def number_of_screenshots(value):
+    try:
+        return type(BbTrackerConfig.defaults['screenshots'])(value)
+    except ValueError as e:
+        # Raising ArgumentTypeError preserves the error message while raising
+        # ValueError produces a generic "invalid value" error message.
+        raise argparse.ArgumentTypeError(e)
+
+
 class BbTracker(TrackerBase):
     name = 'bb'
     label = 'bB'
@@ -23,6 +33,10 @@ class BbTracker(TrackerBase):
     argument_definitions = {
         ('--poster-file',): {
             'help': 'Path or URL to poster image',
+        },
+        ('--screenshots', '-s'): {
+            'help': 'How many screenshots to make',
+            'type': number_of_screenshots,
         },
         ('--title', '-t'): {
             'group': 'single-job',
