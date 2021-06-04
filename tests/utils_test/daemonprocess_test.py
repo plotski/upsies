@@ -52,16 +52,27 @@ def target_taking_arguments(output_queue, input_queue, foo, bar, *, baz):
 
 @pytest.mark.asyncio
 async def test_target_gets_positional_and_keyword_arguments():
+    class LocalString(str):
+        pass
+
+    class LocalStringSubclass(LocalString):
+        pass
+
+    class LocalInteger(int):
+        pass
+
     info_callback = Mock()
     proc = DaemonProcess(
         target=target_taking_arguments,
-        args=('Foo', 'Bar'),
-        kwargs={'baz': 'Baz'},
+        args=(LocalString('Foo'), LocalStringSubclass('Bar')),
+        kwargs={
+            LocalString('baz'): LocalInteger(847),
+        },
         info_callback=info_callback,
     )
     proc.start()
     await proc.join()
-    assert info_callback.call_args_list == [call('Foo'), call('Bar'), call('Baz')]
+    assert info_callback.call_args_list == [call('Foo'), call('Bar'), call(847)]
 
 
 @pytest.mark.asyncio

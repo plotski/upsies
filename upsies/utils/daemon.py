@@ -6,6 +6,7 @@ import asyncio
 import enum
 import functools
 import multiprocessing
+import pickle
 
 from .. import errors
 
@@ -66,12 +67,36 @@ class DaemonProcess:
         self._process = self._ctx.Process(
             name=self._name,
             target=target_wrapped,
-            args=self._target_args,
-            kwargs=self._target_kwargs,
+            args=self._make_args_picklable(self._target_args),
+            kwargs=self._make_kwargs_picklable(self._target_kwargs),
         )
         self._process.start()
         self._read_queue_reader_task = self._loop.create_task(self._read_queue_reader())
         self._read_queue_reader_task.add_done_callback(self._handle_read_queue_reader_task_done)
+
+    def _make_args_picklable(self, args):
+        return tuple(self._get_picklable_value(arg) for arg in args)
+
+    def _make_kwargs_picklable(self, kwargs):
+        return {self._get_picklable_value(k): self._get_picklable_value(v)
+                for k, v in kwargs.items()}
+
+    def _get_picklable_value(self, value):
+        # Try to pickle `value`. If it fails, try to instantiate `value` as one
+        # of it's parent classes. Ignore first class (which is identical to
+        # type(value)) and the last class, which should always be (`object`).
+        types = type(value).mro()[1:-1]
+        while True:
+            try:
+                pickle.dumps(value)
+            # Python 3.9.1: This raises AttributeError, but the docs don't mention it.
+            except Exception:
+                if types:
+                    value = types.pop(0)(value)
+                else:
+                    raise
+            else:
+                return value
 
     async def _read_queue_reader(self):
         while True:
