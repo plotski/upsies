@@ -332,8 +332,8 @@ class _ConfigDict(collections.abc.MutableMapping, dict):
                 converter = self._types[key]
                 try:
                     value = converter(value)
-                except (ValueError, TypeError):
-                    raise ValueError(f'Invalid value: {value}')
+                except (ValueError, TypeError) as e:
+                    raise ValueError(e)
 
         if isinstance(self._keys[key], collections.abc.Mapping):
             # Setting a subdictionary

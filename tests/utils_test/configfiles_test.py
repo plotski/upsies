@@ -104,13 +104,13 @@ def test_ConfigDict_with_custom_types(converter, value, exp_value):
 def test_ConfigDict_converter_raises_ValueError():
     dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
     d = _ConfigDict(dct=dct, types={0: {1: int}})
-    with pytest.raises(ValueError, match=r'^Invalid value: hello$'):
+    with pytest.raises(ValueError, match=r"^invalid literal for int\(\) with base 10: 'hello'$"):
         d[0][1] = 'hello'
 
 def test_ConfigDict_converter_raises_TypeError():
     dct = {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: 0}}}}
     d = _ConfigDict(dct=dct, types={0: {1: int}})
-    with pytest.raises(ValueError, match=r"^Invalid value: \['hello'\]$"):
+    with pytest.raises(ValueError, match=r"^int\(\) argument must be a string, a bytes-like object or a number, not 'list'$"):
         d[0][1] = ['hello']
 
 def test_ConfigDict_subdictionaries_are_ConfigDicts():
@@ -295,7 +295,7 @@ def test_setting_option_to_invalid_value():
         0: {'foo': {'x': 'asdf'},
             None: {'y': 'fdsa', 'z': 'qux'}},
     })
-    with pytest.raises(errors.ConfigError, match=r'^main\.foo\.a: Invalid value: not a number$'):
+    with pytest.raises(errors.ConfigError, match=r"^main\.foo\.a: invalid literal for int\(\) with base 10: 'not a number'$"):
         d._set('main', 'foo', 'a', 'not a number')
     assert d['main.foo.a'] == 123
 
