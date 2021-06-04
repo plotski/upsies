@@ -62,11 +62,17 @@ class submit(CommandBase):
     def tracker_options(self):
         """
         :attr:`tracker_name` section in trackers configuration file combined with
-        CLI arguments where CLI arguments take precedence
+        CLI arguments where CLI arguments take precedence unless their value is
+        `None`
         """
         config = self.config['trackers'][self.tracker_name]
         cli_args = vars(self.args)
-        return {**config, **cli_args}
+        options = {}
+        options.update(config)
+        for k, v in cli_args.items():
+            if v is not None:
+                options[k] = v
+        return options
 
     @utils.cached_property
     def tracker(self):
