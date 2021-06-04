@@ -8,9 +8,54 @@ import enum
 import re
 
 
+def Integer(value, min=None, max=None):
+    """
+    :class:`int` subclass with minimum and maximum value
+
+    >>> i = Integer(5, min=0, max=10)
+    >>> type(i)(100)
+    >>> ValueError: Maximum is 10
+    """
+    # There's a Python bug that prevents us from overloading min() and max()
+    # with variables in the "class ...:" namespace
+    min_ = min
+    max_ = max
+
+    class Integer(int):
+        min = min_
+        """Minimum value"""
+
+        max = max_
+        """Maximum value"""
+
+        def __new__(cls, value):
+            try:
+                i = int(float(value))
+            except (ValueError, TypeError):
+                raise ValueError(f'Invalid integer value: {value!r}')
+
+            if cls.min is not None and i < cls.min:
+                raise ValueError(f'Minimum is {cls.min}')
+            elif cls.max is not None and i > cls.max:
+                raise ValueError(f'Maximum is {cls.max}')
+            else:
+                return super().__new__(cls, i)
+
+        def __repr__(self):
+            string = f'{type(self).__name__}({super().__repr__()}'
+            if min is not None:
+                string += f', min={min!r}'
+            if max is not None:
+                string += f', max={max!r}'
+            string += ')'
+            return string
+
+    return Integer(value)
+
+
 class Bool(str):
     """
-    :class:`str` with boolean value
+    :class:`str` subclass with boolean value
 
     Truthy strings: ``true``, ``yes``, ``on``, ``1``
     Falsy strings: ``false``, ``no``, ``off``, ``0``

@@ -4,6 +4,60 @@ from upsies.utils import types
 
 
 @pytest.mark.parametrize(
+    argnames='value, exp_int',
+    argvalues=(
+        ('1', 1), ('-1', -1),
+        ('0.1', 0), ('-0.1', 0),
+        ('0.9', 0), ('-0.9', 0),
+        ('100', 100), (100, 100), (100.0, 100),
+    ),
+)
+def test_Integer_valid_values(value, exp_int):
+    i = types.Integer(value)
+    assert i == exp_int
+
+@pytest.mark.parametrize(
+    argnames='value',
+    argvalues=('zero', 'foo'),
+)
+def test_Integer_invalid_values(value):
+    with pytest.raises(ValueError, match=rf'^Invalid integer value: {value!r}$'):
+        types.Integer(value)
+
+def test_Integer_min_max_values():
+    min = 0
+    max = 10
+
+    with pytest.raises(ValueError, match=rf'^Minimum is {min}$'):
+        types.Integer(min - 1, min=min, max=max)
+    with pytest.raises(ValueError, match=rf'^Maximum is {max}$'):
+        types.Integer(max + 1, min=min, max=max)
+
+    for value in range(min, max + 1):
+        i = types.Integer(value, min=min, max=max)
+        assert i == value
+
+    i = types.Integer(min, min=min, max=max)
+    assert i.min == min
+    assert i.max == max
+
+    with pytest.raises(ValueError, match=rf'^Minimum is {min}$'):
+        type(i)(min - 1)
+    with pytest.raises(ValueError, match=rf'^Maximum is {max}$'):
+        type(i)(max + 1)
+
+@pytest.mark.parametrize(
+    argnames='value, min, max, exp_repr',
+    argvalues=(
+        (5, 0, 10, 'Integer(5, min=0, max=10)'),
+    ),
+)
+def test_Integer_repr(value, min, max, exp_repr):
+    i = types.Integer(value, min=min, max=max)
+    assert repr(i) == exp_repr
+
+
+@pytest.mark.parametrize(
     argnames='string, exp_bool',
     argvalues=(
         ('true', True), ('false', False),
