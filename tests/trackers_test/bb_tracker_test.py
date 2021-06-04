@@ -4,7 +4,7 @@ from unittest.mock import Mock, call
 import bs4
 import pytest
 
-from upsies import errors, utils
+from upsies import errors
 from upsies.trackers.bb import BbTracker, BbTrackerConfig, BbTrackerJobs
 from upsies.trackers.bb.tracker import number_of_screenshots
 from upsies.utils.http import Result
