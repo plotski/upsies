@@ -25,12 +25,6 @@ def _is_string(value):
 def _any2string(value):
     return ' '.join(str(v) for v in value) if _is_list(value) else str(value)
 
-def _is_integer(value):
-    return isinstance(value, int)
-
-def _2integer(value):
-    return int(float(value))
-
 
 class ConfigFiles:
     """
@@ -74,9 +68,6 @@ class ConfigFiles:
         def get_type(value):
             if _is_list(value):
                 return _any2list
-
-            elif _is_integer(value):
-                converter = _2integer
 
             elif _is_string(value):
                 def converter(v, cls=type(value)):
