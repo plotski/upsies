@@ -41,6 +41,9 @@ def Integer(value, min=None, max=None):
             else:
                 return super().__new__(cls, i)
 
+        def __str__(self):
+            return str(int(self))
+
         def __repr__(self):
             string = f'{type(self).__name__}({super().__repr__()}'
             if min is not None:

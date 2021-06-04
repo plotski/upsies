@@ -56,6 +56,10 @@ def test_Integer_repr(value, min, max, exp_repr):
     i = types.Integer(value, min=min, max=max)
     assert repr(i) == exp_repr
 
+def test_Integer_str():
+    i = types.Integer(3, min=0, max=10)
+    assert str(i) == '3'
+
 
 @pytest.mark.parametrize(
     argnames='string, exp_bool',
