@@ -4,17 +4,19 @@ BbTrackerConfig class
 
 import base64
 
+from ...utils import types
 from ..base import TrackerConfigBase
 
 
 class BbTrackerConfig(TrackerConfigBase):
     defaults = {
-        'base_url'   : base64.b64decode('aHR0cHM6Ly9iYWNvbmJpdHMub3Jn').decode('ascii'),
-        'username'   : '',
-        'password'   : '',
-        'source'     : 'bB',
-        'image_host' : 'imgbox',
-        'exclude'    : [
+        'base_url'    : base64.b64decode('aHR0cHM6Ly9iYWNvbmJpdHMub3Jn').decode('ascii'),
+        'username'    : '',
+        'password'    : '',
+        'source'      : 'bB',
+        'image_host'  : 'imgbox',
+        'screenshots' : types.Integer(2, min=2, max=10),
+        'exclude'     : [
             r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample|extra|bonus|feature)',
         ],
