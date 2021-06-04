@@ -6,6 +6,8 @@
   * scene-check: Ask user in case of HTTP request error
   * release-name: Go back to accepting anything, even with incomplete
     information
+  * bB: Added --screenshots CLI argument and trackers.bb.screenshots config
+    option to customize the number of screenshots to make
 
 
 2021-05-17 0.3.1
