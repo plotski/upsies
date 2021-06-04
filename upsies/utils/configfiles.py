@@ -19,9 +19,6 @@ def _is_list(value):
 def _any2list(value):
     return list(value) if _is_list(value) else str(value).split()
 
-def _is_string(value):
-    return isinstance(value, str)
-
 def _any2string(value):
     return ' '.join(str(v) for v in value) if _is_list(value) else str(value)
 
@@ -68,14 +65,9 @@ class ConfigFiles:
         def get_type(value):
             if _is_list(value):
                 return _any2list
-
-            elif _is_string(value):
+            else:
                 def converter(v, cls=type(value)):
                     return cls(_any2string(v))
-
-            else:
-                converter = type(value)
-
             return converter
 
         types = {}

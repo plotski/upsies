@@ -230,7 +230,6 @@ def test_build_types():
     my_assert(types[0]['foo']['x']('y  z'), ['y', 'z'], list)
 
     my_assert(types[0][None]['x'](5), 5, int)
-    my_assert(types[0][None]['x'](5.3), 5, int)
     my_assert(types[0][None]['x']('5'), 5, int)
 
     my_assert(types[0][None]['y'](5), 5.0, float)
