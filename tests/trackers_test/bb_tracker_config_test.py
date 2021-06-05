@@ -28,3 +28,13 @@ def test_screenshots_option():
         type(config['screenshots'])(1)
     with pytest.raises(ValueError, match=r'^Maximum is 10$'):
         type(config['screenshots'])(11)
+
+
+def test_image_host_option():
+    config = BbTrackerConfig()
+    with pytest.raises(ValueError, match=r'^Not one of [a-z, ]+: foo$'):
+        type(config['image_host'])('foo')
+
+    imghost = type(config['image_host'])('dummy')
+    with pytest.raises(ValueError, match=r'^Not one of [a-z, ]+: foo$'):
+        type(imghost)('foo')

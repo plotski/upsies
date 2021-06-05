@@ -4,7 +4,7 @@ BbTrackerConfig class
 
 import base64
 
-from ...utils import types
+from ...utils import imghosts, types
 from ..base import TrackerConfigBase
 
 
@@ -14,7 +14,7 @@ class BbTrackerConfig(TrackerConfigBase):
         'username'    : '',
         'password'    : '',
         'source'      : 'bB',
-        'image_host'  : 'imgbox',
+        'image_host'  : types.Choice('imgbox', options=(imghost.name for imghost in imghosts.imghosts())),
         'screenshots' : types.Integer(2, min=2, max=10),
         'exclude'     : [
             r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
