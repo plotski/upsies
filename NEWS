@@ -1,4 +1,5 @@
-2021-??-?? 0.?.?
+2021.06.05
+  * Switched to date-based version schema
   * Fixed getting IMDb info
   * screenshots: Added --output-directory/-o argument which defaults to the
     current working directory
