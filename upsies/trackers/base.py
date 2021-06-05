@@ -6,7 +6,7 @@ import abc
 import builtins
 
 from .. import jobs
-from ..utils import cached_property, fs, signal, webdbs
+from ..utils import btclients, cached_property, fs, signal, types, webdbs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -22,7 +22,11 @@ class TrackerConfigBase(dict):
     _defaults = {
         'source'     : '',
         'exclude'    : [],
-        'add-to'     : '',
+        'add-to'     : types.Choice(
+            '',
+            empty_ok=True,
+            options=(client.name for client in btclients.clients()),
+        ),
         'copy-to'    : '',
     }
 
@@ -30,14 +34,36 @@ class TrackerConfigBase(dict):
     """Default values"""
 
     def __new__(cls, config={}):
-        combined_defaults = {**cls._defaults, **cls.defaults}
+        # Merge global and tracker-specific defaults
+        combined_defaults = cls._merge(cls._defaults, cls.defaults)
+
+        # Check user-given config for unknown options
         for k in config:
             if k not in combined_defaults:
                 raise TypeError(f'Unknown option: {k!r}')
+
+        # Merge user-given config with defaults
         obj = super().__new__(cls)
-        obj.update(combined_defaults)
-        obj.update(config)
+        obj.update(cls._merge(combined_defaults, config))
         return obj
+
+    @staticmethod
+    def _merge(a, b):
+        # Copy a
+        combined = {}
+        combined.update(a)
+
+        # Update a with values from b
+        for k, v in b.items():
+            if k in combined:
+                # Ensure same value type from a
+                cls = type(combined[k])
+                combined[k] = cls(v)
+            else:
+                # Append new value
+                combined[k] = v
+
+        return combined
 
     # If the config is passed as config={...}, super().__init__() will interpret
     # as a key-value pair that ends up in the config.

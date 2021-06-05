@@ -48,3 +48,15 @@ def test_arguments_that_are_not_in_defaults():
         }
     with pytest.raises(TypeError, match=r"^Unknown option: 'bingo'$"):
         TestTrackerConfig({'bingo': 'bongo'})
+
+
+def test_add_to_option():
+    class TestTrackerConfig(TrackerConfigBase):
+        defaults = {}
+
+    with pytest.raises(ValueError, match=r'^Not one of [a-z, ]+: foo$'):
+        TestTrackerConfig({'add-to': 'foo'})
+
+    config = TestTrackerConfig()
+    with pytest.raises(ValueError, match=r'^Not one of [a-z, ]+: foo$'):
+        type(config['add-to'])('foo')
