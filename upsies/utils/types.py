@@ -10,7 +10,7 @@ import re
 
 def Integer(value, min=None, max=None):
     """
-    :class:`int` subclass with minimum and maximum value
+    Return :class:`int` subclass with minimum and maximum value
 
     >>> i = Integer(5, min=0, max=10)
     >>> type(i)(100)
@@ -58,10 +58,10 @@ def Integer(value, min=None, max=None):
 
 def Choice(value, options, empty_ok=False):
     """
-    :class:`str` subclass that can only have instances that are equal to an item
-    of `options`
+    Return :class:`str` subclass that can only have instances that are equal to
+    an item of `options`
 
-    :param value: Any object
+    :param value: Initial value
     :param options: Iterable of allowed instances
     :param bool empty_ok: Whether an emptry string is valid even if it is not in
         of `options`
