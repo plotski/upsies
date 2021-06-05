@@ -103,7 +103,7 @@ class ConfigFiles:
         else:
             try:
                 self._cfg[section][subsection][option] = value
-            except (ValueError, TypeError) as e:
+            except errors.ConfigError as e:
                 raise errors.ConfigError(f'{section}.{subsection}.{option}: {e}')
 
     def read(self, section, filepath, ignore_missing=False):
@@ -325,7 +325,7 @@ class _ConfigDict(collections.abc.MutableMapping, dict):
                 try:
                     value = converter(value)
                 except (ValueError, TypeError) as e:
-                    raise ValueError(e)
+                    raise errors.ConfigError(e)
 
         if isinstance(self._keys[key], collections.abc.Mapping):
             # Setting a subdictionary
