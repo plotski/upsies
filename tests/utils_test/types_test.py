@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from upsies.utils import types
@@ -59,6 +61,55 @@ def test_Integer_repr(value, min, max, exp_repr):
 def test_Integer_str():
     i = types.Integer(3, min=0, max=10)
     assert str(i) == '3'
+
+
+@pytest.mark.parametrize(
+    argnames='value, options',
+    argvalues=(
+        ('1', (1, 2, 3, 4)),
+        (2, (1, 2, 3, 4)),
+        (3, ('1', '2', '3', '4')),
+        ('4', ('1', '2', '3', '4')),
+    ),
+)
+def test_Choice_valid_values(value, options):
+    choice = types.Choice(value, options)
+    assert choice == str(choice)
+    assert isinstance(choice, str)
+
+@pytest.mark.parametrize(
+    argnames='empty_ok, error_expected',
+    argvalues=(
+        (False, True),
+        (True, False),
+    ),
+)
+def test_Choice_empty_ok(empty_ok, error_expected):
+    if error_expected:
+        with pytest.raises(ValueError, match=r'^Not one of foo, bar: $'):
+            types.Choice('', options=('foo', 'bar'), empty_ok=empty_ok)
+    else:
+        choice = types.Choice('', options=('foo', 'bar'), empty_ok=empty_ok)
+        assert choice == ''
+
+@pytest.mark.parametrize(
+    argnames='value, options, exp_error',
+    argvalues=(
+        (0, (1, 2, 3, 4), 'Not one of 1, 2, 3, 4: 0'),
+        ('foo', (1, 2, 3, 4), 'Not one of 1, 2, 3, 4: foo'),
+    ),
+)
+def test_Choice_invalid_values(value, options, exp_error):
+    with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+        types.Choice(value, options)
+
+    choice = types.Choice(options[0], options)
+    with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+        type(choice)(value)
+
+def test_Choice_repr():
+    choice = types.Choice('bar', options=('foo', 'bar', 'baz'))
+    assert repr(choice) == "Choice('bar', options=('foo', 'bar', 'baz'))"
 
 
 @pytest.mark.parametrize(

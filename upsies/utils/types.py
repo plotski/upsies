@@ -56,6 +56,40 @@ def Integer(value, min=None, max=None):
     return Integer(value)
 
 
+def Choice(value, options, empty_ok=False):
+    """
+    :class:`str` subclass that can only have instances that are equal to an item
+    of `options`
+
+    :param value: Any object
+    :param options: Iterable of allowed instances
+    :param bool empty_ok: Whether an emptry string is valid even if it is not in
+        of `options`
+
+    :raise ValueError: if instantiation is attempted with a value that is not in
+        `options`
+    """
+    options_str = tuple(str(o) for o in options)
+
+    class Choice(str):
+        options = options_str
+
+        def __new__(cls, val):
+            val_str = str(val)
+            if val_str not in cls.options and (val_str or not empty_ok):
+                raise ValueError(f'Not one of {", ".join(cls.options)}: {val}')
+            else:
+                return super().__new__(cls, val)
+
+        def __str__(self):
+            return super().__str__()
+
+        def __repr__(self):
+            return f'{type(self).__name__}({super().__repr__()}, options={self.options!r})'
+
+    return Choice(value)
+
+
 class Bool(str):
     """
     :class:`str` subclass with boolean value
