@@ -570,7 +570,7 @@ def test_movie_source_job(bb_tracker_jobs, mocker):
         autodetected=bb_tracker_jobs.release_name.source,
         autofinish=True,
         options=(
-            {'label': 'BluRay', 'value': 'BluRay', 'regex': re.compile('^BluRay')},  # BluRay or BluRay Remux
+            {'label': 'BluRay', 'value': 'BluRay', 'regex': re.compile('BluRay')},  # [Hybrid] BluRay [Remux]
             # {'label': 'BluRay 3D', 'value': ' ', 'regex': re.compile('^ $')},
             # {'label': 'BluRay RC', 'value': ' ', 'regex': re.compile('^ $')},
             # {'label': 'CAM', 'value': ' ', 'regex': re.compile('^ $')},
