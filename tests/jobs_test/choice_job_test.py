@@ -26,12 +26,12 @@ def test_label_property(make_ChoiceJob):
 def test_choices_getter(make_ChoiceJob):
     job = make_ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     assert job.choices is job._choices
-    assert job._choices == (('1', '1'), ('2', '2'), ('3', '3'))
+    assert job._choices == [('1', '1'), ('2', '2'), ('3', '3')]
 
 def test_choices_setter_with_strings(make_ChoiceJob):
     job = make_ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     job.choices = ('a', 'b', 'c')
-    assert job._choices == (('a', 'a'), ('b', 'b'), ('c', 'c'))
+    assert job._choices == [('a', 'a'), ('b', 'b'), ('c', 'c')]
 
 @pytest.mark.parametrize('invalid_sequence', (['b'], ['b', 2, 'foo']))
 def test_choices_setter_with_invalid_sequence(invalid_sequence, make_ChoiceJob):
@@ -39,24 +39,24 @@ def test_choices_setter_with_invalid_sequence(invalid_sequence, make_ChoiceJob):
     with pytest.raises(ValueError, match=(r'^Choice must be 2-tuple, '
                                           rf'not {re.escape(str(invalid_sequence))}$')):
         job.choices = (['a', 1], invalid_sequence, ['c', 3])
-    assert job._choices == (('1', '1'), ('2', '2'), ('3', '3'))
+    assert job._choices == [('1', '1'), ('2', '2'), ('3', '3')]
 
 def test_choices_setter_with_valid_sequence(make_ChoiceJob):
     job = make_ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     job.choices = (['a', 1], ['b', 2], ['c', 3])
-    assert job._choices == (('a', 1), ('b', 2), ('c', 3))
+    assert job._choices == [('a', 1), ('b', 2), ('c', 3)]
 
 def test_choices_setter_with_invalid_choice(make_ChoiceJob):
     job = make_ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     with pytest.raises(ValueError, match=r'^Choice must be 2-tuple, not None$'):
         job.choices = (['a', 1], None, ['c', 3])
-    assert job._choices == (('1', '1'), ('2', '2'), ('3', '3'))
+    assert job._choices == [('1', '1'), ('2', '2'), ('3', '3')]
 
 def test_choices_setter_with_too_few_choices(make_ChoiceJob):
     job = make_ChoiceJob(name='foo', label='Foo', choices=('1', '2', '3'))
     with pytest.raises(ValueError, match=r"^There must be at least 2 choices: \['a'\]$"):
         job.choices = ['a']
-    assert job._choices == (('1', '1'), ('2', '2'), ('3', '3'))
+    assert job._choices == [('1', '1'), ('2', '2'), ('3', '3')]
 
 @pytest.mark.parametrize('focused_choice', (('2', 2), '2', 2))
 def test_choices_setter_preserves_focus_if_possible(focused_choice, make_ChoiceJob):
@@ -79,6 +79,13 @@ def test_choices_setter_emits_dialog_updated_signal(make_ChoiceJob):
     cb = Mock()
     job.signal.register('dialog_updated', cb)
     job.choices = (['0', 0], ['1', 1], ['2', 2])
+    assert cb.call_args_list == [call(job)]
+
+def test_choices_change_emits_dialog_updated_signal(make_ChoiceJob):
+    job = make_ChoiceJob(name='foo', label='Foo', choices=(('1', 1), ('2', 2), ('3', 3)))
+    cb = Mock()
+    job.signal.register('dialog_updated', cb)
+    job.choices.append(['3', 3])
     assert cb.call_args_list == [call(job)]
 
 

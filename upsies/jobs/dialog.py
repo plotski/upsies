@@ -4,7 +4,7 @@ Get information from the user
 
 import collections
 
-from .. import errors
+from .. import errors, utils
 from . import JobBase
 
 import logging  # isort:skip
@@ -74,7 +74,10 @@ class ChoiceJob(JobBase):
             raise ValueError(f'There must be at least 2 choices: {choices!r}')
 
         prev_focused = self.focused
-        self._choices = tuple(valid_choices)
+        self._choices = utils.MonitoredList(
+            valid_choices,
+            callback=lambda _: self.signal.emit('dialog_updated', self),
+        )
         if prev_focused in valid_choices:
             self._focused_index = valid_choices.index(prev_focused)
         else:
