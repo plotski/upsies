@@ -178,14 +178,20 @@ class UI:
             if not self._app.is_running and not self._app.is_done:
                 self._loop.call_soon(self._exit)
             else:
-                def when_jobs_terminated():
-                    self._app.exit()
-                    self._update_jobs_container()
+                def handle_jobs_terminated(task):
+                    try:
+                        task.result()
+                    except BaseException as e:
+                        _log.debug('Handling exception from %r', task)
+                        self._exception = e
+                    finally:
+                        _log.debug('Calling %r', self._app.exit)
+                        self._app.exit()
+                        self._update_jobs_container()
 
                 self._app_terminated = True
-                self._app.create_background_task(
-                    self._terminate_jobs(callback=when_jobs_terminated),
-                )
+                task = self._app.create_background_task(self._terminate_jobs())
+                task.add_done_callback(handle_jobs_terminated)
 
     async def _terminate_jobs(self, callback=None):
         _log.debug('Waiting for jobs before exiting')

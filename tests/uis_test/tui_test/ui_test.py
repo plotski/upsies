@@ -320,8 +320,27 @@ async def test_exit_calls_terminate_jobs(mocker):
     mocker.patch.object(ui, '_update_jobs_container', Mock())
     ui._exit()
     await asyncio.sleep(0)
+    await asyncio.sleep(0)
     assert ui._app_terminated is True
     assert ui._app.exit.call_args_list == [call()]
+    assert ui._update_jobs_container.call_args_list == [call()]
+
+@pytest.mark.asyncio
+async def test_exit_handles_exception_from_terminate_jobs(mocker):
+    ui = UI()
+    mocker.patch.object(type(ui._app), 'is_running', PropertyMock(return_value=True))
+    mocker.patch.object(type(ui._app), 'is_done', PropertyMock(return_value=False))
+    mocker.patch.object(type(ui._app), 'exit', Mock())
+    mocker.patch.object(ui, '_update_jobs_container', Mock())
+    mocker.patch.object(ui, '_terminate_jobs', AsyncMock(side_effect=RuntimeError('foo!')))
+    ui._exit()
+    await asyncio.sleep(0)
+    await asyncio.sleep(0)
+    await asyncio.sleep(0)
+    assert ui._app_terminated is True
+    assert ui._app.exit.call_args_list == [call()]
+    assert str(ui._exception) == 'foo!'
+    assert isinstance(ui._exception, RuntimeError)
     assert ui._update_jobs_container.call_args_list == [call()]
 
 
