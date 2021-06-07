@@ -170,6 +170,42 @@ class CaseInsensitiveString(str):
         return self.casefold() >= other.casefold()
 
 
+class MonitoredList(collections.abc.MutableSequence):
+    """
+    :class:`list` that calls `callback` after every change
+
+    :param callback: Callable that gets the instance as a positional argument
+    """
+
+    def __init__(self, *args, callback, **kwargs):
+        self._list = list(*args, **kwargs)
+        self._callback = callback
+
+    def __getitem__(self, index):
+        return self._list[index]
+
+    def __setitem__(self, index, value):
+        self._list[index] = value
+        self._callback(self)
+
+    def __delitem__(self, index):
+        del self._list[index]
+        self._callback(self)
+
+    def insert(self, index, value):
+        self._list.insert(index, value)
+        self._callback(self)
+
+    def __len__(self):
+        return len(self._list)
+
+    def __eq__(self, other):
+        return self._list == other
+
+    def __repr__(self):
+        return f'{type(self).__name__}({repr(self._list)}, callback={self._callback!r})'
+
+
 def is_sequence(obj):
     """Return whether `obj` is a sequence and not a string"""
     return (isinstance(obj, collections.abc.Sequence)

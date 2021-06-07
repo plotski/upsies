@@ -102,6 +102,53 @@ def test_CaseInsensitiveString_ge():
     assert utils.CaseInsensitiveString('Foo') >= 'foo'
 
 
+def test_MonitoredList_getitem():
+    lst = utils.MonitoredList((1, 2, 3), callback=Mock())
+    assert lst[0] == 1
+    assert lst[1] == 2
+    assert lst[2] == 3
+
+def test_MonitoredList_setitem():
+    cb = Mock()
+    lst = utils.MonitoredList((1, 2, 3), callback=cb)
+    assert cb.call_args_list == []
+    lst[0] = 100
+    assert cb.call_args_list == [call(lst)]
+    assert lst == [100, 2, 3]
+
+def test_MonitoredList_delitem():
+    cb = Mock()
+    lst = utils.MonitoredList((1, 2, 3), callback=cb)
+    assert cb.call_args_list == []
+    del lst[1]
+    assert cb.call_args_list == [call(lst)]
+    assert lst == [1, 3]
+
+def test_MonitoredList_insert():
+    cb = Mock()
+    lst = utils.MonitoredList((1, 2, 3), callback=cb)
+    assert cb.call_args_list == []
+    lst.insert(1, 1.5)
+    assert cb.call_args_list == [call(lst)]
+    assert lst == [1, 1.5, 2, 3]
+
+def test_MonitoredList_len():
+    lst = utils.MonitoredList((1, 2, 3), callback=Mock())
+    assert len(lst) == 3
+
+def test_MonitoredList_equality():
+    lst = utils.MonitoredList((1, 2, 3), callback=Mock())
+    assert lst == [1, 2, 3]
+    assert lst != [1, 2, 4]
+    assert lst == utils.MonitoredList([1, 2, 3], callback=Mock())
+    assert lst != utils.MonitoredList([1, 3, 2], callback=Mock())
+
+def test_MonitoredList_repr():
+    cb = Mock()
+    lst = utils.MonitoredList((1, 2, 3), callback=cb)
+    assert repr(lst) == f'MonitoredList([1, 2, 3], callback={cb!r})'
+
+
 def test_is_sequence():
     assert utils.is_sequence((1, 2, 3))
     assert utils.is_sequence([1, 2, 3])
