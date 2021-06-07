@@ -200,7 +200,7 @@ class UI:
             if jobinfo.job.is_started and not jobinfo.job.is_finished:
                 _log.debug('Waiting for %r', jobinfo.job.name)
                 await jobinfo.job.wait()
-                _log.debug('Waiting for %r', jobinfo.job.name)
+                _log.debug('Done waiting for %r', jobinfo.job.name)
         if callback:
             callback()
 
