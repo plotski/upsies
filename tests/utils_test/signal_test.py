@@ -139,3 +139,24 @@ def test_replay_emits():
         call.foo('and', this='that'),
         call.bar(four=56),
     ]
+
+
+def test_suspend_blocks_emissions():
+    s = Signal('foo', 'bar', 'baz')
+    cb = Mock()
+    s.register('foo', cb.foo)
+    s.register('bar', cb.bar)
+    s.register('baz', cb.baz)
+    with s.suspend('bar', 'foo'):
+        s.emit('foo', 123, this='that')
+        s.emit('bar', 456, hey='ho')
+        s.emit('baz', 789, zip='zop')
+    assert cb.mock_calls == [
+        call.baz(789, zip='zop'),
+    ]
+
+def test_suspend_handles_unknown_signals():
+    s = Signal('foo', 'bar', 'baz')
+    with pytest.raises(ValueError, match=r"Unknown signal: 'boo'"):
+        with s.suspend('bar', 'boo'):
+            pass

@@ -3,6 +3,7 @@ Managing callbacks
 """
 
 import collections
+import contextlib
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -13,6 +14,7 @@ class Signal:
 
     def __init__(self, *signals):
         self._signals = {}
+        self._suspended_signals = set()
         self._emissions = []
         self._record_signals = []
         for signal in signals:
@@ -81,10 +83,11 @@ class Signal:
 
         Any other arguments are passed on to the callbacks.
         """
-        for callback in self._signals[signal]:
-            callback(*args, **kwargs)
-        if signal in self._record_signals:
-            self._emissions.append((signal, {'args': args, 'kwargs': kwargs}))
+        if signal not in self._suspended_signals:
+            for callback in self._signals[signal]:
+                callback(*args, **kwargs)
+            if signal in self._record_signals:
+                self._emissions.append((signal, {'args': args, 'kwargs': kwargs}))
 
     @property
     def emissions(self):
@@ -102,3 +105,23 @@ class Signal:
         """:meth:`emit` previously recorded :attr:`emissions`"""
         for signal, payload in emissions:
             self.emit(signal, *payload['args'], **payload['kwargs'])
+
+    @contextlib.contextmanager
+    def suspend(self, *signals):
+        """
+        Context manager that blocks certain signals in its body
+
+        :param signals: Which signals to block
+
+        :raise ValueError: if any signal in `signals` is not registered
+        """
+        for signal in signals:
+            if signal not in self._signals:
+                raise ValueError(f'Unknown signal: {signal!r}')
+
+        self._suspended_signals.update(signals)
+
+        try:
+            yield
+        finally:
+            self._suspended_signals.difference_update(signals)
