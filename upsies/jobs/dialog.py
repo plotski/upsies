@@ -20,8 +20,8 @@ class ChoiceJob(JobBase):
 
         ``dialog_updated``
             Emitted when the :attr:`choices` or :attr:`focused` properties are
-            set. Registered callbacks get the job instance as a positional
-            argument.
+            set or when :attr:`choices` is modified. Registered callbacks get
+            the job instance as a positional argument.
 
         ``chosen``
             Emitted when the :attr:`choice` property is set or when the job's
