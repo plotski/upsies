@@ -183,6 +183,25 @@ class ChoiceJob(JobBase):
         else:
             raise ValueError(f'Invalid choice: {choice!r}')
 
+    def set_label(self, identifier, new_label):
+        """
+        Assign new label to choice
+
+        :param identifier: Choice (2-tuple of (<current label>, <value>) or the
+            current label or value of a choice
+        :param new_label: New label for the choice defined by `identifier`
+
+        Do nothing if `identifier` doesn't match any choice.
+        """
+        new_choices = []
+        for label, value in tuple(self.choices):
+            if identifier == label or identifier == value or identifier == (label, value):
+                new_choices.append((str(new_label), value))
+            else:
+                new_choices.append((label, value))
+        if self.choices != new_choices:
+            self.choices = new_choices
+
     def initialize(self, *, name, label, choices, focused=None):
         """
         Set internal state

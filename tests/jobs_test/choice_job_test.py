@@ -290,3 +290,25 @@ def test_choice_setter_emits_chose_signal(make_ChoiceJob):
     job.signal.register('dialog_updated', cb.dialog_updated)
     job.choice = 'b'
     assert cb.mock_calls == [call.chosen(2)]
+
+
+def test_set_label(make_ChoiceJob):
+    job = make_ChoiceJob(name='foo', label='Foo', choices=(('a', 1), ('b', 2), ('c', 3)))
+    cb = Mock()
+    job.signal.register('dialog_updated', cb)
+
+    job.set_label('a', 'the a')
+    assert job.choices == [('the a', 1), ('b', 2), ('c', 3)]
+    assert cb.call_args_list == [call(job)]
+
+    job.set_label(2, 'the b')
+    assert job.choices == [('the a', 1), ('the b', 2), ('c', 3)]
+    assert cb.call_args_list == [call(job), call(job)]
+
+    job.set_label(('c', 3), 'the c')
+    assert job.choices == [('the a', 1), ('the b', 2), ('the c', 3)]
+    assert cb.call_args_list == [call(job), call(job), call(job)]
+
+    job.set_label('d', 'the d')
+    assert job.choices == [('the a', 1), ('the b', 2), ('the c', 3)]
+    assert cb.call_args_list == [call(job), call(job), call(job)]
