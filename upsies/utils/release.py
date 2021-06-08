@@ -376,6 +376,39 @@ class ReleaseName(collections.abc.Mapping):
         else:
             self._has_commentary = bool(value)
 
+    @property
+    def has_dual_audio(self):
+        """
+        Whether this release has an English and a non-English, original language
+        audio track
+
+        If not set explicitly and the given `path` exists, this value is
+        autodetected if possible, otherwise default to whatever
+        :class:`ReleaseInfo` detected in the release name.
+
+        Setting this value back to `None` turns on autodetection as described
+        above.
+        """
+        # Use manually set value unless it is None
+        if hasattr(self, '_has_dual_audio') and self._has_dual_audio is not None:
+            return self._has_dual_audio
+
+        # Autodetect dual audio
+        elif os.path.exists(self._path):
+            self._has_dual_audio = bool(video.has_dual_audio(self._path))
+            return self._has_dual_audio
+
+        # Default to ReleaseInfo['has_dual_audio']
+        else:
+            return 'Dual Audio' in self._info.get('edition', ())
+
+    @has_dual_audio.setter
+    def has_dual_audio(self, value):
+        if value is None:
+            self._has_dual_audio = value
+        else:
+            self._has_dual_audio = bool(value)
+
     _needed_attrs = {
         ReleaseType.movie: ('title', 'year', 'resolution', 'source',
                             'audio_format', 'video_format'),

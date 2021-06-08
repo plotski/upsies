@@ -61,7 +61,7 @@ def test_str(ReleaseInfo_mock):
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
-    assert len(rn) == 19
+    assert len(rn) == 20
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -673,6 +673,52 @@ def test_has_commentary(path_exists, audio_tracks, release_info, exp_value, mock
     assert rn.has_commentary is True
     rn.has_commentary = None
     assert rn.has_commentary is exp_value
+
+
+@pytest.mark.parametrize(
+    argnames='path_exists, has_dual_audio, release_info, exp_value',
+    argvalues=(
+        ('path_exists', True, {'edition': ['Dual Audio']}, True),
+        ('path_exists', True, {'edition': []}, True),
+
+        ('path_exists', False, {'edition': ['Dual Audio']}, False),
+        ('path_exists', False, {'edition': []}, False),
+
+        ('path_exists', None, {'edition': ['Dual Audio']}, False),
+        ('path_exists', None, {'edition': []}, False),
+
+        ('path_does_not_exist', True, {'edition': ['Dual Audio']}, True),
+        ('path_does_not_exist', True, {'edition': []}, False),
+
+        ('path_does_not_exist', False, {'edition': ['Dual Audio']}, True),
+        ('path_does_not_exist', False, {'edition': []}, False),
+
+        ('path_does_not_exist', None, {'edition': ['Dual Audio']}, True),
+        ('path_does_not_exist', None, {'edition': []}, False),
+    ),
+    ids=lambda v: str(v),
+)
+def test_has_dual_audio(path_exists, has_dual_audio, release_info, exp_value, mocker):
+    mocker.patch(
+        'upsies.utils.video.has_dual_audio',
+        Mock(return_value=has_dual_audio),
+    )
+    mocker.patch(
+        'upsies.utils.release.ReleaseInfo',
+        Mock(return_value=release_info),
+    )
+    mocker.patch(
+        'os.path.exists',
+        Mock(return_value=True if path_exists == 'path_exists' else False),
+    )
+    rn = ReleaseName('path/to/something')
+    assert rn.has_dual_audio is exp_value
+    rn.has_dual_audio = ''
+    assert rn.has_dual_audio is False
+    rn.has_dual_audio = 1
+    assert rn.has_dual_audio is True
+    rn.has_dual_audio = None
+    assert rn.has_dual_audio is exp_value
 
 
 @pytest.mark.parametrize('release_type', tuple(ReleaseType), ids=lambda v: repr(v))
