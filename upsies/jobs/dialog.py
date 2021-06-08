@@ -50,14 +50,15 @@ class ChoiceJob(JobBase):
         Choices may also be passed as a flat iterable of :class:`str`, in which
         case both items in the tuple are identical.
 
-        When setting this property, focus is preserved if the focused choice
-        exists in the new sequence of choices. Otherwise, the first choice is
+        When setting this property, focus is preserved if the value of the
+        focused choice exists in the new choices. Otherwise, the first choice is
         focused.
         """
         return getattr(self, '_choices', ())
 
     @choices.setter
     def choices(self, choices):
+        # Build new list of choices
         valid_choices = []
         for choice in choices:
             if isinstance(choice, str):
@@ -73,15 +74,23 @@ class ChoiceJob(JobBase):
         if len(valid_choices) < 2:
             raise ValueError(f'There must be at least 2 choices: {choices!r}')
 
+        # Remember current focus
         prev_focused = self.focused
+
+        # Set new choices
         self._choices = utils.MonitoredList(
             valid_choices,
             callback=lambda _: self.signal.emit('dialog_updated', self),
         )
-        if prev_focused in valid_choices:
-            self._focused_index = valid_choices.index(prev_focused)
-        else:
-            self._focused_index = 0
+
+        # Try to restore focus
+        self._focused_index = 0
+        if prev_focused:
+            prev_label, prev_value = prev_focused
+            for index, (label, value) in enumerate(valid_choices):
+                if value == prev_value:
+                    self._focused_index = index
+                    break
 
         self.signal.emit('dialog_updated', self)
 

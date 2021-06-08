@@ -63,8 +63,8 @@ def test_choices_setter_preserves_focus_if_possible(focused_choice, make_ChoiceJ
     job = make_ChoiceJob(name='foo', label='Foo', choices=(('1', 1), ('2', 2), ('3', 3)))
     job.focused = ('2', 2)
     assert job.focused == ('2', 2)
-    job.choices = (['0', 0], ['1', 1], ['2', 2], ['3', 3], ['4', 4])
-    assert job.focused == ('2', 2)
+    job.choices = (['a', 0], ['b', 1], ['c', 2], ['d', 3], ['e', 4])
+    assert job.focused == ('c', 2)
 
 @pytest.mark.parametrize('focused_choice', (('2', 2), '2', 2))
 def test_choices_setter_defaults_focus_to_first_choice(focused_choice, make_ChoiceJob):
