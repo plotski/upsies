@@ -266,6 +266,9 @@ class ReleaseName(collections.abc.Mapping):
         """List of "DC", "Uncut", "Unrated", etc"""
         if 'edition' not in self._info:
             self._info['edition'] = []
+        if 'Dual Audio' not in self._info['edition']:
+            if self.has_dual_audio:
+                self._info['edition'].append('Dual Audio')
         return self._info['edition']
 
     @edition.setter

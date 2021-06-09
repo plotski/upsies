@@ -420,6 +420,14 @@ def test_edition_getter_returns_same_list_with_given_edition(ReleaseInfo_mock):
     assert isinstance(rn.edition, list)
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_edition_getter_autodetects_dual_audio(ReleaseInfo_mock, mocker):
+    ReleaseInfo_mock.return_value = {'edition': []}
+    rn = ReleaseName('path/to/something')
+    rn.has_dual_audio = True
+    assert rn.edition == ['Dual Audio']
+    assert rn.edition == ['Dual Audio']
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='edition, exp_edition',
     argvalues=(
