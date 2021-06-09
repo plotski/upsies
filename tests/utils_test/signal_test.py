@@ -147,11 +147,32 @@ def test_suspend_blocks_emissions():
     s.register('foo', cb.foo)
     s.register('bar', cb.bar)
     s.register('baz', cb.baz)
+
+    s.emit('foo', 123, this='that')
+    s.emit('bar', 456, hey='ho')
+    s.emit('baz', 789, zip='zop')
+    assert cb.mock_calls == [
+        call.foo(123, this='that'),
+        call.bar(456, hey='ho'),
+        call.baz(789, zip='zop'),
+    ]
+    cb.reset_mock()
+
     with s.suspend('bar', 'foo'):
         s.emit('foo', 123, this='that')
         s.emit('bar', 456, hey='ho')
         s.emit('baz', 789, zip='zop')
     assert cb.mock_calls == [
+        call.baz(789, zip='zop'),
+    ]
+    cb.reset_mock()
+
+    s.emit('foo', 123, this='that')
+    s.emit('bar', 456, hey='ho')
+    s.emit('baz', 789, zip='zop')
+    assert cb.mock_calls == [
+        call.foo(123, this='that'),
+        call.bar(456, hey='ho'),
         call.baz(789, zip='zop'),
     ]
 
