@@ -1263,6 +1263,18 @@ def test_release_info_directors_cut(editions, exp_text, bb_tracker_jobs, mocker,
     argnames='editions, exp_text',
     argvalues=(
         (('Foo',), None),
+        (('Theatrical',), 'Theatrical Cut'),
+    ),
+)
+def test_release_info_theatrical_cut(editions, exp_text, bb_tracker_jobs, mocker, tmp_path):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'edition', PropertyMock(return_value=editions))
+    assert bb_tracker_jobs.release_info_theatrical_cut == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='editions, exp_text',
+    argvalues=(
+        (('Foo',), None),
         (('IMAX',), 'IMAX'),
     ),
 )
@@ -1450,6 +1462,7 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_unrated', PropertyMock(return_value='Unrated'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_remastered', PropertyMock(return_value='Remastered'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_directors_cut', PropertyMock(return_value="Director's Cut"))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_theatrical_cut', PropertyMock(return_value='Theatrical Cut'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_imax', PropertyMock(return_value='IMAX'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_extended_edition', PropertyMock(return_value='Extended Edition'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_anniversary_edition', PropertyMock(return_value='Anniversary Edition'))
@@ -1465,7 +1478,7 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
     exp_info = ('[BluRay / x264 / E-AC-3 / MKV / 1080p / '
                 'PROPER / REPACK / '
                 'REMUX / HDR10 / 10-bit / '
-                "Uncensored / Uncut / Unrated / Remastered / Director's Cut / IMAX / "
+                "Uncensored / Uncut / Unrated / Remastered / Director's Cut / Theatrical Cut / IMAX / "
                 'Extended Edition / Anniversary Edition / Criterion Edition / Special Edition / Limited / '
                 'Dual Audio / w. Commentary / w. Subtitles]')
     assert title.endswith(exp_info)
@@ -1652,6 +1665,7 @@ def test_get_movie_release_info(bb_tracker_jobs, mocker):
         'release_info_unrated': 'Unrated',
         'release_info_remastered': 'Remastered',
         'release_info_directors_cut': "Director's Cut",
+        'release_info_theatrical_cut': 'Theatrical Cut',
         'release_info_imax': 'IMAX',
         'release_info_extended_edition': 'Extended Edition',
         'release_info_anniversary_edition': 'Anniversary Edition',

@@ -715,6 +715,11 @@ class BbTrackerJobs(TrackerJobsBase):
             return "Director's Cut"
 
     @property
+    def release_info_theatrical_cut(self):
+        if 'Theatrical' in self.release_name.edition:
+            return 'Theatrical Cut'
+
+    @property
     def release_info_imax(self):
         if 'IMAX' in self.release_name.edition:
             return 'IMAX'
@@ -795,6 +800,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_unrated,
             self.release_info_remastered,
             self.release_info_directors_cut,
+            self.release_info_theatrical_cut,
             self.release_info_imax,
             self.release_info_extended_edition,
             self.release_info_anniversary_edition,
@@ -889,6 +895,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_unrated,
             self.release_info_remastered,
             self.release_info_directors_cut,
+            self.release_info_theatrical_cut,
             self.release_info_imax,
             self.release_info_extended_edition,
             self.release_info_anniversary_edition,
