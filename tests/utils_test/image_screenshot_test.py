@@ -90,6 +90,20 @@ def test_timestamp_after_video_end(duration_mock, run_mock, exists_mock):
 @patch('upsies.utils.subproc.run')
 @patch('upsies.utils.video.make_ffmpeg_input', Mock(side_effect=lambda f: f))
 @patch('upsies.utils.video.duration')
+def test_getting_duration_fails(duration_mock, run_mock, exists_mock):
+    mock_file = 'path/to/foo.mkv'
+    duration_mock.side_effect = errors.ContentError('not a video file')
+    exists_mock.side_effect = (False, True)
+    with pytest.raises(errors.ScreenshotError, match=r'^not a video file$'):
+        image.screenshot(mock_file, 123, 'image.png')
+    assert run_mock.call_args_list == []
+
+
+@patch('os.path.exists')
+@patch('upsies.utils.fs.assert_file_readable', Mock(return_value=True))
+@patch('upsies.utils.subproc.run')
+@patch('upsies.utils.video.make_ffmpeg_input', Mock(side_effect=lambda f: f))
+@patch('upsies.utils.video.duration')
 def test_existing_screenshot_file(duration_mock, run_mock, exists_mock):
     mock_file = 'path/to/foo.mkv'
     duration_mock.return_value = 1e6

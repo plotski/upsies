@@ -47,28 +47,37 @@ def screenshot(video_file, timestamp, screenshot_file, overwrite=False):
     :raise ScreenshotError: if something goes wrong
     :return: Path to screenshot file
     """
+    # See if file is readable before we do further checks and launch ffmpeg
     try:
         utils.fs.assert_file_readable(video_file)
     except errors.ContentError as e:
         raise errors.ScreenshotError(e)
 
+    # Validate timestamps
     if isinstance(timestamp, str):
         if not _timestamp_format.match(timestamp):
             raise errors.ScreenshotError(f'Invalid timestamp: {timestamp!r}')
     elif not isinstance(timestamp, (int, float)):
         raise errors.ScreenshotError(f'Invalid timestamp: {timestamp!r}')
 
+    # Check for previously created screenshot
     if not overwrite and os.path.exists(screenshot_file):
         _log.debug('Screenshot already exists: %s', screenshot_file)
         return screenshot_file
 
-    duration = utils.video.duration(video_file)
-    if duration <= utils.timestamp.parse(timestamp):
-        raise errors.ScreenshotError(
-            f'Timestamp is after video end ({utils.timestamp.pretty(duration)}): '
-            + utils.timestamp.pretty(timestamp)
-        )
+    # Ensure timestamp is within range
+    try:
+        duration = utils.video.duration(video_file)
+    except errors.ContentError as e:
+        raise errors.ScreenshotError(e)
+    else:
+        if duration <= utils.timestamp.parse(timestamp):
+            raise errors.ScreenshotError(
+                f'Timestamp is after video end ({utils.timestamp.pretty(duration)}): '
+                + utils.timestamp.pretty(timestamp)
+            )
 
+    # Make screenshot
     cmd = _make_screenshot_cmd(video_file, timestamp, screenshot_file)
     output = utils.subproc.run(cmd, ignore_errors=True, join_stderr=True)
     if not os.path.exists(screenshot_file):
