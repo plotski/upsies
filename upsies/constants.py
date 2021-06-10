@@ -29,7 +29,7 @@ def _get_option_paths(cfg, parents=()):
             paths.append('.'.join(k_parents))
     return tuple(sorted(paths))
 
-VIDEO_FILE_EXTENSIONS = ('mkv', 'mp4', 'ts', 'avi')
+VIDEO_FILE_EXTENSIONS = ('mkv', 'mp4', 'ts', 'avi', 'vob')
 """Sequence of file extensions to recognize video files"""
 
 GUESSIT_OPTIONS = {
