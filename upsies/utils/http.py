@@ -192,9 +192,9 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
         raise ValueError(f'Invalid method: {method}')
 
     if isinstance(data, (bytes, str)):
-        payload = {'content': data}
+        build_request_args = {'content': data}
     else:
-        payload = {'data': data}
+        build_request_args = {'data': data}
 
     headers = {**_default_headers, **headers}
     request = _client.build_request(
@@ -203,7 +203,7 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
         url=str(url),
         params=params,
         files=_open_files(files),
-        **payload,
+        **build_request_args,
     )
 
     if isinstance(user_agent, str):
