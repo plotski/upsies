@@ -47,7 +47,7 @@ class JobWidgetBase(abc.ABC):
                 ),
                 # Warnings
                 ConditionalContainer(
-                    filter=Condition(lambda: not self.job.is_finished and bool(self.job.warnings)),
+                    filter=Condition(lambda: bool(self.job.warnings)),
                     content=self.warnings_widget,
                 ),
                 # Errors
