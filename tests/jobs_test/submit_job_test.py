@@ -234,11 +234,19 @@ async def test_submit_calls_methods_and_callbacks_in_correct_order(job, mocker):
         call.logged_out_cb(),
     ]
 
+@pytest.mark.parametrize(
+    argnames='torrent_url, exp_output',
+    argvalues=(
+        ('http://torrent.url', ('http://torrent.url',)),
+        ('', ()),
+        (None, ()),
+    ),
+)
 @pytest.mark.asyncio
-async def test_submit_sends_upload_return_value_as_output(job):
-    job._tracker.upload.return_value = 'http://torrent.url/'
+async def test_submit_sends_upload_return_value_as_output(torrent_url, exp_output, job):
+    job._tracker.upload.return_value = torrent_url
     await job._submit()
-    assert job.output == ('http://torrent.url/',)
+    assert job.output == exp_output
 
 @pytest.mark.asyncio
 async def test_submit_sets_info_property_to_current_status(job):

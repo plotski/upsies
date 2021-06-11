@@ -127,8 +127,9 @@ class SubmitJob(JobBase):
             try:
                 self.signal.emit('uploading')
                 torrent_page_url = await self._tracker.upload(self._tracker_jobs)
-                self.send(torrent_page_url)
-                self.signal.emit('uploaded')
+                if torrent_page_url:
+                    self.send(torrent_page_url)
+                    self.signal.emit('uploaded')
             finally:
                 self.signal.emit('logging_out')
                 await self._tracker.logout()
