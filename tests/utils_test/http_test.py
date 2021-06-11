@@ -163,8 +163,9 @@ def test_Result_repr():
 
 @pytest.mark.asyncio
 async def test_request_with_invalid_url(mock_cache):
-    url = r'http://:/foo:bar'
-    with pytest.raises(errors.RequestError, match=rf"^{re.escape(url)}: Unsupported URL protocol ''$") as excinfo:
+    # The error message keeps changing, so we just make sure RequestError is raised
+    url = r'http:///baz'
+    with pytest.raises(errors.RequestError, match=(rf"^{re.escape(url)}: ")) as excinfo:
         await http._request('GET', url)
     assert excinfo.value.status_code is None
 
@@ -515,7 +516,7 @@ async def test_request_catches_HTTP_error_status(method, mock_cache, httpserver)
 @pytest.mark.asyncio
 async def test_request_catches_NetworkError(method, mock_cache):
     url = 'http://127.0.0.1:12345/foo/bar/baz'
-    with pytest.raises(errors.RequestError, match=rf'^{url}: .*Connect call failed') as excinfo:
+    with pytest.raises(errors.RequestError, match=rf'^{url}: All connection attempts failed$') as excinfo:
         await http._request(method=method, url=url)
     assert excinfo.value.status_code is None
     assert excinfo.value.headers == {}

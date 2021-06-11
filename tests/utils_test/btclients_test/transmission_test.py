@@ -46,7 +46,7 @@ def test_name(tmp_path):
 async def test_request_connection_error():
     url = 'http://localhost:12345/'
     api = transmission.TransmissionClientApi(url=url)
-    with pytest.raises(errors.TorrentError, match=f'^{re.escape(url)}: .* Connect call failed'):
+    with pytest.raises(errors.TorrentError, match=f'^{re.escape(url)}: All connection attempts failed'):
         await api._request('foo')
 
 @pytest.mark.asyncio
