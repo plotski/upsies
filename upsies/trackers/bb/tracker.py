@@ -194,7 +194,10 @@ class BbTracker(TrackerBase):
             cache=False,
             user_agent=True,
             allow_redirects=False,
-            files={'file_input': (tracker_jobs.torrent_filepath, 'application/octet-stream')},
+            files={'file_input': {
+                'file': tracker_jobs.torrent_filepath,
+                'mimetype': 'application/octet-stream',
+            }},
             data=tracker_jobs.post_data,
         )
 

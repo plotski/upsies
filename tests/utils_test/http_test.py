@@ -692,8 +692,65 @@ async def test_download_catches_OSError_when_opening_filepath(mocker, tmp_path):
         await http.download('mock url', filepath)
 
 
-def test_open_files_raises_exception_from_get_fileobj(mocker):
-    mocker.patch('upsies.utils.http._get_fileobj',
+def test_open_files_opens_files(mocker):
+    mocker.patch(
+        'upsies.utils.http._get_file_object',
+        side_effect=(
+            io.BytesIO(b'foo image'),
+            io.BytesIO(b'bar text1'),
+            io.BytesIO(b'bar text2'),
+            io.BytesIO(b'bar text3'),
+            io.BytesIO(b'bar text4'),
+        ),
+    )
+    opened_files = http._open_files({
+        'a': 'path/to/foo.jpg',
+        'b': {'file': 'path/to/bar.txt'},
+        'c': {'file': 'path/to/bar.txt', 'filename': 'baz'},
+        'd': {'file': 'path/to/bar.txt', 'mimetype': 'text/plain'},
+        'e': {'file': 'path/to/bar.txt', 'mimetype': None},
+        'f': {'file': io.BytesIO(b'in-memory data1'), 'mimetype': 'weird/type'},
+        'g': {'file': io.BytesIO(b'in-memory data2'), 'mimetype': 'weird/type', 'filename': 'kangaroo'},
+        'h': {'file': io.BytesIO(b'in-memory data3'), 'mimetype': None, 'filename': 'kangaroo'},
+        'i': {'file': io.BytesIO(b'in-memory data4'), 'filename': 'kangaroo'},
+    })
+    assert tuple(opened_files) == ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i')
+
+    def assert_opened(fieldname, filename, data, mimetype=False):
+        assert opened_files[fieldname][0] == filename
+        assert opened_files[fieldname][1].read() == data
+        if mimetype is False:
+            assert len(opened_files[fieldname]) == 2
+        else:
+            assert opened_files[fieldname][2] == mimetype
+            assert len(opened_files[fieldname]) == 3
+
+    assert_opened('a', 'foo.jpg', b'foo image')
+    assert_opened('b', 'bar.txt', b'bar text1')
+    assert_opened('c', 'baz', b'bar text2')
+    assert_opened('d', 'bar.txt', b'bar text3', 'text/plain')
+    assert_opened('e', 'bar.txt', b'bar text4', None)
+    assert_opened('f', None, b'in-memory data1', 'weird/type')
+    assert_opened('g', 'kangaroo', b'in-memory data2', 'weird/type')
+    assert_opened('h', 'kangaroo', b'in-memory data3', None)
+    assert_opened('i', 'kangaroo', b'in-memory data4')
+
+def test_open_files_catches_invalid_file_value(mocker):
+    mocker.patch('upsies.utils.http._get_file_object', return_value='mock file object')
+    with pytest.raises(RuntimeError, match=r'^Invalid "file" value in fileinfo: \[1, 2, 3\]$'):
+        http._open_files({
+            'document': {'file': [1, 2, 3]},
+        })
+
+def test_open_files_catches_invalid_fileinfo(mocker):
+    mocker.patch('upsies.utils.http._get_file_object', return_value='mock file object')
+    with pytest.raises(RuntimeError, match=r'^Invalid fileinfo: \[1, 2, 3\]$'):
+        http._open_files({
+            'document': [1, 2, 3],
+        })
+
+def test_open_files_raises_exception_from_get_file_object(mocker):
+    mocker.patch('upsies.utils.http._get_file_object',
                  side_effect=errors.RequestError('bad io'))
     with pytest.raises(errors.RequestError, match=r'^bad io$'):
         http._open_files({
@@ -701,37 +758,16 @@ def test_open_files_raises_exception_from_get_fileobj(mocker):
             'document': ('path/to/bar', 'text/plain'),
         })
 
-def test_open_files_opens_files(mocker):
-    mocker.patch(
-        'upsies.utils.http._get_fileobj',
-        side_effect=(
-            io.BytesIO(b'hello world'),
-            io.BytesIO(b'goodbye world'),
-        ),
-    )
-    opened_files = http._open_files({
-        'image': 'path/to/foo.jpg',
-        'document': ('path/to/bar', 'text/plain'),
-    })
-    assert tuple(opened_files) == ('image', 'document')
-    assert opened_files['image'][0] == 'foo.jpg'
-    assert opened_files['image'][1].read() == b'hello world'
-    assert len(opened_files['image']) == 2
-    assert opened_files['document'][0] == 'bar'
-    assert opened_files['document'][1].read() == b'goodbye world'
-    assert opened_files['document'][2] == 'text/plain'
-    assert len(opened_files['document']) == 3
 
-
-def test_get_fileobj_catches_OSError():
+def test_get_file_object_catches_OSError():
     filepath = 'path/to/foo'
     with pytest.raises(errors.RequestError, match=rf'^{filepath}: No such file or directory$'):
-        http._get_fileobj(filepath)
+        http._get_file_object(filepath)
 
-def test_get_fileobj_returns_fileobj(tmp_path):
+def test_get_file_object_returns_fileobj(tmp_path):
     filepath = tmp_path / 'foo'
     filepath.write_bytes(b'hello')
-    fileobj = http._get_fileobj(filepath)
+    fileobj = http._get_file_object(filepath)
     assert fileobj.read() == b'hello'
 
 

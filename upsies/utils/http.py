@@ -5,6 +5,7 @@ HTTP methods with caching
 import asyncio
 import collections
 import hashlib
+import io
 import json
 import os
 
@@ -260,14 +261,33 @@ def _open_files(files):
     """
     Open files for upload
 
-    :param files: Dictionary that maps field names to file paths or to 2-tuples
-        of file paths and MIME types
+    :param files: Dictionary that maps field names to file paths or
+        dictionaries. For dictionaries, these keys are used:
+
+             ``file``
+                 File path or file-like object, e.g. return value of
+                 :func:`open` or an instance of a subclass of
+                 :class:`~.io.IOBase`.
+
+             ``filename`` (optional)
+                 Name of the file that is reported to the server in the
+                 request. Defaults to :func:`~.os.path.basename` of ``file`` if
+                 ``file`` is a string, `None` otherwise.
+
+             ``mimetype`` (optional)
+                 MIME type of the file content. Guess based on ``file`` if not
+                 provided. If `None`, do not send any MIME type.
 
         Example:
 
         >>> _open_files({
         >>>     "image": "path/to/foo.jpg",
-        >>>     "document": ("path/to/bar", "text/plain"),
+        >>>     "document": {"file": "path/to/bar", "mimetype": "text/plain"},
+        >>>     "data": {
+        >>>         "file": io.IOBytes(b'binary data'),
+        >>>         "filename": "binary.data",
+        >>>         "mimetype": "application/octet-stream",
+        >>>      },
         >>> })
 
     :return: See https://www.python-httpx.org/advanced/#multipart-file-encoding
@@ -277,22 +297,31 @@ def _open_files(files):
     opened = {}
     for fieldname, fileinfo in files.items():
         if isinstance(fileinfo, str):
-            opened[fieldname] = (
-                os.path.basename(fileinfo),     # File name
-                _get_fileobj(fileinfo),         # File handle
-            )
-        elif isinstance(fileinfo, collections.abc.Sequence) and len(fileinfo) == 2:
-            opened[fieldname] = (
-                os.path.basename(fileinfo[0]),  # File name
-                _get_fileobj(fileinfo[0]),      # File handle
-                fileinfo[1],                    # MIME type
-            )
+            filename = os.path.basename(fileinfo)
+            fileobj = _get_file_object(fileinfo)
+            opened[fieldname] = (filename, fileobj)
+
+        elif isinstance(fileinfo, collections.abc.Mapping):
+            if isinstance(fileinfo['file'], str):
+                filename = fileinfo.get('filename', os.path.basename(fileinfo['file']))
+                fileobj = _get_file_object(fileinfo['file'])
+            elif isinstance(fileinfo['file'], io.IOBase):
+                filename = fileinfo.get('filename', None)
+                fileobj = fileinfo['file']
+            else:
+                raise RuntimeError(f'Invalid "file" value in fileinfo: {fileinfo["file"]!r}')
+            mimetype = fileinfo.get('mimetype', False)
+            if mimetype is False:
+                opened[fieldname] = (filename, fileobj)
+            else:
+                opened[fieldname] = (filename, fileobj, mimetype)
+
         else:
-            raise RuntimeError(f'Invalid file: {fileinfo}')
+            raise RuntimeError(f'Invalid fileinfo: {fileinfo}')
+
     return opened
 
-
-def _get_fileobj(filepath):
+def _get_file_object(filepath):
     """
     Open `filepath` and return the file object
 

@@ -203,7 +203,10 @@ class NblTracker(base.TrackerBase):
             url=upload_url,
             user_agent=True,
             allow_redirects=False,
-            files={'file_input': (metadata['torrent_filepath'], 'application/x-bittorrent')},
+            files={'file_input': {
+                'file': metadata['torrent_filepath'],
+                'mimetype': 'application/x-bittorrent',
+            }},
             data=post_data,
         )
 

@@ -451,7 +451,10 @@ async def test_upload_makes_expected_request(mocker):
         cache=False,
         user_agent=True,
         allow_redirects=False,
-        files={'file_input': (tracker_jobs_mock.torrent_filepath, 'application/octet-stream')},
+        files={'file_input': {
+            'file': tracker_jobs_mock.torrent_filepath,
+            'mimetype': 'application/octet-stream',
+        }},
         data=tracker_jobs_mock.post_data,
     )]
 
