@@ -101,6 +101,20 @@ async def test_initialize_creates_jobs_after_upload(tmp_path, tracker, tracker_j
     )
     assert logged == ['Creating jobs_after_upload']
 
+
+@pytest.mark.asyncio
+async def test_initialize_registers_to_tracker_signals(tmp_path, tracker, tracker_jobs):
+    job = SubmitJob(
+        home_directory=tmp_path,
+        cache_directory=tmp_path,
+        tracker=tracker,
+        tracker_jobs=tracker_jobs,
+    )
+    for t in (tracker, tracker_jobs):
+        assert job.warn in t.signal.signals['warning']
+        assert job.error in t.signal.signals['error']
+        assert job.exception in t.signal.signals['exception']
+
 @pytest.mark.asyncio
 async def test_initialize_starts_jobs_after_upload_on_output(tmp_path, tracker, tracker_jobs, mocker):
     type(tracker_jobs).jobs_after_upload = PropertyMock(
