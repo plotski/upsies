@@ -486,6 +486,7 @@ class TrackerBase(abc.ABC):
 
     def __init__(self, options=None):
         self._options = options or {}
+        self._signal = signal.Signal('warning', 'error', 'exception')
 
     argument_definitions = {}
     """CLI argument definitions (see :attr:`.CommandBase.argument_definitions`)"""
@@ -534,3 +535,38 @@ class TrackerBase(abc.ABC):
 
         :param TrackerJobsBase tracker_jobs: :attr:`TrackerJobs` instance
         """
+
+    @property
+    def signal(self):
+        """
+        :class:`~.signal.Signal` instance with the signals ``warning``, ``error``
+        and ``exception``
+        """
+        return self._signal
+
+    def warn(self, warning):
+        """
+        Emit ``warning`` signal (see :attr:`signal`)
+
+        Emit a warning for any non-critical issue that the user can choose to
+        ignore or fix.
+        """
+        self.signal.emit('warning', warning)
+
+    def error(self, error):
+        """
+        Emit ``error`` signal (see :attr:`signal`)
+
+        Emit an error for any critical but expected issue that can't be
+        recovered from (e.g. I/O error).
+        """
+        self.signal.emit('error', error)
+
+    def exception(self, exception):
+        """
+        Emit ``exception`` signal (see :attr:`signal`)
+
+        Emit an exception for any critical and unexpected issue that should be
+        reported as a bug.
+        """
+        self.signal.emit('exception', exception)

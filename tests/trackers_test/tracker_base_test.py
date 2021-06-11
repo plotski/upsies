@@ -1,4 +1,4 @@
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import call, Mock, PropertyMock
 
 from upsies.trackers.base import TrackerBase
 
@@ -33,3 +33,17 @@ def test_options():
 
 def test_argument_definitions():
     assert TrackerBase.argument_definitions == {}
+
+
+def test_signals():
+    tracker = make_TestTracker()
+    cb = Mock()
+    tracker.signal.register('warning', cb.warn)
+    tracker.signal.register('error', cb.error)
+    tracker.signal.register('exception', cb.exception)
+    tracker.warn('foo')
+    assert cb.mock_calls == [call.warn('foo')]
+    tracker.error('bar')
+    assert cb.mock_calls == [call.warn('foo'), call.error('bar')]
+    tracker.exception('baz')
+    assert cb.mock_calls == [call.warn('foo'), call.error('bar'), call.exception('baz')]
