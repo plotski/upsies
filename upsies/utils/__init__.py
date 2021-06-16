@@ -206,6 +206,53 @@ class MonitoredList(collections.abc.MutableSequence):
         return f'{type(self).__name__}({repr(self._list)}, callback={self._callback!r})'
 
 
+class RestrictedMapping(collections.abc.MutableMapping):
+    """
+    :class:`dict` that only accepts the keys provided when it was instantiated
+
+    >>> d = RestrictedMapping({'foo': 'bar'})
+    >>> d['foo']
+    >>> 'bar'
+    >>> d['baz']
+    >>> KeyError: 'baz'
+
+    >>> d = RestrictedMapping(allowed_keys=('foo', 'bar'), foo=1, bar=2)
+    >>> d['foo']
+    >>> 1
+    >>> d['baz']
+    >>> KeyError: 'baz'
+    """
+
+    def __init__(self, *args, allowed_keys=(), **kwargs):
+        self._allowed_keys = set(allowed_keys)
+        if len(args) == 1 and isinstance(args[0], collections.abc.Mapping):
+            self._allowed_keys.update(args[0])
+            self._dict = dict(args[0])
+        else:
+            self._dict = dict(*args, **kwargs)
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def __setitem__(self, key, value):
+        if key in self._allowed_keys:
+            self._dict[key] = value
+        else:
+           raise KeyError(key)
+
+    def __delitem__(self, key):
+        del self._dict[key]
+
+    def __iter__(self):
+        return iter(self._dict)
+
+    def __len__(self):
+        return len(self._dict)
+
+    def __repr__(self):
+        return repr(self._dict)
+
+
 def is_sequence(obj):
     """Return whether `obj` is a sequence and not a string"""
     return (isinstance(obj, collections.abc.Sequence)

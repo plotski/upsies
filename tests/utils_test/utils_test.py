@@ -149,6 +149,52 @@ def test_MonitoredList_repr():
     assert repr(lst) == f'MonitoredList([1, 2, 3], callback={cb!r})'
 
 
+def test_RestrictedMapping_init_with_defaults():
+    dct = utils.RestrictedMapping({'a': 1, 'b': 2, 'c': 3})
+    assert dct._allowed_keys == {'a', 'b', 'c'}
+    assert dct == {'a': 1, 'b': 2, 'c': 3}
+
+def test_RestrictedMapping_init_with_allowed_keys():
+    dct = utils.RestrictedMapping(allowed_keys=('a', 'b', 'c'), a=1)
+    assert dct._allowed_keys == {'a', 'b', 'c'}
+    assert dct == {'a': 1}
+
+def test_RestrictedMapping_getitem():
+    dct = utils.RestrictedMapping(allowed_keys=('a', 'b', 'c'), a=1, b=2, c=3)
+    assert dct == {'a': 1, 'b': 2, 'c': 3}
+
+def test_RestrictedMapping_setitem():
+    dct = utils.RestrictedMapping(allowed_keys=('a', 'b', 'c'))
+    dct['a'] = 'foo'
+    assert dct == {'a': 'foo'}
+    dct['b'] = 'bar'
+    assert dct == {'a': 'foo', 'b': 'bar'}
+    with pytest.raises(KeyError, match=r"^'baz'$"):
+        dct['baz'] = 'c'
+
+def test_RestrictedMapping_delitem():
+    dct = utils.RestrictedMapping(allowed_keys=('a', 'b', 'c'), a=1, b=2)
+    assert dct == {'a': 1, 'b': 2}
+    del dct['b']
+    assert dct == {'a': 1}
+    with pytest.raises(KeyError, match=r"^'c'$"):
+        del dct['c']
+    with pytest.raises(KeyError, match=r"^'baz'$"):
+        del dct['baz']
+
+def test_RestrictedMapping_iter():
+    dct = utils.RestrictedMapping(allowed_keys=('a', 'b', 'c'), a=1, b=2)
+    assert tuple(iter(dct)) == ('a', 'b')
+
+def test_RestrictedMapping_len():
+    dct = utils.RestrictedMapping(allowed_keys=('a', 'b', 'c'), a=1, b=2)
+    assert len(dct) == 2
+
+def test_RestrictedMapping_repr():
+    dct = utils.RestrictedMapping(allowed_keys=('a', 'b', 'c'), a=1, b=2)
+    assert repr(dct) == repr({'a': 1, 'b': 2})
+
+
 def test_is_sequence():
     assert utils.is_sequence((1, 2, 3))
     assert utils.is_sequence([1, 2, 3])
