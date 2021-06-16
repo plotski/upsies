@@ -76,10 +76,10 @@ def test_home_directory_property(path, exp_exception, tmp_path):
     ),
 )
 def test_cache_directory_property(path, tmp_path, mocker):
-    mocker.patch('upsies.constants.CACHE_DIRPATH', 'mock/cache/path')
+    mocker.patch('upsies.constants.CACHE_DIRPATH', tmp_path / 'cache/path')
     if not path:
         job = FooJob()
-        assert job.cache_directory == 'mock/cache/path'
+        assert job.cache_directory == tmp_path / 'cache/path'
     else:
         job = FooJob(cache_directory=tmp_path / path)
         assert job.cache_directory == tmp_path / path

@@ -445,6 +445,7 @@ def test_upload_screenshots_job_with_image_host_argument(mocker):
 
 def test_upload_screenshots_job_is_singleton(mocker):
     mocker.patch('upsies.jobs.imghost.ImageHostJob', side_effect=(Mock(), Mock()))
+    mocker.patch('upsies.jobs.screenshots.ScreenshotsJob')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
