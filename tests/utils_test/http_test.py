@@ -775,7 +775,7 @@ def test_get_file_object_returns_fileobj(tmp_path):
 def test_cache_file_without_params(method, mocker):
     mocker.patch.object(http, 'cache_directory', '/tmp/foo')
     url = 'http://localhost:123/foo/bar'
-    exp_cache_file = f'/tmp/foo/{method.upper()}.http:__localhost:123_foo_bar'
+    exp_cache_file = f'/tmp/foo/{method.upper()}.http___localhost_123_foo_bar'
     assert http._cache_file(method, url) == exp_cache_file
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
@@ -783,7 +783,7 @@ def test_cache_file_with_params(method, mocker):
     mocker.patch.object(http, 'cache_directory', '/tmp/foo')
     url = 'http://localhost:123'
     params = {'foo': 'a b c', 'bar': 12}
-    exp_cache_file = f'/tmp/foo/{method.upper()}.http:__localhost:123?foo=a+b+c&bar=12'
+    exp_cache_file = f'/tmp/foo/{method.upper()}.http___localhost_123_foo=a+b+c&bar=12'
     assert http._cache_file(method, url, params=params) == exp_cache_file
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
@@ -792,8 +792,8 @@ def test_cache_file_with_very_long_params(method, mocker):
     url = 'http://localhost:123'
     params = {'foo': 'a b c ' * 100, 'bar': 12}
     exp_cache_file = (
-        f'/tmp/foo/{method.upper()}.http:__localhost:123?'
-        f'[HASH:{http._semantic_hash(params)}]'
+        f'/tmp/foo/{method.upper()}.http___localhost_123_'
+        f'[HASH_{http._semantic_hash(params)}]'
     )
     assert http._cache_file(method, url, params=params) == exp_cache_file
 
@@ -801,7 +801,7 @@ def test_cache_file_with_very_long_params(method, mocker):
 def test_cache_file_defaults_to_CACHE_DIRPATH(method, mocker):
     mocker.patch('upsies.constants.CACHE_DIRPATH', '/tmp/bar')
     url = 'http://localhost:123'
-    exp_cache_file = f'/tmp/bar/{method.upper()}.http:__localhost:123'
+    exp_cache_file = f'/tmp/bar/{method.upper()}.http___localhost_123'
     assert http._cache_file(method, url) == exp_cache_file
 
 
