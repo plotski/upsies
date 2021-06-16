@@ -384,7 +384,7 @@ def _cache_file(method, url, params={}):
 
     return os.path.join(
         cache_directory or constants.CACHE_DIRPATH,
-        make_filename(method, url, params_str),
+        fs.sanitize_filename(make_filename(method, url, params_str)),
     )
 
 

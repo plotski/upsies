@@ -6,6 +6,17 @@ import pytest
 from upsies.utils import http
 
 
+@pytest.fixture(scope='module', autouse=True)
+def strict_filename_sanitization(module_mocker):
+    # Allow this project to be cloned on Windows.
+    def sanitize_filename(filename):
+        for c in r'<>:"/\|?*':
+            filename = filename.replace(c, '_')
+        return filename
+
+    module_mocker.patch('upsies.utils.fs.sanitize_filename', sanitize_filename)
+
+
 @pytest.fixture(scope='session')
 def data_dir():
     segments = __file__.split(os.sep)
