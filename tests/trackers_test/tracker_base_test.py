@@ -1,4 +1,4 @@
-from unittest.mock import call, Mock, PropertyMock
+from unittest.mock import Mock, PropertyMock, call
 
 from upsies.trackers.base import TrackerBase
 
