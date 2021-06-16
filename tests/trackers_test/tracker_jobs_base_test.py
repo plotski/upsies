@@ -404,6 +404,10 @@ def test_screenshots_job_is_singleton(mocker):
     assert tracker_jobs.screenshots_job is tracker_jobs.screenshots_job
 
 
+def test_image_host_config():
+    assert TrackerJobsBase.image_host_config == {}
+
+
 def test_upload_screenshots_job_without_image_host_argument(mocker):
     ImageHostJob_mock = mocker.patch('upsies.jobs.imghost.ImageHostJob')
     mocker.patch('upsies.jobs.screenshots.ScreenshotsJob')

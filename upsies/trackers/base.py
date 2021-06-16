@@ -329,6 +329,18 @@ class TrackerJobsBase(abc.ABC):
             **self.common_job_args,
         )
 
+    image_host_config = {}
+    """
+    Dictionary that maps :attr:`~.ImageHostBase.name` to keyword arguments for
+    the corresponding :class:`~.ImageHostBase` subclass
+
+    Example:
+
+    >>> image_host_config = {
+    ...     'imgbox': {'thumb_width': 100},
+    ... }
+    """
+
     @cached_property
     def upload_screenshots_job(self):
         """:class:`~.jobs.imghost.ImageHostJob` instance"""
