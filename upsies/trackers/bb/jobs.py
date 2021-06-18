@@ -180,11 +180,11 @@ class BbTrackerJobs(TrackerJobsBase):
         def condition():
             if self.release_type in release_types:
                 # Job is appropriate for release type
-                if not self.monojob_attributes:
+                if not self.isolated_jobs:
                     # No jobs where singled out via CLI arguments or other
                     # means; all appropriate jobs are enabled
                     return True
-                elif job_attr in self.monojob_attributes:
+                elif job_attr in self.isolated_jobs:
                     # This particular job was singled out by the user;
                     # all other jobs are disabled
                     return True
@@ -192,10 +192,10 @@ class BbTrackerJobs(TrackerJobsBase):
         return condition
 
     @property
-    def monojob_attributes(self):
+    def isolated_jobs(self):
         """
-        Sequence of attributes (e.g. "movie_poster_job") that were singled out by
-        the user
+        Sequence of attribute names (e.g. "movie_poster_job") that were singled out
+        by the user, e.g. with a CLI argument
         """
         if self.is_movie_release:
             if self.options.get('title', False):
@@ -1144,10 +1144,10 @@ class BbTrackerJobs(TrackerJobsBase):
     @property
     def submission_ok(self):
         """
-        `False` if :attr:`monojob_attributes` is truthy, parent implementation
+        `False` if :attr:`isolated_jobs` is truthy, parent implementation
         otherwise
         """
-        if self.monojob_attributes:
+        if self.isolated_jobs:
             return False
         else:
             return super().submission_ok

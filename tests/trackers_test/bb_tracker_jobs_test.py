@@ -323,7 +323,7 @@ async def test_jobs_before_upload(bb_tracker_jobs, mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='release_type, release_types, monojob_attributes, job_attr, exp_return_value',
+    argnames='release_type, release_types, isolated_jobs, job_attr, exp_return_value',
     argvalues=(
         (None, (ReleaseType.movie,), (), 'foo', False),
         (None, (ReleaseType.movie,), ('foo', 'bar'), 'foo', False),
@@ -336,15 +336,15 @@ async def test_jobs_before_upload(bb_tracker_jobs, mocker):
         (ReleaseType.movie, (ReleaseType.series,), ('foo', 'bar'), 'foo', False),
     ),
 )
-def test_make_job_condition(release_type, release_types, monojob_attributes, exp_return_value, job_attr, bb_tracker_jobs, mocker):
+def test_make_job_condition(release_type, release_types, isolated_jobs, exp_return_value, job_attr, bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'release_type', PropertyMock(return_value=release_type))
-    mocker.patch.object(type(bb_tracker_jobs), 'monojob_attributes', PropertyMock(return_value=monojob_attributes))
+    mocker.patch.object(type(bb_tracker_jobs), 'isolated_jobs', PropertyMock(return_value=isolated_jobs))
     return_value = bb_tracker_jobs.make_job_condition(job_attr, *release_types)()
     assert return_value == exp_return_value
 
 
 @pytest.mark.parametrize(
-    argnames='is_movie_release, is_series_release, options, exp_monojobs',
+    argnames='is_movie_release, is_series_release, options, exp_isolated_jobs',
     argvalues=(
         (False, False, {'title': True, 'description': False, 'poster': False, 'release_info': False, 'tags': False},
          ()),
@@ -372,11 +372,11 @@ def test_make_job_condition(release_type, release_types, monojob_attributes, exp
         (False, True, {}, ()),
     ),
 )
-def test_monojob_attributes(is_movie_release, is_series_release, options, exp_monojobs, bb_tracker_jobs, mocker):
+def test_isolated_jobs(is_movie_release, is_series_release, options, exp_isolated_jobs, bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=is_movie_release))
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=is_series_release))
     mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value=options))
-    assert bb_tracker_jobs.monojob_attributes == exp_monojobs
+    assert bb_tracker_jobs.isolated_jobs == exp_isolated_jobs
 
 
 def test_release_type_job(bb_tracker_jobs, mocker):
@@ -2287,17 +2287,17 @@ async def test_format_description_series_mediainfo(mediainfo, exp_text, bb_track
 
 
 @pytest.mark.parametrize(
-    argnames='monojob_attributes, parent_ok, exp_ok',
+    argnames='isolated_jobs, parent_ok, exp_ok',
     argvalues=(
         ((), 'parent value', 'parent value'),
         (('foo',), 'parent value', False),
     ),
 )
 @pytest.mark.asyncio
-async def test_submission_ok(monojob_attributes, parent_ok, exp_ok, bb_tracker_jobs, mocker):
+async def test_submission_ok(isolated_jobs, parent_ok, exp_ok, bb_tracker_jobs, mocker):
     parent_submission_ok = mocker.patch('upsies.trackers.base.TrackerJobsBase.submission_ok', new_callable=PropertyMock)
     parent_submission_ok.return_value = parent_ok
-    mocker.patch.object(type(bb_tracker_jobs), 'monojob_attributes', PropertyMock(return_value=monojob_attributes))
+    mocker.patch.object(type(bb_tracker_jobs), 'isolated_jobs', PropertyMock(return_value=isolated_jobs))
     ok = bb_tracker_jobs.submission_ok
     assert ok == exp_ok
 
