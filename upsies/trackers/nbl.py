@@ -1,5 +1,6 @@
 """
-NBL API
+Concrete :class:`~.base.TrackerConfigBase`, :class:`~.base.TrackerJobsBase`
+and :class:`~.base.TrackerBase` subclasses for NBL
 """
 
 import base64
