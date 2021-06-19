@@ -773,6 +773,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
         guessit_other = _as_list(self._guess.get('other'))
         if 'Dual Audio' in guessit_other:
             edition.append('Dual Audio')
+        if 'Open Matte' in guessit_other:
+            edition.append('Open Matte')
 
         return edition
 

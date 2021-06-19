@@ -257,6 +257,12 @@ edition_samples = (
                                                                    'source': 'Hybrid BluRay'}),
     ('The Foo Extended 2000 1080p Hybrid Uncut BluRay DTS x264-ASDF', {'edition': ['Extended', 'Uncut'],
                                                                        'source': 'Hybrid BluRay'}),
+    ('The Foo 2000 OM 1080p BluRay DTS x264-ASDF', {'edition': ['Open Matte']}),
+
+    # TODO: Enable this test when guessit supports it (likely after 3.3.1)
+    #       https://github.com/guessit-io/guessit/commit/ddf8e772d735bc80940ba3068c5014d79499a618
+    # ('The Foo 2000 Open Matte 1080p BluRay DTS x264-ASDF', {'edition': ['Open Matte']}),
+
     # TODO: Enable this test when guessit supports it.
     #       https://github.com/guessit-io/guessit/pull/697
     # ('The Foo 2000 Criterion Collection 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion'],
