@@ -1,5 +1,5 @@
 """
-BbTracker class
+Concrete :class:`~.base.TrackerBase` subclass for bB
 """
 
 import argparse

@@ -1,5 +1,5 @@
 """
-BbTrackerConfig class
+Concrete :class:`~.base.TrackerConfigBase` subclass for bB
 """
 
 import base64

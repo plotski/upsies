@@ -1,5 +1,5 @@
 """
-:class:`~.base.TrackerJobsBase` subclass
+Concrete :class:`~.base.TrackerJobsBase` subclass for bB
 """
 
 import asyncio
