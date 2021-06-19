@@ -107,9 +107,9 @@ class submit(CommandBase):
 
     def _get_imghost(self):
         imghost_name = self.tracker_options.get('image_host', None)
-        imghost_config = self.config['imghosts'][imghost_name].copy()
-        imghost_config.update(self.tracker.TrackerJobs.image_host_config.get(imghost_name, {}))
         if imghost_name:
+            imghost_config = self.config['imghosts'][imghost_name].copy()
+            imghost_config.update(self.tracker.TrackerJobs.image_host_config.get(imghost_name, {}))
             return utils.imghosts.imghost(
                 name=imghost_name,
                 **imghost_config,
