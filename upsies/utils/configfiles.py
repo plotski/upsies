@@ -5,6 +5,7 @@ Configuration files
 import collections
 import configparser
 import copy
+import os
 from os.path import exists as _path_exists
 
 from .. import errors, utils
@@ -54,12 +55,12 @@ class ConfigFiles:
         during initialization
     """
 
-    def __init__(self, defaults, **files):
+    def __init__(self, defaults, ignore_missing=False, **files):
         self._defaults = copy.deepcopy(defaults)
         self._cfg = _ConfigDict(self._defaults, types=self._build_types())
         self._files = {}  # Map section names to file paths
         for section, filepath in files.items():
-            self.read(section, filepath)
+            self.read(section, filepath, ignore_missing=ignore_missing)
 
     def _build_types(self):
         def get_type(value):
@@ -229,6 +230,8 @@ class ConfigFiles:
             sections = tuple(s.split('.')[0] for s in sections)
 
         for section in sections:
+            parentdir = os.path.dirname(self._files[section])
+            os.makedirs(parentdir, exist_ok=True)
             try:
                 with open(self._files[section], 'w') as f:
                     f.write(self._as_ini(section))

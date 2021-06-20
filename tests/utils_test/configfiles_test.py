@@ -195,8 +195,8 @@ def test_init_reads_files(mocker):
         bar='path/to/bar.ini',
     )
     assert config.read.call_args_list == [
-        call('foo', 'path/to/foo.ini'),
-        call('bar', 'path/to/bar.ini'),
+        call('foo', 'path/to/foo.ini', ignore_missing=False),
+        call('bar', 'path/to/bar.ini', ignore_missing=False),
     ]
 
 
@@ -699,11 +699,15 @@ def test__reset_option():
     ),
     ids=lambda v: str(v),
 )
-def test_write_writes_given_files(args, tmp_path):
-    file1 = tmp_path / 'file1.ini'
-    file2 = tmp_path / 'file2.ini'
-    file1.write_text('[foo]\nbar = baz\n')
-    file2.write_text('[foo]\nbar = baz\n')
+@pytest.mark.parametrize('files_exist', (False, True))
+def test_write_writes_files(files_exist, args, tmp_path):
+    file1 = tmp_path / 'subdir' / 'subsubdir' / 'file1.ini'
+    file2 = tmp_path / 'subdir' / 'subsubdir' / 'file2.ini'
+    if files_exist:
+        file1.parent.mkdir(parents=True, exist_ok=True)
+        file1.write_text('[foo]\nbar = baz\n')
+        file2.parent.mkdir(parents=True, exist_ok=True)
+        file2.write_text('[foo]\nbar = baz\n')
     config = ConfigFiles(
         defaults={
             'File_1': {'foo': {'bar': 'qux'}},
@@ -711,20 +715,32 @@ def test_write_writes_given_files(args, tmp_path):
         },
         File_1=file1,
         File_2=file2,
+        ignore_missing=True,
     )
     config['File_1.foo.bar'] = 'config written'
     config['File_2.foo.bar'] = 'config written'
     config.write(*args)
     if not args:
         files_changed = (file1, file2)
+        files_unchanged = ()
     else:
         files_changed = []
+        files_unchanged = []
         if any(arg.startswith('File_1') for arg in args):
             files_changed.append(file1)
+        else:
+            files_unchanged.append(file1)
         if any(arg.startswith('File_2') for arg in args):
             files_changed.append(file2)
+        else:
+            files_unchanged.append(file2)
     for f in files_changed:
         assert open(f).read() == '[foo]\nbar = config written\n'
+    for f in files_unchanged:
+        if files_exist:
+            assert open(f).read() != '[foo]\nbar = config written\n'
+        else:
+            assert not os.path.exists(f)
 
 @pytest.mark.parametrize(argnames='arg', argvalues=('main', 'main.foo'))
 def test_write_extracts_section_from_argument(arg, tmp_path):
