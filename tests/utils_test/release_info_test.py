@@ -257,6 +257,7 @@ edition_samples = (
                                                                    'source': 'Hybrid BluRay'}),
     ('The Foo Extended 2000 1080p Hybrid Uncut BluRay DTS x264-ASDF', {'edition': ['Extended', 'Uncut'],
                                                                        'source': 'Hybrid BluRay'}),
+    ('The Foo 2000 OAR 1080p BluRay DTS x264-ASDF', {'edition': ['OAR']}),
     ('The Foo 2000 OM 1080p BluRay DTS x264-ASDF', {'edition': ['Open Matte']}),
 
     # TODO: Enable this test when guessit supports it (likely after 3.3.1)
@@ -324,22 +325,24 @@ def test_extended_source(source, exp_source):
 
 
 service_samples = (
-    ('NF', 'NF'), ('Netflix', 'NF'),
-    ('AMZN', 'AMZN'), ('Amazon', 'AMZN'),
-    ('APTV', 'APTV'),
-    ('BBC', 'BBC'),
-    ('HBO', 'HBO'),
-    ('HMAX', 'HMAX'),
-    ('HULU', 'HULU'), ('Hulu', 'HULU'),
-    ('iT', 'iT'), ('iTunes', 'iT'),
-    ('VUDU', 'VUDU'),
-    ('CRKL', 'CRKL'),
+    ('NF', 'NF', []), ('Netflix', 'NF', []),
+    ('AMZN', 'AMZN', []), ('Amazon', 'AMZN', []),
+    ('APTV', 'APTV', []),
+    ('BBC', 'BBC', []),
+    ('HBO', 'HBO', []),
+    ('HMAX', 'HMAX', []),
+    ('HULU', 'HULU', []), ('Hulu', 'HULU', []),
+    ('iT', 'iT', []), ('iTunes', 'iT', []),
+    ('VUDU', 'VUDU', []),
+    ('CRKL', 'CRKL', []),
+    # Not streaming services
+    ('OAR', '', ['OAR']),
 )
-@pytest.mark.parametrize('service, service_abbrev', service_samples)
-def test_service_is_abbreviated(service, service_abbrev):
+@pytest.mark.parametrize('service, service_abbrev, edition', service_samples)
+def test_service_is_abbreviated(service, service_abbrev, edition):
     release_name = f'The Foo S10 1080p {service} WEB-DL AAC H.264-ASDF'
     expected = {'type': ReleaseType.season, 'title': 'The Foo', 'year': '', 'episodes': {'10': ()},
-                'resolution': '1080p', 'service': service_abbrev, 'source': 'WEB-DL',
+                'edition': edition, 'resolution': '1080p', 'service': service_abbrev, 'source': 'WEB-DL',
                 'audio_codec': 'AAC', 'audio_channels': '', 'video_codec': 'H.264', 'group': 'ASDF'}
     assert_info(release_name, **expected)
 

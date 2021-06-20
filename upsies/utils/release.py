@@ -775,6 +775,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
             edition.append('Dual Audio')
         if 'Open Matte' in guessit_other:
             edition.append('Open Matte')
+        if 'Original Aspect Ratio' in guessit_other:
+            edition.append('OAR')
 
         return edition
 
@@ -784,6 +786,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
     _streaming_service_regex = re.compile(r'[ \.]([A-Z]+)[ \.](?i:WEB-?(?:DL|Rip))(?:[ \.]|$)')
     _streaming_service_translation = {
         re.compile(r'(?i:IT)') : 'iT',
+        # Not a streaming service
+        re.compile(r'OAR') : '',  # Original Aspect Ratio
     }
 
     def _get_service(self):
@@ -812,7 +816,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         # Default to manual detection
         match = self._streaming_service_regex.search(self.release_name_params)
         if match:
-            return match.group(1)
+            return translate(match.group(1))
 
         return ''
 
