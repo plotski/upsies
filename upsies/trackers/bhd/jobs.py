@@ -377,8 +377,9 @@ class BhdTrackerJobs(TrackerJobsBase):
     # TODO
     # @property
     # def post_data_region(self):
-    #     # The region in which the disc was released. Only for discs! (AUS, CAN,
-    #     # CEE, CHN, ESP, EUR, FRA, GBR, GCommentary, 2in1, Hybrid, OpenMatte,
+    #     # The region in which the disc was released. Only for discs! (AUS,
+    #     # CAN, CEE, CHN, ESP, EUR, FRA, GBR, GER, HKG, ITA, JPN, KOR, NOR,
+    #     # NLD, RUS, TWN or USA)
 
     @property
     def torrent_filepath(self):
