@@ -193,11 +193,16 @@ def test_prune_empty_prunes_empty_files(tmp_path):
     (tmp_path / 'bar' / 'y' / 'z' / '1' / 'c').write_text('yes, this is c')
     (tmp_path / 'bar' / 'y' / 'z' / '1' / 'also_empty').write_text('')
     (tmp_path / 'bar' / 'y' / 'z' / '2').mkdir(parents=True)
+    (tmp_path / 'bar' / 'y' / 'z' / 'symlink_to_empty_directory').symlink_to('../../../foo/a/1')
+    (tmp_path / 'bar' / 'y' / 'z' / 'symlink_to_nonempty_directory').symlink_to('../../../foo/')
+    (tmp_path / 'bar' / 'y' / 'z' / 'symlink_to_empty_file').symlink_to('../../../foo/empty')
+    (tmp_path / 'bar' / 'y' / 'z' / 'symlink_to_nonempty_file').symlink_to('../../../foo/b')
     (tmp_path / 'baz').mkdir(parents=True)
     (tmp_path / 'foo' / 'a' / '1').mkdir(parents=True)
     (tmp_path / 'foo' / 'a' / '2').mkdir(parents=True)
     (tmp_path / 'foo' / 'b').write_text('yes, this is b')
     (tmp_path / 'foo' / 'empty').write_text('')
+    (tmp_path / 'dead_symlink').symlink_to('nothing')
     fs.prune_empty(tmp_path, files=True, directories=False)
     assert os.path.exists(tmp_path)
     assert os.path.isdir(tmp_path)
@@ -215,6 +220,9 @@ def test_prune_empty_prunes_empty_files(tmp_path):
         f'{tmp_path}/bar/y/z/1',
         f'{tmp_path}/bar/y/z/1/c',
         f'{tmp_path}/bar/y/z/2',
+        f'{tmp_path}/bar/y/z/symlink_to_empty_directory',
+        f'{tmp_path}/bar/y/z/symlink_to_nonempty_directory',
+        f'{tmp_path}/bar/y/z/symlink_to_nonempty_file',
         f'{tmp_path}/baz',
         f'{tmp_path}/foo',
         f'{tmp_path}/foo/a',
@@ -229,11 +237,16 @@ def test_prune_empty_prunes_empty_directories(tmp_path):
     (tmp_path / 'bar' / 'y' / 'z' / '1' / 'c').write_text('yes, this is c')
     (tmp_path / 'bar' / 'y' / 'z' / '1' / 'empty').write_text('')
     (tmp_path / 'bar' / 'y' / 'z' / '2').mkdir(parents=True)
+    (tmp_path / 'bar' / 'y' / 'z' / 'symlink_to_empty_directory').symlink_to('../../../foo/a/1')
+    (tmp_path / 'bar' / 'y' / 'z' / 'symlink_to_nonempty_directory').symlink_to('../../../foo/')
+    (tmp_path / 'bar' / 'y' / 'z' / 'symlink_to_empty_file').symlink_to('1/empty')
+    (tmp_path / 'bar' / 'y' / 'z' / 'symlink_to_nonempty_file').symlink_to('../../../foo/b')
     (tmp_path / 'baz').mkdir(parents=True)
     (tmp_path / 'foo' / 'a' / '1').mkdir(parents=True)
     (tmp_path / 'foo' / 'a' / '2').mkdir(parents=True)
     (tmp_path / 'foo' / 'b').write_text('yes, this is b')
     (tmp_path / 'foo' / 'also_empty').write_text('')
+    (tmp_path / 'dead_symlink').symlink_to('nothing')
     fs.prune_empty(tmp_path, files=False, directories=True)
     assert os.path.exists(tmp_path)
     assert os.path.isdir(tmp_path)
@@ -250,6 +263,9 @@ def test_prune_empty_prunes_empty_directories(tmp_path):
         f'{tmp_path}/bar/y/z/1',
         f'{tmp_path}/bar/y/z/1/c',
         f'{tmp_path}/bar/y/z/1/empty',
+        f'{tmp_path}/bar/y/z/symlink_to_empty_file',
+        f'{tmp_path}/bar/y/z/symlink_to_nonempty_directory',
+        f'{tmp_path}/bar/y/z/symlink_to_nonempty_file',
         f'{tmp_path}/foo',
         f'{tmp_path}/foo/also_empty',
         f'{tmp_path}/foo/b',

@@ -112,6 +112,8 @@ def prune_empty(path, files=False, directories=True):
     :param bool files: Whether to prune empty files
     :param bool directories: Whether to prune empty directories
 
+    Dead symbolic links are removed after pruning files and directories.
+
     If `path` is not a directory, do nothing.
     """
     if not os.path.isdir(path):
@@ -123,17 +125,20 @@ def prune_empty(path, files=False, directories=True):
         else:
             raise RuntimeError(f'{path}: Failed to prune: {e}')
 
-    for dirpath, dirnames, filenames in os.walk(path, topdown=False):
-        if files:
+    # Prune empty files
+    if files:
+        for dirpath, dirnames, filenames in os.walk(path, topdown=False):
             for filename in filenames:
                 filepath = os.path.join(dirpath, filename)
                 try:
-                    if file_size(filepath) <= 0:
+                    if os.path.exists(filepath) and file_size(filepath) <= 0:
                         os.unlink(filepath)
                 except OSError as e:
                     raise_error(e, filepath)
 
-        if directories:
+    # Prune empty directories
+    if directories:
+        for dirpath, dirnames, filenames in os.walk(path, topdown=False):
             for dirname in dirnames:
                 subdirpath = os.path.join(dirpath, dirname)
                 try:
@@ -141,6 +146,17 @@ def prune_empty(path, files=False, directories=True):
                         os.rmdir(subdirpath)
                 except OSError as e:
                     raise_error(e, subdirpath)
+
+    # Prune dead links
+    for dirpath, dirnames, filenames in os.walk(path, topdown=False):
+        for filename in filenames:
+            filepath = os.path.join(dirpath, filename)
+            try:
+                if os.path.islink(filepath):
+                    if not os.path.exists(filepath):
+                        os.unlink(filepath)
+            except OSError as e:
+                raise_error(e, filepath)
 
     try:
         if directories and not os.listdir(path):
