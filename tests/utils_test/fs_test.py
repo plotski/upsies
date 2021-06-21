@@ -101,6 +101,11 @@ def test_limit_directory_size(tmp_path):
             (tmp_path / dirname1 / dirname2 / 'y').write_text('_' * 100)
             (tmp_path / dirname1 / dirname2 / 'empty_file').write_text('')
             (tmp_path / dirname1 / dirname2 / 'empty_dir').mkdir()
+            (tmp_path / dirname1 / dirname2 / 'symlink_to_empty_file').symlink_to('empty_file')
+            (tmp_path / dirname1 / dirname2 / 'symlink_to_nonempty_file').symlink_to('y')
+            (tmp_path / dirname1 / dirname2 / 'symlink_to_empty_dir').symlink_to('empty_dir')
+            (tmp_path / dirname1 / dirname2 / 'symlink_to_nonempty_dir').symlink_to('..')
+            (tmp_path / dirname1 / dirname2 / 'dead_symlink').symlink_to('the void')
         (tmp_path / dirname1 / 'z').write_text('_' * 1000)
         (tmp_path / dirname1 / 'empty_file').write_text('')
         (tmp_path / dirname1 / 'empty_dir').mkdir()
@@ -124,23 +129,34 @@ def test_limit_directory_size(tmp_path):
     (tmp_path / 'c' / 'too_young').write_text('y')
     os.utime(tmp_path / 'c' / 'too_young', (now - min_age + 1, now - min_age + 1))
 
+    def get_stat(path):
+        return os.stat(path, follow_symlinks=False)
+
+    def get_size(path):
+        if os.path.islink(path):
+            return 0
+        try:
+            return os.path.getsize(path)
+        except OSError as e:
+            return 0
+
+    def get_total_size():
+        return sum(get_size(f) for f in get_files())
+
     def get_files():
         return sorted(
             (
                 os.path.join(dirpath, filename)
                 for dirpath, dirnames, filenames in os.walk(tmp_path)
                 for filename in filenames
-                if os.path.getsize(os.path.join(dirpath, filename))
+                if get_size(os.path.join(dirpath, filename))
             ),
-            key=lambda filepath: os.stat(filepath).st_atime,
+            key=lambda filepath: get_stat(filepath).st_atime,
         )
 
-    def get_total_size():
-        return sum(os.path.getsize(f) for f in get_files())
-
     def print_current_files():
-        for f in sorted(get_files(), key=lambda f: os.stat(f).st_atime):
-            print(f'{f:<72}', 'age:', round(now - os.stat(f).st_atime), 'size:', os.path.getsize(f))
+        for f in sorted(get_files(), key=lambda f: get_stat(f).st_atime):
+            print(f'{f:<72}', 'age:', round(now - get_stat(f).st_atime), 'size:', get_size(f))
         print(' ' * 75, 'total size:', get_total_size())
 
     orig_files = get_files()

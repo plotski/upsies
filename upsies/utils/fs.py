@@ -80,11 +80,11 @@ def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
     """
     def size(filepaths):
         return sum(file_size(f) for f in filepaths
-                   if os.path.exists(f))
+                   if os.path.exists(f) and not os.path.islink(f))
 
     # This should return mtime if file system was mounted with noatime.
     def atime(filepath):
-        statinfo = os.stat(filepath)
+        statinfo = os.stat(filepath, follow_symlinks=False)
         return statinfo.st_atime
 
     # Remove oldest file until `path` size is small enough
@@ -142,7 +142,7 @@ def prune_empty(path, files=False, directories=True):
             for dirname in dirnames:
                 subdirpath = os.path.join(dirpath, dirname)
                 try:
-                    if not os.listdir(subdirpath):
+                    if not os.path.islink(subdirpath) and not os.listdir(subdirpath):
                         os.rmdir(subdirpath)
                 except OSError as e:
                     raise_error(e, subdirpath)
