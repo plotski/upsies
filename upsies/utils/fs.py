@@ -303,7 +303,7 @@ def file_list(path, extensions=(), min_age=None, max_age=None):
         return not extensions or file_extension(filename).casefold() in extensions
 
     def age_ok(filepath, now=time.time()):
-        statinfo = os.stat(filepath)
+        statinfo = os.stat(filepath, follow_symlinks=False)
         age = round(now - statinfo.st_atime)
         return (min_age or age) <= age <= (max_age or age)
 

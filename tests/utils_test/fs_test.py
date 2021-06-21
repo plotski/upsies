@@ -394,11 +394,15 @@ def test_file_list_recurses_into_subdirectories(tmp_path):
     (tmp_path / 'a' / 'b' / 'b.txt').write_bytes(b'foo')
     (tmp_path / 'a' / 'b' / 'c').mkdir()
     (tmp_path / 'a' / 'b' / 'c' / 'c.txt').write_bytes(b'foo')
+    (tmp_path / 'a' / 'b' / 'dead_symlink').symlink_to('not that')
+    (tmp_path / 'a' / 'b' / 'symlink').symlink_to('c/c.txt')
     assert fs.file_list(tmp_path) == (
         str((tmp_path / 'a.txt')),
         str((tmp_path / 'a' / 'b.txt')),
         str((tmp_path / 'a' / 'b' / 'b.txt')),
         str((tmp_path / 'a' / 'b' / 'c' / 'c.txt')),
+        str((tmp_path / 'a' / 'b' / 'dead_symlink')),
+        str((tmp_path / 'a' / 'b' / 'symlink')),
     )
 
 def test_file_list_sorts_files_naturally(tmp_path):
