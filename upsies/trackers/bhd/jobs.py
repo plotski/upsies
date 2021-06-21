@@ -388,4 +388,4 @@ class BhdTrackerJobs(TrackerJobsBase):
     @property
     def mediainfo_filehandle(self):
         mediainfo = self.get_job_output(self.mediainfo_job, slice=0)
-        return io.StringIO(mediainfo)
+        return io.BytesIO(bytes(mediainfo, 'utf-8'))

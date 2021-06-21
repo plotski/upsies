@@ -707,4 +707,4 @@ def test_mediainfo_filehandle(bhd_tracker_jobs, mocker):
     mocker.patch.object(type(bhd_tracker_jobs), 'mediainfo_job', PropertyMock(return_value=Mock(
         output=('mock mediainfo',),
     )))
-    assert bhd_tracker_jobs.mediainfo_filehandle.read() == 'mock mediainfo'
+    assert bhd_tracker_jobs.mediainfo_filehandle.read() == b'mock mediainfo'
