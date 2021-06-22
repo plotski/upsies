@@ -44,7 +44,7 @@ async def test_handle_input_call_order(make_CopyTorrentJob, mocker, tmp_path):
     ]
 
 @pytest.mark.asyncio
-async def test_handle_input_reports_nonexisting_file(make_CopyTorrentJob, mocker):
+async def test_handle_input_reports_nonexisting_file(make_CopyTorrentJob, mocker, tmp_path):
     job = make_CopyTorrentJob(destination='foo')
 
     mocks = Mock()
@@ -53,9 +53,9 @@ async def test_handle_input_reports_nonexisting_file(make_CopyTorrentJob, mocker
     copy2_mock = mocker.patch('shutil.copy2')
     mocks.attach_mock(copy2_mock, 'copy2')
 
-    await job.handle_input('foo')
+    await job.handle_input(tmp_path / 'foo')
     assert job.output == ()
-    assert job.errors == ('foo: No such file',)
+    assert job.errors == (f'{tmp_path / "foo"}: No such file',)
     assert mocks.mock_calls == []
 
 @pytest.mark.asyncio
