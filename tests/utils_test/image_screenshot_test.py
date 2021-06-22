@@ -22,6 +22,23 @@ def test_ffmpeg_executable(os, exp_executable, mocker):
     assert image._ffmpeg_executable() == exp_executable
 
 
+@pytest.mark.parametrize(
+    argnames='video_file, timestamp, screenshot_file, exp_args',
+    argvalues=(
+        ('video.mkv', '123', 'out.png',
+         ('-y', '-loglevel', 'level+error', '-ss', '123', '-i', 'video.mkv',
+          '-vframes', '1', '-vf', 'scale=trunc(ih*dar):ih,setsar=1/1', 'file:out.png')),
+        ('video.mkv', '123', '100%.png',
+         ('-y', '-loglevel', 'level+error', '-ss', '123', '-i', 'video.mkv',
+          '-vframes', '1', '-vf', 'scale=trunc(ih*dar):ih,setsar=1/1', 'file:100%%.png')),
+    ),
+    ids=lambda v: str(v),
+)
+def test_make_screenshot_cmd(video_file, timestamp, screenshot_file, exp_args):
+    cmd = image._make_screenshot_cmd(video_file, timestamp, screenshot_file)
+    assert cmd == (image._ffmpeg_executable(),) + exp_args
+
+
 @patch('upsies.utils.fs.assert_file_readable')
 @patch('upsies.utils.subproc.run')
 def test_nonexisting_video_file(run_mock, assert_file_readable_mock):

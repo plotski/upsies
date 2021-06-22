@@ -7,11 +7,19 @@ from upsies import errors
 from upsies.utils import image
 
 
-def test_make_resize_cmd():
-    cmd = image._make_resize_cmd('a.jpg', '10:20', 'b.jpg')
-    # Ignore ffmpeg executable
-    assert cmd[1:] == ('-y', '-loglevel', 'level+error', '-i', 'file:a.jpg',
-                       '-vf', 'scale=10:20', 'file:b.jpg')
+@pytest.mark.parametrize(
+    argnames='image_file, dimensions, resized_file, exp_args',
+    argvalues=(
+        ('a.png', '10:20', 'out.jpg',
+         ('-y', '-loglevel', 'level+error', '-i', 'file:a.png', '-vf', 'scale=10:20', 'file:out.jpg')),
+        ('a.png', '10:20', 'out_%f.jpg',
+         ('-y', '-loglevel', 'level+error', '-i', 'file:a.png', '-vf', 'scale=10:20', 'file:out_%%f.jpg')),
+    ),
+    ids=lambda v: str(v),
+)
+def test_make_resize_cmd(image_file, dimensions, resized_file, exp_args):
+    cmd = image._make_resize_cmd(image_file, dimensions, resized_file)
+    assert cmd == (image._ffmpeg_executable(),) + exp_args
 
 
 def test_resize_with_unreadable_file(mocker):
