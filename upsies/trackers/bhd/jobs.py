@@ -232,12 +232,12 @@ class BhdTrackerJobs(TrackerJobsBase):
         screenshot_groups = as_groups(
             self.upload_screenshots_job.uploaded_images,
             group_sizes=(2, 3),
-            default='MISSING SCREENSHOT',
+            default='PLACEHOLDER',
         )
         for screenshots in screenshot_groups:
             cells = []
             for screenshot in screenshots:
-                if screenshot != 'MISSING SCREENSHOT':
+                if screenshot != 'PLACEHOLDER':
                     cells.append(f'[url={screenshot}][img]{screenshot.thumbnail_url}[/img][/url]')
             # Space between columns
             rows.append(' '.join(cells))
