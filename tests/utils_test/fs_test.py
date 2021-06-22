@@ -137,7 +137,7 @@ def test_limit_directory_size(tmp_path):
             return 0
         try:
             return os.path.getsize(path)
-        except OSError as e:
+        except OSError:
             return 0
 
     def get_total_size():
