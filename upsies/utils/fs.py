@@ -249,11 +249,11 @@ def file_extension(path):
     :return: file extension
     :rtype: str
     """
-    path = str(path)
-    if '.' in path:
-        return re.sub(r'^.*\.([a-zA-Z0-9]{1,3})$', r'\1', path).lower()
-    else:
-        return ''
+    filename = os.path.basename(path)
+    match = re.search(r'\.([a-zA-Z0-9]{1,3})$', filename)
+    if match:
+        return match.group(1).lower()
+    return ''
 
 def strip_extension(path, only=()):
     """

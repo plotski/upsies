@@ -381,11 +381,20 @@ def test_sanitize_path_on_windows(mocker):
     assert fs.sanitize_filename('foo<bar>baz :a"b/c \\1|2?3*4.txt') == 'foo_bar_baz _a_b_c _1_2_3_4.txt'
 
 
-def test_file_extension():
-    assert fs.file_extension('Something.x264-GRP.mkv') == 'mkv'
-    assert fs.file_extension('Something.x264-GRP.mp4') == 'mp4'
-    assert fs.file_extension('Something') == ''
-    assert fs.file_extension(Path('some/path') / 'to' / 'file.mkv') == 'mkv'
+@pytest.mark.parametrize(
+    argnames='path, exp_extension',
+    argvalues=(
+        ('path/to/Something.x264-GRP.mkv', 'mkv'),
+        ('path/to/Something.x264-GRP.MKV', 'mkv'),
+        ('path/to/Something.x264-GRP.mp4', 'mp4'),
+        ('path/to/Something.x264-GRP.Mp4', 'mp4'),
+        ('path/to/Something.x264-GRP.MP4', 'mp4'),
+        ('path/to/Something.x264-GRP', ''),
+        (Path('some/path') / 'to' / 'file.mkv', 'mkv'),
+    ),
+)
+def test_file_extension(path, exp_extension):
+    assert fs.file_extension(path) == exp_extension
 
 def test_strip_extension():
     assert fs.strip_extension('Something.x264-GRP.mkv') == 'Something.x264-GRP'
