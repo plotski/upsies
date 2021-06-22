@@ -1,3 +1,9 @@
+2021.06.22
+  * BHD: Fix autodetection of "Commentary" and "DualAudio" tags
+  * BHD: Fix "Too much data for declared Content-Length" when submitting
+    non-ASCII characters in mediainfo
+
+
 2021.06.20.1
   * Fix "No such file or directory" when ~/.config/upsies doesn't exist
 
