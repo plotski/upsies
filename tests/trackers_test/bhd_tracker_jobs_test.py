@@ -91,33 +91,50 @@ def test_guessed_release_name(bhd_tracker_jobs, mocker):
     assert ReleaseName_mock.call_args_list == [call(bhd_tracker_jobs.content_path)]
 
 
+@pytest.mark.parametrize('link_already_exists', (True, False))
 @pytest.mark.parametrize(
-    argnames='release_name_job_is_finished, release_name_job_output, approved_release_name',
+    argnames='content_path',
     argvalues=(
-        # (True, ('something',), 'Approved Release Name'),
-        (True, ('',), None),
-        (False, ('something',), None),
-        (False, ('',), None),
+        'relative/path/to/Foo.2000.1080p.BluRay.x264-ASDF',
+        'relative/path/to/Foo.2000.1080p.BluRay.x264-ASDF.mkv',
+        '/absolute/path/to/Foo.2000.1080p.BluRay.x264-ASDF',
+        '/absolute/path/to/Foo.2000.1080p.BluRay.x264-ASDF.mkv',
     ),
 )
-def test_approved_release_name(release_name_job_is_finished, release_name_job_output, approved_release_name,
-                               bhd_tracker_jobs, mocker):
-    mocker.patch.object(bhd_tracker_jobs, 'release_name_job', Mock(
-        is_finished=release_name_job_is_finished,
-        output=release_name_job_output,
-    ))
+@pytest.mark.parametrize(
+    argnames='release_name_job',
+    argvalues=(
+        Mock(is_finished=True, output=('Approved Release Name',), home_directory='release_name_job/home'),
+        Mock(is_finished=False, output=('Approved Release Name',), home_directory='release_name_job/home'),
+        Mock(is_finished=True, output=(), home_directory='release_name_job/home'),
+        Mock(is_finished=False, output=(), home_directory='release_name_job/home'),
+    ),
+)
+def test_approved_release_name(release_name_job, content_path, link_already_exists, bhd_tracker_jobs, mocker):
+    approved_release_name = release_name_job.output[0] if release_name_job.output else None
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name_job', PropertyMock(return_value=release_name_job))
+    mocker.patch.object(type(bhd_tracker_jobs), 'content_path', PropertyMock(return_value=content_path))
     ReleaseName_mock = mocker.patch('upsies.utils.release.ReleaseName', return_value=approved_release_name)
-    mocker.patch.object(bhd_tracker_jobs, 'get_job_output', return_value='Mocked Release Name')
-    if release_name_job_is_finished:
+    symlink_mock = mocker.patch('os.symlink')
+
+    if release_name_job.is_finished and release_name_job.output:
+        exp_link_path = os.path.join(release_name_job.home_directory, approved_release_name)
+        if bhd_tracker_jobs.content_path.endswith('.mkv'):
+            exp_link_path += '.mkv'
+        mocker.patch('os.path.exists', return_value=link_already_exists)
+
         assert bhd_tracker_jobs.approved_release_name == approved_release_name
-        assert bhd_tracker_jobs.get_job_output.call_args_list == [call(
-            bhd_tracker_jobs.release_name_job,
-            slice=0,
-        )]
-        assert ReleaseName_mock.call_args_list == [call(bhd_tracker_jobs.get_job_output.return_value)]
+        assert bhd_tracker_jobs.approved_release_name == approved_release_name
+        if link_already_exists:
+            assert symlink_mock.call_args_list == []
+        else:
+            assert symlink_mock.call_args_list == [call(os.path.abspath(bhd_tracker_jobs.content_path), exp_link_path)]
+        assert ReleaseName_mock.call_args_list == [call(exp_link_path)]
+
     else:
         assert bhd_tracker_jobs.approved_release_name is None
-        assert bhd_tracker_jobs.get_job_output.call_args_list == []
+        assert bhd_tracker_jobs.approved_release_name is None
+        assert symlink_mock.call_args_list == []
         assert ReleaseName_mock.call_args_list == []
 
 

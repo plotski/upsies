@@ -6,7 +6,7 @@ import io
 import os
 
 from ... import jobs
-from ...utils import as_groups, cached_property, release
+from ...utils import as_groups, cached_property, fs, release
 from ..base import TrackerJobsBase
 
 import logging  # isort:skip
@@ -18,11 +18,19 @@ class BhdTrackerJobs(TrackerJobsBase):
     def guessed_release_name(self):
         return release.ReleaseName(self.content_path)
 
-    @cached_property
+    @property
     def approved_release_name(self):
         if self.release_name_job.is_finished and self.release_name_job.output:
-            release_name = self.get_job_output(self.release_name_job, slice=0)
-            return release.ReleaseName(release_name)
+            if not hasattr(self, '_approved_release_name'):
+                release_name = self.get_job_output(self.release_name_job, slice=0)
+                link_path = os.path.join(self.release_name_job.home_directory, release_name)
+                file_extension = fs.file_extension(self.content_path)
+                if file_extension:
+                    link_path += f'.{file_extension}'
+                if not os.path.exists(link_path):
+                    os.symlink(os.path.abspath(self.content_path), link_path)
+                self._approved_release_name = release.ReleaseName(link_path)
+            return self._approved_release_name
 
     movie_types = (release.ReleaseType.movie,)
     series_types = (release.ReleaseType.season, release.ReleaseType.episode)
