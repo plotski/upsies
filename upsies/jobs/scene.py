@@ -134,12 +134,10 @@ class SceneCheckJob(JobBase):
             self.signal.emit('ask_is_scene_release', types.SceneCheckResult.unknown)
         except errors.SceneError as e:
             self.error(e)
-        except BaseException as e:
-            self.exception(e)
 
     def execute(self):
         """Start asynchronous background worker task"""
-        asyncio.ensure_future(
+        self.add_task(
             self._catch_errors(
                 self._find_release_name()
             )
@@ -186,7 +184,7 @@ class SceneCheckJob(JobBase):
         """
         _log.debug('User selected release name: %r', release_name)
         if release_name:
-            asyncio.ensure_future(
+            self.add_task(
                 self._catch_errors(
                     self._verify_release(release_name)
                 )

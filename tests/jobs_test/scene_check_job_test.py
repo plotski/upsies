@@ -38,12 +38,11 @@ def test_cache_id(make_SceneCheckJob):
     argvalues=(
         (None, None, None, None),
         (errors.SceneError, 'Foo', None, None),
-        (TypeError, 'Foo', TypeError, 'Foo'),
     ),
     ids=lambda v: str(v),
 )
 @pytest.mark.asyncio
-async def test_catch_errors(exc, msg, exp_exc, exp_msg, make_SceneCheckJob, mocker):
+async def test_catch_errors_reports_SceneError(exc, msg, exp_exc, exp_msg, make_SceneCheckJob, mocker):
     async def coro():
         if exc:
             raise exc(msg)
@@ -81,8 +80,7 @@ async def test_execute(make_SceneCheckJob, mocker):
     mocker.patch('upsies.jobs.scene.SceneCheckJob._find_release_name', AsyncMock())
     job = make_SceneCheckJob()
     job.execute()
-    asyncio.get_event_loop().call_soon(job.finish)
-    await job.wait()
+    await job.await_tasks()
     assert job._find_release_name.call_args_list == [call()]
 
 
@@ -203,8 +201,7 @@ async def test_user_selected_release_name_with_release_name(make_SceneCheckJob, 
     mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result', Mock())
     job = make_SceneCheckJob()
     job.user_selected_release_name('mock.release.name')
-    asyncio.get_event_loop().call_soon(job.finish)
-    await job.wait()
+    await job.await_tasks()
     assert job._verify_release.call_args_list == [call('mock.release.name')]
     assert job._handle_scene_check_result.call_args_list == []
 
@@ -214,8 +211,7 @@ async def test_user_selected_release_name_without_release_name(make_SceneCheckJo
     mocker.patch('upsies.jobs.scene.SceneCheckJob._handle_scene_check_result', Mock())
     job = make_SceneCheckJob()
     job.user_selected_release_name(None)
-    asyncio.get_event_loop().call_soon(job.finish)
-    await job.wait()
+    await job.await_tasks()
     assert job._verify_release.call_args_list == []
     assert job._handle_scene_check_result.call_args_list == [call(SceneCheckResult.false)]
 
@@ -315,10 +311,13 @@ def test_finalize(is_scene_release, exp_msg, make_SceneCheckJob, mocker):
     ),
     ids=lambda v: str(v),
 )
-def test_is_scene_release_property_is_replayed_from_cache(is_scene_release, make_SceneCheckJob, mocker):
+@pytest.mark.asyncio
+async def test_is_scene_release_property_is_replayed_from_cache(is_scene_release, make_SceneCheckJob, mocker):
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._find_release_name', AsyncMock())
     job = make_SceneCheckJob(ignore_cache=False)
     assert job.is_scene_release is None
     job.start()
+    await job.await_tasks()
     job.finalize(is_scene_release)  # Cache is_scene_release
     assert job.is_scene_release is is_scene_release
 
