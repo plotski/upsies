@@ -468,7 +468,9 @@ class _ImdbSearchResult(common.SearchResult):
 
         tags = soup.find_all(class_='text-muted')
         if len(tags) >= 3:
-            summary = (tags[2].string or '').strip()
+            strings = tuple(tags[2].strings)
+            if strings and 'Add a Plot' not in strings:
+                summary = (''.join(strings) or '').strip()
 
         # Look for "See full summary" link. Preceding text is summary.
         if not summary:
