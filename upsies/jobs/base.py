@@ -419,7 +419,10 @@ class JobBase(abc.ABC):
                 self.exception(e)
             else:
                 if callback:
-                    callback(result)
+                    try:
+                        callback(result)
+                    except BaseException as e:
+                        self.exception(e)
                 return result
             finally:
                 if finish_when_done:

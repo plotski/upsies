@@ -491,7 +491,7 @@ async def test_added_task_passes_return_value_to_callback(job, mocker):
     assert callback.call_args_list == [call('foo')]
 
 @pytest.mark.asyncio
-async def test_added_task_catches_exceptions(job, mocker):
+async def test_added_task_catches_exceptions_from_coro(job, mocker):
     job.start()
     callback = Mock()
     coro = AsyncMock(side_effect=TypeError('foo'))
@@ -501,6 +501,18 @@ async def test_added_task_catches_exceptions(job, mocker):
     assert isinstance(job.raised, TypeError)
     assert str(job.raised) == 'foo'
     assert callback.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_added_task_catches_exceptions_from_callback(job, mocker):
+    job.start()
+    callback = Mock(side_effect=TypeError('foo'))
+    coro = AsyncMock(return_value='foo')
+    job.add_task(coro, callback=callback)
+    await job._tasks[0]
+    assert job.is_finished
+    assert isinstance(job.raised, TypeError)
+    assert str(job.raised) == 'foo'
+    assert callback.call_args_list == [call('foo')]
 
 @pytest.mark.parametrize('finish_when_done', (False, True))
 @pytest.mark.asyncio
