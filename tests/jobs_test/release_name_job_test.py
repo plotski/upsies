@@ -3,9 +3,9 @@ from unittest.mock import Mock, call
 
 import pytest
 
+from upsies import errors
 from upsies.jobs.release_name import ReleaseNameJob
 from upsies.utils.release import ReleaseName
-from upsies import errors
 
 
 class AsyncMock(Mock):

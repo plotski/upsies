@@ -2,10 +2,8 @@
 Generate uniform release name
 """
 
-import asyncio
-
-from ..utils import fs, release
 from .. import errors
+from ..utils import fs, release
 from . import JobBase
 
 import logging  # isort:skip

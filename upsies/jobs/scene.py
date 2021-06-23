@@ -2,8 +2,6 @@
 Scene release search and check
 """
 
-import asyncio
-
 from .. import errors
 from ..utils import fs, scene, types
 from . import JobBase
