@@ -5,6 +5,7 @@ Generate uniform release name
 import asyncio
 
 from ..utils import fs, release
+from .. import errors
 from . import JobBase
 
 import logging  # isort:skip
@@ -84,15 +85,19 @@ class ReleaseNameJob(JobBase):
         All arguments are passed on to :meth:`.ReleaseName.fetch_info`.
         """
         self.signal.emit('release_name_updating')
-        task = asyncio.ensure_future(
-            self.release_name.fetch_info(*args, **kwargs),
+
+        def fetch_info_done(_):
+            self.signal.emit('release_name_updated', self.release_name)
+
+        self.add_task(
+            self._catch_errors(
+                self.release_name.fetch_info(*args, **kwargs),
+            ),
+            callback=fetch_info_done,
         )
 
-        def fetch_info_done(task):
-            exc = task.exception()
-            if exc:
-                self.exception(exc)
-            else:
-                self.signal.emit('release_name_updated', self.release_name)
-
-        task.add_done_callback(fetch_info_done)
+    async def _catch_errors(self, coro):
+        try:
+            return await coro
+        except errors.RequestError as e:
+            self.error(e)
