@@ -77,6 +77,7 @@ def mock_job_attributes(mocker):
             'source_job',
             'description_job',
             'scene_check_job',
+            'tags_job',
         )
         for job_attr in job_attrs:
             mocker.patch.object(type(bhd_tracker_jobs), job_attr, PropertyMock(return_value=Mock(attr=job_attr)))
@@ -182,6 +183,7 @@ def test_jobs_before_upload_items(bhd_tracker_jobs, mock_job_attributes, mocker)
         'source_job',
         'description_job',
         'scene_check_job',
+        'tags_job',
     )
 
 def test_jobs_before_upload_sets_conditions_on_base_class_jobs(bhd_tracker_jobs, mock_job_attributes, mocker):
@@ -496,6 +498,81 @@ async def test_generate_screenshots_bbcode(uploaded_images, exp_bbcode, bhd_trac
     assert bbcode == exp_bbcode
 
 
+def test_tags_job(bhd_tracker_jobs, mocker):
+    mocker.patch.object(bhd_tracker_jobs, 'make_job_condition')
+    mocker.patch.object(bhd_tracker_jobs, 'autodetect_tags', Mock())
+    TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
+
+    assert bhd_tracker_jobs.tags_job is TextFieldJob_mock.return_value
+    assert TextFieldJob_mock.call_args_list == [call(
+        name='tags',
+        label='Tags',
+        condition=bhd_tracker_jobs.make_job_condition.return_value,
+        read_only=True,
+        **bhd_tracker_jobs.common_job_args,
+    )]
+    bhd_tracker_jobs.make_job_condition.call_args_list == [call('tags_job')]
+
+    assert bhd_tracker_jobs.autodetect_tags.call_args_list == [call()]
+    assert TextFieldJob_mock.return_value.fetch_text.call_args_list == [call(
+        coro=bhd_tracker_jobs.autodetect_tags.return_value,
+        finish_on_success=True,
+    )]
+    assert TextFieldJob_mock.return_value.add_task.call_args_list == [call(
+        TextFieldJob_mock.return_value.fetch_text.return_value
+    )]
+
+
+@pytest.mark.parametrize('source, exp_source_tag', (('WEBRip', 'WEBRip'), ('WEB-DL', 'WEBDL'), ('', None)))
+@pytest.mark.parametrize('hybrid, exp_hybrid_tag', (('Hybrid', 'Hybrid'), ('', None)))
+@pytest.mark.parametrize('has_commentary, exp_commentary_tag', ((True, 'Commentary'), (False, None)))
+@pytest.mark.parametrize('has_dual_audio, exp_dual_audio_tag', ((True, 'DualAudio'), (False, None)))
+@pytest.mark.parametrize('edition, exp_open_matte_tag', ((['Open Matte'], 'OpenMatte'), ([], None)))
+@pytest.mark.parametrize('is_scene_release, exp_scene_tag', ((True, 'Scene'), (False, None)))
+@pytest.mark.parametrize('options, exp_personal_tag', (({'personal_rip': True}, 'Personal'), ({'personal_rip': False}, None)))
+@pytest.mark.asyncio
+async def test_autodetect_tags(options, exp_personal_tag,
+                         is_scene_release, exp_scene_tag,
+                         has_dual_audio, exp_dual_audio_tag,
+                         edition, exp_open_matte_tag,
+                         has_commentary, exp_commentary_tag,
+                         hybrid, exp_hybrid_tag,
+                         source, exp_source_tag,
+                         bhd_tracker_jobs, mocker):
+    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
+        source=' '.join((source, hybrid)),
+        has_commentary=has_commentary,
+        has_dual_audio=has_dual_audio,
+        edition=edition,
+    )))
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name_job', AsyncMock())
+    mocker.patch.object(type(bhd_tracker_jobs), 'scene_check_job', AsyncMock(
+        is_finished=True,
+        is_scene_release=is_scene_release,
+    ))
+    mocker.patch.object(type(bhd_tracker_jobs), 'options', options)
+
+    assert bhd_tracker_jobs.release_name_job.wait.call_args_list == []
+    assert bhd_tracker_jobs.scene_check_job.wait.call_args_list == []
+    tags = await bhd_tracker_jobs.autodetect_tags()
+    assert bhd_tracker_jobs.release_name_job.wait.call_args_list == [call()]
+    assert bhd_tracker_jobs.scene_check_job.wait.call_args_list == [call()]
+
+    exp_tags = [
+        exp_source_tag,
+        exp_hybrid_tag,
+        exp_commentary_tag,
+        exp_dual_audio_tag,
+        exp_open_matte_tag,
+        exp_scene_tag,
+        exp_personal_tag,
+    ]
+    assert tags == '\n'.join(
+        exp_tag for exp_tag in exp_tags
+        if exp_tag is not None
+    )
+
+
 @pytest.mark.parametrize(
     argnames='options, parent_ok, exp_ok',
     argvalues=(
@@ -520,6 +597,7 @@ def test_post_data(anonymous, exp_anon, draft, exp_live, bhd_tracker_jobs, mock_
         'tt00123456',
         'movie/1234',
         'mock description',
+        'Some\nMock\nTags',
     ))
     mocker.patch.object(bhd_tracker_jobs, 'get_job_attribute', side_effect=(
         'mock category',
@@ -532,7 +610,6 @@ def test_post_data(anonymous, exp_anon, draft, exp_live, bhd_tracker_jobs, mock_
         'draft': draft,
     }))
     mocker.patch.object(type(bhd_tracker_jobs), 'post_data_edition', PropertyMock(return_value='mock edition'))
-    mocker.patch.object(type(bhd_tracker_jobs), 'post_data_tags', PropertyMock(return_value='mock tags'))
     mocker.patch.object(type(bhd_tracker_jobs), 'post_data_nfo', PropertyMock(return_value='mock nfo'))
     mocker.patch.object(type(bhd_tracker_jobs), 'post_data_pack', PropertyMock(return_value='mock pack'))
     mocker.patch.object(type(bhd_tracker_jobs), 'post_data_sd', PropertyMock(return_value='mock sd'))
@@ -548,7 +625,7 @@ def test_post_data(anonymous, exp_anon, draft, exp_live, bhd_tracker_jobs, mock_
         'description': 'mock description',
         'edition': 'mock edition',
         'custom_edition': 'mock custom edition',
-        'tags': 'mock tags',
+        'tags': 'Some,Mock,Tags',
         'nfo': 'mock nfo',
         'pack': 'mock pack',
         'sd': 'mock sd',
@@ -561,6 +638,7 @@ def test_post_data(anonymous, exp_anon, draft, exp_live, bhd_tracker_jobs, mock_
         call(bhd_tracker_jobs.imdb_job, slice=0),
         call(bhd_tracker_jobs.tmdb_job, slice=0),
         call(bhd_tracker_jobs.description_job, slice=0),
+        call(bhd_tracker_jobs.tags_job, slice=0),
     ]
     assert bhd_tracker_jobs.get_job_attribute.call_args_list == [
         call(bhd_tracker_jobs.category_job, 'choice'),
@@ -626,44 +704,6 @@ def test_post_data_sd(resolution, exp_sd, bhd_tracker_jobs, mocker):
         resolution=resolution,
     )))
     assert bhd_tracker_jobs.post_data_sd == exp_sd
-
-
-@pytest.mark.parametrize('source, exp_source_tag', (('WEBRip', 'WEBRip'), ('WEB-DL', 'WEBDL'), ('', None)))
-@pytest.mark.parametrize('hybrid, exp_hybrid_tag', (('Hybrid', 'Hybrid'), ('', None)))
-@pytest.mark.parametrize('has_commentary, exp_commentary_tag', ((True, 'Commentary'), (False, None)))
-@pytest.mark.parametrize('has_dual_audio, exp_dual_audio_tag', ((True, 'DualAudio'), (False, None)))
-@pytest.mark.parametrize('edition, exp_open_matte_tag', (('Open Matte', 'OpenMatte'), ([], None)))
-@pytest.mark.parametrize('is_scene_release, exp_scene_tag', ((True, 'Scene'), (False, None)))
-@pytest.mark.parametrize('options, exp_personal_tag', (({'personal_rip': True}, 'Personal'), ({'personal_rip': False}, None)))
-def test_post_data_tags(options, exp_personal_tag,
-                        is_scene_release, exp_scene_tag,
-                        has_dual_audio, exp_dual_audio_tag,
-                        edition, exp_open_matte_tag,
-                        has_commentary, exp_commentary_tag,
-                        hybrid, exp_hybrid_tag,
-                        source, exp_source_tag,
-                        bhd_tracker_jobs, mock_job_attributes, mocker):
-    mock_job_attributes(bhd_tracker_jobs)
-    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
-        source=' '.join((source, hybrid)),
-        edition=edition,
-        has_commentary=has_commentary,
-        has_dual_audio=has_dual_audio,
-    )))
-    mocker.patch.object(type(bhd_tracker_jobs), 'scene_check_job', PropertyMock(return_value=Mock(
-        is_scene_release=is_scene_release,
-    )))
-    mocker.patch.object(type(bhd_tracker_jobs), 'options', PropertyMock(return_value=options))
-    exp_tags = [
-        exp_source_tag,
-        exp_hybrid_tag,
-        exp_commentary_tag,
-        exp_dual_audio_tag,
-        exp_open_matte_tag,
-        exp_scene_tag,
-        exp_personal_tag,
-    ]
-    assert bhd_tracker_jobs.post_data_tags == ','.join(exp_tag for exp_tag in exp_tags if exp_tag is not None)
 
 
 @pytest.mark.parametrize(

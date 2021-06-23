@@ -70,6 +70,7 @@ class BhdTrackerJobs(TrackerJobsBase):
             self.source_job,
             self.description_job,
             self.scene_check_job,
+            self.tags_job,
         )
 
     def make_job_condition(self, job_attr):
@@ -245,6 +246,59 @@ class BhdTrackerJobs(TrackerJobsBase):
         bbcode = '\n\n'.join(rows)
         return f'[center]\n{bbcode}\n[/center]'
 
+    @cached_property
+    def tags_job(self):
+        job = jobs.dialog.TextFieldJob(
+            name='tags',
+            label='Tags',
+            condition=self.make_job_condition('tags_job'),
+            read_only=True,
+            **self.common_job_args,
+        )
+        job.add_task(
+            job.fetch_text(
+                coro=self.autodetect_tags(),
+                finish_on_success=True,
+            )
+        )
+        return job
+
+    async def autodetect_tags(self):
+        await self.release_name_job.wait()
+        await self.scene_check_job.wait()
+
+        # Any additional tags separated by comma(s). (Commentary, 2in1, Hybrid,
+        # OpenMatte, 2D3D, WEBRip, WEBDL, 3D, 4kRemaster, DualAudio, EnglishDub,
+        # Personal, Scene, DigitalExtras, Extras)
+        tags = []
+        if 'WEBRip' in self.approved_release_name.source:
+            tags.append('WEBRip')
+        elif 'WEB-DL' in self.approved_release_name.source:
+            tags.append('WEBDL')
+        if 'Hybrid' in self.approved_release_name.source:
+            tags.append('Hybrid')
+        if self.approved_release_name.has_commentary:
+            tags.append('Commentary')
+        if self.approved_release_name.has_dual_audio:
+            tags.append('DualAudio')
+        if 'Open Matte' in self.approved_release_name.edition:
+            tags.append('OpenMatte')
+        if self.get_job_attribute(self.scene_check_job, 'is_scene_release'):
+            tags.append('Scene')
+        if self.options['personal_rip']:
+            tags.append('Personal')
+
+        # TODO: 4kRemaster (waiting for https://github.com/guessit-io/guessit/pull/701)
+        # TODO: 2in1 (waiting for https://github.com/guessit-io/guessit/pull/702)
+        # TODO: 2D3D
+        # TODO: 3D
+        # TODO: EnglishDub
+        # TODO: DigitalExtras
+        # TODO: Extras
+
+        _log.debug('################ Autodetected tags: %r', tags)
+        return '\n'.join(tags)
+
     @property
     def submission_ok(self):
         """
@@ -268,7 +322,7 @@ class BhdTrackerJobs(TrackerJobsBase):
             'description': self.get_job_output(self.description_job, slice=0),
             'edition': self.post_data_edition,
             'custom_edition': self.options['custom_edition'],
-            'tags': self.post_data_tags,
+            'tags': ','.join(self.get_job_output(self.tags_job, slice=0).split('\n')),
             'nfo': self.post_data_nfo,
             'pack': self.post_data_pack,
             'sd': self.post_data_sd,
@@ -319,39 +373,6 @@ class BhdTrackerJobs(TrackerJobsBase):
             return '0'
         else:
             return '1' if height < 720 else '0'
-
-    @property
-    def post_data_tags(self):
-        # Any additional tags separated by comma(s). (Commentary, 2in1, Hybrid,
-        # OpenMatte, 2D3D, WEBRip, WEBDL, 3D, 4kRemaster, DualAudio, EnglishDub,
-        # Personal, Scene, DigitalExtras, Extras)
-        tags = []
-        if 'WEBRip' in self.approved_release_name.source:
-            tags.append('WEBRip')
-        elif 'WEB-DL' in self.approved_release_name.source:
-            tags.append('WEBDL')
-        if 'Hybrid' in self.approved_release_name.source:
-            tags.append('Hybrid')
-        if self.approved_release_name.has_commentary:
-            tags.append('Commentary')
-        if self.approved_release_name.has_dual_audio:
-            tags.append('DualAudio')
-        if 'Open Matte' in self.approved_release_name.edition:
-            tags.append('OpenMatte')
-        if self.get_job_attribute(self.scene_check_job, 'is_scene_release'):
-            tags.append('Scene')
-        if self.options['personal_rip']:
-            tags.append('Personal')
-
-        # TODO: 4kRemaster (waiting for https://github.com/guessit-io/guessit/pull/701)
-        # TODO: 2in1 (waiting for https://github.com/guessit-io/guessit/pull/702)
-        # TODO: 2D3D
-        # TODO: 3D
-        # TODO: EnglishDub
-        # TODO: DigitalExtras
-        # TODO: Extras
-
-        return ','.join(tags)
 
     max_nfo_size = 500_000
 
