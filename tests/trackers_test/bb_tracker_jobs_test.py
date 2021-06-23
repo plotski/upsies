@@ -693,6 +693,7 @@ def test_movie_poster_job(bb_tracker_jobs, mocker):
         label='Poster',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         worker=bb_tracker_jobs.movie_get_poster_url,
+        catch=(errors.RequestError,),
         **bb_tracker_jobs.common_job_args,
     )]
     assert bb_tracker_jobs.make_job_condition.call_args_list == [call('movie_poster_job', ReleaseType.movie)]
@@ -896,6 +897,7 @@ def test_series_poster_job(bb_tracker_jobs, mocker):
         label='Poster',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         worker=bb_tracker_jobs.series_get_poster_url,
+        catch=(errors.RequestError,),
         **bb_tracker_jobs.common_job_args,
     )]
     assert bb_tracker_jobs.make_job_condition.call_args_list == [

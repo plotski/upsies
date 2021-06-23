@@ -444,6 +444,7 @@ class BbTrackerJobs(TrackerJobsBase):
             label='Poster',
             condition=self.make_job_condition('movie_poster_job', release.ReleaseType.movie),
             worker=self.movie_get_poster_url,
+            catch=(errors.RequestError,),
             **self.common_job_args,
         )
 
@@ -547,6 +548,7 @@ class BbTrackerJobs(TrackerJobsBase):
             label='Poster',
             condition=self.make_job_condition('series_poster_job', release.ReleaseType.season, release.ReleaseType.episode),
             worker=self.series_get_poster_url,
+            catch=(errors.RequestError,),
             **self.common_job_args,
         )
 
