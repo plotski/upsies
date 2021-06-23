@@ -2,8 +2,6 @@
 Custom job that provide the result of a coroutine
 """
 
-import asyncio
-
 from . import JobBase
 
 import logging  # isort:skip
@@ -21,7 +19,7 @@ class CustomJob(JobBase):
     def label(self):
         return self._label
 
-    def initialize(self, *, name, label, worker):
+    def initialize(self, *, name, label, worker, catch=()):
         """
         Set internal state
 
@@ -30,6 +28,8 @@ class CustomJob(JobBase):
         :param worker: Coroutine function (a function defined with an
             ``async def`` syntax) that takes the job instance as a
             positional argument.
+        :param catch: Sequence of :class:`Exception` classes to catch from
+            `worker` and pass to :meth:`~.JobBase.error`
 
         This job finishes when `worker` returns.
 
@@ -39,32 +39,25 @@ class CustomJob(JobBase):
         self._name = str(name)
         self._label = str(label)
         self._worker = worker
+        self._expected_exceptions = tuple(catch)
         self._task = None
 
     def execute(self):
-        self._task = asyncio.ensure_future(
-            self._catch_cancelled_error(
-                self._worker(self),
-            ),
+        self._task = self.add_task(
+            self._catch_errors(self._worker(self)),
+            callback=self._handle_worker_done,
         )
-        self._task.add_done_callback(self._handle_worker_done)
 
-    async def _catch_cancelled_error(self, worker):
+    async def _catch_errors(self, coro):
         try:
-            return await worker
-        except asyncio.CancelledError:
-            _log.debug('%s: Cancelled: %r', self.name, worker)
+            return await coro
+        except self._expected_exceptions as e:
+            self.error(e)
 
-    def _handle_worker_done(self, task):
-        try:
-            result = task.result()
-        except BaseException as e:
-            self.exception(e)
-        else:
-            if result:
-                self.send(result)
-        finally:
-            self.finish()
+    def _handle_worker_done(self, result):
+        if result:
+            self.send(result)
+        self.finish()
 
     async def wait(self):
         """Wait for `worker`"""

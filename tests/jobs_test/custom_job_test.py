@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import pytest
 
@@ -42,17 +42,18 @@ def test_initialize(make_CustomJob):
 
 @pytest.mark.asyncio
 async def test_execute(mocker, make_CustomJob):
-    async def worker(job):
-        assert isinstance(job, CustomJob)
-        worker_calls.append('called')
-
-    worker_calls = []
+    mocker.patch('upsies.jobs.custom.CustomJob.add_task')
+    mocker.patch('upsies.jobs.custom.CustomJob._catch_errors', Mock())
+    worker = Mock()
     job = make_CustomJob(name='foo', label='Foo', worker=worker)
-    mocker.patch.object(job, '_handle_worker_done')
     job.execute()
-    await job._task
-    assert worker_calls == ['called']
-    assert job._handle_worker_done.called
+    assert job._task is job.add_task.return_value
+    assert job.add_task.call_args_list == [call(
+        job._catch_errors.return_value,
+        callback=job._handle_worker_done,
+    )]
+    assert job._catch_errors.call_args_list == [call(worker.return_value)]
+    assert worker.call_args_list == [call(job)]
 
 
 @pytest.mark.asyncio
@@ -64,15 +65,25 @@ async def test_CancelledError_from_worker_is_ignored(make_CustomJob):
     await job._task
 
 @pytest.mark.asyncio
-async def test_other_exceptions_from_worker_are_caught(mocker, make_CustomJob):
+async def test_expected_exceptions_from_worker_are_caught(mocker, make_CustomJob):
     worker = AsyncMock(side_effect=ValueError('ouch'))
-    job = make_CustomJob(name='foo', label='Foo', worker=worker)
+    job = make_CustomJob(name='foo', label='Foo', worker=worker, catch=[ValueError])
+    job.execute()
+    await job._task
+    assert isinstance(job.errors[0], ValueError)
+    assert str(job.errors[0]) == 'ouch'
+    assert len(job.errors) == 1
+
+@pytest.mark.asyncio
+async def test_unexpected_exceptions_from_worker_are_raised(mocker, make_CustomJob):
+    worker = AsyncMock(side_effect=ValueError('ouch'))
+    job = make_CustomJob(name='foo', label='Foo', worker=worker, catch=[TypeError])
     job.execute()
     mocker.patch.object(job, 'exception')
-    with pytest.raises(ValueError, match=r'^ouch$'):
-        await job._task
+    await job.await_tasks()
     assert isinstance(job.exception.call_args_list[0][0][0], ValueError)
     assert str(job.exception.call_args_list[0][0][0]) == 'ouch'
+
 
 @pytest.mark.parametrize(
     argnames='return_value, exp_output',
@@ -105,7 +116,8 @@ async def test_wait_after_job_was_executed(mocker, make_CustomJob):
     job = make_CustomJob(name='foo', label='Foo', worker=lambda job: asyncio.sleep(10))
     job.execute()
     # Allow worker to start
-    await asyncio.sleep(0)
+    for _ in range(5):
+        await asyncio.sleep(0)
     assert not job._task.done()
     job.finish()
     await job.wait()
@@ -127,7 +139,8 @@ async def test_finish_after_job_was_executed(mocker, make_CustomJob):
     job = make_CustomJob(name='foo', label='Foo', worker=lambda job: worker)
     job.execute()
     # Allow worker to start
-    await asyncio.sleep(0)
+    for _ in range(5):
+        await asyncio.sleep(0)
     assert not worker.cancelled()
     job.finish()
     await job.wait()
