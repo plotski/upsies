@@ -514,6 +514,15 @@ async def test_added_task_ignores_CancelledError(finish_when_done, job, mocker):
     assert job.raised is None
     assert callback.call_args_list == []
 
+@pytest.mark.asyncio
+async def test_await_tasks(job, mocker):
+    job._tasks = [AsyncMock(), AsyncMock(), AsyncMock()]
+    for task in job._tasks:
+        assert task.mock_calls == []
+    await job.await_tasks()
+    for task in job._tasks:
+        assert task.mock_calls == [call()]
+
 
 @pytest.mark.parametrize(
     argnames='emissions, exit_code, cache_file, is_executed',

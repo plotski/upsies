@@ -440,6 +440,11 @@ class JobBase(abc.ABC):
         self._tasks.append(wrapped)
         return wrapped
 
+    async def await_tasks(self):
+        """Block until all coroutines passed to :meth:`add_task` are done"""
+        for task in self._tasks:
+            await task
+
     def _write_cache(self):
         """
         Store recorded signals in :attr:`cache_file`
