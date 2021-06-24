@@ -83,7 +83,38 @@ async def post(url, headers={}, data={}, files={}, auth=None,
     :param str url: URL to request
     :param dict headers: Custom headers (added to default headers)
     :param dict data: Data to send as application/x-www-form-urlencoded
-    :param dict files: Files to send as multipart/form-data
+    :param dict files: Files to send as multipart/form-data as a dictionary that
+        maps field names to file paths or dictionaries. For dictionaries, these
+        keys are used:
+
+             ``file``
+                 File path or file-like object, e.g. return value of
+                 :func:`open` or :class:`~.io.BytesIO`.
+
+             ``filename`` (optional)
+                 Name of the file that is reported to the server. Defaults to
+                 :func:`~.os.path.basename` of ``file`` if ``file`` is a string,
+                 `None` otherwise.
+
+             ``mimetype`` (optional)
+                 MIME type of the file content. If not provided and `file` is a
+                 string, guess based on extension of ``file``. If `None`, do not
+                 send any MIME type.
+
+        Examples:
+
+        >>> files = {
+        >>>     "image": "path/to/foo.jpg",
+        >>>     "document": {
+        >>>         "file": "path/to/bar",
+        >>>         "filename": "something.txt",
+        >>>         "mimetype": "text/plain",
+        >>>     },
+        >>>     "data": {
+        >>>         "file": io.BytesIO(b'binary data'),
+        >>>         "mimetype": "application/octet-stream",
+        >>>      },
+        >>> })
     :param auth: Basic access authentication; sequence of <username> and
         <password> or `None`
     :param bool cache: Whether to use cached response if available
@@ -261,36 +292,8 @@ def _open_files(files):
     """
     Open files for upload
 
-    :param files: Dictionary that maps field names to file paths or
-        dictionaries. For dictionaries, these keys are used:
-
-             ``file``
-                 File path or file-like object, e.g. return value of
-                 :func:`open` or an instance of a subclass of
-                 :class:`~.io.IOBase`.
-
-             ``filename`` (optional)
-                 Name of the file that is reported to the server in the
-                 request. Defaults to :func:`~.os.path.basename` of ``file`` if
-                 ``file`` is a string, `None` otherwise.
-
-             ``mimetype`` (optional)
-                 MIME type of the file content. Guess based on ``file`` if not
-                 provided. If `None`, do not send any MIME type.
-
-        Example:
-
-        >>> _open_files({
-        >>>     "image": "path/to/foo.jpg",
-        >>>     "document": {"file": "path/to/bar", "mimetype": "text/plain"},
-        >>>     "data": {
-        >>>         "file": io.IOBytes(b'binary data'),
-        >>>         "filename": "binary.data",
-        >>>         "mimetype": "application/octet-stream",
-        >>>      },
-        >>> })
-
-    :return: See https://www.python-httpx.org/advanced/#multipart-file-encoding
+    See :func:`post` and
+    https://www.python-httpx.org/advanced/#multipart-file-encoding.
 
     :raise RequestError: if a file cannot be opened
     """
