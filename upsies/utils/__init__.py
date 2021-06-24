@@ -86,12 +86,12 @@ def submodules(package):
     """
     # Get absolute path to parent directory of top-level package
     own_path = os.path.dirname(__file__)
-    rel_path = __package__.replace('.', '/')
-    assert own_path.endswith(rel_path)
+    rel_path = __package__.replace('.', os.sep)
+    assert own_path.endswith(rel_path), f'{own_path!r}.endswith({rel_path!r})'
     project_path = own_path[:-len(rel_path)]
 
-    # Add path to given package
-    package_path = os.path.join(project_path, package.replace('.', '/'))
+    # Add relative path within project to given package
+    package_path = os.path.join(project_path, package.replace('.', os.sep))
 
     # Find and import public submodules
     submods = []
