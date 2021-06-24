@@ -83,10 +83,13 @@ class CommandBase(abc.ABC):
                             help='General configuration file path',
                             default=constants.CONFIG_FILEPATH)
     _argparser.add_argument('--trackers-file', '-t',
-                            help='Tracker configuration file path',
+                            help='Trackers configuration file path',
                             default=constants.TRACKERS_FILEPATH)
+    _argparser.add_argument('--imghosts-file', '-i',
+                            help='Image hosting services configuration file path',
+                            default=constants.IMGHOSTS_FILEPATH)
     _argparser.add_argument('--clients-file', '-c',
-                            help='BitTorrent client configuration file path',
+                            help='BitTorrent clients configuration file path',
                             default=constants.CLIENTS_FILEPATH)
     _argparser.add_argument('--ignore-cache', '-C',
                             help='Ignore results from previous calls',
@@ -220,6 +223,7 @@ class CommandBase(abc.ABC):
             config = configfiles.ConfigFiles(defaults=defaults.defaults)
             config.read('config', filepath=main_args.config_file, ignore_missing=True)
             config.read('trackers', filepath=main_args.trackers_file, ignore_missing=True)
+            config.read('imghosts', filepath=main_args.imghosts_file, ignore_missing=True)
             config.read('clients', filepath=main_args.clients_file, ignore_missing=True)
         except errors.ConfigError as e:
             print(e, file=sys.stderr)

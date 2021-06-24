@@ -16,6 +16,9 @@ CONFIG_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'config.ini')
 TRACKERS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'trackers.ini')
 """Path to trackers configuration file"""
 
+IMGHOSTS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'imghosts.ini')
+"""Path to image hosting services configuration file"""
+
 CLIENTS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'clients.ini')
 """Path to BitTorrent clients configuration file"""
 
