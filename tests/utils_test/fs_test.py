@@ -6,7 +6,7 @@ from unittest.mock import call, patch
 
 import pytest
 
-from upsies import errors
+from upsies import __project_name__, errors
 from upsies.utils import fs
 
 
@@ -75,10 +75,10 @@ def test_assert_dir_usable_with_unexecutable_directory(tmp_path):
 @pytest.mark.parametrize(
     argnames='content_path, base, exp_projectdir',
     argvalues=(
-        ('path/to/foo', None, 'default_path/foo.upsies'),
-        ('path/to//foo', None, 'default_path/foo.upsies'),
-        ('path/to/foo/', None, 'default_path/foo.upsies'),
-        ('path/to/foo', 'my/path', 'my/path/foo.upsies'),
+        ('path/to/foo', None, f'default_path/foo.{__project_name__}'),
+        ('path/to//foo', None, f'default_path/foo.{__project_name__}'),
+        ('path/to/foo/', None, f'default_path/foo.{__project_name__}'),
+        ('path/to/foo', 'my/path', f'my/path/foo.{__project_name__}'),
         (None, None, '.'),
         (None, 'my/path', '.'),
         ('', None, '.'),

@@ -7,19 +7,21 @@ import os
 from xdg.BaseDirectory import xdg_cache_home as XDG_CACHE_HOME
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 
-CACHE_DIRPATH = os.path.join(XDG_CACHE_HOME, 'upsies')
+from . import __project_name__
+
+CACHE_DIRPATH = os.path.join(XDG_CACHE_HOME, __project_name__)
 """Path cache directory"""
 
-CONFIG_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'config.ini')
+CONFIG_FILEPATH = os.path.join(XDG_CONFIG_HOME, __project_name__, 'config.ini')
 """Path to general configuration file"""
 
-TRACKERS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'trackers.ini')
+TRACKERS_FILEPATH = os.path.join(XDG_CONFIG_HOME, __project_name__, 'trackers.ini')
 """Path to trackers configuration file"""
 
-IMGHOSTS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'imghosts.ini')
+IMGHOSTS_FILEPATH = os.path.join(XDG_CONFIG_HOME, __project_name__, 'imghosts.ini')
 """Path to image hosting services configuration file"""
 
-CLIENTS_FILEPATH = os.path.join(XDG_CONFIG_HOME, 'upsies', 'clients.ini')
+CLIENTS_FILEPATH = os.path.join(XDG_CONFIG_HOME, __project_name__, 'clients.ini')
 """Path to BitTorrent clients configuration file"""
 
 def _get_option_paths(cfg, parents=()):

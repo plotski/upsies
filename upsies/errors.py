@@ -6,7 +6,7 @@ should be displayed to the user. If the programmer made a mistake, any
 appropriate builtin exception (e.g. :class:`ValueError`, :class:`TypeError`) or
 :class:`RuntimeError` should be raised.
 
-For example, :func:`upsies.utils.http.get` always raises :class:`RequestError`,
+For example, :func:`~.utils.http.get` always raises :class:`RequestError`,
 regardless of which library is used or what went wrong, except when something
 like caching fails, which is most likely due to a bug.
 """
