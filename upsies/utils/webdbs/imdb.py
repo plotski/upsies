@@ -310,6 +310,7 @@ class ImdbApi(WebDbApiBase):
         re.compile(r'^USA.*English'),
         re.compile(r'^USA$'),
         re.compile(r'^World-wide.*English'),
+        re.compile(r'^USA.*reissue'),
     )
 
     async def _get_akas(self, id):

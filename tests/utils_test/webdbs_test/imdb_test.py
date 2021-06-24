@@ -591,6 +591,7 @@ async def test_summary(id, exp_summary, api, store_response):
         ('tt3286052', "The Blackcoat's Daughter", 'February'),
         ('tt6560040', 'The Forest', 'La forêt'),
         ('tt6616260', 'Deadwind', 'Karppi'),
+        ('tt7534328', 'These Woods Are Haunted', 'Terror in the Woods'),
         (None, '', ''),
     ),
     ids=lambda value: str(value),
