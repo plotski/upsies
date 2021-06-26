@@ -270,9 +270,7 @@ class ConfigFiles:
         return repr(self._cfg)
 
 
-# Inherit from MutableMapping to get the ABC benefits. Inherit from dict so that
-# `isinstance(spec_dict_instance, dict)` returns True.
-class _ConfigDict(collections.abc.MutableMapping, dict):
+class _ConfigDict(collections.abc.MutableMapping):
     """
     Dictionary that only accepts certain keys and value types
 
