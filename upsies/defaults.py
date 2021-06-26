@@ -14,7 +14,9 @@ defaults = {
     },
 
     'imghosts': {
-        'dummy': {},
+        'dummy': {
+            'hostname': 'localhost',
+        },
         'imgbox': {},
     },
 
