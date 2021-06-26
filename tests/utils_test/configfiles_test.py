@@ -162,6 +162,13 @@ def test_ConfigDict_nondictionary_value_to_dictionary():
     with pytest.raises(TypeError, match=r'^4 is not a dictionary: \{400: 4000\}$'):
         d[0][3][4] = {400: 4000}
 
+def test_ConfigDict_copy():
+    d1 = _ConfigDict({0: {1: 2, 3: {4: 5, 6: 7, 8: {9: ['a', 'b', 'c']}}}})
+    d2 = d1.copy()
+    assert d2 == {0: {1: 2, 3: {4: 5, 6: 7, 8: {9: ['a', 'b', 'c']}}}}
+    assert id(d2) != id(d1)
+    assert id(d2[0][3][8][9]) != id(d1[0][3][8][9])
+
 
 def test_init_copies_defaults():
     defaults = {'section': {'subsection1': {'foo': 123, 'bar': 456},

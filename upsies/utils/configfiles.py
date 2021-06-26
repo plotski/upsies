@@ -370,3 +370,7 @@ class _ConfigDict(collections.abc.MutableMapping):
 
     def __repr__(self):
         return repr(self._dct)
+
+    def copy(self):
+        """Return deep copy as :class:`dict`"""
+        return copy.deepcopy(self)
