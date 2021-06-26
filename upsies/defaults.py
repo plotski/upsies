@@ -20,6 +20,9 @@ defaults = {
             'hostname': 'localhost',
         },
         'imgbox': {},
+        'ptpimg': {
+            'apikey': '',
+        },
     },
 
     'clients': {
