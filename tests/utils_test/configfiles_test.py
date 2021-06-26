@@ -1,4 +1,3 @@
-import collections
 import configparser
 import os
 from unittest.mock import call, patch
@@ -39,11 +38,6 @@ def test_any2list(value, exp_value):
 def test_any2string(value, exp_value):
     assert _any2string(value) == exp_value
 
-
-@pytest.mark.parametrize(argnames='cls', argvalues=(dict, collections.abc.Mapping))
-def test_ConfigDict_subclass(cls):
-    d = _ConfigDict({'foo': 'baz'})
-    assert isinstance(d, cls)
 
 def test_ConfigDict_implements_delitem():
     d = _ConfigDict({'foo': 'bar', 'bar': 'abc'})
