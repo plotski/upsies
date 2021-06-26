@@ -1,3 +1,5 @@
+import functools
+
 from . import constants, trackers, utils
 
 defaults = {
@@ -32,20 +34,10 @@ defaults = {
 """Defaults for configuration options"""
 
 
+@functools.lru_cache(maxsize=None)
 def option_paths():
     """Tuple of configuration option paths (`<section>.<subsection>.<option>`)"""
-
-    def _get_option_paths(cfg, parents=()):
-        paths = []
-        for k, v in cfg.items():
-            k_parents = parents + (k,)
-            if isinstance(v, dict):
-                paths.extend(_get_option_paths(v, parents=k_parents))
-            else:
-                paths.append('.'.join(k_parents))
-        return tuple(sorted(paths))
-
-    return _get_option_paths(defaults)
+    return utils.configfiles.ConfigFiles(defaults).paths
 
 
 def option_type(option_path):
