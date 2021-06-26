@@ -299,6 +299,21 @@ def test_setting_option_to_invalid_value():
         d._set('main', 'foo', 'a', 'not a number')
     assert d['main.foo.a'] == 123
 
+def test_delitem_calls_reset(mocker):
+    d = ConfigFiles(defaults={})
+    mocker.patch.object(d, 'reset')
+    del d['foo']
+    assert d.reset.call_args_list == [call('foo')]
+
+def test_copy(mocker):
+    d1 = ConfigFiles(defaults={
+        'main': {'foo': {'a': 'x'},
+                 'bar': {'b': ['x'], (1, 2, 3): (25, 30.3)}},
+    })
+    d2 = d1.copy()
+    assert d1 == d2
+    assert id(d1) != id(d2)
+
 
 @patch('upsies.utils.configfiles._path_exists')
 def test_read_ignores_nonexisting_path(path_exists_mock):
