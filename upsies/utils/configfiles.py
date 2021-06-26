@@ -87,7 +87,7 @@ class ConfigFiles:
             paths = []
             for k, v in dct.items():
                 k_parents = parents + (k,)
-                if isinstance(v, dict):
+                if isinstance(v, collections.abc.Mapping):
                     paths.extend(_get_paths(v, parents=k_parents))
                 else:
                     paths.append('.'.join(str(k) for k in k_parents))

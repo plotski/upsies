@@ -2,6 +2,7 @@
 API for tvmaze.com
 """
 
+import collections
 import functools
 import json
 
@@ -68,7 +69,7 @@ class TvmazeApi(WebDbApiBase):
         response = await http.get(url, cache=True)
         try:
             info = json.loads(response)
-            assert isinstance(info, (dict, list))
+            assert isinstance(info, (collections.abc.Mapping, collections.abc.Sequence))
         except (ValueError, TypeError, AssertionError):
             raise errors.RequestError(f'Unexpected search response: {response}')
         else:

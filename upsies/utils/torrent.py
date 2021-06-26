@@ -2,6 +2,7 @@
 Create torrent file
 """
 
+import collections
 import time
 from os.path import exists as _path_exists
 
@@ -97,7 +98,7 @@ def create(*, content_path, announce, torrent_path,
 def _make_file_tree(tree):
     files = []
     for name,file in tree.items():
-        if isinstance(file, dict):
+        if isinstance(file, collections.abc.Mapping):
             subtree = _make_file_tree(file)
             files.append((name, subtree))
         else:

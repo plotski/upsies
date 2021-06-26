@@ -267,7 +267,8 @@ def merge_dicts(a, b, path=()):
     keys = itertools.chain(a, b)
     merged = {}
     for key in keys:
-        if isinstance(a.get(key), dict) and isinstance(b.get(key), dict):
+        if (isinstance(a.get(key), collections.abc.Mapping) and
+            isinstance(b.get(key), collections.abc.Mapping)):
             merged[key] = merge_dicts(a[key], b[key], path + (key,))
         elif key in b:
             # Value from b takes precedence
