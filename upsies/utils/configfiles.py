@@ -24,7 +24,7 @@ def _any2string(value):
     return ' '.join(str(v) for v in value) if _is_list(value) else str(value)
 
 
-class ConfigFiles:
+class ConfigFiles(collections.abc.MutableMapping):
     """
     Combine multiple INI-style configuration files into nested dictionaries
 
@@ -188,8 +188,21 @@ class ConfigFiles:
             target = self._cfg
         target[key] = value
 
+    def __delitem__(self, key):
+        self.reset(key)
+
     def __iter__(self):
         return iter(self._cfg)
+
+    def __len__(self):
+        return len(self._cfg)
+
+    def __repr__(self):
+        return repr(self._cfg)
+
+    def copy(self):
+        """Return deep copy as :class:`dict`"""
+        return copy.deepcopy(self)
 
     def reset(self, path=()):
         """
@@ -265,9 +278,6 @@ class ConfigFiles:
                 lines.append('')
 
         return '\n'.join(lines)
-
-    def __repr__(self):
-        return repr(self._cfg)
 
 
 class _ConfigDict(collections.abc.MutableMapping):
