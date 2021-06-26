@@ -83,6 +83,7 @@ class ConfigFiles:
     @utils.cached_property
     def paths(self):
         """Sorted tuple of ``section.subsection.option`` paths"""
+
         def _get_paths(dct, parents=()):
             paths = []
             for k, v in dct.items():
@@ -92,20 +93,8 @@ class ConfigFiles:
                 else:
                     paths.append('.'.join(str(k) for k in k_parents))
             return tuple(sorted(paths))
-        return _get_paths(self._defaults)
 
-    def _set(self, section, subsection, option, value):
-        if section not in self._cfg:
-            raise errors.ConfigError(f'{section}: Unknown section')
-        elif subsection not in self._cfg[section]:
-            raise errors.ConfigError(f'{section}.{subsection}: Unknown subsection')
-        elif option not in self._cfg[section][subsection]:
-            raise errors.ConfigError(f'{section}.{subsection}.{option}: Unknown option')
-        else:
-            try:
-                self._cfg[section][subsection][option] = value
-            except errors.ConfigError as e:
-                raise errors.ConfigError(f'{section}.{subsection}.{option}: {e}')
+        return _get_paths(self._defaults)
 
     def read(self, section, filepath, ignore_missing=False):
         """
@@ -130,6 +119,19 @@ class ConfigFiles:
                         except errors.ConfigError as e:
                             raise errors.ConfigError(f'{filepath}: {e}')
                 self._files[section] = filepath
+
+    def _set(self, section, subsection, option, value):
+        if section not in self._cfg:
+            raise errors.ConfigError(f'{section}: Unknown section')
+        elif subsection not in self._cfg[section]:
+            raise errors.ConfigError(f'{section}.{subsection}: Unknown subsection')
+        elif option not in self._cfg[section][subsection]:
+            raise errors.ConfigError(f'{section}.{subsection}.{option}: Unknown option')
+        else:
+            try:
+                self._cfg[section][subsection][option] = value
+            except errors.ConfigError as e:
+                raise errors.ConfigError(f'{section}.{subsection}.{option}: {e}')
 
     @staticmethod
     def _parse(section, string, filepath):
