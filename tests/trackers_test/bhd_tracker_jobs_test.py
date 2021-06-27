@@ -274,8 +274,8 @@ def test_category_job(bhd_tracker_jobs, mocker):
         autodetected=bhd_tracker_jobs.guessed_release_name.type,
         autofinish=False,
         options=(
-            {'label': 'Movie', 'value': 1, 'match': bhd_tracker_jobs.is_movie_type},
-            {'label': 'TV', 'value': 2, 'match': bhd_tracker_jobs.is_series_type},
+            {'label': 'Movie', 'value': '1', 'match': bhd_tracker_jobs.is_movie_type},
+            {'label': 'TV', 'value': '2', 'match': bhd_tracker_jobs.is_series_type},
         ),
     )]
     bhd_tracker_jobs.make_job_condition.call_args_list == [call('category_job')]

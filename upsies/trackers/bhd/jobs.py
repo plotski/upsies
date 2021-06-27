@@ -97,8 +97,8 @@ class BhdTrackerJobs(TrackerJobsBase):
             autodetected=self.guessed_release_name.type,
             autofinish=False,
             options=(
-                {'label': 'Movie', 'value': 1, 'match': self.is_movie_type},
-                {'label': 'TV', 'value': 2, 'match': self.is_series_type},
+                {'label': 'Movie', 'value': '1', 'match': self.is_movie_type},
+                {'label': 'TV', 'value': '2', 'match': self.is_series_type},
             ),
         )
 
