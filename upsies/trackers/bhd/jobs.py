@@ -296,7 +296,6 @@ class BhdTrackerJobs(TrackerJobsBase):
         # TODO: DigitalExtras
         # TODO: Extras
 
-        _log.debug('################ Autodetected tags: %r', tags)
         return '\n'.join(tags)
 
     @property
