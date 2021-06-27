@@ -19,7 +19,9 @@ defaults = {
         'dummy': {
             'hostname': 'localhost',
         },
-        'imgbox': {},
+        'imgbox': {
+            'thumb_width': 0,
+        },
         'ptpimg': {
             'apikey': '',
         },
