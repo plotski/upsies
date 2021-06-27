@@ -1,5 +1,5 @@
 """
-Image uploader for imgbox.com
+Image uploader for ptpimg.me
 """
 
 from ... import errors
