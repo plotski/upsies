@@ -19,6 +19,7 @@ class AsyncMock(Mock):
 def imghost():
     class MockImageHost(utils.imghosts.base.ImageHostBase):
         name = 'mock image host'
+        default_config = {}
 
         async def _upload(self, path):
             pass
