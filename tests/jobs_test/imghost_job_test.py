@@ -18,6 +18,7 @@ class AsyncMock(Mock):
 def imghost(tmp_path):
     class TestImageHost(ImageHostBase):
         name = 'testhost'
+        default_config = {}
         upload = AsyncMock()
         _upload = 'not an abstract base method'
     return TestImageHost(cache_directory=tmp_path)
