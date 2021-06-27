@@ -15,9 +15,9 @@ class DummyImageHost(ImageHostBase):
 
     name = 'dummy'
 
-    def __init__(self, *args, hostname='localhost', **kwargs):
-        self._hostname = hostname
-        super().__init__(*args, **kwargs)
+    default_config = {
+        'hostname': 'localhost',
+    }
 
     async def _upload(self, image_path):
         try:
@@ -26,7 +26,7 @@ class DummyImageHost(ImageHostBase):
             raise errors.RequestError(e)
         else:
             await asyncio.sleep(1.5)
-            url = f'http://{self._hostname}/{os.path.basename(image_path)}'
+            url = f'http://{self.config["hostname"]}/{os.path.basename(image_path)}'
             return {
                 'url': url,
                 'thumbnail_url': f'{url}/thumbnail',

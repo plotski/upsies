@@ -32,7 +32,7 @@ class upload_images(CommandBase):
                 ignore_cache=self.args.ignore_cache,
                 imghost=utils.imghosts.imghost(
                     name=self.args.IMAGEHOST,
-                    **self.config['imghosts'][self.args.IMAGEHOST],
+                    config=self.config['imghosts'][self.args.IMAGEHOST],
                 ),
                 enqueue=self.args.IMAGE,
             ),

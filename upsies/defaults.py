@@ -16,15 +16,8 @@ defaults = {
     },
 
     'imghosts': {
-        'dummy': {
-            'hostname': 'localhost',
-        },
-        'imgbox': {
-            'thumb_width': 0,
-        },
-        'ptpimg': {
-            'apikey': '',
-        },
+        imghost.name: imghost.default_config
+        for imghost in utils.imghosts.imghosts()
     },
 
     'clients': {

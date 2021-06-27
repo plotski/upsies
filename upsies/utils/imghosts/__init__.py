@@ -12,14 +12,14 @@ def imghosts():
     return subclasses(ImageHostBase, submodules(__package__))
 
 
-def imghost(name, **kwargs):
+def imghost(name, config=None):
     """
     Create :class:`.ImageHostBase` instance
 
     :param str name: Name of the image hosting service. A subclass of
         :class:`.ImageHostBase` with the same :attr:`~.ImageHostBase.name` must
         exist in one of this package's submodules.
-    :param kwargs: All keyword arguments are passed to the subclass specified by
+    :param dict config: User configuration passed to the subclass specified by
         `name`
 
     :raise ValueError: if no matching subclass can be found
@@ -28,7 +28,7 @@ def imghost(name, **kwargs):
     """
     for imghost in imghosts():
         if imghost.name == name:
-            return imghost(**kwargs)
+            return imghost(config=config)
     raise ValueError(f'Unsupported image hosting service: {name}')
 
 

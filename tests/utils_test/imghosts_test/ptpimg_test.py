@@ -16,44 +16,40 @@ class AsyncMock(Mock):
         return coro()
 
 
-@pytest.fixture(autouse=True)
-def mock_url_base(mocker):
-    mocker.patch('upsies.utils.imghosts.ptpimg.PtpimgImageHost._url_base', 'http://localhost:123')
+def test_name():
+    assert ptpimg.PtpimgImageHost.name == 'ptpimg'
 
 
-@pytest.fixture
-def make_imghost(tmp_path):
-    def make_imghost(**kwargs):
-        if 'cache_directory' not in kwargs:
-            kwargs['cache_directory'] = tmp_path
-        return ptpimg.PtpimgImageHost(**kwargs)
-
-    return make_imghost
+def test_default_config():
+    assert ptpimg.PtpimgImageHost.default_config == {
+        'apikey': '',
+        'base_url': 'https://ptpimg.me',
+    }
 
 
 @pytest.mark.parametrize('apikey', ('', None, 0))
 @pytest.mark.asyncio
-async def test_upload_without_apikey(apikey, make_imghost, mocker):
+async def test_upload_without_apikey(apikey, mocker, tmp_path):
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    imghost = make_imghost(apikey=apikey)
+    imghost = ptpimg.PtpimgImageHost(config={'apikey': apikey}, cache_directory=tmp_path)
     with pytest.raises(errors.RequestError, match=r'^No API key configured$'):
         await imghost._upload('some/path.jpg')
     assert post_mock.call_args_list == []
 
 @pytest.mark.asyncio
-async def test_upload_succeeds(make_imghost, mocker):
+async def test_upload_succeeds(mocker, tmp_path):
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
         text='[{"code": "this_is_the_code", "ext": "png"}]',
         bytes=b'irrelevant',
     )))
-    imghost = make_imghost(apikey='f00')
+    imghost = ptpimg.PtpimgImageHost(config={'apikey': 'f00'}, cache_directory=tmp_path)
     image = await imghost._upload('some/path.jpg')
-    assert image['url'] == imghost._url_base + '/this_is_the_code.png'
+    assert image['url'] == imghost.config['base_url'] + '/this_is_the_code.png'
     assert post_mock.call_args_list == [call(
-        url=f'{imghost._url_base}/upload.php',
+        url=f'{imghost.config["base_url"]}/upload.php',
         cache=False,
         headers={
-            'referer': f'{imghost._url_base}/index.php',
+            'referer': f'{imghost.config["base_url"]}/index.php',
         },
         data={
             'api_key': 'f00',
@@ -62,16 +58,6 @@ async def test_upload_succeeds(make_imghost, mocker):
             'file-upload[0]': 'some/path.jpg',
         },
     )]
-
-@pytest.mark.asyncio
-async def test_upload_gets_empty_list(make_imghost, mocker):
-    mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
-        text='[]',
-        bytes=b'irrelevant',
-    )))
-    imghost = make_imghost(apikey='f00')
-    with pytest.raises(RuntimeError, match=r'^Unexpected response: \[\]$'):
-        await imghost._upload('some/path.jpg')
 
 @pytest.mark.parametrize(
     argnames='json_response',
@@ -88,11 +74,11 @@ async def test_upload_gets_empty_list(make_imghost, mocker):
     ),
 )
 @pytest.mark.asyncio
-async def test_upload_gets_unexpected_json(json_response, make_imghost, mocker):
+async def test_upload_gets_unexpected_json(json_response, mocker, tmp_path):
     mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
         text=json.dumps(json_response),
         bytes=b'irrelevant',
     )))
-    imghost = make_imghost(apikey='f00')
+    imghost = ptpimg.PtpimgImageHost(config={'apikey': 'f00'}, cache_directory=tmp_path)
     with pytest.raises(RuntimeError, match=rf'^Unexpected response: {re.escape(str(json_response))}$'):
         await imghost._upload('some/path.jpg')

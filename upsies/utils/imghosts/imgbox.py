@@ -13,20 +13,19 @@ pyimgbox = LazyModule(module='pyimgbox', namespace=globals())
 
 
 class ImgboxImageHost(ImageHostBase):
-    """
-    Upload images to a gallery on imgbox.com
+    """Upload images to a gallery on imgbox.com"""
 
-    :param int thumb_width: Width of the thumbnails (automatically snaps to
-        closest supported value)
-    """
-
-    DEFAULT_THUMBNAIL_WIDTH = 300
     name = 'imgbox'
 
-    def __init__(self, *args, thumb_width=None, **kwargs):
+    default_config = {
+        # Use smallest thumbnail size
+        'thumb_width': 0,
+    }
+
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._gallery = pyimgbox.Gallery(
-            thumb_width=thumb_width or self.DEFAULT_THUMBNAIL_WIDTH,
+            thumb_width=self.config['thumb_width'],
             square_thumbs=False,
             comments_enabled=False,
         )

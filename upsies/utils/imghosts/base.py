@@ -3,6 +3,7 @@ Base class for image uploaders
 """
 
 import abc
+import copy
 import json
 import os
 
@@ -20,10 +21,14 @@ class ImageHostBase(abc.ABC):
 
     :param str cache_dir: Where to store URLs in JSON files; defaults to
         :attr:`.constants.CACHE_DIRPATH`
+    :param dict config: User configuration
     """
 
-    def __init__(self, cache_directory=None):
+    def __init__(self, cache_directory=None, config=None):
         self.cache_directory = cache_directory if cache_directory else constants.CACHE_DIRPATH
+        self._config = copy.deepcopy(self.default_config)
+        if config is not None:
+            self._config.update(config.items())
 
     @property
     @abc.abstractmethod
@@ -38,6 +43,21 @@ class ImageHostBase(abc.ABC):
     @cache_directory.setter
     def cache_directory(self, directory):
         self._cache_dir = directory
+
+    @property
+    def config(self):
+        """
+        User configuration
+
+        This is a deep copy of :attr:`default_config` that is updated with the
+        `config` argument from initialization.
+        """
+        return self._config
+
+    @property
+    @abc.abstractmethod
+    def default_config(self):
+        """Default user configuration as a dictionary"""
 
     async def upload(self, image_path, cache=True):
         """

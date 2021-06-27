@@ -14,24 +14,24 @@ class PtpimgImageHost(ImageHostBase):
     """Upload images to ptpimg.me"""
 
     name = 'ptpimg'
-    _url_base = 'https://ptpimg.me'
 
-    def __init__(self, *args, apikey='', **kwargs):
-        super().__init__(*args, **kwargs)
-        self._apikey = apikey
+    default_config = {
+        'apikey': '',
+        'base_url': 'https://ptpimg.me',
+    }
 
     async def _upload(self, image_path):
-        if not self._apikey:
+        if not self.config['apikey']:
             raise errors.RequestError('No API key configured')
 
         response = await http.post(
-            url=f'{self._url_base}/upload.php',
+            url=f'{self.config["base_url"]}/upload.php',
             cache=False,
             headers={
-                'referer': f'{self._url_base}/index.php',
+                'referer': f'{self.config["base_url"]}/index.php',
             },
             data={
-                'api_key': self._apikey,
+                'api_key': self.config['apikey'],
             },
             files={
                 'file-upload[0]': image_path,
@@ -48,5 +48,5 @@ class PtpimgImageHost(ImageHostBase):
         except (IndexError, KeyError, TypeError, AssertionError):
             raise RuntimeError(f'Unexpected response: {images}')
         else:
-            image_url = f'{self._url_base}/{code}.{ext}'
+            image_url = f'{self.config["base_url"]}/{code}.{ext}'
             return {'url': image_url}
