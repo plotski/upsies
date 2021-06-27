@@ -19,7 +19,7 @@ class ImageHostBase(abc.ABC):
     """
     Base class for image uploaders
 
-    :param str cache_dir: Where to store URLs in JSON files; defaults to
+    :param str cache_directory: Where to store URLs in JSON files; defaults to
         :attr:`.constants.CACHE_DIRPATH`
     :param dict config: User configuration
     """
@@ -117,14 +117,14 @@ class ImageHostBase(abc.ABC):
             raise RuntimeError(f'Unable to write cache {cache_file}: {msg}')
 
     def _cache_file(self, image_path):
-        # If image is in our cache_dir, the image's file name makes it
+        # If image is in our cache_directory, the image's file name makes it
         # unique. This is usually the case when we're uploading screenshots. If
-        # image is not in our cache_dir, use the absolute path as a unique
+        # image is not in our cache_directory, use the absolute path as a unique
         # identifier.
-        if fs.dirname(image_path) == self._cache_dir:
+        if fs.dirname(image_path) == self.cache_directory:
             image_path = os.path.basename(image_path)
         else:
             image_path = os.path.abspath(image_path)
         # Max file name length is ususally 255 bytes
         filename = fs.sanitize_filename(image_path[-200:]) + f'.{self.name}.json'
-        return os.path.join(self._cache_dir, filename)
+        return os.path.join(self.cache_directory, filename)
