@@ -20,8 +20,8 @@ def test_webdb_returns_WebdbApiBase_instance(mocker):
     existing_webdbs[1].configure_mock(name='bar')
     existing_webdbs[2].configure_mock(name='baz')
     mocker.patch('upsies.utils.webdbs.webdbs', return_value=existing_webdbs)
-    assert webdbs.webdb('bar', x=123) is existing_webdbs[1].return_value
-    assert existing_webdbs[1].call_args_list == [call(x=123)]
+    assert webdbs.webdb('bar', config={'foo': 'bar'}) is existing_webdbs[1].return_value
+    assert existing_webdbs[1].call_args_list == [call(config={'foo': 'bar'})]
 
 def test_webdb_fails_to_find_webdb(mocker):
     existing_webdbs = (Mock(), Mock(), Mock())
@@ -30,7 +30,7 @@ def test_webdb_fails_to_find_webdb(mocker):
     existing_webdbs[2].configure_mock(name='baz')
     mocker.patch('upsies.utils.webdbs.webdbs', return_value=existing_webdbs)
     with pytest.raises(ValueError, match='^Unsupported web database: bam$'):
-        webdbs.webdb('bam', x=123)
+        webdbs.webdb('bam')
     for c in existing_webdbs:
         assert c.call_args_list == []
 

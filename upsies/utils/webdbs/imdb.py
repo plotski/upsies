@@ -20,8 +20,10 @@ class ImdbApi(WebDbApiBase):
 
     name = 'imdb'
     label = 'IMDb'
-    _url_base = 'https://imdb.com'
 
+    default_config = {}
+
+    _url_base = 'https://imdb.com'
     _soup_cache = {}
 
     async def _get_soup(self, path, params={}):

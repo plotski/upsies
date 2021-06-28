@@ -22,6 +22,9 @@ class TvmazeApi(WebDbApiBase):
 
     name = 'tvmaze'
     label = 'TVmaze'
+
+    default_config = {}
+
     _url_base = 'http://api.tvmaze.com'
 
     def __init__(self, *args, **kwargs):

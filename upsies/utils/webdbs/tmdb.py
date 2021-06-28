@@ -19,8 +19,10 @@ class TmdbApi(WebDbApiBase):
 
     name = 'tmdb'
     label = 'TMDb'
-    _url_base = 'http://themoviedb.org'
 
+    default_config = {}
+
+    _url_base = 'http://themoviedb.org'
     _soup_cache = {}
 
     async def _get_soup(self, path, params={}):

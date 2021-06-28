@@ -13,36 +13,54 @@ class AsyncMock(Mock):
         return coro()
 
 
-class TestApi(WebDbApiBase):
-    name = 'foo'
-    label = 'Foo'
-    search = AsyncMock()
+def make_TestWebDbApi(default_config=None, **kwargs):
+    # Avoid NameError bug
+    default_config_ = default_config
 
-    directors = AsyncMock()
-    creators = AsyncMock()
-    cast = AsyncMock()
-    countries = AsyncMock()
-    genres = AsyncMock()
-    poster_url = AsyncMock()
-    rating_min = 0.0
-    rating_max = 10.0
-    rating = AsyncMock()
-    summary = AsyncMock()
-    title_english = AsyncMock()
-    title_original = AsyncMock()
-    type = AsyncMock()
-    url = AsyncMock()
-    year = AsyncMock()
+    class TestWebDbApi(WebDbApiBase):
+        name = 'foo'
+        label = 'Foo'
+        default_config = default_config_ or {}
+        search = AsyncMock()
 
+        directors = AsyncMock()
+        creators = AsyncMock()
+        cast = AsyncMock()
+        countries = AsyncMock()
+        genres = AsyncMock()
+        poster_url = AsyncMock()
+        rating_min = 0.0
+        rating_max = 10.0
+        rating = AsyncMock()
+        summary = AsyncMock()
+        title_english = AsyncMock()
+        title_original = AsyncMock()
+        type = AsyncMock()
+        url = AsyncMock()
+        year = AsyncMock()
+
+    return TestWebDbApi(**kwargs)
 
 @pytest.fixture
 def webdb():
-    return TestApi()
+    return make_TestWebDbApi()
 
 
-def test_attributes(webdb):
+def test_name_property(webdb):
     assert webdb.name == 'foo'
+
+
+def test_label_property(webdb):
     assert webdb.label == 'Foo'
+
+
+def test_config_property():
+    webdb = make_TestWebDbApi()
+    assert webdb.config == {}
+    webdb = make_TestWebDbApi(default_config={'foo': 1, 'bar': 2})
+    assert webdb.config == {'foo': 1, 'bar': 2}
+    webdb = make_TestWebDbApi(default_config={'foo': 1, 'bar': 2}, config={'bar': 99})
+    assert webdb.config == {'foo': 1, 'bar': 99}
 
 
 def test_sanitize_query(webdb):

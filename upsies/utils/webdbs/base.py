@@ -4,6 +4,7 @@ Abstract base class for online databases
 
 import abc
 import asyncio
+import copy
 
 from .common import Query
 
@@ -16,6 +17,11 @@ class WebDbApiBase(abc.ABC):
     argument may raise :class:`NotImplementedError`.
     """
 
+    def __init__(self, config=None):
+        self._config = copy.deepcopy(self.default_config)
+        if config is not None:
+            self._config.update(config.items())
+
     @property
     @abc.abstractmethod
     def name(self):
@@ -25,6 +31,21 @@ class WebDbApiBase(abc.ABC):
     @abc.abstractmethod
     def label(self):
         """User-facing name of this DB"""
+
+    @property
+    def config(self):
+        """
+        User configuration
+
+        This is a deep copy of :attr:`default_config` that is updated with the
+        `config` argument from initialization.
+        """
+        return self._config
+
+    @property
+    @abc.abstractmethod
+    def default_config(self):
+        """Default user configuration as a dictionary"""
 
     def sanitize_query(self, query):
         """
