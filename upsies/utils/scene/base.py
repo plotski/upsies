@@ -3,13 +3,16 @@ Abstract base class for scene release databases
 """
 
 import abc
-
-import logging  # isort:skip
-_log = logging.getLogger(__name__)
+import copy
 
 
 class SceneDbApiBase(abc.ABC):
     """Base class for scene release database APIs"""
+
+    def __init__(self, config=None):
+        self._config = copy.deepcopy(self.default_config)
+        if config is not None:
+            self._config.update(config.items())
 
     @property
     @abc.abstractmethod
@@ -20,6 +23,21 @@ class SceneDbApiBase(abc.ABC):
     @abc.abstractmethod
     def label(self):
         """User-facing name of the scene release database"""
+
+    @property
+    def config(self):
+        """
+        User configuration
+
+        This is a deep copy of :attr:`default_config` that is updated with the
+        `config` argument from initialization.
+        """
+        return self._config
+
+    @property
+    @abc.abstractmethod
+    def default_config(self):
+        """Default user configuration as a dictionary"""
 
     async def search(self, query, only_existing_releases=True):
         """

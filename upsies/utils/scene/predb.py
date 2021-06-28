@@ -12,6 +12,8 @@ class PreDbApi(base.SceneDbApiBase):
     name = 'predb'
     label = 'PreDB'
 
+    default_config = {}
+
     _url_base = b64decode('cHJlZGIub3Zo').decode('ascii')
     _search_url = f'https://{_url_base}/api/v1/'
 

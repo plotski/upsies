@@ -6,20 +6,17 @@ import re
 
 from ... import errors
 from .. import LazyModule, release
-from . import common, predb, srrdb
+from . import common, predb
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 natsort = LazyModule(module='natsort', namespace=globals())
 
-_PREDB = predb.PreDbApi()
-_SRRDB = srrdb.SrrDbApi()
-
 
 async def search(*args, **kwargs):
     """Search with the recommended :class:`~.SceneDbApiBase` subclass"""
-    return await _PREDB.search(*args, **kwargs)
+    return await predb.PreDbApi().search(*args, **kwargs)
 
 
 class SceneQuery:

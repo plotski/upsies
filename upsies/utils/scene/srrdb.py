@@ -11,6 +11,8 @@ class SrrDbApi(base.SceneDbApiBase):
     name = 'srrdb'
     label = 'srrDB'
 
+    default_config = {}
+
     _url_base = b64decode('d3d3LnNycmRiLmNvbQ==').decode('ascii')
     _search_url = f'https://{_url_base}/api/search'
     _details_url = f'https://{_url_base}/api/details'

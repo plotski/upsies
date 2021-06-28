@@ -26,6 +26,10 @@ def test_label():
     assert predb.PreDbApi.label == 'PreDB'
 
 
+def test_default_config():
+    assert predb.PreDbApi.default_config == {}
+
+
 @pytest.mark.parametrize('group', (None, '', 'ASDF'), ids=lambda v: str(v))
 @pytest.mark.asyncio
 async def test_search_calls_http_get(group, api, mocker):
