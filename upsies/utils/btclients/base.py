@@ -39,7 +39,7 @@ class ClientApiBase(abc.ABC):
         """Default user configuration as a dictionary"""
 
     @abc.abstractmethod
-    def add_torrent(self, torrent_path, download_path=None):
+    async def add_torrent(self, torrent_path, download_path=None):
         """
         Add torrent to client
 
