@@ -24,7 +24,7 @@ def test_name_property():
     assert client.name == 'testorrent'
 
 
-def test_config_property(mocker, tmp_path):
+def test_config_property():
     client = make_TestClientApi()
     assert client.config == {}
     client = make_TestClientApi(default_config={'foo': 1, 'bar': 2})

@@ -57,7 +57,7 @@ def test_cache_directory_property(mocker, tmp_path):
     assert imghost.cache_directory == 'path/to/foo'
 
 
-def test_config_property(mocker, tmp_path):
+def test_config_property():
     imghost = make_TestImageHost()
     assert imghost.config == {}
     imghost = make_TestImageHost(default_config={'foo': 1, 'bar': 2})
