@@ -14,12 +14,6 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-DEFAULT_URL = 'http://localhost:9091/transmission/rpc'
-AUTH_ERROR_CODE = 401
-CSRF_ERROR_CODE = 409
-CSRF_HEADER = 'X-Transmission-Session-Id'
-
-
 class TransmissionClientApi(ClientApiBase):
     """
     Transmission daemon API
@@ -32,33 +26,45 @@ class TransmissionClientApi(ClientApiBase):
         "http://localhost:9091/transmission/rpc"
     """
 
+    DEFAULT_URL = 'http://localhost:9091/transmission/rpc'
+    AUTH_ERROR_CODE = 401
+    CSRF_ERROR_CODE = 409
+    CSRF_HEADER = 'X-Transmission-Session-Id'
+    HEADERS = {
+        'Content-Type': 'application/json',
+    }
+
     name = 'transmission'
 
-    def __init__(self, username='', password='', url=None):
-        self._username = username
-        self._password = password
-        self._url = url or DEFAULT_URL
-        self._headers = {'Content-Type': 'application/json'}
+    default_config = {
+        'url': DEFAULT_URL,
+        'username': '',
+        'password': '',
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._headers = self.HEADERS.copy()
 
     async def _request(self, data):
-        if self._username or self._password:
-            auth = (self._username, self._password)
+        if self.config['username'] or self.config['password']:
+            auth = (self.config['username'], self.config['password'])
         else:
             auth = None
 
         try:
             response = await http.post(
-                url=self._url,
+                url=self.config['url'],
                 headers=self._headers,
                 auth=auth,
                 data=data,
             )
         except errors.RequestError as e:
-            if e.status_code == CSRF_ERROR_CODE:
+            if e.status_code == self.CSRF_ERROR_CODE:
                 # Send same request again with CSRF header
-                self._headers[CSRF_HEADER] = e.headers[CSRF_HEADER]
+                self._headers[self.CSRF_HEADER] = e.headers[self.CSRF_HEADER]
                 return await self._request(data)
-            elif e.status_code == AUTH_ERROR_CODE:
+            elif e.status_code == self.AUTH_ERROR_CODE:
                 raise errors.TorrentError('Authentication failed')
             else:
                 raise errors.TorrentError(e)

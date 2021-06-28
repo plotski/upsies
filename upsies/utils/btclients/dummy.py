@@ -12,9 +12,14 @@ class DummyClientApi(ClientApiBase):
 
     name = 'dummy'
 
+    default_config = {
+        'hash': 'DE4DB33F',
+        'delay': 1.0,
+    }
+
     async def add_torrent(self, torrent_path, download_path=None):
         """Pretend to add `torrent_path`"""
         # Raise exception if file doesn't exist
         self.read_torrent_file(torrent_path)
-        await asyncio.sleep(2)
-        return 'DE4DB33F'
+        await asyncio.sleep(self.config['delay'])
+        return self.config['hash']

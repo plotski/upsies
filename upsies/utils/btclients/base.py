@@ -3,6 +3,7 @@ Base class for client APIs
 """
 
 import abc
+import copy
 
 from ... import errors
 
@@ -12,10 +13,30 @@ class ClientApiBase(abc.ABC):
     Base class for all BitTorrent client APIs
     """
 
+    def __init__(self, config=None):
+        self._config = copy.deepcopy(self.default_config)
+        if config is not None:
+            self._config.update(config.items())
+
     @property
     @abc.abstractmethod
     def name(self):
         """Name of the BitTorrent client"""
+
+    @property
+    def config(self):
+        """
+        User configuration
+
+        This is a deep copy of :attr:`default_config` that is updated with the
+        `config` argument from initialization.
+        """
+        return self._config
+
+    @property
+    @abc.abstractmethod
+    def default_config(self):
+        """Default user configuration as a dictionary"""
 
     @abc.abstractmethod
     def add_torrent(self, torrent_path, download_path=None):

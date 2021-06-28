@@ -45,7 +45,7 @@ def test_name(tmp_path):
 @pytest.mark.asyncio
 async def test_request_connection_error():
     url = 'http://localhost:12345/'
-    api = transmission.TransmissionClientApi(url=url)
+    api = transmission.TransmissionClientApi(config={'url': url})
     with pytest.raises(errors.TorrentError, match=f'^{re.escape(url)}: All connection attempts failed'):
         await api._request('foo')
 
@@ -54,7 +54,7 @@ async def test_request_json_parsing_error(httpserver):
     path = '/transmission/rpc'
     httpserver.expect_request(uri=path).respond_with_data('this is not json')
     url = httpserver.url_for(path)
-    api = transmission.TransmissionClientApi(url=url)
+    api = transmission.TransmissionClientApi(config={'url': url})
     with pytest.raises(errors.TorrentError, match='^Malformed JSON: this is not json: '):
         await api._request('foo')
 
@@ -68,8 +68,8 @@ async def test_request_CSRF_token(httpserver):
     class Handler(RequestHandler):
         responses = [
             Response(
-                status=transmission.CSRF_ERROR_CODE,
-                headers={transmission.CSRF_HEADER: csrf_token},
+                status=transmission.TransmissionClientApi.CSRF_ERROR_CODE,
+                headers={transmission.TransmissionClientApi.CSRF_HEADER: csrf_token},
             ),
             json.dumps(response),
         ]
@@ -77,7 +77,7 @@ async def test_request_CSRF_token(httpserver):
         def handle(self, request):
             self.requests_seen.append({
                 'method': request.method,
-                'csrf_token': request.headers.get(transmission.CSRF_HEADER),
+                'csrf_token': request.headers.get(transmission.TransmissionClientApi.CSRF_HEADER),
                 'data': request.data,
             })
             return self.responses.pop(0)
@@ -85,7 +85,7 @@ async def test_request_CSRF_token(httpserver):
     handler = Handler()
     httpserver.expect_request(uri=path).respond_with_handler(handler)
 
-    api = transmission.TransmissionClientApi(url=httpserver.url_for(path))
+    api = transmission.TransmissionClientApi(config={'url': httpserver.url_for(path)})
     assert await api._request(data) == response
     assert handler.requests_seen == [
         {'method': 'POST', 'csrf_token': None, 'data': data},
@@ -104,20 +104,20 @@ async def test_request_authentication_credentials_are_sent(httpserver):
     ).respond_with_json(
         {'response': 'info'}
     )
-    api = transmission.TransmissionClientApi(
-        url=httpserver.url_for(path),
-        username='foo',
-        password='bar',
-    )
+    api = transmission.TransmissionClientApi(config={
+        'url': httpserver.url_for(path),
+        'username': 'foo',
+        'password': 'bar',
+    })
     assert await api._request('request data') == {'response': 'info'}
 
 @pytest.mark.asyncio
 async def test_request_authentication_fails(httpserver):
     path = '/transmission/rpc'
     httpserver.expect_request(uri=path).respond_with_data(
-        status=transmission.AUTH_ERROR_CODE,
+        status=transmission.TransmissionClientApi.AUTH_ERROR_CODE,
     )
-    api = transmission.TransmissionClientApi(url=httpserver.url_for(path))
+    api = transmission.TransmissionClientApi(config={'url': httpserver.url_for(path)})
     with pytest.raises(errors.TorrentError, match='^Authentication failed$'):
         await api._request('request data')
 

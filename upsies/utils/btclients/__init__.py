@@ -11,14 +11,14 @@ def clients():
     return subclasses(ClientApiBase, submodules(__package__))
 
 
-def client(name, **kwargs):
+def client(name, config=None):
     """
     Create :class:`.ClientApiBase` instance
 
     :param str name: Name of the client. A subclass of :class:`.ClientApiBase`
         with the same :attr:`~.ClientApiBase.name` must exist in one of this
         package's submodules.
-    :param kwargs: All keyword arguments are passed to the subclass specified by
+    :param dict config: User configuration passed to the subclass specified by
         `name`
 
     :raise ValueError: if no matching subclass can be found
@@ -27,7 +27,7 @@ def client(name, **kwargs):
     """
     for client in clients():
         if client.name == name:
-            return client(**kwargs)
+            return client(config=config)
     raise ValueError(f'Unsupported client: {name}')
 
 

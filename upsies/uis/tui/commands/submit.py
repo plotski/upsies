@@ -123,7 +123,7 @@ class submit(CommandBase):
         if btclient_name:
             return utils.btclients.client(
                 name=btclient_name,
-                **self.config['clients'][btclient_name],
+                config=self.config['clients'][btclient_name],
             )
 
     def _get_torrent_destination(self):

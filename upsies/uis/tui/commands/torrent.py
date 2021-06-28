@@ -36,7 +36,7 @@ class torrent_add(CommandBase):
                 ignore_cache=self.args.ignore_cache,
                 client=utils.btclients.client(
                     name=self.args.CLIENT,
-                    **self.config['clients'][self.args.CLIENT],
+                    config=self.config['clients'][self.args.CLIENT],
                 ),
                 download_path=self.args.download_path,
                 enqueue=self.args.TORRENT,
@@ -103,7 +103,7 @@ class torrent_create(CommandBase):
                 ignore_cache=self.args.ignore_cache,
                 client=utils.btclients.client(
                     name=self.args.add_to,
-                    **self.config['clients'][self.args.add_to],
+                    config=self.config['clients'][self.args.add_to],
                 ),
                 download_path=utils.fs.dirname(self.args.CONTENT),
             )

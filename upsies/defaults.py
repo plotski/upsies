@@ -21,12 +21,8 @@ defaults = {
     },
 
     'clients': {
-        'dummy': {},
-        'transmission': {
-            'url': 'http://localhost:9091/transmission/rpc',
-            'username': '',
-            'password': '',
-        },
+        client.name: client.default_config
+        for client in utils.btclients.clients()
     },
 }
 """Defaults for configuration options"""

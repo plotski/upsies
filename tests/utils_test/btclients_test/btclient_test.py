@@ -20,8 +20,8 @@ def test_client_returns_ClientApiBase_instance(mocker):
     existing_clients[1].configure_mock(name='bar')
     existing_clients[2].configure_mock(name='baz')
     mocker.patch('upsies.utils.btclients.clients', return_value=existing_clients)
-    assert btclients.client('bar', x=123) is existing_clients[1].return_value
-    assert existing_clients[1].call_args_list == [call(x=123)]
+    assert btclients.client('bar', config={'foo': 'bar'}) is existing_clients[1].return_value
+    assert existing_clients[1].call_args_list == [call(config={'foo': 'bar'})]
 
 def test_client_fails_to_find_client(mocker):
     existing_clients = (Mock(), Mock(), Mock())
@@ -30,7 +30,7 @@ def test_client_fails_to_find_client(mocker):
     existing_clients[2].configure_mock(name='baz')
     mocker.patch('upsies.utils.btclients.clients', return_value=existing_clients)
     with pytest.raises(ValueError, match='^Unsupported client: bam$'):
-        btclients.client('bam', x=123)
+        btclients.client('bam')
     for c in existing_clients:
         assert c.call_args_list == []
 

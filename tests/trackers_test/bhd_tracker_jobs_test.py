@@ -30,6 +30,7 @@ def imghost():
 def btclient():
     class MockClientApi(utils.btclients.base.ClientApiBase):
         name = 'mock bittorrent client'
+        default_config = {}
 
         async def add_torrent(self, torrent_path, download_path=None):
             pass

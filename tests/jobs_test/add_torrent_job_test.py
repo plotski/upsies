@@ -18,6 +18,7 @@ class AsyncMock(Mock):
 def client():
     class MockClient(btclients.ClientApiBase):
         name = 'mocksy'
+        default_config = {}
         add_torrent = AsyncMock()
 
         def __repr__(self):
