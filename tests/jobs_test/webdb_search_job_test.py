@@ -23,6 +23,7 @@ def foodb(mocker):
     class TestDb(WebDbApiBase):
         name = 'foodb'
         label = 'FooDB'
+        default_config = {}
         sanitize_query = Mock()
         search = AsyncMock()
         cast = AsyncMock()
