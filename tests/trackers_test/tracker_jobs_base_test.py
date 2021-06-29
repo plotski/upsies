@@ -440,7 +440,7 @@ def test_upload_screenshots_job_with_image_host_argument(mocker):
     # doesn't concern us
     assert tracker_jobs.screenshots_job.signal.register.call_args_list[-2:] == [
         call('output', tracker_jobs.upload_screenshots_job.enqueue),
-        call('finished', tracker_jobs.upload_screenshots_job.finalize),
+        call('finished', tracker_jobs.finalize_upload_screenshots_job),
     ]
 
 def test_upload_screenshots_job_is_singleton(mocker):
@@ -452,6 +452,19 @@ def test_upload_screenshots_job_is_singleton(mocker):
         image_host=Mock(),
     )
     assert tracker_jobs.upload_screenshots_job is tracker_jobs.upload_screenshots_job
+
+
+def test_finalize_upload_screenshots_job(mocker):
+    mocker.patch('upsies.jobs.screenshots.ScreenshotsJob', side_effect=(Mock(), Mock()))
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        tracker='mock tracker',
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+        bittorrent_client='bittorrent client mock',
+    )
+    mocker.patch.object(tracker_jobs, 'upload_screenshots_job')
+    tracker_jobs.finalize_upload_screenshots_job('mock job')
+    assert tracker_jobs.upload_screenshots_job.finalize.call_args_list == [call()]
 
 
 def test_mediainfo_job(mocker):

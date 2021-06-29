@@ -358,8 +358,11 @@ class TrackerJobsBase(abc.ABC):
             # Pass ScreenshotsJob's output to ImageHostJob input.
             self.screenshots_job.signal.register('output', imghost_job.enqueue)
             # Tell imghost_job to finish the current upload and then finish.
-            self.screenshots_job.signal.register('finished', imghost_job.finalize)
+            self.screenshots_job.signal.register('finished', self.finalize_upload_screenshots_job)
             return imghost_job
+
+    def finalize_upload_screenshots_job(self, _):
+        self.upload_screenshots_job.finalize()
 
     @cached_property
     def mediainfo_job(self):
