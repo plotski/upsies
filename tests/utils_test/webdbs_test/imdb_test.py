@@ -218,7 +218,7 @@ async def test_search_result_genres(query, exp_genres, api, store_response):
         (Query('My Best Fiend', type=ReleaseType.movie, year=1999),
          ("In the 1950s, an adolescent Werner Herzog was transfixed by a film performance "
           "of the young Klaus Kinski. Years later, they would share an apartment where, "
-          "in an unabated, forty-eight-hour ...")),
+          "in an unabated, forty-eight-hour…")),
         (Query('Zero Dark Thirty', type=ReleaseType.movie, year=2012),
          ("A chronicle of the decade-long hunt for al-Qaeda terrorist leader "
           "Osama bin Laden after the September 2001 attacks, and his death "

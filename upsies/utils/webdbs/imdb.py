@@ -484,6 +484,7 @@ class _ImdbSearchResult(common.SearchResult):
                     summary = ''.join(summary_tag.strings)
 
         summary = re.sub(r'(?i:see full summary).*', '', summary).strip()
+        summary = re.sub(r'\s*\.\.\.\s*$', '…', summary)
 
         return summary
 
