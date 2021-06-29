@@ -482,7 +482,8 @@ class _ImdbSearchResult(common.SearchResult):
                 summary_tag = summary_link.parent
                 if summary_tag:
                     summary = ''.join(summary_tag.strings)
-                    summary = re.sub(r'See full summary.*', '', summary).strip()
+
+        summary = re.sub(r'(?i:see full summary).*', '', summary).strip()
 
         return summary
 

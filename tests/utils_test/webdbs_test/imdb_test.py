@@ -197,24 +197,39 @@ async def test_search_result_genres(query, exp_genres, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_summary'),
     argvalues=(
-        (Query('star wars', type=ReleaseType.movie, year=1977), 'Luke Skywalker joins forces with a Jedi'),
-        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), 'A young trapeze artist must decide'),
-        (Query('The Forest', type=ReleaseType.series, year=2017), 'Sixteen-year-old Jennifer disappears'),
-        (Query('Deadwood', type=ReleaseType.series, year=2004), 'set in the late 1800s'),
+        (Query('star wars', type=ReleaseType.movie, year=1977),
+         ("Luke Skywalker joins forces with a Jedi Knight, a cocky pilot, a Wookiee and two droids to save "
+          "the galaxy from the Empire's world-destroying battle station, while also attempting to rescue "
+          "Princess Leia from the mysterious Darth Vader.")),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010),
+         ("A young trapeze artist must decide between her lust for Sergio, the Happy Clown, "
+          "or her affection for Javier, the Sad Clown, both of whom are deeply disturbed.")),
+        (Query('The Forest', type=ReleaseType.series, year=2017),
+         ("Sixteen-year-old Jennifer disappears one night from her village in the Ardennes. "
+          "Captain Gaspard Deker leads the investigation with local cop Virginie Musso, "
+          "who knew the girl well. They are helped by Eve, a lonely and mysterious woman.")),
+        (Query('Deadwood', type=ReleaseType.series, year=2004),
+         ("A show set in the late 1800s, revolving around the characters of Deadwood, "
+          "South Dakota; a town of deep corruption and crime.")),
         (Query('The Deadwood Coach', type=ReleaseType.movie, year=1924), ''),
-        (Query('Two Down', type=ReleaseType.movie, year=2015), "A young woman's world is turned upside down"),
-        (Query('My Best Fiend', type=ReleaseType.movie, year=1999), 'In the 1950s, an adolescent Werner Herzog'),
-        (Query('Zero Dark Thirty', type=ReleaseType.movie, year=2012), 'al-Qaeda terrorist leader Osama bin Laden'),
+        (Query('Two Down', type=ReleaseType.movie, year=2015),
+         ("A young woman's world is turned upside down when an injured hit man "
+          "takes her hostage at gunpoint in her own home.")),
+        (Query('My Best Fiend', type=ReleaseType.movie, year=1999),
+         ("In the 1950s, an adolescent Werner Herzog was transfixed by a film performance "
+          "of the young Klaus Kinski. Years later, they would share an apartment where, "
+          "in an unabated, forty-eight-hour ...")),
+        (Query('Zero Dark Thirty', type=ReleaseType.movie, year=2012),
+         ("A chronicle of the decade-long hunt for al-Qaeda terrorist leader "
+          "Osama bin Laden after the September 2001 attacks, and his death "
+          "at the hands of the Navy S.E.A.L.s Team 6 in May 2011.")),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
 async def test_search_result_summary(query, exp_summary, api, store_response):
     results = await api.search(query)
-    if exp_summary:
-        assert exp_summary in results[0].summary
-    else:
-        assert results[0].summary == ''
+    assert results[0].summary == exp_summary
 
 
 @pytest.mark.parametrize(
