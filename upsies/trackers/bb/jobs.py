@@ -1185,7 +1185,7 @@ class BbTrackerJobs(TrackerJobsBase):
         elif self.is_series_release:
             post_data = {
                 'submit': 'true',
-                'type': 'TV',
+                'type': 'Anime' if self.options['anime'] else 'TV',
                 'title': self.get_job_output(self.series_title_job, slice=0),
                 'tags': self.get_job_output(self.series_tags_job, slice=0),
                 'desc': self.get_job_output(self.series_description_job, slice=0),

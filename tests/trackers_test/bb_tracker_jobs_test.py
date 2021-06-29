@@ -2316,10 +2316,12 @@ async def test_torrent_filepath(bb_tracker_jobs, mocker):
 
 
 @pytest.mark.parametrize('is_scene_release', (True, False))
+@pytest.mark.parametrize('anime', (True, False))
 @pytest.mark.asyncio
-async def test_post_data_for_movie(is_scene_release, bb_tracker_jobs, mocker):
+async def test_post_data_for_movie(anime, is_scene_release, bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=True))
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={'anime': anime}))
     mocker.patch.object(type(bb_tracker_jobs), 'post_data_screenshot_urls', PropertyMock(
         return_value={'screenshot1': 'http://foo', 'screenshot2': 'http://bar'}))
 
@@ -2383,10 +2385,12 @@ async def test_post_data_for_movie(is_scene_release, bb_tracker_jobs, mocker):
     assert post_data == exp_post_data
 
 @pytest.mark.parametrize('is_scene_release', (True, False))
+@pytest.mark.parametrize('anime', (True, False))
 @pytest.mark.asyncio
-async def test_post_data_for_series(is_scene_release, bb_tracker_jobs, mocker):
+async def test_post_data_for_series(anime, is_scene_release, bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=True))
+    mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={'anime': anime}))
     mocker.patch.object(type(bb_tracker_jobs), 'post_data_screenshot_urls', PropertyMock(
         return_value={'screenshot1': 'http://foo', 'screenshot2': 'http://bar'}))
 
@@ -2412,7 +2416,7 @@ async def test_post_data_for_series(is_scene_release, bb_tracker_jobs, mocker):
 
     exp_post_data = {
         'submit': 'true',
-        'type': 'TV',
+        'type': 'TV' if not anime else 'Anime',
         'title': 'title value',
         'tags': 'tags value',
         'desc': 'description value',

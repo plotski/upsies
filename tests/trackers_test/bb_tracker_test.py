@@ -35,6 +35,10 @@ def test_TrackerJobs_attribute():
 
 def test_argument_definitions():
     assert BbTracker.argument_definitions == {
+        ('--anime', '--an'): {
+            'help': 'Upload as anime (ignored for movies)',
+            'action': 'store_true',
+        },
         ('--poster-file',): {
             'help': 'Path or URL to poster image',
         },
