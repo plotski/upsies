@@ -1,4 +1,5 @@
 import os
+import random
 import re
 from unittest.mock import Mock, call, patch
 
@@ -576,7 +577,7 @@ def test_first_video_gets_file(tmp_path, mocker):
         call(file_list_mock.return_value),
     ]
 
-def test_first_video_gets_directory(tmp_path, mocker):
+def test_first_video_gets_directory_with_unexpected_filenames(tmp_path, mocker):
     file_list_mock = mocker.patch(
         'upsies.utils.fs.file_list',
         return_value=('some/path/foo.mkv', 'some/path/bar.mkv', 'some/path/baz.mkv'),
@@ -592,6 +593,28 @@ def test_first_video_gets_directory(tmp_path, mocker):
     assert filter_similar_duration_mock.call_args_list == [
         call(file_list_mock.return_value),
     ]
+
+@pytest.mark.parametrize('separator', ('.', ' '))
+@pytest.mark.parametrize(
+    argnames='filelist',
+    argvalues=(
+        ('some/path/S01E01.mkv', 'some/path/S01E02.mkv', 'some/path/S01E03.mkv'),
+        ('some/path/Foo S02E01.mkv', 'some/path/Foo S02E02.mkv', 'some/path/Foo S02E03.mkv'),
+        ('some/path/Foo S03E01 x264.mkv', 'some/path/Foo S03E02 x264.mkv', 'some/path/Foo S03E03 x264.mkv'),
+        ('some/path/Foo S4E1 x264.mkv', 'some/path/Foo S4E2 x264.mkv', 'some/path/Foo S4E03 x264.mkv'),
+    ),
+    ids=lambda v: str(v),
+)
+def test_first_video_gets_directory_with_expected_filenames(filelist, separator, tmp_path, mocker):
+    filelist_shuffled = [file.replace(' ', separator)
+                         for file in random.sample(filelist, k=len(filelist))]
+    file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=filelist_shuffled)
+    filter_similar_duration_mock = mocker.patch('upsies.utils.video.filter_similar_duration')
+    assert video.first_video(tmp_path) == filelist[0].replace(' ', separator)
+    assert file_list_mock.call_args_list == [
+        call(tmp_path, extensions=constants.VIDEO_FILE_EXTENSIONS),
+    ]
+    assert filter_similar_duration_mock.call_args_list == []
 
 def test_first_video_gets_bluray_image(tmp_path, mocker):
     path = tmp_path / 'foo'

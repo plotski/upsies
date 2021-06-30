@@ -534,6 +534,14 @@ def first_video(path):
     else:
         files = fs.file_list(path, extensions=constants.VIDEO_FILE_EXTENSIONS)
 
+        # Find S\d+E01 in files to get the most common case without getting at
+        # video durations
+        first_video_regex = re.compile(r'(?:^|[ \.])S\d+E0*1[ \.]')
+        for file in files:
+            if first_video_regex.search(os.path.basename(file)):
+                _log.debug('Found first episode: %r', file)
+                return file
+
     if not files:
         raise errors.ContentError(f'{path}: No video file found')
     else:
