@@ -1087,7 +1087,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 extensions=constants.VIDEO_FILE_EXTENSIONS,
             )
             if len(filepaths) >= 5:
-                # Ignore first and last episode as they are often longer
+                # Ignore first and last episode as they can be significantly longer
                 filepaths = filepaths[1:-1]
             runtime = sum(video.duration(f) for f in filepaths) / len(filepaths)
         else:
