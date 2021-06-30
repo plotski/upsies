@@ -446,6 +446,36 @@ def test_file_list_recurses_into_subdirectories(tmp_path):
         str((tmp_path / 'a' / 'b' / 'symlink')),
     )
 
+def test_file_list_with_follow_dirlinks(tmp_path):
+    (tmp_path / 'directory').mkdir()
+    (tmp_path / 'directory' / 'directory_contents').write_bytes(b'foo')
+    (tmp_path / 'link_to_directory').symlink_to('directory')
+    (tmp_path / 'file').write_bytes(b'foo')
+    (tmp_path / 'link_to_file').symlink_to('file')
+    (tmp_path / 'dead_link').symlink_to('no_such_file')
+    assert fs.file_list(tmp_path, follow_dirlinks=True) == (
+        str((tmp_path / 'dead_link')),
+        str((tmp_path / 'directory' / 'directory_contents')),
+        str((tmp_path / 'file')),
+        str((tmp_path / 'link_to_directory' / 'directory_contents')),
+        str((tmp_path / 'link_to_file')),
+    )
+
+def test_file_list_without_follow_dirlinks(tmp_path):
+    (tmp_path / 'directory').mkdir()
+    (tmp_path / 'directory' / 'directory_contents').write_bytes(b'foo')
+    (tmp_path / 'link_to_directory').symlink_to('directory')
+    (tmp_path / 'file').write_bytes(b'foo')
+    (tmp_path / 'link_to_file').symlink_to('file')
+    (tmp_path / 'dead_link').symlink_to('no_such_file')
+    assert fs.file_list(tmp_path, follow_dirlinks=False) == (
+        str((tmp_path / 'dead_link')),
+        str((tmp_path / 'directory' / 'directory_contents')),
+        str((tmp_path / 'file')),
+        str((tmp_path / 'link_to_directory')),
+        str((tmp_path / 'link_to_file')),
+    )
+
 def test_file_list_sorts_files_naturally(tmp_path):
     (tmp_path / '3' / '500').mkdir(parents=True)
     (tmp_path / '3' / '500' / '1000.txt').write_bytes(b'foo')

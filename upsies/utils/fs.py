@@ -295,7 +295,7 @@ def file_size(path):
     return None
 
 
-def file_list(path, extensions=(), min_age=None, max_age=None):
+def file_list(path, extensions=(), min_age=None, max_age=None, follow_dirlinks=False):
     """
     List naturally sorted files in `path` and any subdirectories
 
@@ -310,6 +310,8 @@ def file_list(path, extensions=(), min_age=None, max_age=None):
     :type min_age: int or float
     :param max_age: Exclude files that are older than this
     :type max_age: int or float
+    :param follow_dirlinks: Whether to include the contents of symbolic links to
+        directories or the links themselves
 
     :return: Tuple of file paths
     """
@@ -330,11 +332,28 @@ def file_list(path, extensions=(), min_age=None, max_age=None):
             return ()
 
     files = []
-    for root, dirnames, filenames in os.walk(path):
+    for root, dirnames, filenames in os.walk(path, topdown=True, followlinks=follow_dirlinks):
         for filename in sorted(filenames):
             filepath = os.path.join(root, filename)
             if ext_ok(filename) and age_ok(filepath):
                 files.append(filepath)
+
+        # Symbolic links to directories are in `dirnames`
+        if not follow_dirlinks:
+            # For symbolic links that point to a directory, os.walk() can only
+            # include the contents (followlinks=True) or completely ignore the
+            # link. Here we look for links to directories and a) include them in
+            # the returned list and b), remove them from `dirnames` so os.walk()
+            # doesn't recurse into them. It is important to pass topdown=True
+            # for b) to work.
+            for dirname in tuple(dirnames):
+                # Contrary to what the docs say, this returns `True` for dead
+                # and living symbolic links
+                dirpath = os.path.join(root, dirname)
+                if os.path.islink(dirpath):
+                    del dirnames[dirnames.index(dirname)]
+                    files.append(dirpath)
+
     return tuple(natsort.natsorted(files, key=str.casefold))
 
 
