@@ -409,20 +409,23 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_container_job(self):
+        # Get file extension from largest file
+        files = sorted(fs.file_list(self.content_path), key=fs.file_size)
+        autodetected_extension = fs.file_extension(files[-1])
         return self.make_choice_job(
             name='movie-container',
             label='Container',
             condition=self.make_job_condition('movie_container_job', release.ReleaseType.movie),
-            autodetected=fs.file_extension(video.first_video(self.content_path)),
+            autodetected=autodetected_extension,
             autofinish=True,
             options=(
-                {'label': 'AVI', 'value': 'AVI', 'regex': re.compile(r'(?i:AVI)')},
-                {'label': 'MKV', 'value': 'MKV', 'regex': re.compile('(?i:MKV)')},
-                {'label': 'MP4', 'value': 'MP4', 'regex': re.compile(r'(?i:MP4)')},
-                {'label': 'TS', 'value': 'TS', 'regex': re.compile(r'(?i:TS)')},
-                {'label': 'VOB', 'value': 'VOB', 'regex': re.compile(r'(?i:VOB)')},
-                {'label': 'WMV', 'value': 'WMV', 'regex': re.compile(r'(?i:WMV)')},
-                {'label': 'm2ts', 'value': 'm2ts', 'regex': re.compile(r'(?i:m2ts)')},
+                {'label': 'AVI', 'value': 'AVI', 'regex': re.compile(r'^(?i:avi)$')},
+                {'label': 'MKV', 'value': 'MKV', 'regex': re.compile('^(?i:mkv)$')},
+                {'label': 'MP4', 'value': 'MP4', 'regex': re.compile(r'^(?i:mp4)$')},
+                {'label': 'TS', 'value': 'TS', 'regex': re.compile(r'^(?i:ts)$')},
+                {'label': 'VOB', 'value': 'VOB', 'regex': re.compile(r'^(?i:vob)$')},
+                {'label': 'WMV', 'value': 'WMV', 'regex': re.compile(r'^(?i:wmv)$')},
+                {'label': 'm2ts', 'value': 'm2ts', 'regex': re.compile(r'^(?i:m2ts|mts)$')},
             ),
         )
 

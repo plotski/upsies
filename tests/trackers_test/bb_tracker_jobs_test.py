@@ -652,24 +652,29 @@ def test_movie_video_codec_job(bb_tracker_jobs, mocker):
 def test_movie_container_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
     mocker.patch.object(bb_tracker_jobs, 'make_choice_job')
+    file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=('a.foo', 'b.bar', 'c.baz'))
+    file_size_mock = mocker.patch('upsies.utils.fs.file_size', side_effect=(10, 9001, 1000))
+    exp_autodetected_extension = 'bar'
     assert bb_tracker_jobs.movie_container_job is bb_tracker_jobs.make_choice_job.return_value
     assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
         name='movie-container',
         label='Container',
         condition=bb_tracker_jobs.make_job_condition.return_value,
-        autodetected=utils.fs.file_extension(utils.video.first_video(bb_tracker_jobs.content_path)),
+        autodetected=exp_autodetected_extension,
         autofinish=True,
         options=(
-            {'label': 'AVI', 'value': 'AVI', 'regex': re.compile(r'(?i:AVI)')},
-            {'label': 'MKV', 'value': 'MKV', 'regex': re.compile('(?i:MKV)')},
-            {'label': 'MP4', 'value': 'MP4', 'regex': re.compile(r'(?i:MP4)')},
-            {'label': 'TS', 'value': 'TS', 'regex': re.compile(r'(?i:TS)')},
-            {'label': 'VOB', 'value': 'VOB', 'regex': re.compile(r'(?i:VOB)')},
-            {'label': 'WMV', 'value': 'WMV', 'regex': re.compile(r'(?i:WMV)')},
-            {'label': 'm2ts', 'value': 'm2ts', 'regex': re.compile(r'(?i:m2ts)')},
+            {'label': 'AVI', 'value': 'AVI', 'regex': re.compile(r'^(?i:avi)$')},
+            {'label': 'MKV', 'value': 'MKV', 'regex': re.compile('^(?i:mkv)$')},
+            {'label': 'MP4', 'value': 'MP4', 'regex': re.compile(r'^(?i:mp4)$')},
+            {'label': 'TS', 'value': 'TS', 'regex': re.compile(r'^(?i:ts)$')},
+            {'label': 'VOB', 'value': 'VOB', 'regex': re.compile(r'^(?i:vob)$')},
+            {'label': 'WMV', 'value': 'WMV', 'regex': re.compile(r'^(?i:wmv)$')},
+            {'label': 'm2ts', 'value': 'm2ts', 'regex': re.compile(r'^(?i:m2ts|mts)$')},
         ),
     )]
     assert bb_tracker_jobs.make_job_condition.call_args_list == [call('movie_container_job', ReleaseType.movie)]
+    assert file_list_mock.call_args_list == [call(bb_tracker_jobs.content_path)]
+    assert file_size_mock.call_args_list == [call('a.foo'), call('b.bar'), call('c.baz')]
 
 
 def test_movie_release_info_job(bb_tracker_jobs, mocker):
