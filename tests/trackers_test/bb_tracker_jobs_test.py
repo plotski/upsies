@@ -2149,16 +2149,14 @@ async def test_format_description_runtime_for_season_with_few_episodes(bb_tracke
     content_path.mkdir()
     (content_path / 'episode 1.mkv').write_bytes(b'episode 1 data')
     (content_path / 'episode 2.mkv').write_bytes(b'episode 2 data')
-    (content_path / 'episode 3.mkv').write_bytes(b'episode 3 data')
     (content_path / 'content.nfo').write_bytes(b'text')
     mocker.patch.object(type(bb_tracker_jobs), 'content_path', PropertyMock(return_value=str(content_path)))
-    duration_mock = mocker.patch('upsies.utils.video.duration', side_effect=(100, 127, 109))
+    duration_mock = mocker.patch('upsies.utils.video.duration', side_effect=(80, 100))
     text = await bb_tracker_jobs.format_description_runtime()
-    assert text == '[b]Runtime[/b]: 0:01:52'
+    assert text == '[b]Runtime[/b]: 0:01:30'
     assert duration_mock.call_args_list == [
         call(str(content_path / 'episode 1.mkv')),
         call(str(content_path / 'episode 2.mkv')),
-        call(str(content_path / 'episode 3.mkv')),
     ]
 
 @pytest.mark.asyncio
@@ -2176,14 +2174,13 @@ async def test_format_description_runtime_for_season_with_many_episodes(bb_track
     (content_path / 'episode 6.mkv').write_bytes(b'episode 6 data')
     (content_path / 'content.nfo').write_bytes(b'text')
     mocker.patch.object(type(bb_tracker_jobs), 'content_path', PropertyMock(return_value=str(content_path)))
-    duration_mock = mocker.patch('upsies.utils.video.duration', side_effect=(100, 127, 109, 90, 99, 102))
+    duration_mock = mocker.patch('upsies.utils.video.duration', side_effect=(80, 105, 115))
     text = await bb_tracker_jobs.format_description_runtime()
-    assert text == '[b]Runtime[/b]: 0:01:46'
+    assert text == '[b]Runtime[/b]: 0:01:40'
     assert duration_mock.call_args_list == [
         call(str(content_path / 'episode 2.mkv')),
         call(str(content_path / 'episode 3.mkv')),
         call(str(content_path / 'episode 4.mkv')),
-        call(str(content_path / 'episode 5.mkv')),
     ]
 
 @pytest.mark.asyncio

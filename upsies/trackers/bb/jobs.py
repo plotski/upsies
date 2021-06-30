@@ -1084,15 +1084,15 @@ class BbTrackerJobs(TrackerJobsBase):
         if self.is_movie_release or self.is_episode_release:
             runtime = video.duration(self.content_path)
         elif self.is_season_release:
-            # Return average runtime
-            filepaths = fs.file_list(
-                self.content_path,
-                extensions=constants.VIDEO_FILE_EXTENSIONS,
-            )
+            # Get all video files
+            filepaths = fs.file_list(self.content_path, extensions=constants.VIDEO_FILE_EXTENSIONS)
             if len(filepaths) >= 5:
                 # Ignore first and last episode as they can be significantly longer
                 filepaths = filepaths[1:-1]
-            runtime = sum(video.duration(f) for f in filepaths) / len(filepaths)
+            # Get average from 3 episodes
+            filepaths = filepaths[:3]
+            durations = [video.duration(f) for f in filepaths]
+            runtime = sum(durations) / len(durations)
         else:
             return None
         return f'[b]Runtime[/b]: {timestamp.pretty(runtime)}'
