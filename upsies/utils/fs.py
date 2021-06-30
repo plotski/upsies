@@ -127,7 +127,7 @@ def prune_empty(path, files=False, directories=True):
 
     # Prune empty files
     if files:
-        for dirpath, dirnames, filenames in os.walk(path, topdown=False):
+        for dirpath, dirnames, filenames in os.walk(path, topdown=False, followlinks=False):
             for filename in filenames:
                 filepath = os.path.join(dirpath, filename)
                 try:
@@ -138,7 +138,7 @@ def prune_empty(path, files=False, directories=True):
 
     # Prune empty directories
     if directories:
-        for dirpath, dirnames, filenames in os.walk(path, topdown=False):
+        for dirpath, dirnames, filenames in os.walk(path, topdown=False, followlinks=False):
             for dirname in dirnames:
                 subdirpath = os.path.join(dirpath, dirname)
                 try:
@@ -148,7 +148,7 @@ def prune_empty(path, files=False, directories=True):
                     raise_error(e, subdirpath)
 
     # Prune dead links
-    for dirpath, dirnames, filenames in os.walk(path, topdown=False):
+    for dirpath, dirnames, filenames in os.walk(path, topdown=False, followlinks=False):
         for filename in filenames:
             filepath = os.path.join(dirpath, filename)
             try:
