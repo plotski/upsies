@@ -24,7 +24,7 @@ IMGHOSTS_FILEPATH = os.path.join(XDG_CONFIG_HOME, __project_name__, 'imghosts.in
 CLIENTS_FILEPATH = os.path.join(XDG_CONFIG_HOME, __project_name__, 'clients.ini')
 """Path to BitTorrent clients configuration file"""
 
-VIDEO_FILE_EXTENSIONS = ('mkv', 'mp4', 'ts', 'avi', 'vob')
+VIDEO_FILE_EXTENSIONS = ('mkv', 'mp4', 'avi', 'wmv', 'vob', 'm2ts', 'mts', 'ts')
 """Sequence of file extensions to recognize video files"""
 
 GUESSIT_OPTIONS = {
