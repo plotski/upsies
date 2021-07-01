@@ -233,11 +233,13 @@ def sanitize_filename(filename):
     Replace illegal characters in `filename` with "_"
     """
     if os_family() == 'windows':
-        for char in ('<', '>', ':', '"', '/', '\\', '|', '?', '*'):
-            filename = filename.replace(char, '_')
-        return filename
+        illegal_chars = ('<', '>', ':', '"', '/', '\\', '|', '?', '*')
     else:
-        return filename.replace('/', '_')
+        illegal_chars = ('/',)
+
+    for char in illegal_chars:
+        filename = filename.replace(char, '_')
+    return filename
 
 
 def file_extension(path):
