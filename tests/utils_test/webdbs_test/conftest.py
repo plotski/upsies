@@ -4,6 +4,13 @@ from unittest.mock import Mock, patch
 import pytest
 
 
+# Platform independent fs.filename_sanitization() mocking fixture from
+# tests/conftest.py
+@pytest.fixture(scope='module', autouse=True)
+def strict_filename_sanitization(strict_filename_sanitization):
+    pass
+
+
 @pytest.fixture(scope='module', autouse=True)
 def disable_http_requests(pytestconfig, module_mocker):
     from upsies.utils import http

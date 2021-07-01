@@ -376,7 +376,7 @@ def _cache_file(method, url, params={}):
             filename = f'{method.upper()}.{url}?{params_str}'
         else:
             filename = f'{method.upper()}.{url}'
-        return filename.replace('/', '_').replace(' ', '+')
+        return filename.replace(' ', '+')
 
     if params:
         params_str = '&'.join((f'{k}={v}' for k,v in params.items()))

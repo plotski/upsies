@@ -6,7 +6,7 @@ import pytest
 from upsies.utils import http
 
 
-@pytest.fixture(scope='module', autouse=True)
+@pytest.fixture(scope='module')
 def strict_filename_sanitization(module_mocker):
     # Allow this project to be cloned on Windows.
     def sanitize_filename(filename):
