@@ -374,7 +374,7 @@ def test_file_and_parent():
 
 def test_sanitize_path_on_unix(mocker):
     mocker.patch('upsies.utils.fs.os_family', return_value='unix')
-    assert fs.sanitize_filename('foo/bar/baz') == 'foo_bar_baz'
+    assert fs.sanitize_filename('foo<bar>baz :a"b/c \\1|2?3*4.txt') == 'foo<bar>baz :a"b_c \\1|2?3*4.txt'
 
 def test_sanitize_path_on_windows(mocker):
     mocker.patch('upsies.utils.fs.os_family', return_value='windows')
