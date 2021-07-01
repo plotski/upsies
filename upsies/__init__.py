@@ -12,8 +12,8 @@ def application_setup(config):
 
     :param config: :class:`~.configfiles.ConfigFiles` instance
     """
-    from .utils import http
-    http.cache_directory = config['config']['main']['cache_directory']
+    from . import utils
+    utils.http.cache_directory = config['config']['main']['cache_directory']
 
 
 def application_shutdown(config):
