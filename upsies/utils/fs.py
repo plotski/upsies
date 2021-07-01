@@ -78,7 +78,7 @@ def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
     :param max_age: Preserve files that are older than this
     :type max_age: int or float
     """
-    def size(filepaths):
+    def combined_size(filepaths):
         return sum(file_size(f) for f in filepaths
                    if os.path.exists(f) and not os.path.islink(f))
 
@@ -87,9 +87,12 @@ def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
         statinfo = os.stat(filepath, follow_symlinks=False)
         return statinfo.st_atime
 
-    # Remove oldest file until `path` size is small enough
-    filepaths = file_list(path, min_age=min_age, max_age=max_age)
-    while size(filepaths) > max_total_size:
+    def get_filepaths(dirpath):
+        return file_list(dirpath, min_age=min_age, max_age=max_age, follow_dirlinks=False)
+
+    # Keep removing oldest file until `path` size is small enough
+    filepaths = get_filepaths(path)
+    while combined_size(filepaths) > max_total_size:
         oldest_file = sorted(filepaths, key=atime)[0]
         try:
             os.unlink(oldest_file)
@@ -99,7 +102,7 @@ def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
             else:
                 raise RuntimeError(f'{oldest_file}: Failed to prune: {e}')
         else:
-            filepaths = file_list(path, min_age=min_age, max_age=max_age)
+            filepaths = get_filepaths(path)
 
     prune_empty(path, files=True, directories=True)
 
