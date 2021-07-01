@@ -397,14 +397,14 @@ def _semantic_hash(obj):
 
     https://github.com/schollii/sandals/blob/master/json_sem_hash.py
     """
-    def sorted_dict_str(obj):
+    def as_str(obj):
         if isinstance(obj, collections.abc.Mapping):
-            return {k: sorted_dict_str(obj[k]) for k in sorted(obj.keys())}
+            return {as_str(k): as_str(obj[k]) for k in sorted(obj.keys())}
         elif isinstance(obj, str):
             return str(obj)
         elif isinstance(obj, collections.abc.Sequence):
-            return [sorted_dict_str(val) for val in obj]
+            return [as_str(val) for val in sorted(obj)]
         else:
             return str(obj)
 
-    return hashlib.sha256(bytes(repr(sorted_dict_str(obj)), 'UTF-8')).hexdigest()
+    return hashlib.sha256(bytes(repr(as_str(obj)), 'UTF-8')).hexdigest()

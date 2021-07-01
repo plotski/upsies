@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import hashlib
 import io
 import itertools
 import re
@@ -859,3 +860,21 @@ def test_to_cache_can_write_cache_file(mocker):
     assert open_mock.call_args_list == [call('mock/path', 'wb')]
     assert filehandle.write.call_args_list == [call('data')]
     assert mkdir_mock.call_args_list == [call('mock')]
+
+
+@pytest.mark.parametrize(
+    argnames='obj, exp_bytes',
+    argvalues=(
+        ('foo',
+         b"'foo'"),
+        (23,
+         b"'23'"),
+        (['foo', 'bar', 'baz'],
+         b"['bar', 'baz', 'foo']"),
+        ({'c': (5, 6, 4), 'a': 1, 'b': [2, 1, 3]},
+         b"{'a': '1', 'b': ['1', '2', '3'], 'c': ['4', '5', '6']}"),
+    ),
+    ids=lambda v: str(v),
+)
+def test_semantic_hash(obj, exp_bytes):
+    assert http._semantic_hash(obj) == hashlib.sha256(exp_bytes).hexdigest()
