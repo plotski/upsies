@@ -23,6 +23,7 @@ class set(CommandBase):
 
     Without any arguments, all options are listed with their current values.
 
+    OPTION consists of three segments which are delimited with a period (".").
     The first segment in OPTION is the file name without the extension. The
     second segment is the section name in that file. The third segment is the
     option name.
