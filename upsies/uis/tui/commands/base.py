@@ -186,7 +186,14 @@ class CommandBase(abc.ABC):
                 if group_name not in mutex_groups:
                     mutex_groups[group_name] = parser.add_mutually_exclusive_group()
                 mutex_groups[group_name].add_argument(*names, **argopts)
+
             else:
+                # Allow using REMAINDER flag without importing argparse
+                # everywhere. This also introduces an abstraction layer in case
+                # we ever use something else than argparse.
+                if argopts.get('nargs') == 'REMAINDER':
+                    argopts['nargs'] = argparse.REMAINDER
+
                 parser.add_argument(*names, **argopts)
 
     @classmethod
