@@ -82,3 +82,94 @@ async def test_upload_gets_unexpected_json(json_response, mocker, tmp_path):
     imghost = ptpimg.PtpimgImageHost(config={'apikey': 'f00'}, cache_directory=tmp_path)
     with pytest.raises(RuntimeError, match=rf'^Unexpected response: {re.escape(str(json_response))}$'):
         await imghost._upload('some/path.jpg')
+
+
+@pytest.mark.asyncio
+async def test_get_apikey_finds_apikey(mocker, tmp_path):
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
+        text=(
+            '<html>'
+            '<body>'
+            '<form>'
+            '<input id="api_key" name="api_key" value="d00d1e" />'
+            '</form>'
+            '</body>'
+            '</html>'
+        ),
+        bytes=b'irrelevant',
+    )))
+    imghost = ptpimg.PtpimgImageHost(config={}, cache_directory=tmp_path)
+    apikey = await imghost.get_apikey('foo@localhost', 'hunter2')
+    assert apikey == 'd00d1e'
+    assert post_mock.call_args_list == [call(
+        url=f'{imghost.config["base_url"]}/login.php',
+        cache=False,
+        data={
+            'email': 'foo@localhost',
+            'pass': 'hunter2',
+            'login': '',
+        },
+    )]
+
+@pytest.mark.asyncio
+async def test_get_apikey_with_wrong_login(mocker, tmp_path):
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
+        text=(
+            '<html>'
+            ' <body>'
+            '  <div class="container">'
+            '   <div class="page-header">'
+            '    <div class="panel panel-danger">'
+            '     <div class="panel-heading">'
+            '      <i class="glyphicon glyphicon-remove">'
+            '      </i>'
+            '      <span>'
+            '       Error!'
+            '      </span>'
+            '     </div>'
+            '     <div class="panel-body">'
+            '      <ul>'
+            '       <li>'
+            '        Credentials are incorrect. Please try again.'
+            '       </li>'
+            '      </ul>'
+            '     </div>'
+            '    </div>'
+            '   </div>'
+            '  </div>'
+            ' </body>'
+            '</html>'
+        ),
+        bytes=b'irrelevant',
+    )))
+    imghost = ptpimg.PtpimgImageHost(config={}, cache_directory=tmp_path)
+    with pytest.raises(errors.RequestError, match=r'^Credentials are incorrect\. Please try again\.$'):
+        await imghost.get_apikey('foo@localhost', 'hunter2')
+    assert post_mock.call_args_list == [call(
+        url=f'{imghost.config["base_url"]}/login.php',
+        cache=False,
+        data={
+            'email': 'foo@localhost',
+            'pass': 'hunter2',
+            'login': '',
+        },
+    )]
+
+@pytest.mark.asyncio
+async def test_get_apikey_fails_to_find_apikey(mocker, tmp_path):
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
+        text='',
+        bytes=b'irrelevant',
+    )))
+    imghost = ptpimg.PtpimgImageHost(config={}, cache_directory=tmp_path)
+    with pytest.raises(RuntimeError, match=r'^Failed to find API key$'):
+        await imghost.get_apikey('foo@localhost', 'hunter2')
+    assert post_mock.call_args_list == [call(
+        url=f'{imghost.config["base_url"]}/login.php',
+        cache=False,
+        data={
+            'email': 'foo@localhost',
+            'pass': 'hunter2',
+            'login': '',
+        },
+    )]

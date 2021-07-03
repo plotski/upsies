@@ -3,7 +3,7 @@ Image uploader for ptpimg.me
 """
 
 from ... import errors
-from .. import http
+from .. import html, http
 from .base import ImageHostBase
 
 import logging  # isort:skip
@@ -50,3 +50,41 @@ class PtpimgImageHost(ImageHostBase):
         else:
             image_url = f'{self.config["base_url"]}/{code}.{ext}'
             return {'url': image_url}
+
+    async def get_apikey(self, email, password):
+        """
+        Get API key from website
+
+        :param str email: Email address to use for login
+        :param str password: Password to use for login
+
+        :raises RequestError: if getting the HTML fails for some reason
+
+        :return: API key
+        """
+        _log.debug('Getting API key for %r', email)
+        response = await http.post(
+            url=f'{self.config["base_url"]}/login.php',
+            cache=False,
+            data={
+                'email': email,
+                'pass': password,
+                'login': '',
+            },
+        )
+
+        soup = html.parse(response)
+        _log.debug('%s: %s', self.name, soup.prettify())
+
+        # Find API key
+        input_tag = soup.find('input', id='api_key')
+        if input_tag:
+            return input_tag['value']
+
+        # Find error message
+        error_tag = soup.find(class_='panel-body')
+        if error_tag:
+            raise errors.RequestError(''.join(error_tag.strings).strip())
+
+        # Default exception
+        raise RuntimeError('Failed to find API key')
