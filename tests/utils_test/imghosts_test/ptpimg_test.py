@@ -32,7 +32,7 @@ def test_default_config():
 async def test_upload_without_apikey(apikey, mocker, tmp_path):
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     imghost = ptpimg.PtpimgImageHost(config={'apikey': apikey}, cache_directory=tmp_path)
-    with pytest.raises(errors.RequestError, match=r'^No API key configured$'):
+    with pytest.raises(errors.RequestError, match=r'^Missing API key$'):
         await imghost._upload('some/path.jpg')
     assert post_mock.call_args_list == []
 
