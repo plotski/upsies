@@ -203,14 +203,14 @@ class CommandBase(abc.ABC):
 
         :param args: Sequence of CLI arguments or `None` to use `sys.argv`
         """
-        # argparse has sys.exit(2) hardcoded for CLI errors.
         try:
             if args is None:
                 main_args, remaining_args = cls._argparser.parse_known_args()
             else:
                 main_args, remaining_args = cls._argparser.parse_known_args(args)
-        except SystemExit:
-            raise SystemExit(1)
+        except SystemExit as e:
+            # argparse has sys.exit(2) hardcoded for CLI errors.
+            raise SystemExit(e.code if e.code in (0, 1) else 1)
 
         # Show help if no command given
         if not hasattr(main_args, 'command'):
