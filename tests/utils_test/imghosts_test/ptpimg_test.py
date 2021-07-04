@@ -86,6 +86,7 @@ async def test_upload_gets_unexpected_json(json_response, mocker, tmp_path):
 
 @pytest.mark.asyncio
 async def test_get_apikey_finds_apikey(mocker, tmp_path):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
         text=(
             '<html>'
@@ -110,9 +111,31 @@ async def test_get_apikey_finds_apikey(mocker, tmp_path):
             'login': '',
         },
     )]
+    assert get_mock.call_args_list == [call(f'{imghost.config["base_url"]}/logout.php')]
+
+@pytest.mark.asyncio
+async def test_get_apikey_when_request_fails(mocker, tmp_path):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(
+        side_effect=errors.RequestError('no interwebs'),
+    ))
+    imghost = ptpimg.PtpimgImageHost(config={}, cache_directory=tmp_path)
+    with pytest.raises(errors.RequestError, match=r'^no interwebs$'):
+        await imghost.get_apikey('foo@localhost', 'hunter2')
+    assert post_mock.call_args_list == [call(
+        url=f'{imghost.config["base_url"]}/login.php',
+        cache=False,
+        data={
+            'email': 'foo@localhost',
+            'pass': 'hunter2',
+            'login': '',
+        },
+    )]
+    assert get_mock.call_args_list == []
 
 @pytest.mark.asyncio
 async def test_get_apikey_with_wrong_login(mocker, tmp_path):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
         text=(
             '<html>'
@@ -154,9 +177,11 @@ async def test_get_apikey_with_wrong_login(mocker, tmp_path):
             'login': '',
         },
     )]
+    assert get_mock.call_args_list == [call(f'{imghost.config["base_url"]}/logout.php')]
 
 @pytest.mark.asyncio
 async def test_get_apikey_fails_to_find_apikey(mocker, tmp_path):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
         text='',
         bytes=b'irrelevant',
@@ -173,3 +198,4 @@ async def test_get_apikey_fails_to_find_apikey(mocker, tmp_path):
             'login': '',
         },
     )]
+    assert get_mock.call_args_list == [call(f'{imghost.config["base_url"]}/logout.php')]

@@ -73,18 +73,21 @@ class PtpimgImageHost(ImageHostBase):
             },
         )
 
-        soup = html.parse(response)
-        _log.debug('%s: %s', self.name, soup.prettify())
+        try:
+            soup = html.parse(response)
+            _log.debug('%s: %s', self.name, soup.prettify())
 
-        # Find API key
-        input_tag = soup.find('input', id='api_key')
-        if input_tag:
-            return input_tag['value']
+            # Find API key
+            input_tag = soup.find('input', id='api_key')
+            if input_tag:
+                return input_tag['value']
 
-        # Find error message
-        error_tag = soup.find(class_='panel-body')
-        if error_tag:
-            raise errors.RequestError(''.join(error_tag.strings).strip())
+            # Find error message
+            error_tag = soup.find(class_='panel-body')
+            if error_tag:
+                raise errors.RequestError(''.join(error_tag.strings).strip())
 
-        # Default exception
-        raise RuntimeError('Failed to find API key')
+            # Default exception
+            raise RuntimeError('Failed to find API key')
+        finally:
+            await http.get(f'{self.config["base_url"]}/logout.php')
