@@ -2,7 +2,7 @@
 Change or show configuration file options
 """
 
-from .... import defaults, jobs, utils
+from .... import defaults, errors, jobs, utils
 from .base import CommandBase
 
 
@@ -57,17 +57,54 @@ class set(CommandBase):
             'help': 'Reset OPTION to default value',
             'group': 'value',
         },
+        ('--fetch-ptpimg-apikey',): {
+            'nargs': 2,
+            'metavar': ('EMAIL', 'PASSWORD'),
+            'help': ('Fetch ptpimg API key from the website and save it '
+                     '(EMAIL and PASSWORD are not saved)'),
+        },
     }
 
     @utils.cached_property
     def jobs(self):
-        return (
-            jobs.config.SetJob(
-                config=self.config,
-                option=self.args.OPTION,
-                # VALUE is a list. The Config class should convert lists to
-                # strings (and vice versa) depending on the default type.
-                value=self.args.VALUE,
-                reset=self.args.reset,
-            ),
+        if self.args.fetch_ptpimg_apikey is not None:
+            return (self.fetch_ptpimg_apikey_job,)
+        else:
+            return (
+                jobs.config.SetJob(
+                    config=self.config,
+                    option=self.args.OPTION,
+                    # VALUE is a list. The Config class should convert lists to
+                    # strings (and vice versa) depending on the default type.
+                    value=self.args.VALUE,
+                    reset=self.args.reset,
+                ),
+            )
+
+    @utils.cached_property
+    def fetch_ptpimg_apikey_job(self):
+        return jobs.custom.CustomJob(
+            name='fetch-ptpimg-apikey',
+            label='API key',
+            worker=self.fetch_ptpimg_apikey,
+            catch=(errors.RequestError, errors.ConfigError),
+            ignore_cache=self.args.ignore_cache,
         )
+
+    async def fetch_ptpimg_apikey(self, job):
+        if len(self.args.fetch_ptpimg_apikey) <= 0:
+            job.error('Missing EMAIL and PASSWORD')
+        elif len(self.args.fetch_ptpimg_apikey) <= 1:
+            job.error('Missing PASSWORD')
+        elif len(self.args.fetch_ptpimg_apikey) > 2:
+            unknown_args = ' '.join(self.args.fetch_ptpimg_apikey[2:])
+            job.error(f'Unrecognized arguments: {unknown_args}')
+        else:
+            email = self.args.fetch_ptpimg_apikey[0]
+            password = self.args.fetch_ptpimg_apikey[1]
+            ptpimg = utils.imghosts.imghost('ptpimg')
+            apikey = await ptpimg.get_apikey(email, password)
+            job.send(apikey)
+            self.config['imghosts']['ptpimg']['apikey'] = apikey
+            self.config.write('imghosts.ptpimg.apikey')
+            job.finish()

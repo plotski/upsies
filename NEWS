@@ -1,5 +1,6 @@
 2021.??.??
-  * Added support for ptpimg.me
+  * Added support for ptpimg.me (run "upsies set --fetch-ptpimg-apikey EMAIL
+    PASSWORD" or "upsies set imghosts.ptpimg.apikey APIKEY")
   * bB: Added --anime option
   * Speedier detection of first video file in season packs
 
