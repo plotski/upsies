@@ -408,7 +408,17 @@ def file_tree(tree, _parents_is_last=()):
         if isinstance(node, int):
             lines.append(f'{indent}{name} ({types.Bytes(node)})')
         else:
-            lines.append(f'{indent}{name}')
+            def sum_node_size(nodelist):
+                size = 0
+                for node in nodelist:
+                    if isinstance(node, tuple):
+                        if len(node) >= 2 and isinstance(node[1], int):
+                            size += node[1]
+                        else:
+                            size += sum_node_size(node)
+                return size
+
+            lines.append(f'{indent}{name} ({types.Bytes(sum_node_size(node))})')
             # Descend into child node
             sub_parents_is_last = _parents_is_last + (is_last,)
             lines.append(file_tree(node, _parents_is_last=sub_parents_is_last))

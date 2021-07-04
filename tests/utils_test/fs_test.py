@@ -604,26 +604,31 @@ def test_file_tree():
     tree = (
         ('root', (
             ('sub1', (
-                ('foo', 123),
+                ('foo', 100),
                 ('sub2', (
                     ('sub3', (
-                        ('sub4', (
-                            ('bar', 456),
+                        ('sub4.1', (
+                            ('bar1', 2000),
+                        )),
+                        ('sub4.2', (
+                            ('bar2', 3500),
                         )),
                     )),
                 )),
-                ('baz', 789),
+                ('baz', 5000),
             )),
         )),
     )
 
     assert fs.file_tree(tree) == '''
-root
-└─sub1
-  ├─foo (123 B)
-  ├─sub2
-  │ └─sub3
-  │   └─sub4
-  │     └─bar (456 B)
-  └─baz (789 B)
+root (10.6 kB)
+└─sub1 (10.6 kB)
+  ├─foo (100 B)
+  ├─sub2 (5.5 kB)
+  │ └─sub3 (5.5 kB)
+  │   ├─sub4.1 (2 kB)
+  │   │ └─bar1 (2 kB)
+  │   └─sub4.2 (3.5 kB)
+  │     └─bar2 (3.5 kB)
+  └─baz (5 kB)
 '''.strip()
