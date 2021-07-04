@@ -8,9 +8,6 @@ from ... import __homepage__, application_setup, application_shutdown, errors
 from . import commands
 from .ui import UI
 
-import logging  # isort:skip
-_log = logging.getLogger(__name__)
-
 
 def main(args=None):
     sys.exit(_main(args))
