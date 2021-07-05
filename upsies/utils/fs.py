@@ -8,7 +8,7 @@ import re
 import time
 
 from .. import __project_name__, constants, errors
-from . import LazyModule, os_family, string, types
+from . import LazyModule, os_family, types
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)

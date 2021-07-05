@@ -10,7 +10,6 @@ adds a :class:`~.ReleaseName.format` method to turn everything back into a
 string.
 """
 
-import asyncio
 import collections
 import os
 import re
@@ -468,9 +467,9 @@ class ReleaseName(collections.abc.Mapping):
             'year',
         )
         for attr, key in (
-                ('title', 'title_original'),
-                ('title_aka', 'title_english'),
-                ('year', 'year')
+            ('title', 'title_original'),
+            ('title_aka', 'title_english'),
+            ('year', 'year'),
         ):
             # Only overload non-empty values
             if info[key]:
