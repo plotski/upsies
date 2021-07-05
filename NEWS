@@ -3,6 +3,7 @@
     PASSWORD" or "upsies set imghosts.ptpimg.apikey APIKEY")
   * bB: Added --anime option
   * Speedier detection of first video file in season packs
+  * Fixed "Error 1064" when scene searching for unescaped "@" in group name
 
 
 2021.06.22

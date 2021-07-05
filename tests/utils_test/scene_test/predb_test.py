@@ -30,9 +30,18 @@ def test_default_config():
     assert predb.PreDbApi.default_config == {}
 
 
-@pytest.mark.parametrize('group', (None, '', 'ASDF'), ids=lambda v: str(v))
+@pytest.mark.parametrize(
+    argnames='group, exp_group',
+    argvalues=(
+        (None, None),
+        ('', None),
+        ('ASDF', 'ASDF'),
+        ('M@G', r'M\@G'),
+    ),
+    ids=lambda v: str(v),
+)
 @pytest.mark.asyncio
-async def test_search_calls_http_get(group, api, mocker):
+async def test_search_calls_http_get(group, exp_group, api, mocker):
     response = Mock(json=Mock(return_value={
         'status': 'success',
         'data': {'rows': [{'name': 'Foo'}]},
@@ -42,8 +51,8 @@ async def test_search_calls_http_get(group, api, mocker):
     keywords = ['foo', 'bar']
     query_string = ' '.join(keywords)
     exp_params = {'count': 1000}
-    if group:
-        exp_params['q'] = f'{query_string.lower()} @team {group.lower()}'
+    if exp_group:
+        exp_params['q'] = f'{query_string.lower()} @team {exp_group.lower()}'
     else:
         exp_params['q'] = f'{query_string.lower()}'
 
