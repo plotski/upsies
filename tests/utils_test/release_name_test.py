@@ -810,7 +810,7 @@ def test_update_attributes(ReleaseInfo_mock, ImdbApi_mock, guessed_type, imdb_ty
         'type': imdb_type,
         'title_original': 'Le Foo',
         'title_english': 'The Foo',
-        'year': '2010',
+        'year': '',
     }
     ImdbApi_mock.return_value.gather = AsyncMock(return_value=gather_mock)
     ReleaseInfo_mock.return_value = {'type': guessed_type}
@@ -819,7 +819,10 @@ def test_update_attributes(ReleaseInfo_mock, ImdbApi_mock, guessed_type, imdb_ty
     run_async(rn._update_attributes(id_mock))
     assert rn.title == 'Le Foo'
     assert rn.title_aka == 'The Foo'
-    assert rn.year == '2010'
+    if exp_type is ReleaseType.movie:
+        assert rn.year == 'UNKNOWN_YEAR'
+    else:
+        assert rn.year == ''
     assert rn.type == exp_type
     assert ImdbApi_mock.return_value.gather.call_args_list == [
         call(id_mock, 'type', 'title_english', 'title_original', 'year'),
