@@ -449,13 +449,12 @@ class ReleaseName(collections.abc.Mapping):
 
           - :attr:`title`
           - :attr:`title_aka`
+          - :attr:`type`
           - :attr:`year`
           - :attr:`year_required`
         """
-        await asyncio.gather(
-            self._update_attributes(id),
-            self._update_year_required(),
-        )
+        await self._update_attributes(id)
+        await self._update_year_required()
         _log.debug('Release name updated: %s', self)
         if callback is not None:
             callback(self)

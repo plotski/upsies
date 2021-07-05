@@ -757,6 +757,33 @@ def test_is_complete(release_name, release_type, needed_attrs):
         assert rn.is_complete is True
 
 
+@pytest.mark.parametrize('callback', (None, Mock()))
+@pytest.mark.parametrize(
+    argnames='guessed_type, found_type, exp_type',
+    argvalues=(
+        (ReleaseType.movie, ReleaseType.season, ReleaseType.season),
+    ),
+)
+@pytest.mark.asyncio
+async def test_fetch_info(guessed_type, found_type, exp_type, callback, mocker):
+    rn = ReleaseName('Foo 2000 1080p BluRay DTS x264-ASDF')
+    rn.type = guessed_type
+
+    async def update_attributes(id):
+        await asyncio.sleep(0.1)
+        rn.type = found_type
+
+    async def update_year_required():
+        assert rn.type == found_type
+
+    mocker.patch.object(rn, '_update_attributes', update_attributes)
+    mocker.patch.object(rn, '_update_year_required', update_year_required)
+    await rn.fetch_info('mock id', callback=callback)
+    assert rn.type == exp_type
+    if callback:
+        assert callback.call_args_list == [call(rn)]
+
+
 @patch('upsies.utils.webdbs.imdb.ImdbApi')
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
