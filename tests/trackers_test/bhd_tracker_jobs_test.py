@@ -357,7 +357,6 @@ def test_source_job(bhd_tracker_jobs, mocker):
         name='source',
         label='Source',
         condition=bhd_tracker_jobs.make_job_condition.return_value,
-        autofinish=False,
         options=(
             {'label': 'Blu-ray', 'value': 'Blu-ray'},
             {'label': 'HD-DVD', 'value': 'HD-DVD'},
@@ -375,26 +374,28 @@ def test_autodetect_source_without_approved_release_name(bhd_tracker_jobs, mocke
     assert bhd_tracker_jobs.autodetect_source('_') is None
 
 @pytest.mark.parametrize(
-    argnames='source, exp_focused',
+    argnames='source, exp_focused, exp_output, exp_choice',
     argvalues=(
-        ('BluRay', ('Blu-ray (autodetected)', 'Blu-ray')),
-        ('BluRay Remux', ('Blu-ray (autodetected)', 'Blu-ray')),
-        ('WEB-DL', ('WEB (autodetected)', 'WEB')),
-        ('WEBRip', ('WEB (autodetected)', 'WEB')),
-        ('WEB', ('WEB (autodetected)', 'WEB')),
-        ('DVD9', ('DVD (autodetected)', 'DVD')),
-        ('DVD5', ('DVD (autodetected)', 'DVD')),
-        ('DVD Remux', ('DVD (autodetected)', 'DVD')),
-        ('Foo', ('Blu-ray', 'Blu-ray')),
+        ('BluRay', ('Blu-ray (autodetected)', 'Blu-ray'), ('Blu-ray (autodetected)',), 'Blu-ray'),
+        ('BluRay Remux', ('Blu-ray (autodetected)', 'Blu-ray'), ('Blu-ray (autodetected)',), 'Blu-ray'),
+        ('WEB-DL', ('WEB (autodetected)', 'WEB'), ('WEB (autodetected)',), 'WEB'),
+        ('WEBRip', ('WEB (autodetected)', 'WEB'), ('WEB (autodetected)',), 'WEB'),
+        ('WEB', ('WEB (autodetected)', 'WEB'), ('WEB (autodetected)',), 'WEB'),
+        ('DVD9', ('DVD (autodetected)', 'DVD'), ('DVD (autodetected)',), 'DVD'),
+        ('DVD5', ('DVD (autodetected)', 'DVD'), ('DVD (autodetected)',), 'DVD'),
+        ('DVD Remux', ('DVD (autodetected)', 'DVD'), ('DVD (autodetected)',), 'DVD'),
+        ('Foo', ('Blu-ray', 'Blu-ray'), (), None),
     ),
     ids=lambda v: str(v),
 )
-def test_autodetect_source_with_approved_release_name(source, exp_focused, bhd_tracker_jobs, mocker):
+def test_autodetect_source_with_approved_release_name(source, exp_focused, exp_choice, exp_output, bhd_tracker_jobs, mocker):
     mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
         source=source,
     )))
     bhd_tracker_jobs.autodetect_source('_')
     assert bhd_tracker_jobs.source_job.focused == exp_focused
+    assert bhd_tracker_jobs.source_job.output == exp_output
+    assert bhd_tracker_jobs.source_job.choice == exp_choice
 
 
 def test_description_job(bhd_tracker_jobs, mocker):

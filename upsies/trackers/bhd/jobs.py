@@ -167,7 +167,6 @@ class BhdTrackerJobs(TrackerJobsBase):
             name='source',
             label='Source',
             condition=self.make_job_condition('source_job'),
-            autofinish=False,
             options=(
                 {'label': 'Blu-ray', 'value': 'Blu-ray'},
                 {'label': 'HD-DVD', 'value': 'HD-DVD'},
@@ -192,9 +191,14 @@ class BhdTrackerJobs(TrackerJobsBase):
             _log.debug('Approved source: %r', approved_release_name.source)
             for label, is_match in self._autodetect_source_map.items():
                 if is_match(approved_release_name):
+                    # Focus autodetected choice
                     self.source_job.focused = label
+                    # Get value of autodetected choice
                     value = self.source_job.focused[1]
+                    # Mark autodetected choice
                     self.source_job.set_label(value, f'{label} (autodetected)')
+                    # Select autodetected choice (i.e. finish job)
+                    self.source_job.choice = value
                     break
 
     @cached_property
