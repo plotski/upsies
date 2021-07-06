@@ -1,4 +1,4 @@
-2021.??.??
+2021.07.06
   * Added support for ptpimg.me (run "upsies set --fetch-ptpimg-apikey EMAIL
     PASSWORD" or "upsies set imghosts.ptpimg.apikey APIKEY")
   * bB: Added --anime option
