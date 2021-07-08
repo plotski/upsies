@@ -5,8 +5,7 @@ Entry point
 import sys
 
 from ... import __homepage__, application_setup, application_shutdown, errors
-from . import commands
-from .ui import UI
+from . import commands, utils
 
 
 def main(args=None):
@@ -15,18 +14,24 @@ def main(args=None):
 
 def _main(args=None):
     try:
-        ui = UI()
+        if utils.is_tty():
+            from .tui import TUI
+            ui = TUI()
+        else:
+            from .headless import Headless
+            ui = Headless()
+
         cmd = commands.run(args)
         application_setup(cmd.config)
         exit_code = ui.run(cmd.jobs_active)
         application_shutdown(cmd.config)
 
-    # TUI was terminated by user prematurely
+    # UI was terminated by user prematurely
     except errors.CancelledError as e:
         print(e, file=sys.stderr)
         return 1
 
-    except (errors.DependencyError, errors.ContentError) as e:
+    except (errors.UiError, errors.DependencyError, errors.ContentError) as e:
         print(e, file=sys.stderr)
         return 1
 

@@ -29,6 +29,10 @@ class ConfigError(UpsiesError):
     """Error while reading/writing config file or setting config file option"""
 
 
+class UiError(UpsiesError):
+    """Fatal user interface error that cannot be handled by the UI itself"""
+
+
 class DependencyError(UpsiesError):
     """Some external tool is missing (e.g. ``mediainfo``)"""
 

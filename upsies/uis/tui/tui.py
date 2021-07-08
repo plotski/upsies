@@ -1,5 +1,5 @@
 """
-Main UI widget and job manager
+Interactive text UI widget and job manager
 """
 
 import asyncio
@@ -17,7 +17,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class UI:
+class TUI:
     def __init__(self):
         # Map JobBase.name to SimpleNamespace with attributes:
         #   job       - JobBase instance
