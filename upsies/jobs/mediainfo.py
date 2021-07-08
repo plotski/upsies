@@ -42,16 +42,16 @@ class MediainfoJob(JobBase):
 
     def execute(self):
         """Call ``mediainfo`` in an asynchronous thread"""
-        loop = asyncio.get_event_loop()
-        fut = loop.run_in_executor(None, lambda: video.mediainfo(self._content_path))
-        fut.add_done_callback(self._handle_output)
+        self.add_task(
+            coro=self._get_mediainfo(),
+            finish_when_done=True,
+        )
 
-    def _handle_output(self, fut):
+    async def _get_mediainfo(self):
+        loop = asyncio.get_event_loop()
         try:
-            mi = fut.result()
+            mediainfo = await loop.run_in_executor(None, lambda: video.mediainfo(self._content_path))
         except errors.ContentError as e:
             self.error(e)
         else:
-            self.send(mi)
-        finally:
-            self.finish()
+            self.send(mediainfo)
