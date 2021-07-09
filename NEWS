@@ -1,4 +1,4 @@
-2021.??.??
+2021.07.09
   * Fixed all "/" being removed from mediainfo output when given a path without
     parent directory
   * bB: Fixed submission of Dolby Atmos content
