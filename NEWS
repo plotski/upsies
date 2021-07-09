@@ -2,6 +2,7 @@
   * Fixed all "/" being removed from mediainfo output when given a path without
     parent directory
   * bB: Fixed submission of Dolby Atmos content
+  * Fix crash when stdin is closed
 
 
 2021.07.06
