@@ -50,9 +50,11 @@ def mediainfo(path):
     :return: Output from ``mediainfo``
     :rtype: str
     """
-    text = _run_mediainfo(first_video(path))
+    mi = _run_mediainfo(first_video(path))
     parent_dir = os.path.dirname(path)
-    return text.replace(parent_dir + os.sep, '')
+    if parent_dir:
+        mi = mi.replace(parent_dir + os.sep, '')
+    return mi
 
 
 @functools.lru_cache(maxsize=None)

@@ -76,26 +76,28 @@ def test_mediainfo_gets_first_video_from_path(first_video_mock, run_mediainfo_mo
 
 @patch('upsies.utils.video._run_mediainfo')
 @patch('upsies.utils.video.first_video')
-def test_mediainfo_contains_relative_path_when_passed_file(first_video_mock, run_mediainfo_mock):
+@pytest.mark.parametrize(
+    argnames='argument, orig_complete_name, exp_complete_name',
+    argvalues=(
+        ('/absolute/path/to/foo.mkv', '/absolute/path/to/foo.mkv', 'foo.mkv'),
+        ('relative/path/to/foo.mkv', 'relative/path/to/foo.mkv', 'foo.mkv'),
+        ('/absolute/path', '/absolute/path/to/foo.mkv', 'path/to/foo.mkv'),
+        ('relative/path', 'relative/path/to/foo.mkv', 'path/to/foo.mkv'),
+        ('directory', 'directory/foo.mkv', 'directory/foo.mkv'),
+        ('foo.mkv', 'foo.mkv', 'foo.mkv'),
+    ),
+)
+def test_mediainfo_path_is_stripped_to_relevant_parts(first_video_mock, run_mediainfo_mock,
+                                                      argument, orig_complete_name, exp_complete_name):
     run_mediainfo_mock.return_value = (
-        'Complete name : some/path/to/foo.mkv\n'
+        f'Complete name : {orig_complete_name}\n'
         'Something     : asdf\n'
+        'Format/Info   : hjkl\n'
     )
-    assert video.mediainfo('some/path/to/foo.mkv') == (
-        'Complete name : foo.mkv\n'
+    assert video.mediainfo(argument) == (
+        f'Complete name : {exp_complete_name}\n'
         'Something     : asdf\n'
-    )
-
-@patch('upsies.utils.video._run_mediainfo')
-@patch('upsies.utils.video.first_video')
-def test_mediainfo_contains_relative_path_when_passed_directory(first_video_mock, run_mediainfo_mock):
-    run_mediainfo_mock.return_value = (
-        'Complete name : some/path/to/foo.mkv\n'
-        'Something     : asdf\n'
-    )
-    assert video.mediainfo('some/path') == (
-        'Complete name : path/to/foo.mkv\n'
-        'Something     : asdf\n'
+        'Format/Info   : hjkl\n'
     )
 
 
