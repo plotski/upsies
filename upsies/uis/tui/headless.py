@@ -1,6 +1,9 @@
 """
 Non-interactive job manager
 
+This should be used instead of :class:`~.tui.TUI` when :func:`~.utils.is_tty`
+returns `False`.
+
 Headless usage is limited to :attr:`~.jobs.base.JobBase.hidden` jobs.
 """
 

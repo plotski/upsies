@@ -1,5 +1,5 @@
 """
-Interactive text UI widget and job manager
+Interactive text user interface and job manager
 """
 
 import asyncio
