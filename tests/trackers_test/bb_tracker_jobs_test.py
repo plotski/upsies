@@ -613,7 +613,7 @@ def test_movie_audio_codec_job(bb_tracker_jobs, mocker):
             {'label': 'DTS', 'value': 'DTS', 'regex': re.compile(r'^DTS(?!-HD)')},       # DTS, DTS-ES
             {'label': 'DTS-HD', 'value': 'DTS-HD', 'regex': re.compile(r'^DTS-HD\b')},   # DTS-HD, DTS-HD MA
             {'label': 'DTS:X', 'value': 'DTS:X', 'regex': re.compile(r'^DTS:X$')},
-            {'label': 'Dolby Atmos', 'value': 'Atmos', 'regex': re.compile(r'Atmos')},
+            {'label': 'Dolby Atmos', 'value': 'Dolby Atmos', 'regex': re.compile(r'Atmos')},
             {'label': 'FLAC', 'value': 'FLAC', 'regex': re.compile(r'^FLAC$')},
             {'label': 'MP3', 'value': 'MP3', 'regex': re.compile(r'^MP3$')},
             # {'label': 'PCM', 'value': 'PCM', 'regex': re.compile(r'^$')},
