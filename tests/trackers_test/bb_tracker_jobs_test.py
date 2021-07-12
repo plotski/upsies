@@ -1090,6 +1090,9 @@ def test_release_info_remux(source, exp_text, bb_tracker_jobs, mocker):
 @pytest.mark.parametrize(
     argnames='width, height, frame_rate, resolution, exp_text',
     argvalues=(
+        (0, 1, 0, '123p', '123p'),
+        (1, 0, 0, '123p', '123p'),
+        (0, 0, 0, '123p', '123p'),
         (700, 460, 0, '123p', '123p'),
         (699, 460, 0, '123p', '123p'),
         (700, 459, 0, '123p', '123p'),

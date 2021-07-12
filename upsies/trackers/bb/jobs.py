@@ -638,7 +638,9 @@ class BbTrackerJobs(TrackerJobsBase):
         # Move/TV Rule 3.6.1 - Encodes with a stored resolution less than 700px
         #                      AND a height less than 460px should be labelled
         #                      "SD"
-        if video.width(self.content_path) < 700 and video.height(self.content_path) < 460:
+        width = video.width(self.content_path)
+        height = video.height(self.content_path)
+        if 0 < width < 700 and 0 < height < 460:
             return 'SD'
 
         # Movie Rule 3.6.2 - 576p PAL encodes with a stored resolution of at
