@@ -262,7 +262,7 @@ class ReleaseName(collections.abc.Mapping):
 
     @property
     def edition(self):
-        """List of "DC", "Uncut", "Unrated", etc"""
+        """List of "Director's Cut", "Uncut", "Unrated", etc"""
         if 'edition' not in self._info:
             self._info['edition'] = []
         if 'Dual Audio' not in self._info['edition']:
@@ -751,9 +751,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     def _get_episode_title(self):
         return _as_string(self._guess.get('episode_title', ''))
 
-    _edition_translation = {
-        re.compile(r'(?i:director\'s cut)') : 'DC',
-    }
+    _edition_translation = {}
     _edition_regex = re.compile(r'(?:[ \.]|^)((?i:proper|repack\d*))(?:[ \.]|$)')
 
     def _get_edition(self):
