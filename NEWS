@@ -1,3 +1,8 @@
+2021.07.13
+  * BHD: Disable most edition values except for "Uncut" and "Unrated" to avoid
+    the error: "Invalid edition value: Field must be a valid edition value."
+
+
 2021.07.09
   * Fixed all "/" being removed from mediainfo output when given a path without
     parent directory
