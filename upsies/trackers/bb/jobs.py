@@ -640,6 +640,7 @@ class BbTrackerJobs(TrackerJobsBase):
         #                      "SD"
         width = video.width(self.content_path)
         height = video.height(self.content_path)
+        _log.debug('WTFSD: width=%r, height=%r', width, height)
         if 0 < width < 700 and 0 < height < 460:
             return 'SD'
 
