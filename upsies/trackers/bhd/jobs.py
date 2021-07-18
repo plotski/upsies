@@ -340,25 +340,19 @@ class BhdTrackerJobs(TrackerJobsBase):
         # Limited, Special, Theatrical, Uncut or Unrated)
         edition = self.approved_release_name.edition
         _log.debug('Approved edition: %r', edition)
-
-        # TODO: Submitting any of the commented edition values produces the
-        #       error "Invalid edition value: Field must be a valid edition
-        #       value."
-        #       "Uncut" and "Unrated" work
-
-        # if 'Collector' in edition:
-        #     return 'Collector'
-        # # elif 'DC' in edition or 'Director' in edition:
-        # #     return 'Director'
-        # elif 'Extended' in edition:
-        #     return 'Extended'
-        # elif 'Limited' in edition:
-        #     return 'Limited'
-        # elif 'Special' in edition:
-        #     return 'Special'
-        # elif 'Theatrical' in edition:
-        #     return 'Theatrical'
-        if 'Uncut' in edition:
+        if 'Collector' in edition:
+            return 'Collector'
+        elif 'DC' in edition or 'Director' in edition:
+            return 'Director'
+        elif 'Extended' in edition:
+            return 'Extended'
+        elif 'Limited' in edition:
+            return 'Limited'
+        elif 'Special' in edition:
+            return 'Special'
+        elif 'Theatrical' in edition:
+            return 'Theatrical'
+        elif 'Uncut' in edition:
             return 'Uncut'
         elif 'Unrated' in edition:
             return 'Unrated'
