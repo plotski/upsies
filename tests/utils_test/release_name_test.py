@@ -61,7 +61,7 @@ def test_str(ReleaseInfo_mock):
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
-    assert len(rn) == 20
+    assert len(rn) == 21
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -424,8 +424,16 @@ def test_edition_getter_autodetects_dual_audio(ReleaseInfo_mock, mocker):
     ReleaseInfo_mock.return_value = {'edition': []}
     rn = ReleaseName('path/to/something')
     rn.has_dual_audio = True
-    assert rn.edition == ['Dual Audio']
-    assert rn.edition == ['Dual Audio']
+    assert rn.edition == ['Dual Audio']  # Get info from ReleaseInfo.has_dual_audio
+    assert rn.edition == ['Dual Audio']  # Get info from internal ReleaseInfo object
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_edition_getter_autodetects_dolby_vision(ReleaseInfo_mock, mocker):
+    ReleaseInfo_mock.return_value = {'edition': []}
+    rn = ReleaseName('path/to/something')
+    rn.is_dolby_vision = True
+    assert rn.edition == ['Dolby Vision']  # Get info from ReleaseInfo.is_dolby_vision
+    assert rn.edition == ['Dolby Vision']  # Get info from internal ReleaseInfo object
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -727,6 +735,52 @@ def test_has_dual_audio(path_exists, has_dual_audio, release_info, exp_value, mo
     assert rn.has_dual_audio is True
     rn.has_dual_audio = None
     assert rn.has_dual_audio is exp_value
+
+
+@pytest.mark.parametrize(
+    argnames='path_exists, is_dolby_vision, release_info, exp_value',
+    argvalues=(
+        ('path_exists', True, {'edition': ['Dolby Vision']}, True),
+        ('path_exists', True, {'edition': []}, True),
+
+        ('path_exists', False, {'edition': ['Dolby Vision']}, False),
+        ('path_exists', False, {'edition': []}, False),
+
+        ('path_exists', None, {'edition': ['Dolby Vision']}, False),
+        ('path_exists', None, {'edition': []}, False),
+
+        ('path_does_not_exist', True, {'edition': ['Dolby Vision']}, True),
+        ('path_does_not_exist', True, {'edition': []}, False),
+
+        ('path_does_not_exist', False, {'edition': ['Dolby Vision']}, True),
+        ('path_does_not_exist', False, {'edition': []}, False),
+
+        ('path_does_not_exist', None, {'edition': ['Dolby Vision']}, True),
+        ('path_does_not_exist', None, {'edition': []}, False),
+    ),
+    ids=lambda v: str(v),
+)
+def test_is_dolby_vision(path_exists, is_dolby_vision, release_info, exp_value, mocker):
+    mocker.patch(
+        'upsies.utils.video.is_dolby_vision',
+        Mock(return_value=is_dolby_vision),
+    )
+    mocker.patch(
+        'upsies.utils.release.ReleaseInfo',
+        Mock(return_value=release_info),
+    )
+    mocker.patch(
+        'os.path.exists',
+        Mock(return_value=True if path_exists == 'path_exists' else False),
+    )
+    rn = ReleaseName('path/to/something')
+    assert rn.is_dolby_vision is exp_value
+    rn.is_dolby_vision = ''
+    assert rn.is_dolby_vision is False
+    rn.is_dolby_vision = 1
+    assert rn.is_dolby_vision is True
+    rn.is_dolby_vision = None
+    assert rn.is_dolby_vision is exp_value
 
 
 @pytest.mark.parametrize('release_type', tuple(ReleaseType), ids=lambda v: repr(v))

@@ -268,6 +268,9 @@ class ReleaseName(collections.abc.Mapping):
         if 'Dual Audio' not in self._info['edition']:
             if self.has_dual_audio:
                 self._info['edition'].append('Dual Audio')
+        if 'Dolby Vision' not in self._info['edition']:
+            if self.is_dolby_vision:
+                self._info['edition'].append('Dolby Vision')
         return self._info['edition']
 
     @edition.setter
@@ -410,6 +413,38 @@ class ReleaseName(collections.abc.Mapping):
             self._has_dual_audio = value
         else:
             self._has_dual_audio = bool(value)
+
+    @property
+    def is_dolby_vision(self):
+        """
+        Whether video has Dolby Vision metadata
+
+        If not set explicitly and the given `path` exists, this value is
+        autodetected if possible, otherwise default to whatever
+        :class:`ReleaseInfo` detected in the release name.
+
+        Setting this value back to `None` turns on autodetection as described
+        above.
+        """
+        # Use manually set value unless it is None
+        if getattr(self, '_is_dolby_vision', None) is not None:
+            return self._is_dolby_vision
+
+        # Autodetect
+        elif os.path.exists(self._path):
+            self._is_dolby_vision = bool(video.is_dolby_vision(self._path))
+            return self._is_dolby_vision
+
+        # Default to ReleaseInfo['edition']
+        else:
+            return 'Dolby Vision' in self._info.get('edition', ())
+
+    @is_dolby_vision.setter
+    def is_dolby_vision(self, value):
+        if value is None:
+            self._is_dolby_vision = value
+        else:
+            self._is_dolby_vision = bool(value)
 
     _needed_attrs = {
         ReleaseType.movie: ('title', 'year', 'resolution', 'source',
