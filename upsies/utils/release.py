@@ -753,6 +753,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     _edition_translation = {}
     _proper_repack_regex = re.compile(r'(?:[ \.]|^)((?i:proper|repack\d*))(?:[ \.]|$)')
+    _dolby_vision_regex = re.compile(r'(?i:[ \.]|^)((?i:DV|Dolby[ \.]Vision))(?:[ \.]|$)')
 
     def _get_edition(self):
         edition = _as_list(self._guess.get('edition'))
@@ -765,6 +766,11 @@ class ReleaseInfo(collections.abc.MutableMapping):
         match = self._proper_repack_regex.search(self.release_name_params)
         if match:
             edition.append(match.group(1).capitalize())
+
+        # TODO: Dolby Vision should be supported by upstream by guessit
+        match = self._dolby_vision_regex.search(self.release_name_params)
+        if match:
+            edition.append('Dolby Vision')
 
         guessit_other = _as_list(self._guess.get('other'))
         if 'Open Matte' in guessit_other:
