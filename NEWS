@@ -1,4 +1,5 @@
 2021.??.??
+  * Added detection of Dolby Vision in release name and video file
   * bB: Retry login up to 30 times instead of 15 when encountering login bug and
     cap the delay between login attempts at 5 seconds.
 
