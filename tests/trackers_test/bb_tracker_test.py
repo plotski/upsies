@@ -224,17 +224,17 @@ async def test_login_does_nothing_if_already_logged_in(mocker):
 
 @pytest.mark.asyncio
 async def test_login_bug_workaround_retries_login_successfully(mocker):
-    index_logged_in = '''
+    html_logged_in = '''
         <html>
             <a href="somewhere">Go somewhere</a>
             <a href="logout.php?auth=d34db33f">Logout</a>
             <a href="somewhere/else">Go somewhere else</a>
         </html>
     '''
-    index_login_bug = '''<html></html>'''
+    html_login_bug = '''<html></html>'''
     get_mock = mocker.patch.object(BbTracker, '_max_login_attempts', 4)
-    responses = ([index_login_bug] * (BbTracker._max_login_attempts - 1)
-                 + [index_logged_in])
+    responses = ([html_login_bug] * (BbTracker._max_login_attempts - 1)
+                 + [html_logged_in])
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(
         side_effect=responses,
@@ -265,17 +265,17 @@ async def test_login_bug_workaround_retries_login_successfully(mocker):
 
 @pytest.mark.asyncio
 async def test_login_bug_workaround_exceeds_max_attempts(mocker):
-    index_logged_in = '''
+    html_logged_in = '''
         <html>
             <a href="somewhere">Go somewhere</a>
             <a href="logout.php?auth=d34db33f">Logout</a>
             <a href="somewhere/else">Go somewhere else</a>
         </html>
     '''
-    index_login_bug = '''<html></html>'''
+    html_login_bug = '''<html></html>'''
     get_mock = mocker.patch.object(BbTracker, '_max_login_attempts', 10)
-    responses = ([index_login_bug] * BbTracker._max_login_attempts
-                 + [index_logged_in])
+    responses = ([html_login_bug] * BbTracker._max_login_attempts
+                 + [html_logged_in])
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(
         side_effect=responses,

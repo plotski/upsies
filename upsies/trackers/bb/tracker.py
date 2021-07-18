@@ -79,8 +79,9 @@ class BbTracker(TrackerBase):
         'torrent': '/torrents.php',
     }
 
-    _max_login_attempts = 15
+    _max_login_attempts = 30
     _login_retry_delay = 1
+    _login_retry_delay_max = 5
 
     async def login(self):
         if not self.is_logged_in:
@@ -128,7 +129,8 @@ class BbTracker(TrackerBase):
 
             if self._login_attempts < self._max_login_attempts:
                 if self._login_attempts:
-                    self._login_retry_delay = min(self._login_retry_delay * 1.2, 10)
+                    self._login_retry_delay = min(self._login_retry_delay * 1.2,
+                                                  self._login_retry_delay_max)
                 assert type(self)._login_retry_delay == 1
                 if self._login_attempts > 1:
                     _log.debug(f'Encountered login bug; retrying in {round(self._login_retry_delay)}s')

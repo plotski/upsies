@@ -1,3 +1,8 @@
+2021.??.??
+  * bB: Retry login up to 30 times instead of 15 when encountering login bug and
+    cap the delay between login attempts at 5 seconds.
+
+
 2021.07.13
   * BHD: Disable most edition values except for "Uncut" and "Unrated" to avoid
     the error: "Invalid edition value: Field must be a valid edition value."
