@@ -400,7 +400,7 @@ class ReleaseName(collections.abc.Mapping):
             self._has_dual_audio = bool(video.has_dual_audio(self._path))
             return self._has_dual_audio
 
-        # Default to ReleaseInfo['has_dual_audio']
+        # Default to ReleaseInfo['edition']
         else:
             return 'Dual Audio' in self._info.get('edition', ())
 
