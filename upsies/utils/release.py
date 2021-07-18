@@ -504,14 +504,14 @@ class ReleaseName(collections.abc.Mapping):
         if self.type in (ReleaseType.season, ReleaseType.episode):
             parts.append(str(self.episodes))
 
-        if self.edition:
-            parts.append(' '.join(self.edition))
-
         parts.append(self.resolution)
 
         if self.service:
             parts.append(self.service)
         parts.append(self.source)
+
+        if self.edition:
+            parts.append(' '.join(self.edition))
 
         parts.append(self.audio_format)
         if self.audio_channels:
