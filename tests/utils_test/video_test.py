@@ -435,6 +435,28 @@ def test_is_hdr10_catches_ContentError(default_track_mock):
 
 
 @pytest.mark.parametrize(
+    argnames='exp_return_value, video_dict',
+    argvalues=(
+        (True, {'HDR_Format': 'Dolby Vision'}),
+        (False, {'': 'Boldy Vision'}),
+        (False, {}),
+    ),
+    ids=lambda v: str(v),
+)
+@patch('upsies.utils.video.default_track')
+def test_is_dolby_vision(default_track_mock, exp_return_value, video_dict):
+    default_track_mock.return_value = video_dict
+    video.is_dolby_vision.cache_clear()
+    assert video.is_dolby_vision('foo.mkv') == exp_return_value
+
+@patch('upsies.utils.video.default_track')
+def test_is_dolby_vision_catches_ContentError(default_track_mock):
+    default_track_mock.side_effect = errors.ContentError('Something went wrong')
+    video.is_dolby_vision.cache_clear()
+    assert video.is_dolby_vision('foo.mkv') is None
+
+
+@pytest.mark.parametrize(
     argnames='exp_return_value, audio_dicts',
     argvalues=(
         (False, []),

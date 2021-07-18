@@ -348,6 +348,23 @@ def is_hdr10(path):
 
 
 @functools.lru_cache(maxsize=None)
+def is_dolby_vision(path):
+    """
+    Return `True` if `path` is Dolby Vision video, `False` otherwise, `None` if
+    it can't be determined
+    """
+    try:
+        video_track = default_track('video', path)
+    except errors.ContentError:
+        return None
+    else:
+        if video_track.get('HDR_Format') == 'Dolby Vision':
+            return True
+        else:
+            return False
+
+
+@functools.lru_cache(maxsize=None)
 def has_dual_audio(path):
     """
     Return `True` if `path` contains multiple audio tracks with different
