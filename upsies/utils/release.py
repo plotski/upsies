@@ -752,7 +752,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return _as_string(self._guess.get('episode_title', ''))
 
     _edition_translation = {}
-    _edition_regex = re.compile(r'(?:[ \.]|^)((?i:proper|repack\d*))(?:[ \.]|$)')
+    _proper_repack_regex = re.compile(r'(?:[ \.]|^)((?i:proper|repack\d*))(?:[ \.]|$)')
 
     def _get_edition(self):
         edition = _as_list(self._guess.get('edition'))
@@ -762,7 +762,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
                     edition[i] = edition_fixed
 
         # guessit doesn't distinguish between REPACK, PROPER, etc
-        match = self._edition_regex.search(self.release_name_params)
+        match = self._proper_repack_regex.search(self.release_name_params)
         if match:
             edition.append(match.group(1).capitalize())
 
