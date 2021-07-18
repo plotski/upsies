@@ -356,7 +356,7 @@ class ReleaseName(collections.abc.Mapping):
         above.
         """
         # Use manually set value unless it is None
-        if hasattr(self, '_has_commentary') and self._has_commentary is not None:
+        if getattr(self, '_has_commentary', None) is not None:
             return self._has_commentary
 
         # Find "Commentary" in audio track titles
@@ -392,7 +392,7 @@ class ReleaseName(collections.abc.Mapping):
         above.
         """
         # Use manually set value unless it is None
-        if hasattr(self, '_has_dual_audio') and self._has_dual_audio is not None:
+        if getattr(self, '_has_dual_audio', None) is not None:
             return self._has_dual_audio
 
         # Autodetect dual audio
