@@ -767,12 +767,12 @@ class ReleaseInfo(collections.abc.MutableMapping):
             edition.append(match.group(1).capitalize())
 
         guessit_other = _as_list(self._guess.get('other'))
-        if 'Dual Audio' in guessit_other:
-            edition.append('Dual Audio')
         if 'Open Matte' in guessit_other:
             edition.append('Open Matte')
         if 'Original Aspect Ratio' in guessit_other:
             edition.append('OAR')
+        if 'Dual Audio' in guessit_other:
+            edition.append('Dual Audio')
 
         return edition
 
