@@ -682,6 +682,11 @@ class BbTrackerJobs(TrackerJobsBase):
             return '10-bit'
 
     @property
+    def release_info_dolby_vision(self):
+        if video.is_dolby_vision(self.content_path):
+            return 'Dolby Vision'
+
+    @property
     def release_info_dual_audio(self):
         if video.has_dual_audio(self.content_path):
             return 'Dual Audio'
@@ -801,6 +806,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_remux,
             self.release_info_hdr10,
             self.release_info_10bit,
+            self.release_info_dolby_vision,
 
             # Editions
             self.release_info_uncensored,
@@ -896,6 +902,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_576p_PAL,
             self.release_info_hdr10,
             self.release_info_10bit,
+            self.release_info_dolby_vision,
 
             # Editions
             self.release_info_uncensored,
