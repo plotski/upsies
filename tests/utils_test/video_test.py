@@ -414,46 +414,29 @@ def test_bit_depth_catches_ContentError(default_track_mock):
 @pytest.mark.parametrize(
     argnames='exp_return_value, video_dict',
     argvalues=(
-        (False, {}),
-        (False, {'colour_primaries': 'BT.601 NTSC'}),
-        (True, {'colour_primaries': 'BT.2020 foo'}),
-        (True, {'colour_primaries': 'bar BT.2020'}),
+        (None, {}),
+        (None, {'HDR_Format': 'foo'}),
+        ('Dolby Vision', {'HDR_Format': 'Dolby Vision'}),
+        ('HDR10+', {'HDR_Format_Compatibility': 'HDR10+ Profile A'}),
+        ('HDR10+', {'HDR_Format_Compatibility': 'HDR10+ Profile B'}),
+        ('HDR10', {'HDR_Format_Compatibility': 'HDR10'}),
+        ('HDR', {'HDR_Format_Compatibility': 'foo HDR bar'}),
+        ('HDR', {'HDR_Format': 'foo HDR bar'}),
     ),
     ids=lambda v: str(v),
 )
 @patch('upsies.utils.video.default_track')
-def test_is_hdr10(default_track_mock, exp_return_value, video_dict):
+def test_hdr_format(default_track_mock, exp_return_value, video_dict):
+    print('Setting default video track to', video_dict)
     default_track_mock.return_value = video_dict
-    video.is_hdr10.cache_clear()
-    assert video.is_hdr10('foo.mkv') == exp_return_value
+    video.hdr_format.cache_clear()
+    assert video.hdr_format('foo.mkv') == exp_return_value
 
 @patch('upsies.utils.video.default_track')
-def test_is_hdr10_catches_ContentError(default_track_mock):
+def test_hdr_format_catches_ContentError(default_track_mock):
     default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.is_hdr10.cache_clear()
-    assert video.is_hdr10('foo.mkv') is None
-
-
-@pytest.mark.parametrize(
-    argnames='exp_return_value, video_dict',
-    argvalues=(
-        (True, {'HDR_Format': 'Dolby Vision'}),
-        (False, {'': 'Boldy Vision'}),
-        (False, {}),
-    ),
-    ids=lambda v: str(v),
-)
-@patch('upsies.utils.video.default_track')
-def test_is_dolby_vision(default_track_mock, exp_return_value, video_dict):
-    default_track_mock.return_value = video_dict
-    video.is_dolby_vision.cache_clear()
-    assert video.is_dolby_vision('foo.mkv') == exp_return_value
-
-@patch('upsies.utils.video.default_track')
-def test_is_dolby_vision_catches_ContentError(default_track_mock):
-    default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.is_dolby_vision.cache_clear()
-    assert video.is_dolby_vision('foo.mkv') is None
+    video.hdr_format.cache_clear()
+    assert video.hdr_format('foo.mkv') is None
 
 
 @pytest.mark.parametrize(

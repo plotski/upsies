@@ -330,38 +330,48 @@ def bit_depth(path):
         return video_track.get('BitDepth', None)
 
 
+hdr_formats = {
+    'Dolby Vision': {'HDR_Format': re.compile(r'^Dolby Vision$')},
+    # "HDR10+ Profile A" or "HDR10+ Profile B"
+    'HDR10+': {'HDR_Format_Compatibility': re.compile(r'HDR10\+')},
+    'HDR10': {'HDR_Format_Compatibility': re.compile(r'HDR10(?!\+)')},
+    # "HDR" is not tested with real-world data; feel free to change
+    'HDR': (
+        {'HDR_Format_Compatibility': re.compile(r'HDR')},
+        {'HDR_Format': re.compile(r'HDR')},
+    ),
+}
+"""
+Map HDR format names (e.g. "Dolby Vision") to dictinaries that map mediainfo
+video track fields to regular expressions that must match the fields' values
+"""
+
 @functools.lru_cache(maxsize=None)
-def is_hdr10(path):
-    """
-    Return `True` if `path` is HDR10 video, `False` otherwise, `None` if it
-    can't be determined
-    """
+def hdr_format(path):
+    """Return HDR format based on `hdr_formats`, e.g. "HDR10", or `None`"""
     try:
         video_track = default_track('video', path)
     except errors.ContentError:
         return None
     else:
-        if 'BT.2020' in video_track.get('colour_primaries', ''):
-            return True
-        else:
+        def is_match(video_track, conditions):
+            if isinstance(conditions, collections.abc.Mapping):
+                # `conditions` maps field names to field value matching regexes
+                for key, regex in conditions.items():
+                    value = video_track.get(key, '')
+                    if regex.search(value):
+                        return True
+            else:
+                # `conditions` is a sequence of mappings that map field names to
+                # field value matching regexes (see above)
+                for condition in conditions:
+                    if is_match(video_track, condition):
+                        return True
             return False
 
-
-@functools.lru_cache(maxsize=None)
-def is_dolby_vision(path):
-    """
-    Return `True` if `path` is Dolby Vision video, `False` otherwise, `None` if
-    it can't be determined
-    """
-    try:
-        video_track = default_track('video', path)
-    except errors.ContentError:
-        return None
-    else:
-        if video_track.get('HDR_Format') == 'Dolby Vision':
-            return True
-        else:
-            return False
+        for hdr_format, conditions in hdr_formats.items():
+            if is_match(video_track, conditions):
+                return hdr_format
 
 
 @functools.lru_cache(maxsize=None)
