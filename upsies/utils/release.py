@@ -788,7 +788,12 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     _edition_translation = {}
     _proper_repack_regex = re.compile(r'(?:[ \.]|^)((?i:proper|repack\d*))(?:[ \.]|$)')
-    _dolby_vision_regex = re.compile(r'(?i:[ \.]|^)((?i:DV|DoVi|Dolby[ \.]Vision))(?:[ \.]|$)')
+    _hdr_regexes = {
+        'Dolby Vision': re.compile(r'(?:[ \.]|^)(?i:DV|DoVi|Dolby[ \.]Vision)(?:[ \.]|$)'),
+        'HDR10+': re.compile(r'(?:[ \.]|^)(?i:HDR10\+)(?:[ \.]|$)'),
+        'HDR10': re.compile(r'(?:[ \.]|^)(?i:HDR10)(?:[^\+]|$)'),
+        'HDR': re.compile(r'(?:[ \.]|^)(?i:HDR)(?:[^10\+]|$)'),
+    }
 
     def _get_edition(self):
         edition = _as_list(self._guess.get('edition'))
@@ -797,16 +802,12 @@ class ReleaseInfo(collections.abc.MutableMapping):
                 if regex.search(edition[i]):
                     edition[i] = edition_fixed
 
-        # guessit doesn't distinguish between REPACK, PROPER, etc
+        # Revision (guessit doesn't distinguish between REPACK, PROPER, etc)
         match = self._proper_repack_regex.search(self.release_name_params)
         if match:
             edition.append(match.group(1).capitalize())
 
-        # TODO: Dolby Vision should be supported by upstream by guessit
-        match = self._dolby_vision_regex.search(self.release_name_params)
-        if match:
-            edition.append('Dolby Vision')
-
+        # Various
         guessit_other = _as_list(self._guess.get('other'))
         if 'Open Matte' in guessit_other:
             edition.append('Open Matte')
@@ -814,6 +815,12 @@ class ReleaseInfo(collections.abc.MutableMapping):
             edition.append('OAR')
         if 'Dual Audio' in guessit_other:
             edition.append('Dual Audio')
+
+        # HDR format
+        for hdr_format, regex in self._hdr_regexes.items():
+            if regex.search(self.release_name_params):
+                edition.append(hdr_format)
+                break
 
         return edition
 

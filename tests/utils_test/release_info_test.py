@@ -264,7 +264,11 @@ edition_samples = (
     # ('The Foo 2000 Open Matte 1080p BluRay DTS x264-ASDF', {'edition': ['Open Matte']}),
 
     ('The Foo 2000 1080p BluRay DV DTS x264-ASDF', {'edition': ['Dolby Vision']}),
+    ('The Foo 2000 1080p BluRay DoVi DTS x264-ASDF', {'edition': ['Dolby Vision']}),
     ('The Foo 2000 1080p BluRay Dolby Vision DTS x264-ASDF', {'edition': ['Dolby Vision']}),
+    ('The Foo 2000 1080p BluRay HDR10+ DTS x264-ASDF', {'edition': ['HDR10+']}),
+    ('The Foo 2000 1080p BluRay HDR10 DTS x264-ASDF', {'edition': ['HDR10']}),
+    ('The Foo 2000 1080p BluRay HDR DTS x264-ASDF', {'edition': ['HDR']}),
 
     # TODO: Enable this test when guessit supports it.
     #       https://github.com/guessit-io/guessit/pull/697
