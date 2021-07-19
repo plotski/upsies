@@ -1168,7 +1168,6 @@ def test_release_info_hdr10(is_hdr10, exp_text, bb_tracker_jobs, mocker):
 @pytest.mark.parametrize(
     argnames='bit_depth, exp_text',
     argvalues=(
-        ('5', None),
         ('9', None),
         ('10', '10-bit'),
         ('11', None),
