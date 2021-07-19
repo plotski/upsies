@@ -1154,15 +1154,16 @@ def test_release_info_repack(edition, exp_text, bb_tracker_jobs, mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='is_hdr10, exp_text',
+    argnames='hdr_format, exp_text',
     argvalues=(
-        (False, None),
-        (True, 'HDR10'),
+        (None, None),
+        ('', None),
+        ('HDR10', 'HDR10'),
     ),
 )
-def test_release_info_hdr10(is_hdr10, exp_text, bb_tracker_jobs, mocker):
-    mocker.patch('upsies.utils.video.is_hdr10', return_value=is_hdr10)
-    assert bb_tracker_jobs.release_info_hdr10 == exp_text
+def test_release_info_hdr_format(hdr_format, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch('upsies.utils.video.hdr_format', return_value=hdr_format)
+    assert bb_tracker_jobs.release_info_hdr_format == exp_text
 
 
 @pytest.mark.parametrize(
@@ -1176,19 +1177,6 @@ def test_release_info_hdr10(is_hdr10, exp_text, bb_tracker_jobs, mocker):
 def test_release_info_10bit(bit_depth, exp_text, bb_tracker_jobs, mocker):
     mocker.patch('upsies.utils.video.bit_depth', return_value=bit_depth)
     assert bb_tracker_jobs.release_info_10bit == exp_text
-
-
-@pytest.mark.parametrize(
-    argnames='is_dolby_vision, exp_text',
-    argvalues=(
-        (None, None),
-        (False, None),
-        (True, 'Dolby Vision'),
-    ),
-)
-def test_release_info_dolby_vision(is_dolby_vision, exp_text, bb_tracker_jobs, mocker):
-    mocker.patch('upsies.utils.video.is_dolby_vision', return_value=is_dolby_vision)
-    assert bb_tracker_jobs.release_info_dolby_vision == exp_text
 
 
 @pytest.mark.parametrize(
@@ -1478,9 +1466,8 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
 
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_remux', PropertyMock(return_value='REMUX'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_576p_PAL', PropertyMock(return_value='576p PAL'))
-    mocker.patch.object(type(bb_tracker_jobs), 'release_info_hdr10', PropertyMock(return_value='HDR10'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_10bit', PropertyMock(return_value='10-bit'))
-    mocker.patch.object(type(bb_tracker_jobs), 'release_info_dolby_vision', PropertyMock(return_value='Dolby Vision'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_hdr_format', PropertyMock(return_value='HDR10'))
 
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_uncensored', PropertyMock(return_value='Uncensored'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_uncut', PropertyMock(return_value='Uncut'))
@@ -1502,7 +1489,7 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
     title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
     exp_info = ('[BluRay / x264 / E-AC-3 / MKV / 1080p / '
                 'PROPER / REPACK / '
-                'REMUX / HDR10 / 10-bit / Dolby Vision / '
+                'REMUX / 10-bit / HDR10 / '
                 "Uncensored / Uncut / Unrated / Remastered / Director's Cut / Theatrical Cut / IMAX / "
                 'Extended Edition / Anniversary Edition / Criterion Edition / Special Edition / Limited / '
                 'Dual Audio / w. Commentary / w. Subtitles]')
@@ -1681,9 +1668,8 @@ def test_get_movie_release_info(bb_tracker_jobs, mocker):
         # Special formats
         'release_info_remux': 'REMUX',
         'release_info_576p_PAL': '576p PAL',
-        'release_info_hdr10': 'HDR10',
         'release_info_10bit': '10-bit',
-        'release_info_dolby_vision': 'Dolby Vision',
+        'release_info_hdr_format': 'Dolby Vision',
 
         # Editions
         'release_info_uncensored': 'Uncensored',

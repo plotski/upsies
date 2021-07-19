@@ -672,19 +672,15 @@ class BbTrackerJobs(TrackerJobsBase):
             return 'REPACK'
 
     @property
-    def release_info_hdr10(self):
-        if video.is_hdr10(self.content_path):
-            return 'HDR10'
+    def release_info_hdr_format(self):
+        hdr_format = video.hdr_format(self.content_path)
+        if hdr_format:
+            return hdr_format
 
     @property
     def release_info_10bit(self):
         if video.bit_depth(self.content_path) == '10':
             return '10-bit'
-
-    @property
-    def release_info_dolby_vision(self):
-        if video.is_dolby_vision(self.content_path):
-            return 'Dolby Vision'
 
     @property
     def release_info_dual_audio(self):
@@ -804,9 +800,8 @@ class BbTrackerJobs(TrackerJobsBase):
 
             # Special formats
             self.release_info_remux,
-            self.release_info_hdr10,
             self.release_info_10bit,
-            self.release_info_dolby_vision,
+            self.release_info_hdr_format,
 
             # Editions
             self.release_info_uncensored,
@@ -900,9 +895,8 @@ class BbTrackerJobs(TrackerJobsBase):
             # Special formats
             self.release_info_remux,
             self.release_info_576p_PAL,
-            self.release_info_hdr10,
             self.release_info_10bit,
-            self.release_info_dolby_vision,
+            self.release_info_hdr_format,
 
             # Editions
             self.release_info_uncensored,
