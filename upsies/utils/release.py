@@ -265,12 +265,17 @@ class ReleaseName(collections.abc.Mapping):
         """List of "Director's Cut", "Uncut", "Unrated", etc"""
         if 'edition' not in self._info:
             self._info['edition'] = []
+
+        # Dual Audio
         if 'Dual Audio' not in self._info['edition']:
             if self.has_dual_audio:
                 self._info['edition'].append('Dual Audio')
-        if 'Dolby Vision' not in self._info['edition']:
-            if self.is_dolby_vision:
-                self._info['edition'].append('Dolby Vision')
+
+        # HDR format (e.g. "Dolby Vision" or "HDR10")
+        if not any(hdr in self._info['edition'] for hdr in video.hdr_formats):
+            if self.hdr_format:
+                self._info['edition'].append(self.hdr_format)
+
         return self._info['edition']
 
     @edition.setter
@@ -415,9 +420,9 @@ class ReleaseName(collections.abc.Mapping):
             self._has_dual_audio = bool(value)
 
     @property
-    def is_dolby_vision(self):
+    def hdr_format(self):
         """
-        Whether video has Dolby Vision metadata
+        HDR format name (e.g. "Dolby Vision" or "HDR10")
 
         If not set explicitly and the given `path` exists, this value is
         autodetected if possible, otherwise default to whatever
@@ -427,24 +432,32 @@ class ReleaseName(collections.abc.Mapping):
         above.
         """
         # Use manually set value unless it is None
-        if getattr(self, '_is_dolby_vision', None) is not None:
-            return self._is_dolby_vision
+        if getattr(self, '_hdr_format', None) is not None:
+            return self._hdr_format
 
         # Autodetect
-        elif os.path.exists(self._path):
-            self._is_dolby_vision = bool(video.is_dolby_vision(self._path))
-            return self._is_dolby_vision
+        if os.path.exists(self._path):
+            hdr_format = video.hdr_format(self._path)
+            if hdr_format:
+                self._hdr_format = hdr_format
+                return self._hdr_format
 
         # Default to ReleaseInfo['edition']
-        else:
-            return 'Dolby Vision' in self._info.get('edition', ())
+        guessed_editions = self._info.get('edition', ())
+        for hdr_format in video.hdr_formats:
+            if hdr_format in guessed_editions:
+                return hdr_format
 
-    @is_dolby_vision.setter
-    def is_dolby_vision(self, value):
+    @hdr_format.setter
+    def hdr_format(self, value):
         if value is None:
-            self._is_dolby_vision = None
+            self._hdr_format = None
+        elif value == '':
+            self._hdr_format = ''
+        elif value in video.hdr_formats:
+            self._hdr_format = str(value)
         else:
-            self._is_dolby_vision = bool(value)
+            raise ValueError(f'Unknown HDR format: {value!r}')
 
     _needed_attrs = {
         ReleaseType.movie: ('title', 'year', 'resolution', 'source',

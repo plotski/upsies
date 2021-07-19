@@ -428,11 +428,11 @@ def test_edition_getter_autodetects_dual_audio(ReleaseInfo_mock, mocker):
     assert rn.edition == ['Dual Audio']  # Get info from internal ReleaseInfo object
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_edition_getter_autodetects_dolby_vision(ReleaseInfo_mock, mocker):
+def test_edition_getter_autodetects_hdr_format(ReleaseInfo_mock, mocker):
     ReleaseInfo_mock.return_value = {'edition': []}
     rn = ReleaseName('path/to/something')
-    rn.is_dolby_vision = True
-    assert rn.edition == ['Dolby Vision']  # Get info from ReleaseInfo.is_dolby_vision
+    rn.hdr_format = 'Dolby Vision'
+    assert rn.edition == ['Dolby Vision']  # Get info from ReleaseInfo.hdr_format
     assert rn.edition == ['Dolby Vision']  # Get info from internal ReleaseInfo object
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
@@ -738,49 +738,44 @@ def test_has_dual_audio(path_exists, has_dual_audio, release_info, exp_value, mo
 
 
 @pytest.mark.parametrize(
-    argnames='path_exists, is_dolby_vision, release_info, exp_value',
+    argnames='path_exists, hdr_format, release_info, exp_value',
     argvalues=(
-        ('path_exists', True, {'edition': ['Dolby Vision']}, True),
-        ('path_exists', True, {'edition': []}, True),
-
-        ('path_exists', False, {'edition': ['Dolby Vision']}, False),
-        ('path_exists', False, {'edition': []}, False),
-
-        ('path_exists', None, {'edition': ['Dolby Vision']}, False),
-        ('path_exists', None, {'edition': []}, False),
-
-        ('path_does_not_exist', True, {'edition': ['Dolby Vision']}, True),
-        ('path_does_not_exist', True, {'edition': []}, False),
-
-        ('path_does_not_exist', False, {'edition': ['Dolby Vision']}, True),
-        ('path_does_not_exist', False, {'edition': []}, False),
-
-        ('path_does_not_exist', None, {'edition': ['Dolby Vision']}, True),
-        ('path_does_not_exist', None, {'edition': []}, False),
+        ('path_does_not_exist', 'Dolby Vision', {'edition': ['HDR10']}, 'HDR10'),
+        ('path_exists', 'Dolby Vision', {'edition': ['HDR10']}, 'Dolby Vision'),
+        ('path_exists', None, {'edition': ['HDR10']}, 'HDR10'),
+        ('path_exists', None, {'edition': ['HDR10', 'Dolby Vision', 'HDR', 'HDR10+']}, 'Dolby Vision'),
+        ('path_exists', None, {'edition': ['HDR10', 'HDR10+', 'HDR']}, 'HDR10+'),
+        ('path_exists', None, {'edition': ['HDR', 'HDR10']}, 'HDR10'),
+        ('path_exists', None, {'edition': ['HDR']}, 'HDR'),
+        ('path_exists', None, {'edition': []}, None),
     ),
     ids=lambda v: str(v),
 )
-def test_is_dolby_vision(path_exists, is_dolby_vision, release_info, exp_value, mocker):
-    mocker.patch(
-        'upsies.utils.video.is_dolby_vision',
-        Mock(return_value=is_dolby_vision),
-    )
-    mocker.patch(
-        'upsies.utils.release.ReleaseInfo',
-        Mock(return_value=release_info),
-    )
+def test_hdr_format(path_exists, hdr_format, release_info, exp_value, mocker):
+    mocker.patch('upsies.utils.video.hdr_format', Mock(return_value=hdr_format))
+    mocker.patch('upsies.utils.release.ReleaseInfo', Mock(return_value=release_info))
     mocker.patch(
         'os.path.exists',
         Mock(return_value=True if path_exists == 'path_exists' else False),
     )
     rn = ReleaseName('path/to/something')
-    assert rn.is_dolby_vision is exp_value
-    rn.is_dolby_vision = ''
-    assert rn.is_dolby_vision is False
-    rn.is_dolby_vision = 1
-    assert rn.is_dolby_vision is True
-    rn.is_dolby_vision = None
-    assert rn.is_dolby_vision is exp_value
+    assert rn.hdr_format == exp_value
+    rn.hdr_format = ''
+    assert rn.hdr_format == ''
+    for hdr_format in ('HDR10', 'Dolby Vision'):
+        rn.hdr_format = hdr_format
+        assert rn.hdr_format == hdr_format
+    rn.hdr_format = None
+    assert rn.hdr_format == exp_value
+
+def test_hdr_format_is_set_to_invalid_value(mocker):
+    mocker.patch('upsies.utils.video.hdr_formats', ('foo', 'bar'))
+    rn = ReleaseName('path/to/something')
+    for hdr_format in ('foo', 'bar'):
+        rn.hdr_format = hdr_format
+        assert rn.hdr_format == hdr_format
+    with pytest.raises(ValueError, match=r"^Unknown HDR format: 'baz'$"):
+        rn.hdr_format = 'baz'
 
 
 @pytest.mark.parametrize('release_type', tuple(ReleaseType), ids=lambda v: repr(v))
