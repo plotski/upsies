@@ -154,7 +154,6 @@ def default_track(type, path):
     except (KeyError, IndexError):
         pass
 
-    import pprint
     _log.debug('WTFSD: all tracks: %s', all_tracks)
     raise errors.ContentError(f'{path}: No {type.lower()} track found')
 

@@ -70,6 +70,7 @@ def _main(args=None):
 
 def _wtf():
     import os
+
     from ... import utils
 
     print('$PATH:', os.environ['PATH'].split(':'))
@@ -129,5 +130,3 @@ def _wtf():
 
     print(f'Running: utils.video.audio_format({sys.argv[2]!r}):')
     print(utils.video.audio_format(sys.argv[2]))
-
-    
