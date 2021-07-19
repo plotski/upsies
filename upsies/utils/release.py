@@ -377,7 +377,7 @@ class ReleaseName(collections.abc.Mapping):
     @has_commentary.setter
     def has_commentary(self, value):
         if value is None:
-            self._has_commentary = value
+            self._has_commentary = None
         else:
             self._has_commentary = bool(value)
 
@@ -410,7 +410,7 @@ class ReleaseName(collections.abc.Mapping):
     @has_dual_audio.setter
     def has_dual_audio(self, value):
         if value is None:
-            self._has_dual_audio = value
+            self._has_dual_audio = None
         else:
             self._has_dual_audio = bool(value)
 
@@ -442,7 +442,7 @@ class ReleaseName(collections.abc.Mapping):
     @is_dolby_vision.setter
     def is_dolby_vision(self, value):
         if value is None:
-            self._is_dolby_vision = value
+            self._is_dolby_vision = None
         else:
             self._is_dolby_vision = bool(value)
 
