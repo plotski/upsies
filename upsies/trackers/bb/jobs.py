@@ -678,7 +678,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def release_info_10bit(self):
-        if video.bit_depth(self.content_path) == '10' and not self.release_info_hdr10:
+        if video.bit_depth(self.content_path) == '10':
             return '10-bit'
 
     @property
