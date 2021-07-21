@@ -545,3 +545,16 @@ def test_verify_piece_gets_valid_piece_index(mocker):
     assert tfs.verify_piece(2) is True
     with pytest.raises(ValueError, match=r'^piece_index must be in range 0 - 2: 3$'):
         tfs.verify_piece(3)
+
+def test_verify_piece_returns_None_for_nonexisting_files(mocker):
+    torrent = Torrent(piece_size=123, files=(File('a', 1), File('b', 2), File('c', 3)))
+    tfs = TorrentFileStream(torrent, location='foo/path')
+    mocker.patch.object(type(tfs), 'torrent_piece_hashes', PropertyMock(
+        return_value=(b'foo', b'bar', b'baz'),
+    ))
+    mocker.patch.object(tfs, 'get_piece_hash', return_value=None)
+    assert tfs.verify_piece(0) is None
+    assert tfs.verify_piece(1) is None
+    assert tfs.verify_piece(2) is None
+    with pytest.raises(ValueError, match=r'^piece_index must be in range 0 - 2: 3$'):
+        tfs.verify_piece(3)

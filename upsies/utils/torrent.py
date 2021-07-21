@@ -477,5 +477,6 @@ class TorrentFileStream:
             raise ValueError(f'piece_index must be in range 0 - {max_piece_index}: {piece_index}')
 
         generated_piece_hash = self.get_piece_hash(piece_index)
-        _log.debug('%d: %r =? %r', piece_index, stored_piece_hash, generated_piece_hash)
-        return stored_piece_hash == generated_piece_hash
+        if generated_piece_hash is not None:
+            _log.debug('Comparing piece hash: %r =? %r', stored_piece_hash, generated_piece_hash)
+            return stored_piece_hash == generated_piece_hash
