@@ -372,13 +372,30 @@ def test_file_and_parent():
     assert fs.file_and_parent('d') == ('d',)
 
 
-def test_sanitize_path_on_unix(mocker):
+def test_sanitize_filename_on_unix(mocker):
     mocker.patch('upsies.utils.fs.os_family', return_value='unix')
     assert fs.sanitize_filename('foo<bar>baz :a"b/c \\1|2?3*4.txt') == 'foo<bar>baz :a"b_c \\1|2?3*4.txt'
 
-def test_sanitize_path_on_windows(mocker):
+def test_sanitize_filename_on_windows(mocker):
     mocker.patch('upsies.utils.fs.os_family', return_value='windows')
     assert fs.sanitize_filename('foo<bar>baz :a"b/c \\1|2?3*4.txt') == 'foo_bar_baz _a_b_c _1_2_3_4.txt'
+
+
+def test_sanitize_path(mocker):
+    mock_sanitize_filename = mocker.patch('upsies.utils.fs.sanitize_filename', side_effect=(
+        '<sanitized filename 1>',
+        '<sanitized filename 2>',
+        '<sanitized filename 3>',
+        '<sanitized filename 4>',
+    ))
+    import os
+    mocker.patch.object(os, 'sep', ':')
+    assert fs.sanitize_path('foo:bar:baz') == ':'.join((
+        '<sanitized filename 1>',
+        '<sanitized filename 2>',
+        '<sanitized filename 3>',
+    ))
+    assert mock_sanitize_filename.call_args_list == [call('foo'), call('bar'), call('baz')]
 
 
 @pytest.mark.parametrize(

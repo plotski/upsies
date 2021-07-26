@@ -231,6 +231,8 @@ def file_and_parent(path):
 def sanitize_filename(filename):
     """
     Replace illegal characters in `filename` with "_"
+
+    Illegal characters include :attr:`os.sep`.
     """
     if os_family() == 'windows':
         illegal_chars = ('<', '>', ':', '"', '/', '\\', '|', '?', '*')
@@ -240,6 +242,17 @@ def sanitize_filename(filename):
     for char in illegal_chars:
         filename = filename.replace(char, '_')
     return filename
+
+
+def sanitize_path(path):
+    """
+    Replace illegal characters in each `path` segment with "_"
+
+    `path` is split at :attr:`os.sep` and the resulting items are passed to
+    :func:`sanitize_filename` and joined.
+    """
+    segments = str(path).split(os.sep)
+    return os.sep.join(sanitize_filename(segment) for segment in segments)
 
 
 def file_extension(path):
