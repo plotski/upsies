@@ -21,6 +21,20 @@ def test_make_resize_cmd(image_file, dimensions, resized_file, exp_args):
     cmd = image._make_resize_cmd(image_file, dimensions, resized_file)
     assert cmd == (image._ffmpeg_executable(),) + exp_args
 
+def test_make_resize_cmd_sanitizes_path(mocker):
+    def sanitize_path(path):
+        for c in (os.sep, '\\', '?', '<', '>', ':'):
+            path = path.replace(c, '_')
+        return path
+
+    resized_path = rf'path{os.sep}with:some\potentially?illegal<characters>.100%.png'
+    mocker.patch('upsies.utils.fs.sanitize_path', side_effect=sanitize_path)
+    cmd = image._make_resize_cmd('a.png', '10:20', resized_path)
+    assert cmd == (image._ffmpeg_executable(),) + (
+        '-y', '-loglevel', 'level+error', '-i', 'file:a.png', '-vf', 'scale=10:20',
+        rf'file:path_with_some_potentially_illegal_characters_.100%%.png',
+    )
+
 
 def test_resize_with_unreadable_file(mocker):
     mocker.patch('upsies.utils.fs.assert_file_readable', side_effect=errors.ContentError('No'))

@@ -38,6 +38,21 @@ def test_make_screenshot_cmd(video_file, timestamp, screenshot_file, exp_args):
     cmd = image._make_screenshot_cmd(video_file, timestamp, screenshot_file)
     assert cmd == (image._ffmpeg_executable(),) + exp_args
 
+def test_make_screenshot_cmd_sanitizes_path(mocker):
+    def sanitize_path(path):
+        for c in (os.sep, '\\', '?', '<', '>', ':'):
+            path = path.replace(c, '_')
+        return path
+
+    screenshot_path = rf'path{os.sep}with:some\potentially?illegal<characters>.100%.png'
+    mocker.patch('upsies.utils.fs.sanitize_path', side_effect=sanitize_path)
+    cmd = image._make_screenshot_cmd('video.mkv', 123, screenshot_path)
+    assert cmd == (image._ffmpeg_executable(),) + (
+        '-y', '-loglevel', 'level+error', '-ss', '123', '-i', 'video.mkv',
+        '-vframes', '1', '-vf', 'scale=trunc(ih*dar):ih,setsar=1/1',
+        rf'file:path_with_some_potentially_illegal_characters_.100%%.png',
+    )
+
 
 @patch('upsies.utils.fs.assert_file_readable')
 @patch('upsies.utils.subproc.run')

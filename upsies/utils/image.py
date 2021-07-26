@@ -22,7 +22,7 @@ def _ffmpeg_executable():
 
 def _make_screenshot_cmd(video_file, timestamp, screenshot_file):
     # ffmpeg's "image2" image file muxer uses "%" for string formatting
-    screenshot_file = str(screenshot_file).replace('%', '%%')
+    screenshot_file = utils.fs.sanitize_path(str(screenshot_file).replace('%', '%%'))
     return (
         _ffmpeg_executable(),
         '-y',
@@ -92,7 +92,7 @@ def screenshot(video_file, timestamp, screenshot_file, overwrite=False):
 
 def _make_resize_cmd(image_file, dimensions, resized_file):
     # ffmpeg's "image2" image file muxer uses "%" for string formatting
-    resized_file = resized_file.replace('%', '%%')
+    resized_file = utils.fs.sanitize_path(resized_file.replace('%', '%%'))
     return (
         _ffmpeg_executable(),
         '-y',
