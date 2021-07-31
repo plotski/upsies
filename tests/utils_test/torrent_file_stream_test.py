@@ -289,18 +289,20 @@ def test_get_piece_returns_piece_from_file(piece_size, files, piece_index, tmp_p
     for f in files:
         print(f'{f}: {f.size} bytes: {f.content}')
         f.write_at(tmp_path)
+
     stream = b''.join(f.content for f in files)
     print('concatenated stream:', stream)
+    start = piece_index * piece_size
+    stop = min(start + piece_size, len(stream))
+    exp_piece = stream[start:stop]
+    print('exp_piece:', f'[{start}:{stop}]:', exp_piece)
+    exp_piece_length = stop - start
+    assert len(exp_piece) == exp_piece_length
 
     torrent = Torrent(piece_size=piece_size, files=files)
     with TorrentFileStream(torrent, location=tmp_path) as tfs:
-        start = piece_index * piece_size
-        stop = min(start + piece_size, len(stream))
-        exp_piece = stream[start:stop]
-        print('exp_piece:', f'[{start}:{stop}]:', exp_piece)
-        exp_piece_length = stop - start
-        assert len(exp_piece) == exp_piece_length
-        assert tfs.get_piece(piece_index) == exp_piece
+        piece = tfs.get_piece(piece_index)
+        assert piece == exp_piece
 
 @pytest.mark.parametrize(
     argnames='piece_size, files, piece_index, exp_min_piece_index, exp_max_piece_index',
@@ -424,21 +426,20 @@ def test_get_piece_returns_None_if_file_size_is_wrong(piece_size, files, content
         content = contents.get(f, f.content)
         print(f'{f}: {f.size} bytes: {content}, real size: {len(content)} bytes')
         f.write_at(tmp_path, content)
-    stream = b''.join(f.content for f in files)
-    print('concatenated stream:', stream)
+
+    if exp_piece is not None:
+        stream = b''.join(f.content for f in files)
+        print('concatenated stream:', stream)
+        start = piece_index * piece_size
+        stop = min(start + piece_size, len(stream))
+        exp_piece = stream[start:stop]
+        print('exp_piece:', f'[{start}:{stop}]:', exp_piece)
+        exp_piece_length = stop - start
+        assert len(exp_piece) == exp_piece_length
 
     torrent = Torrent(piece_size=piece_size, files=files)
     with TorrentFileStream(torrent, location=tmp_path) as tfs:
-        if exp_piece is None:
-            assert tfs.get_piece(piece_index) is None
-        else:
-            start = piece_index * piece_size
-            stop = min(start + piece_size, len(stream))
-            exp_piece = stream[start:stop]
-            print('exp_piece:', f'[{start}:{stop}]:', exp_piece)
-            exp_piece_length = stop - start
-            assert len(exp_piece) == exp_piece_length
-            assert tfs.get_piece(piece_index) == exp_piece
+        assert tfs.get_piece(piece_index) == exp_piece
 
 
 def test_get_file_size_from_fs_returns_file_size(mocker):
