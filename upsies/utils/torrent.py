@@ -130,7 +130,7 @@ class TorrentFileStream:
         self._torrent = torrent
         self._location = location
         self._open_files = {}
-        _log.debug('Piece matching torrent files:')
+        _log.debug('Created stream from torrent files:')
         for f in self._torrent.files:
             _log.debug('  %r', f)
 
@@ -293,7 +293,7 @@ class TorrentFileStream:
             # _log.debug(f'    pi_abs = {pi_abs_min} + {pi_rel} = {pi_abs}')
             validated_piece_indexes.add(pi_abs)
 
-        _log.debug('Validated piece indexes: %r', sorted(validated_piece_indexes))
+        # _log.debug('Validated piece indexes: %r', sorted(validated_piece_indexes))
         return sorted(validated_piece_indexes)
 
     def get_piece(self, piece_index):
@@ -305,7 +305,7 @@ class TorrentFileStream:
         Errors from reading files existing (e.g. :class:`PermissionError`) are
         raised as :class:`~.errors.ContentError`.
         """
-        _log.debug('###############################')
+        # _log.debug('###############################')
         piece_size = self._torrent.piece_size
         torrent_size = sum(f.size for f in self._torrent.files)
         # for f in self._torrent.files:
@@ -360,7 +360,6 @@ class TorrentFileStream:
         for f in relevant_files:
             _log.debug('Reading from %r', f)
             fh = self._get_open_file(f)
-            _log.debug('file handle for %r: %r', f, fh)
 
             # We can't read the piece if any `relevant_file` is missing
             if fh is None:
@@ -375,17 +374,17 @@ class TorrentFileStream:
 
             try:
                 if seek_to != 0:
-                    _log.debug('  Seeking to %r', seek_to)
+                    _log.debug('  Seeking to %r in %r', seek_to, f)
                     fh.seek(seek_to)
                     seek_to = 0
 
-                _log.debug('  Reading %r bytes', bytes_to_read)
+                _log.debug('  Reading %r bytes at %r', bytes_to_read, fh.tell())
                 content = fh.read(bytes_to_read)
                 bytes_to_read -= len(content)
-                _log.debug('  Read %d bytes; %d left to read', len(content), bytes_to_read)
+                _log.debug('  Read %d bytes: %r', len(content), _display_piece(content))
+                _log.debug('  %d left to read', bytes_to_read)
                 piece.extend(content)
-                _log.debug('  Piece has now %d bytes', len(piece))
-                # _log.debug('  Piece: %r', piece)
+                _log.debug('  Piece has now %d bytes: %r', len(piece), _display_piece(piece))
             except OSError as e:
                 msg = e.strerror if e.strerror else e
                 raise errors.ContentError(f'Failed to read from {f}: {msg}')
@@ -397,8 +396,8 @@ class TorrentFileStream:
                 exp_piece_size = piece_size
         else:
             exp_piece_size = piece_size
-        _log.debug('  Expected piece size: %r', exp_piece_size)
-        _log.debug('    Actual piece size: %r', len(piece))
+        # _log.debug('  Expected piece size: %r', exp_piece_size)
+        # _log.debug('    Actual piece size: %r', len(piece))
 
         ### Not needed since we exlude any size-mismatching files
         # # Add padding zero bytes if one file was shorter than expected
@@ -445,7 +444,7 @@ class TorrentFileStream:
         _log.debug('Piece %d: %r bytes: %r',
                    piece_index,
                    None if piece is None else len(piece),
-                   None if piece is None else (piece[:20] + b' ... ' + piece[-20:]))
+                   None if piece is None else _display_piece(piece))
         if piece is not None:
             return hashlib.sha1(piece).digest()
 
@@ -470,6 +469,7 @@ class TorrentFileStream:
 
         :return: `True` if both hash values are equal, `False` otherwise
         """
+        _log.debug('Verifying piece index: %r', piece_index)
         try:
             stored_piece_hash = self.torrent_piece_hashes[piece_index]
         except IndexError:
@@ -480,3 +480,10 @@ class TorrentFileStream:
         if generated_piece_hash is not None:
             _log.debug('Comparing piece hash: %r =? %r', stored_piece_hash, generated_piece_hash)
             return stored_piece_hash == generated_piece_hash
+
+
+def _display_piece(piece):
+    import binascii
+    return (binascii.hexlify(piece[:4], ':')
+            + b'...'
+            + binascii.hexlify(piece[-4:], ':'))
