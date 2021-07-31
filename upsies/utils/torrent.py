@@ -337,22 +337,8 @@ class TorrentFileStream:
             # Our piece is spread over multiple files
             file = self.get_file_at_position(first_byte_index_of_piece)
             file_pos = self.get_file_position(file)
-
-            if file == relevant_files[0]:
-                # Our piece starts at or after the first byte of `file`, e.g.
-                seek_to = file.size - ((file_pos + file.size) % piece_size)
-                _log.debug(f'  seek_to = {file.size} - (({file_pos} + {file.size}) % {piece_size}) = {seek_to}')
-
-            else:
-                raise RuntimeError('Implement me!')
-                # # Our piece starts before the first byte of `file`, e.g.
-                # # Piece Index: 0       1_______2       3
-                # # File Stream: aaaaaaaaaabbbbbbbbbbbbbbbbbbbb
-                # first_relevant_file_pos = self.get_file_position(relevant_files[0])
-                # _log.debug(f'  {relevant_files[0]} starts at %r', first_relevant_file_pos)
-                # seek_to = relevant_files[0].size - ((first_relevant_file_pos + relevant_files[0].size) % piece_size)
-                # _log.debug(f'  seek_to = {relevant_files[0].size} - (({first_relevant_file_pos} + '
-                #            f'{relevant_files[0].size}) % {piece_size}) = {seek_to}')
+            seek_to = file.size - ((file_pos + file.size) % piece_size)
+            _log.debug(f'  seek_to = {file.size} - (({file_pos} + {file.size}) % {piece_size}) = {seek_to}')
 
         # Read piece data from `relevant_files`
         bytes_to_read = piece_size
