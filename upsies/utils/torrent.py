@@ -373,10 +373,9 @@ class TorrentFileStream:
                 return None
 
             try:
-                if seek_to != 0:
-                    _log.debug('  Seeking to %r in %r', seek_to, f)
-                    fh.seek(seek_to)
-                    seek_to = 0
+                _log.debug('  Seeking to %r in %r', seek_to, f)
+                fh.seek(seek_to)
+                seek_to = 0
 
                 _log.debug('  Reading %r bytes at %r', bytes_to_read, fh.tell())
                 content = fh.read(bytes_to_read)

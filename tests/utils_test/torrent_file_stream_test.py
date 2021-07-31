@@ -1,3 +1,4 @@
+import math
 import re
 from unittest.mock import Mock, PropertyMock, call
 
@@ -303,6 +304,37 @@ def test_get_piece_returns_piece_from_file(piece_size, files, piece_index, tmp_p
     with TorrentFileStream(torrent, location=tmp_path) as tfs:
         piece = tfs.get_piece(piece_index)
         assert piece == exp_piece
+
+@pytest.mark.parametrize('piece_size', (4, 6, 8, 9, 12))
+def test_get_piece_resets_seek_position_when_reusing_file_handle(piece_size, tmp_path):
+    files = (
+        File('a', size=12),
+        File('b', size=13),
+        File('c', size=7),
+        File('d', size=16),
+    )
+    for f in files:
+        print(f'{f}: {f.size} bytes: {f.content}')
+        f.write_at(tmp_path)
+    stream = b''.join(f.content for f in files)
+    print('concatenated stream:', stream)
+
+    total_size = sum(f.size for f in files)
+    max_piece_index = math.floor((total_size - 1) // piece_size)
+    for piece_index in range(max_piece_index + 1):
+        print('testing piece:', piece_index)
+        start = piece_index * piece_size
+        stop = min(start + piece_size, len(stream))
+        exp_piece = stream[start:stop]
+        print('exp_piece:', f'[{start}:{stop}]:', exp_piece)
+        exp_piece_length = stop - start
+        assert len(exp_piece) == exp_piece_length
+
+        torrent = Torrent(piece_size=piece_size, files=files)
+        with TorrentFileStream(torrent, location=tmp_path) as tfs:
+            for i in range(10):
+                piece = tfs.get_piece(piece_index)
+                assert piece == exp_piece
 
 @pytest.mark.parametrize(
     argnames='piece_size, files, piece_index, exp_min_piece_index, exp_max_piece_index',
