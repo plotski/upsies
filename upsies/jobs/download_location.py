@@ -2,6 +2,7 @@
 Find download path for a torrent, hardlinking existing files
 """
 
+import collections
 import functools
 import os
 
@@ -184,3 +185,71 @@ class DownloadLocationJob(JobBase):
                     os.removedirs(target_parent)
                 except OSError:
                     pass
+
+
+class _Combinator(collections.abc.Iterable):
+    """
+    Take a dictionary that maps keys to lists and turn it into a list of all
+    possible ``(key, list item)`` combinations
+
+    Example:
+
+    >>> things = {
+    >>>     'a': ['a1', 'a2'],
+    >>>     'b': ['b1'],
+    >>>     'c': ['c1', 'c2', 'c3', 'c4'],
+    >>> }
+    >>> _Combinator(things).combinations
+    >>> [
+    >>>     [('a', 'a1'), ('b', 'b1'), ('c', 'c1')],
+    >>>     [('a', 'a1'), ('b', 'b1'), ('c', 'c2')],
+    >>>     [('a', 'a1'), ('b', 'b1'), ('c', 'c3')],
+    >>>     [('a', 'a1'), ('b', 'b1'), ('c', 'c4')],
+    >>>     [('a', 'a2'), ('b', 'b1'), ('c', 'c1')],
+    >>>     [('a', 'a2'), ('b', 'b1'), ('c', 'c2')],
+    >>>     [('a', 'a2'), ('b', 'b1'), ('c', 'c3')],
+    >>>     [('a', 'a2'), ('b', 'b1'), ('c', 'c4')],
+    >>> ]
+    """
+
+    def __init__(self, candidates):
+        self._candidates = {
+            key: tuple(cands)
+            for key, cands in candidates.items()
+        }
+        self._keys = tuple(self._candidates)
+        self._indexes = {key: 0 for key in self._keys}
+
+    def __len__(self):
+        # Product of numbers of candidates
+        length = 1
+        for cands in self._candidates.values():
+            length *= len(cands)
+        return length
+
+    def _advance(self):
+        # Increase the rightmost index or reset it to zero
+        # and increase the next index on the left
+        for key in reversed(self._keys):
+            if self._indexes[key] < len(self._candidates[key]) - 1:
+                self._indexes[key] += 1
+                break
+            else:
+                self._indexes[key] = 0
+
+    @property
+    def _pairs(self):
+        # List of (key, list item) tuples for each key
+        # using current list indexes
+        pairs = []
+        for key in self._keys:
+            list_item = self._candidates[key][self._indexes[key]]
+            pairs.append((key, list_item))
+        return pairs
+
+    def __iter__(self):
+        combinations = []
+        for _ in range(len(self)):
+            combinations.append(self._pairs)
+            self._advance()
+        return iter(combinations)
