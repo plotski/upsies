@@ -32,7 +32,7 @@ def test_make_resize_cmd_sanitizes_path(mocker):
     cmd = image._make_resize_cmd('a.png', '10:20', resized_path)
     assert cmd == (image._ffmpeg_executable(),) + (
         '-y', '-loglevel', 'level+error', '-i', 'file:a.png', '-vf', 'scale=10:20',
-        rf'file:path_with_some_potentially_illegal_characters_.100%%.png',
+        r'file:path_with_some_potentially_illegal_characters_.100%%.png',
     )
 
 
