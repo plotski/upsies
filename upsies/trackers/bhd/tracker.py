@@ -21,8 +21,9 @@ class BhdTracker(TrackerBase):
         ('--draft', '-d'): {
             'help': 'Upload as draft',
             'action': 'store_true',
-            # The default value must be None so uis.tui.commands.submit doesn't
-            # always overwrite the value from the config file.
+            # The default value must be None so
+            # uis.tui.commands.submit.tracker_options doesn't always overwrite
+            # the value with the config file value.
             'default': None,
         },
         ('--personal-rip', '-p'): {
