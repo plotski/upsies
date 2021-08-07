@@ -8,9 +8,21 @@ from .base import CommandBase
 
 class download_location(CommandBase):
     """
-    Hardlink existing files as TORRENT expects them
+    Hard-link existing files as TORRENT expects them and print their location
 
-    TODO: Explain exactly how this works.
+    Go recursively through all files beneath each LOCATION and collect files
+    that match those specified in TORRENT. Hash two pieces of each size-matching
+    file and ignore any mismatching files.
+
+    Pick the first LOCATION beneath which a file from TORRENT is found. Create
+    hard links to matching files from any LOCATION, replicating the directory
+    structure from TORRENT.
+
+    Print the first LOCATION beneath which a file from TORRENT is found. This is
+    the download path of the TORRENT.
+
+    If no matching files are found, print the location passed to --default or
+    the first LOCATION if there is no --default location.
     """
 
     names = ('download-location', 'dloc')
