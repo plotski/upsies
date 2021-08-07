@@ -130,15 +130,11 @@ class TorrentFileStream:
         self._torrent = torrent
         self._location = location
         self._open_files = {}
-        _log.debug('Created stream from torrent files:')
-        for f in self._torrent.files:
-            _log.debug('  %r', f)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        _log.debug('Closing opened files: %r', self._open_files)
         for filepath, fh in tuple(self._open_files.items()):
             fh.close()
             del self._open_files[filepath]
@@ -163,12 +159,9 @@ class TorrentFileStream:
         """
         if byte_index >= 0:
             pos = 0
-            # _log.debug('Finding file at byte index %r', byte_index)
             for f in self._torrent.files:
-                # _log.debug('  %r, size=%r: %r += %r - 1 = %r', f, f.size, pos, f.size, pos + f.size - 1)
                 pos += f.size - 1
                 if pos >= byte_index:
-                    # _log.debug('    Found %r at %r!', byte_index, pos)
                     return f
                 else:
                     pos += 1
@@ -192,18 +185,11 @@ class TorrentFileStream:
         files
         """
         assert first_byte_index <= last_byte_index, (first_byte_index, last_byte_index)
-        # _log.debug('Finding files from byte index %r to %r', first_byte_index, last_byte_index)
         pos = 0
         files = []
         for file in self._torrent.files:
             file_first_byte_index = pos
             file_last_byte_index = pos + file.size - 1
-            # _log.debug('    %s starts at %r, ends at %r', file, file_first_byte_index, file_last_byte_index)
-            # _log.debug('    if (')
-            # _log.debug(f'        {first_byte_index} <= {file_first_byte_index} <= {last_byte_index} or')
-            # _log.debug(f'        {first_byte_index} <= {file_last_byte_index} <= {last_byte_index} or')
-            # _log.debug(f'        ({first_byte_index} >= {file_first_byte_index} and {last_byte_index} <= {file_last_byte_index})')
-            # _log.debug('    ):')
             if (
                     # Is first byte of file inside of range?
                     first_byte_index <= file_first_byte_index <= last_byte_index or
@@ -212,40 +198,9 @@ class TorrentFileStream:
                     # Are all bytes of file inside of range?
                     (first_byte_index >= file_first_byte_index and last_byte_index <= file_last_byte_index)
             ):
-                # _log.debug('    Including %r', file)
                 files.append(file)
             pos += file.size
         return files
-
-    # def get_relative_piece_indexes(self, file, wanted_piece_indexes):
-    #     """
-    #     Return list of sanitized relative piece indexes for `file`
-
-    #     :param wanted_piece_indexes: Sequence of list indexes, e.g. [0, 12, -1, -2]
-
-    #     :param file: :class:`~torf.File` object
-
-    #     Example:
-
-    #     >>> # Assuming `file` covers 100 pieces in the stream of concatenated files
-    #     >>> tfs.validate_piece_indexes(file, (0, 1, 50, 60, -3, -2, -1, 1000))
-    #     >>> [0, 1, 50, 60, 97, 98, 99]
-    #     """
-    #     # _log.debug('Validating piece indexes: %r', wanted_piece_indexes)
-    #     validated_piece_indexes = set()
-    #     min_piece_index = 0
-    #     max_piece_index = math.floor((file.size - 1) / self._torrent.piece_size)
-    #     # _log.debug(f'max_piece_index = math.floor({file.size - 1} / {self._torrent.piece_size}) = {max_piece_index}')
-    #     for wpi in wanted_piece_indexes:
-    #         vwpi = int(wpi)
-    #         if wpi < 0:
-    #             # _log.debug(f'vwpi = {max_piece_index} - abs(int({wpi}))')
-    #             vwpi = max_piece_index - abs(wpi) + 1
-    #         vwpi = max(min_piece_index, min(max_piece_index, vwpi))
-    #         # _log.debug('Validated piece index %r: %r', wpi, vwpi)
-    #         validated_piece_indexes.add(vwpi)
-    #     # _log.debug('Validated piece indexes: %r', sorted(validated_piece_indexes))
-    #     return sorted(validated_piece_indexes)
 
     def get_absolute_piece_indexes(self, file, relative_piece_indexes):
         """
@@ -264,25 +219,18 @@ class TorrentFileStream:
         >>> tfs.validate_piece_indexes(file, (0, 1, 70, 75, 1000, -1000, -3, -2, -1))
         [50, 51, 120, 125, 147, 148, 149]
         """
-        # _log.debug('###############################')
-        # _log.debug('Absolutizing relative piece indexes: %r', relative_piece_indexes)
         file_piece_indexes = self.get_piece_indexes_for_file(file)
-        # _log.debug('Piece indexes for %r: %r', file, file_piece_indexes)
         pi_abs_min = file_piece_indexes[0]
         pi_abs_max = file_piece_indexes[-1]
         pi_rel_min = 0
         pi_rel_max = pi_abs_max - pi_abs_min
-        # _log.debug(f'  pi_rel_min = {pi_rel_min}')
-        # _log.debug(f'  pi_rel_max = {pi_rel_max}')
 
         validated_piece_indexes = set()
         for pi_rel in relative_piece_indexes:
             pi_rel = int(pi_rel)
-            # _log.debug('  relative piece index: %r', pi_rel)
 
             # Convert negative to absolute index
             if pi_rel < 0:
-                # _log.debug(f'    pi_rel = {pi_rel_max} - abs({pi_rel}) + 1')
                 pi_rel = pi_rel_max - abs(pi_rel) + 1
 
             # Ensure relative piece_index is within bounds
@@ -290,10 +238,8 @@ class TorrentFileStream:
 
             # Convert to absolute piece_index
             pi_abs = pi_abs_min + pi_rel
-            # _log.debug(f'    pi_abs = {pi_abs_min} + {pi_rel} = {pi_abs}')
             validated_piece_indexes.add(pi_abs)
 
-        # _log.debug('Validated piece indexes: %r', sorted(validated_piece_indexes))
         return sorted(validated_piece_indexes)
 
     def get_piece(self, piece_index):
@@ -305,15 +251,11 @@ class TorrentFileStream:
         Errors from reading files existing (e.g. :class:`PermissionError`) are
         raised as :class:`~.errors.ContentError`.
         """
-        # _log.debug('###############################')
         piece_size = self._torrent.piece_size
         torrent_size = sum(f.size for f in self._torrent.files)
-        # for f in self._torrent.files:
-        #     _log.debug(f'{f}: {f.size}')
-        # _log.debug(f'total: {torrent_size}')
+
         min_piece_index = 0
         max_piece_index = math.floor((torrent_size - 1) / piece_size)
-        # _log.debug(f'max_piece_index = math.floor(({torrent_size} - 1) / {piece_size}) = {max_piece_index}')
         if not min_piece_index <= piece_index <= max_piece_index:
             raise ValueError(f'piece_index must be in range {min_piece_index} - {max_piece_index}: {piece_index}')
 
@@ -324,27 +266,22 @@ class TorrentFileStream:
             torrent_size - 1,
         )
         relevant_files = self.get_files_for_byte_range(first_byte_index_of_piece, last_byte_index_of_piece)
-        _log.debug('Relevant files for %r .. %r: %r', first_byte_index_of_piece, last_byte_index_of_piece, relevant_files)
 
         # Find out where to start reading in the first relevant file
         if len(relevant_files) == 1:
             # Our piece belongs to a single file
             file_pos = self.get_file_position(relevant_files[0])
             seek_to = first_byte_index_of_piece - file_pos
-            _log.debug(f'  seek_to = {first_byte_index_of_piece} - {file_pos} = {seek_to}')
-
         else:
             # Our piece is spread over multiple files
             file = self.get_file_at_position(first_byte_index_of_piece)
             file_pos = self.get_file_position(file)
             seek_to = file.size - ((file_pos + file.size) % piece_size)
-            _log.debug(f'  seek_to = {file.size} - (({file_pos} + {file.size}) % {piece_size}) = {seek_to}')
 
         # Read piece data from `relevant_files`
         bytes_to_read = piece_size
         piece = bytearray()
         for f in relevant_files:
-            _log.debug('Reading from %r', f)
             fh = self._get_open_file(f)
 
             # We can't read the piece if any `relevant_file` is missing
@@ -355,21 +292,15 @@ class TorrentFileStream:
             # produce the correct piece, b ut we assume the file is not what
             # we're looking for if it doesn't have the expected size.
             elif f.size != self._get_file_size_from_fs(f):
-                _log.debug('  Mismatching file sizes: %r != %r', f.size, self._get_file_size_from_fs(f))
                 return None
 
             try:
-                _log.debug('  Seeking to %r in %r', seek_to, f)
                 fh.seek(seek_to)
                 seek_to = 0
 
-                _log.debug('  Reading %r bytes at %r', bytes_to_read, fh.tell())
                 content = fh.read(bytes_to_read)
                 bytes_to_read -= len(content)
-                _log.debug('  Read %d bytes: %r', len(content), _display_piece(content))
-                _log.debug('  %d left to read', bytes_to_read)
                 piece.extend(content)
-                _log.debug('  Piece has now %d bytes: %r', len(piece), _display_piece(piece))
             except OSError as e:
                 msg = e.strerror if e.strerror else e
                 raise errors.ContentError(f'Failed to read from {f}: {msg}')
@@ -381,16 +312,6 @@ class TorrentFileStream:
                 exp_piece_size = piece_size
         else:
             exp_piece_size = piece_size
-        # _log.debug('  Expected piece size: %r', exp_piece_size)
-        # _log.debug('    Actual piece size: %r', len(piece))
-
-        ### Not needed since we exlude any size-mismatching files
-        # # Add padding zero bytes if one file was shorter than expected
-        # if len(piece) < exp_piece_size:
-        #     padding = b'\x00' * (exp_piece_size - len(piece))
-        #     _log.debug('  Adding %d padding bytes: %r', len(padding), padding)
-        #     piece.extend(padding)
-
         assert len(piece) == exp_piece_size, (len(piece), exp_piece_size)
         return bytes(piece)
 
@@ -401,8 +322,6 @@ class TorrentFileStream:
                 return os.path.getsize(filepath)
             except OSError as e:
                 _log.debug('Ignoring OSError: %r', e)
-        else:
-            _log.debug('No such file: %r', filepath)
 
     def _get_open_file(self, file):
         filepath = os.path.join(self._location, file)
@@ -426,10 +345,6 @@ class TorrentFileStream:
         :return: :class:`bytes`
         """
         piece = self.get_piece(piece_index)
-        _log.debug('Piece %d: %r bytes: %r',
-                   piece_index,
-                   None if piece is None else len(piece),
-                   None if piece is None else _display_piece(piece))
         if piece is not None:
             return hashlib.sha1(piece).digest()
 
@@ -454,7 +369,6 @@ class TorrentFileStream:
 
         :return: `True` if both hash values are equal, `False` otherwise
         """
-        _log.debug('Verifying piece index: %r', piece_index)
         try:
             stored_piece_hash = self.torrent_piece_hashes[piece_index]
         except IndexError:
@@ -463,12 +377,4 @@ class TorrentFileStream:
 
         generated_piece_hash = self.get_piece_hash(piece_index)
         if generated_piece_hash is not None:
-            _log.debug('Comparing piece hash: %r =? %r', stored_piece_hash, generated_piece_hash)
             return stored_piece_hash == generated_piece_hash
-
-
-def _display_piece(piece):
-    import binascii
-    return (binascii.hexlify(piece[:4], ':')
-            + b'...'
-            + binascii.hexlify(piece[-4:], ':'))
