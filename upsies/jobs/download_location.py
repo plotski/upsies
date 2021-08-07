@@ -6,7 +6,7 @@ import collections
 import functools
 import os
 
-from ..utils import LazyModule, cached_property, fs, torrent
+from ..utils import LazyModule, fs, torrent
 from . import JobBase
 
 import logging  # isort:skip
@@ -38,8 +38,11 @@ class DownloadLocationJob(JobBase):
         :param torrent: Path to torrent file
         """
         self._torrent_filepath = torrent
+        # The torrent file is read in execute()
+        self._torrent = None
         self._default_location = default
         self._locations = tuple(location for location in locations if location)
+        # Map target paths to source paths
         self._links_created = {}
 
     def execute(self):
@@ -51,7 +54,7 @@ class DownloadLocationJob(JobBase):
             except torf.TorfError as e:
                 self.error(e)
             else:
-                target_location = self._find_target_location()
+                target_location = self._get_target_location()
                 if target_location is not None:
                     _log.debug('Outputting target location: %r', target_location)
                     self.send(target_location)
@@ -63,116 +66,150 @@ class DownloadLocationJob(JobBase):
                     self.send(self._locations[0])
                 self.finish()
 
-    def _each_file(self, *paths):
-        # Yield (filepath, path) tuples where the first item is always an
-        # existing file beneath the path in the second item and the second item
-        # is a path from `paths`. If there is a file path in `paths`, it is
-        # yielded as both items of the tuple.
-        for path in paths:
-            if not os.path.isdir(path):
-                yield path, path
-            else:
-                for root, dirnames, filenames in os.walk(path, followlinks=True):
-                    for filename in filenames:
-                        yield os.path.join(root, filename), path
+    def _get_target_location(self):
+        file_candidates = self._get_file_candidates()
+        if file_candidates:
+            _log.debug('### Finding piece-matching files')
+        else:
+            _log.debug('### Failed to find any size-matching files')
 
-    @cached_property
-    def _torrent_files(self):
-        # List of files in torrent, sorted by size (descending)
-        return sorted(self._torrent.files, key=lambda file: file.size, reverse=True)
-
-    def _find_target_location(self):
+        links = {}
         target_location = None
-        missing_torrent_files = list(self._torrent_files)
-        for file in self._torrent_files:
-            for filepath, location in self._each_file(*self._locations):
+        # `paths` maps relative file paths expected by torrent to a
+        # candidate dictionary from `file_candidates`.
+        for paths in self._each_set_of_linked_candidates(self._check_location, file_candidates):
+            for file, candidate in paths.items():
+                if file not in links:
+                    if self._verify_file(file):
+                        if target_location is None:
+                            _log.debug('Setting target location: %r', candidate['location'])
+                            target_location = candidate['location']
 
-                # Exclude files with wrong size
-                if self._is_size_match(file, filepath):
-                    # The first location any matching file is found in is the
-                    # torrent's download path
-                    _log.debug('Size match: %r: %r', file, filepath)
-                    if target_location is None:
-                        target_location = location
-
-                    # Ensure the expected path exists
-                    target_path = os.path.join(target_location, str(file))
-                    self._create_link(filepath, target_path)
-
-                    # Compare some pieces to address file size collisions
-                    if self._is_pieces_match(location, file):
-                        _log.debug('Pieces match: %r: %r', file, filepath)
-
-                        # Stop searching if we have found all files
-                        if file in missing_torrent_files:
-                            missing_torrent_files.remove(file)
-                        if not missing_torrent_files:
-                            break
-
+                        _log.debug('Using %r', candidate['filepath'])
+                        links[file] = (candidate['filepath'], os.path.join(target_location, file))
                     else:
-                        _log.debug('Pieces mismatch: %r: %r', file, filepath)
+                        _log.debug('Not using %r', candidate['filepath'])
+                else:
+                    _log.debug('Already linked: %r', file)
 
-                        # Remove the link we created because pieces in torrent
-                        # don't match the content of the existing file
-                        self._remove_link(target_path)
-
-                        # If this was the first size-matching file we found,
-                        # forget any previously set target_location
-                        if not self._links_created:
-                            target_location = None
+        for source, target in links.values():
+            self._create_hardlink(source, target)
 
         return target_location
 
-    @functools.lru_cache(maxsize=None)
-    def _is_size_match(self, torrentfile, filepath):
-        # Return whether a file in a torrent and an existing file are the same.
-        return torrentfile.size == fs.file_size(filepath)
-
-    @functools.lru_cache(maxsize=None)
-    def _is_pieces_match(self, location, file):
-        with torrent.TorrentFileStream(self._torrent, location) as tfs:
-            file_piece_indexes = tfs.get_absolute_piece_indexes(file, (
-                0,
-                1,
-                -2,
-                -1,
-            ))
-            _log.debug('##################################################')
-            _log.debug('Verifying pieces of %r: %r', file, file_piece_indexes)
+    def _verify_file(self, file):
+        _log.debug('Verifying content of %r at %r', file, self._check_location)
+        with torrent.TorrentFileStream(self._torrent, self._check_location) as tfs:
+            # Don't check the first and the last piece of a file as they likely
+            # overlap with another file that might be either invalid or missing
+            file_piece_indexes = tfs.get_absolute_piece_indexes(file, (1, -2))
+            _log.debug('Verifying pieces: %r', file_piece_indexes)
             for piece_index in file_piece_indexes:
-                if tfs.verify_piece(piece_index):
+                piece_ok = tfs.verify_piece(piece_index)
+                if piece_ok is True:
                     _log.debug('Piece %d is valid', piece_index)
-                else:
+                elif piece_ok is False:
                     _log.debug('Piece %d is invalid!', piece_index)
                     return False
+                elif piece_ok is None:
+                    _log.debug('Piece %d is unverifiable; assume non-existing file', piece_index)
+                    return None
         return True
 
-    def _create_link(self, source, target):
+    def _each_set_of_linked_candidates(self, location, file_candidates):
+        _log.debug('Iterating over sets of symlinks beneath %r', location)
+        for pairs in _Combinator(file_candidates):
+            links_created = []
+            try:
+                for file, candidate in pairs:
+                    source = os.path.abspath(candidate['filepath'])
+                    target = os.path.join(location, file)
+                    self._create_symlink(source, target)
+                    links_created.append((source, target))
+
+                yield {file: candidate for file, candidate in pairs}
+
+            finally:
+                for source, target in links_created:
+                    self._remove_link(target)
+
+    def _get_file_candidates(self):
+        # Map relative file paths expected by torrent to lists of files that
+        # have the same size. A candidate is a dictionary that stores relevant
+        # paths (see below).
+        size_matching_files = collections.defaultdict(lambda: [])
+        torrent_files = tuple(self._torrent.files)
+        for filepath, location in self._each_file(*self._locations):
+            for file in torrent_files:
+                if self._is_size_match(file, filepath):
+                    _log.debug('Size match for %r: %r', file, filepath)
+                    #     file: Relative path within torrent
+                    # location: Download path to give to the BitTorrent client
+                    #           along with the torrent file
+                    # filepath: Existing file path with same size as `file`
+                    size_matching_files[file].append({
+                        'location': location,
+                        'filepath': filepath,
+                    })
+        return size_matching_files
+
+    def _each_file(self, *paths):
+        # Yield (filepath, path) tuples where the first item is a file (more
+        # specifically: a non-directory) beneath the second item. The second
+        # item is a path from `paths`. If there is a file path in `paths`, it is
+        # yielded as both items of the tuple.
+        for path in paths:
+            _log.debug('Searching %s', path)
+            if not os.path.isdir(path):
+                yield str(path), str(path)
+            else:
+                for root, dirnames, filenames in os.walk(path, followlinks=True):
+                    for filename in filenames:
+                        yield str(os.path.join(root, filename)), str(path)
+
+    @functools.lru_cache(maxsize=None)
+    def _is_size_match(self, torrentfile, filepath):
+        # Return whether a file in a torrent and an existing file are the same size
+        return torrentfile.size == fs.file_size(filepath)
+
+    def _create_hardlink(self, source, target):
+        return self._create_link(os.link, source, target)
+
+    def _create_symlink(self, source, target):
+        return self._create_link(os.symlink, source, target)
+
+    def _create_link(self, create_link_function, source, target):
         if not os.path.exists(target):
             # Create parent directory if it doesn't exist
             target_parent = os.path.dirname(target)
             try:
-                _log.debug(f'os.makedirs({target_parent!r}, exist_ok=True)')
+                # _log.debug(f'os.makedirs({target_parent!r}, exist_ok=True)')
                 os.makedirs(target_parent, exist_ok=True)
             except OSError as e:
                 msg = e.strerror if e.strerror else e
                 self.error(f'Failed to create directory: {target_parent}: {msg}')
             else:
                 # Create hardlink
-                _log.debug(f'os.link({source!r}, {target!r})')
+                _log.debug(f'{create_link_function.__qualname__}({source!r}, {target!r})')
                 try:
-                    os.link(source, target)
+                    create_link_function(source, target)
                 except OSError as e:
                     msg = e.strerror if e.strerror else e
                     self.error(f'Failed to create link: {target}: {msg}')
                 else:
+                    # Keep track of created links so that _remove_link() can
+                    # refuse to delete anything we didn't create.
                     self._links_created[target] = source
+        else:
+            _log.debug('Already exists: %r', target)
 
     def _remove_link(self, target):
-        # Only remove links we created ourselves
-        if target in self._links_created and os.path.exists(target):
+        # Only remove links we created ourselves.
+        if target not in self._links_created:
+            _log.debug('Refusing to delete %r: %r', target, self._links_created)
+        elif os.path.exists(target):
             try:
-                _log.debug('Removing falsely created link: %r', target)
+                _log.debug(f'os.unlink({target!r})')
                 os.unlink(target)
             except OSError as e:
                 self.exception(e)
@@ -185,6 +222,11 @@ class DownloadLocationJob(JobBase):
                     os.removedirs(target_parent)
                 except OSError:
                     pass
+
+    @property
+    def _check_location(self):
+        """Where to create temporary symlinks to verify pieces"""
+        return os.path.join(self.cache_directory, self.name)
 
 
 class _Combinator(collections.abc.Iterable):
