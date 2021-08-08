@@ -312,9 +312,6 @@ class TrackerJobsBase(abc.ABC):
             **self.common_job_args,
         )
 
-    screenshots = 2
-    """Number of screenshots to make"""
-
     @cached_property
     def screenshots_job(self):
         """
@@ -325,7 +322,7 @@ class TrackerJobsBase(abc.ABC):
         """
         return jobs.screenshots.ScreenshotsJob(
             content_path=self.content_path,
-            count=self.options.get('screenshots') or self.screenshots,
+            count=self.options.get('screenshots'),
             **self.common_job_args,
         )
 

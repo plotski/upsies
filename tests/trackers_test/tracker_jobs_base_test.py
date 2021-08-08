@@ -370,26 +370,18 @@ def test_tvmaze_job_is_singleton(mocker):
     assert tracker_jobs.tvmaze_job is tracker_jobs.tvmaze_job
 
 
-@pytest.mark.parametrize(
-    argnames='options, exp_screenshots',
-    argvalues=(
-        (None, TrackerJobsBase.screenshots),
-        ({'screenshots': 123}, 123),
-    ),
-    ids=lambda v: str(v),
-)
-def test_screenshots_job(options, exp_screenshots, mocker):
+def test_screenshots_job(mocker):
     ScreenshotsJob_mock = mocker.patch('upsies.jobs.screenshots.ScreenshotsJob')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
-        options=options,
+        options={'screenshots': 123},
     )
     assert tracker_jobs.screenshots_job is ScreenshotsJob_mock.return_value
     assert ScreenshotsJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
-            count=exp_screenshots,
+            count=123,
             home_directory='path/to/home',
             ignore_cache='mock bool',
         ),

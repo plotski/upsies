@@ -218,9 +218,6 @@ class BhdTrackerJobs(TrackerJobsBase):
         )
         return job
 
-    screenshots = 4
-    """How many screenshots to make"""
-
     image_host_config = {
         'imgbox': {'thumb_width': 350},
     }

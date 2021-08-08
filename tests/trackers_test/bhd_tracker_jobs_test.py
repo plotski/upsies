@@ -423,10 +423,6 @@ def test_description_job(bhd_tracker_jobs, mocker):
     )]
 
 
-def test_number_of_screenshots(bhd_tracker_jobs, mocker):
-    assert bhd_tracker_jobs.screenshots == 4
-
-
 def test_image_host_config(bhd_tracker_jobs, mocker):
     assert bhd_tracker_jobs.image_host_config == {
         'imgbox': {'thumb_width': 350},
