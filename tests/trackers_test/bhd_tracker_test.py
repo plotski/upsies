@@ -3,7 +3,7 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies import errors
+from upsies import errors, utils
 from upsies.trackers.bhd import BhdTracker, BhdTrackerConfig, BhdTrackerJobs
 from upsies.utils.http import Result
 
@@ -53,6 +53,12 @@ def test_argument_definitions():
         ('--description', '--desc'): {
             'help': 'Only generate description (do not upload anything)',
             'action': 'store_true',
+        },
+        ('--screenshots', '--ss'): {
+            'help': ('How many screenshots to make '
+                     f'(min={BhdTrackerConfig.defaults["screenshots"].min}, '
+                     f'max={BhdTrackerConfig.defaults["screenshots"].max})'),
+            'type': utils.argtypes.number_of_screenshots(BhdTrackerConfig),
         },
     }
 

@@ -42,6 +42,12 @@ class BhdTracker(TrackerBase):
             'help': 'Only generate description (do not upload anything)',
             'action': 'store_true',
         },
+        ('--screenshots', '--ss'): {
+            'help': ('How many screenshots to make '
+                     f'(min={BhdTrackerConfig.defaults["screenshots"].min}, '
+                     f'max={BhdTrackerConfig.defaults["screenshots"].max})'),
+            'type': utils.argtypes.number_of_screenshots(BhdTrackerConfig),
+        },
     }
 
     TrackerConfig = BhdTrackerConfig
