@@ -8,6 +8,7 @@ A custom error message can be provided by raising
 """
 
 import argparse
+import functools
 import os
 
 
@@ -46,6 +47,7 @@ def integer(value):
         raise argparse.ArgumentTypeError(f'Not an integer: {value!r}')
 
 
+@functools.lru_cache(maxsize=None)
 def number_of_screenshots(tracker_config):
     """
     Return function that returns how many screenshots to make
