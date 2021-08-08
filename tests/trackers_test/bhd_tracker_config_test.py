@@ -1,7 +1,9 @@
 import base64
 
+import pytest
+
 from upsies.trackers.bhd import BhdTrackerConfig
-from upsies.utils import btclients, types
+from upsies.utils import btclients, imghosts, types
 
 
 def test_defaults():
@@ -25,3 +27,15 @@ def test_defaults():
             r'/(?i:sample)',
         ],
     }
+
+
+def test_image_host_option():
+    config = BhdTrackerConfig()
+    imghost_names = ', '.join(imghost.name for imghost in imghosts.imghosts())
+
+    with pytest.raises(ValueError, match=rf'^Not one of {imghost_names}: foo$'):
+        type(config['image_host'])('foo')
+
+    imghost = type(config['image_host'])('dummy')
+    with pytest.raises(ValueError, match=rf'^Not one of {imghost_names}: foo$'):
+        type(imghost)('foo')

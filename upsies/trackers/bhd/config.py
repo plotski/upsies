@@ -4,7 +4,7 @@ Concrete :class:`~.base.TrackerConfigBase` subclass for BHD
 
 import base64
 
-from ...utils import types
+from ...utils import imghosts, types
 from ..base import TrackerConfigBase
 
 
@@ -17,7 +17,7 @@ class BhdTrackerConfig(TrackerConfigBase):
         'source'           : 'BHD',
         'anonymous'        : types.Bool('no'),
         'draft'            : types.Bool('no'),
-        'image_host'       : 'imgbox',
+        'image_host'       : types.Choice('imgbox', options=(imghost.name for imghost in imghosts.imghosts())),
         'exclude'          : [
             r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample)',
