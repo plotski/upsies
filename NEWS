@@ -1,4 +1,7 @@
 2021.??.??
+  * New command: download-location: Find existing files and hard-link them what
+    a torrent file expects and print the appropriate download path (run "upsies
+    dloc -h" for more information)
   * Added detection of Dolby Vision in release name and video file
   * bB: Added support for "Dolby Vision" tag
   * bB: Retry login up to 30 times instead of 15 when encountering login bug and
