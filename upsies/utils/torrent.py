@@ -155,7 +155,7 @@ class TorrentFileStream:
         concatenated files
 
         :param byte_index: Index of the byte; minimum is 0, maximum is the
-        torrent's size minus 1
+            torrent's size minus 1
         """
         if byte_index >= 0:
             pos = 0

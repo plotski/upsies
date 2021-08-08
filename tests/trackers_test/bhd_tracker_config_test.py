@@ -3,7 +3,7 @@ import base64
 import pytest
 
 from upsies.trackers.bhd import BhdTrackerConfig
-from upsies.utils import btclients, imghosts, types
+from upsies.utils import imghosts, types
 
 
 def test_defaults():

@@ -2,7 +2,6 @@
 Concrete :class:`~.base.TrackerBase` subclass for bB
 """
 
-import argparse
 import asyncio
 import re
 import urllib
