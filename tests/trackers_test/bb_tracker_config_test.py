@@ -3,6 +3,7 @@ import base64
 import pytest
 
 from upsies.trackers.bb import BbTrackerConfig
+from upsies.utils import imghosts
 
 
 def test_defaults():
@@ -32,9 +33,11 @@ def test_screenshots_option():
 
 def test_image_host_option():
     config = BbTrackerConfig()
-    with pytest.raises(ValueError, match=r'^Not one of [a-z, ]+: foo$'):
+    imghost_names = ', '.join(imghost.name for imghost in imghosts.imghosts())
+
+    with pytest.raises(ValueError, match=rf'^Not one of {imghost_names}: foo$'):
         type(config['image_host'])('foo')
 
     imghost = type(config['image_host'])('dummy')
-    with pytest.raises(ValueError, match=r'^Not one of [a-z, ]+: foo$'):
+    with pytest.raises(ValueError, match=rf'^Not one of {imghost_names}: foo$'):
         type(imghost)('foo')
