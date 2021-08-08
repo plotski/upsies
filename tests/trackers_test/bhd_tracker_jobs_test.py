@@ -445,8 +445,8 @@ class ImageUrl(str):
             (ImageUrl('a.png'), ImageUrl('b.png'), ImageUrl('c.png')),
             (
                 '[center]\n'
-                '[url=a.png][img]thumb_a.png[/img][/url] '
-                '[url=b.png][img]thumb_b.png[/img][/url] '
+                '[url=a.png][img]thumb_a.png[/img][/url] [url=b.png][img]thumb_b.png[/img][/url]\n'
+                '\n'
                 '[url=c.png][img]thumb_c.png[/img][/url]\n'
                 '[/center]'
             ),
@@ -465,11 +465,11 @@ class ImageUrl(str):
             (ImageUrl('a.png'), ImageUrl('b.png'), ImageUrl('c.png'), ImageUrl('d.png'), ImageUrl('e.png')),
             (
                 '[center]\n'
-                '[url=a.png][img]thumb_a.png[/img][/url] '
-                '[url=b.png][img]thumb_b.png[/img][/url] '
-                '[url=c.png][img]thumb_c.png[/img][/url]\n'
+                '[url=a.png][img]thumb_a.png[/img][/url] [url=b.png][img]thumb_b.png[/img][/url]\n'
                 '\n'
-                '[url=d.png][img]thumb_d.png[/img][/url] [url=e.png][img]thumb_e.png[/img][/url]\n'
+                '[url=c.png][img]thumb_c.png[/img][/url] [url=d.png][img]thumb_d.png[/img][/url]\n'
+                '\n'
+                '[url=e.png][img]thumb_e.png[/img][/url]\n'
                 '[/center]'
             ),
         ),
@@ -477,13 +477,11 @@ class ImageUrl(str):
             (ImageUrl('a.png'), ImageUrl('b.png'), ImageUrl('c.png'), ImageUrl('d.png'), ImageUrl('e.png'), ImageUrl('f.png')),
             (
                 '[center]\n'
-                '[url=a.png][img]thumb_a.png[/img][/url] '
-                '[url=b.png][img]thumb_b.png[/img][/url] '
-                '[url=c.png][img]thumb_c.png[/img][/url]\n'
+                '[url=a.png][img]thumb_a.png[/img][/url] [url=b.png][img]thumb_b.png[/img][/url]\n'
                 '\n'
-                '[url=d.png][img]thumb_d.png[/img][/url] '
-                '[url=e.png][img]thumb_e.png[/img][/url] '
-                '[url=f.png][img]thumb_f.png[/img][/url]\n'
+                '[url=c.png][img]thumb_c.png[/img][/url] [url=d.png][img]thumb_d.png[/img][/url]\n'
+                '\n'
+                '[url=e.png][img]thumb_e.png[/img][/url] [url=f.png][img]thumb_f.png[/img][/url]\n'
                 '[/center]'
             ),
         ),

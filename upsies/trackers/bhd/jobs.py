@@ -236,7 +236,7 @@ class BhdTrackerJobs(TrackerJobsBase):
         rows = []
         screenshot_groups = as_groups(
             self.upload_screenshots_job.uploaded_images,
-            group_sizes=(2, 3),
+            group_sizes=(2,),
             default='PLACEHOLDER',
         )
         for screenshots in screenshot_groups:
