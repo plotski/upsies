@@ -7,6 +7,7 @@
   * bB: Retry login up to 30 times instead of 15 when encountering login bug and
     cap the delay between login attempts at 5 seconds.
   * bB: Short option for --screenshots changed to --ss
+  * BHD: Added trackers.bhd.screenshots setting and --screenshots option
   * Fixed "I/O error" when creating screenshots on Windows
 
 
