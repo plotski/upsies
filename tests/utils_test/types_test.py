@@ -139,6 +139,28 @@ def test_Bool_invalid_values(string):
     with pytest.raises(ValueError, match=rf'^Invalid boolean value: {string!r}$'):
         types.Bool(string)
 
+@pytest.mark.parametrize(
+    argnames='a, b',
+    argvalues=(
+        (types.Bool('yes'), types.Bool('true')),
+        (types.Bool('yes'), True),
+    ),
+)
+def test_Bool_equality(a, b):
+    assert a == b
+    assert b == a
+
+@pytest.mark.parametrize(
+    argnames='a, b',
+    argvalues=(
+        (types.Bool('yes'), types.Bool('false')),
+        (types.Bool('yes'), False),
+    ),
+)
+def test_Bool_inequality(a, b):
+    assert a != b
+    assert b != a
+
 
 @pytest.mark.parametrize('number', ('0', '1', '10', '11.5', '11.05', '99', '9999'))
 @pytest.mark.parametrize('space', ('', ' '))

@@ -114,6 +114,14 @@ class Bool(str):
     def __bool__(self):
         return self._bool
 
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return other._bool == self._bool
+        elif isinstance(other, bool):
+            return other == self._bool
+        else:
+            return NotImplemented
+
     def __repr__(self):
         return f'{type(self).__name__}({super().__str__()!r})'
 
