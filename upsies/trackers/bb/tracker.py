@@ -8,22 +8,13 @@ import re
 import urllib
 
 from ... import errors
-from ...utils import html, http
+from ...utils import argtypes, html, http
 from ..base import TrackerBase
 from .config import BbTrackerConfig
 from .jobs import BbTrackerJobs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
-
-
-def number_of_screenshots(value):
-    try:
-        return type(BbTrackerConfig.defaults['screenshots'])(value)
-    except ValueError as e:
-        # Raising ArgumentTypeError preserves the error message while raising
-        # ValueError produces a generic "invalid value" error message.
-        raise argparse.ArgumentTypeError(e)
 
 
 class BbTracker(TrackerBase):
@@ -38,9 +29,11 @@ class BbTracker(TrackerBase):
         ('--poster-file',): {
             'help': 'Path or URL to poster image',
         },
-        ('--screenshots', '-s'): {
-            'help': 'How many screenshots to make',
-            'type': number_of_screenshots,
+        ('--screenshots', '--ss'): {
+            'help': ('How many screenshots to make '
+                     f'(min={BbTrackerConfig.defaults["screenshots"].min}, '
+                     f'max={BbTrackerConfig.defaults["screenshots"].max})'),
+            'type': argtypes.number_of_screenshots(BbTrackerConfig),
         },
         ('--title', '-t'): {
             'group': 'single-job',

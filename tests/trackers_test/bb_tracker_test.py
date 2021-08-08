@@ -4,9 +4,8 @@ from unittest.mock import Mock, call
 import bs4
 import pytest
 
-from upsies import errors
+from upsies import errors, utils
 from upsies.trackers.bb import BbTracker, BbTrackerConfig, BbTrackerJobs
-from upsies.trackers.bb.tracker import number_of_screenshots
 from upsies.utils.http import Result
 
 
@@ -42,9 +41,11 @@ def test_argument_definitions():
         ('--poster-file',): {
             'help': 'Path or URL to poster image',
         },
-        ('--screenshots', '-s'): {
-            'help': 'How many screenshots to make',
-            'type': number_of_screenshots,
+        ('--screenshots', '--ss'): {
+            'help': ('How many screenshots to make '
+                     f'(min={BbTrackerConfig.defaults["screenshots"].min}, '
+                     f'max={BbTrackerConfig.defaults["screenshots"].max})'),
+            'type': utils.argtypes.number_of_screenshots(BbTrackerConfig),
         },
         ('--title', '-t'): {
             'group': 'single-job',
