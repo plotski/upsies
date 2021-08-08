@@ -16,11 +16,7 @@ def test_defaults():
         'anonymous'        : types.Bool('no'),
         'draft'            : types.Bool('no'),
         'image_host'       : 'imgbox',
-        'add-to'     : types.Choice(
-            '',
-            empty_ok=True,
-            options=(client.name for client in btclients.clients()),
-        ),
+        'add-to'           : '',
         'screenshots'      : 4,
         'copy-to'          : '',
         'exclude'          : [
