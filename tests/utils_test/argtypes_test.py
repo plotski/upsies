@@ -1,6 +1,6 @@
 import argparse
 import re
-from unittest.mock import call, patch
+from unittest.mock import Mock, call, patch
 
 import pytest
 
@@ -67,6 +67,38 @@ def test_integer_valid_value(value, exp_value):
 def test_integer_invalid_value(value):
     with pytest.raises(argparse.ArgumentTypeError, match=rf'^Not an integer: {re.escape(repr(value))}'):
         argtypes.integer(value)
+
+
+@pytest.mark.parametrize(
+    argnames='tracker_config, value, exp_value',
+    argvalues=(
+        (Mock(defaults={'screenshots': utils.types.Integer(3, min=1, max=5)}), 5.0, 5),
+    ),
+)
+def test_number_of_screenshots_valid_value(tracker_config, value, exp_value):
+    assert argtypes.number_of_screenshots(tracker_config)(value) == exp_value
+
+def test_number_of_screenshots_invalid_value():
+    class N(int):
+        min = 1
+        max = 5
+
+        def __new__(cls, value):
+            if cls.min <= value <= cls.max:
+                return super().__new__(cls, value)
+            else:
+                raise ValueError(f'Bad: {value}')
+
+    tracker_config = Mock(defaults={'screenshots': N(1)})
+    with pytest.raises(argparse.ArgumentTypeError, match=r'^Bad: -123$'):
+        argtypes.number_of_screenshots(tracker_config)(-123)
+
+@pytest.mark.parametrize('attrs', ({'min': 1}, {'max': 1}))
+def test_number_of_screenshots_expects_Integer_type(attrs):
+    mock_value = Mock(**attrs)
+    tracker_config = Mock(defaults={'screenshots': mock_value})
+    with pytest.raises(AssertionError, match=rf'^Not a Integer: {mock_value!r}$'):
+        argtypes.number_of_screenshots(tracker_config)
 
 
 @pytest.mark.parametrize('option', defaults.option_paths())

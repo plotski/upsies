@@ -46,6 +46,30 @@ def integer(value):
         raise argparse.ArgumentTypeError(f'Not an integer: {value!r}')
 
 
+def number_of_screenshots(tracker_config):
+    """
+    Return function that returns how many screenshots to make
+
+    :param tracker_config: :class:`~.TrackerConfigBase` subclass
+    """
+    config_value = tracker_config.defaults['screenshots']
+    screenshots_cls = type(config_value)
+
+    # We can't do an instance check because types.Integer is a class factory.
+    # The next best thing is to check for "min" and "max" attributes.
+    assert hasattr(screenshots_cls, 'min'), f'Not a Integer: {config_value!r}'
+    assert hasattr(screenshots_cls, 'max'), f'Not a Integer: {config_value!r}'
+
+    def number_of_screenshots(value):
+        """How many screenshots to make within allowed range"""
+        try:
+            return screenshots_cls(value)
+        except ValueError as e:
+            raise argparse.ArgumentTypeError(e)
+
+    return number_of_screenshots
+
+
 def option(value):
     """Name of a configuration option"""
     from .. import defaults
