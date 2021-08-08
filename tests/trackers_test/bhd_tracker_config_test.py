@@ -21,12 +21,21 @@ def test_defaults():
             empty_ok=True,
             options=(client.name for client in btclients.clients()),
         ),
+        'screenshots'      : 4,
         'copy-to'          : '',
         'exclude'          : [
             r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample)',
         ],
     }
+
+
+def test_screenshots_option():
+    config = BhdTrackerConfig()
+    with pytest.raises(ValueError, match=r'^Minimum is 3$'):
+        type(config['screenshots'])(2)
+    with pytest.raises(ValueError, match=r'^Maximum is 10$'):
+        type(config['screenshots'])(11)
 
 
 def test_image_host_option():

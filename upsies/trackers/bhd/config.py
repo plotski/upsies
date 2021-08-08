@@ -18,6 +18,7 @@ class BhdTrackerConfig(TrackerConfigBase):
         'anonymous'        : types.Bool('no'),
         'draft'            : types.Bool('no'),
         'image_host'       : types.Choice('imgbox', options=(imghost.name for imghost in imghosts.imghosts())),
+        'screenshots'      : types.Integer(4, min=3, max=10),
         'exclude'          : [
             r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample)',
