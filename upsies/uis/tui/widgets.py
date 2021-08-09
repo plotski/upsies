@@ -91,7 +91,7 @@ class InputField:
 
     def __init__(self, text='', width=None, extend_width=True, read_only=False,
                  on_accepted=None, on_changed=None, style=''):
-        self._throbber = utils.Throbber(callback=self.set_text, interval=0.1)
+        self._throbber = utils.Throbber(callback=self.set_text)
         self.read_only = read_only
         self.on_accepted = on_accepted
         self.buffer = Buffer(
