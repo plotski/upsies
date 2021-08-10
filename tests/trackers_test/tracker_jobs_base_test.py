@@ -261,6 +261,21 @@ def test_finalize_copy_torrent_job(mocker):
     assert tracker_jobs.copy_torrent_job.finalize.call_args_list == [call()]
 
 
+def test_release_name(mocker):
+    ReleaseName_mock = mocker.patch('upsies.utils.release.ReleaseName')
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+    )
+    assert tracker_jobs.release_name is ReleaseName_mock.return_value
+    assert ReleaseName_mock.call_args_list == [
+        call(
+            path='path/to/content',
+            translate=tracker_jobs.release_name_translation,
+        ),
+    ]
+
+
 def test_release_name_job(mocker):
     ReleaseNameJob_mock = mocker.patch('upsies.jobs.release_name.ReleaseNameJob')
     tracker_jobs = make_TestTrackerJobs(

@@ -6,7 +6,7 @@ import abc
 import builtins
 
 from .. import jobs
-from ..utils import btclients, cached_property, fs, signal, types, webdbs
+from ..utils import btclients, cached_property, fs, release, signal, types, webdbs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -273,6 +273,20 @@ class TrackerJobsBase(abc.ABC):
 
     def finalize_copy_torrent_job(self, _):
         self.copy_torrent_job.finalize()
+
+    @cached_property
+    def release_name(self):
+        """
+        :class:`~.release.ReleaseName` instance with
+        :attr:`release_name_translation` applied
+        """
+        return release.ReleaseName(
+            path=self.content_path,
+            translate=self.release_name_translation,
+        )
+
+    release_name_translation = {}
+    """See ``translate`` argument of :attr:`~.utils.release.ReleaseName`"""
 
     @cached_property
     def release_name_job(self):
