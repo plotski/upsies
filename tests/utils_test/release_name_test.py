@@ -1066,7 +1066,8 @@ async def test_fetch_info(guessed_type, found_type, exp_type, callback, mocker):
 
     mocker.patch.object(rn, '_update_attributes', update_attributes)
     mocker.patch.object(rn, '_update_year_required', update_year_required)
-    await rn.fetch_info('mock id', callback=callback)
+    return_value = await rn.fetch_info('mock id', callback=callback)
+    assert return_value is rn
     assert rn.type == exp_type
     if callback:
         assert callback.call_args_list == [call(rn)]

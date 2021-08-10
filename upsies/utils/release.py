@@ -560,12 +560,15 @@ class ReleaseName(collections.abc.Mapping):
           - :attr:`type`
           - :attr:`year`
           - :attr:`year_required`
+
+        :return: The method's instance (`self`) for convenience
         """
         await self._update_attributes(id)
         await self._update_year_required()
         _log.debug('Release name updated: %s', self)
         if callback is not None:
             callback(self)
+        return self
 
     async def _update_attributes(self, id):
         info = await self._imdb.gather(
