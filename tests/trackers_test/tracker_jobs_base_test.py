@@ -277,15 +277,18 @@ def test_release_name(mocker):
 
 
 def test_release_name_job(mocker):
-    ReleaseNameJob_mock = mocker.patch('upsies.jobs.release_name.ReleaseNameJob')
+    TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
-    assert tracker_jobs.release_name_job is ReleaseNameJob_mock.return_value
-    assert ReleaseNameJob_mock.call_args_list == [
+    mocker.patch.object(type(tracker_jobs), 'release_name', PropertyMock(return_value='Mock Release Name'))
+    assert tracker_jobs.release_name_job is TextFieldJob_mock.return_value
+    assert TextFieldJob_mock.call_args_list == [
         call(
-            content_path='path/to/content',
+            name='release-name',
+            label='Release Name',
+            text='Mock Release Name',
             home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
@@ -298,6 +301,28 @@ def test_release_name_job_is_singleton(mocker):
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     assert tracker_jobs.release_name_job is tracker_jobs.release_name_job
+
+
+def test_update_release_name(mocker):
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+    )
+
+    mocker.patch.object(type(tracker_jobs), 'release_name', PropertyMock())
+    mocker.patch.object(type(tracker_jobs), 'release_name_job', PropertyMock())
+
+    tracker_jobs._update_release_name('tt123456')
+    assert tracker_jobs.release_name_job.add_task.call_args_list == [
+        call(tracker_jobs.release_name_job.fetch_text.return_value),
+    ]
+    assert tracker_jobs.release_name_job.fetch_text.call_args_list == [
+        call(
+            coro=tracker_jobs.release_name.fetch_info.return_value,
+            error_is_fatal=False,
+        ),
+    ]
+    assert tracker_jobs.release_name.fetch_info.call_args_list == [call('tt123456')]
 
 
 def test_imdb_job(mocker):
@@ -319,7 +344,7 @@ def test_imdb_job(mocker):
     ]
     assert webdb_mock.call_args_list == [call('imdb')]
     assert tracker_jobs.imdb_job.signal.register.call_args_list == [
-        call('output', tracker_jobs.release_name_job.fetch_info),
+        call('output', tracker_jobs._update_release_name),
     ]
 
 def test_imdb_job_is_singleton(mocker):

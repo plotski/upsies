@@ -290,10 +290,25 @@ class TrackerJobsBase(abc.ABC):
 
     @cached_property
     def release_name_job(self):
-        """:class:`~.jobs.release_name.ReleaseNameJob` instance"""
-        return jobs.release_name.ReleaseNameJob(
-            content_path=self.content_path,
+        """
+        :class:`~.jobs.dialog.TextFieldJob` instance with text set to
+        :attr:`release_name`
+
+        The text is automatically updated when :attr:`imdb_job` sends an ID.
+        """
+        return jobs.dialog.TextFieldJob(
+            name='release-name',
+            label='Release Name',
+            text=str(self.release_name),
             **self.common_job_args,
+        )
+
+    def _update_release_name(self, imdb_id):
+        self.release_name_job.add_task(
+            self.release_name_job.fetch_text(
+                coro=self.release_name.fetch_info(imdb_id),
+                error_is_fatal=False,
+            ),
         )
 
     @cached_property
@@ -305,7 +320,7 @@ class TrackerJobsBase(abc.ABC):
             **self.common_job_args,
         )
         # Update release name with IMDb data
-        imdb_job.signal.register('output', self.release_name_job.fetch_info)
+        imdb_job.signal.register('output', self._update_release_name)
         return imdb_job
 
     @cached_property
