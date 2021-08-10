@@ -32,11 +32,73 @@ logging.getLogger('rebulk').setLevel(logging.WARNING)
 _guessit = LazyModule(module='guessit.api', name='_guessit', namespace=globals())
 
 
+class _translated_property:
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        self.name = fget.__name__
+        self.fget = fget
+        self.fset = fset
+        self.fdel = fdel
+        if doc is None and fget is not None:
+            doc = fget.__doc__
+        self.__doc__ = doc
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+        else:
+            value = self.fget(obj)
+            return self._translate(value, obj._translate)
+
+    def _translate(self, value, tables):
+        def translate(string):
+            table = tables.get(self.name, {})
+            for regex, replacement in table.items():
+                string = regex.sub(replacement, string)
+            return string
+
+        if isinstance(value, str):
+            value = translate(value)
+        elif isinstance(value, collections.abc.Iterable):
+            value[:] = [translate(v) for v in value]
+
+        return value
+
+    def __set__(self, obj, value):
+        if self.fset is None:
+            raise AttributeError("Can't set attribute")
+        self.fset(obj, value)
+
+    def __delete__(self, obj):
+        raise AttributeError("Can't delete attribute")
+
+    def getter(self, fget):
+        return type(self)(fget, self.fset, self.fdel, self.__doc__)
+
+    def setter(self, fset):
+        return type(self)(self.fget, fset, self.fdel, self.__doc__)
+
+
 class ReleaseName(collections.abc.Mapping):
     """
     Standardized release name
 
     :param str path: Path to release content
+    :param dict translate: Map names of properties that return a string
+        (e.g. ``audio_format``) to maps of regular expressions to replacement
+        strings. The replacement strings may contain backreferences to groups in
+        their regular expression.
+
+        Example:
+
+        >>> {
+        >>>     'audio_format': {
+        >>>         re.compile(r'^AC-3$'): r'DD',
+        >>>         re.compile(r'^E-AC-3$'): r'DD+',
+        >>>     },
+        >>>     'video_format': {
+        >>>         re.compile(r'^x26([45])$'): r'H.26\1',
+        >>>     },
+        >>> }
 
     If `path` exists, it is used to analyze file contents for some parts of the
     new release name, e.g. to detect the resolution.
@@ -52,8 +114,9 @@ class ReleaseName(collections.abc.Mapping):
     'The Foo (1984)'
     """
 
-    def __init__(self, path):
+    def __init__(self, path, translate=None):
         self._path = str(path)
+        self._translate = translate or {}
         self._info = ReleaseInfo(self._path)
         self._imdb = webdbs.imdb.ImdbApi()
 
@@ -78,12 +141,12 @@ class ReleaseName(collections.abc.Mapping):
         cls = type(self)
         return iter(attr for attr in dir(self)
                     if (not attr.startswith('_')
-                        and isinstance(getattr(cls, attr), property)))
+                        and isinstance(getattr(cls, attr), (property, _translated_property))))
 
     def __getitem__(self, name):
         if not isinstance(name, str):
             raise TypeError(f'Not a string: {name!r}')
-        elif isinstance(getattr(type(self), name), property):
+        elif isinstance(getattr(type(self), name, None), (property, _translated_property)):
             return getattr(self, name)
         else:
             raise KeyError(name)
@@ -104,7 +167,7 @@ class ReleaseName(collections.abc.Mapping):
         else:
             self._info['type'] = ReleaseType(value)
 
-    @property
+    @_translated_property
     def title(self):
         """
         Original name of movie or series or "UNKNOWN_TITLE"
@@ -117,7 +180,7 @@ class ReleaseName(collections.abc.Mapping):
     def title(self, value):
         self._info['title'] = str(value)
 
-    @property
+    @_translated_property
     def title_aka(self):
         """
         Alternative name of movie or series or empty string
@@ -137,7 +200,7 @@ class ReleaseName(collections.abc.Mapping):
     def title_aka(self, value):
         self._info['aka'] = str(value)
 
-    @property
+    @_translated_property
     def title_with_aka(self):
         """Combination of :attr:`title` and :attr:`title_aka`"""
         if self.title_aka:
@@ -145,7 +208,7 @@ class ReleaseName(collections.abc.Mapping):
         else:
             return self.title
 
-    @property
+    @_translated_property
     def title_with_aka_and_year(self):
         """
         Combination of :attr:`title`, :attr:`title_aka` and :attr:`year`
@@ -161,7 +224,7 @@ class ReleaseName(collections.abc.Mapping):
             title.append(self.year)
         return ' '.join(title)
 
-    @property
+    @_translated_property
     def year(self):
         """
         Release year or "UNKNOWN_YEAR" for movies, empty string for series unless
@@ -201,7 +264,7 @@ class ReleaseName(collections.abc.Mapping):
     def year_required(self, value):
         self._year_required = bool(value)
 
-    @property
+    @_translated_property
     def episodes(self):
         """
         Season and episodes in "S01E02"-style format or "UNKNOWN_SEASON" for season
@@ -237,7 +300,7 @@ class ReleaseName(collections.abc.Mapping):
         else:
             self._info['episodes'] = Episodes()
 
-    @property
+    @_translated_property
     def episode_title(self):
         """Episode title if :attr:`type` is "episode" or empty string"""
         if self.type is ReleaseType.episode:
@@ -249,7 +312,7 @@ class ReleaseName(collections.abc.Mapping):
     def episode_title(self, value):
         self._info['episode_title'] = str(value)
 
-    @property
+    @_translated_property
     def service(self):
         """Streaming service abbreviation (e.g. "AMZN", "NF") or empty string"""
         return self._info.get('service') or ''
@@ -258,7 +321,7 @@ class ReleaseName(collections.abc.Mapping):
     def service(self, value):
         self._info['service'] = str(value)
 
-    @property
+    @_translated_property
     def edition(self):
         """List of "Director's Cut", "Uncut", "Unrated", etc"""
         if 'edition' not in self._info:
@@ -280,7 +343,7 @@ class ReleaseName(collections.abc.Mapping):
     def edition(self, value):
         self._info['edition'] = [str(v) for v in value]
 
-    @property
+    @_translated_property
     def source(self):
         '''Original source (e.g. "BluRay", "WEB-DL") or "UNKNOWN_SOURCE"'''
         return self._info.get('source') or 'UNKNOWN_SOURCE'
@@ -289,7 +352,7 @@ class ReleaseName(collections.abc.Mapping):
     def source(self, value):
         self._info['source'] = str(value)
 
-    @property
+    @_translated_property
     def resolution(self):
         '''Resolution (e.g. "1080p") or "UNKNOWN_RESOLUTION"'''
         res = video.resolution(self._path)
@@ -301,7 +364,7 @@ class ReleaseName(collections.abc.Mapping):
     def resolution(self, value):
         self._info['resolution'] = str(value)
 
-    @property
+    @_translated_property
     def audio_format(self):
         '''Audio format or "UNKNOWN_AUDIO_FORMAT"'''
         af = video.audio_format(self._path)
@@ -313,7 +376,7 @@ class ReleaseName(collections.abc.Mapping):
     def audio_format(self, value):
         self._info['audio_codec'] = str(value)
 
-    @property
+    @_translated_property
     def audio_channels(self):
         """Audio channels (e.g. "5.1") or empty string"""
         ac = video.audio_channels(self._path)
@@ -325,7 +388,7 @@ class ReleaseName(collections.abc.Mapping):
     def audio_channels(self, value):
         self._info['audio_channels'] = str(value)
 
-    @property
+    @_translated_property
     def video_format(self):
         '''Video format (or encoder in case of x264/x265/XviD) or "UNKNOWN_VIDEO_FORMAT"'''
         vf = video.video_format(self._path)
@@ -337,7 +400,7 @@ class ReleaseName(collections.abc.Mapping):
     def video_format(self, value):
         self._info['video_codec'] = str(value)
 
-    @property
+    @_translated_property
     def group(self):
         '''Name of release group or "NOGROUP"'''
         return self._info.get('group') or 'NOGROUP'
@@ -417,7 +480,7 @@ class ReleaseName(collections.abc.Mapping):
         else:
             self._has_dual_audio = bool(value)
 
-    @property
+    @_translated_property
     def hdr_format(self):
         """
         HDR format name (e.g. "Dolby Vision" or "HDR10")

@@ -148,6 +148,21 @@ def test_title_setter(ReleaseInfo_mock):
     rn.title = 'The Baz'
     assert rn.title == 'The Baz'
 
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_title_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'Bar', 'year': '2015'}
+    translation = {
+        'title': {
+            re.compile(r'o+'): r'00',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    rn.year_required = True
+    assert rn.title == 'The F00'
+    assert rn.title_aka == 'Bar'
+    assert rn.title_with_aka == 'The F00 AKA Bar'
+    assert rn.title_with_aka_and_year == 'The F00 AKA Bar 2015'
+
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_title_aka_getter(ReleaseInfo_mock):
@@ -167,6 +182,21 @@ def test_title_aka_setter(ReleaseInfo_mock):
     rn.title = 'The Baz'
     assert rn.title_aka == ''
 
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_title_aka_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'Bar', 'year': '2015'}
+    translation = {
+        'title_aka': {
+            re.compile(r'(\w+)r'): r'R-\1',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    rn.year_required = True
+    assert rn.title == 'The Foo'
+    assert rn.title_aka == 'R-Ba'
+    assert rn.title_with_aka == 'The Foo AKA R-Ba'
+    assert rn.title_with_aka_and_year == 'The Foo AKA R-Ba 2015'
+
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_title_with_aka(ReleaseInfo_mock):
@@ -174,6 +204,21 @@ def test_title_with_aka(ReleaseInfo_mock):
     assert ReleaseName('path/to/something').title_with_aka == 'The Foo'
     ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'The Bar'}
     assert ReleaseName('path/to/something').title_with_aka == 'The Foo AKA The Bar'
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_title_with_aka_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'Bar', 'year': '2015'}
+    translation = {
+        'title_with_aka': {
+            re.compile(r' +AKA +'): r': ',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    rn.year_required = True
+    assert rn.title == 'The Foo'
+    assert rn.title_aka == 'Bar'
+    assert rn.title_with_aka == 'The Foo: Bar'
+    assert rn.title_with_aka_and_year == 'The Foo: Bar 2015'
 
 
 @pytest.mark.parametrize(
@@ -189,11 +234,27 @@ def test_title_with_aka(ReleaseInfo_mock):
     ids=lambda v: str(v),
 )
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_title_full(ReleaseInfo_mock, release_info, year_required, exp_title_with_aka_and_year):
+def test_title_with_aka_and_year(ReleaseInfo_mock, release_info, year_required, exp_title_with_aka_and_year):
     ReleaseInfo_mock.return_value = release_info
     rn = ReleaseName('path/to/something')
     rn.year_required = year_required
     assert rn.title_with_aka_and_year == exp_title_with_aka_and_year
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_title_with_aka_and_year_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'title': 'The Foo', 'aka': 'Bar', 'year': '2015'}
+    translation = {
+        'title_with_aka_and_year': {
+            re.compile(r'(.*) (\d+)'): r'"\1" \2',
+            re.compile(r'(\d+)'): r'(\1)',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    rn.year_required = True
+    assert rn.title == 'The Foo'
+    assert rn.title_aka == 'Bar'
+    assert rn.title_with_aka == 'The Foo AKA Bar'
+    assert rn.title_with_aka_and_year == '"The Foo AKA Bar" (2015)'
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
@@ -250,6 +311,19 @@ def test_year_setter_with_invalid_year(ReleaseInfo_mock, year, exp_exception, ex
     assert rn.year == ''
     with pytest.raises(exp_exception, match=rf'^{re.escape(exp_message)}$'):
         rn.year = year
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_year_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'year': '2012'}
+    translation = {
+        'year': {
+            re.compile(r'(\d+)'): r'\1 CE',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.year == '2012 CE'
+    rn.year = '1995'
+    assert rn.year == '1995 CE'
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
@@ -359,6 +433,20 @@ def test_episodes_setter_with_valid_value(ReleaseInfo_mock, type, value, exp_epi
     rn.episodes = value
     assert rn.episodes == exp_episodes
 
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_episodes_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'episodes': Episodes({3: ()})}
+    translation = {
+        'episodes': {
+            re.compile(r'S0*'): r'Season ',
+            re.compile(r'E0*'): r', Episode ',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.episodes == 'Season 3'
+    rn.episodes = 'S03E12'
+    assert rn.episodes == 'Season 3, Episode 12'
+
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -389,6 +477,19 @@ def test_episode_title_setter(ReleaseInfo_mock, episode_title, exp_episode_title
     rn.episode_title = episode_title
     assert rn.episode_title == exp_episode_title
 
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_episode_title_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'episode_title': 'This Episode', 'type': ReleaseType.episode}
+    translation = {
+        'episode_title': {
+            re.compile(r'(?i:this)'): r'That',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.episode_title == 'That Episode'
+    rn.episode_title = 'foo'
+    assert rn.episode_title == 'foo'
+
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_service_getter(ReleaseInfo_mock):
@@ -403,6 +504,20 @@ def test_service_setter(ReleaseInfo_mock):
     assert rn.service == 'FOO'
     rn.service = 256
     assert rn.service == '256'
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_service_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'service': 'Asdf'}
+    translation = {
+        'service': {
+            re.compile(r'Asdf'): r'ASDF',
+            re.compile(r'(.*)TV'): r'Tee\1Vee',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.service == 'ASDF'
+    rn.service = 'AsdfTV'
+    assert rn.service == 'TeeASDFVee'
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
@@ -449,6 +564,21 @@ def test_edition_setter(ReleaseInfo_mock, edition, exp_edition):
     assert rn.edition == exp_edition
     assert rn.edition is rn.edition
 
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_edition_is_translated(ReleaseInfo_mock, mocker):
+    ReleaseInfo_mock.return_value = {'edition': ['foo', 'bar', 'baz']}
+    rn = ReleaseName('path/to/something')
+    translation = {
+        'edition': {
+            re.compile(r'o+'): r'00',
+            re.compile(r'b(\w+)'): r'\1F',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.edition == ['f00', 'arF', 'azF']
+    rn.edition = ('noo', 'nar', 'naz')
+    assert rn.edition == ['n00', 'nar', 'naz']
+
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -475,6 +605,21 @@ def test_source_setter(ReleaseInfo_mock, source, exp_source):
     rn = ReleaseName('path/to/something')
     rn.source = source
     assert rn.source == exp_source
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_source_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'source': 'Blu-Ray'}
+    translation = {
+        'source': {
+            re.compile(r'-'): r'',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.source == 'BluRay'
+    rn.source = 'asdf'
+    assert rn.source == 'asdf'
+    rn.source = 'WEB-DL'
+    assert rn.source == 'WEBDL'
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
@@ -511,6 +656,24 @@ def test_resolution_setter(ReleaseInfo_mock):
     assert rn.resolution == 'UNKNOWN_RESOLUTION'
     rn.resolution = 1080
     assert rn.resolution == '1080'
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+@patch('upsies.utils.video.resolution')
+def test_resolution_is_translated(resolution_mock, ReleaseInfo_mock):
+    resolution_mock.return_value = None
+    ReleaseInfo_mock.return_value = {'resolution': '1080i'}
+    translation = {
+        'resolution': {
+            re.compile(r'(\d+)i'): r'\1I',
+            re.compile(r'x'): r':',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.resolution == '1080I'
+    rn.resolution = 'asdf'
+    assert rn.resolution == 'asdf'
+    rn.resolution = '1080x1920'
+    assert rn.resolution == '1080:1920'
 
 
 @patch('upsies.utils.release.ReleaseInfo')
@@ -549,6 +712,24 @@ def test_audio_format_setter(ReleaseInfo_mock):
     rn.audio_format = 'DD+'
     assert rn.audio_format == 'DD+'
 
+@patch('upsies.utils.release.ReleaseInfo')
+@patch('upsies.utils.video.audio_format')
+def test_audio_format_is_translated(audio_format_mock, ReleaseInfo_mock):
+    audio_format_mock.return_value = None
+    ReleaseInfo_mock.return_value = {'audio_codec': 'fooo'}
+    translation = {
+        'audio_format': {
+            re.compile(r'\w(o+)'): r'b\1',
+            re.compile(r'oo'): r'00',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.audio_format == 'b00o'
+    rn.audio_format = 'asdf'
+    assert rn.audio_format == 'asdf'
+    rn.audio_format = 'noooo'
+    assert rn.audio_format == 'b0000'
+
 
 @patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_channels')
@@ -585,6 +766,19 @@ def test_audio_channels_setter(ReleaseInfo_mock):
     assert rn.audio_channels == ''
     rn.audio_channels = 2.0
     assert rn.audio_channels == '2.0'
+
+@patch('upsies.utils.release.ReleaseInfo')
+@patch('upsies.utils.video.audio_channels')
+def test_audio_channels_is_translated(audio_channels_mock, ReleaseInfo_mock):
+    audio_channels_mock.return_value = None
+    ReleaseInfo_mock.return_value = {'audio_channels': '5.1'}
+    translation = {'audio_channels': { re.compile(r'\.'): r':'}}
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.audio_channels == '5:1'
+    rn.audio_channels = 'asdf'
+    assert rn.audio_channels == 'asdf'
+    rn.audio_channels = '2.0'
+    assert rn.audio_channels == '2:0'
 
 
 @patch('upsies.utils.release.ReleaseInfo')
@@ -623,6 +817,24 @@ def test_video_format_setter(ReleaseInfo_mock):
     rn.video_format = 264
     assert rn.video_format == '264'
 
+@patch('upsies.utils.release.ReleaseInfo')
+@patch('upsies.utils.video.video_format')
+def test_video_format_is_translated(video_format_mock, ReleaseInfo_mock):
+    video_format_mock.return_value = None
+    ReleaseInfo_mock.return_value = {'video_codec': 'x264'}
+    translation = {
+        'video_format': {
+            re.compile(r'x(\d+)'): r'H.\1',
+            re.compile(r'H\.?'): r'Harry',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.video_format == 'Harry264'
+    rn.video_format = 'asdf'
+    assert rn.video_format == 'asdf'
+    rn.video_format = 'H265'
+    assert rn.video_format == 'Harry265'
+
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_group_getter(ReleaseInfo_mock):
@@ -643,6 +855,19 @@ def test_group_setter(ReleaseInfo_mock):
     assert rn.group == 'NOGROUP'
     rn.group = 123
     assert rn.group == '123'
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_group_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'group': 'A-SDF'}
+    translation = {
+        'group': {
+            re.compile(r'-'): r'_',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.group == 'A_SDF'
+    rn.group = 'F-o-o'
+    assert rn.group == 'F_o_o'
 
 
 @pytest.mark.parametrize(
@@ -776,6 +1001,20 @@ def test_hdr_format_is_set_to_invalid_value(mocker):
         assert rn.hdr_format == hdr_format
     with pytest.raises(ValueError, match=r"^Unknown HDR format: 'baz'$"):
         rn.hdr_format = 'baz'
+
+def test_hdr_format_is_translated(mocker):
+    mocker.patch('upsies.utils.release.ReleaseInfo', Mock(return_value={'edition': ['HDR10']}))
+    translation = {
+        'hdr_format': {
+            re.compile(r'(?i:hdr)'): r'ABC',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.hdr_format == 'ABC10'
+    rn.hdr_format = 'Dolby Vision'
+    assert rn.hdr_format == 'Dolby Vision'
+    rn.hdr_format = 'HDR10+'
+    assert rn.hdr_format == 'ABC10+'
 
 
 @pytest.mark.parametrize('release_type', tuple(ReleaseType), ids=lambda v: repr(v))
