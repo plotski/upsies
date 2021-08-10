@@ -156,9 +156,7 @@ class ReleaseName(collections.abc.Mapping):
 
         :attr:`title_aka` is appended if it is truthy.
         """
-        title = [self.title]
-        if self.title_aka:
-            title.extend(('AKA', self.title_aka))
+        title = [self.title_with_aka]
         if self.year_required:
             title.append(self.year)
         return ' '.join(title)
