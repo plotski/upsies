@@ -33,12 +33,26 @@ class release_name(CommandBase):
         return (self.imdb_job, self.release_name_job)
 
     @utils.cached_property
+    def release_name(self):
+        return utils.release.ReleaseName(self.args.RELEASE)
+
+    @utils.cached_property
     def release_name_job(self):
-        return jobs.release_name.ReleaseNameJob(
+        return jobs.dialog.TextFieldJob(
+            name='release-name',
+            label='Release Name',
+            text=str(self.release_name),
             home_directory=self.home_directory,
             cache_directory=self.cache_directory,
             ignore_cache=self.args.ignore_cache,
-            content_path=self.args.RELEASE,
+        )
+
+    def _update_release_name(self, imdb_id):
+        self.release_name_job.add_task(
+            self.release_name_job.fetch_text(
+                coro=self.release_name.fetch_info(imdb_id),
+                error_is_fatal=False,
+            ),
         )
 
     @utils.cached_property
@@ -51,5 +65,5 @@ class release_name(CommandBase):
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.RELEASE,
             db=utils.webdbs.webdb('imdb'),
-            callbacks={'output': self.release_name_job.fetch_info},
+            callbacks={'output': self._update_release_name},
         )
