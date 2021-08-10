@@ -192,7 +192,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def year_required(self):
         """
-        Whether :attr:`title_full` includes :attr:`year`
+        Whether :attr:`title_with_aka_and_year` includes :attr:`year`
 
         See also :meth:`fetch_info`.
         """
