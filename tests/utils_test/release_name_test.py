@@ -22,6 +22,21 @@ def run_async(awaitable):
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_name_argument(ReleaseInfo_mock, mocker):
+    rn = ReleaseName('path/to/something', name='the real something')
+    assert ReleaseInfo_mock.call_args_list == [call('the real something')]
+    assert rn._info is ReleaseInfo_mock.return_value
+
+
+def test_set_release_info(mocker):
+    mocker.patch('upsies.utils.video.audio_format', return_value='DTS')
+    rn = ReleaseName('path/to/Foo Season 1 1080p BluRay DTS-ASDF/Foo S01E02 Uncut x264.mkv')
+    assert str(rn) == 'Foo S01E02 1080p BluRay Uncut DTS x264-ASDF'
+    rn.set_release_info('path/to/Bar Season 2 720p Limited WEBDL FLAC-AsdF/Bar S02E03 x265.mkv')
+    assert str(rn) == 'Bar S02E03 720p WEB-DL Limited DTS x265-AsdF'
+
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_tracks_returns_tracks(ReleaseInfo_mock, mocker):
     mocker.patch('upsies.utils.video.tracks', return_value='mock tracks')
     rn = ReleaseName('path/to/something')

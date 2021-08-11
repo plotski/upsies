@@ -82,7 +82,14 @@ class ReleaseName(collections.abc.Mapping):
     """
     Standardized release name
 
-    :param str path: Path to release content
+    :param str path: Path to release file or directory
+
+        If `path` exists, it is used to read video and audio metadata, e.g. to
+        detect the codecs, resolution, etc.
+
+    :param str name: Path or other string to pass to :class:`ReleaseInfo`
+        (defaults to `path`)
+
     :param dict translate: Map names of properties that return a string
         (e.g. ``audio_format``) to maps of regular expressions to replacement
         strings. The replacement strings may contain backreferences to groups in
@@ -100,25 +107,34 @@ class ReleaseName(collections.abc.Mapping):
         >>>     },
         >>> }
 
-    If `path` exists, it is used to analyze file contents for some parts of the
-    new release name, e.g. to detect the resolution.
-
     Example:
 
-    >>> rn = ReleaseName("The.Foo.1984.1080p.Blu-ray.X264-ASDF")
+    >>> rn = ReleaseName("path/to/The.Foo.1984.1080p.Blu-ray.X264-ASDF")
     >>> rn.source
     'BluRay'
     >>> rn.format()
     'The Foo 1984 1080p BluRay DTS x264-ASDF'
-    >>> "{title} ({year})".format(**rn)
-    'The Foo (1984)'
+    >>> "{title} ({year}) [{group}]".format(**rn)
+    'The Foo (1984) [ASDF]'
+    >>> rn.set_name('The Foo 1985 1080p BluRay DTS x264-AsdF')
+    >>> "{title} ({year}) [{group}]".format(**rn)
+    'The Foo (1985) [AsdF]'
     """
 
-    def __init__(self, path, translate=None):
+    def __init__(self, path, name=None, translate=None):
         self._path = str(path)
+        self._info = ReleaseInfo(str(name) if name is not None else self._path)
         self._translate = translate or {}
-        self._info = ReleaseInfo(self._path)
         self._imdb = webdbs.imdb.ImdbApi()
+
+    def set_release_info(self, path):
+        """
+        Update internal :class:`ReleaseInfo` instance
+
+        :param path: Argument for :class:`ReleaseInfo` (path or any other
+            string)
+        """
+        self._info = ReleaseInfo(str(path))
 
     def _tracks(self):
         # Ignore non-existing files and other file system issues
