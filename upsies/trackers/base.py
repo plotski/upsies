@@ -296,12 +296,15 @@ class TrackerJobsBase(abc.ABC):
 
         The text is automatically updated when :attr:`imdb_job` sends an ID.
         """
-        return jobs.dialog.TextFieldJob(
+        job = jobs.dialog.TextFieldJob(
             name='release-name',
             label='Release Name',
             text=str(self.release_name),
             **self.common_job_args,
         )
+        # Automatically update release_name with user-confirmed release name
+        job.signal.register('output', self.release_name.set_release_info)
+        return job
 
     def _update_release_name(self, imdb_id):
         self.release_name_job.add_task(

@@ -282,16 +282,20 @@ def test_release_name_job(mocker):
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
-    mocker.patch.object(type(tracker_jobs), 'release_name', PropertyMock(return_value='Mock Release Name'))
+    release_name_mock = Mock()
+    mocker.patch.object(type(tracker_jobs), 'release_name', PropertyMock(return_value=release_name_mock))
     assert tracker_jobs.release_name_job is TextFieldJob_mock.return_value
     assert TextFieldJob_mock.call_args_list == [
         call(
             name='release-name',
             label='Release Name',
-            text='Mock Release Name',
+            text=str(release_name_mock),
             home_directory='path/to/home',
             ignore_cache='mock bool',
         ),
+    ]
+    assert tracker_jobs.release_name_job.signal.register.call_args_list == [
+        call('output', release_name_mock.set_release_info)
     ]
 
 def test_release_name_job_is_singleton(mocker):
