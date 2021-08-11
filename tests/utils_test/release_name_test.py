@@ -65,6 +65,25 @@ def test_tracks_raises(ReleaseInfo_mock, raised_exception, exp_exception, exp_me
         assert rn._tracks() == {}
 
 
+@patch('upsies.utils.release.ReleaseInfo', Mock(return_value={}))
+@pytest.mark.parametrize(
+    argnames='path, name, translate, exp_repr',
+    argvalues=(
+        ('path/to/something', None, None,
+         "ReleaseName('path/to/something')"),
+        ('path/to/something', 'The Name', None,
+         "ReleaseName('path/to/something', name='The Name')"),
+        ('path/to/something', 'The Name', {'foo': 'bar'},
+         "ReleaseName('path/to/something', name='The Name', translate={'foo': 'bar'})"),
+        ('path/to/something', None, {'foo': 'bar'},
+         "ReleaseName('path/to/something', translate={'foo': 'bar'})"),
+    ),
+)
+def test_repr(path, name, translate, exp_repr):
+    rn = ReleaseName(path=path, name=name, translate=translate)
+    assert repr(rn) == exp_repr
+
+
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_str(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')

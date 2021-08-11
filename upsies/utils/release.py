@@ -123,6 +123,7 @@ class ReleaseName(collections.abc.Mapping):
 
     def __init__(self, path, name=None, translate=None):
         self._path = str(path)
+        self._name = name
         self._info = ReleaseInfo(str(name) if name is not None else self._path)
         self._translate = translate or {}
         self._imdb = webdbs.imdb.ImdbApi()
@@ -144,7 +145,16 @@ class ReleaseName(collections.abc.Mapping):
             return {}
 
     def __repr__(self):
-        return f'{type(self).__name__}({self._path!r})'
+        posargs = [self._path]
+        kwargs = {}
+        if self._name is not None:
+            kwargs['name'] = self._name
+        if self._translate:
+            kwargs['translate'] = self._translate
+        args = ', '.join(repr(arg) for arg in posargs)
+        if kwargs:
+            args += ', ' + ', '.join(f'{k}={v!r}' for k, v in kwargs.items())
+        return f'{type(self).__name__}({args})'
 
     def __str__(self):
         return self.format()
