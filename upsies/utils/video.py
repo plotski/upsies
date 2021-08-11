@@ -397,6 +397,25 @@ def has_dual_audio(path):
             return False
 
 
+@functools.lru_cache(maxsize=None)
+def has_commentary(path):
+    """
+    Return `True` if `path` has an audio track with "Commentary"
+    (case-insensitive) in its title, `False` otherwise, `None` if it can't be
+    determined
+    """
+    try:
+        audio_tracks = tracks(path).get('Audio', ())
+    except errors.ContentError:
+        return None
+    else:
+        languages = set()
+        for track in audio_tracks:
+            if 'commentary' in track.get('Title', '').lower():
+                return True
+        return False
+
+
 _audio_format_translations = (
     # (<format>, <<key>:<regex> dictionary>)
     # - All <regex>s must match each <key> to identify <format>.
