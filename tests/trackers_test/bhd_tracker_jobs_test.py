@@ -532,18 +532,18 @@ def test_tags_job(bhd_tracker_jobs, mocker):
 @pytest.mark.asyncio
 async def test_autodetect_tags(options, exp_personal_tag,
                                is_scene_release, exp_scene_tag,
-                               has_dual_audio, exp_dual_audio_tag,
                                edition, exp_open_matte_tag,
+                               has_dual_audio, exp_dual_audio_tag,
                                has_commentary, exp_commentary_tag,
                                hybrid, exp_hybrid_tag,
                                source, exp_source_tag,
                                bhd_tracker_jobs, mocker):
     mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
         source=' '.join((source, hybrid)),
-        has_commentary=has_commentary,
-        has_dual_audio=has_dual_audio,
         edition=edition,
     )))
+    mocker.patch('upsies.utils.video.has_commentary', return_value=has_commentary)
+    mocker.patch('upsies.utils.video.has_dual_audio', return_value=has_dual_audio)
     mocker.patch.object(type(bhd_tracker_jobs), 'release_name_job', AsyncMock())
     mocker.patch.object(type(bhd_tracker_jobs), 'scene_check_job', AsyncMock(
         is_finished=True,

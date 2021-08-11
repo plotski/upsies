@@ -7,7 +7,7 @@ import os
 import re
 
 from ... import jobs
-from ...utils import as_groups, cached_property, fs, release
+from ...utils import as_groups, cached_property, fs, release, video
 from ..base import TrackerJobsBase
 
 import logging  # isort:skip
@@ -289,9 +289,9 @@ class BhdTrackerJobs(TrackerJobsBase):
             tags.append('WEBDL')
         if 'Hybrid' in self.approved_release_name.source:
             tags.append('Hybrid')
-        if self.approved_release_name.has_commentary:
+        if video.has_commentary(self.content_path):
             tags.append('Commentary')
-        if self.approved_release_name.has_dual_audio:
+        if video.has_dual_audio(self.content_path):
             tags.append('DualAudio')
         if 'Open Matte' in self.approved_release_name.edition:
             tags.append('OpenMatte')
