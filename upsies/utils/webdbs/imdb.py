@@ -307,6 +307,7 @@ class ImdbApi(WebDbApiBase):
         re.compile(r'\(short title\)$'),
         re.compile(r'\(video box title\)$'),
         re.compile(r'\(working title\)$'),
+        re.compile(r'\(long title\)$'),
     )
     _english_akas_keys = (
         re.compile(r'^USA.*English'),

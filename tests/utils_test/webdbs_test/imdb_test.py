@@ -598,6 +598,7 @@ async def test_summary(id, exp_summary, api, store_response):
         ('tt0396184', '', 'Pusher II'),
         ('tt1127715', '', 'Sin Nombre'),
         ('tt1405737', 'Traffic Light', 'Ramzor'),
+        ('tt1413492', '', '12 Strong'),
         ('tt1572491', 'The Last Circus', 'Balada triste de trompeta'),
         ('tt1866210', '', 'Wrecked'),  # No AKAs available
         ('tt2172934', '', '3 Days to Kill'),
