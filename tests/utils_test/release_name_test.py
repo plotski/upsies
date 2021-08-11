@@ -871,32 +871,32 @@ def test_group_is_translated(ReleaseInfo_mock):
 
 
 @pytest.mark.parametrize(
-    argnames='path_exists, audio_tracks, release_info, exp_value',
+    argnames='path_exists, has_commentary, release_info, exp_value',
     argvalues=(
-        ('path_exists', [{'Title': 'Commentary with Foo Bar'}], {'has_commentary': True}, True),
-        ('path_exists', [{'Title': 'Commentary with Foo Bar'}], {'has_commentary': False}, True),
+        ('path_exists', True, {'has_commentary': True}, True),
+        ('path_exists', True, {'has_commentary': False}, True),
 
-        ('path_exists', [{'Title': 'Something'}], {'has_commentary': True}, False),
-        ('path_exists', [{'Title': 'Something'}], {'has_commentary': False}, False),
+        ('path_exists', False, {'has_commentary': True}, False),
+        ('path_exists', False, {'has_commentary': False}, False),
 
-        ('path_exists', [], {'has_commentary': True}, False),
-        ('path_exists', [], {'has_commentary': False}, False),
+        ('path_exists', None, {'has_commentary': True}, False),
+        ('path_exists', None, {'has_commentary': False}, False),
 
-        ('path_does_not_exist', [{'Title': 'Commentary with Foo Bar'}], {'has_commentary': True}, True),
-        ('path_does_not_exist', [{'Title': 'Commentary with Foo Bar'}], {'has_commentary': False}, False),
+        ('path_does_not_exist', True, {'has_commentary': True}, True),
+        ('path_does_not_exist', True, {'has_commentary': False}, False),
 
-        ('path_does_not_exist', [{'Title': 'Something'}], {'has_commentary': True}, True),
-        ('path_does_not_exist', [{'Title': 'Something'}], {'has_commentary': False}, False),
+        ('path_does_not_exist', False, {'has_commentary': True}, True),
+        ('path_does_not_exist', False, {'has_commentary': False}, False),
 
-        ('path_does_not_exist', [], {'has_commentary': True}, True),
-        ('path_does_not_exist', [], {'has_commentary': False}, False),
+        ('path_does_not_exist', None, {'has_commentary': True}, True),
+        ('path_does_not_exist', None, {'has_commentary': False}, False),
     ),
     ids=lambda v: str(v),
 )
-def test_has_commentary(path_exists, audio_tracks, release_info, exp_value, mocker):
+def test_has_commentary(path_exists, has_commentary, release_info, exp_value, mocker):
     mocker.patch(
-        'upsies.utils.release.ReleaseName._tracks',
-        Mock(return_value={'Audio': audio_tracks}),
+        'upsies.utils.video.has_commentary',
+        Mock(return_value=has_commentary),
     )
     mocker.patch(
         'upsies.utils.release.ReleaseInfo',

@@ -430,11 +430,8 @@ class ReleaseName(collections.abc.Mapping):
 
         # Find "Commentary" in audio track titles
         elif os.path.exists(self._path):
-            tracks = self._tracks()
-            for track in tracks.get('Audio', {}):
-                if 'commentary' in track.get('Title', '').lower():
-                    return True
-            return False
+            self._has_commentary = bool(video.has_commentary(self._path))
+            return self._has_commentary
 
         # Default to ReleaseInfo['has_commentary']
         else:
