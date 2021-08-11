@@ -450,8 +450,7 @@ class ReleaseName(collections.abc.Mapping):
     @property
     def has_dual_audio(self):
         """
-        Whether this release has an English and a non-English, original language
-        audio track
+        Whether this release has an English and a non-English audio track
 
         If not set explicitly and the given `path` exists, this value is
         autodetected if possible, otherwise default to whatever
