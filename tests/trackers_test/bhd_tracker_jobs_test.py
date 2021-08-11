@@ -88,10 +88,9 @@ def mock_job_attributes(mocker):
 
 
 def test_guessed_release_name(bhd_tracker_jobs, mocker):
-    ReleaseName_mock = mocker.patch('upsies.utils.release.ReleaseName',
-                                    return_value='Mocked Release Name')
+    release_name_mock = mocker.patch('upsies.trackers.base.TrackerJobsBase.release_name',
+                                     PropertyMock(return_value='Mocked Release Name'))
     assert bhd_tracker_jobs.guessed_release_name == 'Mocked Release Name'
-    assert ReleaseName_mock.call_args_list == [call(bhd_tracker_jobs.content_path)]
 
 
 @pytest.mark.parametrize('link_already_exists', (True, False))
@@ -132,7 +131,10 @@ def test_approved_release_name(release_name_job, content_path, link_already_exis
             assert symlink_mock.call_args_list == []
         else:
             assert symlink_mock.call_args_list == [call(os.path.abspath(bhd_tracker_jobs.content_path), exp_link_path)]
-        assert ReleaseName_mock.call_args_list == [call(exp_link_path)]
+        assert ReleaseName_mock.call_args_list == [call(
+            path=exp_link_path,
+            translate=bhd_tracker_jobs.release_name_translation,
+        )]
 
     else:
         assert bhd_tracker_jobs.approved_release_name is None

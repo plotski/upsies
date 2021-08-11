@@ -4,6 +4,7 @@ Concrete :class:`~.base.TrackerJobsBase` subclass for BHD
 
 import io
 import os
+import re
 
 from ... import jobs
 from ...utils import as_groups, cached_property, fs, release
@@ -16,7 +17,14 @@ _log = logging.getLogger(__name__)
 class BhdTrackerJobs(TrackerJobsBase):
     @cached_property
     def guessed_release_name(self):
-        return release.ReleaseName(self.content_path)
+        return self.release_name
+
+    release_name_translation = {
+        'audio_format': {
+            re.compile(r'^AC-3$'): r'DD',
+            re.compile(r'^E-AC-3$'): r'DD+',
+        },
+    }
 
     @property
     def approved_release_name(self):
@@ -29,7 +37,10 @@ class BhdTrackerJobs(TrackerJobsBase):
                     link_path += f'.{file_extension}'
                 if not os.path.exists(link_path):
                     os.symlink(os.path.abspath(self.content_path), link_path)
-                self._approved_release_name = release.ReleaseName(link_path)
+                self._approved_release_name = release.ReleaseName(
+                    path=link_path,
+                    translate=self.release_name_translation,
+                )
             return self._approved_release_name
 
     movie_types = (release.ReleaseType.movie,)
