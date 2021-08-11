@@ -561,7 +561,7 @@ class ReleaseName(collections.abc.Mapping):
         """
         await self._update_attributes(id)
         await self._update_year_required()
-        _log.debug('Release name updated: %s', self)
+        _log.debug('Release name updated with IMDb info: %s', self)
         if callback is not None:
             callback(self)
         return self
