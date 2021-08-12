@@ -311,42 +311,32 @@ def test_source_job(bhd_tracker_jobs, mocker):
         ),
     )]
     bhd_tracker_jobs.make_job_condition.call_args_list == [call('source_job')]
-    assert bhd_tracker_jobs.autodetect_source in bhd_tracker_jobs.release_name_job.signal.signals['finished']
+    assert bhd_tracker_jobs.autodetect_source in bhd_tracker_jobs.release_name_job.signal.signals['output']
 
 
 @pytest.mark.parametrize(
-    argnames='source, exp_focused, exp_output, exp_choice',
+    argnames='source, exp_focused, exp_choice, exp_output',
     argvalues=(
-        ('BluRay', ('Blu-ray (autodetected)', 'Blu-ray'), ('Blu-ray (autodetected)',), 'Blu-ray'),
-        ('BluRay Remux', ('Blu-ray (autodetected)', 'Blu-ray'), ('Blu-ray (autodetected)',), 'Blu-ray'),
-        ('WEB-DL', ('WEB (autodetected)', 'WEB'), ('WEB (autodetected)',), 'WEB'),
-        ('WEBRip', ('WEB (autodetected)', 'WEB'), ('WEB (autodetected)',), 'WEB'),
-        ('WEB', ('WEB (autodetected)', 'WEB'), ('WEB (autodetected)',), 'WEB'),
-        ('DVD9', ('DVD (autodetected)', 'DVD'), ('DVD (autodetected)',), 'DVD'),
-        ('DVD5', ('DVD (autodetected)', 'DVD'), ('DVD (autodetected)',), 'DVD'),
-        ('DVD Remux', ('DVD (autodetected)', 'DVD'), ('DVD (autodetected)',), 'DVD'),
-        ('Foo', ('Blu-ray', 'Blu-ray'), (), None),
+        ('BluRay', ('Blu-ray (autodetected)', 'Blu-ray'), 'Blu-ray', ('Blu-ray (autodetected)',)),
+        ('BluRay Remux', ('Blu-ray (autodetected)', 'Blu-ray'), 'Blu-ray', ('Blu-ray (autodetected)',)),
+        ('WEB-DL', ('WEB (autodetected)', 'WEB'), 'WEB', ('WEB (autodetected)',)),
+        ('WEBRip', ('WEB (autodetected)', 'WEB'), 'WEB', ('WEB (autodetected)',)),
+        ('WEB', ('WEB (autodetected)', 'WEB'), 'WEB', ('WEB (autodetected)',)),
+        ('DVD9', ('DVD (autodetected)', 'DVD'), 'DVD', ('DVD (autodetected)',)),
+        ('DVD5', ('DVD (autodetected)', 'DVD'), 'DVD', ('DVD (autodetected)',)),
+        ('DVD Remux', ('DVD (autodetected)', 'DVD'), 'DVD', ('DVD (autodetected)',)),
+        ('Foo', ('Blu-ray', 'Blu-ray'), None, ()),
     ),
     ids=lambda v: str(v),
 )
-@pytest.mark.parametrize('release_name_job_finished', (True, False))
-def test_autodetect_source_with_approved_release_name(release_name_job_finished, source,
-                                                      exp_focused, exp_choice, exp_output,
-                                                      bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'release_name_job', PropertyMock(return_value=Mock(
-        is_finished=release_name_job_finished,
-    )))
+def test_autodetect_source(source, exp_focused, exp_output, exp_choice, bhd_tracker_jobs, mocker):
     mocker.patch.object(type(bhd_tracker_jobs), 'release_name', PropertyMock(return_value=Mock(
         source=source,
     )))
     bhd_tracker_jobs.autodetect_source('_')
-    if not release_name_job_finished:
-        exp_output = ()
-        exp_choice = None
-        exp_focused = ('Blu-ray', 'Blu-ray')
     assert bhd_tracker_jobs.source_job.focused == exp_focused
-    assert bhd_tracker_jobs.source_job.output == exp_output
     assert bhd_tracker_jobs.source_job.choice == exp_choice
+    assert bhd_tracker_jobs.source_job.output == exp_output
 
 
 def test_description_job(bhd_tracker_jobs, mocker):

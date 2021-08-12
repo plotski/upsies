@@ -166,7 +166,9 @@ class BhdTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def source_job(self):
-        self.release_name_job.signal.register('finished', self.autodetect_source)
+        # 'output' signal is only emitted when job succeeds while 'finished'
+        # signal is also emitted when job fails (e.g. when Ctrl-c is pressed)
+        self.release_name_job.signal.register('output', self.autodetect_source)
         return self.make_choice_job(
             name='source',
             label='Source',
@@ -189,21 +191,20 @@ class BhdTrackerJobs(TrackerJobsBase):
         'DVD': lambda release_name: 'DVD' in release_name.source,
     }
 
-    def autodetect_source(self, release_name_job):
-        if self.release_name_job.is_finished:
-            approved_release_name = self.release_name
-            _log.debug('Approved source: %r', approved_release_name.source)
-            for label, is_match in self._autodetect_source_map.items():
-                if is_match(approved_release_name):
-                    # Focus autodetected choice
-                    self.source_job.focused = label
-                    # Get value of autodetected choice
-                    value = self.source_job.focused[1]
-                    # Mark autodetected choice
-                    self.source_job.set_label(value, f'{label} (autodetected)')
-                    # Select autodetected choice (i.e. finish job)
-                    self.source_job.choice = value
-                    break
+    def autodetect_source(self, _):
+        approved_release_name = self.release_name
+        _log.debug('Autodetecting source: Approved source: %r', approved_release_name.source)
+        for label, is_match in self._autodetect_source_map.items():
+            if is_match(approved_release_name):
+                # Focus autodetected choice
+                self.source_job.focused = label
+                # Get value of autodetected choice
+                value = self.source_job.focused[1]
+                # Mark autodetected choice
+                self.source_job.set_label(value, f'{label} (autodetected)')
+                # Select autodetected choice (i.e. finish job)
+                self.source_job.choice = value
+                break
 
     @cached_property
     def description_job(self):
