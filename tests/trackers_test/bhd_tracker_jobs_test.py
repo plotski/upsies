@@ -1,4 +1,5 @@
 import os
+import re
 from unittest.mock import Mock, PropertyMock, call
 
 import pytest
@@ -87,60 +88,13 @@ def mock_job_attributes(mocker):
     return mock_job_attributes
 
 
-def test_guessed_release_name(bhd_tracker_jobs, mocker):
-    release_name_mock = mocker.patch('upsies.trackers.base.TrackerJobsBase.release_name',
-                                     PropertyMock(return_value='Mocked Release Name'))
-    assert bhd_tracker_jobs.guessed_release_name == 'Mocked Release Name'
-
-
-@pytest.mark.parametrize('link_already_exists', (True, False))
-@pytest.mark.parametrize(
-    argnames='content_path',
-    argvalues=(
-        'relative/path/to/Foo.2000.1080p.BluRay.x264-ASDF',
-        'relative/path/to/Foo.2000.1080p.BluRay.x264-ASDF.mkv',
-        '/absolute/path/to/Foo.2000.1080p.BluRay.x264-ASDF',
-        '/absolute/path/to/Foo.2000.1080p.BluRay.x264-ASDF.mkv',
-    ),
-)
-@pytest.mark.parametrize(
-    argnames='release_name_job',
-    argvalues=(
-        Mock(is_finished=True, output=('Approved Release Name',), home_directory='release_name_job/home'),
-        Mock(is_finished=False, output=('Approved Release Name',), home_directory='release_name_job/home'),
-        Mock(is_finished=True, output=(), home_directory='release_name_job/home'),
-        Mock(is_finished=False, output=(), home_directory='release_name_job/home'),
-    ),
-)
-def test_approved_release_name(release_name_job, content_path, link_already_exists, bhd_tracker_jobs, mocker):
-    approved_release_name = release_name_job.output[0] if release_name_job.output else None
-    mocker.patch.object(type(bhd_tracker_jobs), 'release_name_job', PropertyMock(return_value=release_name_job))
-    mocker.patch.object(type(bhd_tracker_jobs), 'content_path', PropertyMock(return_value=content_path))
-    ReleaseName_mock = mocker.patch('upsies.utils.release.ReleaseName', return_value=approved_release_name)
-    symlink_mock = mocker.patch('os.symlink')
-
-    if release_name_job.is_finished and release_name_job.output:
-        exp_link_path = os.path.join(release_name_job.home_directory, approved_release_name)
-        if bhd_tracker_jobs.content_path.endswith('.mkv'):
-            exp_link_path += '.mkv'
-        mocker.patch('os.path.exists', return_value=link_already_exists)
-
-        assert bhd_tracker_jobs.approved_release_name == approved_release_name
-        assert bhd_tracker_jobs.approved_release_name == approved_release_name
-        if link_already_exists:
-            assert symlink_mock.call_args_list == []
-        else:
-            assert symlink_mock.call_args_list == [call(os.path.abspath(bhd_tracker_jobs.content_path), exp_link_path)]
-        assert ReleaseName_mock.call_args_list == [call(
-            path=exp_link_path,
-            translate=bhd_tracker_jobs.release_name_translation,
-        )]
-
-    else:
-        assert bhd_tracker_jobs.approved_release_name is None
-        assert bhd_tracker_jobs.approved_release_name is None
-        assert symlink_mock.call_args_list == []
-        assert ReleaseName_mock.call_args_list == []
+def test_release_name_translation():
+    assert bhd.BhdTrackerJobs.release_name_translation == {
+        'audio_format': {
+            re.compile(r'^AC-3$'): r'DD',
+            re.compile(r'^E-AC-3$'): r'DD+',
+        },
+    }
 
 
 @pytest.mark.parametrize(
@@ -275,7 +229,7 @@ def test_category_job(bhd_tracker_jobs, mocker):
         name='category',
         label='Category',
         condition=bhd_tracker_jobs.make_job_condition.return_value,
-        autodetected=bhd_tracker_jobs.guessed_release_name.type,
+        autodetected=bhd_tracker_jobs.release_name.type,
         autofinish=False,
         options=(
             {'label': 'Movie', 'value': '1', 'match': bhd_tracker_jobs.is_movie_type},
@@ -320,10 +274,6 @@ def test_type_job(bhd_tracker_jobs, mocker):
     assert bhd_tracker_jobs.autodetect_type in bhd_tracker_jobs.release_name_job.signal.signals['finished']
 
 
-def test_autodetect_type_without_approved_release_name(bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=None))
-    assert bhd_tracker_jobs.autodetect_type('_') is None
-
 @pytest.mark.parametrize(
     argnames='resolution, source, exp_focused',
     argvalues=(
@@ -341,12 +291,19 @@ def test_autodetect_type_without_approved_release_name(bhd_tracker_jobs, mocker)
     ),
     ids=lambda v: str(v),
 )
-def test_autodetect_type_with_approved_release_name(resolution, source, exp_focused, bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
+@pytest.mark.parametrize('release_name_job_finished', (True, False))
+def test_autodetect_type_with_approved_release_name(release_name_job_finished, resolution, source, exp_focused,
+                                                    bhd_tracker_jobs, mocker):
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name_job', PropertyMock(return_value=Mock(
+        is_finished=release_name_job_finished,
+    )))
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name', PropertyMock(return_value=Mock(
         resolution=resolution,
         source=source,
     )))
     bhd_tracker_jobs.autodetect_type('_')
+    if not release_name_job_finished:
+        exp_focused = bhd_tracker_jobs.type_job.choices[0]
     assert bhd_tracker_jobs.type_job.focused == exp_focused
 
 
@@ -371,10 +328,6 @@ def test_source_job(bhd_tracker_jobs, mocker):
     assert bhd_tracker_jobs.autodetect_source in bhd_tracker_jobs.release_name_job.signal.signals['finished']
 
 
-def test_autodetect_source_without_approved_release_name(bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=None))
-    assert bhd_tracker_jobs.autodetect_source('_') is None
-
 @pytest.mark.parametrize(
     argnames='source, exp_focused, exp_output, exp_choice',
     argvalues=(
@@ -390,11 +343,21 @@ def test_autodetect_source_without_approved_release_name(bhd_tracker_jobs, mocke
     ),
     ids=lambda v: str(v),
 )
-def test_autodetect_source_with_approved_release_name(source, exp_focused, exp_choice, exp_output, bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
+@pytest.mark.parametrize('release_name_job_finished', (True, False))
+def test_autodetect_source_with_approved_release_name(release_name_job_finished, source,
+                                                      exp_focused, exp_choice, exp_output,
+                                                      bhd_tracker_jobs, mocker):
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name_job', PropertyMock(return_value=Mock(
+        is_finished=release_name_job_finished,
+    )))
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name', PropertyMock(return_value=Mock(
         source=source,
     )))
     bhd_tracker_jobs.autodetect_source('_')
+    if not release_name_job_finished:
+        exp_output = ()
+        exp_choice = None
+        exp_focused = ('Blu-ray', 'Blu-ray')
     assert bhd_tracker_jobs.source_job.focused == exp_focused
     assert bhd_tracker_jobs.source_job.output == exp_output
     assert bhd_tracker_jobs.source_job.choice == exp_choice
@@ -538,12 +501,12 @@ async def test_autodetect_tags(options, exp_personal_tag,
                                hybrid, exp_hybrid_tag,
                                source, exp_source_tag,
                                bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name', PropertyMock(return_value=Mock(
         source=' '.join((source, hybrid)),
         edition=edition,
+        has_commentary=has_commentary,
+        has_dual_audio=has_dual_audio,
     )))
-    mocker.patch('upsies.utils.video.has_commentary', return_value=has_commentary)
-    mocker.patch('upsies.utils.video.has_dual_audio', return_value=has_dual_audio)
     mocker.patch.object(type(bhd_tracker_jobs), 'release_name_job', AsyncMock())
     mocker.patch.object(type(bhd_tracker_jobs), 'scene_check_job', AsyncMock(
         is_finished=True,
@@ -663,7 +626,7 @@ def test_post_data(anonymous, exp_anon, draft, exp_live, bhd_tracker_jobs, mock_
     ),
 )
 def test_post_data_edition(edition, exp_edition, bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name', PropertyMock(return_value=Mock(
         edition=edition,
     )))
     assert bhd_tracker_jobs.post_data_edition == exp_edition
@@ -678,7 +641,7 @@ def test_post_data_edition(edition, exp_edition, bhd_tracker_jobs, mocker):
     ),
 )
 def test_post_data_pack(approved_type, exp_pack, bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name', PropertyMock(return_value=Mock(
         type=approved_type,
     )))
     assert bhd_tracker_jobs.post_data_pack == exp_pack
@@ -699,7 +662,7 @@ def test_post_data_pack(approved_type, exp_pack, bhd_tracker_jobs, mocker):
     ),
 )
 def test_post_data_sd(resolution, exp_sd, bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name', PropertyMock(return_value=Mock(
         resolution=resolution,
     )))
     assert bhd_tracker_jobs.post_data_sd == exp_sd
@@ -745,7 +708,7 @@ def test_post_data_nfo(isdir, nfo_file, nfo_data, nfo_readable, exp_value, exp_e
     ),
 )
 def test_post_data_special(approved_type, options, exp_special, bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'approved_release_name', PropertyMock(return_value=Mock(
+    mocker.patch.object(type(bhd_tracker_jobs), 'release_name', PropertyMock(return_value=Mock(
         type=approved_type,
     )))
     mocker.patch.object(type(bhd_tracker_jobs), 'options', PropertyMock(return_value=options))

@@ -15,33 +15,12 @@ _log = logging.getLogger(__name__)
 
 
 class BhdTrackerJobs(TrackerJobsBase):
-    @cached_property
-    def guessed_release_name(self):
-        return self.release_name
-
     release_name_translation = {
         'audio_format': {
             re.compile(r'^AC-3$'): r'DD',
             re.compile(r'^E-AC-3$'): r'DD+',
         },
     }
-
-    @property
-    def approved_release_name(self):
-        if self.release_name_job.is_finished and self.release_name_job.output:
-            if not hasattr(self, '_approved_release_name'):
-                release_name = self.get_job_output(self.release_name_job, slice=0)
-                link_path = os.path.join(self.release_name_job.home_directory, release_name)
-                file_extension = fs.file_extension(self.content_path)
-                if file_extension:
-                    link_path += f'.{file_extension}'
-                if not os.path.exists(link_path):
-                    os.symlink(os.path.abspath(self.content_path), link_path)
-                self._approved_release_name = release.ReleaseName(
-                    path=link_path,
-                    translate=self.release_name_translation,
-                )
-            return self._approved_release_name
 
     movie_types = (release.ReleaseType.movie,)
     series_types = (release.ReleaseType.season, release.ReleaseType.episode)
@@ -105,7 +84,7 @@ class BhdTrackerJobs(TrackerJobsBase):
             name='category',
             label='Category',
             condition=self.make_job_condition('category_job'),
-            autodetected=self.guessed_release_name.type,
+            autodetected=self.release_name.type,
             autofinish=False,
             options=(
                 {'label': 'Movie', 'value': '1', 'match': self.is_movie_type},
@@ -158,8 +137,8 @@ class BhdTrackerJobs(TrackerJobsBase):
     }
 
     def autodetect_type(self, _):
-        if self.approved_release_name:
-            approved_release_name = self.approved_release_name
+        if self.release_name_job.is_finished:
+            approved_release_name = self.release_name
             _log.debug('Approved resolution and source: %r, %r',
                        approved_release_name.resolution, approved_release_name.source)
             for label, is_match in self._autodetect_type_map.items():
@@ -197,8 +176,8 @@ class BhdTrackerJobs(TrackerJobsBase):
     }
 
     def autodetect_source(self, release_name_job):
-        if self.approved_release_name:
-            approved_release_name = self.approved_release_name
+        if self.release_name_job.is_finished:
+            approved_release_name = self.release_name
             _log.debug('Approved source: %r', approved_release_name.source)
             for label, is_match in self._autodetect_source_map.items():
                 if is_match(approved_release_name):
@@ -283,17 +262,17 @@ class BhdTrackerJobs(TrackerJobsBase):
         # OpenMatte, 2D3D, WEBRip, WEBDL, 3D, 4kRemaster, DualAudio, EnglishDub,
         # Personal, Scene, DigitalExtras, Extras)
         tags = []
-        if 'WEBRip' in self.approved_release_name.source:
+        if 'WEBRip' in self.release_name.source:
             tags.append('WEBRip')
-        elif 'WEB-DL' in self.approved_release_name.source:
+        elif 'WEB-DL' in self.release_name.source:
             tags.append('WEBDL')
-        if 'Hybrid' in self.approved_release_name.source:
+        if 'Hybrid' in self.release_name.source:
             tags.append('Hybrid')
-        if video.has_commentary(self.content_path):
+        if self.release_name.has_commentary:
             tags.append('Commentary')
-        if video.has_dual_audio(self.content_path):
+        if self.release_name.has_dual_audio:
             tags.append('DualAudio')
-        if 'Open Matte' in self.approved_release_name.edition:
+        if 'Open Matte' in self.release_name.edition:
             tags.append('OpenMatte')
         if self.get_job_attribute(self.scene_check_job, 'is_scene_release'):
             tags.append('Scene')
@@ -346,7 +325,7 @@ class BhdTrackerJobs(TrackerJobsBase):
     def post_data_edition(self):
         # The edition of the uploaded release. (Collector, Director, Extended,
         # Limited, Special, Theatrical, Uncut or Unrated)
-        edition = self.approved_release_name.edition
+        edition = self.release_name.edition
         _log.debug('Approved edition: %r', edition)
         if 'Collector' in edition:
             return 'Collector'
@@ -369,7 +348,7 @@ class BhdTrackerJobs(TrackerJobsBase):
     def post_data_pack(self):
         # The TV pack flag for when the torrent contains a complete season.
         # (0 = No TV pack or 1 = TV Pack). Default is 0
-        if self.approved_release_name.type is release.ReleaseType.season:
+        if self.release_name.type is release.ReleaseType.season:
             return '1'
         else:
             return '0'
@@ -379,7 +358,7 @@ class BhdTrackerJobs(TrackerJobsBase):
         # The SD flag. (0 = Not Standard Definition, 1 = Standard Definition).
         # Default is 0
         try:
-            height = int(self.approved_release_name.resolution[:-1])
+            height = int(self.release_name.resolution[:-1])
         except ValueError:
             return '0'
         else:
@@ -409,7 +388,7 @@ class BhdTrackerJobs(TrackerJobsBase):
     def post_data_special(self):
         # The TV special flag for when the torrent contains a TV special. (0 =
         # Not a TV special, 1 = TV Special). Default is 0
-        if self.approved_release_name.type is release.ReleaseType.episode:
+        if self.release_name.type is release.ReleaseType.episode:
             if self.options['special']:
                 return '1'
         return '0'
