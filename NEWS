@@ -8,6 +8,7 @@
     cap the delay between login attempts at 5 seconds.
   * bB: Short option for --screenshots changed to --ss
   * BHD: Added trackers.bhd.screenshots setting and --screenshots option
+  * BHD: Replace "(E-)AC-3" in release name with "DD(+)"
   * Fixed "I/O error" when creating screenshots on Windows
 
 
