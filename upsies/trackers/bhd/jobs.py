@@ -45,22 +45,22 @@ class BhdTrackerJobs(TrackerJobsBase):
                 job.condition = self.make_job_condition(job_attr)
 
         return (
-            # Background jobs
-            self.create_torrent_job,
-            self.mediainfo_job,
-            self.screenshots_job,
-            self.upload_screenshots_job,
-
             # Interactive jobs
-            self.category_job,
             self.imdb_job,
             self.tmdb_job,
             self.release_name_job,
+            self.category_job,
             self.type_job,
             self.source_job,
             self.description_job,
             self.scene_check_job,
             self.tags_job,
+
+            # Background jobs
+            self.create_torrent_job,
+            self.mediainfo_job,
+            self.screenshots_job,
+            self.upload_screenshots_job,
         )
 
     def make_job_condition(self, job_attr):
