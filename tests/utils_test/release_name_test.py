@@ -806,7 +806,7 @@ def test_audio_channels_setter(ReleaseInfo_mock):
 def test_audio_channels_is_translated(audio_channels_mock, ReleaseInfo_mock):
     audio_channels_mock.return_value = None
     ReleaseInfo_mock.return_value = {'audio_channels': '5.1'}
-    translation = {'audio_channels': { re.compile(r'\.'): r':'}}
+    translation = {'audio_channels': {re.compile(r'\.'): r':'}}
     rn = ReleaseName('path/to/something', translate=translation)
     assert rn.audio_channels == '5:1'
     rn.audio_channels = 'asdf'

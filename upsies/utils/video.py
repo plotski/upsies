@@ -409,7 +409,6 @@ def has_commentary(path):
     except errors.ContentError:
         return None
     else:
-        languages = set()
         for track in audio_tracks:
             if 'commentary' in track.get('Title', '').lower():
                 return True

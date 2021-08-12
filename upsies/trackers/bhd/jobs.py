@@ -7,7 +7,7 @@ import os
 import re
 
 from ... import jobs
-from ...utils import as_groups, cached_property, fs, release, video
+from ...utils import as_groups, cached_property, release
 from ..base import TrackerJobsBase
 
 import logging  # isort:skip

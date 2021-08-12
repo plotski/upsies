@@ -6,7 +6,8 @@ import abc
 import builtins
 
 from .. import jobs
-from ..utils import btclients, cached_property, fs, release, signal, types, webdbs
+from ..utils import (btclients, cached_property, fs, release, signal, types,
+                     webdbs)
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
