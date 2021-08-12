@@ -1,4 +1,4 @@
-2021.??.??
+2021.08.12
   * New command: download-location: Find existing files and hard-link them what
     a torrent file expects and print the appropriate download path (run "upsies
     dloc -h" for more information)
