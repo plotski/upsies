@@ -22,15 +22,6 @@ class BhdTrackerJobs(TrackerJobsBase):
         },
     }
 
-    movie_types = (release.ReleaseType.movie,)
-    series_types = (release.ReleaseType.season, release.ReleaseType.episode)
-
-    def is_movie_type(self, type):
-        return type in self.movie_types
-
-    def is_series_type(self, type):
-        return type in self.series_types
-
     @cached_property
     def jobs_before_upload(self):
         # Make base class jobs conditional. Custom BHD jobs get their condition
@@ -80,17 +71,37 @@ class BhdTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def category_job(self):
+        # 'output' signal is only emitted when job succeeds while 'finished'
+        # signal is also emitted when job fails (e.g. when Ctrl-c is pressed)
+        self.release_name_job.signal.register('output', self.autodetect_category)
         return self.make_choice_job(
             name='category',
             label='Category',
             condition=self.make_job_condition('category_job'),
-            autodetected=self.release_name.type,
-            autofinish=False,
             options=(
-                {'label': 'Movie', 'value': '1', 'match': self.is_movie_type},
-                {'label': 'TV', 'value': '2', 'match': self.is_series_type},
+                {'label': 'Movie', 'value': '1'},
+                {'label': 'TV', 'value': '2'},
             ),
         )
+
+    _autodetect_category_map = {
+        'Movie': lambda release_name: release_name.type is release.ReleaseType.movie,
+        'TV': lambda release_name: release_name.type in (release.ReleaseType.season,
+                                                         release.ReleaseType.episode)
+    }
+
+    def autodetect_category(self, _):
+        approved_release_name = self.release_name
+        _log.debug('Autodetecting category: Approved release type: %r', approved_release_name.type)
+        for label, is_match in self._autodetect_category_map.items():
+            if is_match(approved_release_name):
+                # Focus autodetected choice
+                self.category_job.focused = label
+                # Get value of autodetected choice
+                value = self.category_job.focused[1]
+                # Mark autodetected choice
+                self.category_job.set_label(value, f'{label} (autodetected)')
+                break
 
     @cached_property
     def type_job(self):
