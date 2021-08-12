@@ -264,7 +264,7 @@ def test_type_job(bhd_tracker_jobs, mocker):
         ),
     )]
     bhd_tracker_jobs.make_job_condition.call_args_list == [call('type_job')]
-    assert bhd_tracker_jobs.autodetect_type in bhd_tracker_jobs.release_name_job.signal.signals['finished']
+    assert bhd_tracker_jobs.autodetect_type in bhd_tracker_jobs.release_name_job.signal.signals['output']
 
 
 @pytest.mark.parametrize(
@@ -284,19 +284,12 @@ def test_type_job(bhd_tracker_jobs, mocker):
     ),
     ids=lambda v: str(v),
 )
-@pytest.mark.parametrize('release_name_job_finished', (True, False))
-def test_autodetect_type_with_approved_release_name(release_name_job_finished, resolution, source, exp_focused,
-                                                    bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'release_name_job', PropertyMock(return_value=Mock(
-        is_finished=release_name_job_finished,
-    )))
+def test_autodetect_type(resolution, source, exp_focused, bhd_tracker_jobs, mocker):
     mocker.patch.object(type(bhd_tracker_jobs), 'release_name', PropertyMock(return_value=Mock(
         resolution=resolution,
         source=source,
     )))
     bhd_tracker_jobs.autodetect_type('_')
-    if not release_name_job_finished:
-        exp_focused = bhd_tracker_jobs.type_job.choices[0]
     assert bhd_tracker_jobs.type_job.focused == exp_focused
 
 

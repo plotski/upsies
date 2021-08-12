@@ -105,7 +105,9 @@ class BhdTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def type_job(self):
-        self.release_name_job.signal.register('finished', self.autodetect_type)
+        # 'output' signal is only emitted when job succeeds while 'finished'
+        # signal is also emitted when job fails (e.g. when Ctrl-c is pressed)
+        self.release_name_job.signal.register('output', self.autodetect_type)
         return self.make_choice_job(
             name='type',
             label='Type',
@@ -133,7 +135,6 @@ class BhdTrackerJobs(TrackerJobsBase):
             ),
         )
 
-    # Map type_job labels to matchers
     _autodetect_type_map = {
         'DVD 9': lambda release_name: release_name.source == 'DVD9',
         'DVD 5': lambda release_name: release_name.source == 'DVD5',
@@ -148,18 +149,20 @@ class BhdTrackerJobs(TrackerJobsBase):
     }
 
     def autodetect_type(self, _):
-        if self.release_name_job.is_finished:
-            approved_release_name = self.release_name
-            _log.debug('Approved resolution and source: %r, %r',
-                       approved_release_name.resolution, approved_release_name.source)
-            for label, is_match in self._autodetect_type_map.items():
-                if is_match(approved_release_name):
-                    self.type_job.focused = label
-                    value = self.type_job.focused[1]
-                    self.type_job.set_label(value, f'{label} (autodetected)')
-                    break
-            else:
-                self.type_job.focused = 'Other'
+        approved_release_name = self.release_name
+        _log.debug('Autodetecting type: Approved resolution: %r', approved_release_name.resolution)
+        _log.debug('Autodetecting type: Approved source: %r', approved_release_name.source)
+        for label, is_match in self._autodetect_type_map.items():
+            if is_match(approved_release_name):
+                # Focus autodetected choice
+                self.type_job.focused = label
+                # Get value of autodetected choice
+                value = self.type_job.focused[1]
+                # Mark autodetected choice
+                self.type_job.set_label(value, f'{label} (autodetected)')
+                break
+        else:
+            self.type_job.focused = 'Other'
 
     @cached_property
     def source_job(self):
