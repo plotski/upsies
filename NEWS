@@ -1,11 +1,12 @@
 2021.08.12
-  * New command: download-location: Find existing files and hard-link them what
-    a torrent file expects and print the appropriate download path (run "upsies
-    dloc -h" for more information)
+  * New command: download-location: Find existing file(s) listed in a torrent
+    file, hard-link them to the file or directory structure expected by the
+    torrent file, and print the appropriate download path (run "upsies dloc -h"
+    for more information)
   * Added detection of Dolby Vision in release name and video file
   * bB: Added support for "Dolby Vision" tag
   * bB: Retry login up to 30 times instead of 15 when encountering login bug and
-    cap the delay between login attempts at 5 seconds.
+    limit the delay between login attempts at 5 seconds.
   * bB: Short option for --screenshots changed to --ss
   * BHD: Added trackers.bhd.screenshots setting and --screenshots option
   * BHD: Replace "(E-)AC-3" in release name with "DD(+)"
