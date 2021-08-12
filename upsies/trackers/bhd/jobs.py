@@ -394,10 +394,7 @@ class BhdTrackerJobs(TrackerJobsBase):
                             with open(nfo_path, 'r') as f:
                                 return f.read()
                         except OSError as e:
-                            if e.strerror:
-                                self.error(e.strerror)
-                            else:
-                                self.error(e)
+                            self.error(e.strerror if e.strerror else str(e))
 
     @property
     def post_data_special(self):
