@@ -18,7 +18,7 @@ class BhdTrackerJobs(TrackerJobsBase):
     release_name_translation = {
         'audio_format': {
             re.compile(r'^AC-3$'): r'DD',
-            re.compile(r'^E-AC-3$'): r'DD+',
+            re.compile(r'^E-AC-3$'): r'DDP',
         },
     }
 
