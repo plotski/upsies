@@ -154,7 +154,6 @@ def default_track(type, path):
     except (KeyError, IndexError):
         pass
 
-    _log.debug('WTFSD: all tracks: %s', all_tracks)
     raise errors.ContentError(f'{path}: No {type.lower()} track found')
 
 
@@ -170,8 +169,7 @@ def width(path):
     """
     try:
         video_track = default_track('video', path)
-    except errors.ContentError as e:
-        _log.debug('WTFSD: width(%r) failed: %r', path, e)
+    except errors.ContentError:
         return 0
     else:
         return _get_display_width(video_track)
@@ -188,8 +186,7 @@ def height(path):
     """
     try:
         video_track = default_track('video', path)
-    except errors.ContentError as e:
-        _log.debug('WTFSD: height(%r) failed: %r', path, e)
+    except errors.ContentError:
         return 0
     else:
         return _get_display_height(video_track)
