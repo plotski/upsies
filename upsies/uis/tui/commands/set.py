@@ -10,10 +10,10 @@ def _make_pretty_option_list():
     lines = []
     for option in defaults.option_paths():
         option_type = defaults.option_type(option)
-        if option_type is not str:
-            lines.append(f'{option} ({option_type.__name__.lower()})')
-        else:
-            lines.append(option)
+        option_type_name = option_type.__name__.lower()
+        if option_type_name == 'str':
+            option_type_name = 'string'
+        lines.append(f'{option} ({option_type_name})')
     return '\n  '.join(lines)
 
 
