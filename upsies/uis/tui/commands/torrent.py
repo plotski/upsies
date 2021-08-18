@@ -51,6 +51,7 @@ class torrent_create(CommandBase):
 
     argument_definitions = {}
 
+    subcommand_name = 'TRACKER'
     subcommands = {
         tracker.name: {
             # Default arguments for all tackers

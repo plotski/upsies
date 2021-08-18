@@ -129,6 +129,9 @@ class CommandBase(abc.ABC):
     :attr:`argument_definitions`.
     """
 
+    subcommand_name = 'PLEASE_GIVE_THIS_SUBCOMMAND_A_PROPER_METAVAR'
+    """Reference to expected subcommand in help"""
+
     description = ''
     """
     Extended description
@@ -165,7 +168,16 @@ class CommandBase(abc.ABC):
 
         # Add subcommands
         if cls.subcommands:
-            subparsers = parser.add_subparsers()
+            subparsers = parser.add_subparsers(
+                metavar=cls.subcommand_name,
+                help='Valid values: ' + ', '.join(sorted(cls.subcommands)),
+            )
+            # FIXME: When Python 3.6 is not supported anymore, `required=True`
+            #        should be passed to add_subparsers() instead.
+            #        https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_subparsers
+            #        https://bugs.python.org/issue26510
+            #        https://bugs.python.org/issue9253
+            subparsers.required = True
             for subcmd, args in cls.subcommands.items():
                 subparser = subparsers.add_parser(subcmd, formatter_class=_MyHelpFormatter)
                 subparser.set_defaults(subcommand=subcmd)
