@@ -217,7 +217,7 @@ class BhdTrackerJobs(TrackerJobsBase):
         )
         job.add_task(
             job.fetch_text(
-                coro=self.generate_screenshots_bbcode(),
+                coro=self.generate_description(),
                 finish_on_success=True,
             )
         )
@@ -232,7 +232,7 @@ class BhdTrackerJobs(TrackerJobsBase):
     :class:`~.imghosts.ImageHostBase` subclass
     """
 
-    async def generate_screenshots_bbcode(self):
+    async def generate_description(self):
         # Wait until all screenshots are uploaded
         await self.upload_screenshots_job.wait()
         rows = []

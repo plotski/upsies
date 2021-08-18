@@ -341,7 +341,7 @@ def test_autodetect_source(source, exp_focused, exp_output, exp_choice, bhd_trac
 
 def test_description_job(bhd_tracker_jobs, mocker):
     mocker.patch.object(bhd_tracker_jobs, 'make_job_condition')
-    mocker.patch.object(bhd_tracker_jobs, 'generate_screenshots_bbcode', Mock())
+    mocker.patch.object(bhd_tracker_jobs, 'generate_description', Mock())
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
 
     assert bhd_tracker_jobs.description_job is TextFieldJob_mock.return_value
@@ -354,9 +354,9 @@ def test_description_job(bhd_tracker_jobs, mocker):
     )]
     bhd_tracker_jobs.make_job_condition.call_args_list == [call('description_job')]
 
-    assert bhd_tracker_jobs.generate_screenshots_bbcode.call_args_list == [call()]
+    assert bhd_tracker_jobs.generate_description.call_args_list == [call()]
     assert TextFieldJob_mock.return_value.fetch_text.call_args_list == [call(
-        coro=bhd_tracker_jobs.generate_screenshots_bbcode.return_value,
+        coro=bhd_tracker_jobs.generate_description.return_value,
         finish_on_success=True,
     )]
     assert TextFieldJob_mock.return_value.add_task.call_args_list == [call(
@@ -425,13 +425,13 @@ class ImageUrl(str):
     ),
 )
 @pytest.mark.asyncio
-async def test_generate_screenshots_bbcode(uploaded_images, exp_bbcode, bhd_tracker_jobs, mocker):
+async def test_generate_description(uploaded_images, exp_bbcode, bhd_tracker_jobs, mocker):
     mocker.patch.object(type(bhd_tracker_jobs), 'upload_screenshots_job', PropertyMock(return_value=Mock(
         wait=AsyncMock(),
         uploaded_images=uploaded_images,
     )))
 
-    bbcode = await bhd_tracker_jobs.generate_screenshots_bbcode()
+    bbcode = await bhd_tracker_jobs.generate_description()
     assert bhd_tracker_jobs.upload_screenshots_job.wait.call_args_list == [call()]
     assert bbcode == exp_bbcode
 
