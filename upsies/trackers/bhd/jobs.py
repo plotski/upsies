@@ -6,7 +6,7 @@ import io
 import os
 import re
 
-from ... import jobs
+from ... import __homepage__, __project_name__, jobs
 from ...utils import as_groups, cached_property, release
 from ..base import TrackerJobsBase
 
@@ -248,9 +248,13 @@ class BhdTrackerJobs(TrackerJobsBase):
                     cells.append(f'[url={screenshot}][img]{screenshot.thumbnail_url}[/img][/url]')
             # Space between columns
             rows.append(' '.join(cells))
-        # Empty line between rows
-        bbcode = '\n\n'.join(rows)
-        return f'[center]\n{bbcode}\n[/center]'
+        screenshots = '[center]\n' + '\n\n'.join(rows) + '\n[/center]'
+        promotion = (
+            '[right][size=1]'
+            f'Shared with [url={__homepage__}]{__project_name__}[/url]'
+            '[/size][/right]'
+        )
+        return screenshots + '\n\n' + promotion
 
     @cached_property
     def tags_job(self):

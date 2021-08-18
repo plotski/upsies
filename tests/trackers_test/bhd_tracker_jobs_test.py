@@ -4,7 +4,7 @@ from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
-from upsies import utils
+from upsies import __homepage__, __project_name__, utils
 from upsies.trackers import bhd
 
 
@@ -385,7 +385,9 @@ class ImageUrl(str):
                 '[url=a.png][img]thumb_a.png[/img][/url] [url=b.png][img]thumb_b.png[/img][/url]\n'
                 '\n'
                 '[url=c.png][img]thumb_c.png[/img][/url]\n'
-                '[/center]'
+                '[/center]\n'
+                '\n'
+                f'[right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/right]'
             ),
         ),
         (
@@ -395,7 +397,9 @@ class ImageUrl(str):
                 '[url=a.png][img]thumb_a.png[/img][/url] [url=b.png][img]thumb_b.png[/img][/url]\n'
                 '\n'
                 '[url=c.png][img]thumb_c.png[/img][/url] [url=d.png][img]thumb_d.png[/img][/url]\n'
-                '[/center]'
+                '[/center]\n'
+                '\n'
+                f'[right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/right]'
             ),
         ),
         (
@@ -407,7 +411,9 @@ class ImageUrl(str):
                 '[url=c.png][img]thumb_c.png[/img][/url] [url=d.png][img]thumb_d.png[/img][/url]\n'
                 '\n'
                 '[url=e.png][img]thumb_e.png[/img][/url]\n'
-                '[/center]'
+                '[/center]\n'
+                '\n'
+                f'[right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/right]'
             ),
         ),
         (
@@ -419,7 +425,9 @@ class ImageUrl(str):
                 '[url=c.png][img]thumb_c.png[/img][/url] [url=d.png][img]thumb_d.png[/img][/url]\n'
                 '\n'
                 '[url=e.png][img]thumb_e.png[/img][/url] [url=f.png][img]thumb_f.png[/img][/url]\n'
-                '[/center]'
+                '[/center]\n'
+                '\n'
+                f'[right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/right]'
             ),
         ),
     ),
