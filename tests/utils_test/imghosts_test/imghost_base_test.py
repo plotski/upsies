@@ -14,13 +14,9 @@ class AsyncMock(Mock):
         return coro()
 
 
-def make_TestImageHost(default_config=None, **kwargs):
-    # Avoid NameError bug
-    default_config_ = default_config
-
+def make_TestImageHost(**kwargs):
     class TestImageHost(imghosts.ImageHostBase):
         name = 'imgw00t'
-        default_config = default_config_ or {}
 
         def __init__(self, *args, mock_cache=False, **kwargs):
             super().__init__(*args, **kwargs)
@@ -57,13 +53,11 @@ def test_cache_directory_property(mocker, tmp_path):
     assert imghost.cache_directory == 'path/to/foo'
 
 
-def test_config_property():
+def test_options_property():
     imghost = make_TestImageHost()
-    assert imghost.config == {}
-    imghost = make_TestImageHost(default_config={'foo': 1, 'bar': 2})
-    assert imghost.config == {'foo': 1, 'bar': 2}
-    imghost = make_TestImageHost(default_config={'foo': 1, 'bar': 2}, config={'bar': 99})
-    assert imghost.config == {'foo': 1, 'bar': 99}
+    assert imghost.options == {}
+    imghost = make_TestImageHost(options={'foo': 1, 'bar': 2})
+    assert imghost.options == {'foo': 1, 'bar': 2}
 
 
 @pytest.mark.parametrize(

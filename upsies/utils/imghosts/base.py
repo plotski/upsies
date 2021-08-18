@@ -21,14 +21,14 @@ class ImageHostBase(abc.ABC):
 
     :param str cache_directory: Where to store URLs in JSON files; defaults to
         :attr:`.constants.CACHE_DIRPATH`
-    :param dict config: User configuration
+    :param options: User configuration options for this image host,
+        e.g. authentication details, thumbnail size, etc
+    :type options: :class:`dict`-like
     """
 
-    def __init__(self, cache_directory=None, config=None):
+    def __init__(self, cache_directory=None, options=None):
+        self._options = options or {}
         self.cache_directory = cache_directory if cache_directory else constants.CACHE_DIRPATH
-        self._config = copy.deepcopy(self.default_config)
-        if config is not None:
-            self._config.update(config.items())
 
     @property
     @abc.abstractmethod
@@ -45,19 +45,17 @@ class ImageHostBase(abc.ABC):
         self._cache_dir = directory
 
     @property
-    def config(self):
+    def options(self):
         """
-        User configuration
+        Configuration options provided by the user
 
-        This is a deep copy of :attr:`default_config` that is updated with the
-        `config` argument from initialization.
+        This is the :class:`dict`-like object from the initialization argument
+        of the same name.
         """
-        return self._config
+        return self._options
 
-    @property
-    @abc.abstractmethod
-    def default_config(self):
-        """Default user configuration as a dictionary"""
+    argument_definitions = {}
+    """CLI argument definitions (see :attr:`.CommandBase.argument_definitions`)"""
 
     async def upload(self, image_path, cache=True):
         """
