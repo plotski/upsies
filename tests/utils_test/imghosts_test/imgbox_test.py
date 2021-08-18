@@ -27,7 +27,7 @@ def test_init(Gallery_mock, tmp_path):
     imghost = imgbox.ImgboxImageHost(cache_directory=tmp_path)
     assert imghost._gallery is Gallery_mock.return_value
     assert Gallery_mock.call_args_list == [call(
-        thumb_width=imghost.config['thumb_width'],
+        thumb_width=imghost.options['thumb_width'],
         square_thumbs=False,
         comments_enabled=False,
     )]

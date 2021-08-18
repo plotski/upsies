@@ -21,17 +21,17 @@ class PtpimgImageHost(ImageHostBase):
     }
 
     async def _upload(self, image_path):
-        if not self.config['apikey']:
+        if not self.options['apikey']:
             raise errors.RequestError('Missing API key')
 
         response = await http.post(
-            url=f'{self.config["base_url"]}/upload.php',
+            url=f'{self.options["base_url"]}/upload.php',
             cache=False,
             headers={
-                'referer': f'{self.config["base_url"]}/index.php',
+                'referer': f'{self.options["base_url"]}/index.php',
             },
             data={
-                'api_key': self.config['apikey'],
+                'api_key': self.options['apikey'],
             },
             files={
                 'file-upload[0]': image_path,
@@ -48,7 +48,7 @@ class PtpimgImageHost(ImageHostBase):
         except (IndexError, KeyError, TypeError, AssertionError):
             raise RuntimeError(f'Unexpected response: {images}')
         else:
-            image_url = f'{self.config["base_url"]}/{code}.{ext}'
+            image_url = f'{self.options["base_url"]}/{code}.{ext}'
             return {'url': image_url}
 
     async def get_apikey(self, email, password):
@@ -64,7 +64,7 @@ class PtpimgImageHost(ImageHostBase):
         """
         _log.debug('Getting API key for %r', email)
         response = await http.post(
-            url=f'{self.config["base_url"]}/login.php',
+            url=f'{self.options["base_url"]}/login.php',
             cache=False,
             data={
                 'email': email,
@@ -90,4 +90,4 @@ class PtpimgImageHost(ImageHostBase):
             # Default exception
             raise RuntimeError('Failed to find API key')
         finally:
-            await http.get(f'{self.config["base_url"]}/logout.php')
+            await http.get(f'{self.options["base_url"]}/logout.php')

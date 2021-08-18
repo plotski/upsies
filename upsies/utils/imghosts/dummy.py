@@ -19,6 +19,12 @@ class DummyImageHost(ImageHostBase):
         'hostname': 'localhost',
     }
 
+    argument_definitions = {
+        ('--hostname', '-n'): {
+            'help': 'Host name in the dummy URL',
+        },
+    }
+
     async def _upload(self, image_path):
         try:
             fs.assert_file_readable(image_path)
@@ -26,7 +32,7 @@ class DummyImageHost(ImageHostBase):
             raise errors.RequestError(e)
         else:
             await asyncio.sleep(1.5)
-            url = f'http://{self.config["hostname"]}/{os.path.basename(image_path)}'
+            url = f'http://{self.options["hostname"]}/{os.path.basename(image_path)}'
             return {
                 'url': url,
                 'thumbnail_url': f'{url}/thumbnail',

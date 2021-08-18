@@ -2,7 +2,7 @@
 Image uploader for imgbox.com
 """
 
-from ... import errors
+from ... import errors, utils
 from .. import LazyModule
 from .base import ImageHostBase
 
@@ -22,10 +22,18 @@ class ImgboxImageHost(ImageHostBase):
         'thumb_width': 0,
     }
 
+    argument_definitions = {
+        ('--thumb-width', '-t'): {
+            'help': 'Thumbnail width in pixels (automatically snaps to closest supported size)',
+            'type': utils.argtypes.integer,
+            'default': None,
+        },
+    }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._gallery = pyimgbox.Gallery(
-            thumb_width=self.config['thumb_width'],
+            thumb_width=self.options['thumb_width'],
             square_thumbs=False,
             comments_enabled=False,
         )

@@ -20,8 +20,8 @@ def test_imghost_returns_ImageHostBase_instance(mocker):
     existing_imghosts[1].configure_mock(name='bar')
     existing_imghosts[2].configure_mock(name='baz')
     mocker.patch('upsies.utils.imghosts.imghosts', return_value=existing_imghosts)
-    assert imghosts.imghost('bar', config={'foo': 'bar'}) is existing_imghosts[1].return_value
-    assert existing_imghosts[1].call_args_list == [call(config={'foo': 'bar'})]
+    assert imghosts.imghost('bar', options={'foo': 'bar'}) is existing_imghosts[1].return_value
+    assert existing_imghosts[1].call_args_list == [call(options={'foo': 'bar'})]
 
 def test_imghost_fails_to_find_imghost(mocker):
     existing_imghosts = (Mock(), Mock(), Mock())

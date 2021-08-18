@@ -31,7 +31,7 @@ def test_default_config():
 @pytest.mark.asyncio
 async def test_upload_without_apikey(apikey, mocker, tmp_path):
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    imghost = ptpimg.PtpimgImageHost(config={'apikey': apikey}, cache_directory=tmp_path)
+    imghost = ptpimg.PtpimgImageHost(options={'apikey': apikey}, cache_directory=tmp_path)
     with pytest.raises(errors.RequestError, match=r'^Missing API key$'):
         await imghost._upload('some/path.jpg')
     assert post_mock.call_args_list == []
@@ -42,14 +42,14 @@ async def test_upload_succeeds(mocker, tmp_path):
         text='[{"code": "this_is_the_code", "ext": "png"}]',
         bytes=b'irrelevant',
     )))
-    imghost = ptpimg.PtpimgImageHost(config={'apikey': 'f00'}, cache_directory=tmp_path)
+    imghost = ptpimg.PtpimgImageHost(options={'apikey': 'f00'}, cache_directory=tmp_path)
     image = await imghost._upload('some/path.jpg')
-    assert image['url'] == imghost.config['base_url'] + '/this_is_the_code.png'
+    assert image['url'] == imghost.options['base_url'] + '/this_is_the_code.png'
     assert post_mock.call_args_list == [call(
-        url=f'{imghost.config["base_url"]}/upload.php',
+        url=f'{imghost.options["base_url"]}/upload.php',
         cache=False,
         headers={
-            'referer': f'{imghost.config["base_url"]}/index.php',
+            'referer': f'{imghost.options["base_url"]}/index.php',
         },
         data={
             'api_key': 'f00',
@@ -79,7 +79,7 @@ async def test_upload_gets_unexpected_json(json_response, mocker, tmp_path):
         text=json.dumps(json_response),
         bytes=b'irrelevant',
     )))
-    imghost = ptpimg.PtpimgImageHost(config={'apikey': 'f00'}, cache_directory=tmp_path)
+    imghost = ptpimg.PtpimgImageHost(options={'apikey': 'f00'}, cache_directory=tmp_path)
     with pytest.raises(RuntimeError, match=rf'^Unexpected response: {re.escape(str(json_response))}$'):
         await imghost._upload('some/path.jpg')
 
@@ -99,11 +99,11 @@ async def test_get_apikey_finds_apikey(mocker, tmp_path):
         ),
         bytes=b'irrelevant',
     )))
-    imghost = ptpimg.PtpimgImageHost(config={}, cache_directory=tmp_path)
+    imghost = ptpimg.PtpimgImageHost(options={}, cache_directory=tmp_path)
     apikey = await imghost.get_apikey('foo@localhost', 'hunter2')
     assert apikey == 'd00d1e'
     assert post_mock.call_args_list == [call(
-        url=f'{imghost.config["base_url"]}/login.php',
+        url=f'{imghost.options["base_url"]}/login.php',
         cache=False,
         data={
             'email': 'foo@localhost',
@@ -111,7 +111,7 @@ async def test_get_apikey_finds_apikey(mocker, tmp_path):
             'login': '',
         },
     )]
-    assert get_mock.call_args_list == [call(f'{imghost.config["base_url"]}/logout.php')]
+    assert get_mock.call_args_list == [call(f'{imghost.options["base_url"]}/logout.php')]
 
 @pytest.mark.asyncio
 async def test_get_apikey_when_request_fails(mocker, tmp_path):
@@ -119,11 +119,11 @@ async def test_get_apikey_when_request_fails(mocker, tmp_path):
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(
         side_effect=errors.RequestError('no interwebs'),
     ))
-    imghost = ptpimg.PtpimgImageHost(config={}, cache_directory=tmp_path)
+    imghost = ptpimg.PtpimgImageHost(options={}, cache_directory=tmp_path)
     with pytest.raises(errors.RequestError, match=r'^no interwebs$'):
         await imghost.get_apikey('foo@localhost', 'hunter2')
     assert post_mock.call_args_list == [call(
-        url=f'{imghost.config["base_url"]}/login.php',
+        url=f'{imghost.options["base_url"]}/login.php',
         cache=False,
         data={
             'email': 'foo@localhost',
@@ -165,11 +165,11 @@ async def test_get_apikey_with_wrong_login(mocker, tmp_path):
         ),
         bytes=b'irrelevant',
     )))
-    imghost = ptpimg.PtpimgImageHost(config={}, cache_directory=tmp_path)
+    imghost = ptpimg.PtpimgImageHost(options={}, cache_directory=tmp_path)
     with pytest.raises(errors.RequestError, match=r'^Credentials are incorrect\. Please try again\.$'):
         await imghost.get_apikey('foo@localhost', 'hunter2')
     assert post_mock.call_args_list == [call(
-        url=f'{imghost.config["base_url"]}/login.php',
+        url=f'{imghost.options["base_url"]}/login.php',
         cache=False,
         data={
             'email': 'foo@localhost',
@@ -177,7 +177,7 @@ async def test_get_apikey_with_wrong_login(mocker, tmp_path):
             'login': '',
         },
     )]
-    assert get_mock.call_args_list == [call(f'{imghost.config["base_url"]}/logout.php')]
+    assert get_mock.call_args_list == [call(f'{imghost.options["base_url"]}/logout.php')]
 
 @pytest.mark.asyncio
 async def test_get_apikey_fails_to_find_apikey(mocker, tmp_path):
@@ -186,11 +186,11 @@ async def test_get_apikey_fails_to_find_apikey(mocker, tmp_path):
         text='',
         bytes=b'irrelevant',
     )))
-    imghost = ptpimg.PtpimgImageHost(config={}, cache_directory=tmp_path)
+    imghost = ptpimg.PtpimgImageHost(options={}, cache_directory=tmp_path)
     with pytest.raises(RuntimeError, match=r'^Failed to find API key$'):
         await imghost.get_apikey('foo@localhost', 'hunter2')
     assert post_mock.call_args_list == [call(
-        url=f'{imghost.config["base_url"]}/login.php',
+        url=f'{imghost.options["base_url"]}/login.php',
         cache=False,
         data={
             'email': 'foo@localhost',
@@ -198,4 +198,4 @@ async def test_get_apikey_fails_to_find_apikey(mocker, tmp_path):
             'login': '',
         },
     )]
-    assert get_mock.call_args_list == [call(f'{imghost.config["base_url"]}/logout.php')]
+    assert get_mock.call_args_list == [call(f'{imghost.options["base_url"]}/logout.php')]

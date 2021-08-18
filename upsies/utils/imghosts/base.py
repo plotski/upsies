@@ -27,7 +27,9 @@ class ImageHostBase(abc.ABC):
     """
 
     def __init__(self, cache_directory=None, options=None):
-        self._options = options or {}
+        self._options = copy.deepcopy(self.default_config)
+        if options is not None:
+            self._options.update(options)
         self.cache_directory = cache_directory if cache_directory else constants.CACHE_DIRPATH
 
     @property
@@ -53,6 +55,9 @@ class ImageHostBase(abc.ABC):
         of the same name.
         """
         return self._options
+
+    default_config = {}
+    """Default user configuration"""
 
     argument_definitions = {}
     """CLI argument definitions (see :attr:`.CommandBase.argument_definitions`)"""
