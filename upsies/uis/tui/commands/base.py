@@ -133,8 +133,8 @@ class CommandBase(abc.ABC):
     """
     Extended description
 
-    The class docstring is the main description. Use this attribute to generate
-    text programmatically.
+    The class docstring is the main description. Use this class attribute to
+    generate text programmatically.
     """
 
     @classmethod
