@@ -475,7 +475,7 @@ async def test_directors(id, exp_directors, api, store_response):
         ('tt0080455', ('action', 'adventure', 'comedy')),  # Blues Brothers (movie)
         ('tt0247199', ('drama',)),  # The Believer (single keyword)
         ('tt0192802', ('animation', 'family')),  # Wind in the Willows (TV movie)
-        ('tt0471711', ('animation', 'comedy', 'romance')),  # Bender's Big Score (Video)
+        ('tt0471711', ('animation', 'comedy', 'musical')),  # Bender's Big Score (Video)
         ('tt0097270', ('crime', 'drama')),  # Elephant (TV movie)
         ('tt3472226', ('short', 'action', 'comedy')),  # Kung Fury (Short)
         ('tt6560040', ('crime', 'drama')),  # The Forest (mini series)
@@ -517,12 +517,12 @@ async def test_poster_url(id, exp_poster_url, api, store_response):
     argvalues=(
         ('tt0080455', 7.9),  # Blues Brothers (movie)
         ('tt0192802', 7.6),  # Wind in the Willows (TV movie)
-        ('tt0471711', 7.7),  # Bender's Big Score (Video)
+        ('tt0471711', 7.6),  # Bender's Big Score (Video)
         ('tt0097270', 7.2),  # Elephant (TV movie)
         ('tt3472226', 8.0),  # Kung Fury (Short)
         ('tt6560040', 7.2),  # The Forest (mini series)
         ('tt0348914', 8.6),  # Deadwood (series)
-        ('tt0556307', 8.4),  # Deadwood - S02E04 (episode)
+        ('tt0556307', 8.3),  # Deadwood - S02E04 (episode)
         (None, None),
     ),
     ids=lambda value: str(value),

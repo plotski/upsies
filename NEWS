@@ -1,3 +1,7 @@
+2021.??.??
+  * IMDb: Fixed getting genre tags
+
+
 2021.08.12
   * New command: download-location: Find existing file(s) listed in a torrent
     file, hard-link them to the file or directory structure expected by the

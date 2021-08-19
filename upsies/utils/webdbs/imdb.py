@@ -160,14 +160,15 @@ class ImdbApi(WebDbApiBase):
     async def genres(self, id):
         if id:
             soup = await self._get_soup(f'title/{id}')
-            # Old website design
-            parent_tag = soup.find(class_='subtext')
-            if not parent_tag:
-                # New website design
-                parent_tag = soup.find(class_=re.compile(r'^GenresAndPlot__ContentParent'))
-            if parent_tag:
-                genre_links = parent_tag.find_all('a', href=re.compile(r'/search/title\?.*genres='))
-                return tuple(link.string.lower().strip() for link in genre_links)
+            genres = []
+            genre_links = soup.find_all('a', href=re.compile(r'/search/title\?.*genres='))
+            for genre_link in genre_links:
+                match = re.search(r'genres=([^&]+)', genre_link['href'])
+                if match:
+                    genre = match.group(1).lower()
+                    if genre not in genres:
+                        genres.append(genre)
+            return tuple(genres)
         return ()
 
     async def poster_url(self, id):
