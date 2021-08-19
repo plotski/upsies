@@ -57,7 +57,7 @@ async def test_search_returns_list_of_SearchResults(api, store_response):
     argnames=('query', 'exp_titles'),
     argvalues=(
         (Query('Star Wars', year=2003), ('Star Wars: Clone Wars',)),
-        (Query('Star Wars', year='2008'), ('Star Wars: The Clone Wars',)),
+        (Query('Star Wars', year='2003'), ('Star Wars: Clone Wars',)),
         (Query('Star Wars', year=2014), ('Star Wars Rebels',)),
         (Query('Star Wars', year='1990'), ()),
     ),
