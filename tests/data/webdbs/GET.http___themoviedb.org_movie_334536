@@ -36,7 +36,7 @@
       <link rel="stylesheet" href="/assets/2/v4/media-7b01183c64a6819c82ef4f23a3087f1ff79f8de786653d6ffb10a07d2a5b70ef.css" media="screen">
       
     
-      <link rel="stylesheet" href="/assets/2/v4/ott-7b5a41663086623adc0e366cb966c8f26a417078d5966ab31b0dd15592d8abde.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/ott-c7e13d5e748448c22fa3b72eea0a7b474e24ef18e75f7658b5c6a2ce43dbd790.css" media="screen">
       
     
       <link rel="stylesheet" href="/assets/2/v4/image-f92aec523e5c3b68d56abad962cf2e30934fa774ebaca9d06cf8584d5a464c09.css" media="screen">
@@ -362,9 +362,9 @@
       Media
 
       <ul class="media number_group">
-        <li><a href="/movie/334536-the-blackcoat-s-daughter/images/backdrops">Backdrops <span class="count">2</span></a></li>
+        <li><a href="/movie/334536-the-blackcoat-s-daughter/images/backdrops">Backdrops <span class="count">3</span></a></li>
         <li><a href="/movie/334536-the-blackcoat-s-daughter/images/logos">Logos <span class="count">0</span></a></li>
-        <li><a href="/movie/334536-the-blackcoat-s-daughter/images/posters">Posters <span class="count">16</span></a></li>
+        <li><a href="/movie/334536-the-blackcoat-s-daughter/images/posters">Posters <span class="count">18</span></a></li>
         <li>
           Videos
 
@@ -457,12 +457,12 @@
 
     <div class="button">
       <div class="provider">
-        <img src="/t/p/original/pJ2UwprmjXjlsCG4Y8oiYU8wbma.jpg" width="36" height="36" alt="Now Streaming on Joyn Plus">
+        <img src="/t/p/original/p2GwlTWJQliHU78yiT960D5qMdW.jpg" width="36" height="36" alt="Now Streaming on Shudder">
       </div>
       <div class="text">
         <span>
           <h4>Now Streaming</h4>
-          <h3><a class="no_click" href="/movie/334536-the-blackcoat-s-daughter/watch" title="Now Streaming on Joyn Plus">Watch Now</a></h3>
+          <h3><a class="no_click" href="/movie/334536-the-blackcoat-s-daughter/watch" title="Now Streaming on Shudder">Watch Now</a></h3>
         </span>
       </div>
     </div>
@@ -527,10 +527,10 @@
     <li class="chart">
       <div class="consensus details">
         <div class="outer_ring">
-          <div class="user_score_chart" data-percent="58.0" data-track-color="#423d0f" data-bar-color="#d2d531">
+          <div class="user_score_chart" data-percent="57.0" data-track-color="#423d0f" data-bar-color="#d2d531">
             <div class="percent">
               
-                <span class="icon icon-r58"></span>
+                <span class="icon icon-r57"></span>
               
             </div>
           </div>
@@ -763,7 +763,7 @@
                       <a href="/person/34847-emma-roberts">
                           
     
-      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/87w6fTvmJTQScgKKJFS91hYJ33a.jpg" srcset="/t/p/w138_and_h175_face/87w6fTvmJTQScgKKJFS91hYJ33a.jpg 1x, /t/p/w276_and_h350_face/87w6fTvmJTQScgKKJFS91hYJ33a.jpg 2x" alt="Emma Roberts">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/gn5rf7Nh0X0855n07XkuEn27n0n.jpg" srcset="/t/p/w138_and_h175_face/gn5rf7Nh0X0855n07XkuEn27n0n.jpg 1x, /t/p/w276_and_h350_face/gn5rf7Nh0X0855n07XkuEn27n0n.jpg 2x" alt="Emma Roberts">
     
   
 
@@ -791,7 +791,7 @@
                       <a href="/person/86232-lucy-boynton">
                           
     
-      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/a8AB1B1jXuDtO3NOD2n4h4e4COJ.jpg" srcset="/t/p/w138_and_h175_face/a8AB1B1jXuDtO3NOD2n4h4e4COJ.jpg 1x, /t/p/w276_and_h350_face/a8AB1B1jXuDtO3NOD2n4h4e4COJ.jpg 2x" alt="Lucy Boynton">
+      <img loading="lazy" class="profile" src="/t/p/w138_and_h175_face/9ef0EcePIN0iTH4J2he4NLVwlQL.jpg" srcset="/t/p/w138_and_h175_face/9ef0EcePIN0iTH4J2he4NLVwlQL.jpg 1x, /t/p/w276_and_h350_face/9ef0EcePIN0iTH4J2he4NLVwlQL.jpg 2x" alt="Lucy Boynton">
     
   
 
@@ -975,8 +975,8 @@
                 <ul>
                   <li class="active" dir="auto"><a id="popular" class="media_panel" href="#">Most Popular</a></li>
                   <li dir="auto"><a id="videos" class="media_panel" href="#">Videos <span>2</span></a></li>
-                  <li dir="auto"><a id="backdrops" class="media_panel" href="#">Backdrops <span>2</span></a></li>
-                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>16</span></a></li>
+                  <li dir="auto"><a id="backdrops" class="media_panel" href="#">Backdrops <span>3</span></a></li>
+                  <li dir="auto"><a id="posters" class="media_panel" href="#">Posters <span>18</span></a></li>
                   <li class="view_all"></li>
                 </ul>
               </div>
@@ -1789,7 +1789,7 @@
         </div>
       </nav>
 
-      <section>Build 0805d13 (1654)</section>
+      <section>Build 9a7deda (2451)</section>
     </footer>
 
     

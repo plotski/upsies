@@ -401,7 +401,7 @@ async def test_genres(id, exp_genres, api, store_response):
         ('tv/1406', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/4Yp35DVbVOAWkfQUIQ7pbh3u0aN.jpg'),
         ('tv/74802', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/cUKqWS2v7D6DVKQze2Iz2netwRH.jpg'),
         ('tv/66260', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/1VaaYENYc8SHsyeudATNZVVfzyx.jpg'),
-        ('movie/3405', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/gRGUKC7ESamF1yrV6HdriuKaKxN.jpg'),
+        ('movie/3405', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/sf31ob8bHZsgCH01J8PutaOnaTA.jpg'),
         (None, ''),
     ),
     ids=lambda value: str(value),
@@ -416,7 +416,7 @@ async def test_poster_url(id, exp_url, api, store_response):
     argnames=('id', 'exp_rating'),
     argvalues=(
         ('movie/525', 77.0),
-        ('movie/334536', 58.0),
+        ('movie/334536', 57.0),
         ('tv/1406', 82.0),
         ('tv/74802', 68.0),
         ('tv/66260', 88.0),

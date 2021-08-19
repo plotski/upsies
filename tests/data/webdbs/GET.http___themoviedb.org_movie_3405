@@ -36,7 +36,7 @@
       <link rel="stylesheet" href="/assets/2/v4/media-7b01183c64a6819c82ef4f23a3087f1ff79f8de786653d6ffb10a07d2a5b70ef.css" media="screen">
       
     
-      <link rel="stylesheet" href="/assets/2/v4/ott-7b5a41663086623adc0e366cb966c8f26a417078d5966ab31b0dd15592d8abde.css" media="screen">
+      <link rel="stylesheet" href="/assets/2/v4/ott-c7e13d5e748448c22fa3b72eea0a7b474e24ef18e75f7658b5c6a2ce43dbd790.css" media="screen">
       
     
       <link rel="stylesheet" href="/assets/2/v4/image-f92aec523e5c3b68d56abad962cf2e30934fa774ebaca9d06cf8584d5a464c09.css" media="screen">
@@ -46,7 +46,7 @@
         <meta property="og:title" content="Anyone Can Play">
   <meta property="og:description" content="No overview found.">
   
-    <meta property="og:image" content="/t/p/w500/gRGUKC7ESamF1yrV6HdriuKaKxN.jpg">
+    <meta property="og:image" content="/t/p/w500/sf31ob8bHZsgCH01J8PutaOnaTA.jpg">
   
   
     <meta property="og:image" content="/t/p/w780/mfzRtctuIKb3EkDQDn9qd4sdX8o.jpg">
@@ -230,12 +230,12 @@
     <style>
   
     html {
-      --primaryColor: #396745;
+      --primaryColor: #523d31;
       --primaryColorContrast: #ffffff;
     }
 
     div.header {
-      background: linear-gradient(to bottom right, rgba(22.35%, 40.39%, 27.06%, 1.00), rgba(22.35%, 40.39%, 27.06%, 0.84));
+      background: linear-gradient(to bottom right, rgba(32.16%, 23.92%, 19.22%, 1.00), rgba(32.16%, 23.92%, 19.22%, 0.84));
     }
 
     div.column_wrapper div.settings_panel h3 {
@@ -303,7 +303,7 @@
 
     
       section.inner_content div.custom_bg {
-        background-image: linear-gradient(to right, rgba(22.35%, 40.39%, 27.06%, 1.00) 150px, rgba(22.35%, 40.39%, 27.06%, 0.84) 100%);
+        background-image: linear-gradient(to right, rgba(32.16%, 23.92%, 19.22%, 1.00) 150px, rgba(32.16%, 23.92%, 19.22%, 0.84) 100%);
       }
     
   
@@ -400,7 +400,7 @@
   
         
     
-      <img class="poster lazyload" src="/t/p/w300_and_h450_bestv2_filter(blur)/gRGUKC7ESamF1yrV6HdriuKaKxN.jpg" data-src="/t/p/w300_and_h450_bestv2/gRGUKC7ESamF1yrV6HdriuKaKxN.jpg" data-srcset="/t/p/w300_and_h450_bestv2/gRGUKC7ESamF1yrV6HdriuKaKxN.jpg 1x, /t/p/w600_and_h900_bestv2/gRGUKC7ESamF1yrV6HdriuKaKxN.jpg 2x" alt="Anyone Can Play">
+      <img class="poster lazyload" src="/t/p/w300_and_h450_bestv2_filter(blur)/sf31ob8bHZsgCH01J8PutaOnaTA.jpg" data-src="/t/p/w300_and_h450_bestv2/sf31ob8bHZsgCH01J8PutaOnaTA.jpg" data-srcset="/t/p/w300_and_h450_bestv2/sf31ob8bHZsgCH01J8PutaOnaTA.jpg 1x, /t/p/w600_and_h900_bestv2/sf31ob8bHZsgCH01J8PutaOnaTA.jpg 2x" alt="Anyone Can Play">
     
   
 
@@ -934,7 +934,7 @@
     <div class="poster">
         
     
-      <img class="poster" src="/t/p/w220_and_h330_face/gRGUKC7ESamF1yrV6HdriuKaKxN.jpg" srcset="/t/p/w220_and_h330_face/gRGUKC7ESamF1yrV6HdriuKaKxN.jpg 1x, /t/p/w440_and_h660_face/gRGUKC7ESamF1yrV6HdriuKaKxN.jpg 2x" alt="Anyone Can Play">
+      <img class="poster" src="/t/p/w220_and_h330_face/sf31ob8bHZsgCH01J8PutaOnaTA.jpg" srcset="/t/p/w220_and_h330_face/sf31ob8bHZsgCH01J8PutaOnaTA.jpg 1x, /t/p/w440_and_h660_face/sf31ob8bHZsgCH01J8PutaOnaTA.jpg 2x" alt="Anyone Can Play">
     
   
 
@@ -1302,7 +1302,7 @@
         },
         series: [{
           field: "value",
-          color: "#396745",
+          color: "#523d31",
           width: 2
         }],
         tooltip: {
@@ -1552,7 +1552,7 @@
 
     
       
-        var window_image_dimensions = getImageWindowDimensions(h, 0.702);
+        var window_image_dimensions = getImageWindowDimensions(h, 0.68);
       
       
 
@@ -1577,7 +1577,7 @@
       $('div.zoom a').on('click', function (e){
         e.preventDefault();
         
-          var image_id = '5cf7eb1f9251411882c4e8bf';
+          var image_id = '5cf7eaf992514153b7b9702a';
         
         
 
@@ -1668,7 +1668,7 @@
         </div>
       </nav>
 
-      <section>Build 0805d13 (1654)</section>
+      <section>Build 9a7deda (2451)</section>
     </footer>
 
     
