@@ -66,14 +66,7 @@ class submit(CommandBase):
         CLI arguments where CLI arguments take precedence unless their value is
         `None`
         """
-        config = self.config['trackers'][self.tracker_name]
-        cli_args = vars(self.args)
-        options = {}
-        options.update(config)
-        for k, v in cli_args.items():
-            if v is not None:
-                options[k] = v
-        return options
+        return self.get_options('trackers', self.tracker_name)
 
     @utils.cached_property
     def tracker(self):

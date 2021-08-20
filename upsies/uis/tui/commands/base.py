@@ -278,6 +278,26 @@ class CommandBase(abc.ABC):
         """Config file options as :class:`~.configfiles.ConfigFiles` object"""
         return self._config
 
+    def get_options(self, config_name, config_section):
+        """
+        Combine section in config file with CLI arguments
+
+        CLI arguments take precedence unless their value is `None`.
+
+        :param str config_name: Config file name with out the "INI" extension
+        :param str config_section: Name of a section in the config file
+
+        :return: `dict`
+        """
+        config = self.config[config_name][config_section]
+        args = vars(self.args)
+        options = {}
+        options.update(config)
+        for k, v in args.items():
+            if v is not None:
+                options[k] = v
+        return options
+
     @property
     def home_directory(self):
         """
