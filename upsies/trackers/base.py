@@ -76,8 +76,10 @@ class TrackerJobsBase(abc.ABC):
     """
     Base class for tracker-specific :class:`jobs <upsies.jobs.base.JobBase>`
 
-    Jobs are instantiated on demand by an instance of this class, which means
-    all arguments for all jobs must be given to this class during instantiation.
+    This base class defines general-purpose jobs that can be used by subclasses
+    by returning them in their :attr:`jobs_before_upload` or
+    :attr:`jobs_after_upload` attributes. It also provides all objects that are
+    needed by any one of those jobs.
 
     Job instances are provided as :func:`~functools.cached_property`, i.e. jobs
     are created only once per session.
@@ -87,98 +89,83 @@ class TrackerJobsBase(abc.ABC):
     :meth:`~.asyncio.Task.add_done_callback` that catches expected exceptions
     and pass them to :meth:`warn`, :meth:`error` or :meth:`exception`.
 
-    This base class defines general-purpose jobs that can be used by subclasses
-    by returning them in their :attr:`jobs_before_upload` or
-    :attr:`jobs_after_upload` attributes.
-
     For a description of the arguments see the corresponding properties.
     """
 
-    def __init__(self, *, content_path, tracker, image_host, bittorrent_client,
-                 torrent_destination, common_job_args, options=None):
+    def __init__(self, *, content_path, tracker, torrent_destination=None,
+                 options=None, image_host=None, bittorrent_client=None,
+                 common_job_args=None):
         self._content_path = content_path
         self._tracker = tracker
         self._image_host = image_host
         self._bittorrent_client = bittorrent_client
         self._torrent_destination = torrent_destination
-        self._common_job_args = common_job_args
+        self._common_job_args = common_job_args or {}
         self._options = options or {}
         self._signal = signal.Signal('warning', 'error', 'exception')
         self._background_tasks = []
+
+    @property
+    def content_path(self):
+        """
+        Content path to generate metadata for
+
+        This is the same object that was passed as a initialization argument.
+        """
+        return self._content_path
+
+    @property
+    def tracker(self):
+        """
+        :class:`~.trackers.base.TrackerBase` subclass
+
+        This is the same object that was passed as a initialization argument.
+        """
+        return self._tracker
+
+    @property
+    def torrent_destination(self):
+        """
+        Where to copy the generated torrent file to or `None`
+
+        This is the same object that was passed as a initialization argument.
+        """
+        return self._torrent_destination
 
     @property
     def options(self):
         """
         Configuration options provided by the user
 
-        This is the :class:`dict`-like object from the initialization argument
-        of the same name.
+        This is the same object that was passed as a initialization argument.
         """
         return self._options
 
     @property
-    def content_path(self):
-        """Path to the content to generate metadata for"""
-        return self._content_path
-
-    @property
-    def tracker(self):
-        """:class:`~.trackers.base.TrackerBase` subclass"""
-        return self._tracker
-
-    @property
-    def signal(self):
-        """
-        :class:`~.signal.Signal` instance with the signals ``warning``, ``error``
-        and ``exception``
-        """
-        return self._signal
-
-    def warn(self, warning):
-        """
-        Emit ``warning`` signal (see :attr:`signal`)
-
-        Emit a warning for any non-critical issue that the user can choose to
-        ignore or fix.
-        """
-        self.signal.emit('warning', warning)
-
-    def error(self, error):
-        """
-        Emit ``error`` signal (see :attr:`signal`)
-
-        Emit an error for any critical but expected issue that can't be
-        recovered from (e.g. I/O error).
-        """
-        self.signal.emit('error', error)
-
-    def exception(self, exception):
-        """
-        Emit ``exception`` signal (see :attr:`signal`)
-
-        Emit an exception for any critical and unexpected issue that should be
-        reported as a bug.
-        """
-        self.signal.emit('exception', exception)
-
-    @property
     def image_host(self):
-        """:class:`~.utils.imghosts.base.ImageHostBase` instance or `None`"""
+        """
+        :class:`~.base.ImageHostBase` instance or `None`
+
+        This is the same object that was passed as a initialization argument.
+        """
         return self._image_host
 
     @property
     def bittorrent_client(self):
-        """:class:`~.utils.btclients.base.ClientApiBase` instance or `None`"""
+        """
+        :class:`~.base.ClientApiBase` instance or `None`
+
+        This is the same object that was passed as a initialization argument.
+        """
         return self._bittorrent_client
 
     @property
-    def torrent_destination(self):
-        """Path to copy the generated torrent file to or `None`"""
-        return self._torrent_destination
-
-    @property
     def common_job_args(self):
-        """Keyword arguments as a dictionary that are passed to all jobs"""
+        """
+        Keyword arguments that are passed to all jobs or empty `dict`
+
+        This is the same object that was passed as a initialization argument.
+        """
         return self._common_job_args
 
     @property
@@ -228,6 +215,41 @@ class TrackerJobsBase(abc.ABC):
             and all(job.exit_code == 0
                     for job in enabled_jobs_before_upload)
         )
+
+    @property
+    def signal(self):
+        """
+        :class:`~.signal.Signal` instance with the signals ``warning``, ``error``
+        and ``exception``
+        """
+        return self._signal
+
+    def warn(self, warning):
+        """
+        Emit ``warning`` signal (see :attr:`signal`)
+
+        Emit a warning for any non-critical issue that the user can choose to
+        ignore or fix.
+        """
+        self.signal.emit('warning', warning)
+
+    def error(self, error):
+        """
+        Emit ``error`` signal (see :attr:`signal`)
+
+        Emit an error for any critical but expected issue that can't be
+        recovered from (e.g. I/O error).
+        """
+        self.signal.emit('error', error)
+
+    def exception(self, exception):
+        """
+        Emit ``exception`` signal (see :attr:`signal`)
+
+        Emit an exception for any critical and unexpected issue that should be
+        reported as a bug.
+        """
+        self.signal.emit('exception', exception)
 
     @cached_property
     def create_torrent_job(self):
