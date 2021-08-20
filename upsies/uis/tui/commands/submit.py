@@ -103,11 +103,11 @@ class submit(CommandBase):
         imghost_name = self.tracker_options.get('image_host', None)
         if imghost_name:
             # Apply tracker-specific image host configuration
-            imghost_config = self.config['imghosts'][imghost_name].copy()
-            imghost_config.update(self.tracker.TrackerJobs.image_host_config.get(imghost_name, {}))
+            options = self.config['imghosts'][imghost_name].copy()
+            options.update(self.tracker.TrackerJobs.image_host_config.get(imghost_name, {}))
             return utils.imghosts.imghost(
                 name=imghost_name,
-                config=imghost_config,
+                options=options,
             )
 
     def _get_btclient(self):
