@@ -1702,14 +1702,14 @@ async def test_get_tags_for_movie(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
     mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(side_effect=(
         # Genres
-        ('comedy', 'hörrór'),
+        ('comedy', 'hörrór', 'sci-fi'),
         # Directors
         ('Jim J. Jackson', "Émile 'E' Jaques"),
         # Cast
         ('Foo', 'Bar', 'BaZ'),
     )))
     tags = await bb_tracker_jobs.get_tags()
-    assert tags == 'comedy,horror,jim.j.jackson,emile.e.jaques,foo,bar,baz'
+    assert tags == 'comedy,horror,science.fiction,jim.j.jackson,emile.e.jaques,foo,bar,baz'
     assert bb_tracker_jobs.try_webdbs.call_args_list == [
         call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'genres'),
         call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'directors'),

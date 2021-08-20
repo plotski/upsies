@@ -931,6 +931,10 @@ class BbTrackerJobs(TrackerJobsBase):
                 )
                 s = re.sub(r'\.+', '.', s)  # Dedup "."
                 s = unidecode.unidecode(s)  # Replace non-ASCII
+                for regex, replacement in self._tags_translation.items():
+                    if regex.search(s):
+                        s = replacement
+                        break
                 normalized.append(s)
             return normalized
 
@@ -963,6 +967,10 @@ class BbTrackerJobs(TrackerJobsBase):
             tags_string = assemble(tags)
 
         return tags_string
+
+    _tags_translation = {
+        re.compile('^sci.?fi$'): 'science.fiction',
+    }
 
     async def get_description(self):
         info_table = await asyncio.gather(
