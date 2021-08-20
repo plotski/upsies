@@ -11,17 +11,37 @@ class upload_images(CommandBase):
 
     names = ('upload-images', 'ui')
 
-    argument_definitions = {
-        'IMAGEHOST': {
-            'type': utils.argtypes.imghost,
-            'help': ('Case-insensitive name of image hosting service\n'
-                     'Supported services: ' + ', '.join(utils.imghosts.imghost_names())),
-        },
-        'IMAGE': {
-            'nargs': '+',
-            'help': 'Path to image file',
-        },
+    argument_definitions = {}
+
+    subcommand_name = 'IMGHOST'
+    subcommands = {
+        imghost.name: {
+            # Default arguments for all image hosts
+            **{
+                'IMAGE': {
+                    'nargs': '+',
+                    'help': 'Path to image file',
+                },
+            },
+            # Custom arguments defined by image host
+            **imghost.argument_definitions,
+        }
+        for imghost in utils.imghosts.imghosts()
     }
+
+    @utils.cached_property
+    def imghost_name(self):
+        """Lower-case image host name"""
+        return self.args.subcommand.lower()
+
+    @utils.cached_property
+    def imghost_options(self):
+        """
+        Relevant section in image host configuration file combined with CLI
+        arguments where CLI arguments take precedence unless their value is
+        `None`
+        """
+        return self.get_options('imghosts', self.imghost_name)
 
     @utils.cached_property
     def jobs(self):
@@ -31,8 +51,8 @@ class upload_images(CommandBase):
                 cache_directory=self.cache_directory,
                 ignore_cache=self.args.ignore_cache,
                 imghost=utils.imghosts.imghost(
-                    name=self.args.IMAGEHOST,
-                    config=self.config['imghosts'][self.args.IMAGEHOST],
+                    name=self.imghost_name,
+                    options=self.imghost_options,
                 ),
                 enqueue=self.args.IMAGE,
             ),
