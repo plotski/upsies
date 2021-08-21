@@ -65,6 +65,12 @@ def bhd_tracker_jobs(imghost, btclient, tmp_path, mocker):
 def mock_job_attributes(mocker):
     def mock_job_attributes(bhd_tracker_jobs):
         job_attrs = (
+            # Background jobs
+            'create_torrent_job',
+            'mediainfo_job',
+            'screenshots_job',
+            'upload_screenshots_job',
+
             # Interactive jobs
             'imdb_job',
             'tmdb_job',
@@ -75,12 +81,6 @@ def mock_job_attributes(mocker):
             'description_job',
             'scene_check_job',
             'tags_job',
-
-            # Background jobs
-            'create_torrent_job',
-            'mediainfo_job',
-            'screenshots_job',
-            'upload_screenshots_job',
         )
         for job_attr in job_attrs:
             mocker.patch.object(type(bhd_tracker_jobs), job_attr, PropertyMock(return_value=Mock(attr=job_attr)))
@@ -102,6 +102,12 @@ def test_jobs_before_upload_items(bhd_tracker_jobs, mock_job_attributes, mocker)
 
     print(bhd_tracker_jobs.jobs_before_upload)
     assert tuple(job.attr for job in bhd_tracker_jobs.jobs_before_upload) == (
+        # Background jobs
+        'create_torrent_job',
+        'mediainfo_job',
+        'screenshots_job',
+        'upload_screenshots_job',
+
         # Interactive jobs
         'imdb_job',
         'tmdb_job',
@@ -112,12 +118,6 @@ def test_jobs_before_upload_items(bhd_tracker_jobs, mock_job_attributes, mocker)
         'description_job',
         'scene_check_job',
         'tags_job',
-
-        # Background jobs
-        'create_torrent_job',
-        'mediainfo_job',
-        'screenshots_job',
-        'upload_screenshots_job',
     )
 
 def test_jobs_before_upload_sets_conditions_on_base_class_jobs(bhd_tracker_jobs, mock_job_attributes, mocker):
