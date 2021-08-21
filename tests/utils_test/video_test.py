@@ -192,6 +192,7 @@ def test_duration_from_mediainfo_does_not_find_duration(tracks_mock, track):
 def test_tracks_gets_first_video_from_path(first_video_mock, run_mediainfo_mock):
     first_video_mock.return_value = 'some/path/to/foo.mkv'
     run_mediainfo_mock.return_value = '{"media": {"track": []}}'
+    video._tracks.cache_clear()
     video.tracks('some/path')
     assert first_video_mock.call_args_list == [call('some/path')]
     assert run_mediainfo_mock.call_args_list == [call('some/path/to/foo.mkv', '--Output=JSON')]
@@ -203,6 +204,7 @@ def test_tracks_returns_expected_structure(run_mediainfo_mock):
                                        '{"@type": "Video", "foo": "bar"}, '
                                        '{"@type": "Audio", "bar": "baz"}, '
                                        '{"@type": "Audio", "also": "this"}]}}')
+    video._tracks.cache_clear()
     tracks = video.tracks('foo/bar.mkv')
     assert run_mediainfo_mock.call_args_list == [call('foo/bar.mkv', '--Output=JSON')]
     assert tracks == {'Video': [{'@type': 'Video', 'foo': 'bar'}],
@@ -215,12 +217,14 @@ def test_tracks_gets_unexpected_output_from_mediainfo(run_mediainfo_mock):
     run_mediainfo_mock.return_value = 'this is not JSON'
     with pytest.raises(RuntimeError, match=(r'^foo/bar.mkv: Unexpected mediainfo output: '
                                             r'this is not JSON: Expecting value: line 1 column 1 \(char 0\)$')):
+        video._tracks.cache_clear()
         video.tracks('foo/bar.mkv')
 
     run_mediainfo_mock.return_value = '{"this": ["is", "unexpected", "json"]}'
     with pytest.raises(RuntimeError, match=(r'^foo/bar.mkv: Unexpected mediainfo output: '
                                             r'\{"this": \["is", "unexpected", "json"\]\}: '
                                             r"Missing field: 'media'$")):
+        video._tracks.cache_clear()
         video.tracks('foo/bar.mkv')
 
 

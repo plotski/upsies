@@ -110,6 +110,7 @@ def tracks(path):
     """
     return _tracks(first_video(path))
 
+@functools.lru_cache(maxsize=None)
 def _tracks(video_file_path):
     stdout = _run_mediainfo(video_file_path, '--Output=JSON')
     tracks = {}
