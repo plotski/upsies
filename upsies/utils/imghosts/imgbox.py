@@ -49,3 +49,7 @@ class ImgboxImageHost(ImageHostBase):
                 'thumbnail_url': submission.thumbnail_url,
                 'edit_url': submission.edit_url,
             }
+
+    @property
+    def cache_id(self):
+        return {'thumb_width': self._gallery.thumb_width}

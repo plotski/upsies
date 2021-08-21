@@ -62,3 +62,10 @@ async def test_upload_handles_error(tmp_path, mocker):
     )
     with pytest.raises(errors.RequestError, match=r'^Something went wrong$'):
         await imghost._upload('foo.png')
+
+
+@pytest.mark.asyncio
+async def test_cache_id(tmp_path, mocker):
+    mocker.patch('pyimgbox.Gallery', return_value=Mock(thumb_width=12342))
+    imghost = imgbox.ImgboxImageHost(cache_directory=tmp_path)
+    assert imghost.cache_id == {'thumb_width': 12342}
