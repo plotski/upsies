@@ -229,8 +229,8 @@ def test_tracks_gets_unexpected_output_from_mediainfo(run_mediainfo_mock):
 
 
 @patch('upsies.utils.video.tracks')
-def test_default_track_returns_track_with_default_tag(default_track_mock):
-    default_track_mock.return_value = {
+def test_default_track_returns_track_with_default_tag(tracks_mock):
+    tracks_mock.return_value = {
         'Video': [
             {'@type': 'Video', 'Some': 'video info'},
             {'@type': 'Video', 'Default': 'No'},
@@ -244,12 +244,12 @@ def test_default_track_returns_track_with_default_tag(default_track_mock):
             {'@type': 'Audio', 'Default': 'Yes', 'But too late': ':('},
         ],
     }
-    assert video.default_track('video', 'foo.mkv') == default_track_mock.return_value['Video'][-2]
-    assert video.default_track('audio', 'foo.mkv') == default_track_mock.return_value['Audio'][-2]
+    assert video.default_track('video', 'foo.mkv') == tracks_mock.return_value['Video'][-2]
+    assert video.default_track('audio', 'foo.mkv') == tracks_mock.return_value['Audio'][-2]
 
 @patch('upsies.utils.video.tracks')
-def test_default_track_returns_first_track_if_no_default_tag_exists(default_track_mock):
-    default_track_mock.return_value = {
+def test_default_track_returns_first_track_if_no_default_tag_exists(tracks_mock):
+    tracks_mock.return_value = {
         'Video': [
             {'@type': 'Video', 'Some': 'video info'},
             {'@type': 'Video', 'Default': 'No'},
@@ -259,12 +259,12 @@ def test_default_track_returns_first_track_if_no_default_tag_exists(default_trac
             {'@type': 'Audio', 'Default': 'No'},
         ],
     }
-    assert video.default_track('video', 'foo.mkv') == default_track_mock.return_value['Video'][0]
-    assert video.default_track('audio', 'foo.mkv') == default_track_mock.return_value['Audio'][0]
+    assert video.default_track('video', 'foo.mkv') == tracks_mock.return_value['Video'][0]
+    assert video.default_track('audio', 'foo.mkv') == tracks_mock.return_value['Audio'][0]
 
 @patch('upsies.utils.video.tracks')
-def test_default_track_fails_to_find_any_track(default_track_mock):
-    default_track_mock.return_value = {}
+def test_default_track_fails_to_find_any_track(track_mock):
+    track_mock.return_value = {}
     with pytest.raises(errors.ContentError, match=r'^foo.mkv: No audio track found$'):
         video.default_track('audio', 'foo.mkv')
     with pytest.raises(errors.ContentError, match=r'^foo.mkv: No video track found$'):
