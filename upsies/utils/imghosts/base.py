@@ -120,10 +120,10 @@ class ImageHostBase(abc.ABC):
             raise RuntimeError(f'Unable to write cache {cache_file}: {msg}')
 
     def _cache_file(self, image_path):
-        # If image is in our cache_directory, the image's file name makes it
-        # unique. This is usually the case when we're uploading screenshots. If
-        # image is not in our cache_directory, use the absolute path as a unique
-        # identifier.
+        # If image_path is in our cache_directory, the image's file name makes
+        # it unique. This is usually the case when we're uploading
+        # screenshots. If image is not in our cache_directory, use the absolute
+        # path as a unique identifier.
         if fs.dirname(image_path) == self.cache_directory:
             image_path = os.path.basename(image_path)
         else:
