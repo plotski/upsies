@@ -2,6 +2,8 @@
   * IMDb: Fixed getting genre tags
   * bB: Fixed science.fiction tag
   * BHD: Fixed --description option
+  * BHD: Disabled submission of nfo file because API responds with "500 Server
+    Error"
 
 
 2021.08.12

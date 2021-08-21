@@ -332,7 +332,8 @@ class BhdTrackerJobs(TrackerJobsBase):
             'edition': self.post_data_edition,
             'custom_edition': self.options['custom_edition'],
             'tags': ','.join(self.get_job_output(self.tags_job, slice=0).split('\n')),
-            'nfo': self.post_data_nfo,
+            # FIXME: This is disabled because the API responds with "500 Server Error".
+            # 'nfo': self.post_data_nfo,
             'pack': self.post_data_pack,
             'sd': self.post_data_sd,
             'special': self.post_data_special,
