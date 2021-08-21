@@ -66,117 +66,6 @@ def test_options_property():
     assert imghost.options == {'foo': 1, 'bar': 99}
 
 
-@pytest.mark.parametrize(
-    argnames=('cache_dir', 'exp_cache_dir'),
-    argvalues=(
-        (None, '/tmp/path'),
-        ('some/path', 'some/path'),
-    ),
-)
-@pytest.mark.parametrize('image_dir', (None, 'some/relative/path', '/absolute/path'))
-def test_cache_file_uses_cache_directory_argument(mocker, image_dir, cache_dir, exp_cache_dir):
-    mocker.patch('upsies.constants.CACHE_DIRPATH', exp_cache_dir)
-    imghost = make_TestImageHost(cache_directory=cache_dir)
-    image_name = 'foo.png'
-    exp_cache_name = f'{image_name}.{imghost.name}.json'
-    if image_dir is None:
-        # Image is in cache dir
-        image_path = os.path.join(exp_cache_dir, image_name)
-    elif os.path.isabs(image_dir):
-        # Image has absolute path
-        image_path = os.path.join(image_dir, image_name)
-        exp_cache_name = os.path.join(os.path.dirname(image_path), exp_cache_name).replace(os.sep, '_')
-    else:
-        # Image has relative path
-        image_path = os.path.join(os.getcwd(), image_dir, image_name)
-        exp_cache_name = os.path.join(os.path.dirname(image_path), exp_cache_name).replace(os.sep, '_')
-    exp_cache_file = os.path.join(exp_cache_dir, exp_cache_name)
-    assert imghost._cache_file(image_path) == exp_cache_file
-
-
-def test_store_info_to_cache_succeeds(mocker, tmp_path):
-    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir')
-    imghost = make_TestImageHost(cache_directory=tmp_path)
-    imghost._store_info_to_cache(
-        image_path=os.path.join(tmp_path, 'foo.png'),
-        info={'this': 'and that'},
-    )
-    assert mkdir_mock.call_args_list == [call(str(tmp_path))]
-    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
-    cache_content = open(cache_file, 'r').read()
-    assert cache_content == ('{\n'
-                             '    "this": "and that"\n'
-                             '}\n')
-
-def test_store_info_to_cache_fails_to_write(mocker, tmp_path):
-    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir')
-    imghost = make_TestImageHost(cache_directory=tmp_path)
-    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
-    os.chmod(tmp_path, 0o000)
-    try:
-        with pytest.raises(RuntimeError, match=rf'^Unable to write cache {cache_file}: Permission denied$'):
-            imghost._store_info_to_cache(
-                image_path=os.path.join(tmp_path, 'foo.png'),
-                info={'this': 'and that'},
-            )
-        assert not os.path.exists(cache_file)
-        assert mkdir_mock.call_args_list == [call(str(tmp_path))]
-    finally:
-        os.chmod(tmp_path, 0o700)
-
-def test_store_info_to_cache_fails_to_encode_json(tmp_path):
-    imghost = make_TestImageHost(cache_directory=tmp_path)
-    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
-    with pytest.raises(RuntimeError, match=(rf'^Unable to write cache {cache_file}: '
-                                            r"Object of type '?function'? is not JSON serializable$")):
-        imghost._store_info_to_cache(
-            image_path=os.path.join(tmp_path, 'foo.png'),
-            info={'this': lambda: None},
-        )
-    assert not os.path.exists(cache_file)
-
-
-def test_get_info_from_cache_succeeds(tmp_path):
-    imghost = make_TestImageHost(cache_directory=tmp_path)
-    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
-    with open(cache_file, 'w') as f:
-        f.write('{\n'
-                '    "this": "and that"\n'
-                '}\n')
-    info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
-    assert info == {'this': 'and that'}
-    assert os.path.exists(cache_file)
-
-def test_get_info_from_cache_with_nonexisting_cache_file(tmp_path):
-    imghost = make_TestImageHost(cache_directory=tmp_path)
-    info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
-    assert info is None
-
-def test_get_info_from_cache_fails_to_read(tmp_path):
-    imghost = make_TestImageHost(cache_directory=tmp_path)
-    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
-    with open(cache_file, 'w') as f:
-        f.write('{\n'
-                '    "this": "and that"\n'
-                '}\n')
-    os.chmod(cache_file, 0o000)
-    try:
-        info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
-    finally:
-        os.chmod(cache_file, 0o600)
-    assert info is None
-
-def test_get_info_from_cache_fails_to_decode_json(tmp_path):
-    imghost = make_TestImageHost(cache_directory=tmp_path)
-    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
-    with open(cache_file, 'w') as f:
-        f.write('{\n'
-                '    "this": and that\n'
-                '}\n')
-    info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
-    assert info is None
-
-
 @pytest.mark.asyncio
 async def test_upload_gets_info_from_upload_request(tmp_path):
     ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
@@ -265,3 +154,114 @@ async def test_upload_with_cache_set_to_False(tmp_path):
     assert image.thumbnail_url == 'http://foo.bar/thumbnail'
     assert image.delete_url == 'http://foo.bar/delete'
     assert image.edit_url == 'http://foo.bar/edit'
+
+
+def test_get_info_from_cache_succeeds(tmp_path):
+    imghost = make_TestImageHost(cache_directory=tmp_path)
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
+    with open(cache_file, 'w') as f:
+        f.write('{\n'
+                '    "this": "and that"\n'
+                '}\n')
+    info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
+    assert info == {'this': 'and that'}
+    assert os.path.exists(cache_file)
+
+def test_get_info_from_cache_with_nonexisting_cache_file(tmp_path):
+    imghost = make_TestImageHost(cache_directory=tmp_path)
+    info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
+    assert info is None
+
+def test_get_info_from_cache_fails_to_read(tmp_path):
+    imghost = make_TestImageHost(cache_directory=tmp_path)
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
+    with open(cache_file, 'w') as f:
+        f.write('{\n'
+                '    "this": "and that"\n'
+                '}\n')
+    os.chmod(cache_file, 0o000)
+    try:
+        info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
+    finally:
+        os.chmod(cache_file, 0o600)
+    assert info is None
+
+def test_get_info_from_cache_fails_to_decode_json(tmp_path):
+    imghost = make_TestImageHost(cache_directory=tmp_path)
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
+    with open(cache_file, 'w') as f:
+        f.write('{\n'
+                '    "this": and that\n'
+                '}\n')
+    info = imghost._get_info_from_cache(image_path=os.path.join(tmp_path, 'foo.png'))
+    assert info is None
+
+
+def test_store_info_to_cache_succeeds(mocker, tmp_path):
+    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir')
+    imghost = make_TestImageHost(cache_directory=tmp_path)
+    imghost._store_info_to_cache(
+        image_path=os.path.join(tmp_path, 'foo.png'),
+        info={'this': 'and that'},
+    )
+    assert mkdir_mock.call_args_list == [call(str(tmp_path))]
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
+    cache_content = open(cache_file, 'r').read()
+    assert cache_content == ('{\n'
+                             '    "this": "and that"\n'
+                             '}\n')
+
+def test_store_info_to_cache_fails_to_write(mocker, tmp_path):
+    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir')
+    imghost = make_TestImageHost(cache_directory=tmp_path)
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
+    os.chmod(tmp_path, 0o000)
+    try:
+        with pytest.raises(RuntimeError, match=rf'^Unable to write cache {cache_file}: Permission denied$'):
+            imghost._store_info_to_cache(
+                image_path=os.path.join(tmp_path, 'foo.png'),
+                info={'this': 'and that'},
+            )
+        assert not os.path.exists(cache_file)
+        assert mkdir_mock.call_args_list == [call(str(tmp_path))]
+    finally:
+        os.chmod(tmp_path, 0o700)
+
+def test_store_info_to_cache_fails_to_encode_json(tmp_path):
+    imghost = make_TestImageHost(cache_directory=tmp_path)
+    cache_file = imghost._cache_file(os.path.join(tmp_path, 'foo.png'))
+    with pytest.raises(RuntimeError, match=(rf'^Unable to write cache {cache_file}: '
+                                            r"Object of type '?function'? is not JSON serializable$")):
+        imghost._store_info_to_cache(
+            image_path=os.path.join(tmp_path, 'foo.png'),
+            info={'this': lambda: None},
+        )
+    assert not os.path.exists(cache_file)
+
+
+@pytest.mark.parametrize(
+    argnames=('cache_dir', 'exp_cache_dir'),
+    argvalues=(
+        (None, '/tmp/path'),
+        ('some/path', 'some/path'),
+    ),
+)
+@pytest.mark.parametrize('image_dir', (None, 'some/relative/path', '/absolute/path'))
+def test_cache_file(mocker, image_dir, cache_dir, exp_cache_dir):
+    mocker.patch('upsies.constants.CACHE_DIRPATH', exp_cache_dir)
+    imghost = make_TestImageHost(cache_directory=cache_dir)
+    image_name = 'foo.png'
+    exp_cache_name = f'{image_name}.{imghost.name}.json'
+    if image_dir is None:
+        # Image is in cache dir
+        image_path = os.path.join(exp_cache_dir, image_name)
+    elif os.path.isabs(image_dir):
+        # Image has absolute path
+        image_path = os.path.join(image_dir, image_name)
+        exp_cache_name = os.path.join(os.path.dirname(image_path), exp_cache_name).replace(os.sep, '_')
+    else:
+        # Image has relative path
+        image_path = os.path.join(os.getcwd(), image_dir, image_name)
+        exp_cache_name = os.path.join(os.path.dirname(image_path), exp_cache_name).replace(os.sep, '_')
+    exp_cache_file = os.path.join(exp_cache_dir, exp_cache_name)
+    assert imghost._cache_file(image_path) == exp_cache_file
