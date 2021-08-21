@@ -3,6 +3,7 @@ Base class for image uploaders
 """
 
 import abc
+import collections
 import copy
 import json
 import os
@@ -128,6 +129,36 @@ class ImageHostBase(abc.ABC):
             image_path = fs.basename(image_path)
         else:
             image_path = os.path.abspath(image_path)
+
+        # Make cache file even more unique, e.g. imgbox only has one thumbnail
+        # size per uploaded image, so if we want a different thumbnail size, we
+        # need to upload again.
+        cache_id = self._get_cache_id_as_string()
+        if cache_id:
+            image_path += f'.{cache_id}'
+
         # Max file name length is usually 255 bytes
         filename = fs.sanitize_filename(image_path[-200:]) + f'.{self.name}.json'
+
         return os.path.join(self.cache_directory, filename)
+
+    def _get_cache_id_as_string(self):
+        def as_str(obj):
+            if isinstance(obj, collections.abc.Mapping):
+                return ','.join(f'{as_str(k)}={as_str(v)}' for k,v in obj.items())
+            elif isinstance(obj, str):
+                return str(obj)
+            elif isinstance(obj, collections.abc.Sequence):
+                return ','.join(as_str(i) for i in obj)
+            else:
+                return str(obj)
+
+        cache_id = self.cache_id
+        if cache_id is None:
+            cache_id = self.options
+        return as_str(cache_id)
+
+    @property
+    def cache_id(self):
+        """Information that makes an upload unique, aside from the file path"""
+        return None

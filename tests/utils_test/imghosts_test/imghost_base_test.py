@@ -1,6 +1,6 @@
 import os
 import re
-from unittest.mock import Mock, call
+from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
@@ -240,18 +240,30 @@ def test_store_info_to_cache_fails_to_encode_json(tmp_path):
 
 
 @pytest.mark.parametrize(
-    argnames=('cache_dir', 'exp_cache_dir'),
+    argnames=('cache_dir', 'cache_id', 'exp_cache_dir'),
     argvalues=(
-        (None, '/tmp/path'),
-        ('some/path', 'some/path'),
+        (None, None, '/tmp/path'),
+        (None, 0, '/tmp/path'),
+        (None, '', '/tmp/path'),
+        (None, 'image_id', '/tmp/path'),
+        ('some/path', None, 'some/path'),
+        ('some/path', 0, 'some/path'),
+        ('some/path', '', 'some/path'),
+        ('some/path', 'image_id', 'some/path'),
     ),
 )
 @pytest.mark.parametrize('image_dir', (None, 'some/relative/path', '/absolute/path'))
-def test_cache_file(mocker, image_dir, cache_dir, exp_cache_dir):
+def test_cache_file(mocker, image_dir, cache_dir, cache_id, exp_cache_dir):
     mocker.patch('upsies.constants.CACHE_DIRPATH', exp_cache_dir)
     imghost = make_TestImageHost(cache_directory=cache_dir)
+    mocker.patch.object(imghost, '_get_cache_id_as_string', return_value=cache_id)
     image_name = 'foo.png'
-    exp_cache_name = f'{image_name}.{imghost.name}.json'
+
+    if cache_id:
+        exp_cache_name = f'{image_name}.{cache_id}.{imghost.name}.json'
+    else:
+        exp_cache_name = f'{image_name}.{imghost.name}.json'
+
     if image_dir is None:
         # Image is in cache dir
         image_path = os.path.join(exp_cache_dir, image_name)
@@ -263,5 +275,23 @@ def test_cache_file(mocker, image_dir, cache_dir, exp_cache_dir):
         # Image has relative path
         image_path = os.path.join(os.getcwd(), image_dir, image_name)
         exp_cache_name = os.path.join(os.path.dirname(image_path), exp_cache_name).replace(os.sep, '_')
+
     exp_cache_file = os.path.join(exp_cache_dir, exp_cache_name)
     assert imghost._cache_file(image_path) == exp_cache_file
+
+
+@pytest.mark.parametrize(
+    argnames=('subclass_cache_id, options, exp_cache_id'),
+    argvalues=(
+        (None, {}, ''),
+        (None, ['foo', 'bar', (1, 2, 3)], 'foo,bar,1,2,3'),
+        (None, {'foo': 'bar', 'this': [23, 42], (1, 2, 3): 'baz'}, 'foo=bar,this=23,42,1,2,3=baz'),
+        ('asdf', {'foo': 'bar'}, 'asdf'),
+    ),
+)
+def test_cache_id(subclass_cache_id, options, exp_cache_id, mocker):
+    imghost = make_TestImageHost()
+    mocker.patch.object(type(imghost), 'options', PropertyMock(return_value=options))
+    mocker.patch.object(type(imghost), 'cache_id', PropertyMock(return_value=subclass_cache_id))
+    cache_id = imghost._get_cache_id_as_string()
+    assert cache_id == exp_cache_id
