@@ -125,7 +125,7 @@ class ImageHostBase(abc.ABC):
         # screenshots. If image is not in our cache_directory, use the absolute
         # path as a unique identifier.
         if fs.dirname(image_path) == self.cache_directory:
-            image_path = os.path.basename(image_path)
+            image_path = fs.basename(image_path)
         else:
             image_path = os.path.abspath(image_path)
         # Max file name length is usually 255 bytes
