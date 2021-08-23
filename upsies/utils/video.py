@@ -46,9 +46,6 @@ def mediainfo(path):
         applied.
 
     :raise ContentError: if anything goes wrong
-
-    :return: Output from ``mediainfo``
-    :rtype: str
     """
     mi = _run_mediainfo(first_video(path))
     parent_dir = os.path.dirname(path)
@@ -60,14 +57,11 @@ def mediainfo(path):
 @functools.lru_cache(maxsize=None)
 def duration(path):
     """
-    Return video duration in seconds (float)
+    Return video duration in seconds (float) or ``0.0`` if it can't be
+    determined
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-
-    Return ``0.0`` if video duration can't be determined.
-
-    :raise ContentError: if anything goes wrong
     """
     return _duration(first_video(path))
 
@@ -128,16 +122,13 @@ def _tracks(video_file_path):
 
 def default_track(type, path):
     """
-    Find default track
+    Return default track
 
     :param str type: "video" or "audio"
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
 
     :raise ContentError: if anything goes wrong
-
-    :return: Default track of `type` or empty `dict`
-    :rtype: dict
     """
     all_tracks = tracks(path)
 
@@ -158,86 +149,85 @@ def default_track(type, path):
     raise errors.ContentError(f'{path}: No {type.lower()} track found')
 
 
-@functools.lru_cache(maxsize=None)
 def width(path):
     """
-    Return displayed width of video file `path` or `0`
+    Return displayed width of video file `path`
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
 
-    :return: int
+    :raise ContentError: if width can't be determined
     """
-    try:
-        video_track = default_track('video', path)
-    except errors.ContentError:
-        return 0
-    else:
-        return _get_display_width(video_track)
-
-@functools.lru_cache(maxsize=None)
-def height(path):
-    """
-    Return displayed height of video file `path` or `0`
-
-    :param str path: Path to video file or directory. :func:`first_video` is
-        applied.
-
-    :return: int
-    """
-    try:
-        video_track = default_track('video', path)
-    except errors.ContentError:
-        return 0
-    else:
-        return _get_display_height(video_track)
-
-@functools.lru_cache(maxsize=None)
-def resolution(path):
-    """
-    Return resolution of video file `path` (e.g. "1080p") or `None`
-
-    :param str path: Path to video file or directory. :func:`first_video` is
-        applied.
-    """
-    try:
-        video_track = default_track('video', path)
-    except errors.ContentError:
-        return None
-
-    # Expect non-wide (1392x1080), narrow (1920x800) and weird (1918x1040)
-    std_resolution = _get_closest_standard_resolution(video_track)
-    if std_resolution:
-        # "p" or "i", default to "p"
-        scan = video_track.get('ScanType', 'Progressive')[0].lower()
-        _log.debug('Detected resolution: %s%s', std_resolution, scan)
-        return f'{std_resolution}{scan}'
-
-    return None
+    video_track = default_track('video', path)
+    return _get_display_width(video_track)
 
 def _get_display_width(video_track):
-    width = int(video_track.get('Width', 0))
-    _log.debug('Stored width: %r', width)
-    if width:
+    try:
+        width = int(video_track['Width'])
+    except (KeyError, ValueError, TypeError):
+        raise errors.ContentError('Unable to determine video width')
+    else:
+        _log.debug('Stored width: %r', width)
         # Actual aspect ratio may differ from display aspect ratio,
         # e.g. 960 x 534 is scaled up to 1280 x 534
         par = float(video_track.get('PixelAspectRatio') or 1.0)
         if par > 1.0:
             _log.debug('Display width: %r * %r = %r', width, par, width * par)
             width = width * par
-    return int(width)
+        return int(width)
+
+
+def height(path):
+    """
+    Return displayed height of video file `path`
+
+    :param str path: Path to video file or directory. :func:`first_video` is
+        applied.
+
+    :raise ContentError: if height can't be determined
+    """
+    video_track = default_track('video', path)
+    return _get_display_height(video_track)
 
 def _get_display_height(video_track):
-    height = int(video_track.get('Height', 0))
-    _log.debug('Stored height: %r', height)
-    if height:
+    try:
+        height = int(video_track['Height'])
+    except (KeyError, ValueError, TypeError):
+        raise errors.ContentError('Unable to determine video height')
+    else:
+        _log.debug('Stored height: %r', height)
         # Actual aspect ratio may differ from display aspect ratio,
         # e.g. 960 x 534 is scaled up to 1280 x 534
         par = float(video_track.get('PixelAspectRatio') or 1.0)
         if par < 1.0:
             _log.debug('Display height: (1 / %r) * %r = %r', par, height, (1 / par) * height)
             height = (1 / par) * height
-    return int(height)
+        return int(height)
+
+
+def resolution(path):
+    """
+    Return resolution of video file `path` (e.g. "1080p")
+
+    :param str path: Path to video file or directory. :func:`first_video` is
+        applied.
+
+    :raise ContentError: if resolution can't be determined
+    """
+    video_track = default_track('video', path)
+    try:
+        std_resolution = _get_closest_standard_resolution(video_track)
+    except errors.ContentError:
+        raise errors.ContentError('Unable to determine video resolution')
+    else:
+        try:
+            # "p" or "i", default to "p"
+            scan = video_track.get('ScanType', 'Progressive')[0].lower()
+        except (KeyError, IndexError, TypeError):
+            raise errors.ContentError('Unable to determine video resolution')
+        else:
+            _log.debug('Detected resolution: %s%s', std_resolution, scan)
+            return f'{std_resolution}{scan}'
 
 _standard_resolutions = (
     # (width, height, standard resolution)
@@ -272,59 +262,64 @@ _standard_resolutions = (
 def _get_closest_standard_resolution(video_track):
     actual_width = _get_display_width(video_track)
     actual_height = _get_display_height(video_track)
-    if actual_width and actual_height:
-        # Find distances from actual display width/height to each standard
-        # width/height. Categorize them by standard ratio.
-        distances = collections.defaultdict(lambda: {})
-        for std_width, std_height, std_resolution in _standard_resolutions:
-            std_aspect_ratio = round(std_width / std_height, 1)
-            w_dist = abs(std_width - actual_width)
-            h_dist = abs(std_height - actual_height)
-            resolution = (std_width, std_height, std_resolution)
-            distances[std_aspect_ratio][w_dist] = distances[std_aspect_ratio][h_dist] = resolution
 
-        # Find standard aspect ratio closest to the given aspect ratio
-        actual_aspect_ratio = round(actual_width / actual_height, 1)
-        _log.debug('Actual resolution: %4d x %4d: aspect ratio: %r',
-                   actual_width, actual_height, actual_aspect_ratio)
-        std_aspect_ratios = tuple(distances)
-        closest_std_aspect_ratio = closest_number(actual_aspect_ratio, std_aspect_ratios)
-        _log.debug('Closest standard aspect ratio: %r', closest_std_aspect_ratio)
+    # Find distances from actual display width/height to each standard
+    # width/height. Categorize them by standard ratio.
+    distances = collections.defaultdict(lambda: {})
+    for std_width, std_height, std_resolution in _standard_resolutions:
+        std_aspect_ratio = round(std_width / std_height, 1)
+        w_dist = abs(std_width - actual_width)
+        h_dist = abs(std_height - actual_height)
+        resolution = (std_width, std_height, std_resolution)
+        distances[std_aspect_ratio][w_dist] = distances[std_aspect_ratio][h_dist] = resolution
 
-        # Pick the standard resolution with the lowest distance to the given resolution
-        dists = distances[closest_std_aspect_ratio]
-        std_width, std_height, std_resolution = sorted(dists.items())[0][1]
-    else:
-        std_width, std_height, std_resolution = 0, 0, None
+    # Find standard aspect ratio closest to the given aspect ratio
+    actual_aspect_ratio = round(actual_width / actual_height, 1)
+    _log.debug('Actual resolution: %4d x %4d: aspect ratio: %r',
+               actual_width, actual_height, actual_aspect_ratio)
+    std_aspect_ratios = tuple(distances)
+    closest_std_aspect_ratio = closest_number(actual_aspect_ratio, std_aspect_ratios)
+    _log.debug('Closest standard aspect ratio: %r', closest_std_aspect_ratio)
+
+    # Pick the standard resolution with the lowest distance to the given resolution
+    dists = distances[closest_std_aspect_ratio]
+    std_width, std_height, std_resolution = sorted(dists.items())[0][1]
 
     _log.debug('Closest standard resolution: %r x %r -> %r x %r -> %r',
                actual_width, actual_height, std_width, std_height, std_resolution)
     return std_resolution
 
 
-@functools.lru_cache(maxsize=None)
 def frame_rate(path):
     """
-    Return frames per second as :class:`float` of default video track or `0` if
-    it can't be determined
+    Return FPS of default video track or ``0.0`` if it can't be determined
+
+    :param str path: Path to video file or directory. :func:`first_video` is
+        applied.
+
+    :raise ContentError: if no video track is found
     """
+    video_track = default_track('video', path)
     try:
-        video_track = default_track('video', path)
-    except errors.ContentError:
-        return 0
-    else:
-        return float(video_track.get('FrameRate', 0))
+        return float(video_track['FrameRate'])
+    except (KeyError, ValueError, TypeError):
+        return 0.0
 
 
-@functools.lru_cache(maxsize=None)
 def bit_depth(path):
-    """Return bit depth of default video track or `None` if it can't be determined"""
+    """
+    Return bit depth of default video track or ``0`` if it can't be determined
+
+    :param str path: Path to video file or directory. :func:`first_video` is
+        applied.
+
+    :raise ContentError: if no video track is found
+    """
+    video_track = default_track('video', path)
     try:
-        video_track = default_track('video', path)
-    except errors.ContentError:
-        return None
-    else:
-        return video_track.get('BitDepth', None)
+        return int(video_track['BitDepth'])
+    except (KeyError, ValueError):
+        return 0
 
 
 hdr_formats = {
@@ -343,74 +338,76 @@ Map HDR format names (e.g. "Dolby Vision") to dictinaries that map mediainfo
 video track fields to regular expressions that must match the fields' values
 """
 
-@functools.lru_cache(maxsize=None)
 def hdr_format(path):
-    """Return HDR format based on `hdr_formats`, e.g. "HDR10", or `None`"""
-    try:
-        video_track = default_track('video', path)
-    except errors.ContentError:
-        return None
-    else:
-        def is_match(video_track, conditions):
-            if isinstance(conditions, collections.abc.Mapping):
-                # `conditions` maps field names to field value matching regexes
-                for key, regex in conditions.items():
-                    value = video_track.get(key, '')
-                    if regex.search(value):
-                        return True
-            else:
-                # `conditions` is a sequence of mappings that map field names to
-                # field value matching regexes (see above)
-                for condition in conditions:
-                    if is_match(video_track, condition):
-                        return True
-            return False
+    """
+    Return HDR format based on `hdr_formats`, e.g. "HDR10", or empty string if
+    it can't be determined
 
-        for hdr_format, conditions in hdr_formats.items():
-            if is_match(video_track, conditions):
-                return hdr_format
+    :param str path: Path to video file or directory. :func:`first_video` is
+        applied.
+
+    :raise ContentError: if no video track is found
+    """
+    def is_match(video_track, conditions):
+        if isinstance(conditions, collections.abc.Mapping):
+            # `conditions` maps field names to field value matching regexes
+            for key, regex in conditions.items():
+                value = video_track.get(key, '')
+                if regex.search(value):
+                    return True
+        else:
+            # `conditions` is a sequence of mappings that map field names to
+            # field value matching regexes (see above)
+            for condition in conditions:
+                if is_match(video_track, condition):
+                    return True
+        return False
+
+    video_track = default_track('video', path)
+    for hdr_format, conditions in hdr_formats.items():
+        if is_match(video_track, conditions):
+            return hdr_format
+    return ''
 
 
-@functools.lru_cache(maxsize=None)
 def has_dual_audio(path):
     """
     Return `True` if `path` contains multiple audio tracks with different
-    languages and one of them is English, `False` otherwise, `None` if it can't
-    be determined
+    languages and one of them is English, `False` otherwise
+
+    :param str path: Path to video file or directory. :func:`first_video` is
+        applied.
+
+    :raise ContentError: if reading `path` fails
     """
-    try:
-        audio_tracks = tracks(path).get('Audio', ())
-    except errors.ContentError:
-        return None
+    languages = set()
+    audio_tracks = tracks(path).get('Audio', ())
+    for track in audio_tracks:
+        if 'commentary' not in track.get('Title', '').lower():
+            language = track.get('Language', '')
+            if language:
+                languages.add(language.casefold())
+    if len(languages) > 1 and 'en' in languages:
+        return True
     else:
-        languages = set()
-        for track in audio_tracks:
-            if 'commentary' not in track.get('Title', '').lower():
-                language = track.get('Language', '')
-                if language:
-                    languages.add(language.casefold())
-        if len(languages) > 1 and 'en' in languages:
-            return True
-        else:
-            return False
+        return False
 
 
-@functools.lru_cache(maxsize=None)
 def has_commentary(path):
     """
     Return `True` if `path` has an audio track with "Commentary"
-    (case-insensitive) in its title, `False` otherwise, `None` if it can't be
-    determined
+    (case-insensitive) in its title, `False` otherwise
+
+    :param str path: Path to video file or directory. :func:`first_video` is
+        applied.
+
+    :raise ContentError: if reading `path` fails
     """
-    try:
-        audio_tracks = tracks(path).get('Audio', ())
-    except errors.ContentError:
-        return None
-    else:
-        for track in audio_tracks:
-            if 'commentary' in track.get('Title', '').lower():
-                return True
-        return False
+    audio_tracks = tracks(path).get('Audio', ())
+    for track in audio_tracks:
+        if 'commentary' in track.get('Title', '').lower():
+            return True
+    return False
 
 
 _audio_format_translations = (
@@ -435,43 +432,40 @@ _audio_format_translations = (
     ('Vorbis', {'Format': re.compile(r'\bOgg\b')}),
 )
 
-@functools.lru_cache(maxsize=None)
 def audio_format(path):
     """
-    Return audio format (e.g. "AAC", "MP3") or `None`
+    Return audio format (e.g. "AAC", "MP3") or empty string
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+
+    :raise ContentError: if no audio track is found
     """
-    try:
-        audio_track = default_track('audio', path)
-    except errors.ContentError:
-        return None
-    else:
-        def is_match(regexs, audio_track):
-            for key,regex in regexs.items():
-                if regex is None:
-                    if key in audio_track:
-                        # `key` must not exists but it does
-                        return False
-                else:
-                    # regex is not None
-                    if key not in audio_track:
-                        # `key` doesn't exist
-                        return False
-                    elif not regex.search(audio_track.get(key, '')):
-                        # `key` has value that doesn't match `regex`
-                        return False
-            # All `regexs` match and no forbidden keys exist in `audio_track`
-            return True
+    def is_match(regexs, audio_track):
+        for key,regex in regexs.items():
+            if regex is None:
+                if key in audio_track:
+                    # `key` must not exists but it does
+                    return False
+            else:
+                # regex is not None
+                if key not in audio_track:
+                    # `key` doesn't exist
+                    return False
+                elif not regex.search(audio_track.get(key, '')):
+                    # `key` has value that doesn't match `regex`
+                    return False
+        # All `regexs` match and no forbidden keys exist in `audio_track`
+        return True
 
-        _log.debug('Audio track for %r: %r', path, audio_track)
-        parts = []
-        for fmt,regexs in _audio_format_translations:
-            if fmt not in parts and is_match(regexs, audio_track):
-                parts.append(fmt)
+    audio_track = default_track('audio', path)
+    _log.debug('Audio track for %r: %r', path, audio_track)
+    parts = []
+    for fmt,regexs in _audio_format_translations:
+        if fmt not in parts and is_match(regexs, audio_track):
+            parts.append(fmt)
 
-        return ' '.join(parts) or None
+    return ' '.join(parts)
 
 
 # NOTE: guessit only recognizes 7.1, 5.1, 2.0 and 1.0
@@ -488,28 +482,25 @@ _audio_channels_translations = (
     ('7.1', re.compile(r'^10$')),
 )
 
-@functools.lru_cache(maxsize=None)
 def audio_channels(path):
     """
-    Return audio channels (e.g. "5.1") or `None`
+    Return audio channels (e.g. "5.1") or empty_string
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+
+    :raise ContentError: if no audio track is found
     """
-    try:
-        audio_track = default_track('audio', path)
-    except errors.ContentError:
-        return None
-    else:
-        audio_channels = None
-        channels = audio_track.get('Channels', '')
-        if channels:
-            for achan,regex in _audio_channels_translations:
-                if regex.search(channels):
-                    audio_channels = achan
-                    break
-        _log.debug('Detected audio channels: %s', audio_channels)
-        return audio_channels
+    audio_channels = ''
+    audio_track = default_track('audio', path)
+    channels = audio_track.get('Channels', '')
+    if channels:
+        for achan,regex in _audio_channels_translations:
+            if regex.search(channels):
+                audio_channels = achan
+                break
+    _log.debug('Detected audio channels: %s', audio_channels)
+    return audio_channels
 
 
 _video_translations = (
@@ -519,16 +510,18 @@ _video_translations = (
     ('H.264', {'Format': re.compile(r'^AVC$')}),
     ('H.265', {'Format': re.compile(r'^HEVC$')}),
     ('VP9', {'Format': re.compile(r'^VP9$')}),
-    ('MPEG-2', {'Format': re.compile(r'^MPEG Video$'), 'Format_Version': re.compile(r'^2$')}),
+    ('MPEG-2', {'Format': re.compile(r'^MPEG Video$')}),
 )
 
-@functools.lru_cache(maxsize=None)
 def video_format(path):
     """
-    Return video format or x264/x265/XviD if they were used or `None`
+    Return video format or x264/x265/XviD if they were used or empty string if
+    it can't be determined
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+
+    :raise ContentError: if no video track is found
     """
     def translate(video_track):
         for vfmt,regexs in _video_translations:
@@ -537,17 +530,12 @@ def video_format(path):
                 if value:
                     if regex.search(value):
                         return vfmt
-        return None
+        return ''
 
-    try:
-        video_track = default_track('video', path)
-    except errors.ContentError:
-        return None
-    else:
-        # _log.debug('Video track for %r: %r', path, video_track)
-        video_format = translate(video_track)
-        _log.debug('Detected video format: %s', video_format)
-        return video_format
+    video_track = default_track('video', path)
+    video_format = translate(video_track)
+    _log.debug('Detected video format: %s', video_format)
+    return video_format
 
 
 @functools.lru_cache(maxsize=None)
@@ -563,8 +551,9 @@ def first_video(path):
     Paths to Blu-ray images (directories that contain a "BDMV" directory) are
     simply returned.
 
-    To avoid samples and similar files, `path` is filtered through
-    :func:`filter_similar_duration`.
+    If a file with the typical "SxxE01" exists, it is returned. Otherwise,
+    `path` is filtered through :func:`filter_similar_duration` to avoid samples
+    and such.
 
     :param str path: Path to file or directory
 

@@ -272,52 +272,64 @@ def test_default_track_fails_to_find_any_track(track_mock):
 
 
 @pytest.mark.parametrize(
-    argnames='width, par, exp_width',
+    argnames='video_track, exp_width, exp_exception',
     argvalues=(
-        ('1920', '1.0', 1920),
-        ('704', '1.455', 1024),
-        ('704', '0.888', 704),
+        ({'@type': 'Video', 'Width': '1920'}, 1920, None),
+        ({'@type': 'Video', 'Width': '1920', 'PixelAspectRatio': '1.0'}, 1920, None),
+        ({'@type': 'Video', 'Width': '704', 'PixelAspectRatio': '1.455'}, 1024, None),
+        ({'@type': 'Video', 'Width': '704', 'PixelAspectRatio': '0.888'}, 704, None),
+        ({'@type': 'Video', 'Width': 'nan'}, None, errors.ContentError('Unable to determine video width')),
+        ({'@type': 'Video', 'Width': ()}, None, errors.ContentError('Unable to determine video width')),
+        ({'@type': 'Video'}, None, errors.ContentError('Unable to determine video width')),
+        ({}, None, errors.ContentError('Unable to determine video width')),
+        (errors.ContentError('Permission denied'), None, errors.ContentError('Permission denied')),
     ),
+    ids=lambda v: str(v),
 )
-@patch('upsies.utils.video.default_track')
-def test_width(default_track_mock, width, par, exp_width):
-    default_track_mock.return_value = {
-        '@type': 'Video',
-        'Width': width,
-        'PixelAspectRatio': par,
-    }
-    video.width.cache_clear()
-    assert video.width('foo.mkv') == exp_width
-    default_track_mock.side_effect = errors.ContentError('No')
-    video.width.cache_clear()
-    assert video.width('foo.mkv') == 0
+def test_width(video_track, exp_width, exp_exception, mocker):
+    if isinstance(video_track, Exception):
+        mocker.patch('upsies.utils.video.default_track', side_effect=video_track)
+    else:
+        mocker.patch('upsies.utils.video.default_track', return_value=video_track)
+
+    if exp_exception:
+        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+            video.width('foo.mkv')
+    else:
+        assert video.width('foo.mkv') == exp_width
 
 
 @pytest.mark.parametrize(
-    argnames='height, par, exp_height',
+    argnames='video_track, exp_height, exp_exception',
     argvalues=(
-        ('1080', '1.0', 1080),
-        ('560', '1.455', 560),
-        ('480', '0.888', 540),
+        ({'@type': 'Video', 'Height': '1080'}, 1080, None),
+        ({'@type': 'Video', 'Height': '1080', 'PixelAspectRatio': '1.0'}, 1080, None),
+        ({'@type': 'Video', 'Height': '560', 'PixelAspectRatio': '1.455'}, 560, None),
+        ({'@type': 'Video', 'Height': '480', 'PixelAspectRatio': '0.888'}, 540, None),
+        ({'@type': 'Video', 'Height': 'nan'}, None, errors.ContentError('Unable to determine video height')),
+        ({'@type': 'Video', 'Height': ()}, None, errors.ContentError('Unable to determine video height')),
+        ({'@type': 'Video'}, None, errors.ContentError('Unable to determine video height')),
+        ({}, None, errors.ContentError('Unable to determine video height')),
+        (errors.ContentError('Permission denied'), None, errors.ContentError('Permission denied')),
     ),
+    ids=lambda v: str(v),
 )
-@patch('upsies.utils.video.default_track')
-def test_height(default_track_mock, height, par, exp_height):
-    default_track_mock.return_value = {
-        '@type': 'Video',
-        'Height': height,
-        'PixelAspectRatio': par,
-    }
-    video.height.cache_clear()
-    assert video.height('foo.mkv') == exp_height
-    default_track_mock.side_effect = errors.ContentError('No')
-    video.height.cache_clear()
-    assert video.height('foo.mkv') == 0
+def test_height(video_track, exp_height, exp_exception, mocker):
+    if isinstance(video_track, Exception):
+        mocker.patch('upsies.utils.video.default_track', side_effect=video_track)
+    else:
+        mocker.patch('upsies.utils.video.default_track', return_value=video_track)
+
+    if exp_exception:
+        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+            video.height('foo.mkv')
+    else:
+        assert video.height('foo.mkv') == exp_height
 
 
-@pytest.mark.parametrize('scan_type, exp_scan_type', (('Progressive', 'p'), ('Interlaced', 'i')))
+@pytest.mark.parametrize('scan_type, exp_scan_type', (('Progressive', 'p'), ('Interlaced', 'i'), (None, 'p')))
 @pytest.mark.parametrize(
-    argnames='width, height, par, exp_res',
+    argnames='width, height, par, exp_resolution',
     argvalues=(
         ('7680', '4320', None, '4320'),
         ('3840', '2160', None, '2160'),
@@ -341,249 +353,245 @@ def test_height(default_track_mock, height, par, exp_height):
     ),
     ids=lambda value: str(value),
 )
-@patch('upsies.utils.video.default_track')
-def test_resolution(default_track_mock, width, height, par, exp_res, scan_type, exp_scan_type):
-    default_track_mock.return_value = {
+def test_resolution(width, height, par, exp_resolution, scan_type, exp_scan_type, mocker):
+    default_track_mock = mocker.patch('upsies.utils.video.default_track', return_value={
         '@type': 'Video',
         'Width': width,
         'Height': height,
         'PixelAspectRatio': par,
         'ScanType': scan_type,
-    }
-    video.resolution.cache_clear()
-    assert video.resolution('foo.mkv') == f'{exp_res}{exp_scan_type}'
+    })
+    for key in tuple(default_track_mock.return_value):
+        if default_track_mock.return_value[key] is None:
+            del default_track_mock.return_value[key]
 
-@patch('upsies.utils.video.default_track')
-def test_resolution_is_unknown(default_track_mock):
-    default_track_mock.return_value = {}
-    video.resolution.cache_clear()
-    assert video.resolution('foo.mkv') is None
+    if exp_resolution and exp_scan_type:
+        assert video.resolution('foo.mkv') == f'{exp_resolution}{exp_scan_type}'
+    else:
+        with pytest.raises(errors.ContentError, match=r'^Unable to determine video resolution$'):
+            video.resolution('foo.mkv')
 
-@patch('upsies.utils.video.default_track')
-def test_resolution_catches_ContentError_from_default_track(default_track_mock):
-    default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.resolution.cache_clear()
-    assert video.resolution('foo.mkv') is None
+@pytest.mark.parametrize(
+    argnames='video_track, exp_exception',
+    argvalues=(
+        ({'@type': 'Video', 'Height': 'nan', 'Width': '123'},
+         errors.ContentError('Unable to determine video resolution')),
+        ({'@type': 'Video', 'Height': '123', 'Width': 'nan'},
+         errors.ContentError('Unable to determine video resolution')),
+        ({'@type': 'Video', 'Width': '123'},
+         errors.ContentError('Unable to determine video resolution')),
+        ({'@type': 'Video', 'Height': '123'},
+         errors.ContentError('Unable to determine video resolution')),
+        ({},
+         errors.ContentError('Unable to determine video resolution')),
+    ),
+    ids=lambda value: str(value),
+)
+def test_resolution_detection_fails(video_track, exp_exception, mocker):
+    mocker.patch('upsies.utils.video.default_track', return_value=video_track)
+    with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+        video.resolution('foo.mkv')
+
+def test_resolution_forwards_ContentError_from_default_track(mocker):
+    mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
+    with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
+        video.resolution('foo.mkv')
 
 def test_resolution_uses_display_aspect_ratio(data_dir):
-    video.resolution.cache_clear()
     video_file = os.path.join(data_dir, 'video', 'aspect_ratio.mkv')
     assert video.resolution(video_file) == '720p'
 
 
 @pytest.mark.parametrize(
-    argnames='exp_frame_rate, video_dict',
+    argnames='video_track, exp_frame_rate',
     argvalues=(
-        (0.0, {}),
-        (25.0, {'FrameRate': '25.000'}),
-        (23.976, {'FrameRate': '23.976'}),
+        ({'FrameRate': '25.000'}, 25.0),
+        ({'FrameRate': '23.976'}, 23.976),
+        ({'FrameRate': 'foo'}, 0.0),
+        ({}, 0.0),
     ),
     ids=lambda v: str(v),
 )
-@patch('upsies.utils.video.default_track')
-def test_frame_rate(default_track_mock, exp_frame_rate, video_dict):
-    default_track_mock.return_value = video_dict
-    video.frame_rate.cache_clear()
+def test_frame_rate(video_track, exp_frame_rate, mocker):
+    mocker.patch('upsies.utils.video.default_track', return_value=video_track)
     assert video.frame_rate('foo.mkv') == exp_frame_rate
 
-@patch('upsies.utils.video.default_track')
-def test_frame_rate_catches_ContentError(default_track_mock):
-    default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.frame_rate.cache_clear()
-    assert video.frame_rate('foo.mkv') == 0.0
+def test_frame_rate_forwards_ContentError_from_default_track(mocker):
+    mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
+    with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
+        video.frame_rate('foo.mkv')
 
 
 @pytest.mark.parametrize(
-    argnames='exp_bit_depth, video_dict',
+    argnames='video_track, exp_bit_depth',
     argvalues=(
-        (None, {}),
-        ('8', {'BitDepth': '8'}),
-        ('10', {'BitDepth': '10'}),
+        ({'BitDepth': '8'}, 8),
+        ({'BitDepth': '10'}, 10),
+        ({'BitDepth': 'foo'}, 0),
+        ({}, 0),
     ),
     ids=lambda v: str(v),
 )
-@patch('upsies.utils.video.default_track')
-def test_bit_depth(default_track_mock, exp_bit_depth, video_dict):
-    default_track_mock.return_value = video_dict
-    video.bit_depth.cache_clear()
+def test_bit_depth(video_track, exp_bit_depth, mocker):
+    mocker.patch('upsies.utils.video.default_track', return_value=video_track)
     assert video.bit_depth('foo.mkv') == exp_bit_depth
 
-@patch('upsies.utils.video.default_track')
-def test_bit_depth_catches_ContentError(default_track_mock):
-    default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.bit_depth.cache_clear()
-    assert video.bit_depth('foo.mkv') is None
+def test_bit_depth_forwards_ContentError_from_default_track(mocker):
+    mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
+    with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
+        video.bit_depth('foo.mkv')
 
 
 @pytest.mark.parametrize(
-    argnames='exp_return_value, video_dict',
+    argnames='video_track, exp_return_value',
     argvalues=(
-        (None, {}),
-        (None, {'HDR_Format': 'foo'}),
-        ('Dolby Vision', {'HDR_Format': 'Dolby Vision'}),
-        ('HDR10+', {'HDR_Format_Compatibility': 'HDR10+ Profile A'}),
-        ('HDR10+', {'HDR_Format_Compatibility': 'HDR10+ Profile B'}),
-        ('HDR10', {'HDR_Format_Compatibility': 'HDR10'}),
-        ('HDR', {'HDR_Format_Compatibility': 'foo HDR bar'}),
-        ('HDR', {'HDR_Format': 'foo HDR bar'}),
+        ({}, ''),
+        ({'HDR_Format': 'foo'}, ''),
+        ({'HDR_Format': 'Dolby Vision'}, 'Dolby Vision'),
+        ({'HDR_Format_Compatibility': 'HDR10+ Profile A'}, 'HDR10+'),
+        ({'HDR_Format_Compatibility': 'HDR10+ Profile B'}, 'HDR10+'),
+        ({'HDR_Format_Compatibility': 'HDR10'}, 'HDR10'),
+        ({'HDR_Format_Compatibility': 'foo HDR bar'}, 'HDR'),
+        ({'HDR_Format': 'foo HDR bar'}, 'HDR'),
     ),
     ids=lambda v: str(v),
 )
-@patch('upsies.utils.video.default_track')
-def test_hdr_format(default_track_mock, exp_return_value, video_dict):
-    print('Setting default video track to', video_dict)
-    default_track_mock.return_value = video_dict
-    video.hdr_format.cache_clear()
+def test_hdr_format(video_track, exp_return_value, mocker):
+    mocker.patch('upsies.utils.video.default_track', return_value=video_track)
     assert video.hdr_format('foo.mkv') == exp_return_value
 
-@patch('upsies.utils.video.default_track')
-def test_hdr_format_catches_ContentError(default_track_mock):
-    default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.hdr_format.cache_clear()
-    assert video.hdr_format('foo.mkv') is None
+def test_hdr_format_forwards_ContentError_from_default_track(mocker):
+    mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
+    with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
+        video.hdr_format('foo.mkv')
 
 
 @pytest.mark.parametrize(
-    argnames='exp_return_value, audio_dicts',
+    argnames='audio_tracks, exp_dual_audio',
     argvalues=(
-        (False, []),
-        (False, [{}, {}]),
-        (False, [{'Language': 'en'}]),
-        (False, [{'Language': 'fr'}]),
-        (True, [{'Language': 'fr'}, {'Language': 'en'}]),
-        (True, [{'Language': 'en'}, {'Language': 'fr'}]),
-        (True, [{'Language': 'en'}, {'Language': 'fr'}, {'Language': 'fr', 'Title': 'Commentary with Foo'}]),
-        (False, [{'Language': 'fr'}, {'Language': 'en', 'Title': 'Commentary with Foo'}]),
+        ([], False),
+        ([{}, {}], False),
+        ([{'Language': 'en'}], False),
+        ([{'Language': 'fr'}], False),
+        ([{'Language': 'fr'}, {'Language': 'en'}], True),
+        ([{'Language': 'en'}, {'Language': 'fr'}], True),
+        ([{'Language': 'en'}, {'Language': 'fr'}, {'Language': 'fr', 'Title': 'Commentary with Foo'}], True),
+        ([{'Language': 'fr'}, {'Language': 'en', 'Title': 'Commentary with Foo'}], False),
     ),
     ids=lambda v: str(v),
 )
-@patch('upsies.utils.video.tracks')
-def test_has_dual_audio(tracks_mock, exp_return_value, audio_dicts):
-    tracks_mock.return_value = {'Audio': audio_dicts}
-    video.has_dual_audio.cache_clear()
-    assert video.has_dual_audio('foo.mkv') == exp_return_value
+def test_has_dual_audio(audio_tracks, exp_dual_audio, mocker):
+    mocker.patch('upsies.utils.video.tracks', return_value={'Audio': audio_tracks})
+    assert video.has_dual_audio('foo.mkv') == exp_dual_audio
 
-@patch('upsies.utils.video.default_track')
-def test_has_dual_audio_catches_ContentError(default_track_mock):
-    default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.has_dual_audio.cache_clear()
-    assert video.has_dual_audio('foo.mkv') is None
+def test_has_dual_audio_forwards_ContentError_from_tracks(mocker):
+    mocker.patch('upsies.utils.video.tracks', side_effect=errors.ContentError('Something went wrong'))
+    with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
+        video.has_dual_audio('foo.mkv')
 
 
 @pytest.mark.parametrize(
-    argnames='exp_return_value, audio_dicts',
+    argnames='audio_tracks, exp_return_value',
     argvalues=(
-        (False, []),
-        (False, [{}, {}]),
-        (False, [{'Title': 'Shlommentary'}]),
-        (True, [{'Title': 'Commentary with Foo'}]),
-        (True, [{'Title': "Foo's commentary"}]),
-        (True, [{'Title': "THE FRICKIN' COMMENTARY, OMG"}]),
+        ([], False),
+        ([{}, {}], False),
+        ([{'Title': 'Shlommentary'}], False),
+        ([{'Title': 'Commentary with Foo'}], True),
+        ([{'Title': "Foo's commentary"}], True),
+        ([{'Title': "THE FRICKIN' COMMENTARY, OMG"}], True),
     ),
     ids=lambda v: str(v),
 )
-@patch('upsies.utils.video.tracks')
-def test_has_commentary(tracks_mock, exp_return_value, audio_dicts):
-    tracks_mock.return_value = {'Audio': audio_dicts}
-    video.has_commentary.cache_clear()
+def test_has_commentary(exp_return_value, audio_tracks, mocker):
+    mocker.patch('upsies.utils.video.tracks', return_value={'Audio': audio_tracks})
     assert video.has_commentary('foo.mkv') == exp_return_value
 
-@patch('upsies.utils.video.default_track')
-def test_has_commentary_catches_ContentError(default_track_mock):
-    default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.has_commentary.cache_clear()
-    assert video.has_commentary('foo.mkv') is None
+def test_has_commentary_forwards_ContentError_from_tracks(mocker):
+    mocker.patch('upsies.utils.video.tracks', side_effect=errors.ContentError('Something went wrong'))
+    with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
+        video.has_commentary('foo.mkv')
 
 
 @pytest.mark.parametrize(
-    argnames='exp_audio_format, audio_dict',
+    argnames='audio_track, exp_audio_format',
     argvalues=(
-        (None, {}),
-        ('AAC', {'Format': 'AAC', 'Format_AdditionalFeatures': 'LC'}),
-        ('AC-3', {'Format': 'AC-3'}),
-        ('E-AC-3', {'Format': 'E-AC-3'}),
-        ('E-AC-3 Atmos', {'Format': 'E-AC-3', 'Format_Commercial_IfAny': 'Dolby Digital Plus with Dolby Atmos'}),
-        ('TrueHD', {'Format': 'MLP FBA', 'Format_Commercial_IfAny': 'Dolby TrueHD'}),
-        ('TrueHD Atmos', {'Format': 'MLP FBA', 'Format_Commercial_IfAny': 'Dolby TrueHD with Dolby Atmos'}),
-        ('DTS', {'Format': 'DTS'}),
-        ('DTS-ES', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-ES Matrix'}),
-        ('DTS-ES', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-ES Discrete'}),
-        ('DTS-HD', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD High Resolution Audio', 'Format_AdditionalFeatures': 'XBR'}),
-        ('DTS-HD MA', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL'}),
-        ('DTS:X', {'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL X'}),
-        ('FLAC', {'Format': 'FLAC'}),
-        ('MP3', {'Format': 'MPEG Audio'}),
-        ('Vorbis', {'Format': 'Vorbis'}),
-        ('Vorbis', {'Format': 'Ogg'}),
+        ({}, ''),
+        ({'Format': 'AAC', 'Format_AdditionalFeatures': 'LC'}, 'AAC'),
+        ({'Format': 'AC-3'}, 'AC-3'),
+        ({'Format': 'E-AC-3'}, 'E-AC-3'),
+        ({'Format': 'E-AC-3', 'Format_Commercial_IfAny': 'Dolby Digital Plus with Dolby Atmos'}, 'E-AC-3 Atmos'),
+        ({'Format': 'MLP FBA', 'Format_Commercial_IfAny': 'Dolby TrueHD'}, 'TrueHD'),
+        ({'Format': 'MLP FBA', 'Format_Commercial_IfAny': 'Dolby TrueHD with Dolby Atmos'}, 'TrueHD Atmos'),
+        ({'Format': 'DTS'}, 'DTS'),
+        ({'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-ES Matrix'}, 'DTS-ES'),
+        ({'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-ES Discrete'}, 'DTS-ES'),
+        ({'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD High Resolution Audio', 'Format_AdditionalFeatures': 'XBR'}, 'DTS-HD'),
+        ({'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL'}, 'DTS-HD MA'),
+        ({'Format': 'DTS', 'Format_Commercial_IfAny': 'DTS-HD Master Audio', 'Format_AdditionalFeatures': 'XLL X'}, 'DTS:X'),
+        ({'Format': 'FLAC'}, 'FLAC'),
+        ({'Format': 'MPEG Audio'}, 'MP3'),
+        ({'Format': 'Vorbis'}, 'Vorbis'),
+        ({'Format': 'Ogg'}, 'Vorbis'),
     ),
     ids=lambda v: str(v),
 )
-@patch('upsies.utils.video.default_track')
-def test_audio_format(default_track_mock, exp_audio_format, audio_dict):
-    default_track_mock.return_value = audio_dict
-    video.audio_format.cache_clear()
+def test_audio_format(audio_track, exp_audio_format, mocker):
+    mocker.patch('upsies.utils.video.default_track', return_value=audio_track)
     assert video.audio_format('foo.mkv') == exp_audio_format
 
-@patch('upsies.utils.video.default_track')
-def test_audio_format_catches_ContentError_from_default_track(default_track_mock):
-    default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.audio_format.cache_clear()
-    assert video.audio_format('foo.mkv') is None
+def test_audio_format_catches_ContentError_from_default_track(mocker):
+    mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
+    with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
+        video.audio_format('foo.mkv')
 
 
 @pytest.mark.parametrize(
-    argnames='exp_audio_channels, audio_dict',
+    argnames='audio_track, exp_audio_channels',
     argvalues=(
-        (None, {}),
-        ('1.0', {'Channels': '1'}),
-        ('2.0', {'Channels': '2'}),
-        ('2.0', {'Channels': '3'}),
-        ('2.0', {'Channels': '4'}),
-        ('2.0', {'Channels': '5'}),
-        ('5.1', {'Channels': '6'}),
-        ('5.1', {'Channels': '7'}),
-        ('7.1', {'Channels': '8'}),
+        ({}, ''),
+        ({'Channels': '1'}, '1.0'),
+        ({'Channels': '2'}, '2.0'),
+        ({'Channels': '3'}, '2.0'),
+        ({'Channels': '4'}, '2.0'),
+        ({'Channels': '5'}, '2.0'),
+        ({'Channels': '6'}, '5.1'),
+        ({'Channels': '7'}, '5.1'),
+        ({'Channels': '8'}, '7.1'),
     ),
     ids=lambda value: str(value),
 )
-@patch('upsies.utils.video.default_track')
-def test_audio_channels(default_track_mock, exp_audio_channels, audio_dict):
-    default_track_mock.return_value = audio_dict
-    video.audio_channels.cache_clear()
+def test_audio_channels(audio_track, exp_audio_channels, mocker):
+    mocker.patch('upsies.utils.video.default_track', return_value=audio_track)
     assert video.audio_channels('foo.mkv') == exp_audio_channels
 
-@patch('upsies.utils.video.default_track')
-def test_audio_channels_catches_ContentError_from_default_track(default_track_mock):
-    default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.audio_channels.cache_clear()
-    assert video.audio_channels('foo.mkv') is None
+def test_audio_channels_catches_ContentError_from_default_track(mocker):
+    mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
+    with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
+        video.audio_channels('foo.mkv')
 
 
 @pytest.mark.parametrize(
-    argnames='exp_video_format, video_dict',
+    argnames='video_track, exp_video_format',
     argvalues=(
-        (None, {}),
-        ('XviD', {'Encoded_Library_Name': 'XviD'}),
-        ('x264', {'Encoded_Library_Name': 'x264'}),
-        ('x265', {'Encoded_Library_Name': 'x265'}),
-        ('H.264', {'Format': 'AVC'}),
-        ('H.265', {'Format': 'HEVC'}),
-        ('VP9', {'Format': 'VP9'}),
-        ('MPEG-2', {'Format': 'MPEG Video', 'Format Version': '2'}),
+        ({}, ''),
+        ({'Encoded_Library_Name': 'XviD'}, 'XviD'),
+        ({'Encoded_Library_Name': 'x264'}, 'x264'),
+        ({'Encoded_Library_Name': 'x265'}, 'x265'),
+        ({'Format': 'AVC'}, 'H.264'),
+        ({'Format': 'HEVC'}, 'H.265'),
+        ({'Format': 'VP9'}, 'VP9'),
+        ({'Format': 'MPEG Video'}, 'MPEG-2'),
     ),
     ids=lambda value: str(value),
 )
-@patch('upsies.utils.video.default_track')
-def test_video_format(default_track_mock, exp_video_format, video_dict):
-    default_track_mock.return_value = video_dict
-    video.video_format.cache_clear()
+def test_video_format(video_track, exp_video_format, mocker):
+    mocker.patch('upsies.utils.video.default_track', return_value=video_track)
     assert video.video_format('foo.mkv') == exp_video_format
 
-@patch('upsies.utils.video.default_track')
-def test_video_format_of_unsupported_or_nonexisting_file(default_track_mock):
-    default_track_mock.side_effect = errors.ContentError('Something went wrong')
-    video.video_format.cache_clear()
-    assert video.video_format('foo.mkv') is None
+def test_video_format_of_unsupported_or_nonexisting_file(mocker):
+    mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
+    with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
+        video.video_format('foo.mkv')
 
 
 def test_first_video_finds_no_videos(tmp_path, mocker):
