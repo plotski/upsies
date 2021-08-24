@@ -20,7 +20,7 @@ def test_defaults():
         'screenshots'      : 4,
         'copy-to'          : '',
         'exclude'          : [
-            r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
+            r'\.(?i:txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample)',
         ],
     }
