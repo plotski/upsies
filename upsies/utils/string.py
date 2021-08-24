@@ -2,12 +2,34 @@
 String formatting and parsing
 """
 
-import math
 import sys
+
+import logging  # isort:skip
+_log = logging.getLogger(__name__)
+
+
+def autodecode(bytes):
+    """
+    Decode `bytes` with autodetected encoding
+
+    :raise ValueError: if autodetection fails
+
+    :return: Decoded string
+    :rtype: str
+    """
+    import chardet
+    info = chardet.detect(bytes)
+    encoding = info.get('encoding', None)
+    if encoding:
+        _log.debug('Decoding %r with %r', bytes[:100], encoding)
+        return str(bytes, encoding)
+    else:
+        raise ValueError(f'Unable to autodetect encoding: {bytes!r}')
 
 
 def star_rating(rating, max_rating=10):
     '''Return star rating string with the characters "★", "⯪" and "☆"'''
+    import math
     rating = min(max_rating, max(0, rating))
     left = '\u2605' * math.floor(rating)
     if rating >= max_rating:

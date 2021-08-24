@@ -1,6 +1,25 @@
+import re
+
 import pytest
 
 from upsies.utils import string
+
+
+@pytest.mark.parametrize(
+    argnames='bytes, exp_string, exp_error',
+    argvalues=(
+        (b'\xf2\xd5\xd3\xd3\xcb\xc9\xca', 'Русский', None),  # Russian
+        (b'\xf2\xe1\xf8\xe9\xfa', 'עברית', None),  # Hebrew
+        (b'\xc5\xeb\xeb\xe7\xed\xe9\xea\xdc', 'Ελληνικά', None),  # Greek
+        (b'\x1aE\xdf\xa3\xa3B\x86\x81\x01B', None, r"Unable to autodetect encoding: b'\x1aE\xdf\xa3\xa3B\x86\x81\x01B'"),
+    ),
+)
+def test_autodecode(bytes, exp_string, exp_error):
+    if exp_error:
+        with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+            string.autodecode(bytes)
+    else:
+        assert string.autodecode(bytes) == exp_string
 
 
 @pytest.mark.parametrize(

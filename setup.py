@@ -40,6 +40,7 @@ setuptools.setup(
         'pyxdg',
         'torf==3.*',
         'Unidecode==1.2.*',
+        'chardet==4.*',
     ],
     entry_points={'console_scripts': ['upsies = upsies.uis.tui:main']},
 )
