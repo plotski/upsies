@@ -7,7 +7,7 @@ import os
 import re
 
 from ... import __homepage__, __project_name__, jobs
-from ...utils import as_groups, cached_property, release
+from ...utils import as_groups, cached_property, release, string
 from ..base import TrackerJobsBase
 
 import logging  # isort:skip
@@ -396,8 +396,8 @@ class BhdTrackerJobs(TrackerJobsBase):
                     # Limit size to 500kB
                     if os.path.getsize(nfo_path) <= self.max_nfo_size:
                         try:
-                            with open(nfo_path, 'r') as f:
-                                return f.read()
+                            with open(nfo_path, 'rb') as f:
+                                return string.autodecode(f.read())
                         except OSError as e:
                             self.error(e.strerror if e.strerror else str(e))
 

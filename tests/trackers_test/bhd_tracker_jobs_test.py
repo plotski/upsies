@@ -658,9 +658,10 @@ def test_post_data_sd(resolution, exp_sd, bhd_tracker_jobs, mocker):
     argvalues=(
         (False, None, None, True, None, []),
         (True, None, None, True, None, []),
-        (True, 'foo.nfo', 'x' * (bhd.BhdTrackerJobs.max_nfo_size + 1), True, None, []),
-        (True, 'foo.nfo', 'x' * bhd.BhdTrackerJobs.max_nfo_size, True, 'x' * bhd.BhdTrackerJobs.max_nfo_size, []),
-        (True, 'foo.nfo', 'x' * bhd.BhdTrackerJobs.max_nfo_size, False, None, [call('Permission denied')]),
+        (True, 'foo.nfo', b'x' * (bhd.BhdTrackerJobs.max_nfo_size + 1), True, None, []),
+        (True, 'foo.nfo', b'x' * bhd.BhdTrackerJobs.max_nfo_size, True, 'x' * bhd.BhdTrackerJobs.max_nfo_size, []),
+        (True, 'foo.nfo', b'x' * bhd.BhdTrackerJobs.max_nfo_size, False, None, [call('Permission denied')]),
+        (True, 'foo.nfo', b'\xb2\xdb', True, '²Û', []),
     ),
     ids=lambda v: str(v)[:20] if len(str(v)) > 20 else str(v),
 )
@@ -669,11 +670,11 @@ def test_post_data_nfo(isdir, nfo_file, nfo_data, nfo_readable, exp_value, exp_e
     if not isdir:
         import shutil
         shutil.rmtree(bhd_tracker_jobs.content_path)
-        with open(f'{bhd_tracker_jobs.content_path}.mkv', 'w') as f:
-            f.write('mock matroska data')
+        with open(f'{bhd_tracker_jobs.content_path}.mkv', 'wb') as f:
+            f.write(b'mock matroska data')
     elif nfo_file:
         nfo_filepath = os.path.join(bhd_tracker_jobs.content_path, nfo_file)
-        with open(nfo_filepath, 'w') as f:
+        with open(nfo_filepath, 'wb') as f:
             f.write(nfo_data)
         if not nfo_readable:
             os.chmod(nfo_filepath, 0o222)
