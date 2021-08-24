@@ -298,6 +298,33 @@ def test_width(video_track, exp_width, exp_exception, mocker):
     else:
         assert video.width('foo.mkv') == exp_width
 
+@pytest.mark.parametrize(
+    argnames='video_track, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'@type': 'Video', 'Width': '1080'}, video.NO_DEFAULT_VALUE, 1080, None),
+        ({'@type': 'Video', 'Width': '1080'}, 'default value', 1080, None),
+        ({'@type': 'Video', 'Width': '1080'}, None, 1080, None),
+        ({}, video.NO_DEFAULT_VALUE, True, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, None, None, None),
+    ),
+)
+def test_width_with_default_value(video_track, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if video_track:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.default_track', return_value=video_track)
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.width(path, default=default)
+        else:
+            assert video.width(path, default=default) is default
+    else:
+        assert video.width(path, default=default) == exp_return_value
+
 
 @pytest.mark.parametrize(
     argnames='video_track, exp_height, exp_exception',
@@ -325,6 +352,33 @@ def test_height(video_track, exp_height, exp_exception, mocker):
             video.height('foo.mkv')
     else:
         assert video.height('foo.mkv') == exp_height
+
+@pytest.mark.parametrize(
+    argnames='video_track, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'@type': 'Video', 'Height': '1080'}, video.NO_DEFAULT_VALUE, 1080, None),
+        ({'@type': 'Video', 'Height': '1080'}, 'default value', 1080, None),
+        ({'@type': 'Video', 'Height': '1080'}, None, 1080, None),
+        ({}, video.NO_DEFAULT_VALUE, True, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, None, None, None),
+    ),
+)
+def test_height_with_default_value(video_track, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if video_track:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.default_track', return_value=video_track)
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.height(path, default=default)
+        else:
+            assert video.height(path, default=default) is default
+    else:
+        assert video.height(path, default=default) == exp_return_value
 
 
 @pytest.mark.parametrize('scan_type, exp_scan_type', (('Progressive', 'p'), ('Interlaced', 'i'), (None, 'p')))
@@ -392,6 +446,33 @@ def test_resolution_detection_fails(video_track, exp_exception, mocker):
     with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
         video.resolution('foo.mkv')
 
+@pytest.mark.parametrize(
+    argnames='video_track, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'@type': 'Video', 'Height': '1080', 'Width': '1920'}, video.NO_DEFAULT_VALUE, '1080p', None),
+        ({'@type': 'Video', 'Height': '1080', 'Width': '1920'}, 'default value', '1080p', None),
+        ({'@type': 'Video', 'Height': '1080', 'Width': '1920'}, None, '1080p', None),
+        ({}, video.NO_DEFAULT_VALUE, True, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, None, None, None),
+    ),
+)
+def test_resolution_with_default_value(video_track, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if video_track:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.default_track', return_value=video_track)
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.resolution(path, default=default)
+        else:
+            assert video.resolution(path, default=default) is default
+    else:
+        assert video.resolution(path, default=default) == exp_return_value
+
 def test_resolution_forwards_ContentError_from_default_track(mocker):
     mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
     with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
@@ -416,6 +497,33 @@ def test_frame_rate(video_track, exp_frame_rate, mocker):
     mocker.patch('upsies.utils.video.default_track', return_value=video_track)
     assert video.frame_rate('foo.mkv') == exp_frame_rate
 
+@pytest.mark.parametrize(
+    argnames='video_track, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'FrameRate': '25.000'}, video.NO_DEFAULT_VALUE, 25.0, None),
+        ({'FrameRate': '25.000'}, 'default value', 25.0, None),
+        ({'FrameRate': '25.000'}, None, 25.0, None),
+        ({}, video.NO_DEFAULT_VALUE, True, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, None, None, None),
+    ),
+)
+def test_frame_rate_with_default_value(video_track, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if video_track:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.default_track', return_value=video_track)
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.frame_rate(path, default=default)
+        else:
+            assert video.frame_rate(path, default=default) is default
+    else:
+        assert video.frame_rate(path, default=default) == exp_return_value
+
 def test_frame_rate_forwards_ContentError_from_default_track(mocker):
     mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
     with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
@@ -435,6 +543,33 @@ def test_frame_rate_forwards_ContentError_from_default_track(mocker):
 def test_bit_depth(video_track, exp_bit_depth, mocker):
     mocker.patch('upsies.utils.video.default_track', return_value=video_track)
     assert video.bit_depth('foo.mkv') == exp_bit_depth
+
+@pytest.mark.parametrize(
+    argnames='video_track, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'BitDepth': '10'}, video.NO_DEFAULT_VALUE, 10, None),
+        ({'BitDepth': '10'}, 'default value', 10, None),
+        ({'BitDepth': '10'}, None, 10, None),
+        ({}, video.NO_DEFAULT_VALUE, True, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, None, None, None),
+    ),
+)
+def test_bit_depth_with_default_value(video_track, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if video_track:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.default_track', return_value=video_track)
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.bit_depth(path, default=default)
+        else:
+            assert video.bit_depth(path, default=default) is default
+    else:
+        assert video.bit_depth(path, default=default) == exp_return_value
 
 def test_bit_depth_forwards_ContentError_from_default_track(mocker):
     mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
@@ -460,6 +595,33 @@ def test_hdr_format(video_track, exp_return_value, mocker):
     mocker.patch('upsies.utils.video.default_track', return_value=video_track)
     assert video.hdr_format('foo.mkv') == exp_return_value
 
+@pytest.mark.parametrize(
+    argnames='video_track, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'HDR_Format_Compatibility': 'HDR10'}, video.NO_DEFAULT_VALUE, 'HDR10', None),
+        ({'HDR_Format_Compatibility': 'HDR10'}, 'default value', 'HDR10', None),
+        ({'HDR_Format_Compatibility': 'HDR10'}, None, 'HDR10', None),
+        ({}, video.NO_DEFAULT_VALUE, True, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, None, None, None),
+    ),
+)
+def test_hdr_format_with_default_value(video_track, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if video_track:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.default_track', return_value=video_track)
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.hdr_format(path, default=default)
+        else:
+            assert video.hdr_format(path, default=default) is default
+    else:
+        assert video.hdr_format(path, default=default) == exp_return_value
+
 def test_hdr_format_forwards_ContentError_from_default_track(mocker):
     mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
     with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
@@ -484,6 +646,33 @@ def test_has_dual_audio(audio_tracks, exp_dual_audio, mocker):
     mocker.patch('upsies.utils.video.tracks', return_value={'Audio': audio_tracks})
     assert video.has_dual_audio('foo.mkv') == exp_dual_audio
 
+@pytest.mark.parametrize(
+    argnames='audio_tracks, default, exp_return_value, exp_exception',
+    argvalues=(
+        ([{'Language': 'fr'}, {'Language': 'en'}], video.NO_DEFAULT_VALUE, True, None),
+        ([{'Language': 'fr'}, {'Language': 'en'}], 'default value', True, None),
+        ([{'Language': 'fr'}, {'Language': 'en'}], None, True, None),
+        ([], video.NO_DEFAULT_VALUE, True, errors.ContentError('{path}: No such file or directory')),
+        ([], 'default value', 'default value', None),
+        ([], None, None, None),
+    ),
+)
+def test_has_dual_audio_with_default_value(audio_tracks, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if audio_tracks:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.tracks', return_value={'Audio': audio_tracks})
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.has_dual_audio(path, default=default)
+        else:
+            assert video.has_dual_audio(path, default=default) is default
+    else:
+        assert video.has_dual_audio(path, default=default) == exp_return_value
+
 def test_has_dual_audio_forwards_ContentError_from_tracks(mocker):
     mocker.patch('upsies.utils.video.tracks', side_effect=errors.ContentError('Something went wrong'))
     with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
@@ -505,6 +694,35 @@ def test_has_dual_audio_forwards_ContentError_from_tracks(mocker):
 def test_has_commentary(exp_return_value, audio_tracks, mocker):
     mocker.patch('upsies.utils.video.tracks', return_value={'Audio': audio_tracks})
     assert video.has_commentary('foo.mkv') == exp_return_value
+
+@pytest.mark.parametrize(
+    argnames='audio_track, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'Title': 'Commentary with Foo'}, video.NO_DEFAULT_VALUE, True, None),
+        ({'Title': 'Commentary with Foo'}, 'default value', True, None),
+        ({'Title': 'Commentary with Foo'}, '', True, None),
+        ({'Title': 'Commentary with Foo'}, None, True, None),
+        ({}, video.NO_DEFAULT_VALUE, False, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, '', '', None),
+        ({}, None, None, None),
+    ),
+)
+def test_has_commentary_with_default_value(audio_track, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if audio_track:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.tracks', return_value={'Audio': [audio_track]})
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.has_commentary(path, default=default)
+        else:
+            assert video.has_commentary(path, default=default) is default
+    else:
+        assert video.has_commentary(path, default=default) == exp_return_value
 
 def test_has_commentary_forwards_ContentError_from_tracks(mocker):
     mocker.patch('upsies.utils.video.tracks', side_effect=errors.ContentError('Something went wrong'))
@@ -539,6 +757,33 @@ def test_audio_format(audio_track, exp_audio_format, mocker):
     mocker.patch('upsies.utils.video.default_track', return_value=audio_track)
     assert video.audio_format('foo.mkv') == exp_audio_format
 
+@pytest.mark.parametrize(
+    argnames='audio_track, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'Format': 'FLAC'}, video.NO_DEFAULT_VALUE, 'FLAC', None),
+        ({'Format': 'FLAC'}, 'default value', 'FLAC', None),
+        ({'Format': 'FLAC'}, None, 'FLAC', None),
+        ({}, video.NO_DEFAULT_VALUE, None, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, None, None, None),
+    ),
+)
+def test_audio_format_with_default_value(audio_track, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if audio_track:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.default_track', return_value=audio_track)
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.audio_format(path, default=default)
+        else:
+            assert video.audio_format(path, default=default) is default
+    else:
+        assert video.audio_format(path, default=default) == exp_return_value
+
 def test_audio_format_catches_ContentError_from_default_track(mocker):
     mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
     with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
@@ -564,6 +809,33 @@ def test_audio_channels(audio_track, exp_audio_channels, mocker):
     mocker.patch('upsies.utils.video.default_track', return_value=audio_track)
     assert video.audio_channels('foo.mkv') == exp_audio_channels
 
+@pytest.mark.parametrize(
+    argnames='audio_track, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'Channels': '2'}, video.NO_DEFAULT_VALUE, '2.0', None),
+        ({'Channels': '2'}, 'default value', '2.0', None),
+        ({'Channels': '2'}, None, '2.0', None),
+        ({}, video.NO_DEFAULT_VALUE, None, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, None, None, None),
+    ),
+)
+def test_audio_channels_with_default_value(audio_track, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if audio_track:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.default_track', return_value=audio_track)
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.audio_channels(path, default=default)
+        else:
+            assert video.audio_channels(path, default=default) is default
+    else:
+        assert video.audio_channels(path, default=default) == exp_return_value
+
 def test_audio_channels_catches_ContentError_from_default_track(mocker):
     mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
     with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
@@ -588,7 +860,34 @@ def test_video_format(video_track, exp_video_format, mocker):
     mocker.patch('upsies.utils.video.default_track', return_value=video_track)
     assert video.video_format('foo.mkv') == exp_video_format
 
-def test_video_format_of_unsupported_or_nonexisting_file(mocker):
+@pytest.mark.parametrize(
+    argnames='audio_track, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'Encoded_Library_Name': 'x264'}, video.NO_DEFAULT_VALUE, 'x264', None),
+        ({'Encoded_Library_Name': 'x264'}, 'default value', 'x264', None),
+        ({'Encoded_Library_Name': 'x264'}, None, 'x264', None),
+        ({}, video.NO_DEFAULT_VALUE, None, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, None, None, None),
+    ),
+)
+def test_video_format_with_default_value(audio_track, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if audio_track:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.default_track', return_value=audio_track)
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.video_format(path, default=default)
+        else:
+            assert video.video_format(path, default=default) is default
+    else:
+        assert video.video_format(path, default=default) == exp_return_value
+
+def test_video_format_catches_ContentError_from_default_track(mocker):
     mocker.patch('upsies.utils.video.default_track', side_effect=errors.ContentError('Something went wrong'))
     with pytest.raises(errors.ContentError, match=r'^Something went wrong$'):
         video.video_format('foo.mkv')

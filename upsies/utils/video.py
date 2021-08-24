@@ -14,6 +14,7 @@ from . import closest_number, fs, os_family, subproc
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
+NO_DEFAULT_VALUE = object()
 
 if os_family() == 'windows':
     _mediainfo_executable = 'mediainfo.exe'
@@ -149,15 +150,19 @@ def default_track(type, path):
     raise errors.ContentError(f'{path}: No {type.lower()} track found')
 
 
-def width(path):
+def width(path, default=NO_DEFAULT_VALUE):
     """
     Return displayed width of video file `path`
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if width can't be determined
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     video_track = default_track('video', path)
     return _get_display_width(video_track)
 
@@ -177,15 +182,19 @@ def _get_display_width(video_track):
         return int(width)
 
 
-def height(path):
+def height(path, default=NO_DEFAULT_VALUE):
     """
     Return displayed height of video file `path`
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if height can't be determined
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     video_track = default_track('video', path)
     return _get_display_height(video_track)
 
@@ -205,15 +214,19 @@ def _get_display_height(video_track):
         return int(height)
 
 
-def resolution(path):
+def resolution(path, default=NO_DEFAULT_VALUE):
     """
     Return resolution of video file `path` (e.g. "1080p")
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if resolution can't be determined
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     video_track = default_track('video', path)
     try:
         std_resolution = _get_closest_standard_resolution(video_track)
@@ -290,15 +303,19 @@ def _get_closest_standard_resolution(video_track):
     return std_resolution
 
 
-def frame_rate(path):
+def frame_rate(path, default=NO_DEFAULT_VALUE):
     """
     Return FPS of default video track or ``0.0`` if it can't be determined
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if no video track is found
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     video_track = default_track('video', path)
     try:
         return float(video_track['FrameRate'])
@@ -306,15 +323,19 @@ def frame_rate(path):
         return 0.0
 
 
-def bit_depth(path):
+def bit_depth(path, default=NO_DEFAULT_VALUE):
     """
     Return bit depth of default video track or ``0`` if it can't be determined
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if no video track is found
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     video_track = default_track('video', path)
     try:
         return int(video_track['BitDepth'])
@@ -338,16 +359,20 @@ Map HDR format names (e.g. "Dolby Vision") to dictinaries that map mediainfo
 video track fields to regular expressions that must match the fields' values
 """
 
-def hdr_format(path):
+def hdr_format(path, default=NO_DEFAULT_VALUE):
     """
     Return HDR format based on `hdr_formats`, e.g. "HDR10", or empty string if
     it can't be determined
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if no video track is found
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     def is_match(video_track, conditions):
         if isinstance(conditions, collections.abc.Mapping):
             # `conditions` maps field names to field value matching regexes
@@ -370,16 +395,20 @@ def hdr_format(path):
     return ''
 
 
-def has_dual_audio(path):
+def has_dual_audio(path, default=NO_DEFAULT_VALUE):
     """
     Return `True` if `path` contains multiple audio tracks with different
     languages and one of them is English, `False` otherwise
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if reading `path` fails
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     languages = set()
     audio_tracks = tracks(path).get('Audio', ())
     for track in audio_tracks:
@@ -393,16 +422,20 @@ def has_dual_audio(path):
         return False
 
 
-def has_commentary(path):
+def has_commentary(path, default=NO_DEFAULT_VALUE):
     """
     Return `True` if `path` has an audio track with "Commentary"
     (case-insensitive) in its title, `False` otherwise
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if reading `path` fails
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     audio_tracks = tracks(path).get('Audio', ())
     for track in audio_tracks:
         if 'commentary' in track.get('Title', '').lower():
@@ -432,15 +465,19 @@ _audio_format_translations = (
     ('Vorbis', {'Format': re.compile(r'\bOgg\b')}),
 )
 
-def audio_format(path):
+def audio_format(path, default=NO_DEFAULT_VALUE):
     """
     Return audio format (e.g. "AAC", "MP3") or empty string
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if no audio track is found
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     def is_match(regexs, audio_track):
         for key,regex in regexs.items():
             if regex is None:
@@ -482,15 +519,19 @@ _audio_channels_translations = (
     ('7.1', re.compile(r'^10$')),
 )
 
-def audio_channels(path):
+def audio_channels(path, default=NO_DEFAULT_VALUE):
     """
     Return audio channels (e.g. "5.1") or empty_string
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if no audio track is found
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     audio_channels = ''
     audio_track = default_track('audio', path)
     channels = audio_track.get('Channels', '')
@@ -513,16 +554,20 @@ _video_translations = (
     ('MPEG-2', {'Format': re.compile(r'^MPEG Video$')}),
 )
 
-def video_format(path):
+def video_format(path, default=NO_DEFAULT_VALUE):
     """
     Return video format or x264/x265/XviD if they were used or empty string if
     it can't be determined
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if no video track is found
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     def translate(video_track):
         for vfmt,regexs in _video_translations:
             for key,regex in regexs.items():
