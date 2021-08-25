@@ -108,7 +108,6 @@ def test_duration_gets_duration_from_ffprobe(first_video_mock, duration_from_ffp
     first_video_mock.return_value = 'some/path/to/foo.mkv'
     duration_from_ffprobe.return_value = 123.4
     duration_from_mediainfo.return_value = 567.8
-    video.duration.cache_clear()
     assert video.duration('some/path') == 123.4
 
 @pytest.mark.parametrize(
@@ -126,7 +125,6 @@ def test_duration_gets_duration_from_mediainfo(first_video_mock, duration_from_f
     first_video_mock.return_value = 'some/path/to/foo.mkv'
     duration_from_ffprobe.side_effect = exception
     duration_from_mediainfo.return_value = 567.8
-    video.duration.cache_clear()
     assert video.duration('some/path') == 567.8
 
 

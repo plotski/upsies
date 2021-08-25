@@ -55,7 +55,6 @@ def mediainfo(path):
     return mi
 
 
-@functools.lru_cache(maxsize=None)
 def duration(path):
     """
     Return video duration in seconds (float) or ``0.0`` if it can't be
