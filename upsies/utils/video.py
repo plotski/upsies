@@ -55,14 +55,19 @@ def mediainfo(path):
     return mi
 
 
-def duration(path):
+def duration(path, default=NO_DEFAULT_VALUE):
     """
     Return video duration in seconds (float) or ``0.0`` if it can't be
     determined
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
+
+    :raise ContentError: if anything goes wrong
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
     return _duration(first_video(path))
 
 def _duration(video_file_path):

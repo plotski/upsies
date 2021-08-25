@@ -101,38 +101,64 @@ def test_mediainfo_path_is_stripped_to_relevant_parts(first_video_mock, run_medi
     )
 
 
-@patch('upsies.utils.video._duration_from_mediainfo')
-@patch('upsies.utils.video._duration_from_ffprobe')
-@patch('upsies.utils.video.first_video')
-def test_duration_gets_duration_from_ffprobe(first_video_mock, duration_from_ffprobe, duration_from_mediainfo):
-    first_video_mock.return_value = 'some/path/to/foo.mkv'
-    duration_from_ffprobe.return_value = 123.4
-    duration_from_mediainfo.return_value = 567.8
-    assert video.duration('some/path') == 123.4
+@pytest.mark.parametrize(
+    argnames='path_exists, duration, default, exp_return_value, exp_exception',
+    argvalues=(
+        (True, 123.0, video.NO_DEFAULT_VALUE, 123.0, None),
+        (True, 123.0, 'default value', 123.0, None),
+        (True, 123.0, None, 123.0, None),
+        (False, 123.0, video.NO_DEFAULT_VALUE, None, errors.ContentError('{path}: No such file or directory')),
+        (False, 123.0, 'default value', 'default value', None),
+        (False, 123.0, None, None, None),
+    ),
+)
+def test_duration_with_default_value(path_exists, duration, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if path_exists:
+        path.write_bytes(b'mock data')
+        duration_mock = mocker.patch('upsies.utils.video._duration', return_value=duration)
+        first_video_mock = mocker.patch('upsies.utils.video.first_video', return_value='some/path/to/foo.mkv')
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.duration(path, default=default)
+        else:
+            assert video.duration(path, default=default) is default
+    else:
+        assert video.duration(path, default=default) == exp_return_value
+
+def test_duration_gets_duration_from_ffprobe(mocker):
+    duration_from_ffprobe_mock = mocker.patch('upsies.utils.video._duration_from_ffprobe', return_value=123.0)
+    duration_from_mediainfo_mock = mocker.patch('upsies.utils.video._duration_from_mediainfo', return_value=456.0)
+    first_video_mock = mocker.patch('upsies.utils.video.first_video', return_value='some/path/to/foo.mkv')
+    assert video.duration('some/path') == 123.0
+    assert first_video_mock.call_args_list == [call('some/path')]
+    assert duration_from_ffprobe_mock.call_args_list == [call(first_video_mock.return_value)]
+    assert duration_from_mediainfo_mock.call_args_list == []
 
 @pytest.mark.parametrize(
-    argnames='exception',
+    argnames='ffprobe_exception',
     argvalues=(
         RuntimeError('foo'),
         errors.DependencyError('bar'),
         errors.ProcessError('baz'),
     ),
 )
-@patch('upsies.utils.video._duration_from_mediainfo')
-@patch('upsies.utils.video._duration_from_ffprobe')
-@patch('upsies.utils.video.first_video')
-def test_duration_gets_duration_from_mediainfo(first_video_mock, duration_from_ffprobe, duration_from_mediainfo, exception):
-    first_video_mock.return_value = 'some/path/to/foo.mkv'
-    duration_from_ffprobe.side_effect = exception
-    duration_from_mediainfo.return_value = 567.8
-    assert video.duration('some/path') == 567.8
+def test_duration_gets_duration_from_mediainfo(ffprobe_exception, mocker):
+    duration_from_ffprobe_mock = mocker.patch('upsies.utils.video._duration_from_ffprobe', side_effect=ffprobe_exception)
+    duration_from_mediainfo_mock = mocker.patch('upsies.utils.video._duration_from_mediainfo', return_value=456.0)
+    first_video_mock = mocker.patch('upsies.utils.video.first_video', return_value='some/path/to/foo.mkv')
+    assert video.duration('some/path') == 456.0
+    assert first_video_mock.call_args_list == [call('some/path')]
+    assert duration_from_ffprobe_mock.call_args_list == [call(first_video_mock.return_value)]
+    assert duration_from_mediainfo_mock.call_args_list == [call(first_video_mock.return_value)]
 
 
-@patch('upsies.utils.video.make_ffmpeg_input')
-@patch('upsies.utils.subproc.run')
-def test_duration_from_ffprobe_succeeds(run_mock, make_ffmpeg_input_mock):
-    make_ffmpeg_input_mock.return_value = 'path/to/foo.mkv'
-    run_mock.return_value = ' 123.4 '
+def test_duration_from_ffprobe_succeeds(mocker):
+    make_ffmpeg_input_mock = mocker.patch('upsies.utils.video.make_ffmpeg_input', return_value='path/to/foo.mkv')
+    run_mock = mocker.patch('upsies.utils.subproc.run', return_value=' 123.4 \n')
     assert video._duration_from_ffprobe('foo') == 123.4
     assert make_ffmpeg_input_mock.call_args_list == [call('foo')]
     assert run_mock.call_args_list == [call(
@@ -143,11 +169,9 @@ def test_duration_from_ffprobe_succeeds(run_mock, make_ffmpeg_input_mock):
         ignore_errors=True,
     )]
 
-@patch('upsies.utils.video.make_ffmpeg_input')
-@patch('upsies.utils.subproc.run')
-def test_duration_from_ffprobe_fails(run_mock, make_ffmpeg_input_mock):
-    make_ffmpeg_input_mock.return_value = 'path/to/foo.mkv'
-    run_mock.return_value = 'arf!'
+def test_duration_from_ffprobe_fails(mocker):
+    make_ffmpeg_input_mock = mocker.patch('upsies.utils.video.make_ffmpeg_input', return_value='path/to/foo.mkv')
+    run_mock = mocker.patch('upsies.utils.subproc.run', return_value='arf!')
     exp_error = (
         'Unexpected output from '
         f"({video._ffprobe_executable!r}, "
@@ -167,10 +191,12 @@ def test_duration_from_ffprobe_fails(run_mock, make_ffmpeg_input_mock):
     )]
 
 
-@patch('upsies.utils.video._tracks')
-def test_duration_from_mediainfo_succeeds(tracks_mock):
-    tracks_mock.return_value = {'General': [{'@type': 'General', 'Duration': '123.4'}]}
+def test_duration_from_mediainfo_succeeds(mocker):
+    tracks_mock = mocker.patch('upsies.utils.video._tracks',return_value={
+        'General': [{'@type': 'General', 'Duration': '123.4'}],
+    })
     assert video._duration_from_mediainfo('some/path') == 123.4
+    assert tracks_mock.call_args_list == [call('some/path')]
 
 @pytest.mark.parametrize(
     argnames='track',
@@ -179,11 +205,13 @@ def test_duration_from_mediainfo_succeeds(tracks_mock):
         {'@type': 'General'},
     ),
 )
-@patch('upsies.utils.video._tracks')
-def test_duration_from_mediainfo_fails(tracks_mock, track):
-    tracks_mock.return_value = {'General': [track]}
+def test_duration_from_mediainfo_fails(track, mocker):
+    tracks_mock = mocker.patch('upsies.utils.video._tracks',return_value={
+        'General': [track],
+    })
     with pytest.raises(RuntimeError, match=rf'^Unexpected tracks: {re.escape(str(tracks_mock.return_value))}$'):
         video._duration_from_mediainfo('some/path')
+    assert tracks_mock.call_args_list == [call('some/path')]
 
 
 @patch('upsies.utils.video._run_mediainfo')
