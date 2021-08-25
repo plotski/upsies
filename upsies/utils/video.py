@@ -88,9 +88,9 @@ def _duration_from_ffprobe(video_file_path):
 def _duration_from_mediainfo(video_file_path):
     tracks = _tracks(video_file_path)
     try:
-        return float(tracks.get('General')[0]['Duration'])
+        return float(tracks['General'][0]['Duration'])
     except (KeyError, IndexError, TypeError, ValueError):
-        return 0.0
+        raise RuntimeError(f'Unexpected tracks: {tracks!r}')
 
 
 def tracks(path):

@@ -170,7 +170,7 @@ def test_duration_from_ffprobe_fails(run_mock, make_ffmpeg_input_mock):
 
 
 @patch('upsies.utils.video._tracks')
-def test_duration_from_mediainfo_finds_duration(tracks_mock):
+def test_duration_from_mediainfo_succeeds(tracks_mock):
     tracks_mock.return_value = {'General': [{'@type': 'General', 'Duration': '123.4'}]}
     assert video._duration_from_mediainfo('some/path') == 123.4
 
@@ -182,9 +182,10 @@ def test_duration_from_mediainfo_finds_duration(tracks_mock):
     ),
 )
 @patch('upsies.utils.video._tracks')
-def test_duration_from_mediainfo_does_not_find_duration(tracks_mock, track):
+def test_duration_from_mediainfo_fails(tracks_mock, track):
     tracks_mock.return_value = {'General': [track]}
-    assert video._duration_from_mediainfo('some/path') == 0.0
+    with pytest.raises(RuntimeError, match=rf'^Unexpected tracks: {re.escape(str(tracks_mock.return_value))}$'):
+        video._duration_from_mediainfo('some/path')
 
 
 @patch('upsies.utils.video._run_mediainfo')
