@@ -97,16 +97,19 @@ def _duration_from_mediainfo(video_file_path):
         raise RuntimeError(f'Unexpected tracks: {tracks!r}')
 
 
-def tracks(path):
+def tracks(path, default=NO_DEFAULT_VALUE):
     """
     ``mediainfo --Output=JSON`` as dictionary that maps each track's ``@type``
     to a list of the tracks
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist
 
     :raise ContentError: if anything goes wrong
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
     return _tracks(first_video(path))
 
 @functools.lru_cache(maxsize=None)

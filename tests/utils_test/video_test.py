@@ -214,23 +214,43 @@ def test_duration_from_mediainfo_fails(track, mocker):
     assert tracks_mock.call_args_list == [call('some/path')]
 
 
-@patch('upsies.utils.video._run_mediainfo')
-@patch('upsies.utils.video.first_video')
-def test_tracks_gets_first_video_from_path(first_video_mock, run_mediainfo_mock):
-    first_video_mock.return_value = 'some/path/to/foo.mkv'
-    run_mediainfo_mock.return_value = '{"media": {"track": []}}'
-    video._tracks.cache_clear()
-    video.tracks('some/path')
-    assert first_video_mock.call_args_list == [call('some/path')]
-    assert run_mediainfo_mock.call_args_list == [call('some/path/to/foo.mkv', '--Output=JSON')]
+@pytest.mark.parametrize(
+    argnames='path_exists, tracks, default, exp_return_value, exp_exception',
+    argvalues=(
+        (True, {'foo': 'bar'}, video.NO_DEFAULT_VALUE, {'foo': 'bar'}, None),
+        (True, {'foo': 'bar'}, 'default value', {'foo': 'bar'}, None),
+        (True, {'foo': 'bar'}, None, {'foo': 'bar'}, None),
+        (False, {'foo': 'bar'}, video.NO_DEFAULT_VALUE, None, errors.ContentError('{path}: No such file or directory')),
+        (False, {'foo': 'bar'}, 'default value', 'default value', None),
+        (False, {'foo': 'bar'}, None, None, None),
+    ),
+)
+def test_tracks(path_exists, tracks, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if path_exists:
+        path.write_bytes(b'mock data')
+        _tracks_mock = mocker.patch('upsies.utils.video._tracks', return_value=tracks)
+        first_video_mock = mocker.patch('upsies.utils.video.first_video', return_value='some/path/to/foo.mkv')
 
-@patch('upsies.utils.video._run_mediainfo')
-@patch('upsies.utils.video.first_video', Mock(return_value='foo/bar.mkv'))
-def test_tracks_returns_expected_structure(run_mediainfo_mock):
-    run_mediainfo_mock.return_value = ('{"media": {"track": ['
-                                       '{"@type": "Video", "foo": "bar"}, '
-                                       '{"@type": "Audio", "bar": "baz"}, '
-                                       '{"@type": "Audio", "also": "this"}]}}')
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.tracks(path, default=default)
+        else:
+            assert video.tracks(path, default=default) is default
+    else:
+        assert video.tracks(path, default=default) == exp_return_value
+
+
+def test_tracks_returns_expected_structure(mocker):
+    run_mediainfo_mock = mocker.patch('upsies.utils.video._run_mediainfo', return_value=(
+        '{"media": {"track": ['
+        '{"@type": "Video", "foo": "bar"}, '
+        '{"@type": "Audio", "bar": "baz"}, '
+        '{"@type": "Audio", "also": "this"}]}}'
+    ))
+    first_video_mock = mocker.patch('upsies.utils.video.first_video', return_value='foo/bar.mkv')
     video._tracks.cache_clear()
     tracks = video.tracks('foo/bar.mkv')
     assert run_mediainfo_mock.call_args_list == [call('foo/bar.mkv', '--Output=JSON')]
@@ -238,10 +258,11 @@ def test_tracks_returns_expected_structure(run_mediainfo_mock):
                       'Audio': [{'@type': 'Audio', 'bar': 'baz'},
                                 {'@type': 'Audio', 'also': 'this'}]}
 
-@patch('upsies.utils.video._run_mediainfo')
-@patch('upsies.utils.video.first_video', Mock(return_value='foo/bar.mkv'))
-def test_tracks_gets_unexpected_output_from_mediainfo(run_mediainfo_mock):
-    run_mediainfo_mock.return_value = 'this is not JSON'
+def test_tracks_gets_unexpected_output_from_mediainfo(mocker):
+    run_mediainfo_mock = mocker.patch('upsies.utils.video._run_mediainfo', return_value=(
+        'this is not JSON'
+    ))
+    first_video_mock = mocker.patch('upsies.utils.video.first_video', return_value='foo/bar.mkv')
     with pytest.raises(RuntimeError, match=(r'^foo/bar.mkv: Unexpected mediainfo output: '
                                             r'this is not JSON: Expecting value: line 1 column 1 \(char 0\)$')):
         video._tracks.cache_clear()
