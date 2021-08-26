@@ -17,8 +17,10 @@ _log = logging.getLogger(__name__)
 class BhdTrackerJobs(TrackerJobsBase):
     release_name_translation = {
         'audio_format': {
-            re.compile(r'^AC-3$'): r'DD',
-            re.compile(r'^E-AC-3$'): r'DDP',
+            # Don't match against end of string to preserve extensions like
+            # "Atmos"
+            re.compile(r'^AC-3'): r'DD',
+            re.compile(r'^E-AC-3'): r'DDP',
         },
     }
 
