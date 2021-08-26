@@ -137,13 +137,6 @@ class ReleaseName(collections.abc.Mapping):
         """
         self._info = ReleaseInfo(str(path))
 
-    def _tracks(self):
-        # Ignore non-existing files and other file system issues
-        try:
-            return video.tracks(self._path)
-        except errors.ContentError:
-            return {}
-
     def __repr__(self):
         posargs = [self._path]
         kwargs = {}

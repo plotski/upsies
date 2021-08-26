@@ -5,7 +5,6 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-from upsies import errors
 from upsies.utils.release import Episodes, ReleaseName
 from upsies.utils.types import ReleaseType
 
@@ -34,35 +33,6 @@ def test_set_release_info(mocker):
     assert str(rn) == 'Foo S01E02 1080p BluRay Uncut DTS x264-ASDF'
     rn.set_release_info('path/to/Bar Season 2 720p Limited WEBDL FLAC-AsdF/Bar S02E03 x265.mkv')
     assert str(rn) == 'Bar S02E03 720p WEB-DL Limited DTS x265-AsdF'
-
-
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_tracks_returns_tracks(ReleaseInfo_mock, mocker):
-    mocker.patch('upsies.utils.video.tracks', return_value='mock tracks')
-    rn = ReleaseName('path/to/something')
-    assert rn._tracks() == 'mock tracks'
-
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-@pytest.mark.parametrize(
-    argnames='raised_exception, exp_exception, exp_message',
-    argvalues=(
-        (None, None, None),
-        (errors.ContentError('no such file'), None, None),
-        (RuntimeError('Argh'), RuntimeError, 'Argh'),
-    ),
-    ids=lambda v: repr(v),
-)
-def test_tracks_raises(ReleaseInfo_mock, raised_exception, exp_exception, exp_message, mocker):
-    rn = ReleaseName('path/to/something')
-    if raised_exception:
-        mocker.patch('upsies.utils.video.tracks', side_effect=raised_exception)
-    else:
-        mocker.patch('upsies.utils.video.tracks', return_value={})
-    if exp_exception:
-        with pytest.raises(exp_exception, match=rf'^{exp_message}$'):
-            rn._tracks()
-    else:
-        assert rn._tracks() == {}
 
 
 @patch('upsies.utils.release.ReleaseInfo', Mock(return_value={}))
