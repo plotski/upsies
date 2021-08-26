@@ -42,11 +42,6 @@ def btclient():
 @pytest.fixture
 def bb_tracker_jobs(imghost, btclient, tmp_path, mocker):
     content_path = tmp_path / 'content.mkv'
-    content_path.write_bytes(b'mock matroska data')
-
-    # Prevent black magic from coroutines to seep into our realm
-    mocker.patch('upsies.utils.release.ReleaseName._tracks')
-
     bb_tracker_jobs = bb.BbTrackerJobs(
         content_path=str(content_path),
         tracker=Mock(),
@@ -59,7 +54,6 @@ def bb_tracker_jobs(imghost, btclient, tmp_path, mocker):
         },
         options=None,
     )
-
     return bb_tracker_jobs
 
 
@@ -1040,8 +1034,9 @@ def test_fill_in_series_description(bb_tracker_jobs, mocker):
     ),
 )
 def test_release_info_subtitles(tracks, exp_text, bb_tracker_jobs, mocker):
-    mocker.patch('upsies.utils.video.tracks', return_value=tracks)
+    tracks_mock = mocker.patch('upsies.utils.video.tracks', return_value=tracks)
     assert bb_tracker_jobs.release_info_subtitles == exp_text
+    assert tracks_mock.call_args_list == [call(bb_tracker_jobs.content_path, default={})]
 
 
 @pytest.mark.parametrize(
@@ -1103,12 +1098,18 @@ def test_release_info_remux(source, exp_text, bb_tracker_jobs, mocker):
     ),
 )
 def test_release_info_resolution(width, height, frame_rate, resolution, exp_text, bb_tracker_jobs, mocker):
-    mocker.patch('upsies.utils.video.width', return_value=width)
-    mocker.patch('upsies.utils.video.height', return_value=height)
-    mocker.patch('upsies.utils.video.frame_rate', return_value=frame_rate)
+    width_mock = mocker.patch('upsies.utils.video.width', return_value=width)
+    height_mock = mocker.patch('upsies.utils.video.height', return_value=height)
+    frame_rate_mock = mocker.patch('upsies.utils.video.frame_rate', return_value=frame_rate)
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'resolution',
                         PropertyMock(return_value=resolution))
     assert bb_tracker_jobs.release_info_resolution == exp_text
+    assert width_mock.call_args_list == [call(bb_tracker_jobs.content_path, default=0)]
+    assert height_mock.call_args_list == [call(bb_tracker_jobs.content_path, default=0)]
+    if 1 < width < 700 and 1 < height < 460:
+        assert frame_rate_mock.call_args_list == []
+    else:
+        assert frame_rate_mock.call_args_list == [call(bb_tracker_jobs.content_path, default=0)]
 
 
 @pytest.mark.parametrize(
@@ -1162,8 +1163,9 @@ def test_release_info_repack(edition, exp_text, bb_tracker_jobs, mocker):
     ),
 )
 def test_release_info_hdr_format(hdr_format, exp_text, bb_tracker_jobs, mocker):
-    mocker.patch('upsies.utils.video.hdr_format', return_value=hdr_format)
+    hdr_format_mock = mocker.patch('upsies.utils.video.hdr_format', return_value=hdr_format)
     assert bb_tracker_jobs.release_info_hdr_format == exp_text
+    assert hdr_format_mock.call_args_list == [call(bb_tracker_jobs.content_path, default=None)]
 
 
 @pytest.mark.parametrize(
@@ -1175,8 +1177,9 @@ def test_release_info_hdr_format(hdr_format, exp_text, bb_tracker_jobs, mocker):
     ),
 )
 def test_release_info_10bit(bit_depth, exp_text, bb_tracker_jobs, mocker):
-    mocker.patch('upsies.utils.video.bit_depth', return_value=bit_depth)
+    bit_depth_mock = mocker.patch('upsies.utils.video.bit_depth', return_value=bit_depth)
     assert bb_tracker_jobs.release_info_10bit == exp_text
+    assert bit_depth_mock.call_args_list == [call(bb_tracker_jobs.content_path, default=None)]
 
 
 @pytest.mark.parametrize(
@@ -1187,8 +1190,9 @@ def test_release_info_10bit(bit_depth, exp_text, bb_tracker_jobs, mocker):
     ),
 )
 def test_release_info_dual_audio(has_dual_audio, exp_text, bb_tracker_jobs, mocker):
-    mocker.patch('upsies.utils.video.has_dual_audio', return_value=has_dual_audio)
+    has_dual_audio_mock = mocker.patch('upsies.utils.video.has_dual_audio', return_value=has_dual_audio)
     assert bb_tracker_jobs.release_info_dual_audio == exp_text
+    assert has_dual_audio_mock.call_args_list == [call(bb_tracker_jobs.content_path, default=False)]
 
 
 @pytest.mark.parametrize(
@@ -2130,7 +2134,7 @@ async def test_format_description_runtime_for_movie(bb_tracker_jobs, mocker):
     duration_mock = mocker.patch('upsies.utils.video.duration', return_value=123)
     text = await bb_tracker_jobs.format_description_runtime()
     assert text == '[b]Runtime[/b]: 0:02:03'
-    assert duration_mock.call_args_list == [call('path/to/content')]
+    assert duration_mock.call_args_list == [call('path/to/content', default=0)]
 
 @pytest.mark.asyncio
 async def test_format_description_runtime_for_episode(bb_tracker_jobs, mocker):
@@ -2141,7 +2145,7 @@ async def test_format_description_runtime_for_episode(bb_tracker_jobs, mocker):
     duration_mock = mocker.patch('upsies.utils.video.duration', return_value=123)
     text = await bb_tracker_jobs.format_description_runtime()
     assert text == '[b]Runtime[/b]: 0:02:03'
-    assert duration_mock.call_args_list == [call('path/to/content')]
+    assert duration_mock.call_args_list == [call('path/to/content', default=0)]
 
 @pytest.mark.asyncio
 async def test_format_description_runtime_for_season_with_few_episodes(bb_tracker_jobs, mocker, tmp_path):
@@ -2158,8 +2162,8 @@ async def test_format_description_runtime_for_season_with_few_episodes(bb_tracke
     text = await bb_tracker_jobs.format_description_runtime()
     assert text == '[b]Runtime[/b]: 0:01:30'
     assert duration_mock.call_args_list == [
-        call(str(content_path / 'episode 1.mkv')),
-        call(str(content_path / 'episode 2.mkv')),
+        call(str(content_path / 'episode 1.mkv'), default=0),
+        call(str(content_path / 'episode 2.mkv'), default=0),
     ]
 
 @pytest.mark.asyncio
@@ -2181,9 +2185,9 @@ async def test_format_description_runtime_for_season_with_many_episodes(bb_track
     text = await bb_tracker_jobs.format_description_runtime()
     assert text == '[b]Runtime[/b]: 0:01:40'
     assert duration_mock.call_args_list == [
-        call(str(content_path / 'episode 2.mkv')),
-        call(str(content_path / 'episode 3.mkv')),
-        call(str(content_path / 'episode 4.mkv')),
+        call(str(content_path / 'episode 2.mkv'), default=0),
+        call(str(content_path / 'episode 3.mkv'), default=0),
+        call(str(content_path / 'episode 4.mkv'), default=0),
     ]
 
 @pytest.mark.asyncio

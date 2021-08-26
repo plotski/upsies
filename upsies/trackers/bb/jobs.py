@@ -610,7 +610,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def release_info_subtitles(self):
-        subtitle_tracks = video.tracks(self.content_path).get('Text', ())
+        subtitle_tracks = video.tracks(self.content_path, default={}).get('Text', ())
         if subtitle_tracks:
             subtitle_languages = [track.get('Language') for track in subtitle_tracks]
             if 'en' in subtitle_languages:
@@ -638,9 +638,9 @@ class BbTrackerJobs(TrackerJobsBase):
         # Move/TV Rule 3.6.1 - Encodes with a stored resolution less than 700px
         #                      AND a height less than 460px should be labelled
         #                      "SD"
-        width = video.width(self.content_path)
-        height = video.height(self.content_path)
-        if 0 < width < 700 and 0 < height < 460:
+        width = video.width(self.content_path, default=0)
+        height = video.height(self.content_path, default=0)
+        if 1 < width < 700 and 1 < height < 460:
             return 'SD'
 
         # Movie Rule 3.6.2 - 576p PAL encodes with a stored resolution of at
@@ -649,7 +649,9 @@ class BbTrackerJobs(TrackerJobsBase):
         #                    Release Info field
         # We also apply this to series releases by using this property in
         # get_series_title_and_release_info().
-        if self.release_name.resolution == '576p' and video.frame_rate(self.content_path) == 25:
+        resolution = self.release_name.resolution
+        frame_rate = video.frame_rate(self.content_path, default=0)
+        if resolution == '576p' and frame_rate == 25:
             return '576p PAL'
 
         return self.release_name.resolution
@@ -672,18 +674,18 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def release_info_hdr_format(self):
-        hdr_format = video.hdr_format(self.content_path)
+        hdr_format = video.hdr_format(self.content_path, default=None)
         if hdr_format:
             return hdr_format
 
     @property
     def release_info_10bit(self):
-        if video.bit_depth(self.content_path) == 10:
+        if video.bit_depth(self.content_path, default=None) == 10:
             return '10-bit'
 
     @property
     def release_info_dual_audio(self):
-        if video.has_dual_audio(self.content_path):
+        if video.has_dual_audio(self.content_path, default=False):
             return 'Dual Audio'
 
     @property
@@ -1092,8 +1094,13 @@ class BbTrackerJobs(TrackerJobsBase):
                     + ', '.join(countries))
 
     async def format_description_runtime(self):
+        def format_runtime(seconds):
+            if seconds > 0:
+                return f'[b]Runtime[/b]: {timestamp.pretty(runtime)}'
+
         if self.is_movie_release or self.is_episode_release:
-            runtime = video.duration(self.content_path)
+            runtime = video.duration(self.content_path, default=0)
+            return format_runtime(runtime)
         elif self.is_season_release:
             # Get all video files
             filepaths = fs.file_list(self.content_path, extensions=constants.VIDEO_FILE_EXTENSIONS)
@@ -1102,11 +1109,11 @@ class BbTrackerJobs(TrackerJobsBase):
                 filepaths = filepaths[1:-1]
             # Get average from 3 episodes
             filepaths = filepaths[:3]
-            durations = [video.duration(f) for f in filepaths]
+            durations = [video.duration(f, default=0) for f in filepaths]
             runtime = sum(durations) / len(durations)
+            return format_runtime(runtime)
         else:
             return None
-        return f'[b]Runtime[/b]: {timestamp.pretty(runtime)}'
 
     @staticmethod
     def _format_person(person):
