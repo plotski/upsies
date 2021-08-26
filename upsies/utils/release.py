@@ -342,7 +342,11 @@ class ReleaseName(collections.abc.Mapping):
 
     @_translated_property
     def edition(self):
-        """List of "Director's Cut", "Uncut", "Unrated", etc"""
+        """
+        List of "Director's Cut", "Uncut", "Unrated", etc
+
+        :raise ContentError: if path exists but contains unexpected data
+        """
         if 'edition' not in self._info:
             self._info['edition'] = []
 
@@ -373,8 +377,12 @@ class ReleaseName(collections.abc.Mapping):
 
     @_translated_property
     def resolution(self):
-        '''Resolution (e.g. "1080p") or "UNKNOWN_RESOLUTION"'''
-        res = video.resolution(self._path)
+        """
+        Resolution (e.g. "1080p") or "UNKNOWN_RESOLUTION"
+
+        :raise ContentError: if path exists but contains unexpected data
+        """
+        res = video.resolution(self._path, default=None)
         if res is None:
             res = self._info.get('resolution') or 'UNKNOWN_RESOLUTION'
         return res
@@ -385,8 +393,12 @@ class ReleaseName(collections.abc.Mapping):
 
     @_translated_property
     def audio_format(self):
-        '''Audio format or "UNKNOWN_AUDIO_FORMAT"'''
-        af = video.audio_format(self._path)
+        """
+        Audio format or "UNKNOWN_AUDIO_FORMAT"
+
+        :raise ContentError: if path exists but contains unexpected data
+        """
+        af = video.audio_format(self._path, default=None)
         if af is None:
             af = self._info.get('audio_codec') or 'UNKNOWN_AUDIO_FORMAT'
         return af
@@ -397,8 +409,12 @@ class ReleaseName(collections.abc.Mapping):
 
     @_translated_property
     def audio_channels(self):
-        """Audio channels (e.g. "5.1") or empty string"""
-        ac = video.audio_channels(self._path)
+        """
+        Audio channels (e.g. "5.1") or empty string
+
+        :raise ContentError: if path exists but contains unexpected data
+        """
+        ac = video.audio_channels(self._path, default=None)
         if ac is None:
             ac = self._info.get('audio_channels') or ''
         return ac
@@ -409,8 +425,12 @@ class ReleaseName(collections.abc.Mapping):
 
     @_translated_property
     def video_format(self):
-        '''Video format (or encoder in case of x264/x265/XviD) or "UNKNOWN_VIDEO_FORMAT"'''
-        vf = video.video_format(self._path)
+        """
+        Video format (or encoder in case of x264/x265/XviD) or "UNKNOWN_VIDEO_FORMAT"
+
+        :raise ContentError: if path exists but contains unexpected data
+        """
+        vf = video.video_format(self._path, default=None)
         if vf is None:
             vf = self._info.get('video_codec') or 'UNKNOWN_VIDEO_FORMAT'
         return vf
@@ -442,6 +462,8 @@ class ReleaseName(collections.abc.Mapping):
 
         Setting this value back to `None` turns on autodetection as described
         above.
+
+        :raise ContentError: if path exists but contains unexpected data
         """
         # Use manually set value unless it is None
         if getattr(self, '_has_commentary', None) is not None:
@@ -474,6 +496,8 @@ class ReleaseName(collections.abc.Mapping):
 
         Setting this value back to `None` turns on autodetection as described
         above.
+
+        :raise ContentError: if path exists but contains unexpected data
         """
         # Use manually set value unless it is None
         if getattr(self, '_has_dual_audio', None) is not None:
@@ -506,6 +530,8 @@ class ReleaseName(collections.abc.Mapping):
 
         Setting this value back to `None` turns on autodetection as described
         above.
+
+        :raise ContentError: if path exists but contains unexpected data
         """
         # Use manually set value unless it is None
         if getattr(self, '_hdr_format', None) is not None:

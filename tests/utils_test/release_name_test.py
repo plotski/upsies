@@ -632,7 +632,7 @@ def test_resolution_getter_prefers_mediainfo(resolution_mock, ReleaseInfo_mock):
     resolution_mock.return_value = '720p'
     ReleaseInfo_mock.return_value = {'resolution': '1080p'}
     assert ReleaseName('path/to/something').resolution == '720p'
-    assert resolution_mock.call_args_list == [call('path/to/something')]
+    assert resolution_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.utils.video.resolution')
@@ -640,7 +640,7 @@ def test_resolution_getter_defaults_to_guess(resolution_mock, ReleaseInfo_mock):
     resolution_mock.return_value = None
     ReleaseInfo_mock.return_value = {'resolution': '1080p'}
     assert ReleaseName('path/to/something').resolution == '1080p'
-    assert resolution_mock.call_args_list == [call('path/to/something')]
+    assert resolution_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @patch('upsies.utils.video.resolution')
@@ -648,7 +648,7 @@ def test_resolution_getter_defaults_to_placeholder(resolution_mock, ReleaseInfo_
     resolution_mock.return_value = None
     ReleaseInfo_mock.return_value = {}
     assert ReleaseName('path/to/something').resolution == 'UNKNOWN_RESOLUTION'
-    assert resolution_mock.call_args_list == [call('path/to/something')]
+    assert resolution_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_resolution_setter(ReleaseInfo_mock):
@@ -686,7 +686,7 @@ def test_audio_format_getter_prefers_mediainfo(audio_format_mock, ReleaseInfo_mo
     audio_format_mock.return_value = 'AC3'
     ReleaseInfo_mock.return_value = {'audio_codec': 'DD+'}
     assert ReleaseName('path/to/something').audio_format == 'AC3'
-    assert audio_format_mock.call_args_list == [call('path/to/something')]
+    assert audio_format_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_format')
@@ -694,7 +694,7 @@ def test_audio_format_getter_defaults_to_guess(audio_format_mock, ReleaseInfo_mo
     audio_format_mock.return_value = None
     ReleaseInfo_mock.return_value = {'audio_codec': 'DD+'}
     assert ReleaseName('path/to/something').audio_format == 'DD+'
-    assert audio_format_mock.call_args_list == [call('path/to/something')]
+    assert audio_format_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_format')
@@ -702,7 +702,7 @@ def test_audio_format_getter_defaults_to_placeholder(audio_format_mock, ReleaseI
     audio_format_mock.return_value = None
     ReleaseInfo_mock.return_value = {'audio_codec': ''}
     assert ReleaseName('path/to/something').audio_format == 'UNKNOWN_AUDIO_FORMAT'
-    assert audio_format_mock.call_args_list == [call('path/to/something')]
+    assert audio_format_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo')
 def test_audio_format_setter(ReleaseInfo_mock):
@@ -741,7 +741,7 @@ def test_audio_channels_getter_prefers_mediainfo(audio_channels_mock, ReleaseInf
     audio_channels_mock.return_value = '5.1'
     ReleaseInfo_mock.return_value = {'audio_channels': '7.1'}
     assert ReleaseName('path/to/something').audio_channels == '5.1'
-    assert audio_channels_mock.call_args_list == [call('path/to/something')]
+    assert audio_channels_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_channels')
@@ -749,7 +749,7 @@ def test_audio_channels_getter_defaults_to_guess(audio_channels_mock, ReleaseInf
     audio_channels_mock.return_value = None
     ReleaseInfo_mock.return_value = {'audio_channels': '7.1'}
     assert ReleaseName('path/to/something').audio_channels == '7.1'
-    assert audio_channels_mock.call_args_list == [call('path/to/something')]
+    assert audio_channels_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.audio_channels')
@@ -757,7 +757,7 @@ def test_audio_channels_getter_defaults_to_empty_string(audio_channels_mock, Rel
     audio_channels_mock.return_value = None
     ReleaseInfo_mock.return_value = {}
     assert ReleaseName('path/to/something').audio_channels == ''
-    assert audio_channels_mock.call_args_list == [call('path/to/something')]
+    assert audio_channels_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo')
 def test_audio_channels_setter(ReleaseInfo_mock):
@@ -791,7 +791,7 @@ def test_video_format_getter_prefers_mediainfo(video_format_mock, ReleaseInfo_mo
     video_format_mock.return_value = 'x264'
     ReleaseInfo_mock.return_value = {'video_codec': 'x265'}
     assert ReleaseName('path/to/something').video_format == 'x264'
-    assert video_format_mock.call_args_list == [call('path/to/something')]
+    assert video_format_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.video_format')
@@ -799,7 +799,7 @@ def test_video_format_getter_defaults_to_guess(video_format_mock, ReleaseInfo_mo
     video_format_mock.return_value = None
     ReleaseInfo_mock.return_value = {'video_codec': 'x265'}
     assert ReleaseName('path/to/something').video_format == 'x265'
-    assert video_format_mock.call_args_list == [call('path/to/something')]
+    assert video_format_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo')
 @patch('upsies.utils.video.video_format')
@@ -807,7 +807,7 @@ def test_video_format_getter_defaults_to_placeholder(video_format_mock, ReleaseI
     video_format_mock.return_value = None
     ReleaseInfo_mock.return_value = {}
     assert ReleaseName('path/to/something').video_format == 'UNKNOWN_VIDEO_FORMAT'
-    assert video_format_mock.call_args_list == [call('path/to/something')]
+    assert video_format_mock.call_args_list == [call('path/to/something', default=None)]
 
 @patch('upsies.utils.release.ReleaseInfo')
 def test_video_format_setter(ReleaseInfo_mock):
