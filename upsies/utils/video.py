@@ -128,16 +128,21 @@ def _tracks(video_file_path):
         raise RuntimeError(f'{video_file_path}: Unexpected mediainfo output: {stdout}: Missing field: {e}')
 
 
-def default_track(type, path):
+def default_track(type, path, default=NO_DEFAULT_VALUE):
     """
     Return default track
 
-    :param str type: "video" or "audio"
+    :param str type: "video", "audio" or "text"
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if anything goes wrong
     """
+    if default is not NO_DEFAULT_VALUE and not os.path.exists(path):
+        return default
+
     all_tracks = tracks(path)
 
     # Find track marked as default

@@ -276,6 +276,33 @@ def test_tracks_gets_unexpected_output_from_mediainfo(mocker):
         video.tracks('foo/bar.mkv')
 
 
+@pytest.mark.parametrize(
+    argnames='tracks, default, exp_return_value, exp_exception',
+    argvalues=(
+        ({'Video': [{'video': 'track'}], 'Audio': [{'audio': 'track'}]}, video.NO_DEFAULT_VALUE, {'video': 'track'}, None),
+        ({'Video': [{'video': 'track'}], 'Audio': [{'audio': 'track'}]}, 'default value', {'video': 'track'}, None),
+        ({'Video': [{'video': 'track'}], 'Audio': [{'audio': 'track'}]}, None, {'video': 'track'}, None),
+        ({}, video.NO_DEFAULT_VALUE, {'video': 'track'}, errors.ContentError('{path}: No such file or directory')),
+        ({}, 'default value', 'default value', None),
+        ({}, None, None, None),
+    ),
+)
+def test_default_track_with_default_value(tracks, default, exp_return_value, exp_exception, mocker, tmp_path):
+    path = tmp_path / 'foo.mkv'
+    if tracks:
+        path.write_bytes(b'mock data')
+        mocker.patch('upsies.utils.video.tracks', return_value=tracks)
+
+    if exp_exception:
+        if default is video.NO_DEFAULT_VALUE:
+            exp_error = str(exp_exception).format(path=path)
+            with pytest.raises(type(exp_exception), match=rf'^{re.escape(exp_error)}$'):
+                video.default_track('video', path, default=default)
+        else:
+            assert video.default_track('video', path, default=default) is default
+    else:
+        assert video.default_track('video', path, default=default) == exp_return_value
+
 @patch('upsies.utils.video.tracks')
 def test_default_track_returns_track_with_default_tag(tracks_mock):
     tracks_mock.return_value = {
