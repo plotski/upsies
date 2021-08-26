@@ -1,7 +1,7 @@
 import os
 import random
 import re
-from unittest.mock import Mock, call, patch
+from unittest.mock import call, patch
 
 import pytest
 
@@ -116,8 +116,8 @@ def test_duration_with_default_value(path_exists, duration, default, exp_return_
     path = tmp_path / 'foo.mkv'
     if path_exists:
         path.write_bytes(b'mock data')
-        duration_mock = mocker.patch('upsies.utils.video._duration', return_value=duration)
-        first_video_mock = mocker.patch('upsies.utils.video.first_video', return_value='some/path/to/foo.mkv')
+        mocker.patch('upsies.utils.video._duration', return_value=duration)
+        mocker.patch('upsies.utils.video.first_video', return_value='some/path/to/foo.mkv')
 
     if exp_exception:
         if default is video.NO_DEFAULT_VALUE:
@@ -229,8 +229,8 @@ def test_tracks(path_exists, tracks, default, exp_return_value, exp_exception, m
     path = tmp_path / 'foo.mkv'
     if path_exists:
         path.write_bytes(b'mock data')
-        _tracks_mock = mocker.patch('upsies.utils.video._tracks', return_value=tracks)
-        first_video_mock = mocker.patch('upsies.utils.video.first_video', return_value='some/path/to/foo.mkv')
+        mocker.patch('upsies.utils.video._tracks', return_value=tracks)
+        mocker.patch('upsies.utils.video.first_video', return_value='some/path/to/foo.mkv')
 
     if exp_exception:
         if default is video.NO_DEFAULT_VALUE:
@@ -250,7 +250,7 @@ def test_tracks_returns_expected_structure(mocker):
         '{"@type": "Audio", "bar": "baz"}, '
         '{"@type": "Audio", "also": "this"}]}}'
     ))
-    first_video_mock = mocker.patch('upsies.utils.video.first_video', return_value='foo/bar.mkv')
+    mocker.patch('upsies.utils.video.first_video', return_value='foo/bar.mkv')
     video._tracks.cache_clear()
     tracks = video.tracks('foo/bar.mkv')
     assert run_mediainfo_mock.call_args_list == [call('foo/bar.mkv', '--Output=JSON')]
@@ -262,7 +262,7 @@ def test_tracks_gets_unexpected_output_from_mediainfo(mocker):
     run_mediainfo_mock = mocker.patch('upsies.utils.video._run_mediainfo', return_value=(
         'this is not JSON'
     ))
-    first_video_mock = mocker.patch('upsies.utils.video.first_video', return_value='foo/bar.mkv')
+    mocker.patch('upsies.utils.video.first_video', return_value='foo/bar.mkv')
     with pytest.raises(RuntimeError, match=(r'^foo/bar.mkv: Unexpected mediainfo output: '
                                             r'this is not JSON: Expecting value: line 1 column 1 \(char 0\)$')):
         video._tracks.cache_clear()
