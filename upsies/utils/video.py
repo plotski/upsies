@@ -62,7 +62,8 @@ def duration(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if anything goes wrong
     """
@@ -104,7 +105,8 @@ def tracks(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if anything goes wrong
     """
@@ -168,7 +170,8 @@ def width(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if width can't be determined
     """
@@ -200,7 +203,8 @@ def height(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if height can't be determined
     """
@@ -232,7 +236,8 @@ def resolution(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if resolution can't be determined
     """
@@ -321,7 +326,8 @@ def frame_rate(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if no video track is found
     """
@@ -341,7 +347,8 @@ def bit_depth(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if no video track is found
     """
@@ -378,7 +385,8 @@ def hdr_format(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if no video track is found
     """
@@ -414,7 +422,8 @@ def has_dual_audio(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if reading `path` fails
     """
@@ -441,7 +450,8 @@ def has_commentary(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if reading `path` fails
     """
@@ -483,7 +493,8 @@ def audio_format(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if no audio track is found
     """
@@ -537,7 +548,8 @@ def audio_channels(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if no audio track is found
     """
@@ -573,7 +585,8 @@ def video_format(path, default=NO_DEFAULT_VALUE):
 
     :param str path: Path to video file or directory. :func:`first_video` is
         applied.
-    :param default: Return value if `path` doesn't exist
+    :param default: Return value if `path` doesn't exist, raise
+        :exc:`~.ContentError` if not provided
 
     :raise ContentError: if no video track is found
     """
