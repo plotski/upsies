@@ -79,13 +79,16 @@ class BhdTracker(TrackerBase):
 
     async def upload(self, tracker_jobs):
         _log.debug('Uploading to %r', self.get_upload_url())
-        _log.debug('POST data: %r', tracker_jobs.post_data)
 
-        # Remove None and empty strings from post_data and ensure all keys and
-        # values are strings.
-        post_data = {str(k): str(v)
-                     for k, v in tracker_jobs.post_data.items()
-                     if v}
+        # Remove None and empty strings from post_data but keep any int(0)
+        # values. Also ensure all keys and values are strings.
+        post_data = {
+            str(k): str(v)
+            for k, v in tracker_jobs.post_data.items()
+            if v not in (None, '')
+        }
+        _log.debug('POST data: %r', post_data)
+
         files = {
             'file': {
                 'file': tracker_jobs.torrent_filepath,

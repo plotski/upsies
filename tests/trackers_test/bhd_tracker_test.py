@@ -252,7 +252,13 @@ async def test_upload_gets_unexpected_json(mocker):
 async def test_upload_succeeds(mocker):
     tracker = BhdTracker(options={'upload_url': 'http://bhd.local/upload', 'apikey': '1337'})
     tracker_jobs_mock = Mock(
-        post_data={'foo': 'bar'},
+        post_data={
+            'foo': 'asdf',
+            'bar': '',
+            'baz': 0,
+            'quux': '0',
+            'quuz': None,
+        },
         torrent_filepath='path/to/content.torrent',
         mediainfo_filehandle=io.StringIO('mediainfo mock'),
     )
@@ -274,7 +280,11 @@ async def test_upload_succeeds(mocker):
         url='http://bhd.local/upload/1337',
         cache=False,
         user_agent=True,
-        data=tracker_jobs_mock.post_data,
+        data={
+            'foo': 'asdf',
+            'baz': '0',
+            'quux': '0',
+        },
         files={
             'file': {
                 'file': tracker_jobs_mock.torrent_filepath,
