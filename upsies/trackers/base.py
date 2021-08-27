@@ -251,6 +251,24 @@ class TrackerJobsBase(abc.ABC):
         """
         self.signal.emit('exception', exception)
 
+    def get_job_name(self, name):
+        """
+        Return job name that is unique for this tracker
+
+        It's important for tracker jobs to have unique names to avoid re-using
+        cached output from another tracker's job with the same name.
+
+        Standard jobs chose their names so that cached output will be re-used by
+        other trackers if possible. This function is mainly for unique and
+        custom jobs that are only used for one tracker but might share the same
+        name with other trackers.
+        """
+        prefix = f'{self.tracker.name}-'
+        if name.startswith(prefix):
+            return name
+        else:
+            return f'{prefix}{name}'
+
     @cached_property
     def create_torrent_job(self):
         """:class:`~.jobs.torrent.CreateTorrentJob` instance"""
@@ -320,7 +338,7 @@ class TrackerJobsBase(abc.ABC):
         The text is automatically updated when :attr:`imdb_job` sends an ID.
         """
         job = jobs.dialog.TextFieldJob(
-            name='release-name',
+            name=self.get_job_name('release-name'),
             label='Release Name',
             text=str(self.release_name),
             **self.common_job_args,
@@ -480,7 +498,7 @@ class TrackerJobsBase(abc.ABC):
                 choices.append((option['label'], option['value']))
 
         job = jobs.dialog.ChoiceJob(
-            name=name,
+            name=self.get_job_name(name),
             label=label,
             condition=condition,
             choices=choices,

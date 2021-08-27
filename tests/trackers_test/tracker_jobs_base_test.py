@@ -116,6 +116,16 @@ def test_submission_ok(jobs_before_upload, exp_submission_ok, mocker):
     assert tracker_jobs.submission_ok == exp_submission_ok
 
 
+def test_get_job_name(tracker):
+    tracker_jobs = make_TestTrackerJobs(
+        content_path='path/to/content',
+        tracker=tracker,
+        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+    )
+    assert tracker_jobs.get_job_name('foo') == f'{tracker.name}-foo'
+    assert tracker_jobs.get_job_name(f'{tracker.name}-foo') == f'{tracker.name}-foo'
+
+
 def test_create_torrent_job(mocker):
     CreateTorrentJob_mock = mocker.patch('upsies.jobs.torrent.CreateTorrentJob')
     tracker_jobs = make_TestTrackerJobs(
@@ -276,10 +286,11 @@ def test_release_name(mocker):
     ]
 
 
-def test_release_name_job(mocker):
+def test_release_name_job(tracker, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
+        tracker=tracker,
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     release_name_mock = Mock()
@@ -287,7 +298,7 @@ def test_release_name_job(mocker):
     assert tracker_jobs.release_name_job is TextFieldJob_mock.return_value
     assert TextFieldJob_mock.call_args_list == [
         call(
-            name='release-name',
+            name=f'{tracker.name}-release-name',
             label='Release Name',
             text=str(release_name_mock),
             home_directory='path/to/home',
@@ -563,9 +574,10 @@ def test_scene_check_job_is_singleton(mocker):
     ),
 )
 @pytest.mark.asyncio
-async def test_make_choice_job_with_regex_autofocus(autodetected, exp_choices, exp_focused, autofinish, mocker):
+async def test_make_choice_job_with_regex_autofocus(autodetected, exp_choices, exp_focused, autofinish, tracker, mocker):
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
+        tracker=tracker,
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     mocker.patch.object(type(tracker_jobs), 'common_job_args', PropertyMock(return_value={'foo': 'bar'}))
@@ -584,7 +596,7 @@ async def test_make_choice_job_with_regex_autofocus(autodetected, exp_choices, e
         condition='mock condition',
     )
     assert ChoiceJob_mock.call_args_list == [call(
-        name='foo',
+        name=f'{tracker.name}-foo',
         label='Foo',
         condition='mock condition',
         choices=exp_choices,
@@ -608,9 +620,10 @@ async def test_make_choice_job_with_regex_autofocus(autodetected, exp_choices, e
     ),
 )
 @pytest.mark.asyncio
-async def test_make_choice_job_with_match_autofocus(autodetected, exp_choices, exp_focused, autofinish, mocker):
+async def test_make_choice_job_with_match_autofocus(autodetected, exp_choices, exp_focused, autofinish, tracker, mocker):
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
+        tracker=tracker,
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     mocker.patch.object(type(tracker_jobs), 'common_job_args', PropertyMock(return_value={'foo': 'bar'}))
@@ -629,7 +642,7 @@ async def test_make_choice_job_with_match_autofocus(autodetected, exp_choices, e
         condition='mock condition',
     )
     assert ChoiceJob_mock.call_args_list == [call(
-        name='foo',
+        name=f'{tracker.name}-foo',
         label='Foo',
         condition='mock condition',
         choices=exp_choices,
