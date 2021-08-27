@@ -4,6 +4,7 @@
   * BHD: Fixed --description option
   * BHD: Resolved "500 Server Error" when uploading a .nfo file
   * BHD: Fixed translation of "(E-)AC-3" to "DD(P)" with Atmos
+  * Fixed detection of Opus audio codec
 
 
 2021.08.12

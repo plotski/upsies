@@ -826,7 +826,7 @@ def test_has_commentary_forwards_ContentError_from_tracks(mocker):
         ({'Format': 'FLAC'}, 'FLAC'),
         ({'Format': 'MPEG Audio'}, 'MP3'),
         ({'Format': 'Vorbis'}, 'Vorbis'),
-        ({'Format': 'Ogg'}, 'Vorbis'),
+        ({'Format': 'Opus'}, 'Opus'),
     ),
     ids=lambda v: str(v),
 )

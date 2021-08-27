@@ -485,6 +485,7 @@ _audio_format_translations = (
     ('MP3', {'Format': re.compile(r'MPEG Audio')}),
     ('Vorbis', {'Format': re.compile(r'\bVorbis\b')}),
     ('Vorbis', {'Format': re.compile(r'\bOgg\b')}),
+    ('Opus', {'Format': re.compile(r'\bOpus\b')}),
 )
 
 def audio_format(path, default=NO_DEFAULT_VALUE):
