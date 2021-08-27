@@ -77,7 +77,7 @@ class BhdTrackerJobs(TrackerJobsBase):
         # signal is also emitted when job fails (e.g. when Ctrl-c is pressed)
         self.release_name_job.signal.register('output', self.autodetect_category)
         return self.make_choice_job(
-            name='category',
+            name=self.get_job_name('category'),
             label='Category',
             condition=self.make_job_condition('category_job'),
             options=(
@@ -111,7 +111,7 @@ class BhdTrackerJobs(TrackerJobsBase):
         # signal is also emitted when job fails (e.g. when Ctrl-c is pressed)
         self.release_name_job.signal.register('output', self.autodetect_type)
         return self.make_choice_job(
-            name='type',
+            name=self.get_job_name('type'),
             label='Type',
             condition=self.make_job_condition('type_job'),
             autofinish=False,
@@ -172,7 +172,7 @@ class BhdTrackerJobs(TrackerJobsBase):
         # signal is also emitted when job fails (e.g. when Ctrl-c is pressed)
         self.release_name_job.signal.register('output', self.autodetect_source)
         return self.make_choice_job(
-            name='source',
+            name=self.get_job_name('source'),
             label='Source',
             condition=self.make_job_condition('source_job'),
             options=(
@@ -211,7 +211,7 @@ class BhdTrackerJobs(TrackerJobsBase):
     @cached_property
     def description_job(self):
         job = jobs.dialog.TextFieldJob(
-            name='description',
+            name=self.get_job_name('description'),
             label='Description',
             condition=self.make_job_condition('description_job'),
             read_only=True,
@@ -261,7 +261,7 @@ class BhdTrackerJobs(TrackerJobsBase):
     @cached_property
     def tags_job(self):
         job = jobs.dialog.TextFieldJob(
-            name='tags',
+            name=self.get_job_name('tags'),
             label='Tags',
             condition=self.make_job_condition('tags_job'),
             read_only=True,

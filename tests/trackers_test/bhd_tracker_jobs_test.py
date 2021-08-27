@@ -16,6 +16,13 @@ class AsyncMock(Mock):
 
 
 @pytest.fixture
+def tracker():
+    tracker = Mock()
+    tracker.name = 'bhd'
+    return tracker
+
+
+@pytest.fixture
 def imghost():
     class MockImageHost(utils.imghosts.base.ImageHostBase):
         name = 'mock image host'
@@ -40,12 +47,12 @@ def btclient():
 
 
 @pytest.fixture
-def bhd_tracker_jobs(imghost, btclient, tmp_path, mocker):
+def bhd_tracker_jobs(imghost, btclient, tracker, tmp_path, mocker):
     content_path = tmp_path / 'Foo 2000 1080p BluRay x264-ASDF'
 
     bhd_tracker_jobs = bhd.BhdTrackerJobs(
         content_path=str(content_path),
-        tracker=Mock(),
+        tracker=tracker,
         image_host=imghost,
         bittorrent_client=btclient,
         torrent_destination=str(tmp_path / 'destination'),
@@ -200,7 +207,7 @@ def test_category_job(bhd_tracker_jobs, mocker):
 
     assert bhd_tracker_jobs.category_job is bhd_tracker_jobs.make_choice_job.return_value
     assert bhd_tracker_jobs.make_choice_job.call_args_list == [call(
-        name='category',
+        name='bhd-category',
         label='Category',
         condition=bhd_tracker_jobs.make_job_condition.return_value,
         options=(
@@ -236,7 +243,7 @@ def test_type_job(bhd_tracker_jobs, mocker):
 
     assert bhd_tracker_jobs.type_job is bhd_tracker_jobs.make_choice_job.return_value
     assert bhd_tracker_jobs.make_choice_job.call_args_list == [call(
-        name='type',
+        name='bhd-type',
         label='Type',
         condition=bhd_tracker_jobs.make_job_condition.return_value,
         autofinish=False,
@@ -297,7 +304,7 @@ def test_source_job(bhd_tracker_jobs, mocker):
 
     assert bhd_tracker_jobs.source_job is bhd_tracker_jobs.make_choice_job.return_value
     assert bhd_tracker_jobs.make_choice_job.call_args_list == [call(
-        name='source',
+        name='bhd-source',
         label='Source',
         condition=bhd_tracker_jobs.make_job_condition.return_value,
         options=(
@@ -344,7 +351,7 @@ def test_description_job(bhd_tracker_jobs, mocker):
 
     assert bhd_tracker_jobs.description_job is TextFieldJob_mock.return_value
     assert TextFieldJob_mock.call_args_list == [call(
-        name='description',
+        name='bhd-description',
         label='Description',
         condition=bhd_tracker_jobs.make_job_condition.return_value,
         read_only=True,
@@ -449,7 +456,7 @@ def test_tags_job(bhd_tracker_jobs, mocker):
 
     assert bhd_tracker_jobs.tags_job is TextFieldJob_mock.return_value
     assert TextFieldJob_mock.call_args_list == [call(
-        name='tags',
+        name='bhd-tags',
         label='Tags',
         condition=bhd_tracker_jobs.make_job_condition.return_value,
         read_only=True,
