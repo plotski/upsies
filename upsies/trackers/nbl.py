@@ -45,7 +45,7 @@ class NblTrackerJobs(base.TrackerJobsBase):
         else:
             guessed = 'Season'
         return jobs.dialog.ChoiceJob(
-            name='category',
+            name=self.get_job_name('category'),
             label='Category',
             choices=('Season', 'Episode'),
             focused=guessed,
