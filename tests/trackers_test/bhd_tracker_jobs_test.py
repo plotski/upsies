@@ -570,8 +570,7 @@ def test_post_data(anonymous, exp_anon, draft, exp_live, bhd_tracker_jobs, mock_
         'edition': 'mock edition',
         'custom_edition': 'mock custom edition',
         'tags': 'Some,Mock,Tags',
-        # FIXME: This is disabled because the API responds with "500 Server Error".
-        # 'nfo': 'mock nfo',
+        'nfo': 'mock nfo',
         'pack': 'mock pack',
         'sd': 'mock sd',
         'special': 'mock special',

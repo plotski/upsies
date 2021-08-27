@@ -2,8 +2,8 @@
   * IMDb: Fixed getting genre tags
   * bB: Fixed science.fiction tag
   * BHD: Fixed --description option
-  * BHD: Disabled submission of nfo file because API responds with error
-  * BHD: Fix translation of "(E-)AC-3" to "DD(P)" with Atmos
+  * BHD: Resolved "500 Server Error" when uploading a .nfo file
+  * BHD: Fixed translation of "(E-)AC-3" to "DD(P)" with Atmos
 
 
 2021.08.12
