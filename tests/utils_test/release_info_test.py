@@ -363,10 +363,11 @@ audio_codec_samples = (
     ('AAC', 'AAC'),
     ('FLAC', 'FLAC'),
     ('MP3', 'MP3'),
+    ('Opus', 'Opus'),
     (None, ''),
 )
 @pytest.mark.parametrize('audio_codec, audio_codec_abbrev', audio_codec_samples)
-def test_audio_codec_is_abbreviated(audio_codec, audio_codec_abbrev):
+def test_audio_codec(audio_codec, audio_codec_abbrev):
     release_name = f'The Foo S04 1080p WEB-DL {audio_codec} H.264-ASDF'
     expected = {'type': ReleaseType.season, 'title': 'The Foo', 'year': '', 'episodes': {'4': ()},
                 'resolution': '1080p', 'source': 'WEB-DL',
@@ -383,6 +384,7 @@ audio_channels_samples = (
     ('DD5.1', 'AC-3', '5.1'),
     ('DD 5.1', 'AC-3', '5.1'),
     ('Dolby Digital 7.1', 'AC-3', '7.1'),
+    ('Opus 7.1', 'Opus', '7.1'),
 )
 @pytest.mark.parametrize('audio, audio_codec, audio_channels', audio_channels_samples)
 def test_audio_channels(audio, audio_codec, audio_channels):
