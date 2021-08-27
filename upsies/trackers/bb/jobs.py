@@ -226,7 +226,7 @@ class BbTrackerJobs(TrackerJobsBase):
     @cached_property
     def release_type_job(self):
         return jobs.dialog.ChoiceJob(
-            name='release-type',
+            name=self.get_job_name('release-type'),
             label='Release Type',
             choices=(
                 ('Movie', release.ReleaseType.movie),
@@ -253,7 +253,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def movie_title_job(self):
         self.imdb_job.signal.register('output', self.fill_in_movie_title)
         return jobs.dialog.TextFieldJob(
-            name='movie-title',
+            name=self.get_job_name('movie-title'),
             label='Title',
             condition=self.make_job_condition('movie_title_job', release.ReleaseType.movie),
             validator=self.movie_title_validator,
@@ -283,7 +283,7 @@ class BbTrackerJobs(TrackerJobsBase):
         else:
             guessed_year = self.release_name.year
         return jobs.dialog.TextFieldJob(
-            name='movie-year',
+            name=self.get_job_name('movie-year'),
             label='Year',
             condition=self.make_job_condition('movie_year_job', release.ReleaseType.movie),
             text=guessed_year,
@@ -309,7 +309,7 @@ class BbTrackerJobs(TrackerJobsBase):
     @cached_property
     def movie_resolution_job(self):
         return self.make_choice_job(
-            name='movie-resolution',
+            name=self.get_job_name('movie-resolution'),
             label='Resolution',
             condition=self.make_job_condition('movie_resolution_job', release.ReleaseType.movie),
             autodetected=self.release_info_resolution,
@@ -334,7 +334,7 @@ class BbTrackerJobs(TrackerJobsBase):
     @cached_property
     def movie_source_job(self):
         return self.make_choice_job(
-            name='movie-source',
+            name=self.get_job_name('movie-source'),
             label='Source',
             condition=self.make_job_condition('movie_source_job', release.ReleaseType.movie),
             autodetected=self.release_name.source,
@@ -366,7 +366,7 @@ class BbTrackerJobs(TrackerJobsBase):
     @cached_property
     def movie_audio_codec_job(self):
         return self.make_choice_job(
-            name='movie-audio-codec',
+            name=self.get_job_name('movie-audio-codec'),
             label='Audio Codec',
             condition=self.make_job_condition('movie_audio_codec_job', release.ReleaseType.movie),
             autodetected=self.release_info_audio_format,
@@ -389,7 +389,7 @@ class BbTrackerJobs(TrackerJobsBase):
     @cached_property
     def movie_video_codec_job(self):
         return self.make_choice_job(
-            name='movie-video-codec',
+            name=self.get_job_name('movie-video-codec'),
             label='Video Codec',
             condition=self.make_job_condition('movie_video_codec_job', release.ReleaseType.movie),
             autodetected=self.release_name.video_format,
@@ -413,7 +413,7 @@ class BbTrackerJobs(TrackerJobsBase):
         files = sorted(fs.file_list(self.content_path), key=fs.file_size)
         autodetected_extension = fs.file_extension(files[-1])
         return self.make_choice_job(
-            name='movie-container',
+            name=self.get_job_name('movie-container'),
             label='Container',
             condition=self.make_job_condition('movie_container_job', release.ReleaseType.movie),
             autodetected=autodetected_extension,
@@ -432,7 +432,7 @@ class BbTrackerJobs(TrackerJobsBase):
     @cached_property
     def movie_release_info_job(self):
         return jobs.dialog.TextFieldJob(
-            name='movie-release-info',
+            name=self.get_job_name('movie-release-info'),
             label='Release Info',
             condition=self.make_job_condition('movie_release_info_job', release.ReleaseType.movie),
             text=self.get_movie_release_info(),
@@ -443,7 +443,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def movie_poster_job(self):
         """Re-upload poster from IMDb to :attr:`~.TrackerJobsBase.image_host`"""
         return jobs.custom.CustomJob(
-            name='movie-poster',
+            name=self.get_job_name('movie-poster'),
             label='Poster',
             condition=self.make_job_condition('movie_poster_job', release.ReleaseType.movie),
             worker=self.movie_get_poster_url,
@@ -458,7 +458,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def movie_tags_job(self):
         self.imdb_job.signal.register('output', self.fill_in_movie_tags)
         return jobs.dialog.TextFieldJob(
-            name='movie-tags',
+            name=self.get_job_name('movie-tags'),
             label='Tags',
             condition=self.make_job_condition('movie_tags_job', release.ReleaseType.movie),
             validator=self.movie_tags_validator,
@@ -482,7 +482,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def movie_description_job(self):
         self.imdb_job.signal.register('finished', self.fill_in_movie_description)
         return jobs.dialog.TextFieldJob(
-            name='movie-description',
+            name=self.get_job_name('movie-description'),
             label='Description',
             condition=self.make_job_condition('movie_description_job', release.ReleaseType.movie),
             validator=self.movie_description_validator,
@@ -518,7 +518,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def series_title_job(self):
         self.tvmaze_job.signal.register('output', self.fill_in_series_title)
         return jobs.dialog.TextFieldJob(
-            name='series-title',
+            name=self.get_job_name('series-title'),
             label='Title',
             condition=self.make_job_condition('series_title_job', release.ReleaseType.season, release.ReleaseType.episode),
             validator=self.series_title_validator,
@@ -547,7 +547,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def series_poster_job(self):
         """Re-upload poster from TVmaze to :attr:`~.TrackerJobsBase.image_host`"""
         return jobs.custom.CustomJob(
-            name='series-poster',
+            name=self.get_job_name('series-poster'),
             label='Poster',
             condition=self.make_job_condition('series_poster_job', release.ReleaseType.season, release.ReleaseType.episode),
             worker=self.series_get_poster_url,
@@ -562,7 +562,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def series_tags_job(self):
         self.tvmaze_job.signal.register('output', self.fill_in_series_tags)
         return jobs.dialog.TextFieldJob(
-            name='series-tags',
+            name=self.get_job_name('series-tags'),
             label='Tags',
             condition=self.make_job_condition('series_tags_job', release.ReleaseType.season, release.ReleaseType.episode),
             validator=self.series_tags_validator,
@@ -586,7 +586,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def series_description_job(self):
         self.tvmaze_job.signal.register('finished', self.fill_in_series_description)
         return jobs.dialog.TextFieldJob(
-            name='series-description',
+            name=self.get_job_name('series-description'),
             label='Description',
             condition=self.make_job_condition('series_description_job', release.ReleaseType.season, release.ReleaseType.episode),
             validator=self.series_description_validator,

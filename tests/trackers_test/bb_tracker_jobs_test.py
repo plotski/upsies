@@ -16,6 +16,13 @@ class AsyncMock(Mock):
 
 
 @pytest.fixture
+def tracker():
+    tracker = Mock()
+    tracker.name = 'bb'
+    return tracker
+
+
+@pytest.fixture
 def imghost():
     class MockImageHost(utils.imghosts.base.ImageHostBase):
         name = 'mock image host'
@@ -40,11 +47,11 @@ def btclient():
 
 
 @pytest.fixture
-def bb_tracker_jobs(imghost, btclient, tmp_path, mocker):
+def bb_tracker_jobs(imghost, btclient, tmp_path, tracker, mocker):
     content_path = tmp_path / 'content.mkv'
     bb_tracker_jobs = bb.BbTrackerJobs(
         content_path=str(content_path),
-        tracker=Mock(),
+        tracker=tracker,
         image_host=imghost,
         bittorrent_client=btclient,
         torrent_destination=str(tmp_path / 'destination'),
@@ -379,7 +386,7 @@ def test_release_type_job(bb_tracker_jobs, mocker):
     ChoiceJob_mock = mocker.patch('upsies.jobs.dialog.ChoiceJob')
     assert bb_tracker_jobs.release_type_job is ChoiceJob_mock.return_value
     assert ChoiceJob_mock.call_args_list == [call(
-        name='release-type',
+        name='bb-release-type',
         label='Release Type',
         choices=(
             ('Movie', utils.types.ReleaseType.movie),
@@ -413,7 +420,7 @@ def test_movie_title_job(bb_tracker_jobs, mocker):
         'output', bb_tracker_jobs.fill_in_movie_title,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
-        name='movie-title',
+        name='bb-movie-title',
         label='Title',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         validator=bb_tracker_jobs.movie_title_validator,
@@ -478,7 +485,7 @@ def test_movie_year_job(year, exp_text, bb_tracker_jobs, mocker):
         'output', bb_tracker_jobs.fill_in_movie_year,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
-        name='movie-year',
+        name='bb-movie-year',
         label='Year',
         text=exp_text,
         condition=bb_tracker_jobs.make_job_condition.return_value,
@@ -531,7 +538,7 @@ def test_movie_resolution_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_choice_job')
     assert bb_tracker_jobs.movie_resolution_job is bb_tracker_jobs.make_choice_job.return_value
     assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
-        name='movie-resolution',
+        name='bb-movie-resolution',
         label='Resolution',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         autodetected=bb_tracker_jobs.release_info_resolution,
@@ -560,7 +567,7 @@ def test_movie_source_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_choice_job')
     assert bb_tracker_jobs.movie_source_job is bb_tracker_jobs.make_choice_job.return_value
     assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
-        name='movie-source',
+        name='bb-movie-source',
         label='Source',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         autodetected=bb_tracker_jobs.release_name.source,
@@ -596,7 +603,7 @@ def test_movie_audio_codec_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_choice_job')
     assert bb_tracker_jobs.movie_audio_codec_job is bb_tracker_jobs.make_choice_job.return_value
     assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
-        name='movie-audio-codec',
+        name='bb-movie-audio-codec',
         label='Audio Codec',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         autodetected=bb_tracker_jobs.release_info_audio_format,
@@ -623,7 +630,7 @@ def test_movie_video_codec_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_choice_job')
     assert bb_tracker_jobs.movie_video_codec_job is bb_tracker_jobs.make_choice_job.return_value
     assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
-        name='movie-video-codec',
+        name='bb-movie-video-codec',
         label='Video Codec',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         autodetected=bb_tracker_jobs.release_name.video_format,
@@ -651,7 +658,7 @@ def test_movie_container_job(bb_tracker_jobs, mocker):
     exp_autodetected_extension = 'bar'
     assert bb_tracker_jobs.movie_container_job is bb_tracker_jobs.make_choice_job.return_value
     assert bb_tracker_jobs.make_choice_job.call_args_list == [call(
-        name='movie-container',
+        name='bb-movie-container',
         label='Container',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         autodetected=exp_autodetected_extension,
@@ -676,7 +683,7 @@ def test_movie_release_info_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.movie_release_info_job is TextFieldJob_mock.return_value
     assert TextFieldJob_mock.call_args_list == [call(
-        name='movie-release-info',
+        name='bb-movie-release-info',
         label='Release Info',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         text=bb_tracker_jobs.get_movie_release_info(),
@@ -690,7 +697,7 @@ def test_movie_poster_job(bb_tracker_jobs, mocker):
     CustomJob_mock = mocker.patch('upsies.jobs.custom.CustomJob')
     assert bb_tracker_jobs.movie_poster_job is CustomJob_mock.return_value
     assert CustomJob_mock.call_args_list == [call(
-        name='movie-poster',
+        name='bb-movie-poster',
         label='Poster',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         worker=bb_tracker_jobs.movie_get_poster_url,
@@ -719,7 +726,7 @@ def test_movie_tags_job(bb_tracker_jobs, mocker):
         'output', bb_tracker_jobs.fill_in_movie_tags,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
-        name='movie-tags',
+        name='bb-movie-tags',
         label='Tags',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         validator=bb_tracker_jobs.movie_tags_validator,
@@ -772,7 +779,7 @@ def test_movie_description_job(bb_tracker_jobs, mocker):
         'finished', bb_tracker_jobs.fill_in_movie_description,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
-        name='movie-description',
+        name='bb-movie-description',
         label='Description',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         validator=bb_tracker_jobs.movie_description_validator,
@@ -840,7 +847,7 @@ def test_series_title_job(bb_tracker_jobs, mocker):
         'output', bb_tracker_jobs.fill_in_series_title,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
-        name='series-title',
+        name='bb-series-title',
         label='Title',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         validator=bb_tracker_jobs.series_title_validator,
@@ -894,7 +901,7 @@ def test_series_poster_job(bb_tracker_jobs, mocker):
     CustomJob_mock = mocker.patch('upsies.jobs.custom.CustomJob')
     assert bb_tracker_jobs.series_poster_job is CustomJob_mock.return_value
     assert CustomJob_mock.call_args_list == [call(
-        name='series-poster',
+        name='bb-series-poster',
         label='Poster',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         worker=bb_tracker_jobs.series_get_poster_url,
@@ -925,7 +932,7 @@ def test_series_tags_job(bb_tracker_jobs, mocker):
         'output', bb_tracker_jobs.fill_in_series_tags,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
-        name='series-tags',
+        name='bb-series-tags',
         label='Tags',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         validator=bb_tracker_jobs.series_tags_validator,
@@ -978,7 +985,7 @@ def test_series_description_job(bb_tracker_jobs, mocker):
         'finished', bb_tracker_jobs.fill_in_series_description,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
-        name='series-description',
+        name='bb-series-description',
         label='Description',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         validator=bb_tracker_jobs.series_description_validator,
