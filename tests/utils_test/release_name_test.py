@@ -557,13 +557,25 @@ def test_edition_getter_autodetects_dual_audio(edition_list, has_dual_audio, exp
     for _ in range(3):
         assert rn.edition == exp_edition
 
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_edition_getter_autodetects_hdr_format(ReleaseInfo_mock, mocker):
-    ReleaseInfo_mock.return_value = {'edition': []}
+@patch('upsies.utils.release.ReleaseInfo', Mock(return_value={}))
+@pytest.mark.parametrize(
+    argnames='edition_list, hdr_format, exp_edition',
+    argvalues=(
+        ([], 'HDR', ['HDR']),
+        (['HDR'], 'HDR', ['HDR']),
+        (['HDR10'], 'HDR', ['HDR']),
+        (['HDR'], 'HDR10', ['HDR10']),
+        (['HDR10'], 'HDR10', ['HDR10']),
+        (['HDR10', 'HDR10'], 'HDR10', ['HDR10']),
+    ),
+)
+def test_edition_getter_autodetects_hdr_format(edition_list, hdr_format, exp_edition, mocker):
     rn = ReleaseName('path/to/something')
-    rn.hdr_format = 'Dolby Vision'
-    assert rn.edition == ['Dolby Vision']  # Get info from ReleaseInfo.hdr_format
-    assert rn.edition == ['Dolby Vision']  # Get info from internal ReleaseInfo object
+    rn._info['edition'] = edition_list
+    hdr_format_mock = mocker.patch.object(type(rn), 'hdr_format', PropertyMock(return_value=hdr_format))
+    # Ensure HDR format is only appended once
+    for _ in range(3):
+        assert rn.edition == exp_edition
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
