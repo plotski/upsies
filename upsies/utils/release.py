@@ -522,7 +522,7 @@ class ReleaseName(collections.abc.Mapping):
     @_translated_property
     def hdr_format(self):
         """
-        HDR format name (e.g. "Dolby Vision" or "HDR10")
+        HDR format name (e.g. "Dolby Vision" or "HDR10") or `None`
 
         If not set explicitly and the given `path` exists, this value is
         autodetected if possible, otherwise default to whatever
@@ -539,8 +539,8 @@ class ReleaseName(collections.abc.Mapping):
 
         # Autodetect
         if os.path.exists(self._path):
-            hdr_format = video.hdr_format(self._path)
-            if hdr_format:
+            hdr_format = video.hdr_format(self._path, default=None)
+            if hdr_format is not None:
                 self._hdr_format = hdr_format
                 return self._hdr_format
 
