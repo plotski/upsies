@@ -665,6 +665,7 @@ def test_bit_depth_forwards_ContentError_from_default_track(mocker):
         ({'HDR_Format_Compatibility': 'HDR10'}, 'HDR10'),
         ({'HDR_Format_Compatibility': 'foo HDR bar'}, 'HDR'),
         ({'HDR_Format': 'foo HDR bar'}, 'HDR'),
+        ({'colour_primaries': 'BT.2020'}, 'HDR10'),
     ),
     ids=lambda v: str(v),
 )

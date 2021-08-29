@@ -366,8 +366,10 @@ hdr_formats = {
     'Dolby Vision': {'HDR_Format': re.compile(r'^Dolby Vision$')},
     # "HDR10+ Profile A" or "HDR10+ Profile B"
     'HDR10+': {'HDR_Format_Compatibility': re.compile(r'HDR10\+')},
-    'HDR10': {'HDR_Format_Compatibility': re.compile(r'HDR10(?!\+)')},
-    # "HDR" is not tested with real-world data; feel free to change
+    'HDR10': (
+        {'HDR_Format_Compatibility': re.compile(r'HDR10(?!\+)')},
+        {'colour_primaries': re.compile(r'BT\.2020')},
+    ),
     'HDR': (
         {'HDR_Format_Compatibility': re.compile(r'HDR')},
         {'HDR_Format': re.compile(r'HDR')},
