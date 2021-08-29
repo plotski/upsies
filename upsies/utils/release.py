@@ -351,9 +351,10 @@ class ReleaseName(collections.abc.Mapping):
             self._info['edition'] = []
 
         # Dual Audio
-        if 'Dual Audio' not in self._info['edition']:
-            if self.has_dual_audio:
-                self._info['edition'].append('Dual Audio')
+        while 'Dual Audio' in self._info['edition']:
+            self._info['edition'].remove('Dual Audio')
+        if self.has_dual_audio:
+            self._info['edition'].append('Dual Audio')
 
         # HDR format (e.g. "Dolby Vision" or "HDR10")
         if not any(hdr in self._info['edition'] for hdr in video.hdr_formats):

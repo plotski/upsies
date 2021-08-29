@@ -1,7 +1,7 @@
 import asyncio
 import re
 import time
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, PropertyMock, call, patch
 
 import pytest
 
@@ -538,13 +538,24 @@ def test_edition_getter_returns_same_list_with_given_edition(ReleaseInfo_mock):
     assert rn.edition is rn.edition
     assert isinstance(rn.edition, list)
 
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_edition_getter_autodetects_dual_audio(ReleaseInfo_mock, mocker):
-    ReleaseInfo_mock.return_value = {'edition': []}
+@patch('upsies.utils.release.ReleaseInfo', Mock(return_value={}))
+@pytest.mark.parametrize(
+    argnames='edition_list, has_dual_audio, exp_edition',
+    argvalues=(
+        ([], True, ['Dual Audio']),
+        ([], False, []),
+        (['Dual Audio'], True, ['Dual Audio']),
+        (['Dual Audio'], False, []),
+        (['Dual Audio', 'Dual Audio'], False, []),
+    ),
+)
+def test_edition_getter_autodetects_dual_audio(edition_list, has_dual_audio, exp_edition, mocker):
     rn = ReleaseName('path/to/something')
-    rn.has_dual_audio = True
-    assert rn.edition == ['Dual Audio']  # Get info from ReleaseInfo.has_dual_audio
-    assert rn.edition == ['Dual Audio']  # Get info from internal ReleaseInfo object
+    rn._info['edition'] = edition_list
+    has_dual_audio_mock = mocker.patch.object(type(rn), 'has_dual_audio', PropertyMock(return_value=has_dual_audio))
+    # Ensure "Dual Audio" is only appended once
+    for _ in range(3):
+        assert rn.edition == exp_edition
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_edition_getter_autodetects_hdr_format(ReleaseInfo_mock, mocker):
