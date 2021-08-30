@@ -2,9 +2,11 @@
 Entry point
 """
 
+import asyncio
 import sys
 
 from ... import __homepage__, application_setup, application_shutdown, errors
+from ...utils import update
 from . import commands, utils
 
 
@@ -13,10 +15,14 @@ def main(args=None):
 
 
 def _main(args=None):
+    update_message_task = None
+
     try:
         if utils.is_tty():
             from .tui import TUI
             ui = TUI()
+            # Find latest version and generate update message in a background task
+            update_message_task = asyncio.get_event_loop().create_task(update.get_update_message())
         else:
             from .headless import Headless
             ui = Headless()
@@ -60,5 +66,10 @@ def _main(args=None):
                     if j.output:
                         print('\n'.join(j.output))
                     break
+
+        # Print update message if there is one
+        msg = asyncio.get_event_loop().run_until_complete(update_message_task)
+        if msg:
+            print(msg, file=sys.stderr)
 
         return exit_code
