@@ -3,7 +3,9 @@ import base64
 import hashlib
 import io
 import itertools
+import os
 import re
+import time
 from unittest.mock import Mock, call
 
 import httpx
@@ -55,16 +57,16 @@ class AsyncMock(Mock):
 
 
 @pytest.mark.parametrize(
-    argnames=('auth', 'cache', 'user_agent', 'allow_redirects'),
+    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects'),
     argvalues=(
-        (None, False, False, True),
-        (('foo', 'bar'), False, True, False),
-        (('bar', 'foo'), True, False, True),
-        (None, True, True, False),
+        (None, False, 123, False, True),
+        (('foo', 'bar'), False, 456, True, False),
+        (('bar', 'foo'), True, 789, False, True),
+        (None, True, 0, True, False),
     ),
 )
 @pytest.mark.asyncio
-async def test_get_forwards_arguments_to_request(auth, cache, user_agent, allow_redirects, mocker):
+async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     result = await http.get(
         url='http://localhost:123/foo',
@@ -72,6 +74,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, user_agent, allow_
         params={'bar': 'baz'},
         auth=auth,
         cache=cache,
+        max_cache_age=max_cache_age,
         user_agent=user_agent,
         allow_redirects=allow_redirects,
     )
@@ -83,6 +86,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, user_agent, allow_
             params={'bar': 'baz'},
             auth=auth,
             cache=cache,
+            max_cache_age=max_cache_age,
             user_agent=user_agent,
             allow_redirects=allow_redirects,
         )
@@ -90,16 +94,16 @@ async def test_get_forwards_arguments_to_request(auth, cache, user_agent, allow_
     assert result is request_mock.return_value
 
 @pytest.mark.parametrize(
-    argnames=('auth', 'cache', 'user_agent', 'allow_redirects'),
+    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects'),
     argvalues=(
-        (('a', 'b'), False, False, False),
-        (None, False, True, False),
-        (('b', 'a'), True, False, True),
-        (None, True, True, True),
+        (('a', 'b'), False, 0, False, False),
+        (None, False, 123, True, False),
+        (('b', 'a'), True, 456, False, True),
+        (None, True, 789, True, True),
     ),
 )
 @pytest.mark.asyncio
-async def test_post_forwards_arguments_to_request(auth, cache, user_agent, allow_redirects, mocker):
+async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     result = await http.post(
         url='http://localhost:123/foo',
@@ -108,6 +112,7 @@ async def test_post_forwards_arguments_to_request(auth, cache, user_agent, allow
         files=b'bar',
         auth=auth,
         cache=cache,
+        max_cache_age=max_cache_age,
         user_agent=user_agent,
         allow_redirects=allow_redirects,
     )
@@ -120,6 +125,7 @@ async def test_post_forwards_arguments_to_request(auth, cache, user_agent, allow
             files=b'bar',
             auth=auth,
             cache=cache,
+            max_cache_age=max_cache_age,
             user_agent=user_agent,
             allow_redirects=allow_redirects,
         )
@@ -206,7 +212,7 @@ async def test_request_gets_cached_result(method, mock_cache):
         assert result is mock_cache.from_cache.return_value
         assert mock_cache.mock_calls == [
             call.cache_file(method, url, {}),
-            call.from_cache(mock_cache.cache_file.return_value),
+            call.from_cache(mock_cache.cache_file.return_value, max_age=float('inf')),
         ] * i
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
@@ -228,7 +234,7 @@ async def test_request_caches_result(method, mock_cache, httpserver):
     assert isinstance(result, http.Result)
     assert mock_cache.mock_calls == [
         call.cache_file(method, httpserver.url_for('/foo'), {}),
-        call.from_cache(mock_cache.cache_file.return_value),
+        call.from_cache(mock_cache.cache_file.return_value, max_age=float('inf')),
         call.cache_file(method, httpserver.url_for('/foo'), {}),
         call.to_cache(mock_cache.cache_file.return_value, b'have this'),
     ]
@@ -822,18 +828,33 @@ def test_cache_file_defaults_to_CACHE_DIRPATH(method, mocker):
     assert http._cache_file(method, url) == exp_cache_file
 
 
-def test_from_cache_cannot_read_cache_file(mocker):
-    open_mock = mocker.patch('builtins.open', side_effect=OSError('Ouch'))
-    assert http._from_cache('mock/path') is None
-    assert open_mock.call_args_list == [call('mock/path', 'rb'), call('mock/path', 'rb')]
+def test_from_cache_with_nonexisting_cache_file():
+    assert http._from_cache('/no/such/path') is None
 
-def test_from_cache_can_read_cache_file(mocker):
-    open_mock = mocker.patch('builtins.open')
-    filehandle = open_mock.return_value.__enter__.return_value
-    filehandle.read.return_value = b'cached data'
-    assert http._from_cache('mock/path') == http.Result('cached data', b'cached data')
-    assert open_mock.call_args_list == [call('mock/path', 'rb'), call('mock/path', 'rb')]
-    assert filehandle.read.call_args_list == [call(), call()]
+def test_from_cache_with_unreadable_cache_file(tmp_path):
+    cache_filepath = tmp_path / 'cache_file'
+    cache_filepath.write_text('mock data')
+    cache_filepath.chmod(0o000)
+    try:
+        assert http._from_cache(cache_filepath) is None
+    finally:
+        cache_filepath.chmod(0o600)
+
+@pytest.mark.parametrize(
+    argnames='cached_data, max_age, cache_file_age, exp_return_value',
+    argvalues=(
+        ('föö', 100, 99, http.Result('föö', b'f\xc3\xb6\xc3\xb6')),
+        ('föö', 100, 101, None),
+    ),
+)
+def test_from_cache_refuses_to_read_old_cache_file(cached_data, max_age, cache_file_age, exp_return_value, tmp_path):
+    cache_filepath = tmp_path / 'cache/file'
+    cache_filepath.parent.mkdir(parents=True)
+    cache_filepath.write_text(cached_data, encoding='UTF-8')
+    mtime = time.time() - cache_file_age
+    os.utime(cache_filepath, times=(mtime, mtime))
+    cached_result = http._from_cache(cache_filepath, max_age=max_age)
+    assert cached_result == exp_return_value
 
 
 def test_to_cache_cannot_create_cache_directory(mocker):

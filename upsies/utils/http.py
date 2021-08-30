@@ -8,6 +8,7 @@ import hashlib
 import io
 import json
 import os
+import time
 
 import httpx
 
@@ -47,7 +48,8 @@ def close():
 
 
 async def get(url, headers={}, params={}, auth=None,
-              cache=False, user_agent=False, allow_redirects=True):
+              cache=False, max_cache_age=float('inf'),
+              user_agent=False, allow_redirects=True):
     """
     Perform HTTP GET request
 
@@ -57,6 +59,7 @@ async def get(url, headers={}, params={}, auth=None,
     :param auth: Basic access authentication; sequence of <username> and
         <password> or `None`
     :param bool cache: Whether to use cached response if available
+    :param int,float max_cache_age: Maximum age of cache in seconds
     :param bool user_agent: Whether to send the User-Agent header
     :param bool allow_redirects: Whether to follow redirects
 
@@ -71,12 +74,14 @@ async def get(url, headers={}, params={}, auth=None,
         params=params,
         auth=auth,
         cache=cache,
+        max_cache_age=max_cache_age,
         user_agent=user_agent,
         allow_redirects=allow_redirects,
     )
 
 async def post(url, headers={}, data={}, files={}, auth=None,
-               cache=False, user_agent=False, allow_redirects=True):
+               cache=False, max_cache_age=float('inf'),
+               user_agent=False, allow_redirects=True):
     """
     Perform HTTP POST request
 
@@ -118,6 +123,7 @@ async def post(url, headers={}, data={}, files={}, auth=None,
     :param auth: Basic access authentication; sequence of <username> and
         <password> or `None`
     :param bool cache: Whether to use cached response if available
+    :param int,float max_cache_age: Maximum age of cache in seconds
     :param bool user_agent: Whether to send the User-Agent header
     :param bool allow_redirects: Whether to follow redirects
 
@@ -133,6 +139,7 @@ async def post(url, headers={}, data={}, files={}, auth=None,
         files=files,
         auth=auth,
         cache=cache,
+        max_cache_age=max_cache_age,
         user_agent=user_agent,
         allow_redirects=allow_redirects,
     )
@@ -219,7 +226,8 @@ class Result(str):
 
 
 async def _request(method, url, headers={}, params={}, data={}, files={},
-                   allow_redirects=True, cache=False, auth=None, user_agent=False):
+                   allow_redirects=True, cache=False, max_cache_age=float('inf'),
+                   auth=None, user_agent=False):
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
 
@@ -250,7 +258,7 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
     async with request_lock:
         if cache:
             cache_file = _cache_file(method, url, params)
-            result = _from_cache(cache_file)
+            result = _from_cache(cache_file, max_age=max_cache_age)
             if result is not None:
                 return result
 
@@ -349,11 +357,18 @@ def _to_cache(cache_file, bytes):
         raise RuntimeError(f'Unable to write cache file {cache_file}: {e}')
 
 
-def _from_cache(cache_file):
-    bytes = _read_bytes_from_file(cache_file)
-    text = _read_string_from_file(cache_file)
-    if bytes and text:
-        return Result(text=text, bytes=bytes)
+def _from_cache(cache_file, max_age=float('inf')):
+    try:
+        cache_mtime = os.stat(cache_file).st_mtime
+    except FileNotFoundError:
+        return None
+    else:
+        cache_age = time.time() - cache_mtime
+        if cache_age <= max_age:
+            bytes = _read_bytes_from_file(cache_file)
+            text = _read_string_from_file(cache_file)
+            if bytes and text:
+                return Result(text=text, bytes=bytes)
 
 
 def _read_string_from_file(filepath):
