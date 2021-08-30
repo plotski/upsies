@@ -35,6 +35,7 @@ setuptools.setup(
         'beautifulsoup4==4.*',
         'guessit==3.*,>=3.3.0',
         'natsort==7.*',
+        'packaging>=21.0',
         'prompt_toolkit==3.*,>=3.0.6',
         'pyimgbox==1.*',
         'pyxdg',

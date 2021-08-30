@@ -327,4 +327,4 @@ def as_groups(sequence, group_sizes, default=None):
 
 from . import (argtypes, browser, btclients, configfiles, daemon, fs, html,
                http, image, imghosts, iso, release, scene, signal, string,
-               subproc, timestamp, torrent, types, video, webdbs)
+               subproc, timestamp, torrent, types, update, video, webdbs)
