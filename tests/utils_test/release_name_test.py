@@ -552,7 +552,7 @@ def test_edition_getter_returns_same_list_with_given_edition(ReleaseInfo_mock):
 def test_edition_getter_autodetects_dual_audio(edition_list, has_dual_audio, exp_edition, mocker):
     rn = ReleaseName('path/to/something')
     rn._info['edition'] = edition_list
-    has_dual_audio_mock = mocker.patch.object(type(rn), 'has_dual_audio', PropertyMock(return_value=has_dual_audio))
+    mocker.patch.object(type(rn), 'has_dual_audio', PropertyMock(return_value=has_dual_audio))
     # Ensure "Dual Audio" is only appended once
     for _ in range(3):
         assert rn.edition == exp_edition
@@ -572,7 +572,7 @@ def test_edition_getter_autodetects_dual_audio(edition_list, has_dual_audio, exp
 def test_edition_getter_autodetects_hdr_format(edition_list, hdr_format, exp_edition, mocker):
     rn = ReleaseName('path/to/something')
     rn._info['edition'] = edition_list
-    hdr_format_mock = mocker.patch.object(type(rn), 'hdr_format', PropertyMock(return_value=hdr_format))
+    mocker.patch.object(type(rn), 'hdr_format', PropertyMock(return_value=hdr_format))
     # Ensure HDR format is only appended once
     for _ in range(3):
         assert rn.edition == exp_edition
