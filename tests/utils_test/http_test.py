@@ -57,16 +57,16 @@ class AsyncMock(Mock):
 
 
 @pytest.mark.parametrize(
-    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects'),
+    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects', 'timeout'),
     argvalues=(
-        (None, False, 123, False, True),
-        (('foo', 'bar'), False, 456, True, False),
-        (('bar', 'foo'), True, 789, False, True),
-        (None, True, 0, True, False),
+        (None, False, 123, False, True, 1),
+        (('foo', 'bar'), False, 456, True, False, 2),
+        (('bar', 'foo'), True, 789, False, True, 3),
+        (None, True, 0, True, False, 4),
     ),
 )
 @pytest.mark.asyncio
-async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, mocker):
+async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, timeout, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     result = await http.get(
         url='http://localhost:123/foo',
@@ -77,6 +77,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, use
         max_cache_age=max_cache_age,
         user_agent=user_agent,
         allow_redirects=allow_redirects,
+        timeout=timeout,
     )
     assert request_mock.call_args_list == [
         call(
@@ -89,21 +90,22 @@ async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, use
             max_cache_age=max_cache_age,
             user_agent=user_agent,
             allow_redirects=allow_redirects,
+            timeout=timeout,
         )
     ]
     assert result is request_mock.return_value
 
 @pytest.mark.parametrize(
-    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects'),
+    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects', 'timeout'),
     argvalues=(
-        (('a', 'b'), False, 0, False, False),
-        (None, False, 123, True, False),
-        (('b', 'a'), True, 456, False, True),
-        (None, True, 789, True, True),
+        (('a', 'b'), False, 0, False, False, 10),
+        (None, False, 123, True, False, 20),
+        (('b', 'a'), True, 456, False, True, 30),
+        (None, True, 789, True, True, 40),
     ),
 )
 @pytest.mark.asyncio
-async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, mocker):
+async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, timeout, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     result = await http.post(
         url='http://localhost:123/foo',
@@ -115,6 +117,7 @@ async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, us
         max_cache_age=max_cache_age,
         user_agent=user_agent,
         allow_redirects=allow_redirects,
+        timeout=timeout,
     )
     assert request_mock.call_args_list == [
         call(
@@ -128,6 +131,7 @@ async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, us
             max_cache_age=max_cache_age,
             user_agent=user_agent,
             allow_redirects=allow_redirects,
+            timeout=timeout,
         )
     ]
     assert result is request_mock.return_value
