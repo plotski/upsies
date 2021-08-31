@@ -23,7 +23,6 @@ def application_shutdown(config):
     :param config: :class:`~.configfiles.ConfigFiles` instance
     """
     from . import utils
-    utils.http.close()
     utils.fs.limit_directory_size(
         path=config['config']['main']['cache_directory'],
         max_total_size=config['config']['main']['max_cache_size'],

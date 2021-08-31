@@ -535,7 +535,7 @@ async def test_request_catches_TimeoutException(method, mock_cache, mocker):
         message='Some error',
         request='mock request',
     )
-    mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
+    mocker.patch('httpx.AsyncClient.send', AsyncMock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
     with pytest.raises(errors.RequestError, match=rf'^{url}: Timeout$') as excinfo:
         await http._request(method=method, url=url)
@@ -546,7 +546,7 @@ async def test_request_catches_TimeoutException(method, mock_cache, mocker):
 @pytest.mark.asyncio
 async def test_request_catches_HTTPError(method, mock_cache, mocker):
     exc = httpx.HTTPError('Some error')
-    mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
+    mocker.patch('httpx.AsyncClient.send', AsyncMock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
     with pytest.raises(errors.RequestError, match=rf'^{url}: Some error$') as excinfo:
         await http._request(method=method, url=url)

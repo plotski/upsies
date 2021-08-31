@@ -18,6 +18,7 @@ from . import fs, html
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
+_default_timeout = 60
 _default_headers = {
     'Accept-Language': 'en-US,en;q=0.5',
     'User-Agent': f'{__project_name__}/{__version__}',
@@ -26,10 +27,6 @@ _default_headers = {
 # Use one Lock per requested url + parameters so we can make multiple identical
 # requests concurrently without bugging the server.
 _request_locks = collections.defaultdict(lambda: asyncio.Lock())
-
-_client = httpx.AsyncClient(
-    timeout=60,
-)
 
 
 cache_directory = None
@@ -40,16 +37,10 @@ If this is set to a falsy value, default to :attr:`~.constants.CACHE_DIRPATH`.
 """
 
 
-def close():
-    """Close the client session"""
-    _log.debug('Closing client: %r', _client)
-    asyncio.get_event_loop().run_until_complete(_client.aclose())
-    _log.debug('Closed client: %r', _client)
-
-
 async def get(url, headers={}, params={}, auth=None,
               cache=False, max_cache_age=float('inf'),
-              user_agent=False, allow_redirects=True):
+              user_agent=False, allow_redirects=True,
+              timeout=_default_timeout):
     """
     Perform HTTP GET request
 
@@ -62,6 +53,7 @@ async def get(url, headers={}, params={}, auth=None,
     :param int,float max_cache_age: Maximum age of cache in seconds
     :param bool user_agent: Whether to send the User-Agent header
     :param bool allow_redirects: Whether to follow redirects
+    :param int,float timeout: Maximum number of seconds the request may take
 
     :return: Response text
     :rtype: Response
@@ -77,11 +69,13 @@ async def get(url, headers={}, params={}, auth=None,
         max_cache_age=max_cache_age,
         user_agent=user_agent,
         allow_redirects=allow_redirects,
+        timeout=timeout,
     )
 
 async def post(url, headers={}, data={}, files={}, auth=None,
                cache=False, max_cache_age=float('inf'),
-               user_agent=False, allow_redirects=True):
+               user_agent=False, allow_redirects=True,
+               timeout=_default_timeout):
     """
     Perform HTTP POST request
 
@@ -126,6 +120,7 @@ async def post(url, headers={}, data={}, files={}, auth=None,
     :param int,float max_cache_age: Maximum age of cache in seconds
     :param bool user_agent: Whether to send the User-Agent header
     :param bool allow_redirects: Whether to follow redirects
+    :param int,float timeout: Maximum number of seconds the request may take
 
     :return: Response text
     :rtype: Response
@@ -142,6 +137,7 @@ async def post(url, headers={}, data={}, files={}, auth=None,
         max_cache_age=max_cache_age,
         user_agent=user_agent,
         allow_redirects=allow_redirects,
+        timeout=timeout,
     )
 
 async def download(url, filepath, *args, **kwargs):
@@ -227,19 +223,23 @@ class Result(str):
 
 async def _request(method, url, headers={}, params={}, data={}, files={},
                    allow_redirects=True, cache=False, max_cache_age=float('inf'),
-                   auth=None, user_agent=False):
+                   auth=None, user_agent=False, timeout=_default_timeout):
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
+
+    client = httpx.AsyncClient(
+        timeout=timeout,
+        headers={**_default_headers, **headers},
+        auth=auth,
+    )
 
     if isinstance(data, (bytes, str)):
         build_request_args = {'content': data}
     else:
         build_request_args = {'data': data}
 
-    headers = {**_default_headers, **headers}
-    request = _client.build_request(
+    request = client.build_request(
         method=str(method),
-        headers=headers,
         url=str(url),
         params=params,
         files=_open_files(files),
@@ -263,37 +263,37 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
                 return result
 
         _log.debug('%s: %r: %r', method, url, params)
-        try:
-            response = await _client.send(
-                request=request,
-                auth=auth,
-                allow_redirects=allow_redirects,
-            )
+        async with client:
             try:
-                response.raise_for_status()
-            except httpx.HTTPStatusError:
-                raise errors.RequestError(
-                    f'{url}: {html.as_text(response.text)}',
-                    url=url,
+                response = await client.send(
+                    request=request,
+                    allow_redirects=allow_redirects,
+                )
+                try:
+                    response.raise_for_status()
+                except httpx.HTTPStatusError:
+                    raise errors.RequestError(
+                        f'{url}: {html.as_text(response.text)}',
+                        url=url,
+                        text=response.text,
+                        headers=response.headers,
+                        status_code=response.status_code,
+                    )
+            except httpx.TimeoutException:
+                raise errors.RequestError(f'{url}: Timeout')
+            except httpx.HTTPError as e:
+                _log.debug(f'Unexpected HTTP error: {e!r}')
+                raise errors.RequestError(f'{url}: {e}')
+            else:
+                if cache:
+                    cache_file = _cache_file(method, url, params)
+                    _to_cache(cache_file, response.content)
+                return Result(
                     text=response.text,
+                    bytes=response.content,
                     headers=response.headers,
                     status_code=response.status_code,
                 )
-        except httpx.TimeoutException:
-            raise errors.RequestError(f'{url}: Timeout')
-        except httpx.HTTPError as e:
-            _log.debug(f'Unexpected HTTP error: {e!r}')
-            raise errors.RequestError(f'{url}: {e}')
-        else:
-            if cache:
-                cache_file = _cache_file(method, url, params)
-                _to_cache(cache_file, response.content)
-            return Result(
-                text=response.text,
-                bytes=response.content,
-                headers=response.headers,
-                status_code=response.status_code,
-            )
 
 
 def _open_files(files):

@@ -35,14 +35,12 @@ def pytest_addoption(parser):
                      help='Use this option to update the request cache')
 
 
-# httpx.AsyncClient() must be closed before the process terminates. We need a
-# loop for that. By default, pytest-asyncio uses a new loop for every test. By
-# overloading the event_loop fixture, we use one AsyncClient instance for every
-# test module and close it after all tests ran.
+# By default, pytest-asyncio uses a new loop for every test, but utils.http uses
+# module-level request asyncio.Lock() objects to avoid making the same request
+# multiple times simultaneously. This fixture uses the same event_loop for all
+# test modules in this package and closes it after all tests ran.
 @pytest.fixture(scope='module', autouse=True)
 def event_loop():
     loop = asyncio.new_event_loop()
-    http._client = type(http._client)()
     yield loop
-    loop.run_until_complete(http._client.aclose())
     loop.close()
