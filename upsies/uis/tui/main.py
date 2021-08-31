@@ -15,6 +15,7 @@ def main(args=None):
 
 
 def _main(args=None):
+    aioloop = asyncio.get_event_loop()
     update_message_task = None
 
     try:
@@ -22,7 +23,7 @@ def _main(args=None):
             from .tui import TUI
             ui = TUI()
             # Find latest version and generate update message in a background task
-            update_message_task = asyncio.get_event_loop().create_task(update.get_update_message())
+            update_message_task = aioloop.create_task(update.get_update_message())
         else:
             from .headless import Headless
             ui = Headless()
@@ -68,8 +69,18 @@ def _main(args=None):
                     break
 
         # Print update message if there is one
-        msg = asyncio.get_event_loop().run_until_complete(update_message_task)
-        if msg:
-            print(msg, file=sys.stderr)
+        if update_message_task:
+            try:
+                # Report result of update_message_task if it has finished, but
+                # don't wait for it to avoid annoying wait times before the user
+                # gets their prompt back.
+                msg = aioloop.run_until_complete(
+                    asyncio.wait_for(update_message_task, timeout=0)
+                )
+            except (asyncio.TimeoutError, errors.RequestError):
+                pass
+            else:
+                if msg:
+                    print(msg, file=sys.stderr)
 
         return exit_code
