@@ -522,7 +522,7 @@ async def test_poster_url(id, exp_poster_url, api, store_response):
         ('tt3472226', 8.0),  # Kung Fury (Short)
         ('tt6560040', 7.2),  # The Forest (mini series)
         ('tt0348914', 8.6),  # Deadwood (series)
-        ('tt0556307', 8.3),  # Deadwood - S02E04 (episode)
+        ('tt0556307', 8.4),  # Deadwood - S02E04 (episode)
         (None, None),
     ),
     ids=lambda value: str(value),
