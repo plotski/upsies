@@ -3,8 +3,6 @@ import os
 
 import pytest
 
-from upsies.utils import http
-
 
 @pytest.fixture(scope='module')
 def strict_filename_sanitization(module_mocker):

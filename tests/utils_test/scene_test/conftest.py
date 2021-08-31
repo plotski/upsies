@@ -13,7 +13,6 @@ def strict_filename_sanitization(strict_filename_sanitization):
 
 @pytest.fixture(scope='module', autouse=True)
 def disable_http_requests(pytestconfig, module_mocker):
-    from upsies.utils import http
     if not pytestconfig.getoption('--allow-requests', None):
         exc = RuntimeError('HTTP requests are disabled; use --allow-requests')
 
