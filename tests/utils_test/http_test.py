@@ -505,6 +505,90 @@ async def test_request_with_allow_redirects(status_code, method, allow_redirects
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
+async def test_request_preserves_cookies_between_requests(method, mock_cache, httpserver):
+    class Handler(RequestHandler):
+        def handle(self, request):
+            from werkzeug.datastructures import ImmutableMultiDict
+            request_cookies = getattr(self, 'request_cookies', ImmutableMultiDict())
+            assert request.cookies == request_cookies
+            bar = int(request_cookies.get('bar', 0))
+            self.request_cookies = ImmutableMultiDict({'bar': str(bar + 1)})
+
+            if request_cookies:
+                headers = {'Set-Cookie': f'bar={bar + 1}'}
+            else:
+                headers = {'Set-Cookie': 'bar=1'}
+
+            return Response(response=f'bar is currently {bar}', headers=headers)
+
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        Handler(),
+    )
+
+    for i in range(3):
+        response = await http._request(
+            method=method,
+            url=httpserver.url_for('/foo'),
+            cache=False,
+        )
+        assert response == f'bar is currently {i}'
+
+    http._cookie_jar.clear()
+
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_uses_separate_cookie_jar_per_domain(method, mock_cache, httpserver):
+    class Handler(RequestHandler):
+        def handle(self, request):
+            if getattr(self, 'set_cookie'):
+                domain = request.url.split('/')[2]
+                headers = {'Set-Cookie': f'domain={domain}'}
+            else:
+                headers = {}
+            return Response(
+                response='current cookies: ' + ', '.join(f'{k}={v}' for k, v in request.cookies.items()),
+                headers=headers,
+            )
+
+    handler = Handler()
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        handler,
+    )
+
+    hosts = ('foo.localhost', 'bar.localhost', 'baz.localhost')
+
+    # Fill cookie jar with some subdomain-specific cookies
+    handler.set_cookie = True
+    for host in hosts:
+        httpserver.host = host
+        response = await http._request(
+            method=method,
+            url=httpserver.url_for('/foo'),
+            cache=False,
+        )
+        assert response == 'current cookies: '
+
+    # Check if we get the same cookies back for each subdomain
+    handler.set_cookie = False
+    for host in hosts:
+        httpserver.host = host
+        response = await http._request(
+            method=method,
+            url=httpserver.url_for('/foo'),
+            cache=False,
+        )
+        assert response == f'current cookies: domain={host}:{httpserver.port}'
+
+    http._cookie_jar.clear()
+
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
 async def test_request_catches_HTTP_error_status(method, mock_cache, httpserver):
     url = httpserver.url_for('/foo')
     httpserver.expect_request(

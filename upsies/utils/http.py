@@ -23,6 +23,7 @@ _default_headers = {
     'Accept-Language': 'en-US,en;q=0.5',
     'User-Agent': f'{__project_name__}/{__version__}',
 }
+_cookie_jar = httpx.Cookies()
 
 # Use one Lock per requested url + parameters so we can make multiple identical
 # requests concurrently without bugging the server.
@@ -227,17 +228,19 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
 
+    # Create client object
     client = httpx.AsyncClient(
         timeout=timeout,
         headers={**_default_headers, **headers},
         auth=auth,
+        cookies=_cookie_jar,
     )
 
+    # Create request object
     if isinstance(data, (bytes, str)):
         build_request_args = {'content': data}
     else:
         build_request_args = {'data': data}
-
     request = client.build_request(
         method=str(method),
         url=str(url),
@@ -246,6 +249,7 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
         **build_request_args,
     )
 
+    # Adjust User-Agent
     if isinstance(user_agent, str):
         request.headers['User-Agent'] = user_agent
     elif not user_agent:
@@ -294,6 +298,9 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
                     headers=response.headers,
                     status_code=response.status_code,
                 )
+            finally:
+                # Preserve cookies between requests
+                _cookie_jar.update(client.cookies)
 
 
 def _open_files(files):
