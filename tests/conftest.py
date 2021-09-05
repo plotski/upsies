@@ -3,6 +3,8 @@ import os
 
 import pytest
 
+from upsies.utils import http
+
 
 @pytest.fixture(scope='module')
 def strict_filename_sanitization(module_mocker):
@@ -39,6 +41,12 @@ def pytest_addoption(parser):
 # test modules in this package and closes it after all tests ran.
 @pytest.fixture(scope='module', autouse=True)
 def event_loop():
+    import httpx
+    http._client = httpx.AsyncClient(
+        timeout=http._default_timeout,
+        headers=http._default_headers,
+    )
     loop = asyncio.new_event_loop()
     yield loop
+    asyncio.get_event_loop().run_until_complete(http.close())
     loop.close()

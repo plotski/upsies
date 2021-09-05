@@ -502,7 +502,6 @@ async def test_request_with_allow_redirects(status_code, method, allow_redirects
         assert result == 'not redirected'
     assert isinstance(result, http.Result)
 
-
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
 async def test_request_preserves_cookies_between_requests(method, mock_cache, httpserver):
@@ -536,7 +535,7 @@ async def test_request_preserves_cookies_between_requests(method, mock_cache, ht
         )
         assert response == f'bar is currently {i}'
 
-    http._cookie_jar.clear()
+    http._client.cookies.clear()
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -585,7 +584,7 @@ async def test_request_uses_separate_cookie_jar_per_domain(method, mock_cache, h
         )
         assert response == f'current cookies: domain={host}:{httpserver.port}'
 
-    http._cookie_jar.clear()
+    http._client.cookies.clear()
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -623,7 +622,7 @@ async def test_request_catches_TimeoutException(method, mock_cache, mocker):
         message='Some error',
         request='mock request',
     )
-    mocker.patch('httpx.AsyncClient.send', AsyncMock(side_effect=exc))
+    mocker.patch.object(http._client, 'send', AsyncMock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
     with pytest.raises(errors.RequestError, match=rf'^{url}: Timeout$') as excinfo:
         await http._request(method=method, url=url)
@@ -634,7 +633,7 @@ async def test_request_catches_TimeoutException(method, mock_cache, mocker):
 @pytest.mark.asyncio
 async def test_request_catches_HTTPError(method, mock_cache, mocker):
     exc = httpx.HTTPError('Some error')
-    mocker.patch('httpx.AsyncClient.send', AsyncMock(side_effect=exc))
+    mocker.patch.object(http._client, 'send', AsyncMock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
     with pytest.raises(errors.RequestError, match=rf'^{url}: Some error$') as excinfo:
         await http._request(method=method, url=url)

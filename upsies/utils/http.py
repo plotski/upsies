@@ -23,12 +23,28 @@ _default_headers = {
     'Accept-Language': 'en-US,en;q=0.5',
     'User-Agent': f'{__project_name__}/{__version__}',
 }
-_cookie_jar = httpx.Cookies()
 
 # Use one Lock per requested url + parameters so we can make multiple identical
 # requests concurrently without bugging the server.
 _request_locks = collections.defaultdict(lambda: asyncio.Lock())
 
+# A global client session seems to be the only way to get cookies working
+# reliably. The downside is that we have to remember to close the client before
+# the application terminates.
+_client = httpx.AsyncClient(
+    timeout=_default_timeout,
+    headers=_default_headers,
+)
+
+async def close():
+    """
+    Close the global client session used for all requests
+
+    This coroutine function must be called before the application terminates.
+    """
+    _log.debug('Closing client: %r', _client)
+    await _client.aclose()
+    _log.debug('Closed client: %r', _client)
 
 cache_directory = None
 """
@@ -228,22 +244,15 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
 
-    # Create client object
-    client = httpx.AsyncClient(
-        timeout=timeout,
-        headers={**_default_headers, **headers},
-        auth=auth,
-        cookies=_cookie_jar,
-    )
-
     # Create request object
     if isinstance(data, (bytes, str)):
         build_request_args = {'content': data}
     else:
         build_request_args = {'data': data}
-    request = client.build_request(
+    request = _client.build_request(
         method=str(method),
         url=str(url),
+        headers={**_default_headers, **headers},
         params=params,
         files=_open_files(files),
         **build_request_args,
@@ -267,40 +276,37 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
                 return result
 
         _log.debug('%s: %r: %r', method, url, params)
-        async with client:
+        try:
+            response = await _client.send(
+                request=request,
+                auth=auth,
+                allow_redirects=allow_redirects,
+            )
             try:
-                response = await client.send(
-                    request=request,
-                    allow_redirects=allow_redirects,
-                )
-                try:
-                    response.raise_for_status()
-                except httpx.HTTPStatusError:
-                    raise errors.RequestError(
-                        f'{url}: {html.as_text(response.text)}',
-                        url=url,
-                        text=response.text,
-                        headers=response.headers,
-                        status_code=response.status_code,
-                    )
-            except httpx.TimeoutException:
-                raise errors.RequestError(f'{url}: Timeout')
-            except httpx.HTTPError as e:
-                _log.debug(f'Unexpected HTTP error: {e!r}')
-                raise errors.RequestError(f'{url}: {e}')
-            else:
-                if cache:
-                    cache_file = _cache_file(method, url, params)
-                    _to_cache(cache_file, response.content)
-                return Result(
+                response.raise_for_status()
+            except httpx.HTTPStatusError:
+                raise errors.RequestError(
+                    f'{url}: {html.as_text(response.text)}',
+                    url=url,
                     text=response.text,
-                    bytes=response.content,
                     headers=response.headers,
                     status_code=response.status_code,
                 )
-            finally:
-                # Preserve cookies between requests
-                _cookie_jar.update(client.cookies)
+        except httpx.TimeoutException:
+            raise errors.RequestError(f'{url}: Timeout')
+        except httpx.HTTPError as e:
+            _log.debug(f'Unexpected HTTP error: {e!r}')
+            raise errors.RequestError(f'{url}: {e}')
+        else:
+            if cache:
+                cache_file = _cache_file(method, url, params)
+                _to_cache(cache_file, response.content)
+            return Result(
+                text=response.text,
+                bytes=response.content,
+                headers=response.headers,
+                status_code=response.status_code,
+            )
 
 
 def _open_files(files):
