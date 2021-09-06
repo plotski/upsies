@@ -1,11 +1,11 @@
-2021.??.??
+2021.09.06
   * IMDb: Fixed getting genre tags
   * bB: Fixed science.fiction tag
   * BHD: Fixed --description option
   * BHD: Resolved "500 Server Error" when uploading a .nfo file
   * BHD: Fixed translation of "(E-)AC-3" to "DD(P)" with Atmos
   * Fixed detection of Opus audio codec
-  * Print message to stderr if there is a newer version available
+  * Print notification to stderr if there is a newer version available
 
 
 2021.08.12
