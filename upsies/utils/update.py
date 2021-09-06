@@ -16,7 +16,7 @@ _log = logging.getLogger(__name__)
 _PYPI_URL = f'https://pypi.org/pypi/{__project_name__}/json'
 _REPO_URL = ('https://raw.githubusercontent.com/'
              f'plotski/{__project_name__}/master/{__project_name__}/__init__.py')
-_MAX_CACHE_AGE = 3600  # 1 hour
+_MAX_CACHE_AGE = 12 * 3600  # 12 hours
 _REQUEST_TIMEOUT = 3
 
 
