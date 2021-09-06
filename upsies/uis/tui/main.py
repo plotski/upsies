@@ -5,7 +5,8 @@ Entry point
 import asyncio
 import sys
 
-from ... import __homepage__, application_setup, application_shutdown, errors
+from ... import (__homepage__, __project_name__, application_setup,
+                 application_shutdown, errors)
 from ...utils import update
 from . import commands, utils
 
@@ -16,14 +17,14 @@ def main(args=None):
 
 def _main(args=None):
     aioloop = asyncio.get_event_loop()
-    update_message_task = None
+    get_newer_version_task = None
 
     try:
         if utils.is_tty():
             from .tui import TUI
             ui = TUI()
             # Find latest version and generate update message in a background task
-            update_message_task = aioloop.create_task(update.get_update_message())
+            get_newer_version_task = aioloop.create_task(update.get_newer_version())
         else:
             from .headless import Headless
             ui = Headless()
@@ -68,19 +69,19 @@ def _main(args=None):
                         print('\n'.join(j.output))
                     break
 
-        # Print update message if there is one
-        if update_message_task:
+        # Print update message if there is a newer version available
+        if get_newer_version_task:
             try:
-                # Report result of update_message_task if it has finished, but
-                # don't wait for it to avoid annoying wait times before the user
-                # gets their prompt back.
-                msg = aioloop.run_until_complete(
-                    asyncio.wait_for(update_message_task, timeout=0)
+                # don't wait for get_newer_version_task to prevent annoying wait
+                # times before the user gets their prompt back.
+                newer_version = aioloop.run_until_complete(
+                    asyncio.wait_for(get_newer_version_task, timeout=0)
                 )
             except (asyncio.TimeoutError, errors.RequestError):
                 pass
             else:
-                if msg:
+                if newer_version:
+                    msg = f'New {__project_name__} version available: {newer_version}'
                     print(msg, file=sys.stderr)
 
         return exit_code

@@ -1,9 +1,7 @@
 from unittest.mock import Mock, call
 
-import packaging
 import pytest
 
-from upsies import __project_name__
 from upsies.utils import update
 
 
@@ -18,46 +16,45 @@ class AsyncMock(Mock):
 
 
 @pytest.mark.parametrize(
-    argnames='version, exp_version',
+    argnames='current, release, prerelease, exp_newer_version',
     argvalues=(
-        ('0.0.1', '0.0.1'),
-        ('2021.6.20', '2021.06.20'),
-        ('2021.6.20.1', '2021.06.20.1'),
-        ('2021.10.20', '2021.10.20'),
-    ),
-)
-def test_fix_version(version, exp_version):
-    assert update._fix_version(version) == exp_version
+        # Running stable
+        ('2021.06.20', '2021.06.20', '2021.06.20', None),
+        ('2021.06.20', '2021.06.20', '2021.06.21alpha', None),
+        ('2021.06.20', '2021.06.20', '2021.06.21', None),
+        ('2021.06.20', '2021.06.21', '2021.06.21', '2021.06.21'),
+        ('2021.06.20', '2021.06.21', '2021.06.21alpha', '2021.06.21'),
+        ('2021.06.20', '2021.06.21', '2021.06.22alpha', '2021.06.21'),
 
-
-@pytest.mark.parametrize(
-    argnames='current, release, prerelease, exp_latest_version',
-    argvalues=(
-        ('2021.06.10', '2021.06.10', '2021.06.10', '2021.06.10'),
-        ('2021.06.10', '2021.06.15', '2021.06.20alpha', '2021.06.15'),
-
-        ('2021.06.20alpha', '2021.06.15', '2021.06.20alpha', '2021.06.20alpha'),
-        ('2021.06.20alpha', '2021.06.15', '2021.06.25alpha', '2021.06.25alpha'),
-
-        ('2021.06.20alpha', '2021.06.15', '2021.06.20alpha1', '2021.06.20alpha1'),
-        ('2021.06.20alpha2', '2021.06.15', '2021.06.25alpha3', '2021.06.25alpha3'),
+        # Running prerelease
+        ('2021.06.25alpha', '2021.06.20', '2021.06.20alpha', None),
+        ('2021.06.25alpha', '2021.06.20', '2021.06.25alpha', None),
+        ('2021.06.25alpha', '2021.06.20', '2021.06.26alpha', '2021.06.26alpha'),
+        ('2021.06.25alpha', '2021.06.26', '2021.06.26alpha', '2021.06.26'),
+        ('2021.06.25alpha', '2021.06.26', '2021.06.27alpha', '2021.06.27alpha'),
     ),
 )
 @pytest.mark.asyncio
-async def test_get_latest_version(current, release, prerelease, exp_latest_version, mocker):
-    get_latest_release_mock = mocker.patch('upsies.utils.update._get_latest_release_version',
-                                           AsyncMock(return_value=release))
-    get_latest_prerelease_mock = mocker.patch('upsies.utils.update._get_latest_prerelease_version',
-                                              AsyncMock(return_value=prerelease))
+async def test_get_newer_version(current, release, prerelease, exp_newer_version, mocker):
+    mocker.patch('upsies.utils.update._get_versions', AsyncMock(return_value=(current, release, prerelease)))
+    newer_version = await update.get_newer_version()
+    assert newer_version == exp_newer_version
+
+
+@pytest.mark.parametrize(
+    argnames='current, release, prerelease, exp_versions',
+    argvalues=(
+        ('2021.06.20', '2021.06.21', '2021.06.25alpha', ('2021.06.20', '2021.06.21', None)),
+        ('2021.06.20alpha', '2021.06.21', '2021.06.25alpha', ('2021.06.20alpha', '2021.06.21', '2021.06.25alpha')),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_versions(current, release, prerelease, exp_versions, mocker):
     mocker.patch('upsies.utils.update.__version__', current)
-    latest_version = await update.get_latest_version()
-    assert latest_version == exp_latest_version
-    if packaging.version.parse(current).is_prerelease:
-        assert get_latest_release_mock.call_args_list == []
-        assert get_latest_prerelease_mock.call_args_list == [call()]
-    else:
-        assert get_latest_release_mock.call_args_list == [call()]
-        assert get_latest_prerelease_mock.call_args_list == []
+    mocker.patch('upsies.utils.update._get_latest_release', AsyncMock(return_value=release))
+    mocker.patch('upsies.utils.update._get_latest_prerelease', AsyncMock(return_value=prerelease))
+    versions = await update._get_versions()
+    assert versions == exp_versions
 
 
 @pytest.mark.parametrize(
@@ -68,14 +65,14 @@ async def test_get_latest_version(current, release, prerelease, exp_latest_versi
     ),
 )
 @pytest.mark.asyncio
-async def test_get_latest_release_version(versions, exp_latest_version, mocker):
+async def test_get_latest_release(versions, exp_latest_version, mocker):
     response_mock = Mock(
         json=Mock(return_value={
             'releases': {v: f'info about {v!r}' for v in versions},
         }),
     )
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(return_value=response_mock))
-    latest_version = await update._get_latest_release_version()
+    latest_version = await update._get_latest_release()
     if exp_latest_version:
         assert latest_version == update._fix_version(exp_latest_version)
     else:
@@ -101,9 +98,9 @@ async def test_get_latest_release_version(versions, exp_latest_version, mocker):
     ),
 )
 @pytest.mark.asyncio
-async def test_get_latest_prerelease_version(init_file_string, exp_latest_version, mocker):
+async def test_get_latest_prerelease(init_file_string, exp_latest_version, mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(return_value=init_file_string))
-    latest_version = await update._get_latest_prerelease_version()
+    latest_version = await update._get_latest_prerelease()
     if exp_latest_version:
         assert latest_version == exp_latest_version
     else:
@@ -119,38 +116,13 @@ async def test_get_latest_prerelease_version(init_file_string, exp_latest_versio
 
 
 @pytest.mark.parametrize(
-    argnames='current_version, latest_version, message_is_returned',
+    argnames='version, exp_version',
     argvalues=(
-        ('2021.06.19', '2021.06.20', True),
-        ('2021.06.20', '2021.06.20', False),
-        ('2021.06.19', '2021.06.18', False),
-
-        ('2021.06.20alpha', '2021.06.20', True),
-        ('2021.06.20alpha', '2021.06.20alpha', False),
-        ('2021.06.20', '2021.06.20alpha', False),
-
-        ('2021.06.20', '2021.06.21alpha', False),
-        ('2021.06.20alpha', '2021.06.21alpha', True),
-        ('2021.06.20alpha', '2021.06.21', True),
-
-        ('2021.06.21alpha0', '2021.06.21alpha1', True),
-        ('2021.06.21alpha1', '2021.06.21alpha1', False),
-        ('2021.06.21alpha1', '2021.06.21alpha0', False),
+        ('0.0.1', '0.0.1'),
+        ('2021.6.20', '2021.06.20'),
+        ('2021.6.20.1', '2021.06.20.1'),
+        ('2021.10.20', '2021.10.20'),
     ),
 )
-@pytest.mark.asyncio
-async def test_get_update_message(current_version, latest_version, message_is_returned, mocker):
-    get_latest_version_mock = mocker.patch('upsies.utils.update.get_latest_version',
-                                           AsyncMock(return_value=latest_version))
-    mocker.patch('upsies.utils.update.__version__', current_version)
-    message = await update.get_update_message()
-    if message_is_returned:
-        exp_message = 'Latest {__project_name__} version: {latest_version}'.format(
-            __project_name__=__project_name__,
-            latest_version=latest_version,
-        )
-        assert message == exp_message
-    else:
-        assert message is None
-
-    assert get_latest_version_mock.call_args_list == [call()]
+def test_fix_version(version, exp_version):
+    assert update._fix_version(version) == exp_version
