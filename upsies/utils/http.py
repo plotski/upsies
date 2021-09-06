@@ -279,6 +279,7 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
         try:
             response = await _client.send(
                 request=request,
+                timeout=timeout,
                 auth=auth,
                 allow_redirects=allow_redirects,
             )

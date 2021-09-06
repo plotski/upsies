@@ -460,6 +460,46 @@ async def test_request_sends_user_agent(method, user_agent, exp_user_agent, mock
     assert result == 'have this'
     assert isinstance(result, http.Result)
 
+@pytest.mark.parametrize(
+    argnames='timeout, response_delay, exp_exception',
+    argvalues=(
+        (0.5, 0.4, None),
+        (0.5, 0.6, errors.RequestError('timeout')),
+        (1, 0.9, None),
+        (1, 1.1, errors.RequestError('timeout')),
+    ),
+)
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_with_timeout_argument(method, timeout, response_delay, exp_exception, mock_cache, httpserver):
+    class Handler(RequestHandler):
+        def handle(self, request):
+            import time
+            time.sleep(response_delay)
+            return Response('have this')
+
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        Handler(),
+    )
+    request_url = httpserver.url_for('/foo')
+    if exp_exception:
+        with pytest.raises(errors.RequestError, match=rf'^{request_url}: Timeout$'):
+            await http._request(
+                method=method,
+                url=request_url,
+                timeout=timeout,
+            )
+    else:
+        result = await http._request(
+            method=method,
+            url=request_url,
+            timeout=timeout,
+        )
+        assert result == 'have this'
+        assert isinstance(result, http.Result)
 
 @pytest.mark.parametrize('allow_redirects', (True, False))
 @pytest.mark.parametrize('method', ('GET', 'POST'))
