@@ -1,3 +1,7 @@
+2021.09.07
+  * Fixed exception when finding newer version
+
+
 2021.09.06
   * IMDb: Fixed getting genre tags
   * bB: Fixed science.fiction tag
