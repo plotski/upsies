@@ -186,8 +186,10 @@ def test_jobs_before_upload_sets_conditions_on_base_class_jobs(bhd_tracker_jobs,
 @pytest.mark.parametrize(
     argnames='options, relevant_job_attrs',
     argvalues=(
-        ({'description': True}, ('description_job', 'screenshots_job', 'upload_screenshots_job')),
-        ({'description': False}, ()),
+        ({'description': True, 'title': False}, ('description_job', 'screenshots_job', 'upload_screenshots_job')),
+        ({'description': False, 'title': False}, ()),
+        ({'description': True, 'title': True}, ('description_job', 'screenshots_job', 'upload_screenshots_job')),
+        ({'description': False, 'title': True}, ('release_name_job', 'imdb_job')),
     ),
     ids=lambda v: str(v),
 )
@@ -527,9 +529,10 @@ async def test_autodetect_tags(options, exp_personal_tag,
 @pytest.mark.parametrize(
     argnames='options, parent_ok, exp_ok',
     argvalues=(
-        ({'description': None}, 'parent value', 'parent value'),
-        ({'description': False}, 'parent value', 'parent value'),
-        ({'description': True}, 'parent value', False),
+        ({'description': False, 'title': False}, 'parent value', 'parent value'),
+        ({'description': True, 'title': False}, 'parent value', False),
+        ({'description': False, 'title': True}, 'parent value', False),
+        ({'description': True, 'title': True}, 'parent value', False),
     ),
 )
 def test_submission_ok(options, parent_ok, exp_ok, bhd_tracker_jobs, mocker):

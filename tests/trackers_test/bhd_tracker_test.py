@@ -50,9 +50,15 @@ def test_argument_definitions():
             'help': 'Tag as special episode, e.g. Christmas special (ignored for movie uploads)',
             'action': 'store_true',
         },
+        ('--title', '-t'): {
+            'help': 'Only generate title (do not upload anything)',
+            'action': 'store_true',
+            'group': 'generate-metadata',
+        },
         ('--description', '--desc'): {
             'help': 'Only generate description (do not upload anything)',
             'action': 'store_true',
+            'group': 'generate-metadata',
         },
         ('--screenshots', '--ss'): {
             'help': ('How many screenshots to make '

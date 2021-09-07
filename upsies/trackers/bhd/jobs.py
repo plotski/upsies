@@ -66,6 +66,9 @@ class BhdTrackerJobs(TrackerJobsBase):
             if self.options['description']:
                 # Only activate description_job and its dependencies
                 return job_attr in ('description_job', 'screenshots_job', 'upload_screenshots_job')
+            elif self.options['title']:
+                # Only activate release_name_job and its dependencies
+                return job_attr in ('release_name_job', 'imdb_job')
             else:
                 return True
 
@@ -316,7 +319,7 @@ class BhdTrackerJobs(TrackerJobsBase):
         `False` if :attr:`~.TrackerJobsBase.options` prevents submission for any
         reason, parent class implementation otherwise
         """
-        if self.options['description']:
+        if self.options['description'] or self.options['title']:
             return False
         else:
             return super().submission_ok
