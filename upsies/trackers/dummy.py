@@ -44,12 +44,13 @@ class DummyTrackerJobs(base.TrackerJobsBase):
     def category_job(self):
         if not self.options['skip_category']:
 
-            def select_release_category(release_name):
-                _log.debug('Setting type: %r', release_name.type)
-                if release_name.type:
-                    self.category_job.focused = release_name.type
+            def select_release_category(_):
+                user_approved_release_name = self.release_name
+                _log.debug('Setting type: %r', user_approved_release_name.type)
+                if user_approved_release_name.type:
+                    self.category_job.focused = user_approved_release_name.type
 
-            self.release_name_job.signal.register('release_name', select_release_category)
+            self.release_name_job.signal.register('output', select_release_category)
 
             choices = [(str(t).capitalize(), t) for t in ReleaseType if t]
             return jobs.dialog.ChoiceJob(
