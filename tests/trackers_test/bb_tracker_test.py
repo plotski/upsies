@@ -51,26 +51,31 @@ def test_argument_definitions():
             'group': 'single-job',
             'help': 'Only generate title',
             'action': 'store_true',
+            'group': 'generate-metadata',
         },
         ('--description', '-d'): {
             'group': 'single-job',
             'help': 'Only generate description',
             'action': 'store_true',
+            'group': 'generate-metadata',
         },
         ('--poster', '-p'): {
             'group': 'single-job',
             'help': 'Only generate poster URL',
             'action': 'store_true',
+            'group': 'generate-metadata',
         },
         ('--release-info', '-i'): {
             'group': 'single-job',
             'help': 'Only generate release info',
             'action': 'store_true',
+            'group': 'generate-metadata',
         },
         ('--tags', '-g'): {
             'group': 'single-job',
             'help': 'Only generate tags',
             'action': 'store_true',
+            'group': 'generate-metadata',
         },
     }
 
