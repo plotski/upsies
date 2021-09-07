@@ -35,19 +35,19 @@ async def get_newer_version():
     """
     current, release, prerelease = await _get_versions()
     current_parsed = parse_version(current)
-    release_parsed = parse_version(release)
-    prerelease_parsed = parse_version(prerelease)
-
     if current_parsed.is_prerelease:
         # Find newest release or prerelease, whichever is newer. Don't return
         # the parsed version because it removes padding zeros ("2021.06.20" ->
         # "2021.6.20").
-        version_map = {release_parsed: release, prerelease_parsed: prerelease}
+        version_map = {
+            parse_version(release): release,
+            parse_version(prerelease): prerelease,
+        }
         newest_parsed = sorted(version_map)[-1]
         if newest_parsed > current_parsed:
             return version_map[newest_parsed]
     else:
-        if release_parsed > current_parsed:
+        if parse_version(release) > current_parsed:
             return release
 
 
