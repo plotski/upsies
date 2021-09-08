@@ -2,6 +2,7 @@
 String formatting and parsing
 """
 
+import re
 import sys
 
 import logging  # isort:skip
@@ -25,6 +26,21 @@ def autodecode(bytes):
         return str(bytes, encoding)
     else:
         raise ValueError(f'Unable to autodetect encoding: {bytes!r}')
+
+
+_capitalize_regex = re.compile(r'(\s*)(\S+)(\s*)')
+
+def capitalize(text):
+    """
+    Capitalize each word in `text`
+
+    Unlike :meth:`str.title`, only words at in front of a space or at the
+    beginning of `text` are capitalized.
+    """
+    return ''.join(
+        match.group(1) + match.group(2).capitalize() + match.group(3)
+        for match in re.finditer(_capitalize_regex, text)
+    )
 
 
 def star_rating(rating, max_rating=10):

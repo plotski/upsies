@@ -23,6 +23,18 @@ def test_autodecode(bytes, exp_string, exp_error):
 
 
 @pytest.mark.parametrize(
+    argnames='text, exp_text',
+    argvalues=(
+        ('THIS is a sTRING', 'This Is A String'),
+        ("this is jeremy's string", "This Is Jeremy's String"),
+        (' this\tstring  has   weird    spacing  ', ' This\tString  Has   Weird    Spacing  '),
+    ),
+)
+def test_capitalize(text, exp_text):
+    assert string.capitalize(text) == exp_text
+
+
+@pytest.mark.parametrize(
     argnames='ratings, exp_string',
     argvalues=(
         ((-0.0, -0.1, -10.5), '☆☆☆☆☆☆☆☆☆☆'),
