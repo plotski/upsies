@@ -2132,78 +2132,28 @@ async def test_format_description_countries(countries, exp_text, bb_tracker_jobs
     ]
 
 
+@pytest.mark.parametrize(
+    argnames='runtimes, exp_text',
+    argvalues=(
+        ({}, None),
+        ({'default': 55}, '[b]Runtime[/b]: 55m'),
+        ({'default': 59}, '[b]Runtime[/b]: 59m'),
+        ({'default': 60}, '[b]Runtime[/b]: 60m'),
+        ({'default': 61}, '[b]Runtime[/b]: 1h1m'),
+        ({'default': 65}, '[b]Runtime[/b]: 1h5m'),
+        ({'default': 119}, '[b]Runtime[/b]: 1h59m'),
+        ({'default': 120}, '[b]Runtime[/b]: 2h'),
+        ({'default': 119, "Director's Cut": 120}, "[b]Runtimes[/b]: 1h59m, 2h (Director's Cut)"),
+        ({'default': 119, "Director's Cut": 120, 'Ultimate Cut': 199},
+         "[b]Runtimes[/b]: 1h59m, 2h (Director's Cut), 3h19m (Ultimate Cut)"),
+    ),
+)
 @pytest.mark.asyncio
-async def test_format_description_runtime_for_movie(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=True))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_season_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'content_path', PropertyMock(return_value='path/to/content'))
-    duration_mock = mocker.patch('upsies.utils.video.duration', return_value=123)
+async def test_format_description_runtime(runtimes, exp_text, bb_tracker_jobs, mocker):
+    try_webdbs_mock = mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=runtimes))
     text = await bb_tracker_jobs.format_description_runtime()
-    assert text == '[b]Runtime[/b]: 0:02:03'
-    assert duration_mock.call_args_list == [call('path/to/content', default=0)]
-
-@pytest.mark.asyncio
-async def test_format_description_runtime_for_episode(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=True))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_season_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'content_path', PropertyMock(return_value='path/to/content'))
-    duration_mock = mocker.patch('upsies.utils.video.duration', return_value=123)
-    text = await bb_tracker_jobs.format_description_runtime()
-    assert text == '[b]Runtime[/b]: 0:02:03'
-    assert duration_mock.call_args_list == [call('path/to/content', default=0)]
-
-@pytest.mark.asyncio
-async def test_format_description_runtime_for_season_with_few_episodes(bb_tracker_jobs, mocker, tmp_path):
-    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_season_release', PropertyMock(return_value=True))
-    content_path = tmp_path / 'content'
-    content_path.mkdir()
-    (content_path / 'episode 1.mkv').write_bytes(b'episode 1 data')
-    (content_path / 'episode 2.mkv').write_bytes(b'episode 2 data')
-    (content_path / 'content.nfo').write_bytes(b'text')
-    mocker.patch.object(type(bb_tracker_jobs), 'content_path', PropertyMock(return_value=str(content_path)))
-    duration_mock = mocker.patch('upsies.utils.video.duration', side_effect=(80, 100))
-    text = await bb_tracker_jobs.format_description_runtime()
-    assert text == '[b]Runtime[/b]: 0:01:30'
-    assert duration_mock.call_args_list == [
-        call(str(content_path / 'episode 1.mkv'), default=0),
-        call(str(content_path / 'episode 2.mkv'), default=0),
-    ]
-
-@pytest.mark.asyncio
-async def test_format_description_runtime_for_season_with_many_episodes(bb_tracker_jobs, mocker, tmp_path):
-    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_season_release', PropertyMock(return_value=True))
-    content_path = tmp_path / 'content'
-    content_path.mkdir()
-    (content_path / 'episode 1.mkv').write_bytes(b'episode 1 data')
-    (content_path / 'episode 2.mkv').write_bytes(b'episode 2 data')
-    (content_path / 'episode 3.mkv').write_bytes(b'episode 3 data')
-    (content_path / 'episode 4.mkv').write_bytes(b'episode 4 data')
-    (content_path / 'episode 5.mkv').write_bytes(b'episode 5 data')
-    (content_path / 'episode 6.mkv').write_bytes(b'episode 6 data')
-    (content_path / 'content.nfo').write_bytes(b'text')
-    mocker.patch.object(type(bb_tracker_jobs), 'content_path', PropertyMock(return_value=str(content_path)))
-    duration_mock = mocker.patch('upsies.utils.video.duration', side_effect=(80, 105, 115))
-    text = await bb_tracker_jobs.format_description_runtime()
-    assert text == '[b]Runtime[/b]: 0:01:40'
-    assert duration_mock.call_args_list == [
-        call(str(content_path / 'episode 2.mkv'), default=0),
-        call(str(content_path / 'episode 3.mkv'), default=0),
-        call(str(content_path / 'episode 4.mkv'), default=0),
-    ]
-
-@pytest.mark.asyncio
-async def test_format_description_runtime_for_unknown_type(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=False))
-    mocker.patch.object(type(bb_tracker_jobs), 'is_season_release', PropertyMock(return_value=False))
-    text = await bb_tracker_jobs.format_description_runtime()
-    assert text is None
+    assert text == exp_text
+    assert try_webdbs_mock.call_args_list == [call((bb_tracker_jobs.imdb, bb_tracker_jobs.tvmaze), 'runtimes')]
 
 
 @pytest.mark.parametrize(

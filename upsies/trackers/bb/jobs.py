@@ -1094,26 +1094,29 @@ class BbTrackerJobs(TrackerJobsBase):
                     + ', '.join(countries))
 
     async def format_description_runtime(self):
-        def format_runtime(seconds):
-            if seconds > 0:
-                return f'[b]Runtime[/b]: {timestamp.pretty(runtime)}'
+        def format_runtime(minutes):
+            if minutes > 60:
+                hours = minutes // 60
+                minutes = minutes - ((minutes // 60) * 60)
+                if minutes:
+                    return f'{hours}h{minutes}m'
+                else:
+                    return f'{hours}h'
+            else:
+                return f'{minutes}m'
 
-        if self.is_movie_release or self.is_episode_release:
-            runtime = video.duration(self.content_path, default=0)
-            return format_runtime(runtime)
-        elif self.is_season_release:
-            # Get all video files
-            filepaths = fs.file_list(self.content_path, extensions=constants.VIDEO_FILE_EXTENSIONS)
-            if len(filepaths) >= 5:
-                # Ignore first and last episode as they can be significantly longer
-                filepaths = filepaths[1:-1]
-            # Get average from 3 episodes
-            filepaths = filepaths[:3]
-            durations = [video.duration(f, default=0) for f in filepaths]
-            runtime = sum(durations) / len(durations)
-            return format_runtime(runtime)
-        else:
-            return None
+        runtimes = await self.try_webdbs((self.imdb, self.tvmaze), 'runtimes')
+        if len(runtimes) == 1:
+            runtime = tuple(runtimes.values())[0]
+            return f'[b]Runtime[/b]: {format_runtime(runtime)}'
+        elif len(runtimes) > 1:
+            parts = []
+            for cut, minutes in runtimes.items():
+                part = f'{format_runtime(minutes)}'
+                if cut != 'default':
+                    part += f' ({cut})'
+                parts.append(part)
+            return f'[b]Runtimes[/b]: {", ".join(parts)}'
 
     @staticmethod
     def _format_person(person):
