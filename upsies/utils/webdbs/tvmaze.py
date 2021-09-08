@@ -138,6 +138,14 @@ class TvmazeApi(WebDbApiBase):
         show = await self._get_show(id)
         return show.get('rating', {}).get('average')
 
+    async def runtimes(self, id):
+        runtimes = {}
+        show = await self._get_show(id)
+        runtime = show.get('runtime', 0)
+        if runtime:
+            runtimes['default'] = round(int(runtime))
+        return runtimes
+
     async def summary(self, id):
         show = await self._get_show(id)
         return _get_summary(show)

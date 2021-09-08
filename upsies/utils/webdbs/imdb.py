@@ -6,7 +6,7 @@ import functools
 import re
 import string
 
-from .. import html, http
+from ... import utils
 from ..types import ReleaseType
 from . import common
 from .base import WebDbApiBase
@@ -30,12 +30,12 @@ class ImdbApi(WebDbApiBase):
         cache_id = (path, tuple(sorted(params.items())))
         if cache_id in self._soup_cache:
             return self._soup_cache[cache_id]
-        text = await http.get(
+        text = await utils.http.get(
             url=f'{self._url_base}/{path}',
             params=params,
             cache=True,
         )
-        self._soup_cache[cache_id] = html.parse(text)
+        self._soup_cache[cache_id] = utils.html.parse(text)
         return self._soup_cache[cache_id]
 
     _title_types = {
@@ -203,6 +203,18 @@ class ImdbApi(WebDbApiBase):
                 except (ValueError, TypeError):
                     pass
         return None
+
+    async def runtimes(self, id):
+        runtimes = {}
+        if id:
+            soup = await self._get_soup(f'title/{id}/technical')
+            runtimes_label_tag = soup.find('td', class_='label', text=re.compile(r'\s*Runtime\s*'))
+            text = str(runtimes_label_tag.next_sibling.next_sibling)
+            for match in re.finditer(r'.*\s+\(?(\d+)\s+min\)?\s*(?:\((.*?)\)|)', text):
+                minutes = int(match.group(1))
+                cut = utils.string.capitalize(match.group(2)) if match.group(2) else 'default'
+                runtimes[cut] = minutes
+        return runtimes
 
     async def summary(self, id):
         if id:
@@ -417,7 +429,7 @@ class _ImdbSearchResult(common.SearchResult):
                  directors=None, id=None, genres=None, summary=None, title=None,
                  title_english=None, title_original=None, type=None, url=None,
                  year=None):
-        soup = soup or html.parse('')
+        soup = soup or utils.html.parse('')
         id = id or self._get_id(soup)
         return super().__init__(
             cast=cast or self._get_cast(soup),

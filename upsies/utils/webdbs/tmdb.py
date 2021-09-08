@@ -167,6 +167,19 @@ class TmdbApi(WebDbApiBase):
                 except (ValueError, TypeError):
                     pass
 
+    async def runtimes(self, id):
+        runtimes = {}
+        if id:
+            soup = await self._get_soup(id)
+            runtimes_tag = soup.find('span', class_='runtime')
+            text = str(runtimes_tag.string)
+            minutes = 0
+            for unit, unit_minutes in (('h', 60), ('m', 1)):
+                for match in re.finditer(rf'(\d+)\s*{unit}', text):
+                    minutes += int(match.group(1)) * unit_minutes
+            runtimes['default'] = minutes
+        return runtimes
+
     _no_overview_texts = (
         "We don't have an overview",
         'No overview found.',

@@ -107,6 +107,17 @@ class WebDbApiBase(abc.ABC):
         """Maximum :meth:`rating` value"""
 
     @abc.abstractmethod
+    async def runtimes(self, id):
+        """
+        Return mapping of runtimes
+
+        Keys are descriptive strings (e.g. "Director's Cut", "Ultimate Cut",
+        etc) and values are the runtime in minutes (:class:int).
+
+        The key of the default cut is ``default``.
+        """
+
+    @abc.abstractmethod
     async def summary(self, id):
         """Return short plot description"""
 

@@ -390,6 +390,20 @@ async def test_rating(id, exp_rating, api, store_response):
 
 
 @pytest.mark.parametrize(
+    argnames=('id', 'exp_runtimes'),
+    argvalues=(
+        (1259, {'default': 15}),
+        (35256, {'default': 60}),
+        (36072, {'default': 50}),
+    ),
+)
+@pytest.mark.asyncio
+async def test_runtimes(id, exp_runtimes, api, store_response):
+    runtimes = await api.runtimes(id)
+    assert runtimes == exp_runtimes
+
+
+@pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
         (1259, 'downfall of the Jedi'),

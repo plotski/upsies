@@ -413,6 +413,25 @@ async def test_poster_url(id, exp_url, api, store_response):
 
 
 @pytest.mark.parametrize(
+    argnames=('id', 'exp_runtimes'),
+    argvalues=(
+        ('movie/525', {'default': 133}),
+        ('movie/334536', {'default': 93}),
+        ('tv/1406', {'default': 55}),
+        ('tv/74802', {'default': 48}),
+        ('tv/66260', {'default': 23}),
+        ('movie/3405', {'default': 88}),
+        (None, {}),
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_runtimes(id, exp_runtimes, api, store_response):
+    runtimes = await api.runtimes(id)
+    assert runtimes == exp_runtimes
+
+
+@pytest.mark.parametrize(
     argnames=('id', 'exp_rating'),
     argvalues=(
         ('movie/525', 77.0),

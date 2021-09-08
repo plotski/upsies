@@ -534,6 +534,26 @@ async def test_rating(id, exp_rating, api, store_response):
 
 
 @pytest.mark.parametrize(
+    argnames=('id', 'exp_runtimes'),
+    argvalues=(
+        ('tt0080455', {'default': 133, 'Extended': 148}),  # Blues Brothers (movie)
+        ('tt0192802', {'default': 73}),  # Wind in the Willows (TV movie)
+        ('tt0097270', {'default': 39}),  # Elephant (TV movie)
+        ('tt6560040', {'Entire Series': 313}),  # The Forest (mini series)
+        ('tt0348914', {'default': 55}),  # Deadwood (series)
+        ('tt0556307', {'default': 53}),  # Deadwood - S02E04 (episode)
+        ('tt0409459', {'default': 162, "Director's Cut": 186, 'Ultimate Cut': 215}),  # Watchmen (movie)
+        (None, {}),
+    ),
+    ids=lambda value: str(value),
+)
+@pytest.mark.asyncio
+async def test_runtimes(id, exp_runtimes, api, store_response):
+    runtimes = await api.runtimes(id)
+    assert runtimes == exp_runtimes
+
+
+@pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
         ('tt0080455', ('Jake Blues, just released from prison, puts together '
