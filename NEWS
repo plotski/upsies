@@ -1,5 +1,6 @@
 2021.??.??
   * BHD: Added --title/-t option that only generates the release name
+  * bB: Get runtime(s) from IMDb/TVmaze
 
 
 2021.09.07
