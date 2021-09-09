@@ -1274,7 +1274,7 @@ def test_release_info_remastered(release_name, exp_text, bb_tracker_jobs, mocker
     argnames='editions, exp_text',
     argvalues=(
         (('Foo',), None),
-        (('DC',), "Director's Cut"),
+        (("Director's Cut",), "Director's Cut"),
     ),
 )
 def test_release_info_directors_cut(editions, exp_text, bb_tracker_jobs, mocker, tmp_path):
@@ -1286,7 +1286,7 @@ def test_release_info_directors_cut(editions, exp_text, bb_tracker_jobs, mocker,
     argnames='editions, exp_text',
     argvalues=(
         (('Foo',), None),
-        (('Theatrical',), 'Theatrical Cut'),
+        (('Theatrical Cut',), 'Theatrical Cut'),
     ),
 )
 def test_release_info_theatrical_cut(editions, exp_text, bb_tracker_jobs, mocker, tmp_path):
@@ -1310,7 +1310,7 @@ def test_release_info_imax(editions, exp_text, bb_tracker_jobs, mocker, tmp_path
     argnames='editions, exp_text',
     argvalues=(
         (('Foo',), None),
-        (('Extended',), 'Extended Edition'),
+        (('Extended Cut',), 'Extended Edition'),
     ),
 )
 def test_release_info_extended_edition(editions, exp_text, bb_tracker_jobs, mocker, tmp_path):
@@ -1338,7 +1338,7 @@ def test_release_info_anniversary_edition(release_name, exp_text, bb_tracker_job
     argnames='editions, exp_text',
     argvalues=(
         (('Foo',), None),
-        (('Criterion',), 'Criterion Edition'),
+        (('Criterion Collection',), 'Criterion Edition'),
     ),
 )
 def test_release_info_criterion_edition(editions, exp_text, bb_tracker_jobs, mocker, tmp_path):
@@ -1350,7 +1350,7 @@ def test_release_info_criterion_edition(editions, exp_text, bb_tracker_jobs, moc
     argnames='editions, exp_text',
     argvalues=(
         (('Foo',), None),
-        (('Special',), 'Special Edition'),
+        (('Special Edition',), 'Special Edition'),
     ),
 )
 def test_release_info_special_edition(editions, exp_text, bb_tracker_jobs, mocker, tmp_path):

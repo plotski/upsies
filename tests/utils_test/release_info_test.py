@@ -245,35 +245,60 @@ def test_title_and_alternative_title(release_name, expected):
 
 
 edition_samples = (
+    ('The Foo 2000 Alternative Cut 1080p BluRay DTS x264-ASDF', {'edition': ['Alternative Cut']}),
+    ('The Foo 2000 Alternative 1080p BluRay DTS x264-ASDF', {'edition': ['Alternative Cut']}),
+    ("The Foo 2000 Collector's Edition 1080p BluRay DTS x264-ASDF", {'edition': ["Collector's Edition"]}),
+    ('The Foo 2000 Collector 1080p BluRay DTS x264-ASDF', {'edition': ["Collector's Edition"]}),
+    # TODO: Enable when support was added to guessit:
+    #       https://github.com/guessit-io/guessit/pull/697
+    # ('The Foo 2000 Criterion Collection 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion Collection']}),
+    # ('The Foo 2000 Criterion 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion Collection']}),
+    ('The Foo 2000 CC 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion Collection']}),
+    ('The Foo 2000 Deluxe 1080p BluRay DTS x264-ASDF', {'edition': ['Deluxe Edition']}),
+    ("The Foo 2000 Director's Cut 1080p BluRay DTS x264-ASDF", {'edition': ["Director's Cut"]}),
+    ('The Foo 2000 DC 1080p BluRay DTS x264-ASDF', {'edition': ["Director's Cut"]}),
+    # TODO: Enable when support was added to guessit:
+    # ("The Foo 2000 Director's Definitive Cut 1080p BluRay DTS x264-ASDF", {'edition': ["Director's Definitive Cut"]}),
+    ('The Foo 2000 DDC 1080p BluRay DTS x264-ASDF', {'edition': ["Director's Definitive Cut"]}),
+    ('The Foo 2000 Extended Cut 1080p BluRay DTS x264-ASDF', {'edition': ['Extended Cut']}),
+    ('The Foo 2000 Extended 1080p BluRay DTS x264-ASDF', {'edition': ['Extended Cut']}),
+    ('The Foo 2000 IMAX 1080p BluRay DTS x264-ASDF', {'edition': ['IMAX']}),
+    ('The Foo 2000 Limited 1080p BluRay DTS x264-ASDF', {'edition': ['Limited']}),
+    ('The Foo 2000 Remastered 1080p BluRay DTS x264-ASDF', {'edition': ['Remastered']}),
+    ('The Foo 2000 Special Edition 1080p BluRay DTS x264-ASDF', {'edition': ['Special Edition']}),
+    # TODO: Enable when support was added to guessit:
+    # ('The Foo 2000 Special 1080p BluRay DTS x264-ASDF', {'edition': ['Special Edition']}),
+    ('The Foo 2000 Theatrical Cut 1080p BluRay DTS x264-ASDF', {'edition': ['Theatrical Cut']}),
+    ('The Foo 2000 Theatrical 1080p BluRay DTS x264-ASDF', {'edition': ['Theatrical Cut']}),
+    ('The Foo 2000 Ultimate Edition 1080p BluRay DTS x264-ASDF', {'edition': ['Ultimate Cut']}),
+    # TODO: Enable when support was added to guessit:
+    # ('The Foo 2000 Ultimate Cut 1080p BluRay DTS x264-ASDF', {'edition': ['Ultimate Cut']}),
+    # ('The Foo 2000 Ultimate 1080p BluRay DTS x264-ASDF', {'edition': ['Ultimate Cut']}),
+    ('The Foo 2000 Uncensored 1080p BluRay DTS x264-ASDF', {'edition': ['Uncensored']}),
+    ('The Foo 2000 Uncut 1080p BluRay DTS x264-ASDF', {'edition': ['Uncut']}),
+    ('The Foo 2000 Unrated 1080p BluRay DTS x264-ASDF', {'edition': ['Unrated']}),
     ('The Foo 2000 1080p PROPER BluRay DTS x264-ASDF', {'edition': ['Proper']}),
     ('The Foo 2000 Repack 1080p BluRay DTS x264-ASDF', {'edition': ['Repack']}),
     ('The Foo 2000 1080p Repack2 BluRay DTS x264-ASDF', {'edition': ['Repack2']}),
     ('The Foo 2000 1080p Dual Audio BluRay DTS x264-ASDF', {'edition': ['Dual Audio']}),
-    ('The Foo 2000 EXTENDED 1080p BluRay DTS x264-ASDF', {'edition': ['Extended']}),
     ('The Foo 2000 DC Uncut 1080p BluRay DTS x264-ASDF', {'edition': ["Director's Cut", 'Uncut']}),
     ('The Foo 2000 1080p Hybrid Uncut BluRay DTS x264-ASDF', {'edition': ['Uncut'],
                                                               'source': 'Hybrid BluRay'}),
     ('The Foo 2000 1080p Hybrid Unrated DC BluRay DTS x264-ASDF', {'edition': ['Unrated', "Director's Cut"],
                                                                    'source': 'Hybrid BluRay'}),
-    ('The Foo Extended 2000 1080p Hybrid Uncut BluRay DTS x264-ASDF', {'edition': ['Extended', 'Uncut'],
+    ('The Foo Extended 2000 1080p Hybrid Uncut BluRay DTS x264-ASDF', {'edition': ['Extended Cut', 'Uncut'],
                                                                        'source': 'Hybrid BluRay'}),
     ('The Foo 2000 OAR 1080p BluRay DTS x264-ASDF', {'edition': ['OAR']}),
     ('The Foo 2000 OM 1080p BluRay DTS x264-ASDF', {'edition': ['Open Matte']}),
-    # TODO: Enable this test when guessit supports it (likely after 3.3.1)
+    # TODO: Enable when support was added to guessit:
     #       https://github.com/guessit-io/guessit/commit/ddf8e772d735bc80940ba3068c5014d79499a618
     # ('The Foo 2000 Open Matte 1080p BluRay DTS x264-ASDF', {'edition': ['Open Matte']}),
-
     ('The Foo 2000 1080p BluRay DV DTS x264-ASDF', {'edition': ['Dolby Vision']}),
     ('The Foo 2000 1080p BluRay DoVi DTS x264-ASDF', {'edition': ['Dolby Vision']}),
     ('The Foo 2000 1080p BluRay Dolby Vision DTS x264-ASDF', {'edition': ['Dolby Vision']}),
     ('The Foo 2000 1080p BluRay HDR10+ DTS x264-ASDF', {'edition': ['HDR10+']}),
     ('The Foo 2000 1080p BluRay HDR10 DTS x264-ASDF', {'edition': ['HDR10']}),
     ('The Foo 2000 1080p BluRay HDR DTS x264-ASDF', {'edition': ['HDR']}),
-
-    # TODO: Enable this test when guessit supports it.
-    #       https://github.com/guessit-io/guessit/pull/697
-    # ('The Foo 2000 Criterion Collection 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion'],
-    #                                                                   'source': 'BluRay'}),
 )
 @pytest.mark.parametrize('release_name, exp_values', edition_samples)
 def test_edition(release_name, exp_values):
@@ -483,10 +508,10 @@ def test_abbreviated_scene_filename(path, exp_release_name):
      {'type': ReleaseType.movie, 'title': 'The Collector', 'year': '2009',
       'resolution': '1080p', 'source': 'BluRay', 'audio_codec': 'DTS', 'group': 'ASDF',
       'edition': []}),
-    ('The Collector Collector 2009 1080p BluRay DTS-ASDF',
+    ("The Collector 2009 Collector's Edition 1080p BluRay DTS-ASDF",
      {'type': ReleaseType.movie, 'title': 'The Collector', 'year': '2009',
       'resolution': '1080p', 'source': 'BluRay', 'audio_codec': 'DTS', 'group': 'ASDF',
-      'edition': ['Collector']}),
+      'edition': ["Collector's Edition"]}),
     ('xXx 2002 1080p BluRay DTS-ASDF',
      {'type': ReleaseType.movie, 'title': 'xXx', 'year': '2002',
       'resolution': '1080p', 'source': 'BluRay', 'audio_codec': 'DTS', 'group': 'ASDF'}),

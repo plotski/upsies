@@ -351,19 +351,19 @@ class BhdTrackerJobs(TrackerJobsBase):
         # Limited, Special, Theatrical, Uncut or Unrated)
         edition = self.release_name.edition
         _log.debug('Approved edition: %r', edition)
-        if 'Collector' in edition:
+        if "Collector's Edition" in edition:
             return 'Collector'
-        elif 'DC' in edition or 'Director' in edition:
+        elif "Director's Cut" in edition:
             return 'Director'
-        elif 'Extended' in edition:
+        elif 'Extended Cut' in edition:
             return 'Extended'
         elif 'Limited' in edition:
             return 'Limited'
-        elif 'Special' in edition:
+        elif 'Special Edition' in edition:
             return 'Special'
-        elif 'Theatrical' in edition:
+        elif 'Theatrical Cut' in edition:
             return 'Theatrical'
-        elif 'Uncut' in edition:
+        elif 'Uncut' in edition or 'Uncensored' in edition:
             return 'Uncut'
         elif 'Unrated' in edition:
             return 'Unrated'

@@ -1,4 +1,5 @@
 2021.??.??
+  * Use long edition names, e.g. "Special Edition" instead of "Special"
   * BHD: Added --title/-t option that only generates the release name
   * bB: Get runtime(s) from IMDb/TVmaze
 

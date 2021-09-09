@@ -907,7 +907,15 @@ class ReleaseInfo(collections.abc.MutableMapping):
     def _get_episode_title(self):
         return _as_string(self._guess.get('episode_title', ''))
 
-    _edition_translation = {}
+    _edition_translation = {
+        "Collector's Edition": re.compile(r'Collector'),
+        'Criterion Collection': re.compile(r'Criterion'),
+        'Deluxe Edition': re.compile(r'Deluxe'),
+        'Extended Cut': re.compile(r'Extended'),
+        'Special Edition': re.compile(r'Special'),
+        'Theatrical Cut': re.compile(r'Theatrical'),
+        'Ultimate Cut': re.compile(r'Ultimate'),
+    }
     _proper_repack_regex = re.compile(r'(?:[ \.]|^)((?i:proper|repack\d*))(?:[ \.]|$)')
     _hdr_regexes = {
         'Dolby Vision': re.compile(r'(?:[ \.]|^)(?i:DV|DoVi|Dolby[ \.]Vision)(?:[ \.]|$)'),
@@ -918,7 +926,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     def _get_edition(self):
         edition = _as_list(self._guess.get('edition'))
-        for regex, edition_fixed in self._edition_translation.items():
+        for edition_fixed, regex in self._edition_translation.items():
             for i in range(len(edition)):
                 if regex.search(edition[i]):
                     edition[i] = edition_fixed

@@ -532,9 +532,9 @@ def test_edition_getter_returns_same_list_with_no_edition(ReleaseInfo_mock):
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_edition_getter_returns_same_list_with_given_edition(ReleaseInfo_mock):
-    ReleaseInfo_mock.return_value = {'edition': ['DC', 'Unrated']}
+    ReleaseInfo_mock.return_value = {'edition': ["Director's Cut", 'Unrated']}
     rn = ReleaseName('path/to/something')
-    assert rn.edition == ['DC', 'Unrated']
+    assert rn.edition == ["Director's Cut", 'Unrated']
     assert rn.edition is rn.edition
     assert isinstance(rn.edition, list)
 
@@ -581,7 +581,7 @@ def test_edition_getter_autodetects_hdr_format(edition_list, hdr_format, exp_edi
 @pytest.mark.parametrize(
     argnames='edition, exp_edition',
     argvalues=(
-        (('DC',), ['DC']),
+        (('Special Edition',), ['Special Edition']),
         ((1, 2, 3), ['1', '2', '3']),
     ),
 )

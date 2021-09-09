@@ -721,12 +721,12 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def release_info_directors_cut(self):
-        if 'DC' in self.release_name.edition:
+        if "Director's Cut" in self.release_name.edition:
             return "Director's Cut"
 
     @property
     def release_info_theatrical_cut(self):
-        if 'Theatrical' in self.release_name.edition:
+        if 'Theatrical Cut' in self.release_name.edition:
             return 'Theatrical Cut'
 
     @property
@@ -736,7 +736,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def release_info_extended_edition(self):
-        if 'Extended' in self.release_name.edition:
+        if 'Extended Cut' in self.release_name.edition:
             return 'Extended Edition'
 
     @property
@@ -751,12 +751,12 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def release_info_criterion_edition(self):
-        if 'Criterion' in self.release_name.edition:
+        if 'Criterion Collection' in self.release_name.edition:
             return 'Criterion Edition'
 
     @property
     def release_info_special_edition(self):
-        if 'Special' in self.release_name.edition:
+        if 'Special Edition' in self.release_name.edition:
             return 'Special Edition'
 
     @property
