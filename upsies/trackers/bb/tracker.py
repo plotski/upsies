@@ -35,34 +35,29 @@ class BbTracker(TrackerBase):
             'type': argtypes.number_of_screenshots(BbTrackerConfig),
         },
         ('--title', '-t'): {
-            'group': 'single-job',
+            'group': 'generate-metadata',
             'help': 'Only generate title',
             'action': 'store_true',
-            'group': 'generate-metadata',
         },
         ('--description', '-d'): {
-            'group': 'single-job',
+            'group': 'generate-metadata',
             'help': 'Only generate description',
             'action': 'store_true',
-            'group': 'generate-metadata',
         },
         ('--poster', '-p'): {
-            'group': 'single-job',
+            'group': 'generate-metadata',
             'help': 'Only generate poster URL',
             'action': 'store_true',
-            'group': 'generate-metadata',
         },
         ('--release-info', '-i'): {
-            'group': 'single-job',
+            'group': 'generate-metadata',
             'help': 'Only generate release info',
             'action': 'store_true',
-            'group': 'generate-metadata',
         },
         ('--tags', '-g'): {
-            'group': 'single-job',
+            'group': 'generate-metadata',
             'help': 'Only generate tags',
             'action': 'store_true',
-            'group': 'generate-metadata',
         },
     }
 
