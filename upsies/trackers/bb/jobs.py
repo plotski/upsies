@@ -8,10 +8,9 @@ import re
 
 import unidecode
 
-from ... import (__homepage__, __project_name__, __version__, constants,
-                 errors, jobs)
-from ...utils import (cached_property, fs, http, image, release, string,
-                      timestamp, video, webdbs)
+from ... import __homepage__, __project_name__, __version__, errors, jobs
+from ...utils import (cached_property, fs, http, image, release, string, video,
+                      webdbs)
 from ..base import TrackerJobsBase
 
 import logging  # isort:skip
