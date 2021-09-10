@@ -7,7 +7,7 @@ import re
 import urllib
 
 from ... import errors
-from ...utils import argtypes, html, http
+from ...utils import html, http
 from ..base import TrackerBase
 from .config import BbTrackerConfig
 from .jobs import BbTrackerJobs
@@ -19,47 +19,6 @@ _log = logging.getLogger(__name__)
 class BbTracker(TrackerBase):
     name = 'bb'
     label = 'bB'
-
-    argument_definitions = {
-        ('--anime', '--an'): {
-            'help': 'Upload as anime (ignored for movies)',
-            'action': 'store_true',
-        },
-        ('--poster-file',): {
-            'help': 'Path or URL to poster image',
-        },
-        ('--screenshots', '--ss'): {
-            'help': ('How many screenshots to make '
-                     f'(min={BbTrackerConfig.defaults["screenshots"].min}, '
-                     f'max={BbTrackerConfig.defaults["screenshots"].max})'),
-            'type': argtypes.number_of_screenshots(BbTrackerConfig),
-        },
-        ('--title', '-t'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate title',
-            'action': 'store_true',
-        },
-        ('--description', '-d'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate description',
-            'action': 'store_true',
-        },
-        ('--poster', '-p'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate poster URL',
-            'action': 'store_true',
-        },
-        ('--release-info', '-i'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate release info',
-            'action': 'store_true',
-        },
-        ('--tags', '-g'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate tags',
-            'action': 'store_true',
-        },
-    }
 
     TrackerConfig = BbTrackerConfig
     TrackerJobs = BbTrackerJobs

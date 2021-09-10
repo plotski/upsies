@@ -31,10 +31,6 @@ def test_options():
     assert tracker.options is options
 
 
-def test_argument_definitions():
-    assert TrackerBase.argument_definitions == {}
-
-
 def test_signals():
     tracker = make_TestTracker()
     cb = Mock()

@@ -4,7 +4,7 @@ from unittest.mock import Mock, call
 import bs4
 import pytest
 
-from upsies import errors, utils
+from upsies import errors
 from upsies.trackers.bb import BbTracker, BbTrackerConfig, BbTrackerJobs
 from upsies.utils.http import Result
 
@@ -30,49 +30,6 @@ def test_TrackerConfig_attribute():
 
 def test_TrackerJobs_attribute():
     assert BbTracker.TrackerJobs is BbTrackerJobs
-
-
-def test_argument_definitions():
-    assert BbTracker.argument_definitions == {
-        ('--anime', '--an'): {
-            'help': 'Upload as anime (ignored for movies)',
-            'action': 'store_true',
-        },
-        ('--poster-file',): {
-            'help': 'Path or URL to poster image',
-        },
-        ('--screenshots', '--ss'): {
-            'help': ('How many screenshots to make '
-                     f'(min={BbTrackerConfig.defaults["screenshots"].min}, '
-                     f'max={BbTrackerConfig.defaults["screenshots"].max})'),
-            'type': utils.argtypes.number_of_screenshots(BbTrackerConfig),
-        },
-        ('--title', '-t'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate title',
-            'action': 'store_true',
-        },
-        ('--description', '-d'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate description',
-            'action': 'store_true',
-        },
-        ('--poster', '-p'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate poster URL',
-            'action': 'store_true',
-        },
-        ('--release-info', '-i'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate release info',
-            'action': 'store_true',
-        },
-        ('--tags', '-g'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate tags',
-            'action': 'store_true',
-        },
-    }
 
 
 @pytest.mark.asyncio

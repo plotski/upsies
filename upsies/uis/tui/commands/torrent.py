@@ -72,7 +72,7 @@ class torrent_create(CommandBase):
                 },
             },
             # Custom arguments defined by tracker
-            **tracker.argument_definitions,
+            **tracker.TrackerConfig.argument_definitions,
         }
         for tracker in trackers.trackers()
     }

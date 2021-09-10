@@ -2,6 +2,7 @@ import base64
 
 import pytest
 
+from upsies import utils
 from upsies.trackers.bb import BbTrackerConfig
 from upsies.utils import imghosts
 
@@ -20,6 +21,49 @@ def test_defaults():
             r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample|extra|bonus|feature)',
         ],
+    }
+
+
+def test_argument_definitions():
+    assert BbTrackerConfig.argument_definitions == {
+        ('--anime', '--an'): {
+            'help': 'Upload as anime (ignored for movies)',
+            'action': 'store_true',
+        },
+        ('--poster-file',): {
+            'help': 'Path or URL to poster image',
+        },
+        ('--screenshots', '--ss'): {
+            'help': ('How many screenshots to make '
+                     f'(min={BbTrackerConfig.defaults["screenshots"].min}, '
+                     f'max={BbTrackerConfig.defaults["screenshots"].max})'),
+            'type': utils.argtypes.number_of_screenshots(BbTrackerConfig.defaults['screenshots']),
+        },
+        ('--title', '-t'): {
+            'group': 'generate-metadata',
+            'help': 'Only generate title',
+            'action': 'store_true',
+        },
+        ('--description', '-d'): {
+            'group': 'generate-metadata',
+            'help': 'Only generate description',
+            'action': 'store_true',
+        },
+        ('--poster', '-p'): {
+            'group': 'generate-metadata',
+            'help': 'Only generate poster URL',
+            'action': 'store_true',
+        },
+        ('--release-info', '-i'): {
+            'group': 'generate-metadata',
+            'help': 'Only generate release info',
+            'action': 'store_true',
+        },
+        ('--tags', '-g'): {
+            'group': 'generate-metadata',
+            'help': 'Only generate tags',
+            'action': 'store_true',
+        },
     }
 
 

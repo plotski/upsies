@@ -14,3 +14,12 @@ def test_defaults():
         'add-to'     : '',
         'copy-to'    : '',
     }
+
+
+def test_argument_definitions():
+    assert NblTrackerConfig.argument_definitions == {
+        ('--ignore-dupes', '-D'): {
+            'help': 'Force submission even if the tracker reports duplicates',
+            'action': 'store_true',
+        },
+    }

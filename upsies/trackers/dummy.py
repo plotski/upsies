@@ -24,6 +24,23 @@ class DummyTrackerConfig(base.TrackerConfigBase):
         'image_host' : 'dummy',
     }
 
+    argument_definitions = {
+        ('--skip-category', '-C'): {
+            'help': 'Do not ask for category',
+            'action': 'store_true',
+        },
+        ('--screenshots', '--ss'): {
+            'help': 'How many screenshots to make',
+            'type': int,
+            'default': 3,
+        },
+        ('--delay', '-d'): {
+            'help': 'Number of seconds login, upload and logout take each',
+            'type': float,
+            'default': 1.0,
+        },
+    }
+
 
 class DummyTrackerJobs(base.TrackerJobsBase):
     @cached_property
@@ -64,23 +81,6 @@ class DummyTrackerJobs(base.TrackerJobsBase):
 class DummyTracker(base.TrackerBase):
     name = 'dummy'
     label = 'DuMmY'
-
-    argument_definitions = {
-        ('--skip-category', '-C'): {
-            'help': 'Do not ask for category',
-            'action': 'store_true',
-        },
-        ('--screenshots', '-s'): {
-            'help': 'How many screenshots to make',
-            'type': int,
-            'default': 3,
-        },
-        ('--delay', '-d'): {
-            'help': 'Number of seconds login, upload and logout take each',
-            'type': float,
-            'default': 1.0,
-        },
-    }
 
     TrackerJobs = DummyTrackerJobs
     TrackerConfig = DummyTrackerConfig

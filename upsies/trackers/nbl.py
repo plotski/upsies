@@ -25,6 +25,13 @@ class NblTrackerConfig(base.TrackerConfigBase):
         'image_host' : '',
     }
 
+    argument_definitions = {
+        ('--ignore-dupes', '-D'): {
+            'help': 'Force submission even if the tracker reports duplicates',
+            'action': 'store_true',
+        },
+    }
+
 
 class NblTrackerJobs(base.TrackerJobsBase):
     @cached_property
@@ -56,13 +63,6 @@ class NblTrackerJobs(base.TrackerJobsBase):
 class NblTracker(base.TrackerBase):
     name = 'nbl'
     label = 'NBL'
-
-    argument_definitions = {
-        ('--ignore-dupes', '-D'): {
-            'help': 'Force submission even if the tracker reports duplicates',
-            'action': 'store_true',
-        },
-    }
 
     TrackerConfig = NblTrackerConfig
     TrackerJobs = NblTrackerJobs

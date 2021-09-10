@@ -3,7 +3,7 @@ import pytest
 from upsies.trackers.base import TrackerConfigBase
 
 
-def test_no_arguments():
+def test_no_config():
     class TestTrackerConfig(TrackerConfigBase):
         defaults = {
             'foo': '1',
@@ -21,7 +21,7 @@ def test_no_arguments():
     }
 
 
-def test_arguments_overload_defaults():
+def test_config_overloads_defaults():
     class TestTrackerConfig(TrackerConfigBase):
         defaults = {
             'foo': '1',
@@ -60,3 +60,7 @@ def test_add_to_option():
     config = TestTrackerConfig()
     with pytest.raises(ValueError, match=r'^Not one of [a-z, ]+: foo$'):
         type(config['add-to'])('foo')
+
+
+def test_argument_definitions():
+    assert TrackerConfigBase.argument_definitions == {}

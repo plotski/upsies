@@ -34,6 +34,9 @@ class TrackerConfigBase(dict):
     defaults = {}
     """Default values"""
 
+    argument_definitions = {}
+    """CLI argument definitions (see :attr:`.CommandBase.argument_definitions`)"""
+
     def __new__(cls, config={}):
         # Merge generic and tracker-specific defaults
         combined_defaults = cls._merge(cls._defaults, cls.defaults)
@@ -569,9 +572,6 @@ class TrackerBase(abc.ABC):
     def __init__(self, options=None):
         self._options = options or {}
         self._signal = signal.Signal('warning', 'error', 'exception')
-
-    argument_definitions = {}
-    """CLI argument definitions (see :attr:`.CommandBase.argument_definitions`)"""
 
     @property
     @abc.abstractmethod
