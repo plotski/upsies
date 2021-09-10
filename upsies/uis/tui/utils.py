@@ -34,7 +34,7 @@ class Throbber:
     """
 
     def __init__(self, *, callback=None, states=('⠷', '⠯', '⠟', '⠻', '⠽', '⠾'),
-                 interval=0.1, active=False, format='{throbber}'):
+                 interval=0.25, active=False, format='{throbber}'):
         self._iterator = itertools.cycle(states)
         self._interval = float(interval)
         self._callback = callback or None
