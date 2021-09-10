@@ -37,7 +37,10 @@ def test_argument_definitions():
             'help': ('How many screenshots to make '
                      f'(min={BbTrackerConfig.defaults["screenshots"].min}, '
                      f'max={BbTrackerConfig.defaults["screenshots"].max})'),
-            'type': utils.argtypes.number_of_screenshots(BbTrackerConfig.defaults['screenshots']),
+            'type': utils.argtypes.number_of_screenshots(
+                min=BbTrackerConfig.defaults['screenshots'].min,
+                max=BbTrackerConfig.defaults['screenshots'].max,
+            ),
         },
         ('--title', '-t'): {
             'group': 'generate-metadata',

@@ -59,7 +59,10 @@ def test_argument_definitions():
             'help': ('How many screenshots to make '
                      f'(min={BhdTrackerConfig.defaults["screenshots"].min}, '
                      f'max={BhdTrackerConfig.defaults["screenshots"].max})'),
-            'type': argtypes.number_of_screenshots(BhdTrackerConfig.defaults['screenshots']),
+            'type': argtypes.number_of_screenshots(
+                min=BhdTrackerConfig.defaults['screenshots'].min,
+                max=BhdTrackerConfig.defaults['screenshots'].max,
+            ),
         },
     }
 

@@ -11,6 +11,8 @@ import argparse
 import functools
 import os
 
+from . import types
+
 
 def client(value):
     """Name of a BitTorrent client from :mod:`~.utils.btclients`"""
@@ -48,24 +50,19 @@ def integer(value):
 
 
 @functools.lru_cache(maxsize=None)
-def number_of_screenshots(tracker_config):
+def number_of_screenshots(*, min, max):
     """
-    Return function that returns how many screenshots to make
+    Return function that returns how many screenshots to make or raises
+    :class:`argparse.ArgumentTypeError`
 
-    :param tracker_config: :class:`~.TrackerConfigBase` subclass
+    :param int min: Minimum number of screenshots
+    :param int max: Maximum number of screenshots
     """
-    config_value = tracker_config.defaults['screenshots']
-    screenshots_cls = type(config_value)
-
-    # We can't do an instance check because types.Integer is a class factory.
-    # The next best thing is to check for "min" and "max" attributes.
-    assert hasattr(screenshots_cls, 'min'), f'Not a Integer: {config_value!r}'
-    assert hasattr(screenshots_cls, 'max'), f'Not a Integer: {config_value!r}'
 
     def number_of_screenshots(value):
         """How many screenshots to make within allowed range"""
         try:
-            return screenshots_cls(value)
+            return types.Integer(value, min=min, max=max)
         except ValueError as e:
             raise argparse.ArgumentTypeError(e)
 

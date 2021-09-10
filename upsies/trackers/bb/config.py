@@ -34,7 +34,10 @@ class BbTrackerConfig(TrackerConfigBase):
             'help': ('How many screenshots to make '
                      f'(min={defaults["screenshots"].min}, '
                      f'max={defaults["screenshots"].max})'),
-            'type': argtypes.number_of_screenshots(defaults['screenshots']),
+            'type': argtypes.number_of_screenshots(
+                min=defaults['screenshots'].min,
+                max=defaults['screenshots'].max,
+            ),
         },
         ('--title', '-t'): {
             'group': 'generate-metadata',
