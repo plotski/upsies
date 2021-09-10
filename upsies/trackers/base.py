@@ -35,7 +35,7 @@ class TrackerConfigBase(dict):
     """Default values"""
 
     def __new__(cls, config={}):
-        # Merge global and tracker-specific defaults
+        # Merge generic and tracker-specific defaults
         combined_defaults = cls._merge(cls._defaults, cls.defaults)
 
         # Check user-given config for unknown options
