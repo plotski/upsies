@@ -1,3 +1,8 @@
+2021.09.11
+  * bB: Fix unhandled "AttributeError: 'NoneType' object has no attribute
+    'next_sibling'"
+
+
 2021.09.10
   * Use long edition names, e.g. "Special Edition" instead of "Special"
   * BHD: Added --title/-t option that only generates the release name
