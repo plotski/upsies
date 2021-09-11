@@ -209,11 +209,16 @@ class ImdbApi(WebDbApiBase):
         if id:
             soup = await self._get_soup(f'title/{id}/technical')
             runtimes_label_tag = soup.find('td', class_='label', text=re.compile(r'\s*Runtime\s*'))
-            text = str(runtimes_label_tag.next_sibling.next_sibling)
+            try:
+                text = str(runtimes_label_tag.next_sibling.next_sibling)
+            except AttributeError:
+                text = ''
+
             for match in re.finditer(r'.*\s+\(?(\d+)\s+min\)?\s*(?:\((.*?)\)|)', text):
                 minutes = int(match.group(1))
                 cut = utils.string.capitalize(match.group(2)) if match.group(2) else 'default'
                 runtimes[cut] = minutes
+
         return runtimes
 
     async def summary(self, id):

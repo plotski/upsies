@@ -421,6 +421,7 @@ async def test_poster_url(id, exp_url, api, store_response):
         ('tv/74802', {'default': 48}),
         ('tv/66260', {'default': 23}),
         ('movie/3405', {'default': 88}),
+        ('tv/111086', {}),  # no runtimes found
         (None, {}),
     ),
     ids=lambda value: str(value),

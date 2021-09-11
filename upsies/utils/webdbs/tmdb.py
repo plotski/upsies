@@ -172,12 +172,18 @@ class TmdbApi(WebDbApiBase):
         if id:
             soup = await self._get_soup(id)
             runtimes_tag = soup.find('span', class_='runtime')
-            text = str(runtimes_tag.string)
+            try:
+                text = str(runtimes_tag.string)
+            except AttributeError:
+                text = ''
+
             minutes = 0
             for unit, unit_minutes in (('h', 60), ('m', 1)):
                 for match in re.finditer(rf'(\d+)\s*{unit}', text):
                     minutes += int(match.group(1)) * unit_minutes
-            runtimes['default'] = minutes
+            if minutes > 0:
+                runtimes['default'] = minutes
+
         return runtimes
 
     _no_overview_texts = (
