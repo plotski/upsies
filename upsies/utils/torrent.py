@@ -57,8 +57,8 @@ def create(*, content_path, announce, torrent_path,
     :param bool overwrite: Whether to overwrite `torrent_path` if it exists
     :param str source: Value of the "source" field in the torrent or `None` to
         leave it out
-    :param exclude: Sequence of regular expressions; matching files are not
-        included in the torrent
+    :param exclude: Sequence of regular expressions that are matched against
+        file system paths. Matching files are not included in the torrent.
 
     :raise TorrentError: if anything goes wrong
 
