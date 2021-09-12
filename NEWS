@@ -1,7 +1,7 @@
 2021.09.11
-  * torrent-create: Add --exclude-files/--ef and --exclude-files-regex/--efr
-    options that exclude files from the generated torrent that aren't already
-    excluded by the trackers.TRACKER.exclude option
+  * torrent-create and submit: Add --exclude-files/--ef and
+    --exclude-files-regex/--efr options that exclude files from the generated
+    torrent that aren't already excluded by the trackers.TRACKER.exclude option
   * bB: Fix unhandled "AttributeError: 'NoneType' object has no attribute
     'next_sibling'"
 
