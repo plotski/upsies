@@ -42,6 +42,7 @@ def make_TestTrackerJobs(**kwargs):
         'image_host': '',
         'bittorrent_client': Mock(),
         'torrent_destination': '',
+        'exclude_files': (),
         'common_job_args': {},
     }
     return TestTrackerJobs(**{**default_kwargs, **kwargs})
@@ -54,6 +55,7 @@ def test_arguments():
         'image_host': Mock(),
         'bittorrent_client': Mock(),
         'torrent_destination': Mock(),
+        'exclude_files': Mock(),
         'common_job_args': Mock(),
         'options': {'mock': 'config'},
     }
@@ -131,6 +133,7 @@ def test_create_torrent_job(mocker):
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         tracker='mock tracker',
+        exclude_files=('a', 'b', 'c'),
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
     )
     assert tracker_jobs.create_torrent_job is CreateTorrentJob_mock.return_value
@@ -138,6 +141,7 @@ def test_create_torrent_job(mocker):
         call(
             content_path='path/to/content',
             tracker='mock tracker',
+            exclude_files=('a', 'b', 'c'),
             home_directory='path/to/home',
             ignore_cache='mock bool',
         ),

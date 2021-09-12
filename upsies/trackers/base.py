@@ -96,13 +96,14 @@ class TrackerJobsBase(abc.ABC):
     """
 
     def __init__(self, *, content_path, tracker, torrent_destination=None,
-                 options=None, image_host=None, bittorrent_client=None,
-                 common_job_args=None):
+                 exclude_files=(), options=None, image_host=None,
+                 bittorrent_client=None, common_job_args=None):
         self._content_path = content_path
         self._tracker = tracker
         self._image_host = image_host
         self._bittorrent_client = bittorrent_client
         self._torrent_destination = torrent_destination
+        self._exclude_files = exclude_files
         self._common_job_args = common_job_args or {}
         self._options = options or {}
         self._signal = signal.Signal('warning', 'error', 'exception')
@@ -134,6 +135,17 @@ class TrackerJobsBase(abc.ABC):
         This is the same object that was passed as a initialization argument.
         """
         return self._torrent_destination
+
+    @property
+    def exclude_files(self):
+        """
+        Sequence of glob and regular expression patterns to exclude from the
+        generated torrent
+
+        See the ``exclude_files`` argument of
+        :meth:`.CreateTorrentJob.initialize`.
+        """
+        return self._exclude_files
 
     @property
     def options(self):
@@ -278,6 +290,7 @@ class TrackerJobsBase(abc.ABC):
         return jobs.torrent.CreateTorrentJob(
             content_path=self.content_path,
             tracker=self.tracker,
+            exclude_files=self._exclude_files,
             **self.common_job_args,
         )
 
