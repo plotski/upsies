@@ -1,5 +1,7 @@
+import fnmatch
 import multiprocessing
 import os
+import re
 import time
 from unittest.mock import Mock, PropertyMock, call, patch
 
@@ -133,8 +135,29 @@ def test_CreateTorrentJob_initialize(tracker, tmp_path):
     )
     assert job._content_path == 'path/to/foo'
     assert job._torrent_path == f'{tmp_path / "foo"}.asdf.torrent'
+    assert job._exclude_files == list(tracker.options['exclude'])
     assert job.info == ''
     assert job._torrent_process is None
+
+@pytest.mark.parametrize(
+    argnames='exclude_defaults, exclude_files, exp_exclude_files',
+    argvalues=(
+        ([r'.*\.txt$'], ['*.jpg'], [r'.*\.txt$', fnmatch.translate('*.jpg')]),
+        ([r'.*\.txt$'], [re.compile(r'\.jpg$')], [r'.*\.txt$', re.compile(r'\.jpg$')]),
+    ),
+)
+def test_CreateTorrentJob_initialize_with_exclude_files(exclude_defaults, exclude_files, exp_exclude_files,
+                                                        tracker, tmp_path, mocker):
+    mocker.patch.dict(tracker.options, {'exclude': exclude_defaults})
+    job = CreateTorrentJob(
+        home_directory=tmp_path,
+        cache_directory=tmp_path,
+        ignore_cache=False,
+        content_path='path/to/foo',
+        tracker=tracker,
+        exclude_files=exclude_files,
+    )
+    assert job._exclude_files == list(exp_exclude_files)
 
 
 @pytest.fixture
@@ -298,7 +321,7 @@ def test_CreateTorrentJob_create_torrent_process(job, mocker):
             'overwrite'    : False,
             'announce'     : announce_url,
             'source'       : job._tracker.options['source'],
-            'exclude'      : job._tracker.options['exclude'],
+            'exclude'      : job._exclude_files,
         },
         init_callback=job._handle_file_tree,
         info_callback=job._handle_progress_update,

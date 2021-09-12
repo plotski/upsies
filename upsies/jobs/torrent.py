@@ -2,8 +2,10 @@
 Create torrent file
 """
 
+import fnmatch
 import os
 import queue
+import re
 
 from .. import errors
 from ..utils import btclients, daemon, fs, torrent
@@ -37,12 +39,18 @@ class CreateTorrentJob(base.JobBase):
     label = 'Torrent'
     cache_id = None
 
-    def initialize(self, *, tracker, content_path):
+    def initialize(self, *, tracker, content_path, exclude_files=()):
         """
         Set internal state
 
         :param TrackerBase tracker: Return value of :func:`.trackers.tracker`
         :param content_path: Path to file or directory
+        :param exclude_files: Sequence of glob patterns (:class:`str`) and
+            :class:`re.Pattern` objects that are matched against the relative
+            path within the generated torrent
+
+            .. note:: This sequence is added to the ``exclude`` list in
+               :class:`~.base.TrackerConfigBase`.
         """
         self._tracker = tracker
         self._content_path = content_path
@@ -50,6 +58,13 @@ class CreateTorrentJob(base.JobBase):
             self.home_directory,
             f'{fs.basename(content_path)}.{tracker.name.lower()}.torrent',
         )
+
+        self._exclude_files = list(self._tracker.options['exclude'])
+        for pattern in exclude_files:
+            if not isinstance(pattern, re.Pattern):
+                pattern = fnmatch.translate(str(pattern))
+            self._exclude_files.append(pattern)
+
         self.signal.add('progress_update')
         self.signal.add('announce_url')
         self._torrent_process = None
@@ -92,7 +107,7 @@ class CreateTorrentJob(base.JobBase):
                 'overwrite'    : self.ignore_cache,
                 'announce'     : announce_url,
                 'source'       : self._tracker.options['source'],
-                'exclude'      : self._tracker.options['exclude'],
+                'exclude'      : self._exclude_files,
             },
             init_callback=self._handle_file_tree,
             info_callback=self._handle_progress_update,
