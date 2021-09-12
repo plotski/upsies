@@ -60,6 +60,21 @@ class torrent_create(CommandBase):
                     'type': utils.argtypes.content,
                     'help': 'Path to release content',
                 },
+                ('--exclude-files', '--ef'): {
+                    'nargs': '+',
+                    'metavar': 'PATTERN',
+                    'help': ('Glob pattern to exclude from torrent '
+                             '(matched case-sensitively against path in torrent)'),
+                    'default': (),
+                },
+                ('--exclude-files-regex', '--efr'): {
+                    'nargs': '+',
+                    'metavar': 'PATTERN',
+                    'help': ('Regular expression to exclude from torrent '
+                             '(matched case-sensitively against path in torrent)'),
+                    'type': utils.argtypes.regex,
+                    'default': (),
+                },
                 ('--add-to', '-a'): {
                     'type': utils.argtypes.client,
                     'metavar': 'CLIENT',
@@ -92,6 +107,10 @@ class torrent_create(CommandBase):
                 name=self.tracker_name,
                 options={**self.config['trackers'][self.tracker_name],
                          **vars(self.args)},
+            ),
+            exclude_files=(
+                tuple(self.args.exclude_files)
+                + tuple(self.args.exclude_files_regex)
             ),
         )
 
