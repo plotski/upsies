@@ -90,10 +90,15 @@ def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, p
 @patch('upsies.utils.torrent._path_exists')
 @patch('upsies.utils.torrent._make_file_tree')
 @patch('torf.Torrent')
-@pytest.mark.parametrize('source, exclude', ((None, None),
-                                             ('asdf', None),
-                                             (None, ('a.*', '.*b')),
-                                             ('foo', ('a.*', '.*b'))))
+@pytest.mark.parametrize(
+    argnames='source, exclude',
+    argvalues=(
+        (None, None),
+        ('asdf', None),
+        (None, ('a.*', '.*b')),
+        ('foo', ('a.*', '.*b')),
+    ),
+)
 def test_create_passes_arguments_to_Torrent_class(Torrent_mock, file_tree_mock, path_exists_mock, time_mock, source, exclude):
     path_exists_mock.side_effect = (False, True)
     create_kwargs = {
