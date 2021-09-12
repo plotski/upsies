@@ -101,6 +101,27 @@ def test_option_invalid_value():
 
 
 @pytest.mark.parametrize(
+    argnames='value, exp_regex',
+    argvalues=(
+        ('foo.*bar', re.compile(r'foo.*bar')),
+    ),
+)
+def test_regex_valid_value(value, exp_regex):
+    assert argtypes.regex(value) == exp_regex
+
+@pytest.mark.parametrize(
+    argnames='regex, exp_msg',
+    argvalues=(
+        ('foo[bar', 'unterminated character set at position 3'),
+    ),
+)
+def test_regex_invalid_value(regex, exp_msg):
+    msg = f'Invalid regular expression: {regex}: {exp_msg}'
+    with pytest.raises(argparse.ArgumentTypeError, match=rf'^{re.escape(msg)}$'):
+        argtypes.regex(regex)
+
+
+@pytest.mark.parametrize(
     argnames='path, exp_path, exc, exp_exc',
     argvalues=(
         ('path/to/foo', 'path/to/foo', None, None),

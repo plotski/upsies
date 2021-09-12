@@ -78,6 +78,16 @@ def option(value):
         raise argparse.ArgumentTypeError(f'Unknown option: {value}')
 
 
+def regex(value):
+    """:class:`re.Pattern` object"""
+    import re
+    try:
+        return re.compile(str(value))
+    except re.error as e:
+        msg = f'Invalid regular expression: {value}: {e}'
+        raise argparse.ArgumentTypeError(msg)
+
+
 def release(value):
     """Same as :func:`content`, but doesn't have to exist"""
     from .. import errors
