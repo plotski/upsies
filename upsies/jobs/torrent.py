@@ -5,10 +5,9 @@ Create torrent file
 import fnmatch
 import os
 import queue
-import re
 
 from .. import errors
-from ..utils import btclients, daemon, fs, torrent
+from ..utils import btclients, daemon, fs, is_regex_pattern, torrent
 from . import base
 
 import logging  # isort:skip
@@ -61,7 +60,7 @@ class CreateTorrentJob(base.JobBase):
 
         self._exclude_files = list(self._tracker.options['exclude'])
         for pattern in exclude_files:
-            if not isinstance(pattern, re.Pattern):
+            if not is_regex_pattern(pattern):
                 pattern = fnmatch.translate(str(pattern))
             self._exclude_files.append(pattern)
 
