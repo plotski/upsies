@@ -18,6 +18,7 @@ def main(args=None):
 def _main(args=None):
     aioloop = asyncio.get_event_loop()
     get_newer_version_task = None
+    cmd = None
 
     try:
         if utils.is_tty():
@@ -86,5 +87,6 @@ def _main(args=None):
         return exit_code
 
     finally:
-        # Cleanup cache, close HTTP session, etc.
-        application_shutdown(cmd.config)
+        if cmd is not None:
+            # Cleanup cache, close HTTP session, etc.
+            application_shutdown(cmd.config)
