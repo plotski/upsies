@@ -26,46 +26,48 @@ def test_defaults():
 
 def test_argument_definitions():
     assert BbTrackerConfig.argument_definitions == {
-        ('--anime', '--an'): {
-            'help': 'Upload as anime (ignored for movies)',
-            'action': 'store_true',
-        },
-        ('--poster-file',): {
-            'help': 'Path or URL to poster image',
-        },
-        ('--screenshots', '--ss'): {
-            'help': ('How many screenshots to make '
-                     f'(min={BbTrackerConfig.defaults["screenshots"].min}, '
-                     f'max={BbTrackerConfig.defaults["screenshots"].max})'),
-            'type': utils.argtypes.number_of_screenshots(
-                min=BbTrackerConfig.defaults['screenshots'].min,
-                max=BbTrackerConfig.defaults['screenshots'].max,
-            ),
-        },
-        ('--title', '-t'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate title',
-            'action': 'store_true',
-        },
-        ('--description', '-d'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate description',
-            'action': 'store_true',
-        },
-        ('--poster', '-p'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate poster URL',
-            'action': 'store_true',
-        },
-        ('--release-info', '-i'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate release info',
-            'action': 'store_true',
-        },
-        ('--tags', '-g'): {
-            'group': 'generate-metadata',
-            'help': 'Only generate tags',
-            'action': 'store_true',
+        'submit': {
+            ('--screenshots', '--ss'): {
+                'help': ('How many screenshots to make '
+                         f'(min={BbTrackerConfig.defaults["screenshots"].min}, '
+                         f'max={BbTrackerConfig.defaults["screenshots"].max})'),
+                'type': utils.argtypes.number_of_screenshots(
+                    min=BbTrackerConfig.defaults['screenshots'].min,
+                    max=BbTrackerConfig.defaults['screenshots'].max,
+                ),
+            },
+            ('--poster-file',): {
+                'help': 'Path or URL to poster image',
+            },
+            ('--anime', '--an'): {
+                'help': 'Tag upload as anime (ignored for movies)',
+                'action': 'store_true',
+            },
+            ('--description', '--desc'): {
+                'group': 'generate-metadata',
+                'help': 'Only generate description',
+                'action': 'store_true',
+            },
+            ('--poster', '-p'): {
+                'group': 'generate-metadata',
+                'help': 'Only generate poster URL',
+                'action': 'store_true',
+            },
+            ('--release-info', '-i'): {
+                'group': 'generate-metadata',
+                'help': 'Only generate release info',
+                'action': 'store_true',
+            },
+            ('--tags', '-g'): {
+                'group': 'generate-metadata',
+                'help': 'Only generate tags',
+                'action': 'store_true',
+            },
+            ('--title', '-t'): {
+                'group': 'generate-metadata',
+                'help': 'Only generate title',
+                'action': 'store_true',
+            },
         },
     }
 

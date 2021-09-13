@@ -26,9 +26,11 @@ class NblTrackerConfig(base.TrackerConfigBase):
     }
 
     argument_definitions = {
-        ('--ignore-dupes', '-D'): {
-            'help': 'Force submission even if the tracker reports duplicates',
-            'action': 'store_true',
+        'submit': {
+            ('--ignore-dupes', '-D'): {
+                'help': 'Force submission even if the tracker reports duplicates',
+                'action': 'store_true',
+            },
         },
     }
 

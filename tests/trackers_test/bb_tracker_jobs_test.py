@@ -4,7 +4,7 @@ from unittest.mock import Mock, PropertyMock, call
 import pytest
 
 from upsies import __homepage__, __project_name__, __version__, errors, utils
-from upsies.trackers import bb
+from upsies.trackers import TrackerConfigBase, bb
 from upsies.utils.types import ReleaseType
 
 
@@ -19,6 +19,7 @@ class AsyncMock(Mock):
 def tracker():
     tracker = Mock()
     tracker.name = 'bb'
+    tracker.options = TrackerConfigBase._defaults
     return tracker
 
 

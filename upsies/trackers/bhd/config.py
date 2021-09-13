@@ -26,43 +26,44 @@ class BhdTrackerConfig(TrackerConfigBase):
     }
 
     argument_definitions = {
-        ('--draft', '-d'): {
-            'help': 'Upload as draft',
-            'action': 'store_true',
-            # The default value must be None so CommandBase.get_options()
-            # doesn't always overwrite the value with the config file value.
-            'default': None,
-        },
-        ('--personal-rip', '-p'): {
-            'help': 'Tag as your own encode',
-            'action': 'store_true',
-        },
-        ('--custom-edition', '-e'): {
-            'help': 'Non-standard edition, e.g. "Final Cut"',
-            'default': '',
-        },
-        ('--special', '-s'): {
-            'help': 'Tag as special episode, e.g. Christmas special (ignored for movie uploads)',
-            'action': 'store_true',
-        },
-        ('--title', '-t'): {
-            'help': 'Only generate title (do not upload anything)',
-            'action': 'store_true',
-            'group': 'generate-metadata',
-        },
-        ('--description', '--desc'): {
-            'help': 'Only generate description (do not upload anything)',
-            'action': 'store_true',
-            'group': 'generate-metadata',
-        },
-        ('--screenshots', '--ss'): {
-            'help': ('How many screenshots to make '
-                     f'(min={defaults["screenshots"].min}, '
-                     f'max={defaults["screenshots"].max})'),
-            'type': argtypes.number_of_screenshots(
-                min=defaults['screenshots'].min,
-                max=defaults['screenshots'].max,
-            ),
-
+        'submit': {
+            ('--screenshots', '--ss'): {
+                'help': ('How many screenshots to make '
+                         f'(min={defaults["screenshots"].min}, '
+                         f'max={defaults["screenshots"].max})'),
+                'type': argtypes.number_of_screenshots(
+                    min=defaults['screenshots'].min,
+                    max=defaults['screenshots'].max,
+                ),
+            },
+            ('--custom-edition', '-e'): {
+                'help': 'Non-standard edition, e.g. "Final Cut"',
+                'default': '',
+            },
+            ('--draft', '-d'): {
+                'help': 'Upload as draft',
+                'action': 'store_true',
+                # The default value must be None so CommandBase.get_options()
+                # doesn't always overwrite the value with the config file value.
+                'default': None,
+            },
+            ('--personal-rip', '-p'): {
+                'help': 'Tag as your own encode',
+                'action': 'store_true',
+            },
+            ('--special', '-s'): {
+                'help': 'Tag as special episode, e.g. Christmas special (ignored for movie uploads)',
+                'action': 'store_true',
+            },
+            ('--title', '-t'): {
+                'help': 'Only generate title (do not upload anything)',
+                'action': 'store_true',
+                'group': 'generate-metadata',
+            },
+            ('--description', '--desc'): {
+                'help': 'Only generate description (do not upload anything)',
+                'action': 'store_true',
+                'group': 'generate-metadata',
+            },
         },
     }

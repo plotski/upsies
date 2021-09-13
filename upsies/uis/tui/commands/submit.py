@@ -48,8 +48,8 @@ class submit(CommandBase):
                     'help': 'Copy the created torrent to PATH (file or directory)',
                 },
             },
-            # Custom arguments defined by tracker
-            **tracker.TrackerConfig.argument_definitions,
+            # Custom arguments defined by tracker for this command
+            **tracker.TrackerConfig.argument_definitions.get('submit', {}),
         }
         for tracker in trackers.trackers()
     }

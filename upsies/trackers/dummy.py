@@ -25,19 +25,28 @@ class DummyTrackerConfig(base.TrackerConfigBase):
     }
 
     argument_definitions = {
-        ('--skip-category', '-C'): {
-            'help': 'Do not ask for category',
-            'action': 'store_true',
+        'submit': {
+            ('--skip-category', '-C'): {
+                'help': 'Do not ask for category',
+                'action': 'store_true',
+            },
+            ('--screenshots', '--ss'): {
+                'help': 'How many screenshots to make',
+                'type': int,
+                'default': 3,
+            },
+            ('--delay', '-d'): {
+                'help': 'Number of seconds login, upload and logout take each',
+                'type': float,
+                'default': 1.0,
+            },
         },
-        ('--screenshots', '--ss'): {
-            'help': 'How many screenshots to make',
-            'type': int,
-            'default': 3,
-        },
-        ('--delay', '-d'): {
-            'help': 'Number of seconds login, upload and logout take each',
-            'type': float,
-            'default': 1.0,
+        'torrent-create': {
+            ('--delay', '-d'): {
+                'help': 'Number of seconds login, upload and logout take each',
+                'type': float,
+                'default': 1.0,
+            },
         },
     }
 
