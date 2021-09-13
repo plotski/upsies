@@ -32,7 +32,6 @@ def _main(args=None):
         cmd = commands.run(args)
         application_setup(cmd.config)
         exit_code = ui.run(cmd.jobs_active)
-        application_shutdown(cmd.config)
 
     # UI was terminated by user prematurely
     except errors.CancelledError as e:
@@ -85,3 +84,7 @@ def _main(args=None):
                     print(msg, file=sys.stderr)
 
         return exit_code
+
+    finally:
+        # Cleanup cache, close HTTP session, etc.
+        application_shutdown(cmd.config)
