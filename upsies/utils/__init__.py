@@ -7,6 +7,7 @@ import importlib
 import inspect
 import itertools
 import os
+import sys
 import types as _types
 
 
@@ -323,6 +324,19 @@ def as_groups(sequence, group_sizes, default=None):
     group_size = max(gs_map[lowest_default_count])
     args = [iter(sequence)] * group_size
     yield from itertools.zip_longest(*args, fillvalue=default)
+
+
+def is_regex_pattern(object):
+    if sys.version_info >= (3, 7, 0):
+        # This is not properly document but works for now.
+        import re
+        return isinstance(object, re.Pattern)
+    else:
+        # For Python 3.6, use typing.Pattern. This is deprecated and won't exist
+        # in Python 3.12 anymore.
+        # https://docs.python.org/3/library/typing.html#typing.Pattern
+        import typing
+        return isinstance(object, typing.Pattern)
 
 
 from . import (argtypes, browser, btclients, configfiles, daemon, fs, html,

@@ -1,4 +1,4 @@
-import sys
+import re
 from unittest.mock import Mock, call
 
 import pytest
@@ -270,3 +270,15 @@ def test_as_groups(items, group_sizes, exp_groups):
     assert len(groups) == len(exp_groups)
     for a, b in zip(groups, exp_groups):
         assert a == b
+
+
+@pytest.mark.parametrize(
+    argnames='object, exp_return_value',
+    argvalues=(
+        ('foo', False),
+        ((1, 2, 3), False),
+        (re.compile(r'1, 2, 3'), True),
+    ),
+)
+def test_is_regex_pattern(object, exp_return_value, mocker):
+    assert utils.is_regex_pattern(object) is exp_return_value
