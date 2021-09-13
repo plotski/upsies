@@ -24,7 +24,7 @@ class TrackerConfigBase(dict):
         'source'     : '',
         'exclude'    : [],
         'add-to'     : types.Choice(
-            '',
+            value='',
             empty_ok=True,
             options=(client.name for client in btclients.clients()),
         ),
