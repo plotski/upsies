@@ -13,6 +13,7 @@ def application_setup(config):
     :param config: :class:`~.configfiles.ConfigFiles` instance
     """
     from . import utils
+
     utils.http.cache_directory = config['config']['main']['cache_directory']
 
 
@@ -26,8 +27,9 @@ def application_shutdown(config):
 
     from . import utils
 
-    asyncio.get_event_loop().run_until_complete(utils.http.close())
     utils.fs.limit_directory_size(
         path=config['config']['main']['cache_directory'],
         max_total_size=config['config']['main']['max_cache_size'],
     )
+
+    asyncio.get_event_loop().run_until_complete(utils.http.close())
