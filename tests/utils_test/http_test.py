@@ -463,10 +463,8 @@ async def test_request_sends_user_agent(method, user_agent, exp_user_agent, mock
 @pytest.mark.parametrize(
     argnames='timeout, response_delay, exp_exception',
     argvalues=(
-        (0.5, 0.4, None),
-        (0.5, 0.6, errors.RequestError('timeout')),
-        (1, 0.9, None),
-        (1, 1.1, errors.RequestError('timeout')),
+        (1, 0.5, None),
+        (1, 1.5, errors.RequestError('timeout')),
     ),
 )
 @pytest.mark.parametrize('method', ('GET', 'POST'))
