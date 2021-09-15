@@ -6,7 +6,6 @@ import pytest
 from upsies import utils
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8, 0), reason='Python 3.8 functools includes cached_property')
 def test_cached_property_caches_return_value_of_decorated_function():
     calculation_mock = Mock()
     calculation_mock.return_value = 'expensive result'
