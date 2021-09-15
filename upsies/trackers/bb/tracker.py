@@ -32,7 +32,7 @@ class BbTracker(TrackerBase):
 
     _max_login_attempts = 30
     _login_retry_delay = 1
-    _login_retry_delay_max = 5
+    _login_retry_delay_max = 3
 
     async def login(self):
         if not self.is_logged_in:
