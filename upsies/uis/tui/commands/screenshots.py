@@ -61,7 +61,7 @@ class screenshots(CommandBase):
                 ignore_cache=self.args.ignore_cache,
                 imghost=utils.imghosts.imghost(
                     name=self.args.upload_to,
-                    config=self.config['imghosts'][self.args.upload_to],
+                    options=self.config['imghosts'][self.args.upload_to],
                 ),
             )
             # Timestamps are calculated in a subprocess, we have to wait for
