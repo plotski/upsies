@@ -1,3 +1,7 @@
+2021.??.??
+  * screenshots: Fix --upload-to/-u option (Thanks to @ctlaltdefeat)
+
+
 2021.09.11
   * torrent-create and submit: Add --exclude-files/--ef and
     --exclude-files-regex/--efr options that exclude files from the generated
