@@ -142,6 +142,11 @@ def test_Result_is_string():
     assert isinstance(r, str)
     assert r == 'foo'
 
+def test_Result_bytes():
+    r = http.Result('föö', bytes('föö', 'utf-8'))
+    assert r.bytes == bytes('föö', 'utf-8')
+    assert str(r.bytes, 'utf-8') == 'föö'
+
 def test_Result_headers():
     r = http.Result('foo', b'foo')
     assert r.headers == {}
@@ -154,11 +159,6 @@ def test_Result_status_code():
     r = http.Result('foo', b'foo', status_code=304)
     assert r.status_code == 304
 
-def test_Result_bytes():
-    r = http.Result('föö', bytes('föö', 'utf-8'))
-    assert r.bytes == bytes('föö', 'utf-8')
-    assert str(r.bytes, 'utf-8') == 'föö'
-
 def test_Result_json():
     r = http.Result('{"this":"that"}', b'{"this":"that"}')
     assert r.json() == {'this': 'that'}
@@ -167,9 +167,23 @@ def test_Result_json():
     with pytest.raises(errors.RequestError, match=r'^Malformed JSON: {"this":"that": '):
         r.json()
 
-def test_Result_repr():
-    r = http.Result('föö', bytes('föö', 'utf-8'))
-    assert repr(r) == f"Result(text='föö', bytes={bytes('föö', 'utf-8')!r}, headers={{}}, status_code=None)"
+@pytest.mark.parametrize(
+    argnames='kwargs, exp_kwargs',
+    argvalues=(
+        ({'text': 'föö', 'bytes': bytes('föö', 'utf-8')}, {'text': 'föö', 'bytes': bytes('föö', 'utf-8')}),
+        ({'text': 'foo', 'bytes': b'foo', 'headers': {'bar': 'baz'}}, {'text': 'foo', 'bytes': b'foo', 'headers': {'bar': 'baz'}}),
+        ({'text': 'foo', 'bytes': b'foo', 'headers': {}}, {'text': 'foo', 'bytes': b'foo'}),
+        ({'text': 'foo', 'bytes': b'foo', 'headers': None}, {'text': 'foo', 'bytes': b'foo'}),
+        ({'text': 'foo', 'bytes': b'foo', 'status_code': 123}, {'text': 'foo', 'bytes': b'foo', 'status_code': 123}),
+        ({'text': 'foo', 'bytes': b'foo', 'status_code': 0}, {'text': 'foo', 'bytes': b'foo', 'status_code': 0}),
+        ({'text': 'foo', 'bytes': b'foo', 'status_code': None}, {'text': 'foo', 'bytes': b'foo'}),
+    ),
+    ids=lambda v: str(v),
+)
+def test_Result_repr(kwargs, exp_kwargs):
+    r = http.Result(**kwargs)
+    exp_kwargs_string = ', '.join(f'{k}={v!r}' for k, v in exp_kwargs.items())
+    assert repr(r) == f'Result({exp_kwargs_string})'
 
 
 @pytest.mark.asyncio

@@ -196,10 +196,10 @@ class Result(str):
     This is a subclass of :class:`str` with additional attributes and methods.
     """
 
-    def __new__(cls, text, bytes, headers={}, status_code=None):
+    def __new__(cls, text, bytes, headers=None, status_code=None):
         obj = super().__new__(cls, text)
         obj._bytes = bytes
-        obj._headers = headers
+        obj._headers = headers if headers is not None else {}
         obj._status_code = status_code
         return obj
 
