@@ -556,12 +556,13 @@ async def test_request_with_allow_redirects(status_code, method, allow_redirects
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
-async def test_request_preserves_cookies_between_requests(method, mock_cache, httpserver):
+async def test_request_preserves_session_cookies_between_requests(method, mock_cache, httpserver):
     class Handler(RequestHandler):
         def handle(self, request):
             from werkzeug.datastructures import ImmutableMultiDict
             request_cookies = getattr(self, 'request_cookies', ImmutableMultiDict())
             assert request.cookies == request_cookies
+
             bar = int(request_cookies.get('bar', 0))
             self.request_cookies = ImmutableMultiDict({'bar': str(bar + 1)})
 
