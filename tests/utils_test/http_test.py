@@ -601,7 +601,7 @@ async def test_request_uses_separate_cookie_jar_per_domain(method, mock_cache, h
         def handle(self, request):
             if getattr(self, 'set_cookie'):
                 domain = request.url.split('/')[2]
-                headers = {'Set-Cookie': f'domain={domain}'}
+                headers = {'Set-Cookie': f'cookie_domain={domain}'}
             else:
                 headers = {}
             return Response(
@@ -639,7 +639,7 @@ async def test_request_uses_separate_cookie_jar_per_domain(method, mock_cache, h
             url=httpserver.url_for('/foo'),
             cache=False,
         )
-        assert response == f'current cookies: domain={host}:{httpserver.port}'
+        assert response == f'current cookies: cookie_domain={host}:{httpserver.port}'
 
     http._client.cookies.clear()
 
