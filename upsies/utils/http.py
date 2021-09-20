@@ -355,10 +355,7 @@ def _get_file_object(filepath):
     try:
         return open(filepath, 'rb')
     except OSError as e:
-        if e.strerror:
-            msg = e.strerror
-        else:
-            msg = 'Failed to open'
+        msg = e.strerror if e.strerror else 'Failed to open'
         raise errors.RequestError(f'{filepath}: {msg}')
 
 
