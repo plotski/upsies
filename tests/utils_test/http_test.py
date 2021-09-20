@@ -16,6 +16,11 @@ from upsies import __project_name__, __version__, errors
 from upsies.utils import http
 
 
+@pytest.fixture(autouse=True)
+def clear_global_client_cookies():
+    http._client.cookies.clear()
+
+
 @pytest.fixture
 def mock_cache(mocker):
     parent = Mock(
@@ -588,7 +593,6 @@ async def test_request_preserves_session_cookies_between_requests(method, mock_c
         )
         assert response == f'bar is currently {i}'
 
-    http._client.cookies.clear()
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
