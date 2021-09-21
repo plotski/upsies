@@ -215,10 +215,8 @@ async def download(url, filepath, *args, **kwargs):
             with open(filepath, 'wb') as f:
                 f.write(response.bytes)
         except OSError as e:
-            if e.strerror:
-                raise errors.RequestError(f'Unable to write {filepath}: {e.strerror}')
-            else:
-                raise errors.RequestError(f'Unable to write {filepath}: {e}')
+            msg = e.strerror if e.strerror else str(e)
+            raise errors.RequestError(f'Unable to write {filepath}: {msg}')
     else:
         _log.debug('Already downloaded %r to %r', url, filepath)
     return filepath
