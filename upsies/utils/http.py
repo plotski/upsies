@@ -5,9 +5,11 @@ HTTP methods with caching
 import asyncio
 import collections
 import hashlib
+import http
 import io
 import json
 import os
+import pathlib
 import time
 
 import httpx
@@ -28,13 +30,22 @@ _default_headers = {
 # requests concurrently without bugging the server.
 _request_locks = collections.defaultdict(lambda: asyncio.Lock())
 
-# A global client session seems to be the only way to get cookies working
-# reliably. The downside is that we have to remember to close the client before
-# the application terminates.
+# Use one single client session for all connections to benefit from re-using
+# connections for multiple requests. The downside is that we have to remember to
+# close the client before the application terminates.
 _client = httpx.AsyncClient(
     timeout=_default_timeout,
     headers=_default_headers,
 )
+
+
+cache_directory = None
+"""
+Where to store cached requests
+
+If this is set to a falsy value, default to :attr:`~.constants.CACHE_DIRPATH`.
+"""
+
 
 async def close():
     """
@@ -46,18 +57,19 @@ async def close():
     await _client.aclose()
     _log.debug('Closed client: %r', _client)
 
-cache_directory = None
-"""
-Where to store cached requests
 
-If this is set to a falsy value, default to :attr:`~.constants.CACHE_DIRPATH`.
-"""
-
-
-async def get(url, headers={}, params={}, auth=None,
-              cache=False, max_cache_age=float('inf'),
-              user_agent=False, allow_redirects=True,
-              timeout=_default_timeout):
+async def get(
+        url,
+        headers={},
+        params={},
+        auth=None,
+        cache=False,
+        max_cache_age=float('inf'),
+        user_agent=False,
+        allow_redirects=True,
+        timeout=_default_timeout,
+        cookies=None,
+    ):
     """
     Perform HTTP GET request
 
@@ -71,6 +83,16 @@ async def get(url, headers={}, params={}, auth=None,
     :param bool user_agent: Whether to send the User-Agent header
     :param bool allow_redirects: Whether to follow redirects
     :param int,float timeout: Maximum number of seconds the request may take
+    :param cookies: Cookies to include in the request (merged with
+        existing cookies in the global client session)
+
+        * If `cookies` is a :class:`dict`, forget them after the request.
+
+        * If `cookies` is a :class:`str`, load cookies from that path (if it
+          exists), perform the request, and save the new set of cookies to the
+          same path.
+
+        .. note:: Session cookies are not saved.
 
     :return: Response text
     :rtype: Response
@@ -87,12 +109,22 @@ async def get(url, headers={}, params={}, auth=None,
         user_agent=user_agent,
         allow_redirects=allow_redirects,
         timeout=timeout,
+        cookies=cookies,
     )
 
-async def post(url, headers={}, data={}, files={}, auth=None,
-               cache=False, max_cache_age=float('inf'),
-               user_agent=False, allow_redirects=True,
-               timeout=_default_timeout):
+async def post(
+        url,
+        headers={},
+        data={},
+        files={},
+        auth=None,
+        cache=False,
+        max_cache_age=float('inf'),
+        user_agent=False,
+        allow_redirects=True,
+        timeout=_default_timeout,
+        cookies=None,
+    ):
     """
     Perform HTTP POST request
 
@@ -138,6 +170,8 @@ async def post(url, headers={}, data={}, files={}, auth=None,
     :param bool user_agent: Whether to send the User-Agent header
     :param bool allow_redirects: Whether to follow redirects
     :param int,float timeout: Maximum number of seconds the request may take
+    :param cookies: Cookies to include in the request (merged with existing
+        cookies in the global client session); see :func:`get`
 
     :return: Response text
     :rtype: Response
@@ -155,6 +189,7 @@ async def post(url, headers={}, data={}, files={}, auth=None,
         user_agent=user_agent,
         allow_redirects=allow_redirects,
         timeout=timeout,
+        cookies=cookies,
     )
 
 async def download(url, filepath, *args, **kwargs):
@@ -231,16 +266,32 @@ class Result(str):
             raise errors.RequestError(f'Malformed JSON: {str(self)}: {e}')
 
     def __repr__(self):
-        return (f'{type(self).__name__}('
-                f'text={str(self)!r}, '
-                f'bytes={self.bytes!r}, '
-                f'headers={self.headers!r}, '
-                f'status_code={self.status_code!r})')
+        kwargs = [
+            f'text={str(self)!r}',
+            f'bytes={self.bytes!r}',
+        ]
+        if self.headers != {}:
+            kwargs.append(f'headers={self.headers!r}')
+        if self.status_code is not None:
+            kwargs.append(f'status_code={self.status_code!r}')
+        return f'{type(self).__name__}({", ".join(kwargs)})'
 
 
-async def _request(method, url, headers={}, params={}, data={}, files={},
-                   allow_redirects=True, cache=False, max_cache_age=float('inf'),
-                   auth=None, user_agent=False, timeout=_default_timeout):
+async def _request(
+        method,
+        url,
+        headers={},
+        params={},
+        data={},
+        files={},
+        allow_redirects=True,
+        cache=False,
+        max_cache_age=float('inf'),
+        auth=None,
+        user_agent=False,
+        timeout=_default_timeout,
+        cookies=None,
+    ):
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
 
@@ -253,6 +304,7 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
         method=str(method),
         url=str(url),
         headers={**_default_headers, **headers},
+        cookies=_load_cookies(cookies),
         params=params,
         files=_open_files(files),
         **build_request_args,
@@ -299,15 +351,62 @@ async def _request(method, url, headers={}, params={}, data={}, files={},
             _log.debug(f'Unexpected HTTP error: {e!r}')
             raise errors.RequestError(f'{url}: {e}')
         else:
+            if cookies and isinstance(cookies, (str, pathlib.Path)):
+                _save_cookies(filepath=cookies, domain=response.url.host)
+
             if cache:
                 cache_file = _cache_file(method, url, params)
                 _to_cache(cache_file, response.content)
+
             return Result(
                 text=response.text,
                 bytes=response.content,
                 headers=response.headers,
                 status_code=response.status_code,
             )
+
+
+def _load_cookies(cookies):
+    _log.debug('Loading cookies from %r', cookies)
+    if isinstance(cookies, (collections.abc.Mapping, http.cookiejar.CookieJar)):
+        return cookies
+    elif cookies and isinstance(cookies, (str, pathlib.Path)):
+        filepath_abs = os.path.join(constants.CACHE_DIRPATH, cookies)
+        cookie_jar = http.cookiejar.LWPCookieJar(filepath_abs)
+        try:
+            cookie_jar.load()
+        except FileNotFoundError:
+            _log.debug('No such file: %r', filepath_abs)
+            pass
+        except OSError as e:
+            msg = e.strerror if e.strerror else str(e)
+            raise errors.RequestError(f'Failed to read {cookie_jar.filename}: {msg}')
+        else:
+            _log.debug('Loaded cookie jar: %r', cookie_jar)
+        return cookie_jar
+    elif cookies is not None:
+        raise RuntimeError(f'Unsupported cookies type: {cookies!r}')
+
+
+def _save_cookies(filepath, domain):
+    filepath_abs = os.path.join(constants.CACHE_DIRPATH, filepath)
+    _log.debug('Saving cookies for %r to %r', domain, filepath_abs)
+    file_cookie_jar = http.cookiejar.LWPCookieJar(filepath_abs)
+    for cookie in _client.cookies.jar:
+        if cookie.domain.endswith(domain):
+            _log.debug('Saving cookie: %r', cookie)
+            file_cookie_jar.set_cookie(cookie)
+        else:
+            _log.debug('Ignoring cookie because %r does not end with %r: %r', cookie.domain, domain, cookie)
+
+    if file_cookie_jar:
+        try:
+            file_cookie_jar.save()
+        except OSError as e:
+            msg = e.strerror if e.strerror else str(e)
+            raise errors.RequestError(f'Failed to write {filepath_abs}: {msg}')
+        else:
+            _log.debug('Saved file cookie jar: %r', file_cookie_jar)
 
 
 def _open_files(files):

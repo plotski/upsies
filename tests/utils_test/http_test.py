@@ -62,16 +62,16 @@ class AsyncMock(Mock):
 
 
 @pytest.mark.parametrize(
-    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects', 'timeout'),
+    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects', 'timeout', 'cookies'),
     argvalues=(
-        (None, False, 123, False, True, 1),
-        (('foo', 'bar'), False, 456, True, False, 2),
-        (('bar', 'foo'), True, 789, False, True, 3),
-        (None, True, 0, True, False, 4),
+        (None, False, 123, False, True, 1, 'mock cookies a'),
+        (('foo', 'bar'), False, 456, True, False, 2, 'mock cookies b'),
+        (('bar', 'foo'), True, 789, False, True, 3, 'mock cookies c'),
+        (None, True, 0, True, False, 4, 'mock cookies d'),
     ),
 )
 @pytest.mark.asyncio
-async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, timeout, mocker):
+async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, timeout, cookies, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     result = await http.get(
         url='http://localhost:123/foo',
@@ -83,6 +83,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, use
         user_agent=user_agent,
         allow_redirects=allow_redirects,
         timeout=timeout,
+        cookies=cookies,
     )
     assert request_mock.call_args_list == [
         call(
@@ -96,21 +97,22 @@ async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, use
             user_agent=user_agent,
             allow_redirects=allow_redirects,
             timeout=timeout,
+            cookies=cookies,
         )
     ]
     assert result is request_mock.return_value
 
 @pytest.mark.parametrize(
-    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects', 'timeout'),
+    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects', 'timeout', 'cookies'),
     argvalues=(
-        (('a', 'b'), False, 0, False, False, 10),
-        (None, False, 123, True, False, 20),
-        (('b', 'a'), True, 456, False, True, 30),
-        (None, True, 789, True, True, 40),
+        (('a', 'b'), False, 0, False, False, 10, 'mock cookies A'),
+        (None, False, 123, True, False, 20, 'mock cookies B'),
+        (('b', 'a'), True, 456, False, True, 30, 'mock cookies C'),
+        (None, True, 789, True, True, 40, 'mock cookies D'),
     ),
 )
 @pytest.mark.asyncio
-async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, timeout, mocker):
+async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, timeout, cookies, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     result = await http.post(
         url='http://localhost:123/foo',
@@ -123,6 +125,7 @@ async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, us
         user_agent=user_agent,
         allow_redirects=allow_redirects,
         timeout=timeout,
+        cookies=cookies,
     )
     assert request_mock.call_args_list == [
         call(
@@ -137,6 +140,7 @@ async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, us
             user_agent=user_agent,
             allow_redirects=allow_redirects,
             timeout=timeout,
+            cookies=cookies,
         )
     ]
     assert result is request_mock.return_value
@@ -641,7 +645,166 @@ async def test_request_uses_separate_cookie_jar_per_domain(method, mock_cache, h
         )
         assert response == f'current cookies: cookie_domain={host}:{httpserver.port}'
 
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_with_custom_cookies(method, mock_cache, httpserver):
+    custom_cookies = {'foo': 'bar'}
+    server_cookies = {'server': 'cookie'}
+
+    class Handler(RequestHandler):
+        def handle(self, request):
+            from werkzeug.datastructures import ImmutableMultiDict
+            if getattr(self, 'cookies_already_set', False):
+                headers = {}
+                exp_request_cookies = ImmutableMultiDict({**custom_cookies, **server_cookies})
+            else:
+                headers = {'Set-Cookie': ', '.join(f'{k}={v}' for k, v in server_cookies.items())}
+                self.cookies_already_set = True
+                exp_request_cookies = ImmutableMultiDict(custom_cookies)
+
+            assert request.cookies == exp_request_cookies
+
+            return Response(
+                response='got cookies: ' + ', '.join(f'{k}={v}' for k, v in request.cookies.items()),
+                headers=headers,
+            )
+
+    handler = Handler()
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        handler,
+    )
+
+    response = await http._request(
+        method=method,
+        url=httpserver.url_for('/foo'),
+        cache=False,
+        cookies=custom_cookies,
+    )
+    assert response == 'got cookies: ' + ', '.join(f'{k}={v}' for k, v in custom_cookies.items())
+
+    response = await http._request(
+        method=method,
+        url=httpserver.url_for('/foo'),
+        cache=False,
+        cookies=custom_cookies,
+    )
+    assert response == 'got cookies: ' + ', '.join(f'{k}={v}' for k, v in {**custom_cookies, **server_cookies}.items())
+
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_with_cookies_file(method, mock_cache, httpserver, tmp_path):
+    cookies_filepath = str(tmp_path / 'my.cookies')
+
+    class Handler(RequestHandler):
+        def handle(self, request):
+            from werkzeug.datastructures import ImmutableMultiDict
+            assert request.cookies == ImmutableMultiDict(self.expected_cookies)
+
+            if getattr(self, 'set_cookie'):
+                subdomain = request.url.split('/')[2].split('.')[0]
+                headers = {'Set-Cookie': f'your_cookie={subdomain}; max-age=500000'}
+            else:
+                headers = {}
+            domain = request.url.split('/')[2]
+            return Response(
+                response=f'got cookies on {domain}: ' + ', '.join(f'{k}={v}' for k, v in request.cookies.items()),
+                headers=headers,
+            )
+
+    handler = Handler()
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        handler,
+    )
+
+    for subdomain in ('foo', 'bar'):
+        httpserver.host = f'{subdomain}.localhost'
+        handler.set_cookie = True
+        handler.expected_cookies = {}
+        response = await http._request(
+            method=method,
+            url=httpserver.url_for('/foo'),
+            cache=False,
+            cookies=cookies_filepath + f'.{subdomain}',
+        )
+        assert response == f'got cookies on {subdomain}.localhost:{httpserver.port}: '
+
+    # Remove in-memory cookies; only send cookies from file
     http._client.cookies.clear()
+
+    for subdomain in ('foo', 'bar'):
+        httpserver.host = f'{subdomain}.localhost'
+        handler.set_cookie = False
+        handler.expected_cookies = {'your_cookie': subdomain}
+        response = await http._request(
+            method=method,
+            url=httpserver.url_for('/foo'),
+            cache=False,
+            cookies=cookies_filepath + f'.{subdomain}',
+        )
+        assert response == f'got cookies on {subdomain}.localhost:{httpserver.port}: your_cookie={subdomain}'
+
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_with_unsavable_cookies_file(method, mock_cache, httpserver, tmp_path):
+    class Handler(RequestHandler):
+        def handle(self, request):
+            headers = {'Set-Cookie': 'your_cookie=foo; max-age=500000'}
+            return Response(
+                response='setting cookie',
+                headers=headers,
+            )
+
+    handler = Handler()
+    httpserver.expect_request(
+        uri='/foo',
+        method=method,
+    ).respond_with_handler(
+        handler,
+    )
+
+    cookies_filepath = str(tmp_path / 'no' / 'such' / 'directory' / 'my.cookies')
+    httpserver.host = 'foo.localhost'
+    with pytest.raises(errors.RequestError, match=rf'^Failed to write {cookies_filepath}: No such file or directory$'):
+        await http._request(
+            method=method,
+            url=httpserver.url_for('/foo'),
+            cache=False,
+            cookies=cookies_filepath,
+        )
+
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_with_unloadable_cookies_file(method, mock_cache, tmp_path):
+    cookies_filepath = tmp_path / 'my.cookies'
+    cookies_filepath.write_text('mock cookies')
+    cookies_filepath.chmod(0o000)
+    try:
+        with pytest.raises(errors.RequestError, match=rf'^Failed to read {cookies_filepath}: Permission denied$'):
+            await http._request(
+                method=method,
+                url='http://localhost:123/foo',
+                cache=False,
+                cookies=cookies_filepath,
+            )
+    finally:
+        cookies_filepath.chmod(0o600)
+
+@pytest.mark.parametrize('method', ('GET', 'POST'))
+@pytest.mark.asyncio
+async def test_request_with_unsupported_cookies_type(method, mock_cache):
+    with pytest.raises(RuntimeError, match=r'^Unsupported cookies type: \(1, 2, 3\)$'):
+        await http._request(
+                method=method,
+                url='http://localhost:123/foo',
+                cache=False,
+                cookies=(1, 2, 3),
+            )
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
