@@ -1,6 +1,10 @@
 [flake8]
 exclude = __init__.py
 ignore =
+    # continuation line under-indented for hanging indent
+    E121,
+    # continuation line with same indent as next logical line
+    E125,
     # whitespace before ':'
     E203,
     # missing whitespace after ','
