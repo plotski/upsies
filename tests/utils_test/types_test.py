@@ -224,6 +224,65 @@ def test_Bytes_as_string(number, exp_string):
     string = str(types.Bytes(number))
     assert string == exp_string
 
+@pytest.mark.parametrize(
+    argnames='number, decimal_places, prefix, trailing_zeros, exp_string',
+    argvalues=(
+        (0, 0, 'binary', True, '0 B'),
+        (0, 0, 'decimal', False, '0 B'),
+        (0, 1, 'binary', False, '0 B'),
+        (0, 1, 'decimal', True, '0.0 B'),
+
+        (1, 0, 'binary', True, '1 B'),
+        (1, 0, 'decimal', False, '1 B'),
+        (1, 3, 'binary', False, '1 B'),
+        (1, 3, 'decimal', True, '1.000 B'),
+
+        ( 999, 3, 'decimal', True, '999.000 B'),
+        (1001, 3, 'decimal', True, '1.001 kB'),
+        (1001, 4, 'decimal', True, '1.0010 kB'),
+        (1001, 4, 'decimal', False, '1.001 kB'),
+
+        ( 999, 3, 'binary', False, '999 B'),
+        (1000, 2, 'binary', False, '1000 B'),
+        (1000, 2, 'binary', True, '1000.00 B'),
+        (1001, 1, 'binary', True, '1001.0 B'),
+
+        (1024, 4, 'decimal', True, '1.0240 kB'),
+        (1024, 3, 'decimal', True, '1.024 kB'),
+        (1024, 2, 'decimal', True, '1.02 kB'),
+        (1024, 1, 'decimal', True, '1.0 kB'),
+        (1024, 1, 'decimal', False, '1 kB'),
+        (1024, 0, 'decimal', True, '1 kB'),
+
+        (1023, 0, 'binary', True, '1023 B'),
+        (1023, 1, 'binary', True, '1023.0 B'),
+        (1023, 1, 'binary', False, '1023 B'),
+
+        (1024, 1, 'binary', True, '1.0 KiB'),
+        (1024, 1, 'binary', False, '1 KiB'),
+        (1024, 0, 'binary', True, '1 KiB'),
+
+        (1025, 5, 'binary', True, '1.00098 KiB'),
+        (1025, 4, 'binary', True, '1.0010 KiB'),
+        (1025, 4, 'binary', False, '1.001 KiB'),
+        (1025, 3, 'binary', True, '1.001 KiB'),
+        (1025, 2, 'binary', True, '1.00 KiB'),
+        (1025, 2, 'binary', False, '1 KiB'),
+
+        (4000, 2, 'shortest', False, '4 kB'),
+        (4096, 2, 'shortest', False, '4 KiB'),
+
+        (100 * 1e6, 0, 'decimal', False, '100 MB'),
+    ),
+)
+def test_Bytes_format(number, prefix, decimal_places, trailing_zeros, exp_string):
+    string = types.Bytes(number).format(
+        prefix=prefix,
+        decimal_places=decimal_places,
+        trailing_zeros=trailing_zeros,
+    )
+    assert string == exp_string
+
 
 @pytest.mark.parametrize(
     argnames=('name', 'bool_value'),

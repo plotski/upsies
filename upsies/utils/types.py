@@ -127,7 +127,7 @@ class Bool(str):
 
 
 class Bytes(int):
-    """:class:`int` subclass that interprets units and unit prefixes"""
+    """:class:`int` subclass with binary or decimal unit prefix"""
 
     _regex = re.compile(r'^(\d+(?:\.\d+|)) ?([a-zA-Z]{,3})$')
     _multipliers = {
@@ -146,6 +146,7 @@ class Bytes(int):
 
     @classmethod
     def from_string(cls, string):
+        """Parse `string` like ``4kB`` or ``1.024 KiB``"""
         match = cls._regex.search(string)
         if not match:
             raise ValueError(f'Invalid size: {string}')
@@ -167,7 +168,17 @@ class Bytes(int):
         else:
             return super().__new__(cls, value)
 
-    def __str__(self):
+    def format(self, prefix='shortest', decimal_places=2, trailing_zeros=False):
+        """
+        Return human-readable string
+
+        :param str prefix: Unit prefix, must be one of ``binary`` (1000 -> "1
+            kB"), ``decimal`` (1024 -> "1 KiB") or ``shortest`` (automatically
+            pick the string representation with the fewest decimal places)
+        :param int decimal_places: How many decimal places to include
+        :param bool trailing_zeros: Whether to remove zeros on the right of the
+            decimal places
+        """
         decimal_multipliers = (
             (prefix, multiplier)
             for prefix, multiplier in reversed(tuple(self._multipliers.items()))
@@ -179,24 +190,44 @@ class Bytes(int):
             if len(prefix) == 2
         )
 
+        string_format = f'{{number:.{decimal_places}f}}'
         def get_string(multipliers):
             for prefix, multiplier in multipliers:
                 if self >= multiplier:
-                    return f'{self / multiplier:.2f}'.rstrip('0').rstrip('.') + f' {prefix}B'
-            return f'{int(self)} B'
+                    number = strip_trailing_zeros(string_format.format(number=self / multiplier))
+                    return f'{number} {prefix}B'
+            number = strip_trailing_zeros(string_format.format(number=int(self)))
+            return f'{number} B'
 
-        def number_of_decimal_places(number):
-            string = str(''.join(c for c in str(number) if c in '1234567890.'))
-            if '.' in string:
-                return len(string.split('.', maxsplit=1)[1])
+        def strip_trailing_zeros(string):
+            # Only strip zeros from decimal places (not from "100")
+            if not trailing_zeros and '.' in string:
+                return string.rstrip('0').rstrip('.') or '0'
+            else:
+                return string
+
+        def number_of_decimal_places(string):
+            number = str(''.join(c for c in str(string) if c in '1234567890.'))
+            if '.' in number:
+                return len(number.split('.', maxsplit=1)[1])
             else:
                 return 0
 
-        decimal_string = get_string(decimal_multipliers)
-        binary_string = get_string(binary_multipliers)
-        sorted_strings = sorted((decimal_string, binary_string),
-                                key=number_of_decimal_places)
-        return sorted_strings[0]
+        if prefix == 'binary':
+            return get_string(binary_multipliers)
+        elif prefix == 'decimal':
+            return get_string(decimal_multipliers)
+        elif prefix == 'shortest':
+            decimal_string = get_string(decimal_multipliers)
+            binary_string = get_string(binary_multipliers)
+            sorted_strings = sorted((decimal_string, binary_string),
+                                    key=number_of_decimal_places)
+            return sorted_strings[0]
+        else:
+            raise ValueError(f'Invalid prefix: {prefix!r}')
+
+    def __str__(self):
+        return self.format()
 
 
 class ReleaseType(enum.Enum):
