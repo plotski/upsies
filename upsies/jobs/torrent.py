@@ -22,7 +22,6 @@ class CreateTorrentJob(base.JobBase):
     attribute:
 
         ``announce_url``
-
             Emitted before and after successful announce URL retrieval.
             Registered callbacks get an :class:`Ellipsis` to indicate the
             retrieval attempt and the announce URL if the attempt was
