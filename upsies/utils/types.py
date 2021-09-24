@@ -229,6 +229,9 @@ class Bytes(int):
     def __str__(self):
         return self.format()
 
+    def __repr__(self):
+        return f'{type(self).__name__}({int(self)!r})'
+
 
 class ReleaseType(enum.Enum):
     """

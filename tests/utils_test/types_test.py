@@ -283,6 +283,10 @@ def test_Bytes_format(number, prefix, decimal_places, trailing_zeros, exp_string
     )
     assert string == exp_string
 
+def test_Bytes_repr():
+    b = types.Bytes(123)
+    assert repr(b) == 'Bytes(123)'
+
 
 @pytest.mark.parametrize(
     argnames=('name', 'bool_value'),
