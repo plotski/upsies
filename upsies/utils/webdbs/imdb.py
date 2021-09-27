@@ -266,7 +266,7 @@ class ImdbApi(WebDbApiBase):
             for key, english_title in akas.items():
                 for regex in self._english_akas_keys:
                     if regex.search(key):
-                        # _log.debug('Interesting English title: %r -> %r', key, english_title)
+                        # _log.debug('Interesting English title: %r: %r', key, english_title)
                         if not allow_empty:
                             # _log.debug('Forcing first match: %r', english_title)
                             return english_title
@@ -322,7 +322,7 @@ class ImdbApi(WebDbApiBase):
         re.compile(r'\(dubbed version\)$'),
         re.compile(r'\(literal title\)$'),
         re.compile(r'\(original script title\)$'),
-        re.compile(r'\(short title\)$'),
+        re.compile(r'\([\w ]*short title\)$'),  # ([informal|...?] short title)
         re.compile(r'\(video box title\)$'),
         re.compile(r'\(working title\)$'),
         re.compile(r'\(long title\)$'),
