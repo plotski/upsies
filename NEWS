@@ -1,5 +1,6 @@
 2021.??.??
   * screenshots: Fix --upload-to/-u option (Thanks to @ctlaltdefeat)
+  * Display remaining time and other information while creating the torrent
 
 
 2021.09.11
