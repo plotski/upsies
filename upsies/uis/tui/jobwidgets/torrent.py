@@ -3,6 +3,7 @@ from prompt_toolkit.layout.containers import (ConditionalContainer,
                                               HorizontalAlign, HSplit, VSplit,
                                               Window, WindowAlign)
 from prompt_toolkit.layout.controls import FormattedTextControl
+from prompt_toolkit.layout.dimension import Dimension
 
 from ....utils import cached_property
 from .. import utils, widgets
@@ -61,6 +62,7 @@ class CreateTorrentJobWidget(JobWidgetBase):
                 ),
             ],
             style='class:info',
+            width=Dimension(min=55, max=100),
         )
 
         self._throbber = utils.Throbber(
