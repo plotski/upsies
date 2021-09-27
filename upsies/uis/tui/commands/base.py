@@ -236,6 +236,7 @@ class CommandBase(abc.ABC):
                 filename=main_args.debug,
             )
             logging.getLogger(__project_name__).setLevel(level=logging.DEBUG)
+            _log.debug('Started logging with %s version %s', __project_name__, __version__)
 
         # Read config files
         try:
