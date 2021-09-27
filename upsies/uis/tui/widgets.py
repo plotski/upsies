@@ -309,20 +309,23 @@ class VLabel:
 
 
 class ProgressBar:
-    def __init__(self, text=''):
+    def __init__(self, text='', style=''):
         self.percent = 0
-        self.container = VSplit([
-            Window(
-                style='class:info.progressbar.progress',
-                width=lambda: Dimension(weight=int(self.percent)),
-                height=1,
-            ),
-            Window(
-                style='class:info.progressbar',
-                width=lambda: Dimension(weight=int(100 - self.percent)),
-                height=1,
-            ),
-        ])
+        self.container = VSplit(
+            children=[
+                Window(
+                    style='class:info.progressbar.progress',
+                    width=lambda: Dimension(weight=int(self.percent)),
+                    height=1,
+                ),
+                Window(
+                    style='class:info.progressbar',
+                    width=lambda: Dimension(weight=int(100 - self.percent)),
+                    height=1,
+                ),
+            ],
+            style=style,
+        )
 
     @property
     def percent(self):
