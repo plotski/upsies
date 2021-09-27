@@ -260,7 +260,7 @@ async def test_login_bug_workaround_exceeds_max_attempts(mocker):
         },
     )] * BbTracker._max_login_attempts
     assert sleep_mock.call_args_list == [
-        call(1), call(2), call(2), call(2), call(3), call(4), call(4), call(5),
+        call(1), call(2), call(2), call(2), call(3), call(3), call(3), call(3),
     ]
     assert not tracker.is_logged_in
     assert not hasattr(tracker, '_auth_token')
