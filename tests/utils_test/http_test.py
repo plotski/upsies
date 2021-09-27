@@ -800,11 +800,11 @@ async def test_request_with_unloadable_cookies_file(method, mock_cache, tmp_path
 async def test_request_with_unsupported_cookies_type(method, mock_cache):
     with pytest.raises(RuntimeError, match=r'^Unsupported cookies type: \(1, 2, 3\)$'):
         await http._request(
-                method=method,
-                url='http://localhost:123/foo',
-                cache=False,
-                cookies=(1, 2, 3),
-            )
+            method=method,
+            url='http://localhost:123/foo',
+            cache=False,
+            cookies=(1, 2, 3),
+        )
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio

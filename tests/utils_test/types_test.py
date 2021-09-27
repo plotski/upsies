@@ -237,12 +237,12 @@ def test_Bytes_as_string(number, exp_string):
         (1, 3, 'binary', False, '1 B'),
         (1, 3, 'decimal', True, '1.000 B'),
 
-        ( 999, 3, 'decimal', True, '999.000 B'),
+        (999, 3, 'decimal', True, '999.000 B'),
         (1001, 3, 'decimal', True, '1.001 kB'),
         (1001, 4, 'decimal', True, '1.0010 kB'),
         (1001, 4, 'decimal', False, '1.001 kB'),
 
-        ( 999, 3, 'binary', False, '999 B'),
+        (999, 3, 'binary', False, '999 B'),
         (1000, 2, 'binary', False, '1000 B'),
         (1000, 2, 'binary', True, '1000.00 B'),
         (1001, 1, 'binary', True, '1001.0 B'),

@@ -191,6 +191,7 @@ class Bytes(int):
         )
 
         string_format = f'{{number:.{decimal_places}f}}'
+
         def get_string(multipliers):
             for prefix, multiplier in multipliers:
                 if self >= multiplier:
