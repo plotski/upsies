@@ -21,6 +21,7 @@ style = styles.Style([
     ('error',                         'fg:#f60 bold'),
 
     ('info',                          'bg:#222 fg:#dd5'),
+    ('info.readout',                  'bold'),
     ('info.progressbar',              ''),
     ('info.progressbar.progress',     'reverse'),
 

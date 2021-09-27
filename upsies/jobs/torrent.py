@@ -28,9 +28,10 @@ class CreateTorrentJob(base.JobBase):
             successful.
 
         ``progress_update``
-            Emitted in roughly equal intervals to provide torrent creation
-            progress. Registered callbacks get a `float` between 0.0 and 100.0
-            as a positional argument.
+            Emitted at roughly equal intervals to provide information about the
+            torrent creation progress. Registered callbacks get a
+            :class:`~.torrent.CreateTorrentStatus` instance as a positional
+            argument.
     """
 
     name = 'torrent'
@@ -124,8 +125,8 @@ class CreateTorrentJob(base.JobBase):
     def _handle_file_tree(self, file_tree):
         self.info = fs.file_tree(file_tree)
 
-    def _handle_progress_update(self, percent_done):
-        self.signal.emit('progress_update', percent_done)
+    def _handle_progress_update(self, status):
+        self.signal.emit('progress_update', status)
 
     def _handle_torrent_created(self, torrent_path=None):
         _log.debug('Torrent created: %r', torrent_path)

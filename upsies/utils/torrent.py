@@ -3,6 +3,7 @@ Create torrent file
 """
 
 import collections
+import datetime
 import hashlib
 import math
 import os
@@ -10,7 +11,7 @@ import time
 from os.path import exists as _path_exists
 
 from .. import __project_name__, __version__, errors
-from . import LazyModule
+from . import LazyModule, types
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -51,9 +52,10 @@ def create(*, content_path, announce, torrent_path,
                    ('Yah.mkv', 3883247384),
                )),
            )
-    :param str progress_callback: Callable that gets the progress as a number
-        between 0 and 100. Torrent creation is cancelled if `progress_callback`
-        returns `True` or any other truthy value.
+    :param str progress_callback: Callable that is called at regular intervals
+        with a :class:`CreateTorrentStatus` object as a positional argument.
+        Torrent creation is cancelled if `progress_callback` returns `True` or
+        any other truthy value.
     :param bool overwrite: Whether to overwrite `torrent_path` if it exists
     :param str source: Value of the "source" field in the torrent or `None` to
         leave it out
@@ -67,13 +69,11 @@ def create(*, content_path, announce, torrent_path,
     if not announce:
         raise errors.TorrentError('Announce URL is empty')
 
-    def cb(torrent, filepath, pieces_done, pieces_total):
-        return progress_callback(pieces_done / pieces_total * 100)
-
     if not overwrite and _path_exists(torrent_path):
         _log.debug('Torrent file already exists: %r', torrent_path)
         return torrent_path
     else:
+        callback = _CreateTorrentCallbackWrapper(progress_callback)
         try:
             torrent = torf.Torrent(
                 path=content_path,
@@ -85,7 +85,7 @@ def create(*, content_path, announce, torrent_path,
                 creation_date=time.time(),
             )
             init_callback(_make_file_tree(torrent.filetree))
-            success = torrent.generate(callback=cb, interval=0.5)
+            torrent.generate(callback=callback, interval=1.0)
         except torf.TorfError as e:
             raise errors.TorrentError(e)
         else:
@@ -106,6 +106,119 @@ def _make_file_tree(tree):
         else:
             files.append((name, file.size))
     return tuple(files)
+
+
+class _CreateTorrentCallbackWrapper:
+    def __init__(self, callback):
+        self._callback = callback
+        self._progress_samples = []
+        self._time_started = datetime.datetime.now()
+
+    def __call__(self, torrent, filepath, pieces_done, pieces_total):
+        time_now = datetime.datetime.now()
+        percent_done = pieces_done / pieces_total * 100
+        seconds_elapsed = time_now - self._time_started
+
+        def progress_samples_trim_condition(samples):
+            oldest_sample_age = time_now - samples[0][0]
+            return oldest_sample_age > datetime.timedelta(seconds=10)
+
+        self._maintain_samples(
+            samples=self._progress_samples,
+            new_sample=(time_now, pieces_done),
+            trim_condition=progress_samples_trim_condition,
+        )
+
+        # Estimate how long torrent creation will take
+        if len(self._progress_samples) >= 2:
+            # Calculate the difference between each pair of samples
+            diffs = [
+                b[1] - a[1]
+                for a, b in zip(self._progress_samples[:-1], self._progress_samples[1:])
+            ]
+            pieces_per_second = self._get_average(diffs, weight_factor=1.1)
+            bytes_per_second = types.Bytes(pieces_per_second * torrent.piece_size)
+            pieces_remaining = pieces_total - pieces_done
+            bytes_remaining = pieces_remaining * torrent.piece_size
+            seconds_remaining = datetime.timedelta(seconds=bytes_remaining / bytes_per_second)
+        else:
+            bytes_per_second = types.Bytes(0)
+            seconds_remaining = datetime.timedelta(seconds=0)
+
+        seconds_total = seconds_elapsed + seconds_remaining
+        time_finished = self._time_started + seconds_total
+
+        status = CreateTorrentStatus(
+            bytes_per_second=bytes_per_second,
+            filepath=filepath,
+            percent_done=percent_done,
+            piece_size=torrent.piece_size,
+            pieces_done=pieces_done,
+            pieces_total=pieces_total,
+            seconds_elapsed=seconds_elapsed,
+            seconds_remaining=seconds_remaining,
+            seconds_total=seconds_total,
+            time_finished=time_finished,
+            time_started=self._time_started,
+            total_size=torrent.size,
+        )
+        return self._callback(status)
+
+    def _maintain_samples(self, new_sample, samples, trim_condition):
+        samples.append(new_sample)
+        while samples and trim_condition(samples):
+            del samples[0]
+
+    def _get_average(self, samples, weight_factor, get_value=lambda sample: sample):
+        # Give recent samples more weight than older samples
+        # https://en.wikipedia.org/wiki/Moving_average
+        weights = []
+        for _ in range(len(samples)):
+            try:
+                weight = weights[-1]
+            except IndexError:
+                weight = 1
+            weights.append(weight * weight_factor)
+
+        return sum(
+            get_value(sample) * weight
+            for sample, weight in zip(samples, weights)
+        ) / sum(weights)
+
+
+class CreateTorrentStatus(collections.namedtuple(
+    typename='CreateTorrentStatus',
+    field_names=(
+        'bytes_per_second',
+        'filepath',
+        'percent_done',
+        'piece_size',
+        'pieces_done',
+        'pieces_total',
+        'seconds_elapsed',
+        'seconds_remaining',
+        'seconds_total',
+        'time_started',
+        'time_finished',
+        'total_size',
+    ),
+)):
+    """
+    :func:`~.collections.namedtuple` with these attributes:
+
+        - ``bytes_per_second`` (:class:`~.types.Bytes`)
+        - ``filepath`` (:class:`str`)
+        - ``percent_done`` (:class:`float`)
+        - ``piece_size`` (:class:`~.types.Bytes`)
+        - ``pieces_done`` (:class:`int`)
+        - ``pieces_total`` (:class:`int`)
+        - ``seconds_elapsed`` (:class:`float`)
+        - ``seconds_remaining`` (:class:`float`)
+        - ``seconds_total`` (:class:`float`)
+        - ``time_started`` (:class:`float`)
+        - ``time_finished`` (:class:`float`)
+        - ``total_size`` (:class:`~.types.Bytes`)
+    """
 
 
 class TorrentFileStream:

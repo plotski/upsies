@@ -4,7 +4,8 @@ import pytest
 import torf
 
 from upsies import __project_name__, __version__, errors
-from upsies.utils.torrent import _make_file_tree, create
+from upsies.utils.torrent import (_CreateTorrentCallbackWrapper,
+                                  _make_file_tree, create)
 
 
 class Callable:
@@ -208,3 +209,23 @@ def test_make_file_tree():
             ))
         ))),
     )
+
+
+def test_CreateTorrentCallbackWrapper(mocker):
+    progress_cb = Mock()
+    cbw = _CreateTorrentCallbackWrapper(progress_cb)
+    pieces_total = 12
+    for pieces_done in range(0, pieces_total + 1):
+        return_value = cbw(Mock(piece_size=450, size=5000), 'current/file', pieces_done, pieces_total)
+        assert return_value is progress_cb.return_value
+        status = progress_cb.call_args[0][0]
+        assert status.percent_done == max(0, min(100, pieces_done / pieces_total * 100))
+        assert status.piece_size == 450
+        assert status.total_size == 5000
+        assert status.pieces_done == pieces_done
+        assert status.pieces_total == pieces_total
+        assert status.filepath == 'current/file'
+
+        # TODO: If you're a Python wizard, feel free to attempt at adding tests
+        #       for these CreateTorrentStatus attributes: seconds_elapsed,
+        #       seconds_remaining, seconds_total, time_finished, time_started
