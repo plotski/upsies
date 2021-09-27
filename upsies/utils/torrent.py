@@ -88,8 +88,7 @@ def create(*, content_path, announce, torrent_path,
             success = torrent.generate(callback=cb, interval=0.5)
         except torf.TorfError as e:
             raise errors.TorrentError(e)
-
-        if success:
+        else:
             try:
                 torrent.write(torrent_path, overwrite=overwrite)
             except torf.TorfError as e:
