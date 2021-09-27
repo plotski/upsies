@@ -608,6 +608,7 @@ async def test_summary(id, exp_summary, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_title_english', 'exp_title_original'),
     argvalues=(
+        ('tt1526578', 'Ao: The Last Hunter', 'Ao, le dernier Néandertal'),
         ('tt0076759', '', 'Star Wars: Episode IV - A New Hope'),
         ('tt0078243', 'The 36th Chamber of Shaolin', 'Shao Lin san shi liu fang'),
         ('tt0080455', '', 'The Blues Brothers'),
