@@ -300,10 +300,7 @@ class CopyTorrentJob(base.QueueJobBase):
             try:
                 new_path = shutil.copy2(filepath, self._destination)
             except OSError as e:
-                if e.strerror:
-                    msg = e.strerror
-                else:
-                    msg = str(e)
+                msg = e.strerror if e.strerror else str(e)
                 self.error(f'Failed to copy {filepath} to {self._destination}: {msg}')
                 # Default to original torrent path
                 self.send(filepath)
