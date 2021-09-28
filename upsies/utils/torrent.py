@@ -31,7 +31,7 @@ def create(*, content_path, announce, torrent_path,
     :param str init_callback: Callable that is called once before torrent
         generation commences. It gets `content_path` as a tree where a node is a
         tuple in which the first item is the directory name and the second item
-        is a list of `(file_name, file_size)` tuples.
+        is a sequence of `(file_name, file_size)` tuples.
 
         Example:
 
