@@ -369,7 +369,7 @@ def test_imdb_job(mocker):
     assert tracker_jobs.imdb_job is WebDbSearchJob_mock.return_value
     assert WebDbSearchJob_mock.call_args_list == [
         call(
-            content_path='path/to/content',
+            query='path/to/content',
             db=webdb_mock.return_value,
             home_directory='path/to/home',
             ignore_cache='mock bool',
@@ -399,7 +399,7 @@ def test_tmdb_job(mocker):
     assert tracker_jobs.tmdb_job is WebDbSearchJob_mock.return_value
     assert WebDbSearchJob_mock.call_args_list == [
         call(
-            content_path='path/to/content',
+            query='path/to/content',
             db=webdb_mock.return_value,
             home_directory='path/to/home',
             ignore_cache='mock bool',
@@ -426,7 +426,7 @@ def test_tvmaze_job(mocker):
     assert tracker_jobs.tvmaze_job is WebDbSearchJob_mock.return_value
     assert WebDbSearchJob_mock.call_args_list == [
         call(
-            content_path='path/to/content',
+            query='path/to/content',
             db=webdb_mock.return_value,
             home_directory='path/to/home',
             ignore_cache='mock bool',

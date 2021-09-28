@@ -232,7 +232,7 @@ class BbTrackerJobs(TrackerJobsBase):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
         return jobs.webdb.WebDbSearchJob(
             condition=self.make_job_condition('imdb_job', release.ReleaseType.movie),
-            content_path=self.content_path,
+            query=self.content_path,
             db=self.imdb,
             **self.common_job_args,
         )
@@ -497,7 +497,7 @@ class BbTrackerJobs(TrackerJobsBase):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
         return jobs.webdb.WebDbSearchJob(
             condition=self.make_job_condition('tvmaze_job', release.ReleaseType.season, release.ReleaseType.episode),
-            content_path=self.content_path,
+            query=self.content_path,
             db=self.tvmaze,
             **self.common_job_args,
         )

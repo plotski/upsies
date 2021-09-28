@@ -56,26 +56,27 @@ class WebDbSearchJob(JobBase):
 
     @property
     def cache_id(self):
-        """Final segment of `content_path` and database :attr:`~.WebDbApiBase.name`"""
-        return fs.basename(self._content_path)
+        """Database :attr:`~.WebDbApiBase.name` and :attr:`query`"""
+        return (self._db.name, self.query)
 
     @property
     def query(self):
         """:class:`~.webdbs.common.Query` instance"""
         return self._query
 
-    def initialize(self, *, db, content_path):
+    def initialize(self, *, db, query):
         """
         Set internal state
 
         :param WebDbApiBase db: Return value of :func:`.utils.webdbs.webdb`
-        :param str content_path: Path or name of the release (doesn't have to
-            exist)
+        :param query: Path of the release (doesn't have to exist) or
+            :class:`~.webdbs.common.Query` instance
         """
         assert isinstance(db, webdbs.WebDbApiBase), f'Not a WebDbApiBase: {db!r}'
         self._db = db
-        self._content_path = content_path
-        self._query = self._db.sanitize_query(webdbs.Query.from_path(content_path))
+        if not isinstance(query, webdbs.Query):
+            query = webdbs.Query.from_path(str(query))
+        self._query = self._db.sanitize_query(query)
         self._is_searching = False
 
         self.signal.add('search_results')

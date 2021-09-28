@@ -390,7 +390,7 @@ class TrackerJobsBase(abc.ABC):
     def imdb_job(self):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
         imdb_job = jobs.webdb.WebDbSearchJob(
-            content_path=self.content_path,
+            query=self.content_path,
             db=self.imdb,
             **self.common_job_args,
         )
@@ -402,7 +402,7 @@ class TrackerJobsBase(abc.ABC):
     def tmdb_job(self):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
         return jobs.webdb.WebDbSearchJob(
-            content_path=self.content_path,
+            query=self.content_path,
             db=self.tmdb,
             **self.common_job_args,
         )
@@ -411,7 +411,7 @@ class TrackerJobsBase(abc.ABC):
     def tvmaze_job(self):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
         return jobs.webdb.WebDbSearchJob(
-            content_path=self.content_path,
+            query=self.content_path,
             db=self.tvmaze,
             **self.common_job_args,
         )

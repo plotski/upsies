@@ -24,7 +24,7 @@ def foodb(mocker):
         name = 'foodb'
         label = 'FooDB'
         default_config = {}
-        sanitize_query = Mock()
+        sanitize_query = Mock(return_value='sanitized query')
         search = AsyncMock()
         cast = AsyncMock()
         creators = AsyncMock()
@@ -54,7 +54,7 @@ def job(foodb, tmp_path, mocker):
         cache_directory=tmp_path,
         ignore_cache=False,
         db=foodb,
-        content_path='path/to/foo',
+        query='path/to/foo',
     )
     assert job._db is foodb
     return job
@@ -69,22 +69,38 @@ def test_WebDbSearchJob_label(job):
 
 
 def test_WebDbSearchJob_cache_id(job):
-    assert job.cache_id == 'foo'
+    assert job.cache_id == (job._db.name, job.query)
 
 
-def test_WebDbSearchJob_query(tmp_path, foodb):
+def test_WebDbSearchJob_query(job):
+    assert job.query is job._query
+
+
+def test_WebDbSearchJob_initialize_sets_query_from_path(tmp_path, foodb):
     foodb.sanitize_query.return_value = 'mock query'
     job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
         db=foodb,
-        content_path='path/to/foo',
+        query='path/to/foo',
     )
     assert job.query == 'mock query'
     assert foodb.sanitize_query.call_args_list == [
         call(Query.from_path('path/to/foo')),
     ]
 
+def test_WebDbSearchJob_initialize_sets_query_Query(tmp_path, foodb):
+    foodb.sanitize_query.return_value = 'mock query'
+    job = webdb.WebDbSearchJob(
+        home_directory=tmp_path,
+        cache_directory=tmp_path,
+        db=foodb,
+        query=Query(title='The Foo', year=2010),
+    )
+    assert job.query == 'mock query'
+    assert foodb.sanitize_query.call_args_list == [
+        call(Query(title='The Foo', year=2010)),
+    ]
 
 def test_WebDbSearchJob_initialize_creates_searcher(tmp_path, mocker, foodb):
     Searcher_mock = mocker.patch('upsies.jobs.webdb._Searcher', Mock())
@@ -93,7 +109,7 @@ def test_WebDbSearchJob_initialize_creates_searcher(tmp_path, mocker, foodb):
         cache_directory=tmp_path,
         ignore_cache=False,
         db=foodb,
-        content_path='path/to/foo',
+        query='path/to/foo',
     )
     assert job._searcher is Searcher_mock.return_value
     assert Searcher_mock.call_args_list == [call(
@@ -126,7 +142,7 @@ def test_WebDbSearchJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
         cache_directory=tmp_path,
         ignore_cache=False,
         db=foodb,
-        content_path='path/to/foo',
+        query='path/to/foo',
     )
     assert job._info_updater is InfoUpdater_mock.return_value
     assert InfoUpdater_mock.call_args_list == [call(
@@ -162,7 +178,7 @@ def test_WebDbSearchJob_make_update_info_func(tmp_path, mocker, foodb):
         cache_directory=tmp_path,
         ignore_cache=False,
         db=foodb,
-        content_path='path/to/foo',
+        query='path/to/foo',
     )
     func = job._make_update_info_func('key')
     func('value 1')

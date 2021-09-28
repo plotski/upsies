@@ -398,7 +398,7 @@ def test_imdb_job(bb_tracker_jobs, mocker):
     assert bb_tracker_jobs.imdb_job is WebDbSearchJob_mock.return_value
     assert WebDbSearchJob_mock.call_args_list == [call(
         condition=bb_tracker_jobs.make_job_condition.return_value,
-        content_path=bb_tracker_jobs.content_path,
+        query=bb_tracker_jobs.content_path,
         db=bb_tracker_jobs.imdb,
         **bb_tracker_jobs.common_job_args,
     )]
@@ -823,7 +823,7 @@ def test_tvmaze_job(bb_tracker_jobs, mocker):
     assert bb_tracker_jobs.tvmaze_job is WebDbSearchJob_mock.return_value
     assert WebDbSearchJob_mock.call_args_list == [call(
         condition=bb_tracker_jobs.make_job_condition.return_value,
-        content_path=bb_tracker_jobs.content_path,
+        query=bb_tracker_jobs.content_path,
         db=bb_tracker_jobs.tvmaze,
         **bb_tracker_jobs.common_job_args,
     )]
