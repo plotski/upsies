@@ -5,7 +5,7 @@ from prompt_toolkit.layout.containers import (ConditionalContainer,
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.dimension import Dimension
 
-from ....utils import cached_property
+from ....utils import cached_property, fs
 from .. import utils, widgets
 from . import JobWidgetBase
 
@@ -16,7 +16,7 @@ _log = logging.getLogger(__name__)
 class CreateTorrentJobWidget(JobWidgetBase):
     def setup(self):
         self._progress = widgets.ProgressBar()
-
+        self._file_tree = FormattedTextControl()
         self._bytes_per_second = FormattedTextControl()
         self._percent_done = FormattedTextControl()
         self._seconds_elapsed = FormattedTextControl()
@@ -25,20 +25,20 @@ class CreateTorrentJobWidget(JobWidgetBase):
         self._time_started = FormattedTextControl()
         self._time_finished = FormattedTextControl()
 
-        column1 = HSplit(
+        status_column1 = HSplit(
             children=[
                 self.make_readout(' Started:', '_time_started', align='left', width=8),
                 self.make_readout('Finished:', '_time_finished', align='left', width=8),
             ],
         )
-        column2 = HSplit(
+        status_column2 = HSplit(
             children=[
                 self.make_readout('  Elapsed:', '_seconds_elapsed', align='center', width=8),
                 self.make_readout('Remaining:', '_seconds_remaining', align='center', width=8),
                 self.make_readout('    Total:', '_seconds_total', align='center', width=8),
             ],
         )
-        column3 = HSplit(
+        status_column3 = HSplit(
             children=[
                 self.make_readout('%'.ljust(5), '_percent_done', align='right', width=6, label_side='right'),
                 self.make_readout(
@@ -50,15 +50,14 @@ class CreateTorrentJobWidget(JobWidgetBase):
                 ),
             ],
         )
-
-        content = VSplit(children=[column1, column2, column3], padding=3)
+        status = VSplit(children=[status_column1, status_column2, status_column3], padding=3)
 
         self._runtime_widget = HSplit(
             children=[
                 self._progress,
                 ConditionalContainer(
                     filter=Condition(lambda: self._progress.percent > 0),
-                    content=content,
+                    content=HSplit([status, Window(self._file_tree)]),
                 ),
             ],
             style='class:info',
@@ -70,6 +69,7 @@ class CreateTorrentJobWidget(JobWidgetBase):
             format='Getting announce URL {throbber}'
         )
         self.job.signal.register('announce_url', self.handle_announce_url)
+        self.job.signal.register('file_tree', self.handle_file_tree)
         self.job.signal.register('progress_update', self.handle_progress_update)
         self.job.signal.register('finished', lambda _: self.invalidate())
 
@@ -98,6 +98,9 @@ class CreateTorrentJobWidget(JobWidgetBase):
     def handle_throbber_state(self, state):
         self.job.info = state
         self.invalidate()
+
+    def handle_file_tree(self, file_tree):
+        self._file_tree.text = fs.format_file_tree(file_tree)
 
     def handle_announce_url(self, announce_url):
         if announce_url is Ellipsis:

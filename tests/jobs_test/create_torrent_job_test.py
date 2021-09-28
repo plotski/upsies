@@ -344,12 +344,12 @@ def test_CreateTorrentJob_finish(torrent_process, job):
         assert job._torrent_process is None
 
 
-@patch('upsies.utils.fs.file_tree')
-def test_handle_file_tree(file_tree_mock, job):
-    assert job.info == ''
-    job._handle_file_tree('beautiful tree')
-    assert job.info == str(file_tree_mock.return_value)
-    assert file_tree_mock.call_args_list == [call('beautiful tree')]
+def test_handle_file_tree(job):
+    cb = Mock()
+    job.signal.register('file_tree', cb)
+    assert cb.call_args_list == []
+    job._handle_file_tree('nested file tree sequence')
+    assert cb.call_args_list == [call('nested file tree sequence')]
 
 
 def test_handle_progress_update(job):

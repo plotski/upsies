@@ -27,6 +27,12 @@ class CreateTorrentJob(base.JobBase):
             retrieval attempt and the announce URL if the attempt was
             successful.
 
+        ``file_tree``
+            Emitted when torrent creation begins. Registered callbacks get
+            nested `(file_name, file_size)` tuples (see
+            :func:`~.utils.torrent.create`) as a positional argument. (See also
+            :func:`.fs.format_file_tree`.)
+
         ``progress_update``
             Emitted at roughly equal intervals to provide information about the
             torrent creation progress. Registered callbacks get a
@@ -64,8 +70,9 @@ class CreateTorrentJob(base.JobBase):
                 pattern = fnmatch.translate(str(pattern))
             self._exclude_files.append(pattern)
 
-        self.signal.add('progress_update')
         self.signal.add('announce_url')
+        self.signal.add('file_tree')
+        self.signal.add('progress_update')
         self._torrent_process = None
 
     def execute(self):
@@ -123,7 +130,7 @@ class CreateTorrentJob(base.JobBase):
         super().finish()
 
     def _handle_file_tree(self, file_tree):
-        self.info = fs.format_file_tree(file_tree)
+        self.signal.emit('file_tree', file_tree)
 
     def _handle_progress_update(self, status):
         self.signal.emit('progress_update', status)
