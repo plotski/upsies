@@ -123,7 +123,7 @@ class CreateTorrentJob(base.JobBase):
         super().finish()
 
     def _handle_file_tree(self, file_tree):
-        self.info = fs.file_tree(file_tree)
+        self.info = fs.format_file_tree(file_tree)
 
     def _handle_progress_update(self, status):
         self.signal.emit('progress_update', status)

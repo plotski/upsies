@@ -383,7 +383,7 @@ _DOWN_RIGHT = '\u251C'  # noqa: E221  # ├
 _RIGHT      = '\u2500'  # noqa: E221  # ─
 _CORNER     = '\u2514'  # noqa: E221  # └
 
-def file_tree(tree, _parents_is_last=()):
+def format_file_tree(tree, _parents_is_last=()):
     """
     Format nested file tree sequence as indented multi-line string
 
@@ -434,6 +434,6 @@ def file_tree(tree, _parents_is_last=()):
             lines.append(f'{indent}{name} ({types.Bytes(sum_node_size(node))})')
             # Descend into child node
             sub_parents_is_last = _parents_is_last + (is_last,)
-            lines.append(file_tree(node, _parents_is_last=sub_parents_is_last))
+            lines.append(format_file_tree(node, _parents_is_last=sub_parents_is_last))
 
     return '\n'.join(lines)

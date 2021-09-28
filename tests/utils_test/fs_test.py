@@ -617,7 +617,7 @@ def test_file_list_with_nonexisting_path(tmp_path):
     )
 
 
-def test_file_tree():
+def test_format_file_tree():
     tree = (
         ('root', (
             ('sub1', (
@@ -637,7 +637,7 @@ def test_file_tree():
         )),
     )
 
-    assert fs.file_tree(tree) == '''
+    assert fs.format_file_tree(tree) == '''
 root (10.6 kB)
 └─sub1 (10.6 kB)
   ├─foo (100 B)
