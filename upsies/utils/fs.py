@@ -385,7 +385,7 @@ _CORNER     = '\u2514'  # noqa: E221  # └
 
 def file_tree(tree, _parents_is_last=()):
     """
-    Create a pretty file tree as multi-line string
+    Format nested file tree sequence as indented multi-line string
 
     :param tree: Nested 2-tuples: The first item is the file or directory name,
         the second item is the file size for files or a tuple for directories
