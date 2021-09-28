@@ -147,13 +147,6 @@ def test_promotion(bb_tracker_jobs, mocker):
     ))
 
 
-def test_imdb(bb_tracker_jobs, mocker):
-    assert isinstance(bb_tracker_jobs.imdb, utils.webdbs.imdb.ImdbApi)
-
-def test_tvmaze(bb_tracker_jobs, mocker):
-    assert isinstance(bb_tracker_jobs.tvmaze, utils.webdbs.tvmaze.TvmazeApi)
-
-
 @pytest.mark.parametrize('output, exp_id', ((('123',), '123'), ((), None)))
 @pytest.mark.asyncio
 async def test_get_imdb_id_from_imdb_job(output, exp_id, bb_tracker_jobs, mocker):

@@ -9,8 +9,7 @@ import re
 import unidecode
 
 from ... import __homepage__, __project_name__, __version__, errors, jobs
-from ...utils import (cached_property, fs, http, image, release, string, video,
-                      webdbs)
+from ...utils import cached_property, fs, http, image, release, string, video
 from ..base import TrackerJobsBase
 
 import logging  # isort:skip
@@ -66,16 +65,6 @@ class BbTrackerJobs(TrackerJobsBase):
     )
 
     # Web DBs
-
-    @cached_property
-    def imdb(self):
-        """:class:`~.webdbs.imdb.ImdbApi` instance"""
-        return webdbs.webdb('imdb')
-
-    @cached_property
-    def tvmaze(self):
-        """:class:`~.webdbs.imdb.TvmazeApi` instance"""
-        return webdbs.webdb('tvmaze')
 
     async def get_imdb_id(self):
         """Return IMDb ID by any means possible, default to `None`"""

@@ -5,6 +5,7 @@ from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
+from upsies import utils
 from upsies.trackers.base import TrackerJobsBase
 
 
@@ -84,6 +85,19 @@ def test_signals(mocker):
         call('error', 'bar'),
         call('exception', 'baz'),
     ]
+
+
+def test_imdb():
+    tracker_jobs = make_TestTrackerJobs()
+    assert isinstance(tracker_jobs.imdb, utils.webdbs.imdb.ImdbApi)
+
+def test_tmdb():
+    tracker_jobs = make_TestTrackerJobs()
+    assert isinstance(tracker_jobs.tvmaze, utils.webdbs.tvmaze.TvmazeApi)
+
+def test_tvmaze():
+    tracker_jobs = make_TestTrackerJobs()
+    assert isinstance(tracker_jobs.tvmaze, utils.webdbs.tvmaze.TvmazeApi)
 
 
 def test_jobs_after_upload(mocker):

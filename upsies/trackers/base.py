@@ -266,6 +266,21 @@ class TrackerJobsBase(abc.ABC):
         """
         self.signal.emit('exception', exception)
 
+    @cached_property
+    def imdb(self):
+        """:class:`~.webdbs.imdb.ImdbApi` instance"""
+        return webdbs.webdb('imdb')
+
+    @cached_property
+    def tmdb(self):
+        """:class:`~.webdbs.tmdb.TmdbApi` instance"""
+        return webdbs.webdb('tmdb')
+
+    @cached_property
+    def tvmaze(self):
+        """:class:`~.webdbs.tvmaze.TvmazeApi` instance"""
+        return webdbs.webdb('tvmaze')
+
     def get_job_name(self, name):
         """
         Return job name that is unique for this tracker
@@ -376,7 +391,7 @@ class TrackerJobsBase(abc.ABC):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
         imdb_job = jobs.webdb.WebDbSearchJob(
             content_path=self.content_path,
-            db=webdbs.webdb('imdb'),
+            db=self.imdb,
             **self.common_job_args,
         )
         # Update release name with IMDb data
@@ -388,7 +403,7 @@ class TrackerJobsBase(abc.ABC):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
         return jobs.webdb.WebDbSearchJob(
             content_path=self.content_path,
-            db=webdbs.webdb('tmdb'),
+            db=self.tmdb,
             **self.common_job_args,
         )
 
@@ -397,7 +412,7 @@ class TrackerJobsBase(abc.ABC):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
         return jobs.webdb.WebDbSearchJob(
             content_path=self.content_path,
-            db=webdbs.webdb('tvmaze'),
+            db=self.tvmaze,
             **self.common_job_args,
         )
 
