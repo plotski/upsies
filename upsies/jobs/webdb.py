@@ -7,7 +7,7 @@ import collections
 from time import monotonic as time_monotonic
 
 from .. import errors
-from ..utils import fs, webdbs
+from ..utils import webdbs
 from . import JobBase
 
 import logging  # isort:skip
