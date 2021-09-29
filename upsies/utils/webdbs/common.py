@@ -40,7 +40,6 @@ class Query:
         self.type = kwargs.get('type', self._kwarg_defaults['type'])
         self.year = kwargs.get('year', self._kwarg_defaults['year'])
         self.id = kwargs.get('id', self._kwarg_defaults['id'])
-        self._title_normalized = self._normalize_title(self.title)
         self._kwargs_order = tuple(kwargs)
 
     @property
@@ -60,6 +59,7 @@ class Query:
     @title.setter
     def title(self, title):
         self._title = str(title)
+        self._title_normalized = self._normalize_title(self.title)
 
     @property
     def title_normalized(self):

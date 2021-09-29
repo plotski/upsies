@@ -5,8 +5,11 @@ from upsies.utils.types import ReleaseType
 
 
 def test_Query_title():
-    assert webdbs.Query().title == ''
-    assert webdbs.Query('The Title').title == 'The Title'
+    q = webdbs.Query()
+    assert q.title == ''
+    assert q.title_normalized == ''
+    q.title = '\nThe Title '
+    assert q.title_normalized == 'the title'
 
 def test_Query_year():
     assert webdbs.Query('The Title', year='2000').year == '2000'
