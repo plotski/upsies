@@ -5,7 +5,7 @@ subclasses
 
 import re
 
-from .. import release
+from .. import release, signal
 from ..types import ReleaseType
 
 import logging  # isort:skip
@@ -36,11 +36,13 @@ class Query:
     }
 
     def __init__(self, title='', **kwargs):
+        self._kwargs_order = tuple(kwargs)
+        self._signal = signal.Signal()
+        self._signal.add('changed')
         self.title = title
         self.type = kwargs.get('type', self._kwarg_defaults['type'])
         self.year = kwargs.get('year', self._kwarg_defaults['year'])
         self.id = kwargs.get('id', self._kwarg_defaults['id'])
-        self._kwargs_order = tuple(kwargs)
 
     @property
     def type(self):
@@ -50,6 +52,7 @@ class Query:
     @type.setter
     def type(self, type):
         self._type = ReleaseType(type)
+        self.signal.emit('changed', self)
 
     @property
     def title(self):
@@ -60,6 +63,7 @@ class Query:
     def title(self, title):
         self._title = str(title)
         self._title_normalized = self._normalize_title(self.title)
+        self.signal.emit('changed', self)
 
     @property
     def title_normalized(self):
@@ -85,6 +89,7 @@ class Query:
                     raise ValueError(f'Invalid year: {year}')
                 else:
                     self._year = str(year_int)
+        self.signal.emit('changed', self)
 
     @property
     def id(self):
@@ -94,6 +99,7 @@ class Query:
     @id.setter
     def id(self, id):
         self._id = None if id is None else str(id)
+        self.signal.emit('changed', self)
 
     _types = {
         ReleaseType.movie: ('movie', 'film'),
@@ -165,6 +171,19 @@ class Query:
         if info.get('type'):
             kwargs['type'] = info['type']
         return cls(**kwargs)
+
+    @property
+    def signal(self):
+        """
+        :class:`~.signal.Signal` instance
+
+        Available signals:
+
+        ``changed``
+            Emitted after query parameters changed. Registered callbacks get the
+            instance as a positional argument.
+        """
+        return self._signal
 
     def __eq__(self, other):
         if isinstance(other, type(self)):

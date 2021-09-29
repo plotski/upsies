@@ -1,3 +1,5 @@
+from unittest.mock import Mock, call
+
 import pytest
 
 from upsies.utils import webdbs
@@ -6,34 +8,84 @@ from upsies.utils.types import ReleaseType
 
 def test_Query_title():
     q = webdbs.Query()
+    cb = Mock()
+    q.signal.register('changed', cb)
+
     assert q.title == ''
     assert q.title_normalized == ''
-    q.title = '\nThe Title '
+    assert cb.mock_calls == []
+
+    q.title = 'The Title '
     assert q.title_normalized == 'the title'
+    assert cb.mock_calls == [call(q)]
+
+    q.title = '  The\n OTHER  Title! '
+    assert q.title_normalized == 'the other title!'
+    assert cb.mock_calls == [call(q), call(q)]
+
 
 def test_Query_year():
-    assert webdbs.Query('The Title', year='2000').year == '2000'
-    assert webdbs.Query('The Title', year=2000).year == '2000'
-    assert webdbs.Query('The Title', year=2000.5).year == '2000'
+    q = webdbs.Query('The Title', year='2000')
+    cb = Mock()
+    q.signal.register('changed', cb)
+
+    assert q.year == '2000'
+    assert cb.mock_calls == []
+
+    q.year = 2000
+    assert q.year == '2000'
+    assert cb.mock_calls == [call(q)]
+
+    q.year = 2000.5
+    assert q.year == '2000'
+    assert cb.mock_calls == [call(q), call(q)]
+
     with pytest.raises(ValueError, match=r'^Invalid year: 1000$'):
-        webdbs.Query('The Title', year=1000)
+        q.year = 1000
+    assert cb.mock_calls == [call(q), call(q)]
     with pytest.raises(ValueError, match=r'^Invalid year: 3000$'):
-        webdbs.Query('The Title', year='3000')
+        q.year = '3000'
+    assert cb.mock_calls == [call(q), call(q)]
     with pytest.raises(ValueError, match=r'^Invalid year: foo$'):
-        webdbs.Query('The Title', year='foo')
+        q.year = 'foo'
+    assert cb.mock_calls == [call(q), call(q)]
+
 
 @pytest.mark.parametrize('typ', list(ReleaseType) + [str(t) for t in ReleaseType], ids=lambda v: repr(v))
 def test_Query_valid_type(typ):
-    assert webdbs.Query('The Title', type=typ).type is ReleaseType(typ)
+    q = webdbs.Query('The Title', type=typ)
+    cb = Mock()
+    q.signal.register('changed', cb)
+    assert q.type is ReleaseType(typ)
+    q.type = ReleaseType('unknown')
+    assert q.type is ReleaseType('unknown')
+    assert cb.mock_calls == [call(q)]
 
 def test_Query_invalid_type():
+    q = webdbs.Query('The Title')
+    cb = Mock()
+    q.signal.register('changed', cb)
     with pytest.raises(ValueError, match=r"^'foo' is not a valid ReleaseType$"):
-        webdbs.Query('The Title', type='foo')
+        q.type = 'foo'
+    assert cb.mock_calls == []
+
 
 def test_Query_id():
-    assert webdbs.Query('The Title', id='12345').id == '12345'
-    assert webdbs.Query('The Title', id=12345).id == '12345'
-    assert webdbs.Query('The Title', id='tt12345').id == 'tt12345'
+    q = webdbs.Query('The Title', id='12345')
+    cb = Mock()
+    q.signal.register('changed', cb)
+
+    assert q.id == '12345'
+    assert cb.mock_calls == []
+
+    q.id = 123
+    assert q.id == '123'
+    assert cb.mock_calls == [call(q)]
+
+    q.id = 'tt12345'
+    assert q.id == 'tt12345'
+    assert cb.mock_calls == [call(q), call(q)]
+
 
 @pytest.mark.parametrize(
     argnames=('a', 'b'),
