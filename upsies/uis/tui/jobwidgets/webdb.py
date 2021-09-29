@@ -66,6 +66,7 @@ class WebDbSearchJobWidget(JobWidgetBase):
         self.job.signal.register('searching_status', self.handle_searching_status)
         self.job.signal.register('info_updating', self.handle_info_updating)
         self.job.signal.register('info_updated', self.handle_info_updated)
+        self.job.signal.register('query_updated', self.handle_query_updated)
 
     def handle_query(self, buffer):
         query_text = self._widgets['query'].text
@@ -98,6 +99,9 @@ class WebDbSearchJobWidget(JobWidgetBase):
         self._widgets[attr].is_loading = False
         self._widgets[attr].text = str(value)
         self.invalidate()
+
+    def handle_query_updated(self, query):
+        self._widgets['query'].set_text(str(query))
 
     @cached_property
     def runtime_widget(self):
