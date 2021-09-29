@@ -139,26 +139,26 @@ class JobBase(abc.ABC):
         their own signals.
 
         ``finished``
-            is emitted when :meth:`finish` is called or when output is read from
+            Emitted when :meth:`finish` is called or when output is read from
             cache. Registered callbacks get the job instance as a positional
             argument.
 
         ``output``
-            is emitted when :meth:`send` is called or when output is read from
+            Emitted when :meth:`send` is called or when output is read from
             cache. Registered callbacks get the value passed to :meth:`send` as
             a positional argument.
 
         ``info``
-            is emitted when :attr:`info` is set. Registered callbacks get the
-            new :attr:`info` as a positional argument.
+            Emitted when :attr:`info` is set. Registered callbacks get the new
+            :attr:`info` as a positional argument.
 
         ``warning``
-            is emitted when :meth:`warn` is called. Registered callbacks get the
+            Emitted when :meth:`warn` is called. Registered callbacks get the
             value passed to :meth:`warn` as a positional argument.
 
         ``error``
-            is emitted when :meth:`error` is called. Registered callbacks get
-            the value passed to :meth:`error` as a positional argument.
+            Emitted when :meth:`error` is called. Registered callbacks get the
+            value passed to :meth:`error` as a positional argument.
         """
         return self._signal
 
