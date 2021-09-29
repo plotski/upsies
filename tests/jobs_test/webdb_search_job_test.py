@@ -24,7 +24,7 @@ def foodb(mocker):
         name = 'foodb'
         label = 'FooDB'
         default_config = {}
-        sanitize_query = Mock(return_value='sanitized query')
+        sanitize_query = Mock(return_value=Query('sanitized query'))
         search = AsyncMock()
         cast = AsyncMock()
         creators = AsyncMock()
@@ -54,7 +54,7 @@ def job(foodb, tmp_path, mocker):
         cache_directory=tmp_path,
         ignore_cache=False,
         db=foodb,
-        query='path/to/foo',
+        query=Query('Mock Title'),
     )
     assert job._db is foodb
     return job
@@ -77,27 +77,27 @@ def test_WebDbSearchJob_query(job):
 
 
 def test_WebDbSearchJob_initialize_sets_query_from_path(tmp_path, foodb):
-    foodb.sanitize_query.return_value = 'mock query'
+    foodb.sanitize_query.return_value = Query('this query')
     job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
         db=foodb,
         query='path/to/foo',
     )
-    assert job.query == 'mock query'
+    assert job.query == Query('this query')
     assert foodb.sanitize_query.call_args_list == [
         call(Query.from_path('path/to/foo')),
     ]
 
 def test_WebDbSearchJob_initialize_sets_query_from_Query(tmp_path, foodb):
-    foodb.sanitize_query.return_value = 'mock query'
+    foodb.sanitize_query.return_value = Query('this query')
     job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
         db=foodb,
         query=Query(title='The Foo', year=2010),
     )
-    assert job.query == 'mock query'
+    assert job.query == Query('this query')
     assert foodb.sanitize_query.call_args_list == [
         call(Query(title='The Foo', year=2010)),
     ]
@@ -275,6 +275,19 @@ def test_WebDbSearchJob_update_info_emits_info_updated_signal(job):
     job._update_info('The Key', 'The Info')
     assert cb.info_updating.call_args_list == []
     assert cb.info_updated.call_args_list == [call('The Key', 'The Info')]
+
+
+def test_WebDbSearchJob_changing_query_emits_query_updated_signal(job):
+    cb = Mock()
+    job.signal.register('query_updated', cb)
+    job.query.title = 'My Title'
+    assert cb.call_args_list == [call(job.query)]
+    job.query.year = 2010
+    assert cb.call_args_list == [call(job.query), call(job.query)]
+    job.query.type = 'movie'
+    assert cb.call_args_list == [call(job.query), call(job.query), call(job.query)]
+    job.query.id = '123'
+    assert cb.call_args_list == [call(job.query), call(job.query), call(job.query), call(job.query)]
 
 
 def test_WebDbSearchJob_result_focused(job):

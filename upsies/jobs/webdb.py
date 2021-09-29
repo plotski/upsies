@@ -44,6 +44,10 @@ class WebDbSearchJob(JobBase):
             :class:`~.utils.webdbs.common.SearchResult` object that returns a
             coroutine function. ``value`` is the return value of that coroutine
             function.
+
+        ``query_updated``
+            Emitted after the :attr:`query` changed. Registered callbacks get
+            the new query as a positional argument.
     """
 
     @property
@@ -77,13 +81,15 @@ class WebDbSearchJob(JobBase):
         if not isinstance(query, webdbs.Query):
             query = webdbs.Query.from_path(str(query))
         self._query = self._db.sanitize_query(query)
-        self._is_searching = False
+        self._query.signal.register('changed', lambda q: self.signal.emit('query_updated', q))
 
         self.signal.add('search_results')
         self.signal.add('searching_status')
         self.signal.add('info_updating')
         self.signal.add('info_updated')
+        self.signal.add('query_updated')
 
+        self._is_searching = False
         self._searcher = _Searcher(
             search_coro=self._db.search,
             results_callback=self._handle_search_results,
