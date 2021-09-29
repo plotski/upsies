@@ -89,7 +89,7 @@ def test_WebDbSearchJob_initialize_sets_query_from_path(tmp_path, foodb):
         call(Query.from_path('path/to/foo')),
     ]
 
-def test_WebDbSearchJob_initialize_sets_query_Query(tmp_path, foodb):
+def test_WebDbSearchJob_initialize_sets_query_from_Query(tmp_path, foodb):
     foodb.sanitize_query.return_value = 'mock query'
     job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
