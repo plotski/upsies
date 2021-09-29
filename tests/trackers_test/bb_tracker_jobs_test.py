@@ -388,8 +388,24 @@ def test_release_type_job(bb_tracker_jobs, mocker):
             ('Episode', utils.types.ReleaseType.episode),
         ),
         focused=bb_tracker_jobs.release_name.type,
+        callbacks={
+            'finished': bb_tracker_jobs.release_type_selected,
+        },
         **bb_tracker_jobs.common_job_args,
     )]
+
+@pytest.mark.parametrize(
+    argnames='choice, exp_type',
+    argvalues=(
+        ('my choice', 'my choice'),
+        (None, 'original type'),
+    ),
+)
+def test_release_type_selected(choice, exp_type, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs.imdb_job.query), 'type', 'original type')
+    mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice', choice)
+    bb_tracker_jobs.release_type_selected('argument ignored')
+    assert bb_tracker_jobs.imdb_job.query.type == exp_type
 
 
 def test_imdb_job(bb_tracker_jobs, mocker):

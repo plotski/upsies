@@ -222,8 +222,15 @@ class BbTrackerJobs(TrackerJobsBase):
                 ('Episode', release.ReleaseType.episode),
             ),
             focused=self.release_name.type,
+            callbacks={
+                'finished': self.release_type_selected,
+            },
             **self.common_job_args,
         )
+
+    def release_type_selected(self, _):
+        if self.release_type_job.choice:
+            self.imdb_job.query.type = self.release_type_job.choice
 
     # Movie jobs
 
