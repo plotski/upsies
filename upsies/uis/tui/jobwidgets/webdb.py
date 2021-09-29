@@ -16,7 +16,6 @@ _log = logging.getLogger(__name__)
 class WebDbSearchJobWidget(JobWidgetBase):
     def setup(self):
         right_column_width = 40
-        self._old_query_text = str(self.job.query)
         self._widgets = {
             'id' : widgets.TextField(width=15, style='class:dialog.search.info'),
             'query' : widgets.InputField(
@@ -62,6 +61,8 @@ class WebDbSearchJobWidget(JobWidgetBase):
             ),
         }
 
+        self.set_query_text(self.job.query)
+
         self.job.signal.register('search_results', self.handle_search_results)
         self.job.signal.register('searching_status', self.handle_searching_status)
         self.job.signal.register('info_updating', self.handle_info_updating)
@@ -72,8 +73,7 @@ class WebDbSearchJobWidget(JobWidgetBase):
         query_text = self._widgets['query'].text
         if query_text != self._old_query_text:
             self.job.search(webdbs.Query.from_string(query_text))
-            self._widgets['query'].set_text(str(self.job.query))
-            self._old_query_text = self._widgets['query'].text
+            self.set_query_text(self.job.query)
         else:
             # The same query was accepted twice without changing it.
             # Select focused search result.
@@ -101,7 +101,11 @@ class WebDbSearchJobWidget(JobWidgetBase):
         self.invalidate()
 
     def handle_query_updated(self, query):
-        self._widgets['query'].set_text(str(query))
+        self.set_query_text(query)
+
+    def set_query_text(self, text):
+        self._widgets['query'].set_text(str(text))
+        self._old_query_text = self._widgets['query'].text
 
     @cached_property
     def runtime_widget(self):
