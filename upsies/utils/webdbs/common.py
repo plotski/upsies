@@ -101,6 +101,23 @@ class Query:
         self._id = None if id is None else str(id)
         self.signal.emit('changed', self)
 
+    def update(self, query):
+        """
+        Copy property values from other query
+
+        Values that are undefined on the other query are not copied.
+
+        :param query: :class:`Query` instance to copy values from
+        """
+        with self.signal.suspend('changed'):
+            self.title = query.title
+            for attr in ('type', 'year', 'id'):
+                new_value = getattr(query, attr)
+                default_value = self._kwarg_defaults[attr]
+                if new_value != default_value:
+                    setattr(self, attr, new_value)
+        self.signal.emit('changed', self)
+
     _types = {
         ReleaseType.movie: ('movie', 'film'),
         ReleaseType.season: ('season', 'series', 'tv', 'show', 'tvshow'),

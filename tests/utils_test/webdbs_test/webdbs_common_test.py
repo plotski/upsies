@@ -88,6 +88,37 @@ def test_Query_id():
 
 
 @pytest.mark.parametrize(
+    argnames='a, b, exp_attrs',
+    argvalues=(
+        (
+            webdbs.Query('The Title', type=ReleaseType.movie),
+            webdbs.Query('The Title', id='123'),
+            {'title': 'The Title', 'id': '123', 'type': ReleaseType.movie, 'year': None},
+        ),
+        (
+            webdbs.Query('The Title', id='123'),
+            webdbs.Query('The Other Title', id='456', year='2005', type=ReleaseType.series),
+            {'title': 'The Other Title', 'id': '456', 'type': ReleaseType.series, 'year': '2005'},
+        ),
+        (
+            webdbs.Query('The Title', id='123', year='2010', type=ReleaseType.series),
+            webdbs.Query('The Title', year='2010', type=ReleaseType.unknown),
+            {'title': 'The Title', 'id': '123', 'type': ReleaseType.series, 'year': '2010'},
+        ),
+    ),
+)
+def test_Query_update(a, b, exp_attrs):
+    b_attrs = {attr: getattr(b, attr) for attr in ('title', 'type', 'year', 'id')}
+    cb = Mock()
+    a.signal.register('changed', cb)
+    assert cb.call_args_list == []
+    a.update(b)
+    assert cb.call_args_list == [call(a)]
+    assert {attr: getattr(a, attr) for attr in ('title', 'type', 'year', 'id')} == exp_attrs
+    assert {attr: getattr(b, attr) for attr in ('title', 'type', 'year', 'id')} == b_attrs
+
+
+@pytest.mark.parametrize(
     argnames=('a', 'b'),
     argvalues=(
         (webdbs.Query('The Title'), webdbs.Query('The Title')),
