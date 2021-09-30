@@ -11,44 +11,48 @@ def test_Query_title():
     cb = Mock()
     q.signal.register('changed', cb)
 
-    assert q.title == ''
-    assert q.title_normalized == ''
-    assert cb.mock_calls == []
+    for _ in range(3):
+        assert q.title == ''
+        assert q.title_normalized == ''
+        assert cb.mock_calls == []
 
-    q.title = 'The Title '
-    assert q.title_normalized == 'the title'
-    assert cb.mock_calls == [call(q)]
+    for _ in range(3):
+        q.title = 'The Title '
+        assert q.title_normalized == 'the title'
+        assert cb.mock_calls == [call(q)]
 
-    q.title = '  The\n OTHER  Title! '
-    assert q.title_normalized == 'the other title!'
-    assert cb.mock_calls == [call(q), call(q)]
+    for _ in range(3):
+        q.title = '  The\n OTHER  Title! '
+        assert q.title_normalized == 'the other title!'
+        assert cb.mock_calls == [call(q), call(q)]
 
 
 def test_Query_year():
     q = webdbs.Query('The Title', year='2000')
     cb = Mock()
     q.signal.register('changed', cb)
-
     assert q.year == '2000'
     assert cb.mock_calls == []
 
-    q.year = 2000
-    assert q.year == '2000'
-    assert cb.mock_calls == [call(q)]
+    for _ in range(3):
+        q.year = 2001
+        assert q.year == '2001'
+        assert cb.mock_calls == [call(q)]
 
-    q.year = 2000.5
-    assert q.year == '2000'
-    assert cb.mock_calls == [call(q), call(q)]
+    for _ in range(3):
+        q.year = 2001.5
+        assert q.year == '2001'
+        assert cb.mock_calls == [call(q)]
 
     with pytest.raises(ValueError, match=r'^Invalid year: 1000$'):
         q.year = 1000
-    assert cb.mock_calls == [call(q), call(q)]
+    assert cb.mock_calls == [call(q)]
     with pytest.raises(ValueError, match=r'^Invalid year: 3000$'):
         q.year = '3000'
-    assert cb.mock_calls == [call(q), call(q)]
+    assert cb.mock_calls == [call(q)]
     with pytest.raises(ValueError, match=r'^Invalid year: foo$'):
         q.year = 'foo'
-    assert cb.mock_calls == [call(q), call(q)]
+    assert cb.mock_calls == [call(q)]
 
 
 @pytest.mark.parametrize('typ', list(ReleaseType) + [str(t) for t in ReleaseType], ids=lambda v: repr(v))
@@ -57,9 +61,24 @@ def test_Query_valid_type(typ):
     cb = Mock()
     q.signal.register('changed', cb)
     assert q.type is ReleaseType(typ)
-    q.type = ReleaseType('unknown')
-    assert q.type is ReleaseType('unknown')
-    assert cb.mock_calls == [call(q)]
+
+    all_types = list(ReleaseType)
+    if all_types.index(ReleaseType(typ)) < len(all_types) - 1:
+        next_type_index = all_types.index(ReleaseType(typ)) + 1
+    else:
+        next_type_index = 0
+    print(typ, all_types, next_type_index)
+    next_type = all_types[next_type_index]
+
+    for _ in range(3):
+        q.type = next_type
+        assert q.type is ReleaseType(next_type)
+        assert cb.mock_calls == [call(q)]
+
+    for _ in range(3):
+        q.type = typ
+        assert q.type is ReleaseType(typ)
+        assert cb.mock_calls == [call(q), call(q)]
 
 def test_Query_invalid_type():
     q = webdbs.Query('The Title')
@@ -74,48 +93,45 @@ def test_Query_id():
     q = webdbs.Query('The Title', id='12345')
     cb = Mock()
     q.signal.register('changed', cb)
-
     assert q.id == '12345'
     assert cb.mock_calls == []
 
-    q.id = 123
-    assert q.id == '123'
-    assert cb.mock_calls == [call(q)]
+    for _ in range(3):
+        q.id = 123
+        assert q.id == '123'
+        assert cb.mock_calls == [call(q)]
 
-    q.id = 'tt12345'
-    assert q.id == 'tt12345'
-    assert cb.mock_calls == [call(q), call(q)]
+    for _ in range(3):
+        q.id = 'tt12345'
+        assert q.id == 'tt12345'
+        assert cb.mock_calls == [call(q), call(q)]
 
 
-@pytest.mark.parametrize(
-    argnames='a, b, exp_attrs',
-    argvalues=(
-        (
-            webdbs.Query('The Title', type=ReleaseType.movie),
-            webdbs.Query('The Title', id='123'),
-            {'title': 'The Title', 'id': '123', 'type': ReleaseType.movie, 'year': None},
-        ),
-        (
-            webdbs.Query('The Title', id='123'),
-            webdbs.Query('The Other Title', id='456', year='2005', type=ReleaseType.series),
-            {'title': 'The Other Title', 'id': '456', 'type': ReleaseType.series, 'year': '2005'},
-        ),
-        (
-            webdbs.Query('The Title', id='123', year='2010', type=ReleaseType.series),
-            webdbs.Query('The Title', year='2010', type=ReleaseType.unknown),
-            {'title': 'The Title', 'id': '123', 'type': ReleaseType.series, 'year': '2010'},
-        ),
-    ),
-)
-def test_Query_update(a, b, exp_attrs):
-    b_attrs = {attr: getattr(b, attr) for attr in ('title', 'type', 'year', 'id')}
+def test_Query_update():
+    q = webdbs.Query('The Title', year='2010', type=ReleaseType.series)
     cb = Mock()
-    a.signal.register('changed', cb)
+    q.signal.register('changed', cb)
     assert cb.call_args_list == []
-    a.update(b)
-    assert cb.call_args_list == [call(a)]
-    assert {attr: getattr(a, attr) for attr in ('title', 'type', 'year', 'id')} == exp_attrs
-    assert {attr: getattr(b, attr) for attr in ('title', 'type', 'year', 'id')} == b_attrs
+
+    for _ in range(3):
+        q.update(webdbs.Query('The Title', type=ReleaseType.movie))
+        assert str(q) == 'The Title type:movie'
+        assert cb.call_args_list == [call(q)]
+
+    for _ in range(3):
+        q.update(webdbs.Query('The Title', type=ReleaseType.season))
+        assert str(q) == 'The Title type:season'
+        assert cb.call_args_list == [call(q), call(q)]
+
+    for _ in range(3):
+        q.update(webdbs.Query('The Other Title', type=ReleaseType.episode, year='2015'))
+        assert str(q) == 'The Other Title year:2015 type:episode'
+        assert cb.call_args_list == [call(q), call(q), call(q)]
+
+    for _ in range(3):
+        q.update(webdbs.Query('The Title', id='123', year='2015', type=ReleaseType.episode))
+        assert str(q) == 'id:123'
+        assert cb.call_args_list == [call(q), call(q), call(q), call(q)]
 
 
 @pytest.mark.parametrize(

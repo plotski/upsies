@@ -51,8 +51,12 @@ class Query:
 
     @type.setter
     def type(self, type):
+        before = getattr(self, '_type', None)
+
         self._type = ReleaseType(type)
-        self.signal.emit('changed', self)
+
+        if self._type != before:
+            self.signal.emit('changed', self)
 
     @property
     def title(self):
@@ -61,9 +65,13 @@ class Query:
 
     @title.setter
     def title(self, title):
+        before = getattr(self, '_title_normalized', None)
+
         self._title = str(title)
         self._title_normalized = self._normalize_title(self.title)
-        self.signal.emit('changed', self)
+
+        if self._title_normalized != before:
+            self.signal.emit('changed', self)
 
     @property
     def title_normalized(self):
@@ -77,6 +85,8 @@ class Query:
 
     @year.setter
     def year(self, year):
+        before = getattr(self, '_year', None)
+
         if year is None:
             self._year = None
         else:
@@ -89,7 +99,9 @@ class Query:
                     raise ValueError(f'Invalid year: {year}')
                 else:
                     self._year = str(year_int)
-        self.signal.emit('changed', self)
+
+        if self._year != before:
+            self.signal.emit('changed', self)
 
     @property
     def id(self):
@@ -98,25 +110,28 @@ class Query:
 
     @id.setter
     def id(self, id):
+        before = getattr(self, '_id', None)
+
         self._id = None if id is None else str(id)
-        self.signal.emit('changed', self)
+
+        if self._id != before:
+            self.signal.emit('changed', self)
 
     def update(self, query):
         """
         Copy property values from other query
 
-        Values that are undefined on the other query are not copied.
-
         :param query: :class:`Query` instance to copy values from
         """
+        before = str(self)
+
         with self.signal.suspend('changed'):
-            self.title = query.title
-            for attr in ('type', 'year', 'id'):
-                new_value = getattr(query, attr)
-                default_value = self._kwarg_defaults[attr]
-                if new_value != default_value:
-                    setattr(self, attr, new_value)
-        self.signal.emit('changed', self)
+            for attr in ('title', 'type', 'year', 'id'):
+                other_value = getattr(query, attr)
+                setattr(self, attr, other_value)
+
+        if str(self) != before:
+            self.signal.emit('changed', self)
 
     _types = {
         ReleaseType.movie: ('movie', 'film'),
