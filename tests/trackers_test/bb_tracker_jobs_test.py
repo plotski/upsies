@@ -294,6 +294,7 @@ async def test_jobs_before_upload(bb_tracker_jobs, mocker):
 
     assert make_job_condition_mock.call_args_list == [
         call('mediainfo_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
+        call('scene_check_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
         call('create_torrent_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
         call('screenshots_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
         call('upload_screenshots_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
