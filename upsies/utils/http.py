@@ -365,7 +365,8 @@ async def _request(
 
 
 def _load_cookies(cookies):
-    _log.debug('Loading cookies from %r', cookies)
+    if cookies:
+        _log.debug('Loading cookies from %r', cookies)
     if isinstance(cookies, (collections.abc.Mapping, http.cookiejar.CookieJar)):
         return cookies
     elif cookies and isinstance(cookies, (str, pathlib.Path)):
