@@ -482,7 +482,7 @@ class TrackerJobsBase(abc.ABC):
         )
 
     def make_choice_job(self, name, label, options, condition=None,
-                        autodetected=None, autofinish=False):
+                        callbacks=None, autodetected=None, autofinish=False):
         """
         Return :class:`~.jobs.dialog.ChoiceJob` instance
 
@@ -505,6 +505,7 @@ class TrackerJobsBase(abc.ABC):
               this option is autofocused
 
         :param condition: See :attr:`~.base.JobBase.condition`
+        :param callbacks: See :attr:`~.base.JobBase`
         :param bool autofinish: Whether to choose the autodetected value with no
             user-interaction
         """
@@ -532,6 +533,7 @@ class TrackerJobsBase(abc.ABC):
             name=self.get_job_name(name),
             label=label,
             condition=condition,
+            callbacks=callbacks or {},
             choices=choices,
             focused=focused,
             **self.common_job_args,

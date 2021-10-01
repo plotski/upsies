@@ -612,11 +612,13 @@ async def test_make_choice_job_with_regex_autofocus(autodetected, exp_choices, e
         autodetected=autodetected,
         autofinish=autofinish,
         condition='mock condition',
+        callbacks='mock callbacks',
     )
     assert ChoiceJob_mock.call_args_list == [call(
         name=f'{tracker.name}-foo',
         label='Foo',
         condition='mock condition',
+        callbacks='mock callbacks',
         choices=exp_choices,
         focused=exp_focused,
         foo='bar',
@@ -663,6 +665,7 @@ async def test_make_choice_job_with_match_autofocus(autodetected, exp_choices, e
         name=f'{tracker.name}-foo',
         label='Foo',
         condition='mock condition',
+        callbacks={},
         choices=exp_choices,
         focused=exp_focused,
         foo='bar',
