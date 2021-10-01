@@ -75,6 +75,16 @@ class BhdTrackerJobs(TrackerJobsBase):
         return condition
 
     @cached_property
+    def imdb_job(self):
+        imdb_job = super().imdb_job
+        imdb_job.signal.register('output', self.handle_imdb_job_output)
+        return imdb_job
+
+    def handle_imdb_job_output(self, _):
+        user_confirmed_type = self.imdb_job.query.type
+        self.tmdb_job.query.type = user_confirmed_type
+
+    @cached_property
     def category_job(self):
         # 'output' signal is only emitted when job succeeds while 'finished'
         # signal is also emitted when job fails (e.g. when Ctrl-c is pressed)

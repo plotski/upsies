@@ -203,6 +203,18 @@ def test_make_job_condition(job_attr, options, relevant_job_attrs, bhd_tracker_j
         assert return_value is False
 
 
+def test_imdb_job(bhd_tracker_jobs):
+    output_callbacks = bhd_tracker_jobs.imdb_job.signal.signals.get('output', [])
+    assert bhd_tracker_jobs.handle_imdb_job_output in output_callbacks
+
+
+def test_handle_imdb_job_output(bhd_tracker_jobs, mocker):
+    mocker.patch.object(type(bhd_tracker_jobs.imdb_job.query), 'type', 'mock type')
+    assert bhd_tracker_jobs.tmdb_job.query.type != 'mock type'
+    bhd_tracker_jobs.handle_imdb_job_output('ignored argument')
+    assert bhd_tracker_jobs.tmdb_job.query.type == 'mock type'
+
+
 def test_category_job(bhd_tracker_jobs, mocker):
     mocker.patch.object(bhd_tracker_jobs, 'make_job_condition')
     mocker.patch.object(bhd_tracker_jobs, 'make_choice_job')
