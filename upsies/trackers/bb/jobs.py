@@ -222,12 +222,12 @@ class BbTrackerJobs(TrackerJobsBase):
             ),
             focused=self.release_name.type,
             callbacks={
-                'output': self.release_type_selected,
+                'output': self.handle_release_type_selected,
             },
             **self.common_job_args,
         )
 
-    def release_type_selected(self, _):
+    def handle_release_type_selected(self, _):
         if self.release_type_job.choice:
             self.imdb_job.query.type = self.release_type_job.choice
 

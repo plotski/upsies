@@ -390,7 +390,7 @@ def test_release_type_job(bb_tracker_jobs, mocker):
         ),
         focused=bb_tracker_jobs.release_name.type,
         callbacks={
-            'output': bb_tracker_jobs.release_type_selected,
+            'output': bb_tracker_jobs.handle_release_type_selected,
         },
         **bb_tracker_jobs.common_job_args,
     )]
@@ -402,10 +402,10 @@ def test_release_type_job(bb_tracker_jobs, mocker):
         (None, 'original type'),
     ),
 )
-def test_release_type_selected(choice, exp_type, bb_tracker_jobs, mocker):
+def test_handle_release_type_selected(choice, exp_type, bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs.imdb_job.query), 'type', 'original type')
     mocker.patch.object(type(bb_tracker_jobs.release_type_job), 'choice', choice)
-    bb_tracker_jobs.release_type_selected('argument ignored')
+    bb_tracker_jobs.handle_release_type_selected('argument ignored')
     assert bb_tracker_jobs.imdb_job.query.type == exp_type
 
 
