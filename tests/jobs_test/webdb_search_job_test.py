@@ -295,6 +295,18 @@ def test_WebDbSearchJob_changing_query_emits_query_updated_signal(job):
     job.query.id = '123'
     assert cb.call_args_list == [call(job.query), call(job.query), call(job.query), call(job.query)]
 
+def test_WebDbSearchJob_changing_query_calls_search(job, mocker):
+    mocker.patch.object(job, 'search')
+    assert job.search.call_args_list == []
+    job.query.title = 'My Title'
+    assert job.search.call_args_list == [call(job.query)]
+    job.query.title = 2010
+    assert job.search.call_args_list == [call(job.query), call(job.query)]
+    job.query.type = 'movie'
+    assert job.search.call_args_list == [call(job.query), call(job.query), call(job.query)]
+    job.query.id = '123'
+    assert job.search.call_args_list == [call(job.query), call(job.query), call(job.query), call(job.query)]
+
 
 def test_WebDbSearchJob_result_focused(job):
     job.result_focused('The Result')

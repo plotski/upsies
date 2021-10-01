@@ -81,7 +81,7 @@ class WebDbSearchJob(JobBase):
         if not isinstance(query, webdbs.Query):
             query = webdbs.Query.from_path(str(query))
         self._query = self._db.sanitize_query(query)
-        self._query.signal.register('changed', lambda q: self.signal.emit('query_updated', q))
+        self._query.signal.register('changed', self._handle_query_changed)
 
         self.signal.add('search_results')
         self.signal.add('searching_status')
@@ -157,6 +157,10 @@ class WebDbSearchJob(JobBase):
             self.query.update(new_query)
             self._searcher.search(self.query)
             self.clear_warnings()
+
+    def _handle_query_changed(self, new_query):
+        self.signal.emit('query_updated', new_query)
+        self.search(new_query)
 
     def _handle_searching_status(self, is_searching):
         self._is_searching = bool(is_searching)
