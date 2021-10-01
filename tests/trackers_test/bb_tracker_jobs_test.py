@@ -390,7 +390,7 @@ def test_release_type_job(bb_tracker_jobs, mocker):
         ),
         focused=bb_tracker_jobs.release_name.type,
         callbacks={
-            'finished': bb_tracker_jobs.release_type_selected,
+            'output': bb_tracker_jobs.release_type_selected,
         },
         **bb_tracker_jobs.common_job_args,
     )]

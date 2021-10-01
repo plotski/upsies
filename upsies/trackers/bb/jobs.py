@@ -222,7 +222,7 @@ class BbTrackerJobs(TrackerJobsBase):
             ),
             focused=self.release_name.type,
             callbacks={
-                'finished': self.release_type_selected,
+                'output': self.release_type_selected,
             },
             **self.common_job_args,
         )
