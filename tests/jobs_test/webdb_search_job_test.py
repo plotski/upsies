@@ -215,20 +215,26 @@ def test_WebDbSearchJob_finish(job):
 
 def test_WebDbSearchJob_search_before_finished(job, mocker):
     mocker.patch.object(job._searcher, 'search')
-    mocker.patch.object(job._db, 'sanitize_query')
-    job.search('foo')
+    mocker.patch.object(job._db, 'sanitize_query', return_value=Query('sanitized query', year='2020'))
+    query_id = id(job.query)
+    job.search('query string')
+    assert job._db.sanitize_query.call_args_list == [call(Query.from_string('query string'))]
     assert job._searcher.search.call_args_list == [call(job._db.sanitize_query.return_value)]
-    assert job._db.sanitize_query.call_args_list == [call(Query.from_string('foo'))]
-    assert job.query is job._db.sanitize_query.return_value
+    assert id(job.query) == query_id
+    assert job.query.title == job._db.sanitize_query.return_value.title
+    assert job.query.type == job._db.sanitize_query.return_value.type
+    assert job.query.year == job._db.sanitize_query.return_value.year
+    assert job.query.id == job._db.sanitize_query.return_value.id
 
 def test_WebDbSearchJob_search_after_finished(job, mocker):
     mocker.patch.object(job._searcher, 'search')
-    mocker.patch.object(job._db, 'sanitize_query')
+    mocker.patch.object(job._db, 'sanitize_query', return_value=Query('sanitized query', year='2020'))
+    original_query = {attr: getattr(job.query, attr) for attr in ('title', 'year', 'type', 'id')}
     job.finish()
     job.search('foo')
     assert job._searcher.search.call_args_list == []
     assert job._db.sanitize_query.call_args_list == []
-    assert job.query is not job._db.sanitize_query.return_value
+    assert {attr: getattr(job.query, attr) for attr in ('title', 'year', 'type', 'id')} == original_query
 
 
 def test_WebDbSearchJob_searching_status(job):

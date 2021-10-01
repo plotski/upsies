@@ -125,7 +125,7 @@ class WebDbSearchJob(JobBase):
         """Search for initial query"""
         # It is important NOT to do this in initialize() because the window
         # between initialize() and execute() is used to register callbacks.
-        self.search(self._query)
+        self.search(self.query)
 
     async def wait(self):
         """Wait for any running internal coroutines"""
@@ -142,11 +142,20 @@ class WebDbSearchJob(JobBase):
         self._info_updater.cancel()
         super().finish()
 
-    def search(self, query):
-        """Make a new search request after cancelling any currently ongoing request"""
+    def search(self, query_string):
+        """
+        Make new search request
+
+        Any currently ongoing search is cancelled.
+
+        :param str query_string: Query string that is first passed through
+            :meth:`~.webdbs.Query.from_string` and then
+            :meth:`~.webdbs.WebDbApiBase.sanitize_query`
+        """
         if not self.is_finished:
-            self._query = self._db.sanitize_query(webdbs.Query.from_string(query))
-            self._searcher.search(self._query)
+            new_query = self._db.sanitize_query(webdbs.Query.from_string(query_string))
+            self.query.update(new_query)
+            self._searcher.search(self.query)
             self.clear_warnings()
 
     def _handle_searching_status(self, is_searching):
