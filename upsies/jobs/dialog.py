@@ -154,8 +154,7 @@ class ChoiceJob(JobBase):
         :attr:`choices` or the first or second item of an item in
         :attr:`choices`.
         """
-        if self.is_finished:
-            return getattr(self, '_choice', None)
+        return getattr(self, '_choice', None)
 
     @choice.setter
     def choice(self, choice):
