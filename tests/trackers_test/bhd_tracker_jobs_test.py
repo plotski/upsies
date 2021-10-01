@@ -260,7 +260,6 @@ def test_type_job(bhd_tracker_jobs, mocker):
         name='bhd-type',
         label='Type',
         condition=bhd_tracker_jobs.make_job_condition.return_value,
-        autofinish=False,
         options=(
             {'label': 'UHD 100', 'value': 'UHD 100'},
             {'label': 'UHD 66', 'value': 'UHD 66'},
@@ -287,29 +286,31 @@ def test_type_job(bhd_tracker_jobs, mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='resolution, source, exp_focused',
+    argnames='resolution, source, exp_focused, exp_choice, exp_output',
     argvalues=(
-        ('', 'DVD9', ('DVD 9 (autodetected)', 'DVD 9')),
-        ('', 'DVD5', ('DVD 5 (autodetected)', 'DVD 5')),
-        ('', 'DVD Remux', ('DVD Remux (autodetected)', 'DVD Remux')),
-        ('2160p', '', ('2160p (autodetected)', '2160p')),
-        ('1080p', '', ('1080p (autodetected)', '1080p')),
-        ('1080i', '', ('1080i (autodetected)', '1080i')),
-        ('720p', '', ('720p (autodetected)', '720p')),
-        ('576p', '', ('576p (autodetected)', '576p')),
-        ('540p', '', ('540p (autodetected)', '540p')),
-        ('480p', '', ('480p (autodetected)', '480p')),
-        ('123p', '', ('Other', 'Other')),
+        ('', 'DVD9', ('DVD 9 (autodetected)', 'DVD 9'), 'DVD 9', ('DVD 9 (autodetected)',)),
+        ('', 'DVD5', ('DVD 5 (autodetected)', 'DVD 5'), 'DVD 5', ('DVD 5 (autodetected)',)),
+        ('', 'DVD Remux', ('DVD Remux (autodetected)', 'DVD Remux'), 'DVD Remux', ('DVD Remux (autodetected)',)),
+        ('2160p', '', ('2160p (autodetected)', '2160p'), '2160p', ('2160p (autodetected)',)),
+        ('1080p', '', ('1080p (autodetected)', '1080p'), '1080p', ('1080p (autodetected)',)),
+        ('1080i', '', ('1080i (autodetected)', '1080i'), '1080i', ('1080i (autodetected)',)),
+        ('720p', '', ('720p (autodetected)', '720p'), '720p', ('720p (autodetected)',)),
+        ('576p', '', ('576p (autodetected)', '576p'), '576p', ('576p (autodetected)',)),
+        ('540p', '', ('540p (autodetected)', '540p'), '540p', ('540p (autodetected)',)),
+        ('480p', '', ('480p (autodetected)', '480p'), '480p', ('480p (autodetected)',)),
+        ('123p', '', ('Other', 'Other'), None, ()),
     ),
     ids=lambda v: str(v),
 )
-def test_autodetect_type(resolution, source, exp_focused, bhd_tracker_jobs, mocker):
+def test_autodetect_type(resolution, source, exp_focused, exp_choice, exp_output, bhd_tracker_jobs, mocker):
     mocker.patch.object(type(bhd_tracker_jobs), 'release_name', PropertyMock(return_value=Mock(
         resolution=resolution,
         source=source,
     )))
     bhd_tracker_jobs.autodetect_type('_')
     assert bhd_tracker_jobs.type_job.focused == exp_focused
+    assert bhd_tracker_jobs.type_job.choice == exp_choice
+    assert bhd_tracker_jobs.type_job.output == exp_output
 
 
 def test_source_job(bhd_tracker_jobs, mocker):

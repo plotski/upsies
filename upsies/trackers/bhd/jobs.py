@@ -127,7 +127,6 @@ class BhdTrackerJobs(TrackerJobsBase):
             name=self.get_job_name('type'),
             label='Type',
             condition=self.make_job_condition('type_job'),
-            autofinish=False,
             options=(
                 {'label': 'UHD 100', 'value': 'UHD 100'},
                 {'label': 'UHD 66', 'value': 'UHD 66'},
@@ -175,6 +174,8 @@ class BhdTrackerJobs(TrackerJobsBase):
                 value = self.type_job.focused[1]
                 # Mark autodetected choice
                 self.type_job.set_label(value, f'{label} (autodetected)')
+                # Select autodetected choice (i.e. finish job and don't prompt user)
+                self.type_job.choice = value
                 break
         else:
             self.type_job.focused = 'Other'
@@ -217,7 +218,7 @@ class BhdTrackerJobs(TrackerJobsBase):
                 value = self.source_job.focused[1]
                 # Mark autodetected choice
                 self.source_job.set_label(value, f'{label} (autodetected)')
-                # Select autodetected choice (i.e. finish job)
+                # Select autodetected choice (i.e. finish job and don't prompt user)
                 self.source_job.choice = value
                 break
 
