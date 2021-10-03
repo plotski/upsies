@@ -63,7 +63,7 @@ class release_name(CommandBase):
             home_directory=self.home_directory,
             cache_directory=self.cache_directory,
             ignore_cache=self.args.ignore_cache,
-            content_path=self.args.RELEASE,
+            query=self.args.RELEASE,
             db=utils.webdbs.webdb('imdb'),
             callbacks={'output': self._update_release_name},
         )
