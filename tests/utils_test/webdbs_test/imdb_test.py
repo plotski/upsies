@@ -608,13 +608,13 @@ async def test_summary(id, exp_summary, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_title_english', 'exp_title_original'),
     argvalues=(
-        ('tt1526578', 'Ao: The Last Hunter', 'Ao, le dernier Néandertal'),
         ('tt0076759', '', 'Star Wars: Episode IV - A New Hope'),
         ('tt0078243', 'The 36th Chamber of Shaolin', 'Shao Lin san shi liu fang'),
         ('tt0080455', '', 'The Blues Brothers'),
         ('tt0097138', '', 'Cyborg'),
         ('tt0102984', '', 'Stone Cold'),
         ('tt0104684', 'Hard Boiled', 'Lat sau san taam'),
+        ('tt0188030', 'Butterfly', 'La lengua de las mariposas'),
         ('tt0280990', 'The Nest', 'Nid de guêpes'),
         ('tt0348914', '', 'Deadwood'),
         ('tt0396184', '', 'Pusher II'),
@@ -622,6 +622,7 @@ async def test_summary(id, exp_summary, api, store_response):
         ('tt1405737', 'Traffic Light', 'Ramzor'),
         ('tt1413492', '', '12 Strong'),
         ('tt1520211', '', 'The Walking Dead'),
+        ('tt1526578', 'Ao: The Last Hunter', 'Ao, le dernier Néandertal'),
         ('tt1572491', 'The Last Circus', 'Balada triste de trompeta'),
         ('tt1866210', '', 'Wrecked'),  # No AKAs available
         ('tt2172934', '', '3 Days to Kill'),
