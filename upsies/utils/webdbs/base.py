@@ -139,7 +139,14 @@ class WebDbApiBase(abc.ABC):
 
     @abc.abstractmethod
     async def title_original(self, id):
-        """Return original title (e.g. non-English) or empty string"""
+        """
+        Return original title (e.g. non-English)
+
+        Return the original title if one is found and it is sufficiently
+        different from the English title (also see :meth:`title_english`).
+        Otherwise, return the English title, assuming it is an English-language
+        movie or series.
+        """
 
     @abc.abstractmethod
     async def type(self, id):
