@@ -123,7 +123,19 @@ class WebDbApiBase(abc.ABC):
 
     @abc.abstractmethod
     async def title_english(self, id):
-        """Return English title if different from original title or empty string"""
+        """
+        Return English title if it differs from original title or empty string
+
+        If the English title if is too similar to the original title, return an
+        empty string. You should use :meth:`title_original` in that case.
+
+        Titles are normalized (casefolded, stripped, etc) before they are
+        compared, and neither one must be contained in the other.
+
+        For example, if the original title is "Foo" and the English title is
+        "The Foo", the titles are considered too similar and an empty string is
+        returned. But if the Original title is "Le Feu", "The Foo" is returned.
+        """
 
     @abc.abstractmethod
     async def title_original(self, id):
