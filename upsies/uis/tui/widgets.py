@@ -230,6 +230,9 @@ class RadioList:
     def _get_text_fragments(self):
         result = []
 
+        if not self.choices:
+            return result
+
         def choice_as_string(choice):
             if isinstance(choice, str):
                 return choice
@@ -253,6 +256,7 @@ class RadioList:
             result.append(('', '\n'))
 
         result.pop()  # Remove last newline
+
         return result
 
     def __pt_container__(self):
