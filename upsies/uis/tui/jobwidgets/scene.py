@@ -22,15 +22,9 @@ class SceneSearchJobWidget(JobWidgetBase):
 
 
 class SceneCheckJobWidget(JobWidgetBase):
-
-    # Force this job to be interactive. Autodetection doesn't work because
-    # potential dialogs pop up when we get a reply to a scenedb query.
-    is_interactive = True
-
     def setup(self):
         self._question = FormattedTextControl('')
         self._radiolist = widgets.RadioList()
-        self._dialog_enabled = False
         self.job.signal.register('ask_release_name', self._ask_release_name)
         self.job.signal.register('ask_is_scene_release', self._ask_is_scene_release)
 
@@ -39,7 +33,6 @@ class SceneCheckJobWidget(JobWidgetBase):
 
         def handle_release_name(choice):
             _log.debug('Got release name: %r', choice)
-            self._dialog_enabled = False
             self.invalidate()
             self.job.user_selected_release_name(choice[1])
 
@@ -48,7 +41,6 @@ class SceneCheckJobWidget(JobWidgetBase):
         self._radiolist.choices.append(('This is not a scene release', None))
 
         self._question.text = 'Pick the correct release name:'
-        self._dialog_enabled = True
         self.invalidate()
 
     def _ask_is_scene_release(self, is_scene_release):
@@ -68,7 +60,6 @@ class SceneCheckJobWidget(JobWidgetBase):
 
         def handle_is_scene_release(choice):
             _log.debug('Got decision from user: %r', choice)
-            self._dialog_enabled = False
             self.invalidate()
             self.job.finalize(choice[1])
 
@@ -77,21 +68,13 @@ class SceneCheckJobWidget(JobWidgetBase):
         self._radiolist.on_accepted = handle_is_scene_release
 
         self._question.text = 'Is this a scene release?'
-        self._dialog_enabled = True
         self.invalidate()
 
     @cached_property
     def runtime_widget(self):
         return HSplit(
             children=[
-                ConditionalContainer(
-                    filter=Condition(lambda: self._dialog_enabled),
-                    content=HSplit(
-                        children=[
-                            Window(self._question),
-                            self._radiolist,
-                        ],
-                    ),
-                ),
+                Window(self._question),
+                self._radiolist,
             ],
         )
