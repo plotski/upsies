@@ -114,6 +114,7 @@ class TUI:
                         self._layout.focus(jobinfo.container)
                     except ValueError:
                         pass
+
                     # Don't display more than one unfinished interactive job
                     # unless any job has errors, in which case we are
                     # terminating the application and display all jobs.
