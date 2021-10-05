@@ -1,6 +1,4 @@
-from prompt_toolkit.filters import Condition
-from prompt_toolkit.layout.containers import (ConditionalContainer, HSplit,
-                                              Window)
+from prompt_toolkit.layout.containers import HSplit, Window
 from prompt_toolkit.layout.controls import FormattedTextControl
 
 from ....utils import cached_property
