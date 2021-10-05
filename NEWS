@@ -1,3 +1,7 @@
+2021.??.??
+  * Fixed stuck/unresponsive "Scene Check" yes/no prompt when PreDB is down
+
+
 2021.10.04
   * screenshots: Fix --upload-to/-u option (Thanks to @ctlaltdefeat)
   * Display remaining time and other information while creating the torrent
