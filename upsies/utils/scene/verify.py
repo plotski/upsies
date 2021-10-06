@@ -8,13 +8,12 @@ import re
 
 from ... import errors, utils
 from ..types import ReleaseType, SceneCheckResult
-from . import common, predb, srrdb
+from . import common, find, srrdb
 from .find import SceneQuery
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-_predb = predb.PreDbApi()
 _srrdb = srrdb.SrrDbApi()
 
 _abbreviated_scene_filename_regexs = (
@@ -60,7 +59,7 @@ async def is_scene_release(release):
     #         - Prospect.2018.720p.BluRay.DD5.1.x264-LoRD
     #         - How.The.Grinch.Stole.Christmas.2000.720p.BluRay.DTS.x264-EbP
     query = SceneQuery.from_release(release_info)
-    results = await _predb.search(query)
+    results = await find.search(query)
     if results:
         # Do we have enough information to pinpoint a single release?
         needed_keys = common.get_needed_keys(release_info)
@@ -88,7 +87,7 @@ async def release_files(release_name):
     """
     Map release file names to file information
 
-    This function uses :class:`~.predb.PreDbApi` for searching and
+    This function uses :func:`~.find.search` for searching and
     :class:`~.srrdb.SrrDbApi` to get the file information.
 
     :param str release_name: Exact name of the release
@@ -107,7 +106,7 @@ async def release_files(release_name):
     release_info = utils.release.ReleaseInfo(release_name)
     if release_info['type'] is ReleaseType.season:
         query = SceneQuery.from_release(release_info)
-        results = await _predb.search(query)
+        results = await find.search(query)
         if results:
             files = await asyncio.gather(
                 *(_srrdb.release_files(result) for result in results)
@@ -122,7 +121,7 @@ async def release_files(release_name):
     elif release_info['type'] is ReleaseType.episode:
         # Remove single episodes from seasons
         release_info['episodes'].remove_specific_episodes()
-        results = await _predb.search(SceneQuery.from_release(release_info))
+        results = await find.search(SceneQuery.from_release(release_info))
         if len(results) == 1:
             _log.debug('Getting files from single result: %r', results[0])
             files = await _srrdb.release_files(results[0])

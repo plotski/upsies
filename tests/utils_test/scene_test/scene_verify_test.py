@@ -101,7 +101,7 @@ async def test_is_scene_release(release_name, exp_return_value, store_response):
 
 @pytest.mark.asyncio
 async def test_is_scene_release_with_no_needed_keys(mocker):
-    mocker.patch('upsies.utils.scene.verify._predb.search', AsyncMock(return_value=('a', 'b')))
+    mocker.patch('upsies.utils.scene.find.search', AsyncMock(return_value=('a', 'b')))
     mocker.patch('upsies.utils.scene.common.get_needed_keys', Mock(return_value=()))
     assert await verify.is_scene_release('Some.Release-NAME') is SceneCheckResult.unknown
 
