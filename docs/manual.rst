@@ -13,7 +13,8 @@ Subcommands do one or more jobs and print the result to stdout. If a subcommand
 does multiple jobs (e.g. creating and uploading screenshots), the final result
 is the last job's output. If stdout is not a TTY (e.g. when it is redirected to
 a file or a pipe), the TUI is printed to stderr. For example, you can run
-``upsies screenshots file.mkv --upload-to imgbox | xclip`` and paste the result.
+``upsies screenshots file.mkv --upload-to imgbox | xclip`` and then paste the
+screenshot URLs.
 
 User input comes from configuration files, CLI arguments and interactive
 prompts. You should only be bothered by a prompt if upsies is unsure about its
@@ -41,16 +42,15 @@ Caching
 -------
 
 Generated metadata is cached and re-used as much as possible. You can cancel
-upsies at any time, run the same command again, and it should pick up where it
-stopped.
+upsies at any time, run the same command again, and it should continue without
+losing progress.
 
 .. note:: The torrent can only be created in one go.
 
 If you made a mistake and you need to regenerate metadata, use the
-``--ignore-cache/-C`` option.
-
-.. note:: ``--ignore-cache/-C`` is a global option and must come before any
-          subcommand.
+``--ignore-cache/-C`` option. Note that this is a global option and must come
+before any subcommand, e.g. ``upsies --ignore-cache release-name
+The.Foo.2000.x264.mkv``.
 
 For easy inspection and debugging, cached metadata is stored in files beneath
 ``$HOME/.cache/upsies/`` or ``$XDG_CACHE_HOME/upsies/`` if ``$XDG_CACHE_HOME``
