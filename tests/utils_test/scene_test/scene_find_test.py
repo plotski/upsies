@@ -1,3 +1,4 @@
+import re
 from unittest.mock import Mock, call
 
 import pytest
@@ -12,6 +13,73 @@ class AsyncMock(Mock):
         async def coro(_sup=super()):
             return _sup.__call__(*args, **kwargs)
         return coro()
+
+
+def make_db_class(name, exception):
+    _name = name
+
+    class MockSceneDb:
+        name = _name
+        calls = []
+
+        async def search(self, *args, **kwargs):
+            self.calls.append(call(*args, **kwargs))
+            if exception:
+                raise exception
+            else:
+                return f'{name} search results'
+
+    return MockSceneDb()
+
+
+@pytest.mark.parametrize(
+    argnames='dbs, exp_results, exp_exception, exp_queried_db_names',
+    argvalues=(
+        (
+            (make_db_class(name='foo', exception=None),
+             make_db_class(name='bar', exception=None)),
+            'foo search results',
+            None,
+            ['foo'],
+        ),
+        (
+            (make_db_class(name='foo', exception=errors.RequestError('foo is down')),
+             make_db_class(name='bar', exception=None)),
+            'bar search results',
+            None,
+            ['foo', 'bar'],
+        ),
+        (
+            (make_db_class(name='foo', exception=errors.RequestError('foo is down')),
+             make_db_class(name='bar', exception=errors.RequestError('bar is down'))),
+            None,
+            errors.RequestError('All queries failed: foo is down, bar is down'),
+            ['foo', 'bar'],
+        ),
+        (
+            (),
+            [],
+            None,
+            [],
+        ),
+    ),
+)
+@pytest.mark.asyncio
+async def test_search(dbs, exp_results, exp_exception, exp_queried_db_names, mocker):
+    mocker.patch('upsies.utils.scene.scenedb', side_effect=dbs)
+
+    db_order = [db.name for db in dbs]
+    if exp_exception:
+        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+            await find.search('mock posarg', dbs=db_order, kwarg='mock kwarg')
+    else:
+        results = await find.search('mock posarg', dbs=db_order, kwarg='mock kwarg')
+        assert results == exp_results
+
+    db_map = {db.name: db for db in dbs}
+    for db_name in exp_queried_db_names:
+        db = db_map[db_name]
+        assert db.calls == [call('mock posarg', kwarg='mock kwarg')]
 
 
 def test_SceneQuery_from_string(mocker):

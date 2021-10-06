@@ -6,7 +6,7 @@ import re
 
 from ... import errors
 from .. import LazyModule, release
-from . import common, predb
+from . import common
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -14,9 +14,43 @@ _log = logging.getLogger(__name__)
 natsort = LazyModule(module='natsort', namespace=globals())
 
 
-async def search(*args, **kwargs):
-    """Search with the recommended :class:`~.SceneDbApiBase` subclass"""
-    return await predb.PreDbApi().search(*args, **kwargs)
+async def search(*args, dbs=('predb', 'srrdb'), **kwargs):
+    """
+    Search scene databases
+
+    Try to get search results from multiple :class:`~.base.SceneDbApiBase`
+    instances and return the first response.
+
+    Failed requests are ignored unless all requests fail, in which case they are
+    combined into a single :class:`~.errors.RequestError`.
+
+    :param dbs: Sequence of :attr:`~.base.SceneDbApiBase.name` values
+
+    All other arguments are forwarded to :attr:`~.base.SceneDbApiBase.search`.
+
+    :return: Sequence of release names as :class:`str`
+
+    :raise RequestError: if all search requests fail
+    """
+    from . import scenedb
+
+    exceptions = []
+    for db_name in dbs:
+        db = scenedb(db_name)
+        try:
+            result = await db.search(*args, **kwargs)
+        except errors.RequestError as e:
+            _log.debug('Collecting scene search error: %r', e)
+            exceptions.append(e)
+        else:
+            _log.debug('Returning first scene search result: %r', result)
+            return result
+
+    if exceptions:
+        msg = 'All queries failed: ' + ', '.join(str(e) for e in exceptions)
+        raise errors.RequestError(msg)
+    else:
+        return []
 
 
 class SceneQuery:
