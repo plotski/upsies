@@ -43,5 +43,8 @@ setuptools.setup(
         'Unidecode==1.2.*',
         'chardet==4.*',
     ],
+    extras_require = {
+        'docs': ['sphinx-autorun'],
+    },
     entry_points={'console_scripts': ['upsies = upsies.uis.tui:main']},
 )
