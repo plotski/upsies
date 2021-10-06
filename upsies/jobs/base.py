@@ -378,13 +378,12 @@ class JobBase(abc.ABC):
 
         :param Exception exception: Exception instance
         """
-        if not self.is_finished:
-            import traceback
-            tb = ''.join(traceback.format_exception(
-                type(exception), exception, exception.__traceback__))
-            _log.debug('Exception in %s: %s', self.name, tb)
-            self._exception = exception
-            self.finish()
+        import traceback
+        tb = ''.join(traceback.format_exception(
+            type(exception), exception, exception.__traceback__))
+        _log.debug('Exception in %s: %s', self.name, tb)
+        self._exception = exception
+        self.finish()
 
     @property
     def raised(self):

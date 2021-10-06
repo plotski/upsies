@@ -449,8 +449,10 @@ async def test_exception_on_finished_job(job):
     job.exception(TypeError('Sorry, not my type.'))
     assert job.is_finished
     for _ in range(5):
-        await job.wait()  # No exception
-        assert job.raised is None
+        with pytest.raises(TypeError, match=r'^Sorry, not my type\.$'):
+            await job.wait()  # No exception
+        assert type(job.raised) is TypeError
+        assert str(job.raised) == 'Sorry, not my type.'
 
 @pytest.mark.asyncio
 async def test_exception_sets_exception_that_is_raised_by_wait(job):
@@ -459,8 +461,8 @@ async def test_exception_sets_exception_that_is_raised_by_wait(job):
     for _ in range(5):
         with pytest.raises(TypeError, match=r'^Sorry, not my type\.$'):
             await job.wait()
-            assert type(job.raised) is TypeError
-            assert str(job.raised) == 'Sorry, not my type.'
+        assert type(job.raised) is TypeError
+        assert str(job.raised) == 'Sorry, not my type.'
 
 @pytest.mark.asyncio
 async def test_exception_finishes_job(job):
