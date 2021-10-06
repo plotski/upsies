@@ -1,7 +1,13 @@
+"""
+Classes and functions that are not specific to
+:class:`~.base.SceneDbApiBase` subclasses
+"""
+
 from ..types import ReleaseType
 
 _needed_movie_keys = ('title', 'year', 'resolution', 'source', 'video_codec', 'group')
 _needed_series_keys = ('title', 'episodes', 'resolution', 'source', 'video_codec', 'group')
+
 
 def get_needed_keys(release_info):
     """
