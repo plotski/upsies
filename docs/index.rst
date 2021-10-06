@@ -12,4 +12,5 @@ Table of Contents
    quickstart
    installation
    manual
+   commands
    reference

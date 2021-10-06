@@ -3,6 +3,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinx_autorun',
 ]
 
 autosummary_generate = True
