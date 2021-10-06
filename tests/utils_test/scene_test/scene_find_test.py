@@ -318,7 +318,7 @@ def test_SceneQuery_repr(keywords, group, episodes, exp_repr):
         ((), (), '', '', {}, {}, True),
     )
 )
-def test_equality(keywords1, keywords2, group1, group2, episodes1, episodes2, exp_equality):
+def test_SceneQuery_equality(keywords1, keywords2, group1, group2, episodes1, episodes2, exp_equality):
     a = find.SceneQuery(keywords1, group=group1, episodes=episodes1)
     b = find.SceneQuery(keywords2, group=group2, episodes=episodes2)
     assert (a == b) is exp_equality
