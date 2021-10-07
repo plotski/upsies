@@ -31,7 +31,7 @@ class CommandsReference(SphinxDirective):
                 help_text = self._get_cmd_output(help_cmd)
                 paragraph = nodes.paragraph()
                 paragraph += nodes.strong(text=subcmd_name)
-                paragraph += nodes.literal_block(text=help_text)
+                paragraph += nodes.literal_block(text=help_text, language='none')
                 help_list += nodes.list_item('', paragraph)
 
         return nodelist
