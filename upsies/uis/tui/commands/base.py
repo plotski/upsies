@@ -12,7 +12,6 @@ import textwrap
 
 from .... import (__description__, __project_name__, __version__, constants,
                   defaults, errors, utils)
-from ....utils import configfiles
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -240,7 +239,7 @@ class CommandBase(abc.ABC):
 
         # Read config files
         try:
-            config = configfiles.ConfigFiles(defaults=defaults.defaults)
+            config = utils.configfiles.ConfigFiles(defaults=defaults.defaults)
             config.read('config', filepath=main_args.config_file, ignore_missing=True)
             config.read('trackers', filepath=main_args.trackers_file, ignore_missing=True)
             config.read('imghosts', filepath=main_args.imghosts_file, ignore_missing=True)
