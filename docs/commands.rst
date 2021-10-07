@@ -1,6 +1,5 @@
 Commands Reference
 ==================
 
-.. runblock:: console
-
-    $ upsies id --help
+.. commands_reference::
+   upsies.uis.tui.commands
