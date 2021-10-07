@@ -1,5 +1,5 @@
 """
-TODO
+Find files from a torrent and create links if necessary
 """
 
 from .... import jobs, utils
