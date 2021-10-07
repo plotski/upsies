@@ -15,12 +15,10 @@ class CommandsReference(SphinxDirective):
     has_content = True
 
     def run(self):
-        help_list = nodes.bullet_list()
         nodelist = [
             nodes.paragraph(text=(
                 f"This page lists help screen for {__project_name__} {__version__}."
             )),
-            help_list,
         ]
 
         for module_path in self.content:
@@ -29,10 +27,10 @@ class CommandsReference(SphinxDirective):
                 subcmd_name = cmdcls.names[0]
                 help_cmd = f'{__project_name__} {subcmd_name} --help'
                 help_text = self._get_cmd_output(help_cmd)
-                paragraph = nodes.paragraph()
-                paragraph += nodes.strong(text=subcmd_name)
-                paragraph += nodes.literal_block(text=help_text, language='none')
-                help_list += nodes.list_item('', paragraph)
+                section = nodes.section(ids=[subcmd_name])
+                section += nodes.title(text=subcmd_name)
+                section += nodes.literal_block(text=help_text, language='none')
+                nodelist.append(section)
 
         return nodelist
 
