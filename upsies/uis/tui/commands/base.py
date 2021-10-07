@@ -12,6 +12,7 @@ import textwrap
 
 from .... import (__description__, __project_name__, __version__, constants,
                   defaults, errors, utils)
+from .. import utils as tuiutils
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -48,8 +49,11 @@ class _MyHelpFormatter(argparse.HelpFormatter):
                     subsequent_indent=indent,
                 )
 
-        width = min(width, self.MAX_WIDTH) - len(indent)
-        text = re.sub(r'``(.*?)``', '\x1b[3m\\1\x1b[23m', text)
+        if tuiutils.is_tty():
+            text = re.sub(r'``(.*?)``', '\x1b[3m\\1\x1b[23m', text)
+        else:
+            text = re.sub(r'``(.*?)``', r'"\1"', text)
+
         return [line
                 for paragraph in text.split('\n')
                 for line in wrap(paragraph)]
