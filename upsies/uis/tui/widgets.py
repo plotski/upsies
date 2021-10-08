@@ -228,10 +228,9 @@ class RadioList:
             self.focused_index = self.choices.index(choice)
 
     def _get_text_fragments(self):
-        result = []
-
+        fragments = []
         if not self.choices:
-            return result
+            return fragments
 
         def choice_as_string(choice):
             if isinstance(choice, str):
@@ -246,18 +245,18 @@ class RadioList:
             choice_string = choice_as_string(choice)
             if i == self.focused_index:
                 style = 'class:dialog.choice.focused'
-                result.append(('[SetCursorPosition]', ''))
-                result.append((style, '*'))
+                fragments.append(('[SetCursorPosition]', ''))
+                fragments.append((style, '*'))
             else:
                 style = 'class:dialog.choice'
-                result.append((style, ' '))
-            result.append((style, ' '))
-            result.extend(to_formatted_text(choice_string.ljust(width), style=style))
-            result.append(('', '\n'))
+                fragments.append((style, ' '))
+            fragments.append((style, ' '))
+            fragments.extend(to_formatted_text(choice_string.ljust(width), style=style))
+            fragments.append(('', '\n'))
 
-        result.pop()  # Remove last newline
+        fragments.pop()  # Remove last newline
 
-        return result
+        return fragments
 
     def __pt_container__(self):
         return self.window
