@@ -12,5 +12,5 @@ Table of Contents
    quickstart
    installation
    manual
-   commands
+   subcommands
    reference

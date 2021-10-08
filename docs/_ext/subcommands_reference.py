@@ -1,0 +1,91 @@
+import logging
+import subprocess
+
+from docutils import nodes
+from docutils.parsers.rst import directives
+from docutils.statemachine import ViewList
+from sphinx.util.docutils import SphinxDirective
+
+from upsies import __project_name__
+from upsies.uis.tui.commands import CommandBase
+from upsies.utils import subclasses, submodules
+
+
+class SubcommandsReference(SphinxDirective):
+    has_content = True
+
+    def run(self):
+        nodelist = [
+        ]
+
+        for module_path in self.content:
+            subcmdclses = self._get_CommandBase_subclasses(module_path)
+            for subcmdcls in subcmdclses:
+                # Subcommand
+                subcmd_name = subcmdcls.names[0]
+                section = self._get_subcmd_section(
+                    subcmd_names=subcmdcls.names,
+                    args=('--help',),
+                )
+                nodelist.append(section)
+
+                # Subsubcommands
+                for subsubcmd_name in sorted(subcmdcls.subcommands):
+                    section = self._get_subcmd_section(
+                        subcmd_names=subcmdcls.names,
+                        subsubcmd_names=(subsubcmd_name,),
+                        args=('--help',),
+                    )
+                    nodelist.append(section)
+
+        return nodelist
+
+    def _get_CommandBase_subclasses(self, module_path):
+        return sorted(
+            subclasses(CommandBase, submodules(module_path)),
+            key=lambda subcmdcls: subcmdcls.names[0],
+        )
+
+    def _get_subcmd_section(self, subcmd_names, subsubcmd_names=(), args=()):
+        title = self._join_cmd_names(subcmd_names)
+        argv = (__project_name__, subcmd_names[0])
+        if subsubcmd_names:
+            title += ' ' + self._join_cmd_names(subsubcmd_names)
+            argv += (subsubcmd_names[0],)
+        argv += tuple(args)
+
+        output = self._run_cmd(argv)
+        section = nodes.section(ids=subcmd_names)
+        section += nodes.title(text=title)
+        section += nodes.literal_block(
+            text='$ ' + ' '.join(argv) + '\n' + output,
+            language='none',
+        )
+        return section
+
+    def _join_cmd_names(self, names):
+        joined = names[0]
+        if len(names) >= 2:
+            joined += ' (' + ', '.join(names[1:]) + ')'
+        return joined
+
+    def _run_cmd(self, argv):
+        print('running:', argv)
+        proc = subprocess.run(
+            argv,
+            encoding='utf-8',
+            shell=isinstance(argv, str),
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        return proc.stdout
+
+
+def setup(app):
+    app.add_directive('subcommands_reference', SubcommandsReference)
+    return {
+        'version': '0.1',
+        'parallel_read_safe': True,
+        'parallel_write_safe': True,
+    }

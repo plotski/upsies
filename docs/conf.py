@@ -8,7 +8,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
-    'commands_reference',
+    'subcommands_reference',
 ]
 
 autosummary_generate = True
