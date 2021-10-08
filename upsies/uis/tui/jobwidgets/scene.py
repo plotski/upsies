@@ -1,4 +1,6 @@
-from prompt_toolkit.layout.containers import HSplit, Window
+from prompt_toolkit.filters import Condition
+from prompt_toolkit.layout.containers import (ConditionalContainer, HSplit,
+                                              Window)
 from prompt_toolkit.layout.controls import FormattedTextControl
 
 from ....utils import cached_property
@@ -72,7 +74,14 @@ class SceneCheckJobWidget(JobWidgetBase):
     def runtime_widget(self):
         return HSplit(
             children=[
-                Window(self._question),
-                self._radiolist,
+                ConditionalContainer(
+                    filter=Condition(lambda: bool(self._radiolist.choices)),
+                    content=HSplit(
+                        children=[
+                            Window(self._question),
+                            self._radiolist,
+                        ],
+                    ),
+                ),
             ],
         )
