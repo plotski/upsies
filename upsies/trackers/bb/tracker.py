@@ -111,7 +111,6 @@ class BbTracker(TrackerBase):
             raise RuntimeError('Failed to find authentication token')
         else:
             self._auth_token = auth_token
-            _log.debug('%s: Authentication token: %s', self.name, self._auth_token)
 
     @property
     def is_logged_in(self):
@@ -138,10 +137,9 @@ class BbTracker(TrackerBase):
         doc = html.parse(response)
         announce_url_tag = doc.find('input', value=re.compile(r'^https?://.*/announce$'))
         if announce_url_tag:
-            _log.debug('%s: Announce URL: %s', self.name, announce_url_tag['value'])
             return announce_url_tag['value']
         else:
-            _log.debug('%s: Failed to find announce URL in %s', self.name, doc.prettify())
+            _log.debug('%s: Failed to find announce URL', self.name)
 
     async def upload(self, tracker_jobs):
         _log.debug('Uploading %r', tracker_jobs.post_data)
