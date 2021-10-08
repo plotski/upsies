@@ -124,6 +124,20 @@ async def test_read_queue_breaks_if_job_is_finished(mocker, tmp_path):
     assert qjob.handle_input.call_args_list == [call('a')]
 
 @pytest.mark.asyncio
+async def test_read_queue_handles_CancelledError_from_handle_input(qjob, mocker):
+    mocker.patch.object(qjob, 'handle_input', AsyncMock(
+        side_effect=asyncio.CancelledError(),
+    ))
+    qjob.start()
+    qjob._queue.put_nowait('a')
+    await qjob._read_queue()
+    assert qjob._queue.empty()
+    assert qjob.handle_input.call_args_list == [call('a')]
+    await qjob.wait()
+    assert qjob.is_finished
+    assert qjob.raised is None
+
+@pytest.mark.asyncio
 async def test_read_queue_handles_exception_from_handle_input(qjob, mocker):
     mocker.patch.object(qjob, 'handle_input', AsyncMock(
         side_effect=TypeError('argh'),

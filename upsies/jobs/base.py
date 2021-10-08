@@ -622,6 +622,9 @@ class QueueJobBase(JobBase):
             else:
                 try:
                     await self.handle_input(value)
+                except asyncio.CancelledError:
+                    _log.debug('%s: Job was cancelled while handling %r', self.name, value)
+                    break
                 except BaseException as e:
                     self.exception(e)
                     break
