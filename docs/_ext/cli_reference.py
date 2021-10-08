@@ -11,7 +11,7 @@ from upsies.uis.tui.commands import CommandBase
 from upsies.utils import subclasses, submodules
 
 
-class SubcommandsReference(SphinxDirective):
+class CliReference(SphinxDirective):
     has_content = True
 
     def run(self):
@@ -83,7 +83,7 @@ class SubcommandsReference(SphinxDirective):
 
 
 def setup(app):
-    app.add_directive('subcommands_reference', SubcommandsReference)
+    app.add_directive('cli_reference', CliReference)
     return {
         'version': '0.1',
         'parallel_read_safe': True,

@@ -12,5 +12,5 @@ Table of Contents
    quickstart
    installation
    manual
-   subcommands
-   reference
+   cli_reference
+   dev_reference
