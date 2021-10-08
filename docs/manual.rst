@@ -4,7 +4,8 @@ User Manual
 upsies comes with a mixed TUI/CLI interface. Subcommands provide a variety of
 functions that can be configured with options and configuration files. Every
 subcommand (and subsubcommand) provides a ``--help/-h`` option that explains
-what it does and the arguments it accepts.
+what it does and the arguments it accepts. See :ref:`cli-reference` for a
+complete overview.
 
 Input/Output
 ------------
