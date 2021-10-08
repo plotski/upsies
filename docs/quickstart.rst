@@ -3,7 +3,8 @@ Quickstart
 
 This is a very concise overview of how to get ``upsies`` up and running.
 
-Read the :doc:`installation manual <./installation>` for more details.
+Read the :doc:`installation manual <./installation>` and the :doc:`user manual
+<./manual>` for more details.
 
 Installation
 ------------
@@ -37,9 +38,9 @@ Submission
 
    $ upsies submit -h
    $ upsies submit <tracker> -h
-   $ upsies submit <tracker> <path/to/content> \
+   $ upsies submit <tracker> path/to/content \
      [--add-to <client>] \
-     [--copy-to <path/to/watch/directory>]
+     [--copy-to watch/directory/for/torrent/files]
 
 Upgrading
 ---------
