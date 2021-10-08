@@ -73,7 +73,6 @@ class CliReference(SphinxDirective):
         return joined
 
     def _run_cmd(self, argv):
-        print('running:', argv)
         proc = subprocess.run(
             argv,
             encoding='utf-8',
