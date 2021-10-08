@@ -12,10 +12,11 @@ Input/Output
 
 Subcommands do one or more jobs and print the result to stdout. If a subcommand
 does multiple jobs (e.g. creating and uploading screenshots), the final result
-is the last job's output. If stdout is not a TTY (e.g. when it is redirected to
-a file or a pipe), the TUI is printed to stderr. For example, you can run
-``upsies screenshots file.mkv --upload-to imgbox | xclip`` and then paste the
-screenshot URLs.
+is the last job's output.
+
+If stdout is not a TTY (e.g. when it is redirected to a file or a pipe), the TUI
+is printed to stderr. For example, you can run ``upsies screenshots
+file.mkv --upload-to imgbox | xclip`` and then paste the screenshot URLs.
 
 User input comes from configuration files, CLI arguments and interactive
 prompts. You should only be bothered by a prompt if upsies is unsure about its
@@ -29,8 +30,8 @@ Configuration is stored in INI files beneath ``$HOME/.config/upsies/`` or
 configuration options with a text editor or with ``upsies set <option>
 <value>``.
 
-.. warning:: You will lose comments and order if you use the ``set`` subcommand.
-             It is recommended to edit the configuration files in a text editor.
+.. warning:: You will lose any comments and order if you use the ``set``
+             subcommand for setting options.
 
 ``upsies set`` without any other arguments prints a list of configuration
 options and their values. To get the value of a specific option, run ``upsies
@@ -44,7 +45,7 @@ Caching
 
 Generated metadata is cached and re-used as much as possible. You can cancel
 upsies at any time, run the same command again, and it should continue without
-losing progress.
+losing too much progress.
 
 .. note:: The torrent can only be created in one go.
 
