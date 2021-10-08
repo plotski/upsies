@@ -16,6 +16,8 @@ class SubcommandsReference(SphinxDirective):
 
     def run(self):
         nodelist = [
+            nodes.literal_block(text=self._run_cmd(('upsies', '--version')), language='none'),
+            nodes.literal_block(text=self._run_cmd(('upsies', '--help')), language='none'),
         ]
 
         for module_path in self.content:
@@ -54,11 +56,10 @@ class SubcommandsReference(SphinxDirective):
             argv += (subsubcmd_names[0],)
         argv += tuple(args)
 
-        output = self._run_cmd(argv)
         section = nodes.section(ids=subcmd_names)
         section += nodes.title(text=title)
         section += nodes.literal_block(
-            text='$ ' + ' '.join(argv) + '\n' + output,
+            text=self._run_cmd(argv),
             language='none',
         )
         return section
@@ -74,12 +75,11 @@ class SubcommandsReference(SphinxDirective):
         proc = subprocess.run(
             argv,
             encoding='utf-8',
-            shell=isinstance(argv, str),
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
-        return proc.stdout
+        return '$ ' + ' '.join(argv) + '\n' + proc.stdout
 
 
 def setup(app):
