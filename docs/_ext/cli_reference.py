@@ -51,12 +51,14 @@ class CliReference(SphinxDirective):
     def _get_subcmd_section(self, subcmd_names, subsubcmd_names=(), args=()):
         title = self._join_cmd_names(subcmd_names)
         argv = (__project_name__, subcmd_names[0])
+        ids = subcmd_names[0]
         if subsubcmd_names:
             title += ' ' + self._join_cmd_names(subsubcmd_names)
             argv += (subsubcmd_names[0],)
+            ids += '-' + subsubcmd_names[0]
         argv += tuple(args)
 
-        section = nodes.section(ids=subcmd_names)
+        section = nodes.section(ids=[ids])
         section += nodes.title(text=title)
         section += nodes.literal_block(
             text=self._run_cmd(argv),
