@@ -151,12 +151,15 @@ class CommandBase(abc.ABC):
 
         This classmethod must be called on every subclass.
         """
+        # Get long text in output of "upsies <subcommand> --help"
         if cls.description:
             description = textwrap.dedent(cls.__doc__.strip('\n')) + '\n\n' + cls.description
         else:
             description = textwrap.dedent(cls.__doc__.strip('\n'))
 
+        # Get short text in output of "upsies --help"
         help = description.split('\n', 1)[0]
+
         parser = cls._subparsers.add_parser(
             cls.names[0],
             aliases=cls.names[1:],
