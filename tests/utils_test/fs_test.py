@@ -399,6 +399,21 @@ def test_sanitize_path(mocker):
 
 
 @pytest.mark.parametrize(
+    argnames='home, path, exp_path',
+    argvalues=(
+        ('/home/foo', 'relative/path', 'relative/path'),
+        ('/home/foo', '/absolute/path', '/absolute/path'),
+        ('/home/foo', '/home/foo/path', '~/path'),
+        ('/home/foo', '/absolute/path/to/home/foo/bar', '/absolute/path/to/home/foo/bar'),
+        ('/home/foo(with]regex}chars', '/home/foo(with]regex}chars/bar/baz', '~/bar/baz'),
+    ),
+)
+def test_tildify_path(home, path, exp_path, mocker):
+    mocker.patch('os.path.expanduser', return_value=home)
+    assert fs.tildify_path(path) == exp_path
+
+
+@pytest.mark.parametrize(
     argnames='path, exp_extension',
     argvalues=(
         ('path/to/Something.x264-GRP.mkv', 'mkv'),

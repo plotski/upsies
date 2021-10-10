@@ -255,6 +255,12 @@ def sanitize_path(path):
     return os.sep.join(sanitize_filename(segment) for segment in segments)
 
 
+def tildify_path(path):
+    """Return `path` with $HOME replaced by ``~``"""
+    home = os.path.expanduser('~')
+    return re.sub(rf'^{re.escape(home)}', '~', path)
+
+
 def file_extension(path):
     """
     Return file extension
