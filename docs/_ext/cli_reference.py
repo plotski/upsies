@@ -1,9 +1,6 @@
-import logging
 import subprocess
 
 from docutils import nodes
-from docutils.parsers.rst import directives
-from docutils.statemachine import ViewList
 from sphinx.util.docutils import SphinxDirective
 
 from upsies import __project_name__
@@ -24,7 +21,6 @@ class CliReference(SphinxDirective):
             subcmdclses = self._get_CommandBase_subclasses(module_path)
             for subcmdcls in subcmdclses:
                 # Subcommand
-                subcmd_name = subcmdcls.names[0]
                 section = self._get_subcmd_section(
                     subcmd_names=subcmdcls.names,
                     args=('--help',),
