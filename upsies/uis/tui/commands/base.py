@@ -157,6 +157,9 @@ class CommandBase(abc.ABC):
         else:
             description = textwrap.dedent(cls.__doc__.strip('\n'))
 
+        if cls.subcommands:
+            description += f'\n\nRun ``upsies {cls.names[0]} {cls.subcommand_name} --help`` for more information.'
+
         # Get short text in output of "upsies --help"
         help = description.split('\n', 1)[0]
 

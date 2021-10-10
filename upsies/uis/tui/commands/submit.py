@@ -7,7 +7,7 @@ from .base import CommandBase
 
 
 class submit(CommandBase):
-    """Generate all required metadata and upload to tracker"""
+    """Generate all required metadata and upload to TRACKER"""
 
     names = ('submit',)
 

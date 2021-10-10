@@ -43,9 +43,9 @@ class DummyTrackerConfig(base.TrackerConfigBase):
         },
         'torrent-create': {
             ('--delay', '-d'): {
-                'help': 'Number of seconds login, upload and logout take each',
+                'help': 'Number of seconds login and logout take each',
                 'type': float,
-                'default': 1.0,
+                'default': 0.0,
             },
         },
     }

@@ -16,7 +16,7 @@ class release_name(CommandBase):
     Audio and video information is detected with mediainfo.
 
     Missing required information is highlighted with placeholders,
-    e.g. "UNKNOWN_RESOLUTION"
+    e.g. "UNKNOWN_RESOLUTION".
     """
 
     names = ('release-name', 'rn')

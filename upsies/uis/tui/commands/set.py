@@ -2,7 +2,7 @@
 Change or show configuration file options
 """
 
-from .... import defaults, errors, jobs, utils
+from .... import constants, defaults, errors, jobs, utils
 from .base import CommandBase
 
 
@@ -60,7 +60,8 @@ class set(CommandBase):
         ('--fetch-ptpimg-apikey',): {
             'nargs': 2,
             'metavar': ('EMAIL', 'PASSWORD'),
-            'help': ('Fetch ptpimg API key from the website and save it '
+            'help': ('Fetch ptpimg API key and save it in '
+                     f'{utils.fs.tildify_path(constants.IMGHOSTS_FILEPATH)}\n'
                      '(EMAIL and PASSWORD are not saved)'),
         },
     }
