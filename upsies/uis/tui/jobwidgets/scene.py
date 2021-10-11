@@ -22,6 +22,8 @@ class SceneSearchJobWidget(JobWidgetBase):
 
 
 class SceneCheckJobWidget(JobWidgetBase):
+    is_interactive = True
+
     def setup(self):
         self._question = FormattedTextControl('')
         self._radiolist = widgets.RadioList()
