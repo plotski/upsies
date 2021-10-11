@@ -107,13 +107,16 @@ class TUI:
         for jobinfo in self._enabled_jobs:
             if jobinfo.widget.is_interactive:
                 job_containers.append(jobinfo.container)
+                _log.debug('Added interactive job: %r', jobinfo.job.name)
+
                 # Focus the first unfinished job
                 if not jobinfo.job.is_finished:
-                    _log.debug('Active job: %r', jobinfo.job.name)
                     try:
                         self._layout.focus(jobinfo.container)
                     except ValueError:
-                        pass
+                        _log.debug('Failed to focus job: %r', jobinfo.job.name)
+                    else:
+                        _log.debug('Focused job: %r', jobinfo.job.name)
 
                     # Don't display more than one unfinished interactive job
                     # unless any job has errors, in which case we are
@@ -127,6 +130,7 @@ class TUI:
         for jobinfo in self._enabled_jobs:
             if not jobinfo.widget.is_interactive:
                 job_containers.append(jobinfo.container)
+                _log.debug('Added background job: %r', jobinfo.job.name)
 
         # Replace visible containers
         self._jobs_container.children[:] = job_containers
