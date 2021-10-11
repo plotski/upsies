@@ -1,6 +1,7 @@
 2021.??.??
   * Fixed stuck/unresponsive "Scene Check" yes/no prompt when PreDB is down
   * Try to find release on SrrDB if PreDB is down before prompting user
+  * Added "User Manual" and "CLI Reference" to documentation
 
 
 2021.10.04
