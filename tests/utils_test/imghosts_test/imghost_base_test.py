@@ -4,6 +4,7 @@ from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
+from upsies import errors
 from upsies.utils import imghosts
 
 
@@ -67,6 +68,25 @@ def test_options_property():
 
 
 @pytest.mark.asyncio
+async def test_upload_gets_info_from_cache(tmp_path):
+    ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
+    ih._get_info_from_cache_mock.return_value = {
+        'url': 'http://foo.bar',
+        'thumbnail_url': 'http://foo.bar.cached/thumbnail',
+        'delete_url': 'http://foo.bar.cached/delete',
+        'edit_url': 'http://foo.bar.cached/edit',
+    }
+    image = await ih.upload('path/to/foo.png')
+    assert ih._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
+    assert ih._upload_mock.call_args_list == []
+    assert ih._store_info_to_cache_mock.call_args_list == []
+    assert isinstance(image, imghosts.UploadedImage)
+    assert image == 'http://foo.bar'
+    assert image.thumbnail_url == 'http://foo.bar.cached/thumbnail'
+    assert image.delete_url == 'http://foo.bar.cached/delete'
+    assert image.edit_url == 'http://foo.bar.cached/edit'
+
+@pytest.mark.asyncio
 async def test_upload_gets_info_from_upload_request(tmp_path):
     ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
     ih._get_info_from_cache_mock.return_value = None
@@ -95,23 +115,15 @@ async def test_upload_gets_info_from_upload_request(tmp_path):
     assert image.edit_url == 'http://foo.bar/edit'
 
 @pytest.mark.asyncio
-async def test_upload_gets_info_from_cache(tmp_path):
+async def test_upload_prepends_file_name_to_RequestError(tmp_path):
     ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
-    ih._get_info_from_cache_mock.return_value = {
-        'url': 'http://foo.bar',
-        'thumbnail_url': 'http://foo.bar.cached/thumbnail',
-        'delete_url': 'http://foo.bar.cached/delete',
-        'edit_url': 'http://foo.bar.cached/edit',
-    }
-    image = await ih.upload('path/to/foo.png')
+    ih._get_info_from_cache_mock.return_value = None
+    ih._upload_mock.side_effect = errors.RequestError('Service is down')
+    with pytest.raises(errors.RequestError, match=rf'path/to/foo.png: Service is down'):
+        await ih.upload('path/to/foo.png')
     assert ih._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
-    assert ih._upload_mock.call_args_list == []
+    assert ih._upload_mock.call_args_list == [call('path/to/foo.png')]
     assert ih._store_info_to_cache_mock.call_args_list == []
-    assert isinstance(image, imghosts.UploadedImage)
-    assert image == 'http://foo.bar'
-    assert image.thumbnail_url == 'http://foo.bar.cached/thumbnail'
-    assert image.delete_url == 'http://foo.bar.cached/delete'
-    assert image.edit_url == 'http://foo.bar.cached/edit'
 
 @pytest.mark.asyncio
 async def test_upload_is_missing_url(tmp_path):

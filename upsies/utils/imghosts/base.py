@@ -8,7 +8,7 @@ import copy
 import json
 import os
 
-from ... import constants
+from ... import constants, errors
 from .. import fs
 from . import common
 
@@ -77,11 +77,17 @@ class ImageHostBase(abc.ABC):
         """
         info = self._get_info_from_cache(image_path) if cache else {}
         if not info:
-            info = await self._upload(image_path)
-            _log.debug('Uploaded %r: %r', image_path, info)
-            self._store_info_to_cache(image_path, info)
+            try:
+                info = await self._upload(image_path)
+            except errors.RequestError as e:
+                raise errors.RequestError(f'{image_path}: {e}')
+            else:
+                _log.debug('Uploaded %r: %r', image_path, info)
+                self._store_info_to_cache(image_path, info)
+
         if 'url' not in info:
             raise RuntimeError(f'Missing "url" key in {info}')
+
         return common.UploadedImage(**info)
 
     @abc.abstractmethod
