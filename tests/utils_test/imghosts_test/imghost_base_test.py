@@ -119,7 +119,7 @@ async def test_upload_prepends_file_name_to_RequestError(tmp_path):
     ih = make_TestImageHost(cache_directory=tmp_path, mock_cache=True)
     ih._get_info_from_cache_mock.return_value = None
     ih._upload_mock.side_effect = errors.RequestError('Service is down')
-    with pytest.raises(errors.RequestError, match=rf'path/to/foo.png: Service is down'):
+    with pytest.raises(errors.RequestError, match=r'path/to/foo.png: Service is down'):
         await ih.upload('path/to/foo.png')
     assert ih._get_info_from_cache_mock.call_args_list == [call('path/to/foo.png')]
     assert ih._upload_mock.call_args_list == [call('path/to/foo.png')]
