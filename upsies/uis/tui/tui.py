@@ -107,7 +107,6 @@ class TUI:
         for jobinfo in self._enabled_jobs:
             if jobinfo.widget.is_interactive:
                 job_containers.append(jobinfo.container)
-                _log.debug('Added interactive job: %r', jobinfo.job.name)
 
                 # Focus the first unfinished job
                 if not jobinfo.job.is_finished:
@@ -130,7 +129,6 @@ class TUI:
         for jobinfo in self._enabled_jobs:
             if not jobinfo.widget.is_interactive:
                 job_containers.append(jobinfo.container)
-                _log.debug('Added background job: %r', jobinfo.job.name)
 
         # Replace visible containers
         self._jobs_container.children[:] = job_containers
