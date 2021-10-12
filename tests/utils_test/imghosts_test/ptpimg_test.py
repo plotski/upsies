@@ -27,10 +27,6 @@ def test_default_config():
     }
 
 
-def test_cache_id():
-    assert ptpimg.PtpimgImageHost.cache_id is None
-
-
 @pytest.mark.parametrize('apikey', ('', None, 0))
 @pytest.mark.asyncio
 async def test_upload_without_apikey(apikey, mocker, tmp_path):

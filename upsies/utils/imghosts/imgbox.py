@@ -30,6 +30,11 @@ class ImgboxImageHost(ImageHostBase):
         },
     }
 
+    @property
+    def cache_id(self):
+        """Thumbnail width"""
+        return {'thumb_width': self._gallery.thumb_width}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._gallery = pyimgbox.Gallery(
@@ -49,7 +54,3 @@ class ImgboxImageHost(ImageHostBase):
                 'thumbnail_url': submission.thumbnail_url,
                 'edit_url': submission.edit_url,
             }
-
-    @property
-    def cache_id(self):
-        return {'thumb_width': self._gallery.thumb_width}

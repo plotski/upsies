@@ -20,9 +20,6 @@ class PtpimgImageHost(ImageHostBase):
         'base_url': 'https://ptpimg.me',
     }
 
-    # The File path is unique enough
-    cache_id = None
-
     async def _upload(self, image_path):
         if not self.options['apikey']:
             raise errors.RequestError('Missing API key')
