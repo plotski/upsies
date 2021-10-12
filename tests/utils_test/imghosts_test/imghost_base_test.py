@@ -293,17 +293,17 @@ def test_cache_file(mocker, image_dir, cache_dir, cache_id, exp_cache_dir):
 
 
 @pytest.mark.parametrize(
-    argnames=('subclass_cache_id, options, exp_cache_id'),
+    argnames=('cache_id, exp_cache_id'),
     argvalues=(
-        (None, {}, ''),
-        (None, ['foo', 'bar', (1, 2, 3)], 'foo,bar,1,2,3'),
-        (None, {'foo': 'bar', 'this': [23, 42], (1, 2, 3): 'baz'}, 'foo=bar,this=23,42,1,2,3=baz'),
-        ('asdf', {'foo': 'bar'}, 'asdf'),
+        (None, None),
+        (23, '23'),
+        ('asdf', 'asdf'),
+        (['foo', 'bar', (1, 2, 3)], 'foo,bar,1,2,3'),
+        ({'foo': 'bar', 'this': [23, 42], (1, 2, 3): 'baz'}, 'foo=bar,this=23,42,1,2,3=baz'),
     ),
 )
-def test_cache_id(subclass_cache_id, options, exp_cache_id, mocker):
+def test_get_cache_id_as_string(cache_id, exp_cache_id, mocker):
     imghost = make_TestImageHost()
-    mocker.patch.object(type(imghost), 'options', PropertyMock(return_value=options))
-    mocker.patch.object(type(imghost), 'cache_id', PropertyMock(return_value=subclass_cache_id))
+    mocker.patch.object(type(imghost), 'cache_id', PropertyMock(return_value=cache_id))
     cache_id = imghost._get_cache_id_as_string()
     assert cache_id == exp_cache_id

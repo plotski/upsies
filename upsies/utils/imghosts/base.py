@@ -160,11 +160,16 @@ class ImageHostBase(abc.ABC):
                 return str(obj)
 
         cache_id = self.cache_id
-        if cache_id is None:
-            cache_id = self.options
-        return as_str(cache_id)
+        if cache_id is not None:
+            return as_str(cache_id)
 
     @property
     def cache_id(self):
-        """Information that makes an upload unique, aside from the file path"""
+        """
+        Information that makes an upload unique, aside from the file path
+
+        If this returns `None`, the file path is unique enough. Otherwise, the
+        return value should be a string, dictionary, sequence or anything with a
+        readable and unique string representation.
+        """
         return None
