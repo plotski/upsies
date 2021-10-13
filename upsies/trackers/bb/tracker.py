@@ -97,13 +97,23 @@ class BbTracker(TrackerBase):
 
     @classmethod
     def _get_auth_token(cls, doc):
-        auth_tag = doc.find('a', href=cls._auth_token_regex)
-        if auth_tag:
-            auth_link = auth_tag['href']
-            if auth_link:
-                match = cls._auth_token_regex.search(auth_link)
+        logout_link_tag = doc.find('a', href=cls._auth_token_regex)
+        if logout_link_tag:
+            _log.debug('LOGINBUGDEBUG: logout_link_tag: %r', logout_link_tag)
+            logout_link_href = logout_link_tag['href']
+            _log.debug('LOGINBUGDEBUG: logout_link_href: %r', logout_link_href)
+            if logout_link_href:
+                match = cls._auth_token_regex.search(logout_link_href)
+                _log.debug('LOGINBUGDEBUG: logout_link_href match: %r', match)
                 if match:
+                    _log.debug('LOGINBUGDEBUG: auth_token: %r', match.group(1))
                     return match.group(1)
+                else:
+                    _log.debug('LOGINBUGDEBUG: %r does not match %r', logout_link_href, cls._auth_token_regex)
+            else:
+                _log.debug('LOGINBUGDEBUG: Failed to find logout URL in HTML: %r', logout_link_tag)
+        else:
+            _log.debug('LOGINBUGDEBUG: Failed to find logout link tag in HTML: %r', doc)
 
     def _store_auth_token(self, doc):
         auth_token = self._get_auth_token(doc)
