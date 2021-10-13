@@ -109,7 +109,8 @@ class BbTracker(TrackerBase):
                     _log.debug('LOGINBUGDEBUG: auth_token: %r', match.group(1))
                     return match.group(1)
                 else:
-                    _log.debug('LOGINBUGDEBUG: %r does not match %r', logout_link_href, cls._auth_token_regex)
+                    _log.debug('LOGINBUGDEBUG: Failed to find auth token: %r does not match %r',
+                               logout_link_href, cls._auth_token_regex)
             else:
                 _log.debug('LOGINBUGDEBUG: Failed to find logout URL in HTML: %r', logout_link_tag)
         else:
