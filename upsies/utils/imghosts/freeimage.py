@@ -1,5 +1,5 @@
 """
-Image uploader for pixhost.to
+Image uploader for freeimage.host
 """
 
 import json
