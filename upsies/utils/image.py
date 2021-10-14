@@ -164,7 +164,7 @@ def resize(image_file, width=None, height=None, target_file=None):
     output = utils.subproc.run(cmd, ignore_errors=True, join_stderr=True)
     if not os.path.exists(target_file):
         raise errors.ImageResizeError(
-            f'{image_file}: Failed to resize: {output}'
+            f'Failed to resize: {output}'
         )
     else:
         return str(target_file)

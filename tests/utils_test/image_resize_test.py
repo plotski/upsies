@@ -121,5 +121,5 @@ def test_resize_with_failed_ffmpeg_command(mocker):
     mocker.patch('upsies.utils.fs.assert_file_readable')
     mocker.patch('upsies.utils.subproc.run', return_value='The error message')
     mocker.patch('os.path.exists', return_value=False)
-    with pytest.raises(errors.ImageResizeError, match=r'^a.jpg: Failed to resize: The error message$'):
+    with pytest.raises(errors.ImageResizeError, match=r'^Failed to resize: The error message$'):
         image.resize('a.jpg', 10, 20)
