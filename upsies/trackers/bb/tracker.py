@@ -47,6 +47,7 @@ class BbTracker(TrackerBase):
             )
 
             doc = html.parse('')
+            _log.debug('LOGINBUGDEBUG: Initial doc: %r', doc)
             while await self._work_around_login_bug(doc):
                 _log.debug('%s: Logging in as %r', self.name, self.options['username'])
                 response = await http.post(
@@ -58,7 +59,9 @@ class BbTracker(TrackerBase):
                         'login': 'Log In!',
                     },
                 )
+                _log.debug('LOGINBUGDEBUG: Login response: %r', response)
                 doc = html.parse(response)
+                _log.debug('LOGINBUGDEBUG: New doc %r', doc)
                 self._raise_login_error(doc)
 
             self._store_auth_token(doc)
