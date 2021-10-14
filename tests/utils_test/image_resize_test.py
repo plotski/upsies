@@ -1,4 +1,5 @@
 import os
+import pathlib
 from unittest.mock import call
 
 import pytest
@@ -55,41 +56,54 @@ def test_resize_with_invalid_height(mocker):
         image.resize('a.jpg', 20, -1)
 
 @pytest.mark.parametrize('extension', ('jpg', 'png'))
-@pytest.mark.parametrize('target_file', (None, 'b'))
+@pytest.mark.parametrize('target_filename', (None, 'b'))
+@pytest.mark.parametrize('target_directory', (None, 'path/to/'))
 @pytest.mark.parametrize(
     argnames='width, height',
     argvalues=(
         (10, 20),
-        (10, None),
-        (None, 20),
-        (None, None),
+        (10, 0),
+        (0, 20),
+        (0, 0),
     ),
     ids=lambda v: str(v),
 )
-def test_resize_with_valid_dimensions(width, height, target_file, extension, mocker, tmp_path):
+def test_resize_with_valid_dimensions(width, height, target_filename, target_directory, extension, mocker, tmp_path):
     mocker.patch('upsies.utils.fs.assert_file_readable')
     mocker.patch('upsies.utils.image._ffmpeg_executable', return_value='ffmpeg')
-    run_mock = mocker.patch('upsies.utils.subproc.run')
-    mocker.patch('os.path.exists', return_value=True)
+
     image_file = tmp_path / f'a.{extension}'
     image_file.write_bytes(b'image data')
-    if target_file:
-        target_file = str(tmp_path / f'{target_file}.{extension}')
-    resized_file = image.resize(image_file, width, height, target_file)
 
-    assert os.path.exists(resized_file)
-
-    if target_file:
-        exp_target_file = target_file
-    elif width and height:
-        exp_target_file = str(tmp_path / f'a.width={width},height={height}.{extension}')
-    elif width:
-        exp_target_file = str(tmp_path / f'a.width={width}.{extension}')
-    elif height:
-        exp_target_file = str(tmp_path / f'a.height={height}.{extension}')
+    if target_directory:
+        target_directory = str(tmp_path / target_directory)
+        exp_target_directory = target_directory
     else:
-        exp_target_file = str(tmp_path / f'a.{extension}')
-    assert resized_file == exp_target_file
+        exp_target_directory = os.path.dirname(image_file)
+
+    if target_filename:
+        exp_target_filename = target_filename
+    elif width and height:
+        exp_target_filename = f'a.width={width},height={height}.{extension}'
+    elif width:
+        exp_target_filename = f'a.width={width}.{extension}'
+    elif height:
+        exp_target_filename = f'a.height={height}.{extension}'
+    else:
+        exp_target_filename = f'a.{extension}'
+
+    exp_target_filepath = os.path.join(exp_target_directory, exp_target_filename)
+
+    def create_target_filepath(*_, **__):
+        path = pathlib.Path(exp_target_filepath)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b'resized image')
+
+    run_mock = mocker.patch('upsies.utils.subproc.run', side_effect=create_target_filepath)
+
+    resized_file = image.resize(image_file, width, height, target_directory, target_filename)
+    assert resized_file == exp_target_filepath
+    assert os.path.exists(resized_file)
 
     if width and height:
         exp_ffmpeg_cmd = ('ffmpeg', '-y', '-loglevel', 'level+error', '-i', f'file:{image_file}',
@@ -107,15 +121,26 @@ def test_resize_with_valid_dimensions(width, height, target_file, extension, moc
     else:
         assert run_mock.call_args_list == []
 
-def test_resize_with_unwritable_target_file(mocker):
+def test_resize_with_uncreatable_target_directory(mocker, tmp_path):
     mocker.patch('upsies.utils.fs.assert_file_readable')
     mocker.patch('upsies.utils.image._ffmpeg_executable', return_value='ffmpeg')
+    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir', side_effect=errors.ContentError('mkdir failed'))
     run_mock = mocker.patch('upsies.utils.subproc.run')
-    exp_error = 'Failed to copy image/does/not/exist.jpg to /path/does/not/exist/: No such file or directory'
-    with pytest.raises(errors.ImageResizeError, match=rf'^{exp_error}$'):
-        image.resize('image/does/not/exist.jpg', None, None, '/path/does/not/exist/')
+    target_directory = str(tmp_path / 'foo' / 'bar')
+    with pytest.raises(errors.ImageResizeError, match=rf'^mkdir failed$'):
+        image.resize('image/does/not/exist.jpg', target_directory=target_directory)
+    assert mkdir_mock.call_args_list == [call(target_directory)]
     assert run_mock.call_args_list == []
 
+def test_resize_with_uncopyable_target_filepath(mocker, tmp_path):
+    mocker.patch('upsies.utils.fs.assert_file_readable')
+    mocker.patch('upsies.utils.image._ffmpeg_executable', return_value='ffmpeg')
+    copy2_mock = mocker.patch('shutil.copy2', side_effect=OSError('argh'))
+    run_mock = mocker.patch('upsies.utils.subproc.run')
+    exp_error = 'Failed to copy image/does/not/exist.jpg to image/does/not/resized.jpg: argh'
+    with pytest.raises(errors.ImageResizeError, match=rf'^{exp_error}$'):
+        image.resize('image/does/not/exist.jpg', target_filename='resized.jpg')
+    assert run_mock.call_args_list == []
 
 def test_resize_with_failed_ffmpeg_command(mocker):
     mocker.patch('upsies.utils.fs.assert_file_readable')
