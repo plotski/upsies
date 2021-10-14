@@ -179,10 +179,8 @@ def mkdir(path):
     try:
         os.makedirs(path, exist_ok=True)
     except OSError as e:
-        if e.strerror:
-            raise errors.ContentError(f'{path}: {e.strerror}')
-        else:
-            raise errors.ContentError(f'{path}: {e}')
+        msg = e.strerror if e.strerror else str(e)
+        raise errors.ContentError(f'{path}: {msg}')
     else:
         assert_dir_usable(path)
 
