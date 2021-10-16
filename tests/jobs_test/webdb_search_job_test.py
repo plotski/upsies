@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from unittest.mock import Mock, call
 
 import pytest
@@ -371,6 +372,7 @@ def test_Searcher_cancel_while_not_searching(searcher):
     assert searcher._search_task is None
 
 
+@pytest.mark.skipif(sys.version_info[:2] == (3, 7), reason='Python 3.7 is silly')
 @pytest.mark.asyncio
 async def test_Searcher_search_while_not_searching(searcher, mocker):
     mocker.patch.object(searcher, '_search', return_value=AsyncMock())
@@ -381,6 +383,7 @@ async def test_Searcher_search_while_not_searching(searcher, mocker):
     assert not searcher._search_task.done()
     assert not searcher._search_task.cancelled()
 
+@pytest.mark.skipif(sys.version_info[:2] == (3, 7), reason='Python 3.7 is silly')
 @pytest.mark.asyncio
 async def test_Searcher_search_while_searching(searcher, mocker):
     mocker.patch.object(searcher, '_search', return_value=AsyncMock())
