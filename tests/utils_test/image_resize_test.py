@@ -127,7 +127,7 @@ def test_resize_with_uncreatable_target_directory(mocker, tmp_path):
     mkdir_mock = mocker.patch('upsies.utils.fs.mkdir', side_effect=errors.ContentError('mkdir failed'))
     run_mock = mocker.patch('upsies.utils.subproc.run')
     target_directory = str(tmp_path / 'foo' / 'bar')
-    with pytest.raises(errors.ImageResizeError, match=rf'^mkdir failed$'):
+    with pytest.raises(errors.ImageResizeError, match=r'^mkdir failed$'):
         image.resize('image/does/not/exist.jpg', target_directory=target_directory)
     assert mkdir_mock.call_args_list == [call(target_directory)]
     assert run_mock.call_args_list == []
@@ -135,7 +135,7 @@ def test_resize_with_uncreatable_target_directory(mocker, tmp_path):
 def test_resize_with_uncopyable_target_filepath(mocker, tmp_path):
     mocker.patch('upsies.utils.fs.assert_file_readable')
     mocker.patch('upsies.utils.image._ffmpeg_executable', return_value='ffmpeg')
-    copy2_mock = mocker.patch('shutil.copy2', side_effect=OSError('argh'))
+    mocker.patch('shutil.copy2', side_effect=OSError('argh'))
     run_mock = mocker.patch('upsies.utils.subproc.run')
     exp_error = 'Failed to copy image/does/not/exist.jpg to image/does/not/resized.jpg: argh'
     with pytest.raises(errors.ImageResizeError, match=rf'^{exp_error}$'):
