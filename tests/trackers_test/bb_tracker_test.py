@@ -412,7 +412,7 @@ async def test_upload_makes_expected_request(mocker):
         url='http://bb.local' + BbTracker._url_path['upload'],
         cache=False,
         user_agent=True,
-        allow_redirects=False,
+        follow_redirects=False,
         files={'file_input': {
             'file': tracker_jobs_mock.torrent_filepath,
             'mimetype': 'application/octet-stream',

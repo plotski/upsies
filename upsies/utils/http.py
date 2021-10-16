@@ -66,7 +66,7 @@ async def get(
         cache=False,
         max_cache_age=float('inf'),
         user_agent=False,
-        allow_redirects=True,
+        follow_redirects=True,
         timeout=_default_timeout,
         cookies=None,
     ):
@@ -81,7 +81,7 @@ async def get(
     :param bool cache: Whether to use cached response if available
     :param int,float max_cache_age: Maximum age of cache in seconds
     :param bool user_agent: Whether to send the User-Agent header
-    :param bool allow_redirects: Whether to follow redirects
+    :param bool follow_redirects: Whether to follow redirects
     :param int,float timeout: Maximum number of seconds the request may take
     :param cookies: Cookies to include in the request (merged with
         existing cookies in the global client session)
@@ -107,7 +107,7 @@ async def get(
         cache=cache,
         max_cache_age=max_cache_age,
         user_agent=user_agent,
-        allow_redirects=allow_redirects,
+        follow_redirects=follow_redirects,
         timeout=timeout,
         cookies=cookies,
     )
@@ -121,7 +121,7 @@ async def post(
         cache=False,
         max_cache_age=float('inf'),
         user_agent=False,
-        allow_redirects=True,
+        follow_redirects=True,
         timeout=_default_timeout,
         cookies=None,
     ):
@@ -168,7 +168,7 @@ async def post(
     :param bool cache: Whether to use cached response if available
     :param int,float max_cache_age: Maximum age of cache in seconds
     :param bool user_agent: Whether to send the User-Agent header
-    :param bool allow_redirects: Whether to follow redirects
+    :param bool follow_redirects: Whether to follow redirects
     :param int,float timeout: Maximum number of seconds the request may take
     :param cookies: Cookies to include in the request (merged with existing
         cookies in the global client session); see :func:`get`
@@ -187,7 +187,7 @@ async def post(
         cache=cache,
         max_cache_age=max_cache_age,
         user_agent=user_agent,
-        allow_redirects=allow_redirects,
+        follow_redirects=follow_redirects,
         timeout=timeout,
         cookies=cookies,
     )
@@ -282,7 +282,7 @@ async def _request(
         params={},
         data={},
         files={},
-        allow_redirects=True,
+        follow_redirects=True,
         cache=False,
         max_cache_age=float('inf'),
         auth=None,
@@ -305,6 +305,7 @@ async def _request(
         cookies=_load_cookies(cookies),
         params=params,
         files=_open_files(files),
+        timeout=timeout,
         **build_request_args,
     )
 
@@ -329,20 +330,20 @@ async def _request(
         try:
             response = await _client.send(
                 request=request,
-                timeout=timeout,
                 auth=auth,
-                allow_redirects=allow_redirects,
+                follow_redirects=follow_redirects,
             )
             try:
                 response.raise_for_status()
             except httpx.HTTPStatusError:
-                raise errors.RequestError(
-                    f'{url}: {html.as_text(response.text)}',
-                    url=url,
-                    text=response.text,
-                    headers=response.headers,
-                    status_code=response.status_code,
-                )
+                if response.status_code not in (301, 302, 303, 307, 308):
+                    raise errors.RequestError(
+                        f'{url}: {html.as_text(response.text)}',
+                        url=url,
+                        text=response.text,
+                        headers=response.headers,
+                        status_code=response.status_code,
+                    )
         except httpx.TimeoutException:
             raise errors.RequestError(f'{url}: Timeout')
         except httpx.HTTPError as e:

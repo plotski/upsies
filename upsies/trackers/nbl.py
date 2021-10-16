@@ -205,7 +205,7 @@ class NblTracker(base.TrackerBase):
         response = await http.post(
             url=upload_url,
             user_agent=True,
-            allow_redirects=False,
+            follow_redirects=False,
             files={'file_input': {
                 'file': metadata['torrent_filepath'],
                 'mimetype': 'application/x-bittorrent',

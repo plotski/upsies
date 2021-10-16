@@ -62,7 +62,7 @@ class AsyncMock(Mock):
 
 
 @pytest.mark.parametrize(
-    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects', 'timeout', 'cookies'),
+    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'follow_redirects', 'timeout', 'cookies'),
     argvalues=(
         (None, False, 123, False, True, 1, 'mock cookies a'),
         (('foo', 'bar'), False, 456, True, False, 2, 'mock cookies b'),
@@ -71,7 +71,7 @@ class AsyncMock(Mock):
     ),
 )
 @pytest.mark.asyncio
-async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, timeout, cookies, mocker):
+async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, follow_redirects, timeout, cookies, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     result = await http.get(
         url='http://localhost:123/foo',
@@ -81,7 +81,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, use
         cache=cache,
         max_cache_age=max_cache_age,
         user_agent=user_agent,
-        allow_redirects=allow_redirects,
+        follow_redirects=follow_redirects,
         timeout=timeout,
         cookies=cookies,
     )
@@ -95,7 +95,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, use
             cache=cache,
             max_cache_age=max_cache_age,
             user_agent=user_agent,
-            allow_redirects=allow_redirects,
+            follow_redirects=follow_redirects,
             timeout=timeout,
             cookies=cookies,
         )
@@ -103,7 +103,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, use
     assert result is request_mock.return_value
 
 @pytest.mark.parametrize(
-    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'allow_redirects', 'timeout', 'cookies'),
+    argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'follow_redirects', 'timeout', 'cookies'),
     argvalues=(
         (('a', 'b'), False, 0, False, False, 10, 'mock cookies A'),
         (None, False, 123, True, False, 20, 'mock cookies B'),
@@ -112,7 +112,7 @@ async def test_get_forwards_arguments_to_request(auth, cache, max_cache_age, use
     ),
 )
 @pytest.mark.asyncio
-async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, allow_redirects, timeout, cookies, mocker):
+async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, user_agent, follow_redirects, timeout, cookies, mocker):
     request_mock = mocker.patch('upsies.utils.http._request', new_callable=AsyncMock)
     result = await http.post(
         url='http://localhost:123/foo',
@@ -123,7 +123,7 @@ async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, us
         cache=cache,
         max_cache_age=max_cache_age,
         user_agent=user_agent,
-        allow_redirects=allow_redirects,
+        follow_redirects=follow_redirects,
         timeout=timeout,
         cookies=cookies,
     )
@@ -138,7 +138,7 @@ async def test_post_forwards_arguments_to_request(auth, cache, max_cache_age, us
             cache=cache,
             max_cache_age=max_cache_age,
             user_agent=user_agent,
-            allow_redirects=allow_redirects,
+            follow_redirects=follow_redirects,
             timeout=timeout,
             cookies=cookies,
         )
@@ -522,11 +522,11 @@ async def test_request_with_timeout_argument(method, timeout, response_delay, ex
         assert result == 'have this'
         assert isinstance(result, http.Result)
 
-@pytest.mark.parametrize('allow_redirects', (True, False))
+@pytest.mark.parametrize('follow_redirects', (True, False))
 @pytest.mark.parametrize('method', ('GET', 'POST'))
-@pytest.mark.parametrize('status_code', ('301', '302', '303'))
+@pytest.mark.parametrize('status_code', (301, 302, 303, 307, 308))
 @pytest.mark.asyncio
-async def test_request_with_allow_redirects(status_code, method, allow_redirects, mock_cache, httpserver):
+async def test_request_with_follow_redirects(status_code, method, follow_redirects, mock_cache, httpserver):
     class Handler(RequestHandler):
         def handle(self, request):
             if request.path == '/foo':
@@ -547,7 +547,7 @@ async def test_request_with_allow_redirects(status_code, method, allow_redirects
     )
     httpserver.expect_request(
         uri='/bar',
-        method='GET',
+        method='GET' if status_code in (301, 302, 303) else method,
     ).respond_with_handler(
         handler,
     )
@@ -555,9 +555,9 @@ async def test_request_with_allow_redirects(status_code, method, allow_redirects
     result = await http._request(
         method=method,
         url=httpserver.url_for('/foo'),
-        allow_redirects=allow_redirects,
+        follow_redirects=follow_redirects,
     )
-    if allow_redirects:
+    if follow_redirects:
         assert result == 'redirected'
     else:
         assert result == 'not redirected'
