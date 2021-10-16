@@ -1,4 +1,3 @@
-import asyncio
 from unittest.mock import Mock, call
 
 import pytest
@@ -57,7 +56,8 @@ def test_release_name_selected(tmp_path):
     assert cb.release_name.call_args_list == [call(job.release_name)]
 
 
-def test_fetch_info(tmp_path, mocker):
+@pytest.mark.asyncio
+async def test_fetch_info(tmp_path, mocker):
     job = ReleaseNameJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
@@ -73,7 +73,7 @@ def test_fetch_info(tmp_path, mocker):
     job.signal.register('release_name_updated', cb.release_name_updated)
     job.signal.register('release_name', cb.release_name)
     job.fetch_info('arg1', 'arg2', kw='arg3')
-    asyncio.get_event_loop().run_until_complete(job.await_tasks())
+    await job.await_tasks()
     assert job.release_name.fetch_info.call_args_list == [call(
         'arg1', 'arg2', kw='arg3',
     )]
@@ -81,7 +81,8 @@ def test_fetch_info(tmp_path, mocker):
     assert cb.release_name_updated.call_args_list == [call(job.release_name)]
     assert cb.release_name.call_args_list == []
 
-def test_fetch_info_raises_RequestError(tmp_path, mocker):
+@pytest.mark.asyncio
+async def test_fetch_info_raises_RequestError(tmp_path, mocker):
     job = ReleaseNameJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
@@ -97,13 +98,14 @@ def test_fetch_info_raises_RequestError(tmp_path, mocker):
     job.signal.register('release_name_updated', cb.release_name_updated)
     job.signal.register('release_name', cb.release_name)
     job.fetch_info('arg1', 'arg2', kw='arg3')
-    asyncio.get_event_loop().run_until_complete(job.wait())
+    await job.wait()
     assert job.errors == (errors.RequestError('No'),)
     assert cb.release_name_updating.call_args_list == [call()]
     assert cb.release_name_updated.call_args_list == []
     assert cb.release_name.call_args_list == []
 
-def test_fetch_info_raises_exception(tmp_path, mocker):
+@pytest.mark.asyncio
+async def test_fetch_info_raises_exception(tmp_path, mocker):
     job = ReleaseNameJob(
         home_directory=tmp_path,
         cache_directory=tmp_path,
@@ -120,7 +122,7 @@ def test_fetch_info_raises_exception(tmp_path, mocker):
     job.signal.register('release_name', cb.release_name)
     job.fetch_info('arg1', 'arg2', kw='arg3')
     with pytest.raises(Exception, match='^No$'):
-        asyncio.get_event_loop().run_until_complete(job.wait())
+        await job.wait()
     assert cb.release_name_updating.call_args_list == [call()]
     assert cb.release_name_updated.call_args_list == []
     assert cb.release_name.call_args_list == []

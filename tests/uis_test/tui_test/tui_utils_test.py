@@ -1,4 +1,3 @@
-import asyncio
 from unittest.mock import Mock, call
 
 import pytest
@@ -54,13 +53,15 @@ def test_is_tty(stdin, stdout, stderr, stdin_isatty, stdout_isatty, stderr_isatt
     assert utils.is_tty() is exp_is_tty
 
 
-def test_Throbber_active_argument():
+@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+async def test_Throbber_active_argument():
     throbber = utils.Throbber(active=1)
     assert throbber.active is True
     throbber = utils.Throbber(active=0)
     assert throbber.active is False
 
-def test_Throbber_active_property(mocker):
+@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+async def test_Throbber_active_property(mocker):
     mocker.patch('upsies.uis.tui.utils.Throbber._iterate')
     throbber = utils.Throbber()
     assert throbber.active is False
@@ -75,18 +76,20 @@ def test_Throbber_active_property(mocker):
     assert throbber.active is True
     assert throbber._iterate.call_args_list == [call(), call()]
 
-def test_Throbber_active_property_calls_iterate(mocker):
-    call_later_mock = mocker.patch.object(asyncio.get_event_loop(), 'call_later')
+@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+async def test_Throbber_active_property_calls_iterate(mocker, event_loop):
     throbber = utils.Throbber(interval=0)
+    call_later_mock = mocker.patch.object(throbber._loop, 'call_later')
     assert call_later_mock.call_args_list == []
     throbber.active = True
     assert call_later_mock.call_args_list == [call(0.0, throbber._iterate)]
 
 
-def test_Throbber_iterate_while_not_active(mocker):
-    call_later_mock = mocker.patch.object(asyncio.get_event_loop(), 'call_later')
+@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+async def test_Throbber_iterate_while_not_active(mocker):
     cb = Mock()
     throbber = utils.Throbber(callback=cb, interval=123, states=('a', 'b', 'c'))
+    call_later_mock = mocker.patch.object(throbber._loop, 'call_later')
     throbber._iterate()
     assert cb.call_args_list == []
     assert call_later_mock.call_args_list == []
@@ -97,11 +100,13 @@ def test_Throbber_iterate_while_not_active(mocker):
     assert cb.call_args_list == []
     assert call_later_mock.call_args_list == []
 
-def test_Throbber_iterate_while_active(mocker):
-    call_later_mock = mocker.patch.object(asyncio.get_event_loop(), 'call_later')
+
+@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+async def test_Throbber_iterate_while_active(mocker):
     cb = Mock()
     throbber = utils.Throbber(callback=cb, interval=123, states=('a', 'b', 'c'),
                               active=False, format='<{throbber}>')
+    call_later_mock = mocker.patch.object(throbber._loop, 'call_later')
     assert cb.call_args_list == []
     assert call_later_mock.call_args_list == []
     throbber.active = True

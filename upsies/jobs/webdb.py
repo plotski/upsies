@@ -239,7 +239,14 @@ class _Searcher:
         if self._search_task:
             self._search_task.cancel()
             self._search_task = None
-        self._search_task = asyncio.ensure_future(self._search(query))
+
+        # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
+        try:
+            self._search_task = asyncio.create_task(self._search(query))
+        except AttributeError:
+            # Python 3.6 doesn't have asyncio.create_task()
+            self._search_task = asyncio.ensure_future(self._search(query))
+
         self._search_task.add_done_callback(self._handle_search_task)
 
     async def _search(self, query):

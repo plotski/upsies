@@ -16,10 +16,6 @@ class AsyncMock(Mock):
         return coro()
 
 
-def run_async(awaitable):
-    return asyncio.get_event_loop().run_until_complete(awaitable)
-
-
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_name_argument(ReleaseInfo_mock, mocker):
     rn = ReleaseName('path/to/something', name='the real something')
@@ -1100,8 +1096,6 @@ async def test_fetch_info(guessed_type, found_type, exp_type, callback, mocker):
         assert callback.call_args_list == [call(rn)]
 
 
-@patch('upsies.utils.webdbs.imdb.ImdbApi')
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='guessed_type, imdb_type, exp_type',
     argvalues=(
@@ -1120,7 +1114,8 @@ async def test_fetch_info(guessed_type, found_type, exp_type, callback, mocker):
         (ReleaseType.episode, ReleaseType.unknown, ReleaseType.episode),
     ),
 )
-def test_update_attributes(ReleaseInfo_mock, ImdbApi_mock, guessed_type, imdb_type, exp_type):
+@pytest.mark.asyncio
+async def test_update_attributes(guessed_type, imdb_type, exp_type, mocker):
     id_mock = '12345'
     gather_mock = {
         'type': imdb_type,
@@ -1128,11 +1123,13 @@ def test_update_attributes(ReleaseInfo_mock, ImdbApi_mock, guessed_type, imdb_ty
         'title_english': 'The Foo',
         'year': '',
     }
-    ImdbApi_mock.return_value.gather = AsyncMock(return_value=gather_mock)
-    ReleaseInfo_mock.return_value = {'type': guessed_type}
+
     rn = ReleaseName('path/to/something')
+    mocker.patch.object(rn, '_info', {'type': guessed_type})
+    gather_mock = mocker.patch('upsies.utils.webdbs.imdb.ImdbApi.gather', AsyncMock(return_value=gather_mock))
+
     assert rn.type == guessed_type
-    run_async(rn._update_attributes(id_mock))
+    await rn._update_attributes(id_mock)
     assert rn.title == 'Le Foo'
     assert rn.title_aka == 'The Foo'
     if exp_type is ReleaseType.movie:
@@ -1140,13 +1137,11 @@ def test_update_attributes(ReleaseInfo_mock, ImdbApi_mock, guessed_type, imdb_ty
     else:
         assert rn.year == ''
     assert rn.type == exp_type
-    assert ImdbApi_mock.return_value.gather.call_args_list == [
+    assert gather_mock.call_args_list == [
         call(id_mock, 'type', 'title_english', 'title_original', 'year'),
     ]
 
 
-@patch('upsies.utils.webdbs.imdb.ImdbApi')
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
     argnames='type, results, exp_year_required',
     argvalues=(
@@ -1159,16 +1154,21 @@ def test_update_attributes(ReleaseInfo_mock, ImdbApi_mock, guessed_type, imdb_ty
     ),
     ids=lambda v: str(v),
 )
-def test_update_year_required(ReleaseInfo_mock, ImdbApi_mock, type, results, exp_year_required):
-    ImdbApi_mock.return_value.search = AsyncMock(return_value=results)
-    ReleaseInfo_mock.return_value = {'type': type, 'title': 'The Foo'}
+@pytest.mark.asyncio
+async def test_update_year_required(type, results, exp_year_required, mocker):
     rn = ReleaseName('path/to/something')
+    mocker.patch.object(rn, '_info', {'type': type, 'title': 'The Foo'})
+    mocker.patch('upsies.utils.webdbs.imdb.ImdbApi.search', AsyncMock(return_value=results))
+
     orig_year_required = rn.year_required
+
     if type is ReleaseType.movie:
         assert rn.year_required is True
     else:
         assert rn.year_required is False
-    run_async(rn._update_year_required())
+
+    await rn._update_year_required()
+
     if exp_year_required is None:
         assert rn.year_required is orig_year_required
     else:

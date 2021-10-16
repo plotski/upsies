@@ -27,7 +27,14 @@ class TUI:
         self._app = self._make_app()
         self._app_terminated = False
         self._exception = None
-        self._loop = asyncio.get_event_loop()
+
+        # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
+        try:
+            self._loop = asyncio.get_running_loop()
+        except AttributeError:
+            # Python 3.6 doesn't have get_running_loop()
+            self._loop = asyncio.get_event_loop()
+
         self._loop.set_exception_handler(self._handle_exception)
 
     def _handle_exception(self, loop, context):

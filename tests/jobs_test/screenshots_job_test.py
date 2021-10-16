@@ -323,8 +323,14 @@ def job(tmp_path, mocker):
     )
 
 
-def test_cache_id(tmp_path):
-    job = ScreenshotsJob(home_directory=tmp_path, cache_directory=tmp_path, content_path='some/path')
+# Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio
+async def test_cache_id(tmp_path):
+    job = ScreenshotsJob(
+        home_directory=tmp_path,
+        cache_directory=tmp_path,
+        content_path='some/path',
+    )
     assert job.cache_id is None
 
 

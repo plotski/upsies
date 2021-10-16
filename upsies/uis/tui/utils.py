@@ -39,6 +39,14 @@ class Throbber:
         self._interval = float(interval)
         self._callback = callback or None
         self._format = format
+
+        # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
+        try:
+            self._loop = asyncio.get_running_loop()
+        except AttributeError:
+            # Python 3.6 doesn't have get_running_loop()
+            self._loop = asyncio.get_event_loop()
+
         self.active = active
 
     @property
@@ -63,4 +71,4 @@ class Throbber:
         if self.active:
             if self._callback:
                 self._callback(self.next_state)
-            asyncio.get_event_loop().call_later(self._interval, self._iterate)
+            self._loop.call_later(self._interval, self._iterate)

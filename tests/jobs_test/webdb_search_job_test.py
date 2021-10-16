@@ -198,7 +198,15 @@ def test_WebDbSearchJob_execute_does_initial_search(job, mocker):
 async def test_WebDbSearchJob_wait(job):
     assert job._searcher.wait.call_args_list == []
     assert job._info_updater.wait.call_args_list == []
-    asyncio.get_event_loop().call_soon(job.finish)
+
+    # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
+    try:
+        aioloop = asyncio.get_running_loop()
+    except AttributeError:
+        # Python 3.6 doesn't have asyncio.get_running_loop()
+        aioloop = asyncio.get_event_loop()
+
+    aioloop.call_soon(job.finish)
     await job.wait()
     assert job.is_finished
     assert job._searcher.wait.call_args_list == [call()]
@@ -363,8 +371,9 @@ def test_Searcher_cancel_while_not_searching(searcher):
     assert searcher._search_task is None
 
 
-def test_Searcher_search_while_not_searching(searcher, mocker):
-    mocker.patch.object(searcher, '_search', Mock(return_value=AsyncMock()))
+@pytest.mark.asyncio
+async def test_Searcher_search_while_not_searching(searcher, mocker):
+    mocker.patch.object(searcher, '_search', return_value=AsyncMock())
     searcher._search_task = None
     searcher.search('mock query')
     assert searcher._search.call_args_list == [call('mock query')]
@@ -372,8 +381,9 @@ def test_Searcher_search_while_not_searching(searcher, mocker):
     assert not searcher._search_task.done()
     assert not searcher._search_task.cancelled()
 
-def test_Searcher_search_while_searching(searcher, mocker):
-    mocker.patch.object(searcher, '_search', Mock(return_value=AsyncMock()))
+@pytest.mark.asyncio
+async def test_Searcher_search_while_searching(searcher, mocker):
+    mocker.patch.object(searcher, '_search', return_value=AsyncMock())
     old_task = searcher._search_task = Mock()
     searcher.search('mock query')
     assert searcher._search.call_args_list == [call('mock query')]

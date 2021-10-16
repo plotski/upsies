@@ -16,7 +16,7 @@ def test_UploadedImage_thumbnail_url():
         thumbnail_url='http://url.to/image.thumbnail.jpg',
     )
     assert image.thumbnail_url == 'http://url.to/image.thumbnail.jpg'
-    with pytest.raises(AttributeError, match=r"^can't set attribute$"):
+    with pytest.raises(AttributeError, match=r"^can't set attribute(?: 'thumbnail_url'|)$"):
         image.thumbnail_url = 'foo'
     assert repr(image) == "UploadedImage('http://url.to/image.jpg', thumbnail_url='http://url.to/image.thumbnail.jpg')"
 
@@ -27,7 +27,7 @@ def test_UploadedImage_delete_url():
         delete_url='http://url.to/image.jpg/delete',
     )
     assert image.delete_url == 'http://url.to/image.jpg/delete'
-    with pytest.raises(AttributeError, match=r"^can't set attribute$"):
+    with pytest.raises(AttributeError, match=r"^can't set attribute(?: 'delete_url'|)$"):
         image.delete_url = 'foo'
     assert str(image) == 'http://url.to/image.jpg'
     assert repr(image) == "UploadedImage('http://url.to/image.jpg', delete_url='http://url.to/image.jpg/delete')"
@@ -39,7 +39,7 @@ def test_UploadedImage_edit_url():
         edit_url='http://url.to/image.jpg/edit',
     )
     assert image.edit_url == 'http://url.to/image.jpg/edit'
-    with pytest.raises(AttributeError, match=r"^can't set attribute$"):
+    with pytest.raises(AttributeError, match=r"^can't set attribute(?: 'edit_url'|)$"):
         image.edit_url = 'foo'
     assert str(image) == 'http://url.to/image.jpg'
     assert repr(image) == "UploadedImage('http://url.to/image.jpg', edit_url='http://url.to/image.jpg/edit')"

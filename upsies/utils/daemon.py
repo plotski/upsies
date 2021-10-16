@@ -53,7 +53,13 @@ class DaemonProcess:
         self._process = None
         self._read_queue_reader_task = None
         self._exception = None
-        self._loop = asyncio.get_event_loop()
+
+        # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
+        try:
+            self._loop = asyncio.get_running_loop()
+        except AttributeError:
+            # Python 3.6 doesn't have get_running_loop()
+            self._loop = asyncio.get_event_loop()
 
     def start(self):
         """Start the process"""
