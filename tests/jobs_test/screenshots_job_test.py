@@ -323,8 +323,7 @@ def job(tmp_path, mocker):
     )
 
 
-# Prevent "RuntimeError: no running event loop"
-@pytest.mark.asyncio
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_cache_id(tmp_path):
     job = ScreenshotsJob(
         home_directory=tmp_path,

@@ -77,7 +77,8 @@ def test_WebDbSearchJob_query(job):
     assert job.query is job._query
 
 
-def test_WebDbSearchJob_initialize_sets_query_from_path(tmp_path, foodb):
+@pytest.mark.asyncio  # Ensure aioloop exists
+async def test_WebDbSearchJob_initialize_sets_query_from_path(tmp_path, foodb):
     foodb.sanitize_query.return_value = Query('this query')
     job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
@@ -90,7 +91,8 @@ def test_WebDbSearchJob_initialize_sets_query_from_path(tmp_path, foodb):
         call(Query.from_path('path/to/foo')),
     ]
 
-def test_WebDbSearchJob_initialize_sets_query_from_Query(tmp_path, foodb):
+@pytest.mark.asyncio  # Ensure aioloop exists
+async def test_WebDbSearchJob_initialize_sets_query_from_Query(tmp_path, foodb):
     foodb.sanitize_query.return_value = Query('this query')
     job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
@@ -103,7 +105,8 @@ def test_WebDbSearchJob_initialize_sets_query_from_Query(tmp_path, foodb):
         call(Query(title='The Foo', year=2010)),
     ]
 
-def test_WebDbSearchJob_initialize_creates_searcher(tmp_path, mocker, foodb):
+@pytest.mark.asyncio  # Ensure aioloop exists
+async def test_WebDbSearchJob_initialize_creates_searcher(tmp_path, mocker, foodb):
     Searcher_mock = mocker.patch('upsies.jobs.webdb._Searcher', Mock())
     job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
@@ -121,7 +124,8 @@ def test_WebDbSearchJob_initialize_creates_searcher(tmp_path, mocker, foodb):
         searching_callback=job._handle_searching_status,
     )]
 
-def test_WebDbSearchJob_initialize_creates_info_updater(tmp_path, mocker, foodb):
+@pytest.mark.asyncio  # Ensure aioloop exists
+async def test_WebDbSearchJob_initialize_creates_info_updater(tmp_path, mocker, foodb):
     InfoUpdater_mock = mocker.patch('upsies.jobs.webdb._InfoUpdater', Mock())
     make_update_info_func_mock = mocker.patch(
         'upsies.jobs.webdb.WebDbSearchJob._make_update_info_func',
@@ -172,7 +176,8 @@ def test_WebDbSearchJob_initialize_creates_info_updater(tmp_path, mocker, foodb)
     ]
 
 
-def test_WebDbSearchJob_make_update_info_func(tmp_path, mocker, foodb):
+@pytest.mark.asyncio  # Ensure aioloop exists
+async def test_WebDbSearchJob_make_update_info_func(tmp_path, mocker, foodb):
     mocker.patch('upsies.jobs.webdb.WebDbSearchJob._update_info')
     job = webdb.WebDbSearchJob(
         home_directory=tmp_path,
@@ -196,18 +201,10 @@ def test_WebDbSearchJob_execute_does_initial_search(job, mocker):
 
 
 @pytest.mark.asyncio
-async def test_WebDbSearchJob_wait(job):
+async def test_WebDbSearchJob_wait(job, event_loop):
     assert job._searcher.wait.call_args_list == []
     assert job._info_updater.wait.call_args_list == []
-
-    # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
-    try:
-        aioloop = asyncio.get_running_loop()
-    except AttributeError:
-        # Python 3.6 doesn't have asyncio.get_running_loop()
-        aioloop = asyncio.get_event_loop()
-
-    aioloop.call_soon(job.finish)
+    event_loop.call_soon(job.finish)
     await job.wait()
     assert job.is_finished
     assert job._searcher.wait.call_args_list == [call()]
@@ -372,10 +369,10 @@ def test_Searcher_cancel_while_not_searching(searcher):
     assert searcher._search_task is None
 
 
-@pytest.mark.skipif(sys.version_info[:2] == (3, 7), reason='Python 3.7 is silly')
+@pytest.mark.skipif(sys.version_info[:2] == (3, 7), reason='Python 3.7 fails to recoginize AsyncMock as awaitable')
 @pytest.mark.asyncio
 async def test_Searcher_search_while_not_searching(searcher, mocker):
-    mocker.patch.object(searcher, '_search', return_value=AsyncMock())
+    mocker.patch.object(searcher, '_search', return_value=AsyncMock)
     searcher._search_task = None
     searcher.search('mock query')
     assert searcher._search.call_args_list == [call('mock query')]
@@ -383,10 +380,10 @@ async def test_Searcher_search_while_not_searching(searcher, mocker):
     assert not searcher._search_task.done()
     assert not searcher._search_task.cancelled()
 
-@pytest.mark.skipif(sys.version_info[:2] == (3, 7), reason='Python 3.7 is silly')
+@pytest.mark.skipif(sys.version_info[:2] == (3, 7), reason='Python 3.7 fails to recoginize AsyncMock as awaitable')
 @pytest.mark.asyncio
 async def test_Searcher_search_while_searching(searcher, mocker):
-    mocker.patch.object(searcher, '_search', return_value=AsyncMock())
+    mocker.patch.object(searcher, '_search', return_value=AsyncMock)
     old_task = searcher._search_task = Mock()
     searcher.search('mock query')
     assert searcher._search.call_args_list == [call('mock query')]

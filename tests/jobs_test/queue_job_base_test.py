@@ -189,34 +189,34 @@ async def test_finish_with_running_read_queue_task(qjob):
 
 
 @pytest.mark.asyncio
-async def test_wait_without_running_read_queue_task(qjob):
+async def test_wait_without_running_read_queue_task(qjob, event_loop):
     assert qjob._read_queue_task is None
     assert not qjob.is_finished
-    asyncio.get_event_loop().call_soon(qjob.start)
-    asyncio.get_event_loop().call_soon(qjob.finish)
+    event_loop.call_soon(qjob.start)
+    event_loop.call_soon(qjob.finish)
     await qjob.wait()
     assert qjob.is_finished
     assert qjob.errors == ()
 
 @pytest.mark.asyncio
-async def test_wait_awaits_read_queue_task(qjob):
+async def test_wait_awaits_read_queue_task(qjob, event_loop):
     qjob.start()
     assert qjob._read_queue_task is not None
     assert not qjob.is_finished
-    asyncio.get_event_loop().call_soon(qjob.finalize)
+    event_loop.call_soon(qjob.finalize)
     await qjob.wait()
     assert qjob.is_finished
     assert qjob.errors == ()
     assert qjob._read_queue_task.done()
 
 @pytest.mark.asyncio
-async def test_wait_handles_CancelledError_from_read_queue_task(qjob):
+async def test_wait_handles_CancelledError_from_read_queue_task(qjob, event_loop):
     qjob.start()
     assert qjob._read_queue_task is not None
     for i in range(1000):
         qjob.enqueue(i)
     assert not qjob.is_finished
-    asyncio.get_event_loop().call_soon(qjob.finish)
+    event_loop.call_soon(qjob.finish)
     await qjob.wait()
     assert qjob.is_finished
     assert qjob.exit_code == 1

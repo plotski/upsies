@@ -42,7 +42,7 @@ def test_cache_id(make_SceneCheckJob):
     ids=lambda v: str(v),
 )
 @pytest.mark.asyncio
-async def test_catch_errors_reports_SceneError(exc, msg, exp_exc, exp_msg, make_SceneCheckJob, mocker):
+async def test_catch_errors_reports_SceneError(exc, msg, exp_exc, exp_msg, make_SceneCheckJob, mocker, event_loop):
     async def coro():
         if exc:
             raise exc(msg)
@@ -51,12 +51,12 @@ async def test_catch_errors_reports_SceneError(exc, msg, exp_exc, exp_msg, make_
     await job._catch_errors(coro())
 
     if exp_exc:
-        asyncio.get_event_loop().call_soon(job.finish)
+        event_loop.call_soon(job.finish)
         with pytest.raises(exp_exc, match=rf'^{exp_msg}$'):
             await job.wait()
     else:
         if not exc:
-            asyncio.get_event_loop().call_soon(job.finish)
+            event_loop.call_soon(job.finish)
         await job.wait()
         assert job.errors == ((exc(msg),) if exc else ())
         assert job.is_finished

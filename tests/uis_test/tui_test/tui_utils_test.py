@@ -53,14 +53,14 @@ def test_is_tty(stdin, stdout, stderr, stdin_isatty, stdout_isatty, stderr_isatt
     assert utils.is_tty() is exp_is_tty
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_Throbber_active_argument():
     throbber = utils.Throbber(active=1)
     assert throbber.active is True
     throbber = utils.Throbber(active=0)
     assert throbber.active is False
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_Throbber_active_property(mocker):
     mocker.patch('upsies.uis.tui.utils.Throbber._iterate')
     throbber = utils.Throbber()
@@ -76,7 +76,7 @@ async def test_Throbber_active_property(mocker):
     assert throbber.active is True
     assert throbber._iterate.call_args_list == [call(), call()]
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_Throbber_active_property_calls_iterate(mocker, event_loop):
     throbber = utils.Throbber(interval=0)
     call_later_mock = mocker.patch.object(throbber._loop, 'call_later')
@@ -85,7 +85,7 @@ async def test_Throbber_active_property_calls_iterate(mocker, event_loop):
     assert call_later_mock.call_args_list == [call(0.0, throbber._iterate)]
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_Throbber_iterate_while_not_active(mocker):
     cb = Mock()
     throbber = utils.Throbber(callback=cb, interval=123, states=('a', 'b', 'c'))
@@ -101,7 +101,7 @@ async def test_Throbber_iterate_while_not_active(mocker):
     assert call_later_mock.call_args_list == []
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_Throbber_iterate_while_active(mocker):
     cb = Mock()
     throbber = utils.Throbber(callback=cb, interval=123, states=('a', 'b', 'c'),

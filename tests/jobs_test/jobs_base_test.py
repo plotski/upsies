@@ -206,12 +206,12 @@ def test_start_executes_job_if_no_cached_output_is_found(job):
 
 
 @pytest.mark.asyncio
-async def test_wait_returns_when_finish_is_called(tmp_path):
+async def test_wait_returns_when_finish_is_called(tmp_path, event_loop):
     class BarJob(FooJob):
         calls = collections.deque()
 
         def execute(self):
-            asyncio.get_event_loop().call_later(0.1, self.finish)
+            event_loop.call_later(0.1, self.finish)
 
         def finish(self):
             self.calls.append('finish() called')
@@ -282,8 +282,8 @@ async def test_finish(is_started, is_finished, is_enabled, exp_finished, job, mo
 
 
 @pytest.mark.asyncio
-async def test_is_finished(job):
-    asyncio.get_event_loop().call_soon(job.finish)
+async def test_is_finished(job, event_loop):
+    event_loop.call_soon(job.finish)
     job.start()
     assert job.is_finished is False
     await job.wait()

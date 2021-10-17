@@ -38,7 +38,7 @@ def mock_JobWidget(mocker):
     mocker.patch('upsies.uis.tui.jobwidgets.JobWidget', Mock(return_value=job_widget))
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_add_jobs_does_not_add_same_job_twice(mocker):
     jobs = (Mock(), Mock(), Mock(), Mock())
     for job, name in zip(jobs, ('a', 'b', 'b', 'c')):
@@ -50,7 +50,7 @@ async def test_add_jobs_does_not_add_same_job_twice(mocker):
         ui.add_jobs(*jobs)
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_add_jobs_creates_JobWidgets(mocker):
     jobs = (Mock(), Mock(), Mock())
     JobWidget_mock = mocker.patch('upsies.uis.tui.jobwidgets.JobWidget')
@@ -72,7 +72,7 @@ async def test_add_jobs_creates_JobWidgets(mocker):
         call(JobWidget_mock.return_value),
     ]
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_add_jobs_registers_signals(mocker):
     jobs = (Mock(), Mock(), Mock())
     for job, name in zip(jobs, ('a', 'b', 'c')):
@@ -99,7 +99,7 @@ async def test_add_jobs_registers_signals(mocker):
                 call('finished', ui._exit_if_job_failed),
             ]
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_add_jobs_calls_update_jobs_container(mocker):
     ui = TUI()
     mocker.patch.object(ui, '_update_jobs_container')
@@ -107,7 +107,7 @@ async def test_add_jobs_calls_update_jobs_container(mocker):
     assert ui._update_jobs_container.call_args_list == [call()]
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_update_jobs_container_autostarts_enabled_jobs():
     jobs = (
         (Mock(autostart=False, is_enabled=False, is_started=False), False),
@@ -130,7 +130,7 @@ async def test_update_jobs_container_autostarts_enabled_jobs():
         else:
             assert job.start.call_args_list == []
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_update_jobs_container_sorts_interactive_jobs_above_background_jobs():
     ui = TUI()
     ui._jobs = {
@@ -149,7 +149,7 @@ async def test_update_jobs_container_sorts_interactive_jobs_above_background_job
         ui._jobs['d'].container,
     ]
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_update_jobs_container_only_adds_first_unfinished_job_and_focuses_it_if_no_job_has_errors():
     ui = TUI()
     ui._jobs = {
@@ -182,7 +182,7 @@ async def test_update_jobs_container_only_adds_first_unfinished_job_and_focuses_
     assert_jobs_container('ai', 'ci', 'gi', 'bn', 'dn', focused='gi')
 
 @pytest.mark.parametrize('failed_job_name', ('ai', 'bn', 'ci', 'dn', 'ei', 'fn', 'gi'))
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_update_jobs_container_adds_all_jobs_it_if_one_job_has_errors(failed_job_name):
     ui = TUI()
     ui._jobs = {
@@ -208,7 +208,7 @@ async def test_update_jobs_container_adds_all_jobs_it_if_one_job_has_errors(fail
     assert_jobs_container('ai', 'ci', 'gi', 'bn', 'dn', focused='ai')
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_run_calls_add_jobs(mocker):
     ui = TUI()
     mocker.patch.object(ui, 'add_jobs')
@@ -216,7 +216,7 @@ async def test_run_calls_add_jobs(mocker):
     ui.run(('a', 'b', 'c'))
     assert ui.add_jobs.call_args_list == [call('a', 'b', 'c')]
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_run_runs_application(mocker):
     ui = TUI()
     mocker.patch.object(ui, 'add_jobs')
@@ -224,7 +224,7 @@ async def test_run_runs_application(mocker):
     ui.run(('a', 'b', 'c'))
     assert ui._app.run.call_args_list == [call(set_exception_handler=False)]
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_run_raises_stored_exception(mocker):
     ui = TUI()
     mocker.patch.object(ui, 'add_jobs')
@@ -233,7 +233,7 @@ async def test_run_raises_stored_exception(mocker):
     with pytest.raises(ValueError, match=r'^foo$'):
         ui.run(('a', 'b', 'c'))
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_run_returns_first_nonzero_job_exit_code(mocker):
     ui = TUI()
     ui._jobs = {
@@ -248,7 +248,7 @@ async def test_run_returns_first_nonzero_job_exit_code(mocker):
     exit_code = ui.run(('a', 'b', 'c'))
     assert exit_code == 1
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_run_returns_zero_if_all_jobs_finished_successfully(mocker):
     ui = TUI()
     ui._jobs = {
@@ -264,7 +264,7 @@ async def test_run_returns_zero_if_all_jobs_finished_successfully(mocker):
     assert exit_code == 0
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_exit_if_all_jobs_finished(mocker):
     ui = TUI()
     ui._jobs = {
@@ -284,7 +284,7 @@ async def test_exit_if_all_jobs_finished(mocker):
     assert ui._exit.call_args_list == [call()]
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_exit_if_job_failed_does_nothing_if_job_is_not_finished(mocker):
     ui = TUI()
     mocker.patch.object(ui, '_exit')
@@ -293,14 +293,14 @@ async def test_exit_if_job_failed_does_nothing_if_job_is_not_finished(mocker):
     ui._exit_if_job_failed(Mock(is_finished=False, exit_code=123, exceptions=()))
     assert ui._exit.call_args_list == []
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_exit_if_job_failed_does_nothing_if_exit_code_is_zero(mocker):
     ui = TUI()
     mocker.patch.object(ui, '_exit')
     ui._exit_if_job_failed(Mock(is_finished=True, exit_code=0, exceptions=()))
     assert ui._exit.call_args_list == []
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_exit_if_job_failed_calls_exit_if_exit_code_is_nonzero(mocker):
     ui = TUI()
     mocker.patch.object(ui, '_exit')
@@ -309,7 +309,7 @@ async def test_exit_if_job_failed_calls_exit_if_exit_code_is_nonzero(mocker):
     assert ui._exit.call_args_list == [call()]
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_exit_does_nothing_if_already_exited(mocker):
     ui = TUI()
     ui._app_terminated = True
@@ -318,7 +318,7 @@ async def test_exit_does_nothing_if_already_exited(mocker):
     assert ui._terminate_jobs.call_args_list == []
     assert ui._app_terminated is True
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_exit_waits_for_application_to_run(mocker):
     ui = TUI()
     mocker.patch.object(ui, '_terminate_jobs', AsyncMock())
@@ -394,7 +394,7 @@ async def test_terminate_jobs(callback, mocker):
         assert callback.call_args_list == [call()]
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_finish_jobs():
     ui = TUI()
     ui._jobs = {
@@ -410,7 +410,7 @@ async def test_finish_jobs():
     assert ui._jobs['d'].job.finish.call_args_list == []
 
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_get_exception_from_loop_exception_handler():
     ui = TUI()
     ui._exception = ValueError('asdf')
@@ -424,7 +424,7 @@ async def test_get_exception_from_loop_exception_handler():
     assert isinstance(exc, ValueError)
     assert str(exc) == 'asdf'
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_get_exception_from_first_failed_enabled_job():
     ui = TUI()
     ui._exception = None
@@ -438,7 +438,7 @@ async def test_get_exception_from_first_failed_enabled_job():
     assert isinstance(exc, ValueError)
     assert str(exc) == 'bar'
 
-@pytest.mark.asyncio  # Prevent "RuntimeError: no running event loop"
+@pytest.mark.asyncio  # Ensure aioloop exists
 async def test_get_exception_returns_None_if_no_exception_raised():
     ui = TUI()
     ui._exception = None
