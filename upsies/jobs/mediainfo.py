@@ -2,8 +2,6 @@
 Wrapper for ``mediainfo`` command
 """
 
-import asyncio
-
 from .. import errors
 from ..utils import fs, get_aioloop, video
 from . import JobBase

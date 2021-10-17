@@ -7,7 +7,6 @@ returns `False`.
 Headless usage is limited to :attr:`~.jobs.base.JobBase.hidden` jobs.
 """
 
-import asyncio
 import sys
 
 from ... import errors, utils

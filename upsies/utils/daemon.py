@@ -2,7 +2,6 @@
 Background workers to keep the UI responsive
 """
 
-import asyncio
 import enum
 import functools
 import multiprocessing
