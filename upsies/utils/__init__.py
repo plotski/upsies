@@ -13,6 +13,7 @@ import types as _types
 
 
 def get_aioloop():
+    """Return :class:`asyncio.AbstractEventLoop` instance"""
     # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
     try:
         return asyncio.get_running_loop()
