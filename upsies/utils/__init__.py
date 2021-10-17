@@ -2,6 +2,7 @@
 Swiss Army knife
 """
 
+import asyncio
 import collections
 import importlib
 import inspect
@@ -9,6 +10,18 @@ import itertools
 import os
 import sys
 import types as _types
+
+
+def get_aioloop():
+    # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
+    try:
+        return asyncio.get_running_loop()
+    except RuntimeError:
+        # ...
+        return asyncio.get_event_loop()
+    except AttributeError:
+        # Python 3.6 doesn't have get_running_loop()
+        return asyncio.get_event_loop()
 
 
 def os_family():

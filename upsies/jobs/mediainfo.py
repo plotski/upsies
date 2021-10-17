@@ -5,7 +5,7 @@ Wrapper for ``mediainfo`` command
 import asyncio
 
 from .. import errors
-from ..utils import fs, video
+from ..utils import fs, get_aioloop, video
 from . import JobBase
 
 import logging  # isort:skip
@@ -48,7 +48,7 @@ class MediainfoJob(JobBase):
         )
 
     async def _get_mediainfo(self):
-        loop = asyncio.get_event_loop()
+        loop = get_aioloop()
         try:
             mediainfo = await loop.run_in_executor(None, lambda: video.mediainfo(self._content_path))
         except errors.ContentError as e:

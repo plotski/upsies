@@ -37,4 +37,4 @@ def application_shutdown(config):
         max_total_size=config['config']['main']['max_cache_size'],
     )
 
-    asyncio.get_event_loop().run_until_complete(utils.http.close())
+    utils.get_aioloop().run_until_complete(utils.http.close())

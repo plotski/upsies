@@ -7,7 +7,7 @@ import collections
 from time import monotonic as time_monotonic
 
 from .. import errors
-from ..utils import webdbs
+from ..utils import get_aioloop, webdbs
 from . import JobBase
 
 import logging  # isort:skip
@@ -210,6 +210,7 @@ class _Searcher:
         self._exception_callback = exception_callback
         self._previous_search_time = 0
         self._search_task = None
+        self._loop = get_aioloop()
 
     async def wait(self):
         if self._search_task:
@@ -239,14 +240,7 @@ class _Searcher:
         if self._search_task:
             self._search_task.cancel()
             self._search_task = None
-
-        # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
-        try:
-            self._search_task = asyncio.create_task(self._search(query))
-        except AttributeError:
-            # Python 3.6 doesn't have asyncio.create_task()
-            self._search_task = asyncio.ensure_future(self._search(query))
-
+        self._search_task = self._loop.create_task(self._search(query))
         self._search_task.add_done_callback(self._handle_search_task)
 
     async def _search(self, query):

@@ -10,7 +10,7 @@ Headless usage is limited to :attr:`~.jobs.base.JobBase.hidden` jobs.
 import asyncio
 import sys
 
-from ... import errors
+from ... import errors, utils
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ class Headless:
     def __init__(self):
         self._jobs = {}
         self._exception = None
-        self._loop = asyncio.get_event_loop()
+        self._loop = get_aioloop()
 
     def add_jobs(self, *jobs):
         """Add :class:`~.jobs.base.JobBase` instances"""

@@ -2,7 +2,6 @@
 Interactive text user interface and job manager
 """
 
-import asyncio
 import collections
 import types
 
@@ -11,6 +10,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout import Layout
 from prompt_toolkit.layout.containers import HSplit, Window, to_container
 
+from ... import utils
 from . import jobwidgets, style
 
 import logging  # isort:skip
@@ -27,14 +27,7 @@ class TUI:
         self._app = self._make_app()
         self._app_terminated = False
         self._exception = None
-
-        # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
-        try:
-            self._loop = asyncio.get_running_loop()
-        except AttributeError:
-            # Python 3.6 doesn't have get_running_loop()
-            self._loop = asyncio.get_event_loop()
-
+        self._loop = utils.get_aioloop()
         self._loop.set_exception_handler(self._handle_exception)
 
     def _handle_exception(self, loop, context):

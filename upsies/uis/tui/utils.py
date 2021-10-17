@@ -2,6 +2,8 @@ import asyncio
 import itertools
 import sys
 
+from ... import utils
+
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
@@ -39,14 +41,7 @@ class Throbber:
         self._interval = float(interval)
         self._callback = callback or None
         self._format = format
-
-        # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
-        try:
-            self._loop = asyncio.get_running_loop()
-        except AttributeError:
-            # Python 3.6 doesn't have get_running_loop()
-            self._loop = asyncio.get_event_loop()
-
+        self._loop = utils.get_aioloop()
         self.active = active
 
     @property

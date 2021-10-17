@@ -7,7 +7,7 @@ import sys
 
 from ... import (__homepage__, __project_name__, application_setup,
                  application_shutdown, errors)
-from ...utils import update
+from ...utils import get_aioloop, update
 from . import commands, utils
 
 
@@ -16,7 +16,7 @@ def main(args=None):
 
 
 def _main(args=None):
-    aioloop = asyncio.get_event_loop()
+    aioloop = get_aioloop()
     get_newer_version_task = None
     cmd = None
 

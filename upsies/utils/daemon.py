@@ -9,6 +9,7 @@ import multiprocessing
 import pickle
 
 from .. import errors
+from . import get_aioloop
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -53,13 +54,7 @@ class DaemonProcess:
         self._process = None
         self._read_queue_reader_task = None
         self._exception = None
-
-        # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
-        try:
-            self._loop = asyncio.get_running_loop()
-        except AttributeError:
-            # Python 3.6 doesn't have get_running_loop()
-            self._loop = asyncio.get_event_loop()
+        self._loop = get_aioloop()
 
     def start(self):
         """Start the process"""
