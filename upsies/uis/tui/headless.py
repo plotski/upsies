@@ -20,7 +20,7 @@ class Headless:
     def __init__(self):
         self._jobs = {}
         self._exception = None
-        self._loop = get_aioloop()
+        self._loop = utils.get_aioloop()
 
     def add_jobs(self, *jobs):
         """Add :class:`~.jobs.base.JobBase` instances"""
