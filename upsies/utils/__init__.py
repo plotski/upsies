@@ -19,8 +19,8 @@ def get_aioloop():
         return asyncio.get_running_loop()
     except RuntimeError:
         # RuntimeError("no running event loop")
-        # FIXME: This is probably wrong but works for now.
-        return asyncio.new_event_loop()
+        # FIXME: This is wrong but works for now.
+        return asyncio.get_event_loop()
     except AttributeError:
         # Python 3.6 doesn't have get_running_loop()
         return asyncio.get_event_loop()
