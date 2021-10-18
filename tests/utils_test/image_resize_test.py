@@ -136,6 +136,7 @@ def test_resize_with_uncopyable_target_filepath(mocker, tmp_path):
     mocker.patch('upsies.utils.fs.assert_file_readable')
     mocker.patch('upsies.utils.image._ffmpeg_executable', return_value='ffmpeg')
     mocker.patch('shutil.copy2', side_effect=OSError('argh'))
+    mocker.patch('upsies.utils.fs.mkdir')
     run_mock = mocker.patch('upsies.utils.subproc.run')
     exp_error = 'Failed to copy image/does/not/exist.jpg to image/does/not/resized.jpg: argh'
     with pytest.raises(errors.ImageResizeError, match=rf'^{exp_error}$'):
@@ -146,5 +147,6 @@ def test_resize_with_failed_ffmpeg_command(mocker):
     mocker.patch('upsies.utils.fs.assert_file_readable')
     mocker.patch('upsies.utils.subproc.run', return_value='The error message')
     mocker.patch('os.path.exists', return_value=False)
+    mocker.patch('upsies.utils.fs.mkdir')
     with pytest.raises(errors.ImageResizeError, match=r'^Failed to resize: The error message$'):
         image.resize('a.jpg', 10, 20)
