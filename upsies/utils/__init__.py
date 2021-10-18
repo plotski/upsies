@@ -14,13 +14,15 @@ import types as _types
 
 def get_aioloop():
     """Return :class:`asyncio.AbstractEventLoop` instance"""
-    # https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.get_event_loop
+    # https://docs.python.org/3.10/library/asyncio-eventloop.html
     try:
         return asyncio.get_running_loop()
+    # "no running event loop"
     except RuntimeError:
-        # RuntimeError("no running event loop")
-        # FIXME: This is wrong but works for now.
-        return asyncio.get_event_loop()
+        # We need a loop before the application has started.
+        # This mimics get_event_loop(), but that is going to be an alias for
+        # get_running_loop() in future Python releases.
+        return asyncio.get_event_loop_policy().get_event_loop()
     except AttributeError:
         # Python 3.6 doesn't have get_running_loop()
         return asyncio.get_event_loop()
