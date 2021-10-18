@@ -22,7 +22,7 @@ class FreeimageImageHost(ImageHostBase):
         'apikey': '6d207e02198a847aa98d0a2a901485a5',
     }
 
-    async def _upload(self, image_path):
+    async def _upload_image(self, image_path):
         try:
             response = await http.post(
                 url=self.options['base_url'] + '/api/1/upload',
@@ -57,9 +57,6 @@ class FreeimageImageHost(ImageHostBase):
         info = response.json()
         _log.debug('%s: JSON: %r', self.name, info)
         try:
-            return {
-                'url': info['image']['image']['url'],
-                'thumbnail_url': info['image']['medium']['url'],
-            }
+            return info['image']['image']['url']
         except KeyError:
             raise RuntimeError(f'Unexpected response: {response}')

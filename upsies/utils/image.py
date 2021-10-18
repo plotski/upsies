@@ -154,7 +154,6 @@ def resize(image_file, width=0, height=0, target_directory=None, target_filename
             return utils.fs.dirname(image_file)
 
     target_filepath = os.path.join(get_target_directory(), get_target_filename())
-    _log.debug('Resize target: %r', target_filepath)
 
     if not width and not height:
         # Nothing to resize
@@ -181,7 +180,6 @@ def resize(image_file, width=0, height=0, target_directory=None, target_filename
         f'{k[0]}={v if v else -1}'
         for k, v in dimensions_map.items()
     )
-    _log.debug('Resizing to %r: %r', ffmpeg_params, image_file)
     cmd = _make_resize_cmd(image_file, ffmpeg_params, target_filepath)
     output = utils.subproc.run(cmd, ignore_errors=True, join_stderr=True)
     if not os.path.exists(target_filepath):

@@ -5,11 +5,10 @@ Base class for image uploaders
 import abc
 import collections
 import copy
-import json
 import os
 
 from ... import constants, errors
-from .. import fs
+from .. import fs, image
 from . import common
 
 import logging  # isort:skip
@@ -20,7 +19,7 @@ class ImageHostBase(abc.ABC):
     """
     Base class for image uploaders
 
-    :param str cache_directory: Where to store URLs in JSON files; defaults to
+    :param str cache_directory: Where to cache URLs; defaults to
         :attr:`.constants.CACHE_DIRPATH`
     :param options: User configuration options for this image host,
         e.g. authentication details, thumbnail size, etc
@@ -28,7 +27,8 @@ class ImageHostBase(abc.ABC):
     """
 
     def __init__(self, cache_directory=None, options=None):
-        self._options = copy.deepcopy(self.default_config)
+        self._options = copy.deepcopy(self._default_config_base)
+        self._options.update(self.default_config)
         if options is not None:
             self._options.update(options)
         self.cache_directory = cache_directory if cache_directory else constants.CACHE_DIRPATH
@@ -57,6 +57,10 @@ class ImageHostBase(abc.ABC):
         """
         return self._options
 
+    _default_config_base = {
+        'thumb_width': 0,  # No thumbnail
+    }
+
     default_config = {}
     """Default user configuration"""
 
@@ -65,64 +69,70 @@ class ImageHostBase(abc.ABC):
 
     async def upload(self, image_path, cache=True):
         """
-        Upload image to gallery
+        Upload image file
 
-        :param str image_path: Path to image file
-        :param bool cache: Whether to attempt to get the image URL from cache or
-            cache it
+        :param image_path: Path to image file
+        :param bool cache: Whether to attempt to get the image URL from cache
 
         :raise RequestError: if the upload fails
 
         :return: :class:`~.imghost.common.UploadedImage`
         """
-        info = self._get_info_from_cache(image_path) if cache else {}
-        if not info:
+        info = {
+            'url': await self._get_image_url(image_path, cache=cache),
+        }
+
+        thumb_width = self.options['thumb_width']
+        if thumb_width:
             try:
-                info = await self._upload(image_path)
-            except errors.RequestError as e:
+                thumbnail_path = image.resize(
+                    image_path,
+                    width=thumb_width,
+                    target_directory=self.cache_directory,
+                )
+            except errors.ImageResizeError as e:
                 raise errors.RequestError(f'{image_path}: {e}')
             else:
-                _log.debug('Uploaded %r: %r', image_path, info)
-                self._store_info_to_cache(image_path, info)
-
-        if 'url' not in info:
-            raise RuntimeError(f'Missing "url" key in {info}')
+                info['thumbnail_url'] = await self._get_image_url(thumbnail_path, cache=cache)
 
         return common.UploadedImage(**info)
 
+    async def _get_image_url(self, image_path, cache=True):
+        url = self._get_url_from_cache(image_path) if cache else None
+        if not url:
+            try:
+                url = await self._upload_image(image_path)
+            except errors.RequestError as e:
+                raise errors.RequestError(f'{image_path}: {e}')
+            else:
+                _log.debug('Uploaded %r: %r', image_path, url)
+                self._store_url_to_cache(image_path, url)
+        else:
+            _log.debug('Got URL from cache: %r: %r', image_path, url)
+        return url
+
     @abc.abstractmethod
-    async def _upload(self, image_path):
-        """
-        Upload a single image
+    async def _upload_image(self, image_path):
+        """Upload `image_path` and return URL to the image file"""
 
-        :param str image_path: Path to an image file
-
-        :return: Dictionary that must contain an "url" key
-        """
-
-    def _get_info_from_cache(self, image_path):
+    def _get_url_from_cache(self, image_path):
         cache_file = self._cache_file(image_path)
         if os.path.exists(cache_file):
             _log.debug('Already uploaded: %s', cache_file)
             try:
                 with open(cache_file, 'r') as f:
-                    return json.loads(f.read())
-            except (OSError, ValueError):
-                # We'll overwrite the corrupted cache file later
+                    return f.read().strip()
+            except OSError:
+                # We'll try to overwrite the bad cache file later
                 pass
 
-    def _store_info_to_cache(self, image_path, info):
+    def _store_url_to_cache(self, image_path, url):
         cache_file = self._cache_file(image_path)
-        try:
-            json_string = json.dumps(info, indent=4) + '\n'
-        except (TypeError, ValueError) as e:
-            raise RuntimeError(f'Unable to write cache {cache_file}: {e}')
-
         try:
             fs.mkdir(fs.dirname(cache_file))
             with open(cache_file, 'w') as f:
-                f.write(json_string)
-        except (OSError, TypeError, ValueError) as e:
+                f.write(url)
+        except OSError as e:
             msg = e.strerror if getattr(e, 'strerror', None) else e
             raise RuntimeError(f'Unable to write cache {cache_file}: {msg}')
 
@@ -144,7 +154,7 @@ class ImageHostBase(abc.ABC):
             image_path += f'.{cache_id}'
 
         # Max file name length is usually 255 bytes
-        filename = fs.sanitize_filename(image_path[-200:]) + f'.{self.name}.json'
+        filename = fs.sanitize_filename(image_path[-200:]) + f'.{self.name}.url'
 
         return os.path.join(self.cache_directory, filename)
 

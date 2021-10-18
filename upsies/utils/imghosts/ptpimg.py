@@ -20,7 +20,7 @@ class PtpimgImageHost(ImageHostBase):
         'base_url': 'https://ptpimg.me',
     }
 
-    async def _upload(self, image_path):
+    async def _upload_image(self, image_path):
         if not self.options['apikey']:
             raise errors.RequestError('Missing API key')
 
@@ -49,7 +49,7 @@ class PtpimgImageHost(ImageHostBase):
             raise RuntimeError(f'Unexpected response: {images}')
         else:
             image_url = f'{self.options["base_url"]}/{code}.{ext}'
-            return {'url': image_url}
+            return image_url
 
     async def get_apikey(self, email, password):
         """

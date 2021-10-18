@@ -22,6 +22,11 @@ class upload_images(CommandBase):
                     'nargs': '+',
                     'help': 'Path to image file',
                 },
+                ('--thumb-width', '-t'): {
+                    'help': 'Thumbnail width in pixels (automatically snaps to closest supported size)',
+                    'type': utils.argtypes.integer,
+                    'default': None,
+                },
             },
             # Custom arguments defined by image host
             **imghost.argument_definitions,

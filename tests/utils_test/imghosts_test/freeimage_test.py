@@ -28,18 +28,14 @@ def test_default_config():
 
 
 @pytest.mark.asyncio
-async def test_upload_succeeds(mocker, tmp_path):
+async def test_upload_image_succeeds(mocker, tmp_path):
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
-        text=('{"image": {'
-              '"image":{"url":"https://localhost/path/to/image.png"},'
-              '"medium":{"url":"https://localhost/path/to/image.md.png"}'
-              '}}'),
+        text='{"image":{"image":{"url":"https://localhost/path/to/image.png"}}}',
         bytes=b'irrelevant',
     )))
     imghost = freeimage.FreeimageImageHost(cache_directory=tmp_path)
-    image = await imghost._upload('some/image.png')
-    assert image['url'] == 'https://localhost/path/to/image.png'
-    assert image['thumbnail_url'] == 'https://localhost/path/to/image.md.png'
+    url = await imghost._upload_image('some/image.png')
+    assert url == 'https://localhost/path/to/image.png'
     assert post_mock.call_args_list == [call(
         url=imghost.options['base_url'] + '/api/1/upload',
         cache=False,
@@ -57,25 +53,23 @@ async def test_upload_succeeds(mocker, tmp_path):
 @pytest.mark.parametrize(
     argnames='response',
     argvalues=(
-        '{"image": {"image":{"url":"https://foo/image.png"},"medium":{"ASDF":"https://foo/image.md.png"}}}',
-        '{"image": {"image":{"url":"https://foo/image.png"},"ASDF":{"url":"https://foo/image.md.png"}}}',
-        '{"image": {"image":{"ASDF":"https://foo/image.png"},"medium":{"url":"https://foo/image.md.png"}}}',
-        '{"image": {"ASDF":{"url":"https://foo/image.png"},"medium":{"url":"https://foo/image.md.png"}}}',
-        '{"ASDF": {"image":{"url":"https://foo/image.png"},"medium":{"url":"https://foo/image.md.png"}}}',
+        '{"image": {"image":{"ASDF":"https://foo/image.png"}}}',
+        '{"image": {"ASDF":{"url":"https://foo/image.png"}}}',
+        '{"ASDF": {"image":{"url":"https://foo/image.png"}}}',
     ),
 )
 @pytest.mark.asyncio
-async def test_upload_gets_unexpected_response(response, mocker, tmp_path):
+async def test_upload_image_gets_unexpected_response(response, mocker, tmp_path):
     mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
         text=response,
         bytes=b'irrelevant',
     )))
     imghost = freeimage.FreeimageImageHost(cache_directory=tmp_path)
     with pytest.raises(RuntimeError, match=rf'Unexpected response: {re.escape(response)}$'):
-        await imghost._upload('some/image.png')
+        await imghost._upload_image('some/image.png')
 
 @pytest.mark.asyncio
-async def test_upload_gets_expected_error(mocker, tmp_path):
+async def test_upload_image_gets_expected_error(mocker, tmp_path):
     mocker.patch('upsies.utils.http.post', AsyncMock(
         side_effect=errors.RequestError('ignored', text=json.dumps({
             "status_code": 400,
@@ -89,7 +83,7 @@ async def test_upload_gets_expected_error(mocker, tmp_path):
     ))
     imghost = freeimage.FreeimageImageHost(cache_directory=tmp_path)
     with pytest.raises(errors.RequestError, match=r'^Bad Request: Your request sucks$'):
-        await imghost._upload('some/image.png')
+        await imghost._upload_image('some/image.png')
 
 @pytest.mark.parametrize(
     argnames='error_text',
@@ -100,10 +94,10 @@ async def test_upload_gets_expected_error(mocker, tmp_path):
     ),
 )
 @pytest.mark.asyncio
-async def test_upload_gets_unexpected_error(error_text, mocker, tmp_path):
+async def test_upload_image_gets_unexpected_error(error_text, mocker, tmp_path):
     mocker.patch('upsies.utils.http.post', AsyncMock(
         side_effect=errors.RequestError('ignored', text=error_text),
     ))
     imghost = freeimage.FreeimageImageHost(cache_directory=tmp_path)
     with pytest.raises(errors.RequestError, match=rf'^Upload failed: {re.escape(str(error_text))}$'):
-        await imghost._upload('some/image.png')
+        await imghost._upload_image('some/image.png')

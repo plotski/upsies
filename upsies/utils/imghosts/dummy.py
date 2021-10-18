@@ -25,7 +25,11 @@ class DummyImageHost(ImageHostBase):
         },
     }
 
-    async def _upload(self, image_path):
+    @property
+    def cache_id(self):
+        return self.options['hostname']
+
+    async def _upload_image(self, image_path):
         try:
             fs.assert_file_readable(image_path)
         except errors.ContentError as e:
@@ -33,7 +37,4 @@ class DummyImageHost(ImageHostBase):
         else:
             await asyncio.sleep(1.5)
             url = f'http://{self.options["hostname"]}/{os.path.basename(image_path)}'
-            return {
-                'url': url,
-                'thumbnail_url': f'{url}/thumbnail',
-            }
+            return url
