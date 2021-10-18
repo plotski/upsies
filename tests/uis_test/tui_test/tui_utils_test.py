@@ -79,17 +79,17 @@ async def test_Throbber_active_property(mocker):
 @pytest.mark.asyncio  # Ensure aioloop exists
 async def test_Throbber_active_property_calls_iterate(mocker, event_loop):
     throbber = utils.Throbber(interval=0)
-    call_later_mock = mocker.patch.object(throbber._loop, 'call_later')
+    call_later_mock = mocker.patch.object(event_loop, 'call_later')
     assert call_later_mock.call_args_list == []
     throbber.active = True
     assert call_later_mock.call_args_list == [call(0.0, throbber._iterate)]
 
 
 @pytest.mark.asyncio  # Ensure aioloop exists
-async def test_Throbber_iterate_while_not_active(mocker):
+async def test_Throbber_iterate_while_not_active(mocker, event_loop):
     cb = Mock()
     throbber = utils.Throbber(callback=cb, interval=123, states=('a', 'b', 'c'))
-    call_later_mock = mocker.patch.object(throbber._loop, 'call_later')
+    call_later_mock = mocker.patch.object(event_loop, 'call_later')
     throbber._iterate()
     assert cb.call_args_list == []
     assert call_later_mock.call_args_list == []
@@ -102,11 +102,11 @@ async def test_Throbber_iterate_while_not_active(mocker):
 
 
 @pytest.mark.asyncio  # Ensure aioloop exists
-async def test_Throbber_iterate_while_active(mocker):
+async def test_Throbber_iterate_while_active(mocker, event_loop):
     cb = Mock()
     throbber = utils.Throbber(callback=cb, interval=123, states=('a', 'b', 'c'),
                               active=False, format='<{throbber}>')
-    call_later_mock = mocker.patch.object(throbber._loop, 'call_later')
+    call_later_mock = mocker.patch.object(event_loop, 'call_later')
     assert cb.call_args_list == []
     assert call_later_mock.call_args_list == []
     throbber.active = True

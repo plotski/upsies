@@ -27,8 +27,7 @@ class TUI:
         self._app = self._make_app()
         self._app_terminated = False
         self._exception = None
-        self._loop = utils.get_aioloop()
-        self._loop.set_exception_handler(self._handle_exception)
+        utils.get_aioloop().set_exception_handler(self._handle_exception)
 
     def _handle_exception(self, loop, context):
         exception = context.get('exception')
@@ -179,7 +178,7 @@ class TUI:
     def _exit(self):
         if not self._app_terminated:
             if not self._app.is_running and not self._app.is_done:
-                self._loop.call_soon(self._exit)
+                utils.get_aioloop().call_soon(self._exit)
             else:
                 def handle_jobs_terminated(task):
                     try:

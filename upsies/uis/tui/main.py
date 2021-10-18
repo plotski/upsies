@@ -16,7 +16,6 @@ def main(args=None):
 
 
 def _main(args=None):
-    aioloop = get_aioloop()
     get_newer_version_task = None
     cmd = None
 
@@ -25,7 +24,7 @@ def _main(args=None):
             from .tui import TUI
             ui = TUI()
             # Find latest version and generate update message in a background task
-            get_newer_version_task = aioloop.create_task(update.get_newer_version())
+            get_newer_version_task = get_aioloop().create_task(update.get_newer_version())
         else:
             from .headless import Headless
             ui = Headless()
@@ -74,7 +73,7 @@ def _main(args=None):
             try:
                 # don't wait for get_newer_version_task to prevent annoying wait
                 # times before the user gets their prompt back.
-                newer_version = aioloop.run_until_complete(
+                newer_version = get_aioloop().run_until_complete(
                     asyncio.wait_for(get_newer_version_task, timeout=0)
                 )
             except (asyncio.TimeoutError, errors.RequestError):

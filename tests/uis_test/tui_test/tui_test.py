@@ -319,16 +319,16 @@ async def test_exit_does_nothing_if_already_exited(mocker):
     assert ui._app_terminated is True
 
 @pytest.mark.asyncio  # Ensure aioloop exists
-async def test_exit_waits_for_application_to_run(mocker):
+async def test_exit_waits_for_application_to_run(mocker, event_loop):
     ui = TUI()
     mocker.patch.object(ui, '_terminate_jobs', AsyncMock())
     mocker.patch.object(type(ui._app), 'is_running', PropertyMock(return_value=False))
     mocker.patch.object(type(ui._app), 'is_done', PropertyMock(return_value=False))
     # If asycnio.call_soon() is still mocked when the test is finished, pytest
     # just hangs. pytest.mark.asyncio seems to depend on it.
-    with patch.object(ui._loop, 'call_soon'):
+    with patch.object(event_loop, 'call_soon'):
         ui._exit()
-        assert ui._loop.call_soon.call_args_list == [call(ui._exit)]
+        assert event_loop.call_soon.call_args_list == [call(ui._exit)]
     assert ui._terminate_jobs.call_args_list == []
     assert ui._app_terminated is False
 

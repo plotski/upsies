@@ -19,7 +19,6 @@ class Headless:
     def __init__(self):
         self._jobs = {}
         self._exception = None
-        self._loop = utils.get_aioloop()
 
     def add_jobs(self, *jobs):
         """Add :class:`~.jobs.base.JobBase` instances"""
@@ -53,7 +52,7 @@ class Headless:
         for job in self._enabled_jobs:
             _log.debug('Starting job: %r', job.name)
             job.start()
-        self._loop.run_until_complete(self._wait_for_jobs())
+        utils.get_aioloop().run_until_complete(self._wait_for_jobs())
 
         # First non-zero exit_code is the application exit_code
         for job in self._enabled_jobs:

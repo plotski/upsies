@@ -40,7 +40,6 @@ class Throbber:
         self._interval = float(interval)
         self._callback = callback or None
         self._format = format
-        self._loop = utils.get_aioloop()
         self.active = active
 
     @property
@@ -65,4 +64,4 @@ class Throbber:
         if self.active:
             if self._callback:
                 self._callback(self.next_state)
-            self._loop.call_later(self._interval, self._iterate)
+            utils.get_aioloop().call_later(self._interval, self._iterate)

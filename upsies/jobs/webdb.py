@@ -210,7 +210,6 @@ class _Searcher:
         self._exception_callback = exception_callback
         self._previous_search_time = 0
         self._search_task = None
-        self._loop = get_aioloop()
 
     async def wait(self):
         if self._search_task:
@@ -240,7 +239,7 @@ class _Searcher:
         if self._search_task:
             self._search_task.cancel()
             self._search_task = None
-        self._search_task = self._loop.create_task(self._search(query))
+        self._search_task = get_aioloop().create_task(self._search(query))
         self._search_task.add_done_callback(self._handle_search_task)
 
     async def _search(self, query):

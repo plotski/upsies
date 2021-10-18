@@ -53,7 +53,6 @@ class DaemonProcess:
         self._process = None
         self._read_queue_reader_task = None
         self._exception = None
-        self._loop = get_aioloop()
 
     def start(self):
         """Start the process"""
@@ -71,7 +70,7 @@ class DaemonProcess:
             kwargs=self._make_kwargs_picklable(self._target_kwargs),
         )
         self._process.start()
-        self._read_queue_reader_task = self._loop.create_task(self._read_queue_reader())
+        self._read_queue_reader_task = get_aioloop().create_task(self._read_queue_reader())
         self._read_queue_reader_task.add_done_callback(self._handle_read_queue_reader_task_done)
 
     def _make_args_picklable(self, args):
@@ -100,7 +99,7 @@ class DaemonProcess:
 
     async def _read_queue_reader(self):
         while True:
-            typ, msg = await self._loop.run_in_executor(None, self._read_queue.get)
+            typ, msg = await get_aioloop().run_in_executor(None, self._read_queue.get)
             if typ is MsgType.init:
                 if self._init_callback:
                     self._init_callback(msg)
@@ -172,7 +171,7 @@ class DaemonProcess:
         """Block asynchronously until the process exits"""
         if self._process:
             _log.debug('Joining process: %r', self._process)
-            await self._loop.run_in_executor(None, self._process.join)
+            await get_aioloop().run_in_executor(None, self._process.join)
             self._process = None
 
         if self._read_queue_reader_task:
