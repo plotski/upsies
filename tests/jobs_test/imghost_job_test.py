@@ -20,7 +20,7 @@ def imghost(tmp_path):
         name = 'testhost'
         default_config = {}
         upload = AsyncMock()
-        _upload = 'not an abstract base method'
+        _upload_image = 'not an abstract base method'
     return TestImageHost(cache_directory=tmp_path)
 
 @pytest.fixture

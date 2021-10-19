@@ -28,7 +28,7 @@ def imghost():
         name = 'mock image host'
         default_config = {}
 
-        async def _upload(self, path):
+        async def _upload_image(self, path):
             pass
 
     return MockImageHost()
