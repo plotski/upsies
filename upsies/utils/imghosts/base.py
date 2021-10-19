@@ -61,7 +61,7 @@ class ImageHostBase(abc.ABC):
         'thumb_width': 0,  # No thumbnail
     }
 
-    default_config = {}
+    default_config = copy.deepcopy(_default_config_base)
     """Default user configuration"""
 
     argument_definitions = {}
