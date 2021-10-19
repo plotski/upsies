@@ -121,8 +121,9 @@ class submit(CommandBase):
     def _get_imghost(self):
         imghost_name = self.tracker_options.get('image_host', None)
         if imghost_name:
-            # Apply tracker-specific image host configuration
+            # Get global image host options
             options = self.config['imghosts'][imghost_name].copy()
+            # Apply tracker-specific image host configuration
             options.update(self.tracker.TrackerJobs.image_host_config.get(imghost_name, {}))
             return utils.imghosts.imghost(
                 name=imghost_name,
