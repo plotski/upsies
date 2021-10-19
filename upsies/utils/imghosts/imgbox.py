@@ -23,10 +23,12 @@ class ImgboxImageHost(ImageHostBase):
             square_thumbs=False,
             comments_enabled=False,
         )
-
-        submission = await gallery.upload(image_path)
-        _log.debug('Submission: %r', submission)
-        if not submission.success:
-            raise errors.RequestError(submission.error)
-        else:
-            return submission.image_url
+        try:
+            submission = await gallery.upload(image_path)
+            _log.debug('Submission: %r', submission)
+            if not submission.success:
+                raise errors.RequestError(submission.error)
+            else:
+                return submission.image_url
+        finally:
+            await gallery.close()
