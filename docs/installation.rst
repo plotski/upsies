@@ -112,3 +112,14 @@ For ``pipx --version < 0.15.0.0``
        $ pipx install upsies --spec 'git+git://github.com/plotski/upsies.git#egg=upsies' --force
        $ # Install specific commit
        $ pipx install upsies --spec 'git+git://github.com/plotski/upsies.git@<COMMIT HASH>#egg=upsies' --force
+
+Installing Specific Version
+---------------------------
+
+You can install an older version if the installed release has a bug.
+
+.. code-block:: sh
+
+   $ pipx install upsies==<version> --force
+
+See https://pypi.org/project/upsies/#history for a list of versions.
