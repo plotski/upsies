@@ -119,8 +119,8 @@ async def test_upload_catches_ResizeError(cache, resize_error, exp_request_error
 @pytest.mark.asyncio
 async def test_get_image_url_from_cache(mocker, tmp_path):
     ih = make_TestImageHost(cache_directory=tmp_path)
-    mocker.patch.object(ih, '_upload_image', return_value='http://localhost:123/uploaded.image.jpg')
-    mocker.patch.object(ih, '_get_url_from_cache', return_value='http://localhost:123/cached.image.jpg')
+    mocker.patch.object(ih, '_upload_image', AsyncMock(return_value='http://localhost:123/uploaded.image.jpg'))
+    mocker.patch.object(ih, '_get_url_from_cache', Mock(return_value='http://localhost:123/cached.image.jpg'))
     mocker.patch.object(ih, '_store_url_to_cache')
     url = await ih._get_image_url('path/to/image.jpg', cache=True)
     assert url == 'http://localhost:123/cached.image.jpg'
@@ -131,8 +131,8 @@ async def test_get_image_url_from_cache(mocker, tmp_path):
 @pytest.mark.asyncio
 async def test_get_image_url_from_upload(mocker, tmp_path):
     ih = make_TestImageHost(cache_directory=tmp_path)
-    mocker.patch.object(ih, '_upload_image', return_value='http://localhost:123/uploaded.image.jpg')
-    mocker.patch.object(ih, '_get_url_from_cache', return_value='http://localhost:123/cached.image.jpg')
+    mocker.patch.object(ih, '_upload_image', AsyncMock(return_value='http://localhost:123/uploaded.image.jpg'))
+    mocker.patch.object(ih, '_get_url_from_cache', Mock(return_value='http://localhost:123/cached.image.jpg'))
     mocker.patch.object(ih, '_store_url_to_cache')
     url = await ih._get_image_url('path/to/image.jpg', cache=False)
     assert url == 'http://localhost:123/uploaded.image.jpg'
@@ -146,8 +146,8 @@ async def test_get_image_url_from_upload(mocker, tmp_path):
 @pytest.mark.asyncio
 async def test_get_image_url_prepends_image_path_to_request_error(mocker, tmp_path):
     ih = make_TestImageHost(cache_directory=tmp_path)
-    mocker.patch.object(ih, '_upload_image', side_effect=errors.RequestError('Connection refused'))
-    mocker.patch.object(ih, '_get_url_from_cache', return_value='http://localhost:123/cached.image.jpg')
+    mocker.patch.object(ih, '_upload_image', AsyncMock(side_effect=errors.RequestError('Connection refused')))
+    mocker.patch.object(ih, '_get_url_from_cache', Mock(return_value='http://localhost:123/cached.image.jpg'))
     mocker.patch.object(ih, '_store_url_to_cache')
     with pytest.raises(errors.RequestError, match=r'^path/to/image.jpg: Connection refused$'):
         await ih._get_image_url('path/to/image.jpg', cache=False)
