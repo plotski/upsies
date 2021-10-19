@@ -3,6 +3,7 @@
   * Try to find release on SrrDB if PreDB is down before prompting user
   * Added "User Manual" and "CLI Reference" to documentation
   * Added support for freeimage.host
+  * Thumbnails are now supported for all image hosters
 
 
 2021.10.04
