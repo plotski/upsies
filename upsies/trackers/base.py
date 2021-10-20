@@ -198,7 +198,7 @@ class TrackerJobsBase(abc.ABC):
         finished
 
         .. note:: Jobs returned by this class should have
-                  :attr:`~.JobBase.autostart` set to False or they will be
+                  :attr:`~.JobBase.autostart` set to `False` or they will be
                   started before submission is attempted.
 
         By default, this returns :attr:`add_torrent_job` and
