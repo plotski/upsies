@@ -22,8 +22,11 @@ def test_name():
 
 def test_default_config():
     assert freeimage.FreeimageImageHost.default_config == {
-        'apikey': '6d207e02198a847aa98d0a2a901485a5',
-        'base_url': 'https://freeimage.host',
+        **freeimage.FreeimageImageHost.default_config_common,
+        **{
+            'apikey': '6d207e02198a847aa98d0a2a901485a5',
+            'base_url': 'https://freeimage.host',
+        },
     }
 
 

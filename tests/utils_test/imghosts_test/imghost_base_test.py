@@ -1,3 +1,4 @@
+import copy
 import os
 import re
 from unittest.mock import Mock, PropertyMock, call
@@ -41,6 +42,45 @@ def test_cache_directory_property(mocker, tmp_path):
     assert imghost.cache_directory is tmp_path
     imghost.cache_directory = 'path/to/foo'
     assert imghost.cache_directory == 'path/to/foo'
+
+
+def test_default_config_without_custom_defaults():
+    imghost = make_TestImageHost()
+    default_config_common = copy.deepcopy(imghost.default_config_common)
+    exp_default_config = {**default_config_common, **imghost.default_config}
+    assert imghost.default_config == exp_default_config
+    exp_options = {**imghost.default_config}
+    assert imghost.options == exp_options
+    assert imghost.default_config_common == default_config_common
+
+def test_default_config_with_custom_defaults():
+    imghost = make_TestImageHost(default_config={'foo': 1, 'bar': 2})
+    default_config_common = copy.deepcopy(imghost.default_config_common)
+    exp_default_config = {**default_config_common, **{'foo': 1, 'bar': 2}}
+    assert imghost.default_config == exp_default_config
+    exp_options = exp_default_config
+    assert imghost.options == exp_options
+    assert imghost.default_config_common == default_config_common
+
+def test_default_config_with_custom_defaults_and_custom_options():
+    imghost = make_TestImageHost(default_config={'foo': 1, 'bar': 2}, options={'foo': 1, 'bar': 99})
+    default_config_common = copy.deepcopy(imghost.default_config_common)
+    exp_default_config = {**default_config_common, **{'foo': 1, 'bar': 2}}
+    assert imghost.default_config == exp_default_config
+    exp_options = {**imghost.default_config, **{'foo': 1, 'bar': 99}}
+    assert imghost.options == exp_options
+    assert imghost.default_config_common == default_config_common
+
+def test_default_config_with_overloaded_common_defaults():
+    default_config_key = tuple(imghosts.ImageHostBase.default_config_common)[0]
+    default_config = {default_config_key: 'foozbar'}
+    imghost = make_TestImageHost(default_config=default_config)
+    default_config_common = copy.deepcopy(imghost.default_config_common)
+    exp_default_config = {**default_config_common, **{default_config_key: 'foozbar'}}
+    assert imghost.default_config == exp_default_config
+    exp_options = exp_default_config
+    assert imghost.options == exp_options
+    assert imghost.default_config_common == default_config_common
 
 
 def test_options_property():

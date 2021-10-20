@@ -22,8 +22,11 @@ def test_name():
 
 def test_default_config():
     assert ptpimg.PtpimgImageHost.default_config == {
-        'apikey': '',
-        'base_url': 'https://ptpimg.me',
+        **ptpimg.PtpimgImageHost.default_config_common,
+        **{
+            'apikey': '',
+            'base_url': 'https://ptpimg.me',
+        },
     }
 
 

@@ -27,11 +27,22 @@ class ImageHostBase(abc.ABC):
     """
 
     def __init__(self, cache_directory=None, options=None):
-        self._options = copy.deepcopy(self._default_config_base)
-        self._options.update(self.default_config)
+        self._options = copy.deepcopy(self.default_config)
+        self._options.update()
         if options is not None:
             self._options.update(options)
         self.cache_directory = cache_directory if cache_directory else constants.CACHE_DIRPATH
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        # This method is called for each subclass. This hack allows us to
+        # overload `default_config` in subclasses without caring about common
+        # defaults, e.g. subclasses don't need to have "thumb_width" in their
+        # `default_config`, but it will exist anyway.
+        cls.default_config = {
+            **cls.default_config_common,
+            **cls.default_config,
+        }
 
     @property
     @abc.abstractmethod
@@ -57,12 +68,17 @@ class ImageHostBase(abc.ABC):
         """
         return self._options
 
-    _default_config_base = {
+    default_config_common = {
         'thumb_width': 0,  # No thumbnail
     }
+    """Default user configuration for all subclasses"""
 
-    default_config = copy.deepcopy(_default_config_base)
-    """Default user configuration"""
+    default_config = {}
+    """
+    Default user configuration for a subclass
+
+    This always contains :attr:`default_config_common`.
+    """
 
     argument_definitions = {}
     """CLI argument definitions (see :attr:`.CommandBase.argument_definitions`)"""
