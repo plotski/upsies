@@ -20,14 +20,12 @@ class ScreenshotsJobWidget(JobWidgetBase):
 
     def handle_throbber_state(self, state):
         self.job.info = state
-        self.invalidate()
 
     def handle_screenshot_path(self, path):
         self._throbber.active = False
         self.job.info = ''
         if self.job.screenshots_total > 0:
             self._screenshot_progress.percent = self.job.screenshots_created / self.job.screenshots_total * 100
-            self.invalidate()
 
     @cached_property
     def runtime_widget(self):
