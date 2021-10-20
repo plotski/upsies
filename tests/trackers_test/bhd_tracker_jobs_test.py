@@ -386,7 +386,7 @@ def test_description_job(bhd_tracker_jobs, mocker):
 
 def test_image_host_config(bhd_tracker_jobs, mocker):
     assert bhd_tracker_jobs.image_host_config == {
-        'imgbox': {'thumb_width': 350},
+        'common': {'thumb_width': 350},
     }
 
 

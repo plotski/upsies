@@ -123,8 +123,13 @@ class submit(CommandBase):
         if imghost_name:
             # Get global image host options
             options = self.config['imghosts'][imghost_name].copy()
-            # Apply tracker-specific image host configuration
+
+            # Apply tracker-specific options that are common for all image hosts
+            options.update(self.tracker.TrackerJobs.image_host_config.get('common', {}))
+
+            # Apply tracker-specific options for the used image host
             options.update(self.tracker.TrackerJobs.image_host_config.get(imghost_name, {}))
+
             return utils.imghosts.imghost(
                 name=imghost_name,
                 options=options,

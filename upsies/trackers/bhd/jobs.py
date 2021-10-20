@@ -240,13 +240,8 @@ class BhdTrackerJobs(TrackerJobsBase):
         return job
 
     image_host_config = {
-        'imgbox': {'thumb_width': 350},
+        'common': {'thumb_width': 350},
     }
-    """
-    Dictionary that maps an image hosting service
-    :attr:`~.imghosts.ImageHostBase.name` to keyword arguments for its
-    :class:`~.imghosts.ImageHostBase` subclass
-    """
 
     async def generate_description(self):
         # Wait until all screenshots are uploaded

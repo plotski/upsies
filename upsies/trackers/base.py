@@ -432,13 +432,18 @@ class TrackerJobsBase(abc.ABC):
 
     image_host_config = {}
     """
-    Dictionary that maps :attr:`~.ImageHostBase.name` to keyword arguments for
-    the corresponding :class:`~.ImageHostBase` subclass
+    Dictionary that maps an image hosting service :attr:`~.ImageHostBase.name`
+    to :attr:`~.ImageHostBase.default_config` values
+
+    ``common`` is a special image host whose values are always applied.
 
     Example:
 
     >>> image_host_config = {
-    ...     'imgbox': {'thumb_width': 100},
+    ...     # Always generate 300p thumbnails
+    ...     'common': {'thumb_width': 300},
+    ...     # If "myhost" is used, use this API key, but only for this tracker
+    ...     'myhost': {'apikey': 'd34db33f'},
     ... }
     """
 
