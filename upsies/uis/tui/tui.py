@@ -97,7 +97,7 @@ class TUI:
     def _update_jobs_container(self, *_):
         job_containers = []
 
-        # Ensure enabled jobs are started
+        # Start all enabled jobs that are supposed to start automatically
         for jobinfo in self._enabled_jobs:
             if not jobinfo.job.is_started and jobinfo.job.autostart:
                 jobinfo.job.start()
