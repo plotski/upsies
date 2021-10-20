@@ -66,6 +66,7 @@ class TUI:
             full_screen=False,
             erase_when_done=False,
             mouse_support=False,
+            on_invalidate=self._update_jobs_container,
         )
         # Make escape key work
         app.timeoutlen = 0.1
