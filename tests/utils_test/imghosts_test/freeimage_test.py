@@ -68,7 +68,7 @@ async def test_upload_image_gets_unexpected_response(response, mocker, tmp_path)
         bytes=b'irrelevant',
     )))
     imghost = freeimage.FreeimageImageHost(cache_directory=tmp_path)
-    with pytest.raises(RuntimeError, match=rf'Unexpected response: {re.escape(response)}$'):
+    with pytest.raises(RuntimeError, match=rf'^Unexpected response: {re.escape(response)}$'):
         await imghost._upload_image('some/image.png')
 
 @pytest.mark.asyncio
