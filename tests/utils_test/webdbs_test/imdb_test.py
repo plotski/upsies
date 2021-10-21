@@ -299,8 +299,8 @@ async def test_search_result_type(query, exp_type, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_url'),
     argvalues=(
-        (Query('The Blues Brothers', year=1980), 'https://imdb.com/title/tt0080455'),
-        (Query('Deadwood', year=2004), 'https://imdb.com/title/tt0348914'),
+        (Query('The Blues Brothers', year=1980), 'https://www.imdb.com/title/tt0080455'),
+        (Query('Deadwood', year=2004), 'https://www.imdb.com/title/tt0348914'),
     ),
     ids=lambda value: str(value),
 )
@@ -344,37 +344,37 @@ async def test_search_result_parser_failure(api):
     argnames=('id', 'exp_cast'),
     argvalues=(
         # Blues Brothers (movie)
-        ('tt0080455', (('John Belushi', 'https://imdb.com/name/nm0000004'),
-                       ('Dan Aykroyd', 'https://imdb.com/name/nm0000101'),
-                       ('Cab Calloway', 'https://imdb.com/name/nm0130572'))),
+        ('tt0080455', (('John Belushi', 'https://www.imdb.com/name/nm0000004'),
+                       ('Dan Aykroyd', 'https://www.imdb.com/name/nm0000101'),
+                       ('Cab Calloway', 'https://www.imdb.com/name/nm0130572'))),
         # Wind in the Willows (TV movie)
-        ('tt0192802', (('Alan Bennett', 'https://imdb.com/name/nm0003141'),
-                       ('Michael Palin', 'https://imdb.com/name/nm0001589'),
-                       ('Michael Gambon', 'https://imdb.com/name/nm0002091'))),
+        ('tt0192802', (('Alan Bennett', 'https://www.imdb.com/name/nm0003141'),
+                       ('Michael Palin', 'https://www.imdb.com/name/nm0001589'),
+                       ('Michael Gambon', 'https://www.imdb.com/name/nm0002091'))),
         # Bender's Big Score (Video)
-        ('tt0471711', (('Billy West', 'https://imdb.com/name/nm0921942'),
-                       ('Katey Sagal', 'https://imdb.com/name/nm0005408'),
-                       ('John DiMaggio', 'https://imdb.com/name/nm0224007'))),
+        ('tt0471711', (('Billy West', 'https://www.imdb.com/name/nm0921942'),
+                       ('Katey Sagal', 'https://www.imdb.com/name/nm0005408'),
+                       ('John DiMaggio', 'https://www.imdb.com/name/nm0224007'))),
         # Elephant (TV Short)
-        ('tt0097270', (('Gary Walker', 'https://imdb.com/name/nm1281884'),
-                       ('Bill Hamilton', 'https://imdb.com/name/nm1685093'),
-                       ('Michael Foyle', 'https://imdb.com/name/nm0289432'))),
+        ('tt0097270', (('Gary Walker', 'https://www.imdb.com/name/nm1281884'),
+                       ('Bill Hamilton', 'https://www.imdb.com/name/nm1685093'),
+                       ('Michael Foyle', 'https://www.imdb.com/name/nm0289432'))),
         # Kung Fury (Short)
-        ('tt3472226', (('David Sandberg', 'https://imdb.com/name/nm6247887'),
-                       ('Jorma Taccone', 'https://imdb.com/name/nm1672246'),
-                       ('Steven Chew', 'https://imdb.com/name/nm7320022'))),
+        ('tt3472226', (('David Sandberg', 'https://www.imdb.com/name/nm6247887'),
+                       ('Jorma Taccone', 'https://www.imdb.com/name/nm1672246'),
+                       ('Steven Chew', 'https://www.imdb.com/name/nm7320022'))),
         # The Forest (TV mini-series)
-        ('tt6560040', (('Samuel Labarthe', 'https://imdb.com/name/nm0479355'),
-                       ('Suzanne Clément', 'https://imdb.com/name/nm0167501'),
-                       ('Alexia Barlier', 'https://imdb.com/name/nm1715145'))),
+        ('tt6560040', (('Samuel Labarthe', 'https://www.imdb.com/name/nm0479355'),
+                       ('Suzanne Clément', 'https://www.imdb.com/name/nm0167501'),
+                       ('Alexia Barlier', 'https://www.imdb.com/name/nm1715145'))),
         # Orange Is the New Black (series)
-        ('tt2372162', (('Taylor Schilling', 'https://imdb.com/name/nm2279940'),
-                       ('Danielle Brooks', 'https://imdb.com/name/nm5335029'),
-                       ('Taryn Manning', 'https://imdb.com/name/nm0543383'))),
+        ('tt2372162', (('Taylor Schilling', 'https://www.imdb.com/name/nm2279940'),
+                       ('Danielle Brooks', 'https://www.imdb.com/name/nm5335029'),
+                       ('Taryn Manning', 'https://www.imdb.com/name/nm0543383'))),
         # Orange Is the New Black - S07E01 (episode)
-        ('tt5440238', (('Taylor Schilling', 'https://imdb.com/name/nm2279940'),
-                       ('Natasha Lyonne', 'https://imdb.com/name/nm0005169'),
-                       ('Uzo Aduba', 'https://imdb.com/name/nm2499064'))),
+        ('tt5440238', (('Taylor Schilling', 'https://www.imdb.com/name/nm2279940'),
+                       ('Natasha Lyonne', 'https://www.imdb.com/name/nm0005169'),
+                       ('Uzo Aduba', 'https://www.imdb.com/name/nm2499064'))),
         # No cast list
         ('tt0896516', ()),
         (None, ()),
@@ -422,10 +422,10 @@ async def test_countries(id, exp_countries, api, store_response):
         ('tt0471711', ()),  # Bender's Big Score (Video)
         ('tt0097270', ()),  # Elephant (TV Short)
         ('tt3472226', ()),  # Kung Fury (Short)
-        ('tt6560040', (('Delinda Jacobs', 'https://imdb.com/name/nm3064398'),)),  # The Forest (TV mini-series)
-        ('tt2372162', (('Jenji Kohan', 'https://imdb.com/name/nm0463176'),)),  # Orange Is the New Black (series)
-        ('tt0149460', (('David X. Cohen', 'https://imdb.com/name/nm0169326'),
-                       ('Matt Groening', 'https://imdb.com/name/nm0004981'))),  # Futurama
+        ('tt6560040', (('Delinda Jacobs', 'https://www.imdb.com/name/nm3064398'),)),  # The Forest (TV mini-series)
+        ('tt2372162', (('Jenji Kohan', 'https://www.imdb.com/name/nm0463176'),)),  # Orange Is the New Black (series)
+        ('tt0149460', (('David X. Cohen', 'https://www.imdb.com/name/nm0169326'),
+                       ('Matt Groening', 'https://www.imdb.com/name/nm0004981'))),  # Futurama
         ('tt5440238', ()),  # Orange Is the New Black - S07E01 (episode)
         (None, ()),
     ),
@@ -445,15 +445,15 @@ async def test_creators(id, exp_creators, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_directors'),
     argvalues=(
-        ('tt3286052', (('Oz Perkins', 'https://imdb.com/name/nm0674020'),)),  # February (movie)
-        ('tt0192802', (('Dave Unwin', 'https://imdb.com/name/nm0881386'),
-                       ('Dennis Abey', 'https://imdb.com/name/nm0008688'))),  # Wind in the Willows (TV movie)
-        ('tt0471711', (('Dwayne Carey-Hill', 'https://imdb.com/name/nm1401752'),)),  # Bender's Big Score (Video)
-        ('tt0097270', (('Alan Clarke', 'https://imdb.com/name/nm0164639'),)),  # Elephant (TV Short)
-        ('tt3472226', (('David Sandberg', 'https://imdb.com/name/nm6247887'),)),  # Kung Fury (Short)
+        ('tt3286052', (('Oz Perkins', 'https://www.imdb.com/name/nm0674020'),)),  # February (movie)
+        ('tt0192802', (('Dave Unwin', 'https://www.imdb.com/name/nm0881386'),
+                       ('Dennis Abey', 'https://www.imdb.com/name/nm0008688'))),  # Wind in the Willows (TV movie)
+        ('tt0471711', (('Dwayne Carey-Hill', 'https://www.imdb.com/name/nm1401752'),)),  # Bender's Big Score (Video)
+        ('tt0097270', (('Alan Clarke', 'https://www.imdb.com/name/nm0164639'),)),  # Elephant (TV Short)
+        ('tt3472226', (('David Sandberg', 'https://www.imdb.com/name/nm6247887'),)),  # Kung Fury (Short)
         ('tt6560040', ()),  # The Forest (TV mini-series)
         ('tt2372162', ()),  # Orange Is the New Black (series)
-        ('tt5440238', (('Michael Trim', 'https://imdb.com/name/nm0872841'),)),  # Orange Is the New Black - S07E01 (episode)
+        ('tt5440238', (('Michael Trim', 'https://www.imdb.com/name/nm0872841'),)),  # Orange Is the New Black - S07E01 (episode)
         (None, ()),
     ),
     ids=lambda value: str(value),

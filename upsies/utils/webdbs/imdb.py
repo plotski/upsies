@@ -23,7 +23,7 @@ class ImdbApi(WebDbApiBase):
 
     default_config = {}
 
-    _url_base = 'https://imdb.com'
+    _url_base = 'https://www.imdb.com'
     _soup_cache = {}
 
     async def _get_soup(self, path, params={}):
@@ -100,7 +100,7 @@ class ImdbApi(WebDbApiBase):
     async def cast(self, id):
         cast = []
         if id:
-            soup = await self._get_soup(f'title/{id}')
+            soup = await self._get_soup(f'title/{id}/')
             # New website
             cast_tag = soup.find(class_='title-cast__grid')
             if cast_tag is None:
@@ -118,7 +118,7 @@ class ImdbApi(WebDbApiBase):
     async def countries(self, id):
         countries = []
         if id:
-            soup = await self._get_soup(f'title/{id}')
+            soup = await self._get_soup(f'title/{id}/')
             a_tags = soup.find_all(href=re.compile(r'/search/title.*?country_of_origin='))
             for a_tag in a_tags:
                 country = ''.join(a_tag.stripped_strings)
@@ -129,7 +129,7 @@ class ImdbApi(WebDbApiBase):
 
     async def creators(self, id):
         if id:
-            soup = await self._get_soup(f'title/{id}')
+            soup = await self._get_soup(f'title/{id}/')
             # Old website design
             credits_tags = soup.find_all(class_='credit_summary_item')
             if not credits_tags:
@@ -145,7 +145,7 @@ class ImdbApi(WebDbApiBase):
 
     async def directors(self, id):
         if id:
-            soup = await self._get_soup(f'title/{id}')
+            soup = await self._get_soup(f'title/{id}/')
             # Old website design
             credits_tags = soup.find_all(class_='credit_summary_item')
             if not credits_tags:
@@ -159,7 +159,7 @@ class ImdbApi(WebDbApiBase):
 
     async def genres(self, id):
         if id:
-            soup = await self._get_soup(f'title/{id}')
+            soup = await self._get_soup(f'title/{id}/')
             genres = []
             genre_links = soup.find_all('a', href=re.compile(r'/search/title\?.*genres='))
             for genre_link in genre_links:
@@ -173,7 +173,7 @@ class ImdbApi(WebDbApiBase):
 
     async def poster_url(self, id):
         if id:
-            soup = await self._get_soup(f'title/{id}')
+            soup = await self._get_soup(f'title/{id}/')
             a_tag = soup.find(href=re.compile(r'/title/tt\d+/mediaviewer/'))
             if a_tag:
                 soup = await self._get_soup(a_tag['href'])
@@ -193,7 +193,7 @@ class ImdbApi(WebDbApiBase):
 
     async def rating(self, id):
         if id:
-            soup = await self._get_soup(f'title/{id}')
+            soup = await self._get_soup(f'title/{id}/')
             rating_tag = soup.find(itemprop='ratingValue')
             if not rating_tag:
                 rating_tag = soup.find(class_=re.compile(r'^AggregateRatingButton__RatingScore.*'))
@@ -223,7 +223,7 @@ class ImdbApi(WebDbApiBase):
 
     async def summary(self, id):
         if id:
-            soup = await self._get_soup(f'title/{id}')
+            soup = await self._get_soup(f'title/{id}/')
 
             # Get summary from the top
             candidates = (
@@ -366,7 +366,7 @@ class ImdbApi(WebDbApiBase):
 
     async def type(self, id):
         if id:
-            soup = await self._get_soup(f'title/{id}')
+            soup = await self._get_soup(f'title/{id}/')
 
             # Old website design
             subtext_tag = soup.find(class_='subtext')
@@ -408,7 +408,7 @@ class ImdbApi(WebDbApiBase):
 
     async def year(self, id):
         if id:
-            soup = await self._get_soup(f'title/{id}')
+            soup = await self._get_soup(f'title/{id}/')
 
             # Movies (old website design)
             year_tag = soup.find(id='titleYear')
