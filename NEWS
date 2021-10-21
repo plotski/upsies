@@ -2,7 +2,7 @@
   * Fixed stuck/unresponsive "Scene Check" yes/no prompt when PreDB is down
   * Try to find release on SrrDB if PreDB is down before prompting user
   * Added "User Manual" and "CLI Reference" to documentation
-  * Added support for freeimage.host
+  * Added support for freeimage.host and imgbb.com
   * Thumbnails are now supported for all image hosters
   * Fixed empty title in search results when searching for IMDb ID
 
