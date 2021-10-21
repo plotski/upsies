@@ -4,6 +4,7 @@
   * Added "User Manual" and "CLI Reference" to documentation
   * Added support for freeimage.host
   * Thumbnails are now supported for all image hosters
+  * Fixed empty title in search results when searching for IMDb ID
 
 
 2021.10.04

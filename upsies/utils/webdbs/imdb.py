@@ -50,6 +50,8 @@ class ImdbApi(WebDbApiBase):
 
         if query.id:
             _log.debug('Getting ID: %r', query.id)
+            title_english = await self.title_english(query.id)
+            title_original = await self.title_original(query.id)
             return [_ImdbSearchResult(
                 imdb_api=self,
                 cast=functools.partial(self.cast, query.id),
@@ -58,9 +60,9 @@ class ImdbApi(WebDbApiBase):
                 genres=functools.partial(self.genres, query.id),
                 id=query.id,
                 summary=functools.partial(self.summary, query.id),
-                title=await self.title_english(query.id),
-                title_english=functools.partial(self.title_english, query.id),
-                title_original=functools.partial(self.title_original, query.id),
+                title=title_english or title_original,
+                title_english=title_english,
+                title_original=title_original,
                 type=await self.type(query.id),
                 url=await self.url(query.id),
                 year=await self.year(query.id),

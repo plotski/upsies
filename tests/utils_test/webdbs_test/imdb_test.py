@@ -19,23 +19,64 @@ def api():
     return imdb.ImdbApi()
 
 
+@pytest.mark.parametrize(
+    argnames='id, title, title_english, title_original, type, year, cast, countries, directors, genres, summary',
+    argvalues=(
+        (
+            'tt3286052',
+            "The Blackcoat's Daughter",
+            "The Blackcoat's Daughter",
+            'February',
+            ReleaseType.movie,
+            '2015',
+            ('Emma Roberts', 'Kiernan Shipka', 'Lucy Boynton'),
+            ('Canada',),
+            ('Oz Perkins',),
+            ('horror', 'mystery', 'thriller'),
+            ('Two girls must battle a mysterious evil force when they get left behind '
+             'at their boarding school over winter break.'),
+        ),
+        (
+            'tt0080455',
+            'The Blues Brothers',
+            '',
+            'The Blues Brothers',
+            ReleaseType.movie,
+            '1980',
+            (),
+            ('USA',),
+            ('John Landis',),
+            ('action', 'adventure', 'comedy'),
+            ('Jake Blues rejoins with his brother Elwood after being released from prison, '
+             'but the duo has just days to reunite their old R&B band and save the Catholic '
+             'home where the two were raised, outrunning the police as they tear through Chicago.'),
+        ),
+    ),
+)
 @pytest.mark.asyncio
-async def test_search_handles_id_in_query(api, store_response):
-    results = await api.search(Query(id='tt3286052'))
+async def test_search_handles_id_in_query(id, title, title_english, title_original, type, year,
+                                          cast, countries, directors, genres, summary,
+                                          api, store_response):
+    async def get_value(name):
+        value = getattr(results[0], name)
+        if not isinstance(value, str):
+            value = await value()
+        return value
+
+    results = await api.search(Query(id=id))
     assert len(results) == 1
-    assert (await results[0].cast())[:3] == ('Emma Roberts', 'Kiernan Shipka', 'Lucy Boynton')
-    assert await results[0].countries() == ('Canada',)
-    assert await results[0].directors() == ('Oz Perkins',)
-    assert results[0].id == 'tt3286052'
-    assert await results[0].genres() == ('horror', 'mystery', 'thriller')
-    assert await results[0].summary() == ('Two girls must battle a mysterious evil force '
-                                          'when they get left behind at their boarding school over winter break.')
-    assert results[0].title == "The Blackcoat's Daughter"
-    assert await results[0].title_english() == "The Blackcoat's Daughter"
-    assert await results[0].title_original() == 'February'
-    assert results[0].type == ReleaseType.movie
-    assert results[0].url == 'https://imdb.com/title/tt3286052'
-    assert results[0].year == '2015'
+    assert results[0].id == id
+    assert results[0].title == title
+    assert results[0].type == type
+    assert results[0].url == f'{imdb.ImdbApi._url_base}/title/{id}'
+    assert results[0].year == year
+    assert await get_value('title_english') == title_english
+    assert await get_value('title_original') == title_original
+    assert (await get_value('cast'))[:len(cast)] == cast
+    assert await get_value('countries') == countries
+    assert await get_value('directors') == directors
+    assert await get_value('genres') == genres
+    assert await get_value('summary') == summary
 
 
 @pytest.mark.asyncio
