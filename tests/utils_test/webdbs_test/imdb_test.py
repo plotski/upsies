@@ -181,7 +181,7 @@ async def test_search_result_directors(query, exp_directors, api, store_response
     argnames=('query', 'exp_genres'),
     argvalues=(
         (Query('star wars', type=ReleaseType.movie, year=1977), ('action', 'adventure', 'fantasy')),
-        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ('action', 'adventure', 'comedy')),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ('comedy', 'drama', 'horror')),
         (Query('The Forest', type=ReleaseType.series, year=2017), ('crime', 'drama')),
         (Query('Deadwood', type=ReleaseType.series, year=2004), ('crime', 'drama', 'history')),
         (Query('The Believer', type=ReleaseType.movie, year=2001), ('drama',)),
@@ -522,7 +522,7 @@ async def test_poster_url(id, exp_poster_url, api, store_response):
         ('tt3472226', 8.0),  # Kung Fury (Short)
         ('tt6560040', 7.2),  # The Forest (mini series)
         ('tt0348914', 8.6),  # Deadwood (series)
-        ('tt0556307', 8.4),  # Deadwood - S02E04 (episode)
+        ('tt0556307', 8.3),  # Deadwood - S02E04 (episode)
         (None, None),
     ),
     ids=lambda value: str(value),
@@ -557,9 +557,10 @@ async def test_runtimes(id, exp_runtimes, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
-        ('tt0080455', ('Jake Blues, just released from prison, puts together '
-                       'his old band to save the Catholic home where he and '
-                       'his brother Elwood were raised.')),  # Blues Brothers (movie)
+        ('tt0080455', ('Jake Blues rejoins with his brother Elwood after being released '
+                       'from prison, but the duo has just days to reunite their old R&B band '
+                       'and save the Catholic home where the two were raised, outrunning '
+                       'the police as they tear through Chicago.')),  # Blues Brothers (movie)
         ('tt0192802', ('When three close friends Mole, Ratty and Badger '
                        'find out that the infamous Mr. Toad of Toad Hall '
                        'has been up to no good, they must find him and change '
