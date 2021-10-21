@@ -55,7 +55,6 @@ class FreeimageImageHost(ImageHostBase):
 
         _log.debug('%s: Response: %r', self.name, response)
         info = response.json()
-        _log.debug('%s: JSON: %r', self.name, info)
         try:
             return info['image']['image']['url']
         except KeyError:

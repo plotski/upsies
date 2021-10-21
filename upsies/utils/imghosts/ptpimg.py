@@ -39,7 +39,6 @@ class PtpimgImageHost(ImageHostBase):
         )
         _log.debug('%s: Response: %r', self.name, response)
         images = response.json()
-        _log.debug('%s: JSON: %r', self.name, images)
 
         try:
             code = images[0]['code']
