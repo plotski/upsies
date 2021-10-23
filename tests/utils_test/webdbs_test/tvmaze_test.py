@@ -273,6 +273,7 @@ async def test_search_result_year(title, exp_year, api, store_response):
                ('Vanessa Marshall', 'https://www.tvmaze.com/people/25383/vanessa-marshall'))),
         (36483, (('Christopher Sean', 'https://www.tvmaze.com/people/5900/christopher-sean'),
                  ('Scott Lawrence', 'https://www.tvmaze.com/people/9486/scott-lawrence'))),
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -303,6 +304,7 @@ async def test_cast_deduplicates_actors_with_multiple_roles(api, store_response)
         (35256, ['Korea, Republic of']),
         (36072, ['France']),
         (1910, ['Sweden']),
+        (None, ()),
     ),
 )
 @pytest.mark.asyncio
@@ -314,6 +316,7 @@ async def test_countries(id, exp_countries, api, store_response):
     argnames=('id', 'exp_creators'),
     argvalues=(
         (170, (('Jenji Kohan', 'https://www.tvmaze.com/people/29524/jenji-kohan'),)),
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -334,6 +337,7 @@ async def test_creators(id, exp_creators, api, store_response):
         (1259, ()),
         (117, ()),
         (36483, ()),
+        (None, ()),
     ),
     ids=lambda value: str(value),
 )
@@ -349,6 +353,7 @@ async def test_directors(id, exp_directors, api, store_response):
         (1259, ('action', 'science-fiction')),
         (35256, ('drama', 'romance')),
         (36072, ('thriller', 'mystery')),
+        (None, ()),
     ),
 )
 @pytest.mark.asyncio
@@ -367,6 +372,7 @@ async def test_genres(id, exp_genres, api, store_response):
         (1259, 3, 'https://static.tvmaze.com/uploads/images/medium_portrait/7/18007.jpg'),
         (1910, 2, 'https://static.tvmaze.com/uploads/images/medium_portrait/252/631184.jpg'),
         (117, 1, 'https://static.tvmaze.com/uploads/images/medium_portrait/51/127565.jpg'),
+        (None, None, ''),
     ),
 )
 @pytest.mark.asyncio
@@ -381,6 +387,7 @@ async def test_poster_url(id, season, exp_url, api, store_response):
         (1259, 8.2),
         (35256, 7.9),
         (36072, 7.6),
+        (None, None),
     ),
 )
 @pytest.mark.asyncio
@@ -395,6 +402,7 @@ async def test_rating(id, exp_rating, api, store_response):
         (1259, {'default': 15}),
         (35256, {'default': 60}),
         (36072, {'default': 50}),
+        (None, {}),
     ),
 )
 @pytest.mark.asyncio
@@ -431,6 +439,7 @@ async def test_summary(id, exp_summary, api, store_response):
         (35256, 'Something in the Rain'),
         (37993, 'Traffic Light'),
         (36072, 'The Chalet'),
+        (None, ''),
     ),
 )
 @pytest.mark.asyncio
@@ -444,6 +453,7 @@ async def test_title_english(id, exp_title_english, api, store_response):
         (35256, 'Bap Jal Sajuneun Yeppeun Nuna'),
         (37993, 'Ramzor'),
         (36072, 'Le chalet'),
+        (None, ''),
     ),
 )
 @pytest.mark.asyncio
@@ -451,11 +461,10 @@ async def test_title_original(id, exp_title_original, api, store_response):
     assert await api.title_original(id) == exp_title_original
 
 
-@pytest.mark.parametrize('id', (1259, 35256, 36072))
+@pytest.mark.parametrize('id', (1259, 35256, 36072, None))
 @pytest.mark.asyncio
 async def test_type(id, api, store_response):
-    with pytest.raises(NotImplementedError, match=r'^Type lookup is not implemented for TVmaze$'):
-        await api.type(id)
+    await api.type(id) == ReleaseType.unknown
 
 
 @pytest.mark.parametrize(
@@ -464,6 +473,7 @@ async def test_type(id, api, store_response):
         (1259, 'https://www.tvmaze.com/shows/1259/star-wars-clone-wars'),
         (35256, 'https://www.tvmaze.com/shows/35256/something-in-the-rain'),
         (36072, 'https://www.tvmaze.com/shows/36072/le-chalet'),
+        (None, ''),
     ),
 )
 @pytest.mark.asyncio
@@ -477,6 +487,7 @@ async def test_url(id, exp_url, api, store_response):
         (1259, '2003'),
         (35256, '2018'),
         (36072, '2018'),
+        (None, ''),
     ),
 )
 @pytest.mark.asyncio
@@ -490,6 +501,7 @@ async def test_year(id, exp_year, api, store_response):
         (35256, 'tt8078816'),
         (37993, 'tt1405737'),
         (36072, 'tt8168678'),
+        (None, ''),
     ),
 )
 @pytest.mark.asyncio
@@ -502,8 +514,8 @@ async def test_imdb_id(id, exp_imdb_id, api, store_response):
     argvalues=(
         (35256, 1, 5, {
             'date': '2018-04-13',
-            'episode': 5,
-            'season': 1,
+            'episode': '5',
+            'season': '1',
             'summary': ("Setting aside her guilt, Jin Ah spends the night at Jun Hee's place. "
                         "Back at work after the business trip, she gets called to Director Nam's office."),
             'title': 'Episode 5',
@@ -511,19 +523,27 @@ async def test_imdb_id(id, exp_imdb_id, api, store_response):
         }),
         (37993, 3, 10, {
             'date': '2011-08-13',
-            'episode': 10,
-            'season': 3,
+            'episode': '10',
+            'season': '3',
             'summary': '',
             'title': 'Test in Shlomy',
             'url': 'https://www.tvmaze.com/episodes/1505367/ramzor-3x10-test-in-shlomy',
         }),
         (117, 1, 3, {
             'date': '2014-10-27',
-            'episode': 3,
-            'season': 1,
+            'episode': '3',
+            'season': '1',
             'summary': 'The Rebels undergo a daring rescue mission, only to find themselves facing a powerful foe.',
             'title': 'Rise of the Old Masters',
             'url': 'https://www.tvmaze.com/episodes/9023/star-wars-rebels-1x03-rise-of-the-old-masters',
+        }),
+        (None, 1, 3, {
+            'date': '',
+            'episode': '',
+            'season': '',
+            'summary': '',
+            'title': '',
+            'url': '',
         }),
     ),
 )
@@ -538,6 +558,7 @@ async def test_episode(id, season, episode, exp_episode, api, store_response):
         (35256, 'Ended'),
         (37993, 'Ended'),
         (36072, 'Ended'),
+        (None, ''),
     ),
 )
 @pytest.mark.asyncio

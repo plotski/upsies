@@ -83,35 +83,43 @@ class TvmazeApi(WebDbApiBase):
         return await self._get_json(url)
 
     async def cast(self, id):
-        show = await self._get_show(id)
-        cast = show.get('_embedded', {}).get('cast', ())
-        return tuple(
-            common.Person(item['person']['name'], item['person'].get('url', ''))
-            for item in utils.deduplicate(cast, key=lambda item: item['person']['name'])
-        )
+        if id:
+            show = await self._get_show(id)
+            cast = show.get('_embedded', {}).get('cast', ())
+            return tuple(
+                common.Person(item['person']['name'], item['person'].get('url', ''))
+                for item in utils.deduplicate(cast, key=lambda item: item['person']['name'])
+            )
+        return ()
 
     async def countries(self, id):
-        show = await self._get_show(id)
-        return _get_countries(show)
+        if id:
+            show = await self._get_show(id)
+            return _get_countries(show)
+        return ()
 
     async def creators(self, id):
-        show = await self._get_show(id)
-        crew = show.get('_embedded', {}).get('crew', ())
-        creators = []
-        for item in crew:
-            if item.get('type') == 'Creator' and item.get('person', {}).get('name'):
-                creators.append(common.Person(
-                    item['person']['name'],
-                    item['person'].get('url', ''),
-                ))
-        return tuple(creators)
+        if id:
+            show = await self._get_show(id)
+            crew = show.get('_embedded', {}).get('crew', ())
+            creators = []
+            for item in crew:
+                if item.get('type') == 'Creator' and item.get('person', {}).get('name'):
+                    creators.append(common.Person(
+                        item['person']['name'],
+                        item['person'].get('url', ''),
+                    ))
+            return tuple(creators)
+        return ()
 
     async def directors(self, id):
         return ()
 
     async def genres(self, id):
-        show = await self._get_show(id)
-        return _get_genres(show)
+        if id:
+            show = await self._get_show(id)
+            return _get_genres(show)
+        return ()
 
     async def poster_url(self, id, season=None):
         """
@@ -119,70 +127,83 @@ class TvmazeApi(WebDbApiBase):
 
         :param season: Return poster for specific season
         """
-        info = {}
-        if season:
-            url = f'{self._url_base}/shows/{id}/seasons'
-            seasons = await self._get_json(url)
-            for s in seasons:
-                if str(s.get('number')) == str(season) and s.get('image'):
-                    info = s
-                    break
-        if not info:
-            info = await self._get_show(id)
-        return (info.get('image') or {}).get('medium', None)
+        if id:
+            info = {}
+            if season:
+                url = f'{self._url_base}/shows/{id}/seasons'
+                seasons = await self._get_json(url)
+                for s in seasons:
+                    if str(s.get('number')) == str(season) and s.get('image'):
+                        info = s
+                        break
+            if not info:
+                info = await self._get_show(id)
+            return (info.get('image') or {}).get('medium', None)
+        return ''
 
     rating_min = 0.0
     rating_max = 10.0
 
     async def rating(self, id):
-        show = await self._get_show(id)
-        return show.get('rating', {}).get('average')
+        if id:
+            show = await self._get_show(id)
+            return show.get('rating', {}).get('average')
+        return None
 
     async def runtimes(self, id):
         runtimes = {}
-        show = await self._get_show(id)
-        runtime = show.get('runtime', 0)
-        if runtime:
-            runtimes['default'] = round(int(runtime))
+        if id:
+            show = await self._get_show(id)
+            runtime = show.get('runtime', 0)
+            if runtime:
+                runtimes['default'] = round(int(runtime))
         return runtimes
 
     async def summary(self, id):
-        show = await self._get_show(id)
-        return _get_summary(show)
+        if id:
+            show = await self._get_show(id)
+            return _get_summary(show)
+        return ''
 
     async def title_english(self, id):
-        imdb_id = await self.imdb_id(id)
-        if imdb_id:
-            return await self._imdb.title_english(imdb_id)
-        else:
-            return ''
+        if id:
+            imdb_id = await self.imdb_id(id)
+            if imdb_id:
+                return await self._imdb.title_english(imdb_id)
+        return ''
 
     async def title_original(self, id):
-        imdb_id = await self.imdb_id(id)
-        if imdb_id:
-            return await self._imdb.title_original(imdb_id)
-        else:
-            return ''
+        if id:
+            imdb_id = await self.imdb_id(id)
+            if imdb_id:
+                return await self._imdb.title_original(imdb_id)
+        return ''
 
     async def type(self, id):
         # TVmaze does not support movies and we can't distinguish between season
-        # and episode by IMDb ID.
-        raise NotImplementedError('Type lookup is not implemented for TVmaze')
+        # and episode by ID.
+        return ReleaseType.unknown
 
     async def url(self, id):
-        show = await self._get_show(id)
-        return show.get('url', None)
+        if id:
+            show = await self._get_show(id)
+            return show.get('url', '')
+        return ''
 
     async def year(self, id):
-        show = await self._get_show(id)
-        return _get_year(show)
+        if id:
+            show = await self._get_show(id)
+            return _get_year(show)
+        return ''
 
     async def imdb_id(self, id):
         """Return IMDb ID for TVmaze ID `id` or `None`"""
-        show = await self._get_show(id)
-        imdb_id = show.get('externals', {}).get('imdb')
-        if imdb_id:
-            return imdb_id
+        if id:
+            show = await self._get_show(id)
+            imdb_id = show.get('externals', {}).get('imdb')
+            if imdb_id:
+                return imdb_id
+        return ''
 
     async def episode(self, id, season, episode):
         """
@@ -195,27 +216,32 @@ class TvmazeApi(WebDbApiBase):
         :return: :class:`dict` with these keys:
 
             - ``date`` (:class:`str` as "YYYY-MM-DD")
-            - ``episode`` (:class:`int`)
-            - ``season`` (:class:`int`)
+            - ``episode`` (:class:`str`)
+            - ``season`` (:class:`str`)
             - ``summary`` (:class:`str`)
             - ``title`` (:class:`str`)
             - ``url`` (:class:`str`)
         """
-        url = f'{self._url_base}/shows/{id}/episodebynumber?season={season}&number={episode}'
-        episode = await self._get_json(url)
+        if id:
+            url = f'{self._url_base}/shows/{id}/episodebynumber?season={season}&number={episode}'
+            episode = await self._get_json(url)
+        else:
+            episode = {}
         return {
-            'date': episode.get('airdate'),
-            'episode': episode.get('number', -1),
-            'season': episode.get('season', -1),
+            'date': episode.get('airdate', ''),
+            'episode': str(episode.get('number', '')) or '',
+            'season': str(episode.get('season', '')) or '',
             'summary': _get_summary(episode),
-            'title': episode.get('name'),
-            'url': episode.get('url'),
+            'title': episode.get('name', ''),
+            'url': episode.get('url', ''),
         }
 
     async def status(self, id):
-        """Return "Running" or "Ended" or `None`"""
-        show = await self._get_show(id)
-        return show.get('status')
+        """Return something like "Running", "Ended" or empty string"""
+        if id:
+            show = await self._get_show(id)
+            return show.get('status')
+        return ''
 
 
 class _TvmazeSearchResult(common.SearchResult):
