@@ -1,4 +1,3 @@
-import asyncio
 import re
 import time
 from unittest.mock import Mock, PropertyMock, call, patch
