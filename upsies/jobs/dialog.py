@@ -364,7 +364,7 @@ class TextFieldJob(JobBase):
             if default_text is not None:
                 self.text = default_text
         else:
-            # send() also finishes. This is important for reading from cache.
+            # send() also finishes this job. This is important for caching.
             if finish_on_success:
                 self.send(text)
             else:
