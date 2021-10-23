@@ -406,14 +406,23 @@ async def test_runtimes(id, exp_runtimes, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_summary'),
     argvalues=(
-        (1259, 'downfall of the Jedi'),
-        (35256, 'coffee shop'),
-        (36072, 'dark secret from the past'),
+        (1259, ('The Clone Wars television series chronicles the events taking place '
+                'between Star Wars Episode II: Attack of the Clones and '
+                'Star Wars Episode III: Revenge of the Sith. The Clone Wars will ultimately lead '
+                'to the downfall of the Jedi and the rise of the Galactic Empire.')),
+        (35256, ('Yoon Jin Ah is a single woman in her 30s who works as a store supervisor '
+                 'in a coffee shop. Despite being an easygoing person, she lives a rather empty '
+                 "life. She suddenly feels romantic feelings towards her best friend's younger "
+                 'brother, Seo Joon Hee, a designer at a video game company, '
+                 'who has just returned from working abroad.')),
+        (36072, ('Friends gathered at a remote chalet in the French Alps for a summer getaway '
+                 'are caught in a deadly trap as a dark secret from the past comes to light.')),
+        (None, ''),
     ),
 )
 @pytest.mark.asyncio
 async def test_summary(id, exp_summary, api, store_response):
-    assert exp_summary in await api.summary(id)
+    assert await api.summary(id) == exp_summary
 
 
 @pytest.mark.parametrize(
