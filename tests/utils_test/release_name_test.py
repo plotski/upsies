@@ -1080,7 +1080,7 @@ async def test_fetch_info(guessed_type, found_type, exp_type, callback, mocker):
     rn = ReleaseName('Foo 2000 1080p BluRay DTS x264-ASDF')
     rn.type = guessed_type
 
-    async def update_attributes(id):
+    async def update_attributes(imdb_id):
         await asyncio.sleep(0.1)
         rn.type = found_type
 
@@ -1089,7 +1089,7 @@ async def test_fetch_info(guessed_type, found_type, exp_type, callback, mocker):
 
     mocker.patch.object(rn, '_update_attributes', update_attributes)
     mocker.patch.object(rn, '_update_year_required', update_year_required)
-    return_value = await rn.fetch_info('mock id', callback=callback)
+    return_value = await rn.fetch_info('mock imdb id', callback=callback)
     assert return_value is rn
     assert rn.type == exp_type
     if callback:
@@ -1116,7 +1116,7 @@ async def test_fetch_info(guessed_type, found_type, exp_type, callback, mocker):
 )
 @pytest.mark.asyncio
 async def test_update_attributes(guessed_type, imdb_type, exp_type, mocker):
-    id_mock = '12345'
+    imdb_id_mock = '12345'
     gather_mock = {
         'type': imdb_type,
         'title_original': 'Le Foo',
@@ -1129,7 +1129,7 @@ async def test_update_attributes(guessed_type, imdb_type, exp_type, mocker):
     gather_mock = mocker.patch('upsies.utils.webdbs.imdb.ImdbApi.gather', AsyncMock(return_value=gather_mock))
 
     assert rn.type == guessed_type
-    await rn._update_attributes(id_mock)
+    await rn._update_attributes(imdb_id_mock)
     assert rn.title == 'Le Foo'
     assert rn.title_aka == 'The Foo'
     if exp_type is ReleaseType.movie:
@@ -1138,7 +1138,7 @@ async def test_update_attributes(guessed_type, imdb_type, exp_type, mocker):
         assert rn.year == ''
     assert rn.type == exp_type
     assert gather_mock.call_args_list == [
-        call(id_mock, 'type', 'title_english', 'title_original', 'year'),
+        call(imdb_id_mock, 'type', 'title_english', 'title_original', 'year'),
     ]
 
 

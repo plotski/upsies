@@ -589,11 +589,11 @@ class ReleaseName(collections.abc.Mapping):
                 return False
         return True
 
-    async def fetch_info(self, id, callback=None):
+    async def fetch_info(self, imdb_id, callback=None):
         """
         Fill in information from IMDb
 
-        :param str id: IMDb ID
+        :param str imdb_id: IMDb ID
         :param callable callback: Function to call after fetching; gets the
             instance (`self`) as a keyword argument
 
@@ -607,16 +607,16 @@ class ReleaseName(collections.abc.Mapping):
 
         :return: The method's instance (`self`) for convenience
         """
-        await self._update_attributes(id)
+        await self._update_attributes(imdb_id)
         await self._update_year_required()
         _log.debug('Release name updated with IMDb info: %s', self)
         if callback is not None:
             callback(self)
         return self
 
-    async def _update_attributes(self, id):
+    async def _update_attributes(self, imdb_id):
         info = await self._imdb.gather(
-            id,
+            imdb_id,
             'type',
             'title_english',
             'title_original',
@@ -647,7 +647,7 @@ class ReleaseName(collections.abc.Mapping):
                 return unidecode.unidecode(title.casefold())
 
             title_normalized = normalize_title(self.title)
-            same_titles = tuple(f'{r.title} year={r.year} id={r.id}' for r in results
+            same_titles = tuple(f'{r.title} year={r.year} imdb_id={r.id}' for r in results
                                 if normalize_title(r.title) == title_normalized)
             if len(same_titles) >= 2:
                 _log.debug('Found multiple search results for %r: %r', query, same_titles)
