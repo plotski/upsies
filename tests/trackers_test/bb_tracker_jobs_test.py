@@ -1388,13 +1388,13 @@ async def test_get_movie_title(bb_tracker_jobs, mocker):
                         PropertyMock(return_value='Title AKA Tilte'))
     movie_title = await bb_tracker_jobs.get_movie_title('imdb id')
     assert movie_title == 'Title AKA Tilte'
-    assert bb_tracker_jobs.release_name.fetch_info.call_args_list == [call('imdb id')]
+    assert bb_tracker_jobs.release_name.fetch_info.call_args_list == [call(imdb_id='imdb id')]
 
 
 @pytest.mark.parametrize(
     argnames='tvmaze_id, imdb_id, exp_fetch_info_calls',
     argvalues=(
-        ('tvmaze id', 'imdb id', [call('imdb id')]),
+        ('tvmaze id', 'imdb id', [call(imdb_id='imdb id')]),
         ('tvmaze id', '', []),
         ('tvmaze id', None, []),
     ),

@@ -50,7 +50,7 @@ class release_name(CommandBase):
     def _update_release_name(self, imdb_id):
         self.release_name_job.add_task(
             self.release_name_job.fetch_text(
-                coro=self.release_name.fetch_info(imdb_id),
+                coro=self.release_name.fetch_info(imdb_id=imdb_id),
                 error_is_fatal=False,
             ),
         )

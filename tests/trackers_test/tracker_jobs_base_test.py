@@ -355,7 +355,7 @@ def test_update_release_name(mocker):
             error_is_fatal=False,
         ),
     ]
-    assert tracker_jobs.release_name.fetch_info.call_args_list == [call('tt123456')]
+    assert tracker_jobs.release_name.fetch_info.call_args_list == [call(imdb_id='tt123456')]
 
 
 def test_imdb_job(mocker):

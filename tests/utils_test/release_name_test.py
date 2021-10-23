@@ -1069,6 +1069,7 @@ def test_is_complete(release_name, release_type, needed_attrs):
 
 
 @pytest.mark.parametrize('callback', (None, Mock()))
+@pytest.mark.parametrize('db_name', ('imdb',))
 @pytest.mark.parametrize(
     argnames='guessed_type, found_type, exp_type',
     argvalues=(
@@ -1076,28 +1077,62 @@ def test_is_complete(release_name, release_type, needed_attrs):
     ),
 )
 @pytest.mark.asyncio
-async def test_fetch_info(guessed_type, found_type, exp_type, callback, mocker):
+async def test_fetch_info(guessed_type, found_type, exp_type, db_name, callback, mocker):
+
     rn = ReleaseName('Foo 2000 1080p BluRay DTS x264-ASDF')
     rn.type = guessed_type
 
-    async def update_attributes(imdb_id):
-        await asyncio.sleep(0.1)
-        rn.type = found_type
+    mocker.patch.object(rn, '_update_attributes', AsyncMock())
+    mocker.patch.object(rn, '_update_type', AsyncMock())
+    mocker.patch.object(rn, '_update_year_required', AsyncMock())
 
-    async def update_year_required():
-        assert rn.type == found_type
+    db_id = f'mock {db_name} id'
+    db = getattr(rn, f'_{db_name}')
 
-    mocker.patch.object(rn, '_update_attributes', update_attributes)
-    mocker.patch.object(rn, '_update_year_required', update_year_required)
-    return_value = await rn.fetch_info('mock imdb id', callback=callback)
+    fetch_info_kwargs = {f'{db_name}_id': db_id, 'callback': callback}
+    return_value = await rn.fetch_info(**fetch_info_kwargs)
     assert return_value is rn
-    assert rn.type == exp_type
+
+    assert rn._update_attributes.call_args_list == [call(db, db_id)]
+    assert rn._update_type.call_args_list == [call(db, db_id)]
+    assert rn._update_year_required.call_args_list == [call()]
+
     if callback:
         assert callback.call_args_list == [call(rn)]
 
 
 @pytest.mark.parametrize(
-    argnames='guessed_type, imdb_type, exp_type',
+    argnames='info',
+    argvalues=(
+        {'title_original': 'Le Foo', 'title_english': 'The Foo', 'year': '2000'},
+        {'title_original': 'Le Foo', 'title_english': '', 'year': '2000'},
+        {'title_original': 'Le Foo', 'title_english': 'The Foo', 'year': ''},
+        {'title_original': 'Le Foo', 'title_english': 'The Foo', 'year': None},
+        {'title_original': 'Le Foo', 'title_english': None, 'year': '2000'},
+        {'title_original': None, 'title_english': 'The Foo', 'year': '2000'},
+    ),
+    ids=lambda v: str(v),
+)
+@pytest.mark.asyncio
+async def test_update_attributes(info, mocker):
+    id_mock = 'mock id'
+    db_mock = Mock(gather=AsyncMock(return_value=info))
+    rn = ReleaseName('path/to/something')
+    rn.type = ReleaseType.movie
+    rn.title = 'Guessed Title'
+    rn.title_ak = 'Guessed AKA'
+    rn.year = '1999'
+    await rn._update_attributes(db_mock, id_mock)
+    assert rn.title == info.get('title_original') or 'Guessed Title'
+    assert rn.title_aka == info.get('title_english') or 'Guessed AKA'
+    assert rn.year == info.get('year') or '1999'
+    assert db_mock.gather.call_args_list == [
+        call(id_mock, 'title_english', 'title_original', 'year'),
+    ]
+
+
+@pytest.mark.parametrize(
+    argnames='guessed_type, db_type, exp_type',
     argvalues=(
         (ReleaseType.movie, ReleaseType.movie, ReleaseType.movie),
         (ReleaseType.movie, ReleaseType.season, ReleaseType.season),
@@ -1115,31 +1150,24 @@ async def test_fetch_info(guessed_type, found_type, exp_type, callback, mocker):
     ),
 )
 @pytest.mark.asyncio
-async def test_update_attributes(guessed_type, imdb_type, exp_type, mocker):
-    imdb_id_mock = '12345'
-    gather_mock = {
-        'type': imdb_type,
-        'title_original': 'Le Foo',
-        'title_english': 'The Foo',
-        'year': '',
-    }
+async def test_update_type(guessed_type, db_type, exp_type, mocker):
+    id_mock = 'mock id'
+    db_mock = Mock(type=AsyncMock(return_value=db_type))
 
     rn = ReleaseName('path/to/something')
     mocker.patch.object(rn, '_info', {'type': guessed_type})
-    gather_mock = mocker.patch('upsies.utils.webdbs.imdb.ImdbApi.gather', AsyncMock(return_value=gather_mock))
 
     assert rn.type == guessed_type
-    await rn._update_attributes(imdb_id_mock)
-    assert rn.title == 'Le Foo'
-    assert rn.title_aka == 'The Foo'
+
+    await rn._update_type(db_mock, id_mock)
+
+    assert rn.type == exp_type
     if exp_type is ReleaseType.movie:
         assert rn.year == 'UNKNOWN_YEAR'
     else:
         assert rn.year == ''
-    assert rn.type == exp_type
-    assert gather_mock.call_args_list == [
-        call(imdb_id_mock, 'type', 'title_english', 'title_original', 'year'),
-    ]
+
+    assert db_mock.type.call_args_list == [call(id_mock)]
 
 
 @pytest.mark.parametrize(

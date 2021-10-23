@@ -592,7 +592,7 @@ class ReleaseName(collections.abc.Mapping):
                 return False
         return True
 
-    async def fetch_info(self, imdb_id, callback=None):
+    async def fetch_info(self, *, imdb_id=None, callback=None):
         """
         Fill in information from IMDb
 
@@ -610,17 +610,23 @@ class ReleaseName(collections.abc.Mapping):
 
         :return: The method's instance (`self`) for convenience
         """
-        await self._update_attributes(imdb_id)
+        # Theoretically, we should use also use `tmdb_id` and `tvmaze_id` to
+        # lookup attributes. Unfortunately, IMDb is the only usable source for
+        # the information we need.
+        for db_name, id in (('_imdb', imdb_id),):
+            db = getattr(self, db_name)
+            await self._update_attributes(db, id)
+        await self._update_type(self._imdb, id)
         await self._update_year_required()
         _log.debug('Release name updated with IMDb info: %s', self)
+
         if callback is not None:
             callback(self)
         return self
 
-    async def _update_attributes(self, imdb_id):
-        info = await self._imdb.gather(
-            imdb_id,
-            'type',
+    async def _update_attributes(self, db, id):
+        info = await db.gather(
+            id,
             'title_english',
             'title_original',
             'year',
@@ -634,11 +640,13 @@ class ReleaseName(collections.abc.Mapping):
             if info[key]:
                 setattr(self, attr, info[key])
 
-        # Use type from IMDb if known. ReleaseInfo can misdetect type (e.g. if
-        # mini-series doesn't contain "S01"). But if ReleaseInfo detected an
-        # episode (e.g. "S04E03"), it's unlikely to be wrong.
-        if info['type'] and self.type is not ReleaseType.episode:
-            self.type = info['type']
+    async def _update_type(self, db, id):
+        # Use type from database if possible. ReleaseInfo can misdetect type
+        # (e.g. if mini-series doesn't contain "S01"). But if ReleaseInfo
+        # detected an episode (e.g. "S04E03"), it's unlikely to be wrong.
+        db_type = await db.type(id)
+        if db_type and self.type is not ReleaseType.episode:
+            self.type = db_type
 
     async def _update_year_required(self):
         if self.type in (ReleaseType.season, ReleaseType.episode):

@@ -761,13 +761,13 @@ class BbTrackerJobs(TrackerJobsBase):
     # Metadata generators
 
     async def get_movie_title(self, imdb_id):
-        await self.release_name.fetch_info(imdb_id)
+        await self.release_name.fetch_info(imdb_id=imdb_id)
         return self.release_name.title_with_aka
 
     async def get_series_title_and_release_info(self, tvmaze_id):
         imdb_id = await self.tvmaze.imdb_id(tvmaze_id)
         if imdb_id:
-            await self.release_name.fetch_info(imdb_id)
+            await self.release_name.fetch_info(imdb_id=imdb_id)
 
         title = [self.release_name.title_with_aka]
         if self.release_name.year_required:
