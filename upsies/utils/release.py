@@ -126,7 +126,10 @@ class ReleaseName(collections.abc.Mapping):
         self._name = name
         self._info = ReleaseInfo(str(name) if name is not None else self._path)
         self._translate = translate or {}
-        self._imdb = webdbs.imdb.ImdbApi()
+
+    @cached_property
+    def _imdb(self):
+        return webdbs.imdb.ImdbApi()
 
     def set_release_info(self, path):
         """
