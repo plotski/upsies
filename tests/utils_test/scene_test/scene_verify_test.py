@@ -192,7 +192,7 @@ async def test_is_scene_release_with_no_needed_keys(mocker):
            'size': 779447228,
            'crc': '8C8C0AE7'}}),
 
-        # # Non-scene release
+        # Non-scene release
         ('Foo.2015.1080p.Bluray.DD5.1.x264-DON.mkv', {}),
     ),
 )
