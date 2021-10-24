@@ -33,6 +33,14 @@ _guessit = LazyModule(module='guessit.api', name='_guessit', namespace=globals()
 
 
 class _translated_property:
+    """
+    Property that is automatically translated on lookup
+
+    The translation is based on a mapping on the parent instance. It must be
+    available as ``_translate``. It maps regular expressions to replacement
+    strings. All regular expressions are applied in order.
+    """
+
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
         self.name = fget.__name__
         self.fget = fget
