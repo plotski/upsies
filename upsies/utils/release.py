@@ -1247,7 +1247,7 @@ class Episodes(dict):
         return super().__init__(validated_args)
 
     def remove_specific_episodes(self):
-        """Remove episodes from each season, leaving only complete season"""
+        """Remove episodes from each season, leaving only complete seasons"""
         for season in tuple(self):
             if season:
                 self[season] = ()
