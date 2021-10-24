@@ -391,9 +391,15 @@ def test_image_host_config(bhd_tracker_jobs, mocker):
 
 
 class ImageUrl(str):
+    def __new__(cls, *args, thumbnail=True, **kwargs):
+        self = super().__new__(cls, *args, **kwargs)
+        self._thumbnail = thumbnail
+        return self
+
     @property
     def thumbnail_url(self):
-        return f'thumb_{self}'
+        if self._thumbnail:
+            return f'thumb_{self}'
 
 @pytest.mark.parametrize(
     argnames='uploaded_images, exp_bbcode',
@@ -462,6 +468,16 @@ async def test_generate_description(uploaded_images, exp_bbcode, bhd_tracker_job
     bbcode = await bhd_tracker_jobs.generate_description()
     assert bhd_tracker_jobs.upload_screenshots_job.wait.call_args_list == [call()]
     assert bbcode == exp_bbcode
+
+@pytest.mark.asyncio
+async def test_generate_description_without_thumbnail_url(bhd_tracker_jobs, mocker):
+    mocker.patch.object(type(bhd_tracker_jobs), 'upload_screenshots_job', PropertyMock(return_value=Mock(
+        wait=AsyncMock(),
+        uploaded_images=(ImageUrl('a.png'), ImageUrl('b.png', thumbnail=False), ImageUrl('c.png')),
+    )))
+
+    with pytest.raises(RuntimeError, match=r'^No thumbnail for b\.png$'):
+        await bhd_tracker_jobs.generate_description()
 
 
 def test_tags_job(bhd_tracker_jobs, mocker):

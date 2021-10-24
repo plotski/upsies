@@ -256,6 +256,8 @@ class BhdTrackerJobs(TrackerJobsBase):
             cells = []
             for screenshot in screenshots:
                 if screenshot is not None:
+                    if screenshot.thumbnail_url is None:
+                        raise RuntimeError(f'No thumbnail for {screenshot}')
                     cells.append(f'[url={screenshot}][img]{screenshot.thumbnail_url}[/img][/url]')
             # Space between columns
             rows.append(' '.join(cells))
