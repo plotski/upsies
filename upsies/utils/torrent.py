@@ -19,14 +19,17 @@ _log = logging.getLogger(__name__)
 torf = LazyModule(module='torf', namespace=globals())
 
 
-def create(*, content_path, announce, torrent_path,
+def create(*, content_path, announce, source, torrent_path,
            init_callback, progress_callback,
-           overwrite=False, source=None, exclude=()):
+           overwrite=False, exclude=()):
     """
     Generate and write torrent file
 
     :param str content_path: Path to the torrent's payload
     :param str announce: Announce URL
+    :param str source: Value of the ``source`` field in the torrent. This makes
+        the torrent unique for each tracker to avoid cross-seeding issues, so it
+        is usually the tracker's abbreviated name.
     :param str torrent_path: Path of the generated torrent file
     :param str init_callback: Callable that is called once before torrent
         generation commences. It gets `content_path` as a tree where a node is a
@@ -57,8 +60,6 @@ def create(*, content_path, announce, torrent_path,
         Torrent creation is cancelled if `progress_callback` returns `True` or
         any other truthy value.
     :param bool overwrite: Whether to overwrite `torrent_path` if it exists
-    :param str source: Value of the "source" field in the torrent or `None` to
-        leave it out
     :param exclude: Sequence of regular expressions that are matched against
         file system paths. Matching files are not included in the torrent.
 
@@ -68,6 +69,8 @@ def create(*, content_path, announce, torrent_path,
     """
     if not announce:
         raise errors.TorrentError('Announce URL is empty')
+    if not source:
+        raise errors.TorrentError('Source is empty')
 
     if not overwrite and _path_exists(torrent_path):
         _log.debug('Torrent file already exists: %r', torrent_path)

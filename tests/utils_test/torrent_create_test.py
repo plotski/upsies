@@ -22,6 +22,7 @@ def test_create_handles_existing_torrent_file(Torrent_mock, file_tree_mock, tmp_
     return_value = create(
         content_path='path/to/content',
         announce='http://announce.url',
+        source='ABC',
         torrent_path=torrent_path,
         init_callback=init_cb,
         progress_callback=progress_cb,
@@ -43,6 +44,7 @@ def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, t
         content_path='path/to/content',
         overwrite=True,
         announce='http://announce.url',
+        source='ABC',
         torrent_path=torrent_path,
         init_callback=init_cb,
         progress_callback=progress_cb,
@@ -53,7 +55,7 @@ def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, t
         exclude_regexs=(),
         trackers=(('http://announce.url',),),
         private=True,
-        source=None,
+        source='ABC',
         created_by=f'{__project_name__} {__version__}',
         creation_date=time_mock.return_value,
     )]
@@ -66,19 +68,18 @@ def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, t
 @pytest.mark.parametrize(
     argnames='source, exclude',
     argvalues=(
-        (None, None),
         ('asdf', None),
-        (None, ('a.*', '.*b')),
         ('foo', ('a.*', '.*b')),
     ),
 )
 def test_create_passes_arguments_to_Torrent_class(Torrent_mock, file_tree_mock, time_mock, source, exclude):
     create_kwargs = {
-        'content_path' : 'path/to/content',
-        'announce' : 'http://announce.url',
-        'torrent_path' : 'path/to/torrent',
-        'init_callback' : Mock(),
-        'progress_callback' : Mock(),
+        'content_path': 'path/to/content',
+        'announce': 'http://announce.url',
+        'source': source,
+        'torrent_path': 'path/to/torrent',
+        'init_callback': Mock(),
+        'progress_callback': Mock(),
     }
     if source:
         create_kwargs['source'] = source
@@ -91,7 +92,7 @@ def test_create_passes_arguments_to_Torrent_class(Torrent_mock, file_tree_mock, 
         exclude_regexs=exclude or (),
         trackers=(('http://announce.url',),),
         private=True,
-        source=source or None,
+        source=source,
         created_by=f'{__project_name__} {__version__}',
         creation_date=time_mock.return_value,
     )]
@@ -104,6 +105,7 @@ def test_create_calls_init_callback(Torrent_mock, file_tree_mock):
     return_value = create(
         content_path='path/to/content',
         announce='http://announce.url',
+        source='ABC',
         torrent_path='path/to/torrent',
         init_callback=init_cb,
         progress_callback=Mock()
@@ -118,6 +120,7 @@ def test_create_generates_torrent(Torrent_mock, file_tree_mock):
     return_value = create(
         content_path='path/to/content',
         announce='http://announce.url',
+        source='ABC',
         torrent_path='path/to/torrent',
         init_callback=Mock(),
         progress_callback=Mock(),
@@ -136,6 +139,7 @@ def test_create_catches_exception_from_torrent_generation(Torrent_mock, file_tre
         create(
             content_path='path/to/content',
             announce='http://announce.url',
+            source='ABC',
             torrent_path='path/to/torrent',
             init_callback=Mock(),
             progress_callback=Mock(),
@@ -149,6 +153,21 @@ def test_create_does_not_accept_empty_announce_url(Torrent_mock, file_tree_mock)
         create(
             content_path='path/to/content',
             announce='',
+            source='ABC',
+            torrent_path='path/to/torrent',
+            init_callback=Mock(),
+            progress_callback=Mock(),
+        )
+    assert Torrent_mock.call_args_list == []
+
+@patch('upsies.utils.torrent._make_file_tree')
+@patch('torf.Torrent')
+def test_create_does_not_accept_empty_source(Torrent_mock, file_tree_mock):
+    with pytest.raises(errors.TorrentError, match=r'^Source is empty$'):
+        create(
+            content_path='path/to/content',
+            announce='http://announce.url',
+            source='',
             torrent_path='path/to/torrent',
             init_callback=Mock(),
             progress_callback=Mock(),
@@ -163,6 +182,7 @@ def test_create_catches_error_when_writing_torrent_file(Torrent_mock, file_tree_
         create(
             content_path='path/to/content',
             announce='http://announce.url',
+            source='ABC',
             torrent_path='path/to/torrent',
             init_callback=Mock(),
             progress_callback=Mock(),
@@ -176,6 +196,7 @@ def test_create_writes_torrent_file_after_successful_generation(Torrent_mock, fi
     return_value = create(
         content_path='path/to/content',
         announce='http://announce.url',
+        source='ABC',
         torrent_path='path/to/torrent',
         init_callback=Mock(),
         progress_callback=Mock(),
