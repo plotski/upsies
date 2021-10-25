@@ -107,7 +107,7 @@ class SceneQuery:
         if info.get('source') == 'WEB-DL':
             info['source'] = 'WEB'
 
-        # Group and episodes are handled separately
+        # Group and episodes are handled separately the other keywords
         needed_keys = [k for k in common.get_needed_keys(info)
                        if k not in ('group', 'episodes')]
         keywords = [info[key] for key in needed_keys
