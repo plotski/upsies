@@ -113,9 +113,10 @@ class TUI:
                     try:
                         self._layout.focus(jobinfo.container)
                     except ValueError:
-                        _log.debug('Failed to focus job: %r', jobinfo.job.name)
-                    else:
-                        _log.debug('Focused job: %r', jobinfo.job.name)
+                        pass
+                    #     _log.debug('Failed to focus job: %r', jobinfo.job.name)
+                    # else:
+                    #     _log.debug('Focused job: %r', jobinfo.job.name)
 
                     # Don't display more than one unfinished interactive job
                     # unless any job has errors, in which case we are
