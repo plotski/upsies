@@ -285,7 +285,7 @@ def test_is_regex_pattern(object, exp_return_value, mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='obj, exp_bytes',
+    argnames='obj, exp_id',
     argvalues=(
         ('foo',
          b"'foo'"),
@@ -295,8 +295,10 @@ def test_is_regex_pattern(object, exp_return_value, mocker):
          b"['bar', 'baz', 'foo']"),
         ({'c': (5, 6, 4), 'a': 1, 'b': [2, 1, 3]},
          b"{'a': '1', 'b': ['1', '2', '3'], 'c': ['4', '5', '6']}"),
+        ({'a': ('a', 2, 3.0), 'c': 1, 'b': 'two'},
+         b"{'a': ['2', '3.0', 'a'], 'b': 'two', 'c': '1'}"),
     ),
     ids=lambda v: str(v),
 )
-def test_semantic_hash(obj, exp_bytes):
-    assert utils.semantic_hash(obj) == hashlib.sha256(exp_bytes).hexdigest()
+def test_semantic_hash(obj, exp_id):
+    assert utils.semantic_hash(obj) == hashlib.sha256(exp_id).hexdigest()

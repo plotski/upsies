@@ -366,11 +366,13 @@ def semantic_hash(obj):
     """
     def as_str(obj):
         if isinstance(obj, collections.abc.Mapping):
-            return {as_str(k): as_str(obj[k]) for k in sorted(obj.keys())}
+            sorted_keys = sorted(as_str(k) for k in obj.keys())
+            return {as_str(k): as_str(obj[k]) for k in sorted_keys}
         elif isinstance(obj, str):
             return str(obj)
         elif isinstance(obj, collections.abc.Sequence):
-            return [as_str(val) for val in sorted(obj)]
+            sorted_items = sorted(as_str(i) for i in obj)
+            return [as_str(val) for val in sorted_items]
         else:
             return str(obj)
 
