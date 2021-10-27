@@ -83,7 +83,8 @@ class CreateTorrentJob(base.JobBase):
         else:
             self._get_announce_url_task = self.add_task(self._get_announce_url())
             self._get_announce_url_task.add_done_callback(
-                lambda task: self._create_torrent_process(task.result()))
+                lambda task: self._start_torrent_creation_process(task.result())
+            )
 
     async def _get_announce_url(self):
         self.info = 'Getting announce URL'
@@ -103,7 +104,7 @@ class CreateTorrentJob(base.JobBase):
             except errors.RequestError as e:
                 self.warn(e)
 
-    def _create_torrent_process(self, announce_url):
+    def _start_torrent_creation_process(self, announce_url):
         self._torrent_process = daemon.DaemonProcess(
             name=self.name,
             target=_torrent_process,

@@ -183,7 +183,7 @@ def job(tmp_path, tracker):
 async def test_CreateTorrentJob_execute(ignore_cache, path_exists, exp_torrent_created, job, mocker, tmp_path):
     mocker.patch.object(job, '_get_announce_url', AsyncMock())
     mocker.patch.object(job, '_handle_torrent_created', Mock())
-    mocker.patch.object(job, '_create_torrent_process', Mock())
+    mocker.patch.object(job, '_start_torrent_creation_process', Mock())
     mocker.patch.object(type(job), 'ignore_cache', PropertyMock(return_value=ignore_cache))
 
     if path_exists:
@@ -196,12 +196,12 @@ async def test_CreateTorrentJob_execute(ignore_cache, path_exists, exp_torrent_c
     if exp_torrent_created:
         assert job._get_announce_url.call_args_list == [call()]
         assert job._handle_torrent_created.call_args_list == []
-        assert job._create_torrent_process.call_args_list == [call(job._get_announce_url.return_value)]
+        assert job._start_torrent_creation_process.call_args_list == [call(job._get_announce_url.return_value)]
         assert not job.is_finished
     else:
         assert job._get_announce_url.call_args_list == []
         assert job._handle_torrent_created.call_args_list == [call(job._torrent_path)]
-        assert job._create_torrent_process.call_args_list == []
+        assert job._start_torrent_creation_process.call_args_list == []
         assert job.is_finished
 
 
@@ -303,12 +303,12 @@ async def test_CreateTorrentJob_get_announce_url_catches_RequestError_from_logou
     assert job.info == ''
 
 
-def test_CreateTorrentJob_create_torrent_process(job, mocker):
+def test_CreateTorrentJob_start_torrent_creation_process(job, mocker):
     DaemonProcess_mock = mocker.patch('upsies.utils.daemon.DaemonProcess', Mock(
         return_value=Mock(join=AsyncMock()),
     ))
     announce_url = 'http:/foo/announce'
-    job._create_torrent_process(announce_url)
+    job._start_torrent_creation_process(announce_url)
     assert DaemonProcess_mock.call_args_list == [call(
         name=job.name,
         target=_torrent_process,
