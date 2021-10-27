@@ -4,6 +4,7 @@ Swiss Army knife
 
 import asyncio
 import collections
+import hashlib
 import importlib
 import inspect
 import itertools
@@ -354,6 +355,26 @@ def is_regex_pattern(object):
         # https://docs.python.org/3/library/typing.html#typing.Pattern
         import typing
         return isinstance(object, typing.Pattern)
+
+
+def semantic_hash(obj):
+    """
+    Return SHA256 hash for `obj` that stays the same between Python interpreter
+    sessions
+
+    https://github.com/schollii/sandals/blob/master/json_sem_hash.py
+    """
+    def as_str(obj):
+        if isinstance(obj, collections.abc.Mapping):
+            return {as_str(k): as_str(obj[k]) for k in sorted(obj.keys())}
+        elif isinstance(obj, str):
+            return str(obj)
+        elif isinstance(obj, collections.abc.Sequence):
+            return [as_str(val) for val in sorted(obj)]
+        else:
+            return str(obj)
+
+    return hashlib.sha256(bytes(repr(as_str(obj)), 'UTF-8')).hexdigest()
 
 
 from . import (argtypes, browser, btclients, configfiles, daemon, fs, html,

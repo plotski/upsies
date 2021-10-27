@@ -4,7 +4,6 @@ HTTP methods with caching
 
 import asyncio
 import collections
-import hashlib
 import http
 import io
 import json
@@ -15,7 +14,7 @@ import time
 import httpx
 
 from .. import __project_name__, __version__, constants, errors
-from . import fs, html
+from . import fs, html, semantic_hash
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -506,7 +505,7 @@ def _cache_file(method, url, params={}):
     if params:
         params_str = '&'.join((f'{k}={v}' for k,v in params.items()))
         if len(make_filename(method, url, params_str)) > 250:
-            params_str = f'[HASH:{_semantic_hash(params)}]'
+            params_str = f'[HASH:{semantic_hash(params)}]'
     else:
         params_str = ''
 
@@ -514,22 +513,3 @@ def _cache_file(method, url, params={}):
         cache_directory or constants.CACHE_DIRPATH,
         fs.sanitize_filename(make_filename(method, url, params_str)),
     )
-
-
-def _semantic_hash(obj):
-    """
-    Return hash for `obj` that stays the same between sessions
-
-    https://github.com/schollii/sandals/blob/master/json_sem_hash.py
-    """
-    def as_str(obj):
-        if isinstance(obj, collections.abc.Mapping):
-            return {as_str(k): as_str(obj[k]) for k in sorted(obj.keys())}
-        elif isinstance(obj, str):
-            return str(obj)
-        elif isinstance(obj, collections.abc.Sequence):
-            return [as_str(val) for val in sorted(obj)]
-        else:
-            return str(obj)
-
-    return hashlib.sha256(bytes(repr(as_str(obj)), 'UTF-8')).hexdigest()

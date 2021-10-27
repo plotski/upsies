@@ -1,3 +1,4 @@
+import hashlib
 import re
 from unittest.mock import Mock, call
 
@@ -281,3 +282,21 @@ def test_as_groups(items, group_sizes, exp_groups):
 )
 def test_is_regex_pattern(object, exp_return_value, mocker):
     assert utils.is_regex_pattern(object) is exp_return_value
+
+
+@pytest.mark.parametrize(
+    argnames='obj, exp_bytes',
+    argvalues=(
+        ('foo',
+         b"'foo'"),
+        (23,
+         b"'23'"),
+        (['foo', 'bar', 'baz'],
+         b"['bar', 'baz', 'foo']"),
+        ({'c': (5, 6, 4), 'a': 1, 'b': [2, 1, 3]},
+         b"{'a': '1', 'b': ['1', '2', '3'], 'c': ['4', '5', '6']}"),
+    ),
+    ids=lambda v: str(v),
+)
+def test_semantic_hash(obj, exp_bytes):
+    assert utils.semantic_hash(obj) == hashlib.sha256(exp_bytes).hexdigest()
