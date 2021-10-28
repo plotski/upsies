@@ -404,7 +404,7 @@ class TorrentFileStream:
                 return None
 
             # It's theoretically possible that a differntly sized file can
-            # produce the correct piece, b ut we assume the file is not what
+            # produce the correct piece, but we assume the file is not what
             # we're looking for if it doesn't have the expected size.
             elif f.size != self._get_file_size_from_fs(f):
                 return None
