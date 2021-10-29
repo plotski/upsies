@@ -13,9 +13,6 @@ from os.path import exists as _path_exists
 from .. import __project_name__, __version__, constants, errors, utils
 from . import LazyModule, fs, types
 
-import logging  # isort:skip
-_log = logging.getLogger(__name__)
-
 torf = LazyModule(module='torf', namespace=globals())
 
 
@@ -522,7 +519,8 @@ class TorrentFileStream:
             try:
                 return os.path.getsize(filepath)
             except OSError as e:
-                _log.debug('Ignoring OSError: %r', e)
+                # Return None instead of raising an exception
+                pass
 
     def _get_open_file(self, file):
         filepath = os.path.join(self._location, file)
