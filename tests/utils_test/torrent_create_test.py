@@ -247,6 +247,6 @@ def test_CreateTorrentCallbackWrapper(mocker):
         assert status.pieces_total == pieces_total
         assert status.filepath == 'current/file'
 
-        # TODO: If you're a Python wizard, feel free to attempt at adding tests
-        #       for these CreateTorrentStatus attributes: seconds_elapsed,
+        # TODO: If you're a Python wizard, feel free to add tests for these
+        #       CreateTorrentStatus attributes: seconds_elapsed,
         #       seconds_remaining, seconds_total, time_finished, time_started
