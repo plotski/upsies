@@ -1,208 +1,444 @@
-from unittest.mock import Mock, call, patch
+import copy
+import os
+import re
+from types import SimpleNamespace
+from unittest.mock import Mock, call
 
 import pytest
 import torf
 
 from upsies import __project_name__, __version__, errors
-from upsies.utils.torrent import (_CreateTorrentCallbackWrapper,
-                                  _make_file_tree, create)
+from upsies.utils import torrent
 
 
-class Callable:
-    def __eq__(self, other):
-        return callable(other)
-
-@patch('upsies.utils.torrent._make_file_tree')
-@patch('torf.Torrent')
-def test_create_handles_existing_torrent_file(Torrent_mock, file_tree_mock, tmp_path):
-    torrent_path = tmp_path / 'file.torrent'
-    torrent_path.write_bytes(b'asdf')
-    init_cb = Mock()
-    progress_cb = Mock()
-    return_value = create(
-        content_path='path/to/content',
-        announce='http://announce.url',
-        source='ABC',
-        torrent_path=torrent_path,
-        init_callback=init_cb,
-        progress_callback=progress_cb,
-    )
-    assert return_value == torrent_path
-    assert Torrent_mock.call_args_list == []
-    assert init_cb.call_args_list == []
-    assert progress_cb.call_args_list == []
-
-@patch('time.time')
-@patch('upsies.utils.torrent._make_file_tree')
-@patch('torf.Torrent')
-def test_create_overwrites_existing_torrent_file(Torrent_mock, file_tree_mock, time_mock, tmp_path):
-    torrent_path = tmp_path / 'file.torrent'
-    torrent_path.write_bytes(b'asdf')
-    init_cb = Mock()
-    progress_cb = Mock()
-    return_value = create(
-        content_path='path/to/content',
-        overwrite=True,
-        announce='http://announce.url',
-        source='ABC',
-        torrent_path=torrent_path,
-        init_callback=init_cb,
-        progress_callback=progress_cb,
-    )
-    assert return_value == torrent_path
-    assert Torrent_mock.call_args_list == [call(
-        path='path/to/content',
-        exclude_regexs=(),
-        trackers=(('http://announce.url',),),
-        private=True,
-        source='ABC',
-        created_by=f'{__project_name__} {__version__}',
-        creation_date=time_mock.return_value,
-    )]
-    assert init_cb.call_args_list == [call(file_tree_mock.return_value)]
-    assert Torrent_mock.return_value.write.call_args_list == [call(torrent_path, overwrite=True)]
-
-@patch('time.time')
-@patch('upsies.utils.torrent._make_file_tree')
-@patch('torf.Torrent')
 @pytest.mark.parametrize(
-    argnames='source, exclude',
+    argnames='torrent_path_exists, overwrite, exp_torrent_created',
     argvalues=(
-        ('asdf', None),
-        ('foo', ('a.*', '.*b')),
+        (True, True, True),
+        (True, False, False),
+        (False, True, True),
+        (False, False, True),
     ),
 )
-def test_create_passes_arguments_to_Torrent_class(Torrent_mock, file_tree_mock, time_mock, source, exclude):
-    create_kwargs = {
-        'content_path': 'path/to/content',
-        'announce': 'http://announce.url',
-        'source': source,
-        'torrent_path': 'path/to/torrent',
-        'init_callback': Mock(),
-        'progress_callback': Mock(),
-    }
-    if source:
-        create_kwargs['source'] = source
-    if exclude:
-        create_kwargs['exclude'] = exclude
-    return_value = create(**create_kwargs)
-    assert return_value == 'path/to/torrent'
+@pytest.mark.parametrize('torrent_from_cache', (False, True))
+def test_create(torrent_from_cache, torrent_path_exists, overwrite, exp_torrent_created, mocker, tmp_path):
+    content_path = str(tmp_path / 'content')
+    torrent_path = str(tmp_path / 'content.torrent')
+    announce = 'http://foo'
+    source = 'ASDF'
+    init_callback = Mock()
+    progress_callback = Mock()
+    exclude = ('a', 'b', 'c')
+
+    mocker.patch('upsies.utils.torrent._path_exists', return_value=torrent_path_exists)
+    mocker.patch('upsies.utils.torrent._read_cache_torrent', return_value=Mock() if torrent_from_cache else None)
+    mocker.patch('upsies.utils.torrent._generate_torrent', return_value=Mock())
+    mocker.patch('upsies.utils.torrent._store_cache_torrent')
+    exp_torrent = torrent._read_cache_torrent.return_value or torrent._generate_torrent.return_value
+
+    t_path = torrent.create(
+        content_path=content_path,
+        announce=announce,
+        source=source,
+        torrent_path=torrent_path,
+        init_callback=init_callback,
+        progress_callback=progress_callback,
+        overwrite=overwrite,
+        exclude=exclude,
+    )
+    assert t_path == torrent_path
+    if not overwrite:
+        assert torrent._path_exists.call_args_list == [call(torrent_path)]
+    else:
+        assert torrent._path_exists.call_args_list == []
+
+    if exp_torrent_created:
+        assert torrent._read_cache_torrent.call_args_list == [call(content_path=content_path, exclude=exclude)]
+        if torrent_from_cache:
+            assert exp_torrent.trackers == ((announce,))
+            assert exp_torrent.source == source
+        else:
+            assert torrent._generate_torrent.call_args_list == [call(
+                content_path=content_path,
+                announce=announce,
+                source=source,
+                exclude=exclude,
+                progress_callback=progress_callback,
+                init_callback=init_callback,
+            )]
+            assert torrent._store_cache_torrent.call_args_list == [call(exp_torrent)]
+
+        assert exp_torrent.write.call_args_list == [call(torrent_path, overwrite=True)]
+
+    else:
+        assert torrent._read_cache_torrent.call_args_list == []
+        assert torrent._generate_torrent.call_args_list == []
+        assert torrent._store_cache_torrent.call_args_list == []
+        assert exp_torrent.write.call_args_list == []
+
+
+@pytest.mark.parametrize(
+    argnames='announce, source, exp_error',
+    argvalues=(
+        ('http://foo', '', 'Source is empty'),
+        ('', 'ASDF', 'Announce URL is empty'),
+        ('', '', 'Announce URL is empty'),
+    ),
+)
+def test_create_validates_arguments(announce, source, exp_error, mocker, tmp_path):
+    torrent_path = str(tmp_path / 'content.torrent'),
+
+    mocker.patch('upsies.utils.torrent._path_exists', return_value=False)
+    mocker.patch('upsies.utils.torrent._read_cache_torrent')
+    mocker.patch('upsies.utils.torrent._generate_torrent')
+    mocker.patch('upsies.utils.torrent._store_cache_torrent')
+
+    with pytest.raises(errors.TorrentError, match=rf'^{re.escape(exp_error)}$'):
+        torrent.create(
+            content_path=str(tmp_path / 'content'),
+            torrent_path=torrent_path,
+            announce=announce,
+            source=source,
+            init_callback=Mock(),
+            progress_callback=Mock(),
+            exclude=('a', 'b', 'c'),
+        )
+    assert torrent._path_exists.call_args_list == []
+    assert torrent._read_cache_torrent.call_args_list == []
+    assert torrent._generate_torrent.call_args_list == []
+    assert torrent._store_cache_torrent.call_args_list == []
+
+def test_create_handles_TorfError_from_torrent_write(mocker, tmp_path):
+    torrent_path = str(tmp_path / 'content.torrent'),
+
+    mocker.patch('upsies.utils.torrent._path_exists', return_value=False)
+    mocker.patch('upsies.utils.torrent._read_cache_torrent')
+    mocker.patch('upsies.utils.torrent._generate_torrent')
+    mocker.patch('upsies.utils.torrent._store_cache_torrent')
+    torrent._read_cache_torrent.return_value.write.side_effect = torf.TorfError('nope')
+
+    print('cached_torrent:', torrent._read_cache_torrent.return_value)
+    print('created_torrent:', torrent._generate_torrent.return_value)
+
+    with pytest.raises(errors.TorrentError, match=r'^nope$'):
+        torrent.create(
+            content_path=str(tmp_path / 'content'),
+            torrent_path=torrent_path,
+            announce='http://foo',
+            source='ASDF',
+            init_callback=Mock(),
+            progress_callback=Mock(),
+            exclude=('a', 'b', 'c'),
+        )
+
+
+def test_generate_torrent(mocker, tmp_path):
+    content_path = str(tmp_path / 'content')
+    exclude = ('foo', 'bar', 'baz')
+    announce = 'http://announce.mock'
+    source = 'ASDF',
+    created_by = f'{__project_name__} {__version__}'
+    time = 'mock time'
+    init_callback = Mock()
+    progress_callback = Mock()
+
+    Torrent_mock = mocker.patch('torf.Torrent')
+    mocker.patch('upsies.utils.torrent._CreateTorrentCallbackWrapper')
+    mocker.patch('upsies.utils.torrent._make_file_tree')
+    mocker.patch('time.time', return_value=time)
+
+    t = torrent._generate_torrent(
+        content_path=content_path,
+        announce=announce,
+        source=source,
+        exclude=exclude,
+        init_callback=init_callback,
+        progress_callback=progress_callback,
+    )
+    assert t == Torrent_mock.return_value
     assert Torrent_mock.call_args_list == [call(
-        path='path/to/content',
-        exclude_regexs=exclude or (),
-        trackers=(('http://announce.url',),),
+        path=content_path,
+        exclude_regexs=exclude,
+        trackers=((announce,),),
         private=True,
         source=source,
-        created_by=f'{__project_name__} {__version__}',
-        creation_date=time_mock.return_value,
+        created_by=created_by,
+        creation_date=time,
     )]
-
-@patch('upsies.utils.torrent._make_file_tree')
-@patch('torf.Torrent')
-def test_create_calls_init_callback(Torrent_mock, file_tree_mock):
-    file_tree_mock.return_value = 'beautiful tree'
-    init_cb = Mock()
-    return_value = create(
-        content_path='path/to/content',
-        announce='http://announce.url',
-        source='ABC',
-        torrent_path='path/to/torrent',
-        init_callback=init_cb,
-        progress_callback=Mock()
-    )
-    assert return_value == 'path/to/torrent'
-    assert init_cb.call_args_list == [call('beautiful tree')]
-    assert file_tree_mock.call_args_list == [call(Torrent_mock.return_value.filetree)]
-
-@patch('upsies.utils.torrent._make_file_tree')
-@patch('torf.Torrent')
-def test_create_generates_torrent(Torrent_mock, file_tree_mock):
-    return_value = create(
-        content_path='path/to/content',
-        announce='http://announce.url',
-        source='ABC',
-        torrent_path='path/to/torrent',
-        init_callback=Mock(),
-        progress_callback=Mock(),
-    )
-    assert return_value == 'path/to/torrent'
+    assert torrent._CreateTorrentCallbackWrapper.call_args_list == [call(progress_callback)]
+    assert torrent._make_file_tree.call_args_list == [call(Torrent_mock.return_value.filetree)]
+    assert init_callback.call_args_list == [call(torrent._make_file_tree.return_value)]
     assert Torrent_mock.return_value.generate.call_args_list == [call(
-        callback=Callable(),
+        callback=torrent._CreateTorrentCallbackWrapper.return_value,
         interval=1.0,
     )]
 
-@patch('upsies.utils.torrent._make_file_tree')
-@patch('torf.Torrent')
-def test_create_catches_exception_from_torrent_generation(Torrent_mock, file_tree_mock):
-    Torrent_mock.return_value.generate.side_effect = torf.TorfError('Nyet')
-    with pytest.raises(errors.TorrentError, match=r'^Nyet$'):
-        create(
-            content_path='path/to/content',
-            announce='http://announce.url',
-            source='ABC',
-            torrent_path='path/to/torrent',
-            init_callback=Mock(),
-            progress_callback=Mock(),
-        )
-    assert Torrent_mock.return_value.write.call_args_list == []
+def test_generate_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
+    content_path = str(tmp_path / 'content')
+    exclude = ('foo', 'bar', 'baz')
+    announce = 'http://announce.mock'
+    source = 'ASDF',
+    created_by = f'{__project_name__} {__version__}'
+    time = 'mock time'
+    init_callback = Mock()
+    progress_callback = Mock()
 
-@patch('upsies.utils.torrent._make_file_tree')
-@patch('torf.Torrent')
-def test_create_does_not_accept_empty_announce_url(Torrent_mock, file_tree_mock):
-    with pytest.raises(errors.TorrentError, match=r'^Announce URL is empty$'):
-        create(
-            content_path='path/to/content',
-            announce='',
-            source='ABC',
-            torrent_path='path/to/torrent',
-            init_callback=Mock(),
-            progress_callback=Mock(),
-        )
-    assert Torrent_mock.call_args_list == []
+    Torrent_mock = mocker.patch('torf.Torrent', side_effect=torf.TorfError('nope'))
+    mocker.patch('upsies.utils.torrent._CreateTorrentCallbackWrapper')
+    mocker.patch('upsies.utils.torrent._make_file_tree')
+    mocker.patch('time.time', return_value=time)
 
-@patch('upsies.utils.torrent._make_file_tree')
-@patch('torf.Torrent')
-def test_create_does_not_accept_empty_source(Torrent_mock, file_tree_mock):
-    with pytest.raises(errors.TorrentError, match=r'^Source is empty$'):
-        create(
-            content_path='path/to/content',
-            announce='http://announce.url',
-            source='',
-            torrent_path='path/to/torrent',
-            init_callback=Mock(),
-            progress_callback=Mock(),
+    with pytest.raises(errors.TorrentError, match=r'^nope$'):
+        torrent._generate_torrent(
+            content_path=content_path,
+            announce=announce,
+            source=source,
+            exclude=exclude,
+            init_callback=init_callback,
+            progress_callback=progress_callback,
         )
-    assert Torrent_mock.call_args_list == []
+    assert Torrent_mock.call_args_list == [call(
+        path=content_path,
+        exclude_regexs=exclude,
+        trackers=((announce,),),
+        private=True,
+        source=source,
+        created_by=created_by,
+        creation_date=time,
+    )]
+    assert torrent._CreateTorrentCallbackWrapper.call_args_list == [call(progress_callback)]
+    assert torrent._make_file_tree.call_args_list == []
+    assert init_callback.call_args_list == []
+    assert Torrent_mock.return_value.generate.call_args_list == []
 
-@patch('upsies.utils.torrent._make_file_tree')
-@patch('torf.Torrent')
-def test_create_catches_error_when_writing_torrent_file(Torrent_mock, file_tree_mock):
-    Torrent_mock.return_value.write.side_effect = torf.TorfError('Nada')
-    with pytest.raises(errors.TorrentError, match=r'^Nada$'):
-        create(
-            content_path='path/to/content',
-            announce='http://announce.url',
-            source='ABC',
-            torrent_path='path/to/torrent',
-            init_callback=Mock(),
-            progress_callback=Mock(),
+def test_generate_torrent_handles_TorfError_from_Torrent_generate(mocker, tmp_path):
+    content_path = str(tmp_path / 'content')
+    exclude = ('foo', 'bar', 'baz')
+    announce = 'http://announce.mock'
+    source = 'ASDF',
+    created_by = f'{__project_name__} {__version__}'
+    time = 'mock time'
+    init_callback = Mock()
+    progress_callback = Mock()
+
+    Torrent_mock = mocker.patch('torf.Torrent')
+    Torrent_mock.return_value.generate.side_effect = torf.TorfError('nope')
+    mocker.patch('upsies.utils.torrent._CreateTorrentCallbackWrapper')
+    mocker.patch('upsies.utils.torrent._make_file_tree')
+    mocker.patch('time.time', return_value=time)
+
+    with pytest.raises(errors.TorrentError, match=r'^nope$'):
+        torrent._generate_torrent(
+            content_path=content_path,
+            announce=announce,
+            source=source,
+            exclude=exclude,
+            init_callback=init_callback,
+            progress_callback=progress_callback,
         )
-    assert Torrent_mock.return_value.write.call_args_list == [call('path/to/torrent', overwrite=False)]
+    assert Torrent_mock.call_args_list == [call(
+        path=content_path,
+        exclude_regexs=exclude,
+        trackers=((announce,),),
+        private=True,
+        source=source,
+        created_by=created_by,
+        creation_date=time,
+    )]
+    assert torrent._CreateTorrentCallbackWrapper.call_args_list == [call(progress_callback)]
+    assert torrent._make_file_tree.call_args_list == [call(Torrent_mock.return_value.filetree)]
+    assert init_callback.call_args_list == [call(torrent._make_file_tree.return_value)]
+    assert Torrent_mock.return_value.generate.call_args_list == [call(
+        callback=torrent._CreateTorrentCallbackWrapper.return_value,
+        interval=1.0,
+    )]
 
-@patch('upsies.utils.torrent._make_file_tree')
-@patch('torf.Torrent')
-def test_create_writes_torrent_file_after_successful_generation(Torrent_mock, file_tree_mock):
-    Torrent_mock.return_value.generate.return_value = True
-    return_value = create(
-        content_path='path/to/content',
-        announce='http://announce.url',
-        source='ABC',
-        torrent_path='path/to/torrent',
-        init_callback=Mock(),
-        progress_callback=Mock(),
+
+def test_store_cache_torrent(mocker, tmp_path):
+    Torrent_mock = mocker.patch('torf.Torrent')
+    mocker.patch('upsies.utils.torrent._get_cache_torrent_path')
+    mocker.patch('upsies.utils.torrent._copy_torrent_info')
+    mocker.patch('time.time', return_value='mock time')
+    mock_torrent = Mock()
+    torrent._store_cache_torrent(mock_torrent)
+    assert Torrent_mock.call_args_list == [call(
+        private=True,
+        created_by=f'{__project_name__} {__version__}',
+        creation_date='mock time',
+        comment='This torrent is used to cache previously hashed pieces.',
+    )]
+    assert torrent._copy_torrent_info.call_args_list == [call(
+        mock_torrent, Torrent_mock.return_value,
+    )]
+    assert torrent._get_cache_torrent_path.call_args_list == [call(
+        Torrent_mock.return_value,
+        create_directory=True,
+    )]
+    assert Torrent_mock.return_value.write.call_args_list == [call(
+        torrent._get_cache_torrent_path.return_value,
+    )]
+
+
+def test_read_cache_torrent_returns_Torrent_instance(mocker, tmp_path):
+    content_path = str(tmp_path / 'content')
+    exclude = ('foo', 'bar', 'baz')
+    Torrent_mock = mocker.patch('torf.Torrent')
+    mocker.patch('upsies.utils.torrent._get_cache_torrent_path')
+    mocker.patch('upsies.utils.torrent._copy_torrent_info')
+    mocker.patch('time.time', return_value='mock time')
+    t = torrent._read_cache_torrent(content_path, exclude=exclude)
+    assert t is Torrent_mock.return_value
+    assert Torrent_mock.call_args_list == [call(
+        path=content_path,
+        exclude_regexs=exclude,
+        private=True,
+        created_by=f'{__project_name__} {__version__}',
+        creation_date='mock time',
+    )]
+    assert torrent._get_cache_torrent_path.call_args_list == [call(
+        Torrent_mock.return_value,
+        create_directory=False,
+    )]
+    assert Torrent_mock.read.call_args_list == [call(
+        torrent._get_cache_torrent_path.return_value
+    )]
+    assert torrent._copy_torrent_info.call_args_list == [call(
+        Torrent_mock.read.return_value, Torrent_mock.return_value,
+    )]
+
+def test_read_cache_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
+    content_path = str(tmp_path / 'content')
+    exclude = ('foo', 'bar', 'baz')
+    Torrent_mock = mocker.patch('torf.Torrent', side_effect=torf.TorfError('nope'))
+    mocker.patch('upsies.utils.torrent._get_cache_torrent_path')
+    mocker.patch('upsies.utils.torrent._copy_torrent_info')
+    mocker.patch('time.time', return_value='mock time')
+    t = torrent._read_cache_torrent(content_path, exclude=exclude)
+    assert t is None
+    assert Torrent_mock.call_args_list == [call(
+        path=content_path,
+        exclude_regexs=exclude,
+        private=True,
+        created_by=f'{__project_name__} {__version__}',
+        creation_date='mock time',
+    )]
+    assert torrent._get_cache_torrent_path.call_args_list == []
+    assert Torrent_mock.read.call_args_list == []
+    assert torrent._copy_torrent_info.call_args_list == []
+
+def test_read_cache_torrent_handles_TorfError_from_Torrent_read(mocker, tmp_path):
+    content_path = str(tmp_path / 'content')
+    exclude = ('foo', 'bar', 'baz')
+    Torrent_mock = mocker.patch('torf.Torrent', Mock(read=Mock(side_effect=torf.TorfError('nope'))))
+    mocker.patch('upsies.utils.torrent._get_cache_torrent_path')
+    mocker.patch('upsies.utils.torrent._copy_torrent_info')
+    mocker.patch('time.time', return_value='mock time')
+    t = torrent._read_cache_torrent(content_path, exclude=exclude)
+    assert t is None
+    assert Torrent_mock.call_args_list == [call(
+        path=content_path,
+        exclude_regexs=exclude,
+        private=True,
+        created_by=f'{__project_name__} {__version__}',
+        creation_date='mock time',
+    )]
+    assert torrent._get_cache_torrent_path.call_args_list == [call(
+        Torrent_mock.return_value,
+        create_directory=False,
+    )]
+    assert Torrent_mock.read.call_args_list == [call(
+        torrent._get_cache_torrent_path.return_value
+    )]
+    assert torrent._copy_torrent_info.call_args_list == []
+
+
+class MockFile(str):
+    def __new__(cls, string, size):
+        self = super().__new__(cls, string)
+        self.size = size
+        return self
+
+@pytest.mark.parametrize(
+    argnames='cache_torrent, cache_dirpath, create_directory',
+    argvalues=(
+        (
+            SimpleNamespace(name='Foo', piece_size=123, files=(MockFile('a', size=123), MockFile('b', size=456))),
+            'path/to/cache',
+            False,
+        ),
+        (
+            SimpleNamespace(name='Foo', piece_size=123, files=(MockFile('a', size=123), MockFile('b', size=456))),
+            'path/to/cache',
+            True,
+        ),
+    ),
+    ids=lambda v: str(v),
+)
+def test_get_cache_torrent_path(cache_torrent, cache_dirpath, create_directory, mocker, tmp_path):
+    cache_dirpath = str(tmp_path / cache_dirpath)
+    mocker.patch('upsies.constants.CACHE_DIRPATH', cache_dirpath)
+    mock_mkdir = mocker.patch('upsies.utils.fs.mkdir')
+    mock_semantic_hash = mocker.patch('upsies.utils.semantic_hash', return_value='D34DB33F')
+
+    exp_cache_torrent_path = os.path.join(
+        cache_dirpath,
+        'generic_torrents',
+        f'{cache_torrent.name}.{mock_semantic_hash.return_value}.torrent',
     )
-    assert return_value == 'path/to/torrent'
-    assert Torrent_mock.return_value.write.call_args_list == [call('path/to/torrent', overwrite=False)]
+    cache_torrent_path = torrent._get_cache_torrent_path(cache_torrent, create_directory=create_directory)
+    assert cache_torrent_path == cache_torrent_path
+    if create_directory:
+        assert mock_mkdir.call_args_list == [call(os.path.dirname(exp_cache_torrent_path))]
+    else:
+        assert mock_mkdir.call_args_list == []
+    assert mock_semantic_hash.call_args_list == [call(
+        {
+            'files': [(str(f), f.size) for f in cache_torrent.files],
+            'piece_size': cache_torrent.piece_size,
+        },
+    )]
+
+def test_get_cache_torrent_path_handles_ContentError_from_mkdir(mocker, tmp_path):
+    cache_torrent = Mock()
+    mocker.patch('upsies.constants.CACHE_DIRPATH', str(tmp_path / 'cache'))
+    mocker.patch('upsies.utils.fs.mkdir', side_effect=errors.ContentError('nope'))
+    mocker.patch('upsies.utils.semantic_hash', return_value='D34DB33F')
+    with pytest.raises(errors.TorrentError, match=rf'^{tmp_path / "cache" / "generic_torrents"}: nope$'):
+        torrent._get_cache_torrent_path(cache_torrent, create_directory=True)
+
+
+@pytest.mark.parametrize(
+    argnames='info_a, info_b, exp_info_b',
+    argvalues=(
+        (
+            {'pieces': 'pieces a', 'piece length': 'piece length a', 'name': 'name a', 'length': 'length a', 'foo': 'bar'},
+            {},
+            {'pieces': 'pieces a', 'piece length': 'piece length a', 'name': 'name a', 'length': 'length a'},
+        ),
+        (
+            {'pieces': 'pieces a', 'piece length': 'piece length a', 'name': 'name a', 'files': 'files a', 'foo': 'bar'},
+            {},
+            {'pieces': 'pieces a', 'piece length': 'piece length a', 'name': 'name a', 'files': 'files a'},
+        ),
+        (
+            {'pieces': 'pieces a', 'piece length': 'piece length a', 'name': 'name a', 'length': 'length a', 'foo': 'bar'},
+            {'pieces': 'pieces b', 'piece length': 'piece length b', 'name': 'name b', 'length': 'length b', 'foo': 'baz'},
+            {'pieces': 'pieces a', 'piece length': 'piece length a', 'name': 'name a', 'length': 'length a', 'foo': 'baz'},
+        ),
+        (
+            {'pieces': 'pieces a', 'piece length': 'piece length a', 'name': 'name a', 'files': 'files a', 'foo': 'bar'},
+            {'pieces': 'pieces b', 'piece length': 'piece length b', 'name': 'name b', 'files': 'files b', 'foo': 'baz'},
+            {'pieces': 'pieces a', 'piece length': 'piece length a', 'name': 'name a', 'files': 'files a', 'foo': 'baz'},
+        ),
+    ),
+    ids=lambda v: str(v),
+)
+def test_copy_torrent_info(info_a, info_b, exp_info_b):
+    info_a_orig = copy.deepcopy(info_a)
+    a, b = Mock(metainfo={'info': info_a}), Mock(metainfo={'info': info_b})
+    torrent._copy_torrent_info(a, b)
+    assert info_b == exp_info_b
+    assert info_a == info_a_orig
 
 
 def test_make_file_tree():
@@ -221,7 +457,7 @@ def test_make_file_tree():
             }
         }
     }
-    assert _make_file_tree(filetree) == (
+    assert torrent._make_file_tree(filetree) == (
         (('Top', (
             ('a', 123),
             ('b', (
@@ -234,7 +470,7 @@ def test_make_file_tree():
 
 def test_CreateTorrentCallbackWrapper(mocker):
     progress_cb = Mock()
-    cbw = _CreateTorrentCallbackWrapper(progress_cb)
+    cbw = torrent._CreateTorrentCallbackWrapper(progress_cb)
     pieces_total = 12
     for pieces_done in range(0, pieces_total + 1):
         return_value = cbw(Mock(piece_size=450, size=5000), 'current/file', pieces_done, pieces_total)

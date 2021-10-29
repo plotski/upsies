@@ -10,8 +10,8 @@ import os
 import time
 from os.path import exists as _path_exists
 
-from .. import __project_name__, __version__, errors
-from . import LazyModule, types
+from .. import __project_name__, __version__, constants, errors, utils
+from . import LazyModule, fs, types
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -72,32 +72,118 @@ def create(*, content_path, announce, source, torrent_path,
     if not source:
         raise errors.TorrentError('Source is empty')
 
-    if not overwrite and _path_exists(torrent_path):
-        _log.debug('Torrent file already exists: %r', torrent_path)
-        return torrent_path
-    else:
-        callback = _CreateTorrentCallbackWrapper(progress_callback)
-        try:
-            torrent = torf.Torrent(
-                path=content_path,
-                exclude_regexs=exclude,
-                trackers=((announce,),),
-                private=True,
+    if overwrite or not _path_exists(torrent_path):
+        torrent = None
+
+        # Try to read piece hashes from cache
+        torrent = _read_cache_torrent(
+            content_path=content_path,
+            exclude=exclude,
+        )
+        if torrent:
+            # Update metadata in generic torrent
+            torrent.trackers = (announce,)
+            torrent.source = source
+        else:
+            # Reading cached piece hashes failed for some reason
+            torrent = _generate_torrent(
+                content_path=content_path,
+                announce=announce,
                 source=source,
-                created_by=f'{__project_name__} {__version__}',
-                creation_date=time.time(),
+                exclude=exclude,
+                progress_callback=progress_callback,
+                init_callback=init_callback,
             )
-            init_callback(_make_file_tree(torrent.filetree))
-            torrent.generate(callback=callback, interval=1.0)
+            _store_cache_torrent(torrent)
+
+        # Write torrent file
+        try:
+            torrent.write(torrent_path, overwrite=True)
         except torf.TorfError as e:
             raise errors.TorrentError(e)
-        else:
-            try:
-                torrent.write(torrent_path, overwrite=overwrite)
-            except torf.TorfError as e:
-                raise errors.TorrentError(e)
-            else:
-                return torrent_path
+
+    return torrent_path
+
+
+def _generate_torrent(*, content_path, announce, source, exclude, init_callback, progress_callback):
+    callback = _CreateTorrentCallbackWrapper(progress_callback)
+    try:
+        torrent = torf.Torrent(
+            path=content_path,
+            exclude_regexs=exclude,
+            trackers=((announce,),),
+            private=True,
+            source=source,
+            created_by=f'{__project_name__} {__version__}',
+            creation_date=time.time(),
+        )
+        init_callback(_make_file_tree(torrent.filetree))
+        torrent.generate(callback=callback, interval=1.0)
+    except torf.TorfError as e:
+        raise errors.TorrentError(e)
+    else:
+        return torrent
+
+
+def _store_cache_torrent(torrent):
+    cache_torrent = torf.Torrent(
+        private=True,
+        created_by=f'{__project_name__} {__version__}',
+        creation_date=time.time(),
+        comment='This torrent is used to cache previously hashed pieces.',
+    )
+    _copy_torrent_info(torrent, cache_torrent)
+    cache_torrent_path = _get_cache_torrent_path(cache_torrent, create_directory=True)
+    cache_torrent.write(cache_torrent_path)
+
+
+def _read_cache_torrent(content_path, exclude):
+    try:
+        torrent = torf.Torrent(
+            path=content_path,
+            exclude_regexs=exclude,
+            private=True,
+            created_by=f'{__project_name__} {__version__}',
+            creation_date=time.time(),
+        )
+        cache_torrent_path = _get_cache_torrent_path(torrent, create_directory=False)
+        cache_torrent = torf.Torrent.read(cache_torrent_path)
+    except torf.TorfError as e:
+        return None
+    else:
+        _copy_torrent_info(cache_torrent, torrent)
+        return torrent
+
+
+def _get_cache_torrent_path(torrent, create_directory=True):
+    directory = os.path.join(
+        constants.CACHE_DIRPATH,
+        'generic_torrents',
+    )
+    if create_directory:
+        try:
+            fs.mkdir(directory)
+        except errors.ContentError as e:
+            raise errors.TorrentError(f'{directory}: {e}')
+
+    cache_id = {
+        'files': [(str(f), f.size) for f in torrent.files],
+        'piece_size': torrent.piece_size,
+    }
+    cache_id_string = utils.semantic_hash(cache_id)
+    filename = f'{torrent.name}.{cache_id_string}.torrent'
+    return os.path.join(directory, filename)
+
+
+def _copy_torrent_info(from_torrent, to_torrent):
+    from_info, to_info = from_torrent.metainfo['info'], to_torrent.metainfo['info']
+    to_info['pieces'] = from_info['pieces']
+    to_info['piece length'] = from_info['piece length']
+    to_info['name'] = from_info['name']
+    if 'length' in from_info:
+        to_info['length'] = from_info['length']
+    else:
+        to_info['files'] = from_info['files']
 
 
 def _make_file_tree(tree):

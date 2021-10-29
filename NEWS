@@ -1,3 +1,7 @@
+2021.??.??
+  * Re-use hashed pieces from previously generated torrents if possible
+
+
 2021.10.23
   * Fixed stuck/unresponsive "Scene Check" yes/no prompt when PreDB is down
   * Try to find release on SrrDB if PreDB is down before prompting user

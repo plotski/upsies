@@ -45,7 +45,14 @@ class torrent_add(CommandBase):
 
 
 class torrent_create(CommandBase):
-    """Create torrent file and optionally add or copy it"""
+    """
+    Create torrent file and optionally add or copy it
+
+    The piece hashes are cached and re-used if possible. This means the torrent
+    is not generated for every tracker again. Note that the torrent is always
+    generated if files are excluded on one tracker but not on the other. The
+    files in each torrent must be identical.
+    """
 
     names = ('torrent-create', 'tc')
 
