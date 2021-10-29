@@ -145,7 +145,7 @@ def _read_cache_torrent(content_path, exclude):
         )
         cache_torrent_path = _get_cache_torrent_path(torrent, create_directory=False)
         cache_torrent = torf.Torrent.read(cache_torrent_path)
-    except torf.TorfError as e:
+    except torf.TorfError:
         return None
     else:
         _copy_torrent_info(cache_torrent, torrent)
@@ -518,7 +518,7 @@ class TorrentFileStream:
         if os.path.exists(filepath):
             try:
                 return os.path.getsize(filepath)
-            except OSError as e:
+            except OSError:
                 # Return None instead of raising an exception
                 pass
 
