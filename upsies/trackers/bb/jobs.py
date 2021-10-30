@@ -167,15 +167,17 @@ class BbTrackerJobs(TrackerJobsBase):
         def condition():
             if self.release_type in release_types:
                 # Job is appropriate for release type
-                if not self.isolated_jobs:
+                isolated_jobs = self.isolated_jobs
+                if not isolated_jobs:
                     # No jobs where singled out via CLI arguments or other
                     # means; all appropriate jobs are enabled
                     return True
-                elif job_attr in self.isolated_jobs:
+                elif job_attr in isolated_jobs:
                     # This particular job was singled out by the user;
                     # all other jobs are disabled
                     return True
             return False
+
         return condition
 
     @property
