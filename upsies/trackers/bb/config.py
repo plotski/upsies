@@ -33,7 +33,7 @@ class BbTrackerConfig(TrackerConfigBase):
                     max=defaults['screenshots'].max,
                 ),
             },
-            ('--poster-file',): {
+            ('--poster-file', '--pf'): {
                 'help': 'Path or URL to poster image',
             },
             ('--anime', '--an'): {
