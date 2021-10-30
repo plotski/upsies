@@ -43,13 +43,6 @@ def test_argument_definitions():
                 'help': 'Tag upload as anime (ignored for movies)',
                 'action': 'store_true',
             },
-            ('--poster-file', '--pf'): {
-                'help': 'Path or URL to poster image',
-            },
-            ('--anime', '--an'): {
-                'help': 'Tag upload as anime (ignored for movies)',
-                'action': 'store_true',
-            },
             ('--only-description', '--od'): {
                 'help': 'Only generate description (do not upload anything)',
                 'action': 'store_true',
