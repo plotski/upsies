@@ -1,4 +1,5 @@
 2021.??.??
+  * submit: Tracker-specific CLI options changed (see `upsies submit <TRACKER> -h`)
   * Re-use hashed pieces from previously generated torrents if possible
 
 
