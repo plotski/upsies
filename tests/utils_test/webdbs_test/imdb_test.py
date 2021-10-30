@@ -578,14 +578,14 @@ async def test_rating(id, exp_rating, api, store_response):
     argnames=('id', 'exp_runtimes'),
     argvalues=(
         ('tt0080455', {'default': 133, 'Extended': 148}),  # Blues Brothers (movie)
-        ('tt0192802', {'default': 73}),  # Wind in the Willows (TV movie)
         ('tt0097270', {'default': 39}),  # Elephant (TV movie)
-        ('tt6560040', {'Entire Series': 313}),  # The Forest (mini series)
+        ('tt0192802', {'default': 73}),  # Wind in the Willows (TV movie)
         ('tt0348914', {'default': 55}),  # Deadwood (series)
-        ('tt0556307', {'default': 53}),  # Deadwood - S02E04 (episode)
-        ('tt0409459', {'default': 162, "Director's Cut": 186, 'Ultimate Cut': 215}),  # Watchmen (movie)
-        ('tt3323824', {'default': 23}),  # Drifters (series) with removed "approx" runtime
         ('tt0402123', {}),  # Deadwood Coach (movie, no runtime found)
+        ('tt0409459', {'default': 162, "Director's Cut": 186, 'Ultimate Cut': 215}),  # Watchmen (movie)
+        ('tt0556307', {'default': 53}),  # Deadwood - S02E04 (episode)
+        ('tt3323824', {'default': 23}),  # Drifters (series) with removed "approx" runtime
+        ('tt6560040', {'Entire Series': 313}),  # The Forest (mini series)
         (None, {}),
     ),
     ids=lambda value: str(value),
