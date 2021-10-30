@@ -1,3 +1,4 @@
+import random
 from unittest.mock import Mock, call
 
 import pytest
@@ -66,12 +67,16 @@ async def test_get_versions(current, release, prerelease, exp_versions, mocker):
 @pytest.mark.parametrize(
     argnames='versions, exp_latest_version',
     argvalues=(
-        (['2021.6.20', '2021.8.10', '2023.4.7'], '2023.4.7'),
+        (['2021.6.20', '2023.4.7', '2021.8.10'], '2023.4.7'),
+        (['2021.8.27', '2021.10.9', '2021.9.20'], '2021.10.9'),
+        (['2021.10.3', '2021.10.10', '2021.10.9'], '2021.10.10'),
         ([], None),
     ),
+    ids=lambda v: str(v),
 )
 @pytest.mark.asyncio
 async def test_get_latest_release(versions, exp_latest_version, mocker):
+    random.shuffle(versions)
     response_mock = Mock(
         json=Mock(return_value={
             'releases': {v: f'info about {v!r}' for v in versions},

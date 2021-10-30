@@ -5,6 +5,7 @@ Find most recent version
 import asyncio
 import re
 
+import natsort
 from packaging.version import parse as parse_version
 
 from .. import __project_name__, __version__
@@ -71,7 +72,7 @@ async def _get_latest_release():
         cache=True,
         max_cache_age=_MAX_CACHE_AGE,
     )
-    all_versions = tuple(response.json()['releases'])
+    all_versions = natsort.natsorted(response.json()['releases'])
     # PyPI should return the releases sorted by release date (latest last)
     if all_versions:
         return _fix_version(all_versions[-1])
