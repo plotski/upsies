@@ -43,30 +43,37 @@ def test_argument_definitions():
                 'help': 'Tag upload as anime (ignored for movies)',
                 'action': 'store_true',
             },
-            ('--description', '--desc'): {
-                'group': 'generate-metadata',
-                'help': 'Only generate description',
+            ('--poster-file', '--pf'): {
+                'help': 'Path or URL to poster image',
+            },
+            ('--anime', '--an'): {
+                'help': 'Tag upload as anime (ignored for movies)',
                 'action': 'store_true',
             },
-            ('--poster', '-p'): {
-                'group': 'generate-metadata',
-                'help': 'Only generate poster URL',
+            ('--only-description', '--od'): {
+                'help': 'Only generate description (do not upload anything)',
                 'action': 'store_true',
+                'group': 'generate-metadata',
             },
-            ('--release-info', '-i'): {
-                'group': 'generate-metadata',
-                'help': 'Only generate release info',
+            ('--only-poster', '--op'): {
+                'help': 'Only generate poster URL (do not upload anything)',
                 'action': 'store_true',
+                'group': 'generate-metadata',
             },
-            ('--tags', '-g'): {
-                'group': 'generate-metadata',
-                'help': 'Only generate tags',
+            ('--only-release-info', '--or'): {
+                'help': 'Only generate release info (do not upload anything)',
                 'action': 'store_true',
+                'group': 'generate-metadata',
             },
-            ('--title', '-t'): {
-                'group': 'generate-metadata',
-                'help': 'Only generate title',
+            ('--only-tags', '--ota'): {
+                'help': 'Only generate tags (do not upload anything)',
                 'action': 'store_true',
+                'group': 'generate-metadata',
+            },
+            ('--only-title', '--oti'): {
+                'help': 'Only generate title (do not upload anything)',
+                'action': 'store_true',
+                'group': 'generate-metadata',
             },
         },
     }

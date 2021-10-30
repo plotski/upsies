@@ -40,30 +40,30 @@ class BbTrackerConfig(TrackerConfigBase):
                 'help': 'Tag upload as anime (ignored for movies)',
                 'action': 'store_true',
             },
-            ('--description', '--desc'): {
-                'group': 'generate-metadata',
-                'help': 'Only generate description',
+            ('--only-description', '--od'): {
+                'help': 'Only generate description (do not upload anything)',
                 'action': 'store_true',
+                'group': 'generate-metadata',
             },
-            ('--poster', '-p'): {
-                'group': 'generate-metadata',
-                'help': 'Only generate poster URL',
+            ('--only-poster', '--op'): {
+                'help': 'Only generate poster URL (do not upload anything)',
                 'action': 'store_true',
+                'group': 'generate-metadata',
             },
-            ('--release-info', '-i'): {
-                'group': 'generate-metadata',
-                'help': 'Only generate release info',
+            ('--only-release-info', '--or'): {
+                'help': 'Only generate release info (do not upload anything)',
                 'action': 'store_true',
+                'group': 'generate-metadata',
             },
-            ('--tags', '-g'): {
-                'group': 'generate-metadata',
-                'help': 'Only generate tags',
+            ('--only-tags', '--ota'): {
+                'help': 'Only generate tags (do not upload anything)',
                 'action': 'store_true',
+                'group': 'generate-metadata',
             },
-            ('--title', '-t'): {
-                'group': 'generate-metadata',
-                'help': 'Only generate title',
+            ('--only-title', '--oti'): {
+                'help': 'Only generate title (do not upload anything)',
                 'action': 'store_true',
+                'group': 'generate-metadata',
             },
         },
     }

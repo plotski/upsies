@@ -185,27 +185,27 @@ class BbTrackerJobs(TrackerJobsBase):
         by the user, e.g. with a CLI argument
         """
         if self.is_movie_release:
-            if self.options.get('title', False):
-                return ('imdb_job', 'movie_title_job')
-            elif self.options.get('description', False):
+            if self.options.get('only_description', False):
                 return ('imdb_job', 'movie_description_job')
-            elif self.options.get('poster', False):
+            elif self.options.get('only_poster', False):
                 return ('imdb_job', 'movie_poster_job')
-            elif self.options.get('release_info', False):
+            elif self.options.get('only_release_info', False):
                 return ('movie_release_info_job',)
-            elif self.options.get('tags', False):
+            elif self.options.get('only_tags', False):
                 return ('imdb_job', 'movie_tags_job')
+            elif self.options.get('only_title', False):
+                return ('imdb_job', 'movie_title_job')
 
         elif self.is_series_release:
-            if self.options.get('title', False) or self.options.get('release_info', False):
-                # Series title and release_info are combined
-                return ('tvmaze_job', 'series_title_job')
-            elif self.options.get('description', False):
+            if self.options.get('only_description', False):
                 return ('tvmaze_job', 'mediainfo_job', 'screenshots_job',
                         'upload_screenshots_job', 'series_description_job')
-            elif self.options.get('poster', False):
+            elif self.options.get('only_poster', False):
                 return ('tvmaze_job', 'series_poster_job')
-            elif self.options.get('tags', False):
+            elif self.options.get('only_title', False) or self.options.get('only_release_info', False):
+                # Series title and release_info are combined
+                return ('tvmaze_job', 'series_title_job')
+            elif self.options.get('only_tags', False):
                 return ('tvmaze_job', 'series_tags_job')
 
         return ()
