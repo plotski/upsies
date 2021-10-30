@@ -121,9 +121,8 @@ class BbTrackerJobs(TrackerJobsBase):
                                   'screenshots_job', 'upload_screenshots_job',
                                   'add_torrent_job', 'copy_torrent_job')
         for job_attr in generic_job_attributes:
-            job = getattr(self, job_attr, None)
-            if job:
-                job.condition = self.make_job_condition(job_attr, *all_release_types)
+            job = getattr(self, job_attr)
+            job.condition = self.make_job_condition(job_attr, *all_release_types)
 
         # Return all possible jobs and disable/enable them via JobBase's
         # "condition" argument.
