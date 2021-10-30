@@ -206,6 +206,10 @@ class ImdbApi(WebDbApiBase):
                     pass
         return None
 
+    _ignored_runtimes_keys = (
+        re.compile(r'^(?i:approx)\w*$'),
+    )
+
     async def runtimes(self, id):
         runtimes = {}
         if id:
@@ -218,8 +222,9 @@ class ImdbApi(WebDbApiBase):
 
             for match in re.finditer(r'.*\s+\(?(\d+)\s+min\)?\s*(?:\((.*?)\)|)', text):
                 minutes = int(match.group(1))
-                cut = utils.string.capitalize(match.group(2)) if match.group(2) else 'default'
-                runtimes[cut] = minutes
+                key = utils.string.capitalize(match.group(2)) if match.group(2) else 'default'
+                if not any(regex.search(key) for regex in self._ignored_runtimes_keys):
+                    runtimes[key] = minutes
 
         return runtimes
 

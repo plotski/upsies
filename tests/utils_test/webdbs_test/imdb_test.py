@@ -584,6 +584,7 @@ async def test_rating(id, exp_rating, api, store_response):
         ('tt0348914', {'default': 55}),  # Deadwood (series)
         ('tt0556307', {'default': 53}),  # Deadwood - S02E04 (episode)
         ('tt0409459', {'default': 162, "Director's Cut": 186, 'Ultimate Cut': 215}),  # Watchmen (movie)
+        ('tt3323824', {'default': 23}),  # Drifters (series) with removed "approx" runtime
         ('tt0402123', {}),  # Deadwood Coach (movie, no runtime found)
         (None, {}),
     ),
