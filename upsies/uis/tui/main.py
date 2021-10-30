@@ -80,7 +80,7 @@ def _main(args=None):
                 pass
             else:
                 if newer_version:
-                    msg = f'New {__project_name__} version available: {newer_version}'
+                    msg = f'{__project_name__} {newer_version} has been released.'
                     print(msg, file=sys.stderr)
 
         return exit_code
