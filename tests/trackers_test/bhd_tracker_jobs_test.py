@@ -164,43 +164,33 @@ def test_jobs_before_upload_sets_conditions_on_base_class_jobs(bhd_tracker_jobs,
 
 
 @pytest.mark.parametrize(
-    argnames='job_attr',
+    argnames='job_attr, isolated_jobs, exp_return_value',
     argvalues=(
-        # Interactive jobs
-        'imdb_job',
-        'tmdb_job',
-        'release_name_job',
-        'category_job',
-        'type_job',
-        'source_job',
-        'description_job',
-        'scene_check_job',
-
-        # Background jobs
-        'create_torrent_job',
-        'mediainfo_job',
-        'screenshots_job',
-        'upload_screenshots_job',
-    ),
-)
-@pytest.mark.parametrize(
-    argnames='options, relevant_job_attrs',
-    argvalues=(
-        ({'description': True, 'title': False}, ('description_job', 'screenshots_job', 'upload_screenshots_job')),
-        ({'description': False, 'title': False}, ()),
-        ({'description': True, 'title': True}, ('description_job', 'screenshots_job', 'upload_screenshots_job')),
-        ({'description': False, 'title': True}, ('release_name_job', 'imdb_job')),
+        ('foo', (), True),
+        ('foo', ('foo', 'bar'), True),
+        ('bar', ('foo', 'bar'), True),
+        ('baz', ('foo', 'bar'), False),
     ),
     ids=lambda v: str(v),
 )
-def test_make_job_condition(job_attr, options, relevant_job_attrs, bhd_tracker_jobs, mocker):
-    mocker.patch.object(type(bhd_tracker_jobs), 'options', PropertyMock(return_value=options))
+def test_make_job_condition(job_attr, isolated_jobs, exp_return_value, bhd_tracker_jobs, mocker):
+    mocker.patch.object(type(bhd_tracker_jobs), 'isolated_jobs', PropertyMock(return_value=isolated_jobs))
     condition = bhd_tracker_jobs.make_job_condition(job_attr)
     return_value = condition()
-    if job_attr in relevant_job_attrs or not relevant_job_attrs:
-        assert return_value is True
-    else:
-        assert return_value is False
+    assert return_value == exp_return_value
+
+
+@pytest.mark.parametrize(
+    argnames='options, exp_isolated_jobs',
+    argvalues=(
+        ({'only_description': True}, ('description_job', 'screenshots_job', 'upload_screenshots_job')),
+        ({'only_title': True}, ('release_name_job', 'imdb_job')),
+        ({}, ()),
+    ),
+)
+def test_isolated_jobs(options, exp_isolated_jobs, bhd_tracker_jobs, mocker):
+    mocker.patch.object(type(bhd_tracker_jobs), 'options', PropertyMock(return_value=options))
+    assert bhd_tracker_jobs.isolated_jobs == exp_isolated_jobs
 
 
 def test_imdb_job(bhd_tracker_jobs):
@@ -556,18 +546,16 @@ async def test_autodetect_tags(options, exp_personal_tag,
 
 
 @pytest.mark.parametrize(
-    argnames='options, parent_ok, exp_ok',
+    argnames='isolated_jobs, parent_ok, exp_ok',
     argvalues=(
-        ({'description': False, 'title': False}, 'parent value', 'parent value'),
-        ({'description': True, 'title': False}, 'parent value', False),
-        ({'description': False, 'title': True}, 'parent value', False),
-        ({'description': True, 'title': True}, 'parent value', False),
+        ((), 'parent value', 'parent value'),
+        (('foo',), 'parent value', False),
     ),
 )
-def test_submission_ok(options, parent_ok, exp_ok, bhd_tracker_jobs, mocker):
+def test_submission_ok(isolated_jobs, parent_ok, exp_ok, bhd_tracker_jobs, mocker):
     parent_submission_ok = mocker.patch('upsies.trackers.base.TrackerJobsBase.submission_ok', new_callable=PropertyMock)
     parent_submission_ok.return_value = parent_ok
-    mocker.patch.object(type(bhd_tracker_jobs), 'options', PropertyMock(return_value=options))
+    mocker.patch.object(type(bhd_tracker_jobs), 'isolated_jobs', PropertyMock(return_value=isolated_jobs))
     ok = bhd_tracker_jobs.submission_ok
     assert ok == exp_ok
 

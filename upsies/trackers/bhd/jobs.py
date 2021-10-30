@@ -63,16 +63,28 @@ class BhdTrackerJobs(TrackerJobsBase):
         :param str job_attr: Name of the job attribute this condition is for
         """
         def condition():
-            if self.options['description']:
-                # Only activate description_job and its dependencies
-                return job_attr in ('description_job', 'screenshots_job', 'upload_screenshots_job')
-            elif self.options['title']:
-                # Only activate release_name_job and its dependencies
-                return job_attr in ('release_name_job', 'imdb_job')
+            isolated_jobs = self.isolated_jobs
+            if isolated_jobs:
+                return job_attr in isolated_jobs
             else:
                 return True
 
         return condition
+
+    @property
+    def isolated_jobs(self):
+        """
+        Sequence of attribute names (e.g. "imdb_job") that were singled out by the
+        user, e.g. with a CLI argument
+        """
+        if self.options.get('only_description', False):
+            # Only activate description_job and its dependencies
+            return ('description_job', 'screenshots_job', 'upload_screenshots_job')
+        elif self.options.get('only_title', False):
+            # Only activate release_name_job and its dependencies
+            return ('release_name_job', 'imdb_job')
+        else:
+            return ()
 
     @cached_property
     def imdb_job(self):
@@ -327,7 +339,7 @@ class BhdTrackerJobs(TrackerJobsBase):
         `False` if :attr:`~.TrackerJobsBase.options` prevents submission for any
         reason, parent class implementation otherwise
         """
-        if self.options['description'] or self.options['title']:
+        if self.isolated_jobs:
             return False
         else:
             return super().submission_ok

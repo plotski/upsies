@@ -36,32 +36,32 @@ class BhdTrackerConfig(TrackerConfigBase):
                     max=defaults['screenshots'].max,
                 ),
             },
-            ('--custom-edition', '-e'): {
+            ('--custom-edition', '--ce'): {
                 'help': 'Non-standard edition, e.g. "Final Cut"',
                 'default': '',
             },
-            ('--draft', '-d'): {
+            ('--draft', '--dr'): {
                 'help': 'Upload as draft',
                 'action': 'store_true',
                 # The default value must be None so CommandBase.get_options()
                 # doesn't always overwrite the value with the config file value.
                 'default': None,
             },
-            ('--personal-rip', '-p'): {
+            ('--personal-rip', '--pr'): {
                 'help': 'Tag as your own encode',
                 'action': 'store_true',
             },
-            ('--special', '-s'): {
+            ('--special', '--sp'): {
                 'help': 'Tag as special episode, e.g. Christmas special (ignored for movie uploads)',
                 'action': 'store_true',
             },
-            ('--title', '-t'): {
-                'help': 'Only generate title (do not upload anything)',
+            ('--only-description', '--od'): {
+                'help': 'Only generate description (do not upload anything)',
                 'action': 'store_true',
                 'group': 'generate-metadata',
             },
-            ('--description', '--desc'): {
-                'help': 'Only generate description (do not upload anything)',
+            ('--only-title', '--oti'): {
+                'help': 'Only generate title (do not upload anything)',
                 'action': 'store_true',
                 'group': 'generate-metadata',
             },
