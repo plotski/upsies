@@ -30,9 +30,6 @@ class PtpimgImageHost(ImageHostBase):
     )
 
     async def _upload_image(self, image_path):
-        if not self.options['apikey']:
-            raise errors.RequestError('Missing API key')
-
         response = await http.post(
             url=f'{self.options["base_url"]}/upload.php',
             cache=False,

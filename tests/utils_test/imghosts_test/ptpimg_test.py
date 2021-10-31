@@ -42,15 +42,6 @@ def test_description():
     )
 
 
-@pytest.mark.parametrize('apikey', ('', None, 0))
-@pytest.mark.asyncio
-async def test_upload_image_without_apikey(apikey, mocker, tmp_path):
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    imghost = ptpimg.PtpimgImageHost(options={'apikey': apikey}, cache_directory=tmp_path)
-    with pytest.raises(errors.RequestError, match=r'^Missing API key$'):
-        await imghost._upload_image('some/path.jpg')
-    assert post_mock.call_args_list == []
-
 @pytest.mark.asyncio
 async def test_upload_image_succeeds(mocker, tmp_path):
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=Result(
