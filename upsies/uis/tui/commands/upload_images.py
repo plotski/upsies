@@ -23,7 +23,7 @@ class upload_images(CommandBase):
                     'help': 'Path to image file',
                 },
                 ('--thumb-width', '-t'): {
-                    'help': 'Thumbnail width in pixels (automatically snaps to closest supported size)',
+                    'help': 'Thumbnail width in pixels',
                     'type': utils.argtypes.integer,
                     'default': None,
                 },
