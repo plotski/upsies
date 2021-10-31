@@ -7,7 +7,7 @@ import collections
 import copy
 import os
 
-from ... import constants, errors
+from ... import __project_name__, constants, errors
 from .. import fs, image
 from . import common
 
@@ -97,6 +97,13 @@ class ImageHostBase(abc.ABC):
 
         :return: :class:`~.imghost.common.UploadedImage`
         """
+        if 'apikey' in self.options and not self.options['apikey']:
+            raise errors.RequestError(
+                'You must configure an API key first. Run '
+                f'"{__project_name__} upload-images {self.name} --help" '
+                'for more information.'
+            )
+
         info = {
             'url': await self._get_image_url(image_path, cache=cache),
         }

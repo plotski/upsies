@@ -5,7 +5,7 @@ from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
-from upsies import errors
+from upsies import __project_name__, errors
 from upsies.utils import imghosts
 
 
@@ -95,6 +95,35 @@ def test_options_property():
 def test_description():
     imghost = make_TestImageHost()
     assert imghost.description == ''
+
+
+@pytest.mark.parametrize(
+    argnames='options, exp_exception',
+    argvalues=(
+        ({}, None),
+        ({'apikey': 'd34db33f'}, None),
+        ({'apikey': ''}, errors.RequestError(
+            'You must configure an API key first. Run '
+            f'"{__project_name__} upload-images {{name}} --help" '
+            'for more information.'
+        )),
+    ),
+)
+@pytest.mark.asyncio
+async def test_upload_checks_for_missing_apikey(options, exp_exception, mocker, tmp_path):
+    resize_mock = mocker.patch('upsies.utils.image.resize')
+    ih = make_TestImageHost(cache_directory=tmp_path, options=options)
+    mocker.patch.object(ih, '_get_image_url', AsyncMock())
+    if exp_exception is None:
+        await ih.upload('foo.png')
+        assert resize_mock.call_args_list == []
+        assert ih._get_image_url.call_args_list == [call('foo.png', cache=True)]
+    else:
+        exp_error = str(exp_exception).format(name=ih.name)
+        with pytest.raises(type(exp_exception), match=rf'{re.escape(exp_error)}$'):
+            await ih.upload('foo.png')
+        assert resize_mock.call_args_list == []
+        assert ih._get_image_url.call_args_list == []
 
 
 @pytest.mark.parametrize('cache', (True, False))
