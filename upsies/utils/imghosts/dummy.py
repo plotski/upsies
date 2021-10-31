@@ -15,6 +15,11 @@ class DummyImageHost(ImageHostBase):
 
     name = 'dummy'
 
+    description = (
+        'This is a fake image hosting service '
+        'that is used for testing and debugging.'
+    )
+
     default_config = {
         'hostname': 'localhost',
     }
