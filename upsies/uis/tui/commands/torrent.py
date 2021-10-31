@@ -61,40 +61,46 @@ class torrent_create(CommandBase):
     subcommand_name = 'TRACKER'
     subcommands = {
         tracker.name: {
-            # Default arguments for all tackers
-            **{
-                'CONTENT': {
-                    'type': utils.argtypes.content,
-                    'help': 'Path to release content',
+            'description': (
+                f'Create a torrent file for {tracker.label} '
+                'in the current working directory.'
+            ),
+            'cli': {
+                # Default arguments for all tackers
+                **{
+                    'CONTENT': {
+                        'type': utils.argtypes.content,
+                        'help': 'Path to release content',
+                    },
+                    ('--exclude-files', '--ef'): {
+                        'nargs': '+',
+                        'metavar': 'PATTERN',
+                        'help': ('Glob pattern to exclude from torrent '
+                                 '(matched case-sensitively against path in torrent)'),
+                        'default': (),
+                    },
+                    ('--exclude-files-regex', '--efr'): {
+                        'nargs': '+',
+                        'metavar': 'PATTERN',
+                        'help': ('Regular expression to exclude from torrent '
+                                 '(matched case-sensitively against path in torrent)'),
+                        'type': utils.argtypes.regex,
+                        'default': (),
+                    },
+                    ('--add-to', '-a'): {
+                        'type': utils.argtypes.client,
+                        'metavar': 'CLIENT',
+                        'help': ('Case-insensitive BitTorrent client name\n'
+                                 'Supported clients: ' + ', '.join(utils.btclients.client_names())),
+                    },
+                    ('--copy-to', '-c'): {
+                        'metavar': 'PATH',
+                        'help': 'Copy the created torrent to PATH (file or directory)',
+                    },
                 },
-                ('--exclude-files', '--ef'): {
-                    'nargs': '+',
-                    'metavar': 'PATTERN',
-                    'help': ('Glob pattern to exclude from torrent '
-                             '(matched case-sensitively against path in torrent)'),
-                    'default': (),
-                },
-                ('--exclude-files-regex', '--efr'): {
-                    'nargs': '+',
-                    'metavar': 'PATTERN',
-                    'help': ('Regular expression to exclude from torrent '
-                             '(matched case-sensitively against path in torrent)'),
-                    'type': utils.argtypes.regex,
-                    'default': (),
-                },
-                ('--add-to', '-a'): {
-                    'type': utils.argtypes.client,
-                    'metavar': 'CLIENT',
-                    'help': ('Case-insensitive BitTorrent client name\n'
-                             'Supported clients: ' + ', '.join(utils.btclients.client_names())),
-                },
-                ('--copy-to', '-c'): {
-                    'metavar': 'PATH',
-                    'help': 'Copy the created torrent to PATH (file or directory)',
-                },
-            },
-            # Custom arguments defined by tracker for this command
-            **tracker.TrackerConfig.argument_definitions.get('torrent-create', {}),
+                # Custom arguments defined by tracker for this command
+                **tracker.TrackerConfig.argument_definitions.get('torrent-create', {}),
+            }
         }
         for tracker in trackers.trackers()
     }

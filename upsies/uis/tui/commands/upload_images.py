@@ -16,20 +16,23 @@ class upload_images(CommandBase):
     subcommand_name = 'IMGHOST'
     subcommands = {
         imghost.name: {
-            # Default arguments for all image hosts
-            **{
-                'IMAGE': {
-                    'nargs': '+',
-                    'help': 'Path to image file',
+            'description': imghost.description,
+            'cli': {
+                # Default arguments for all image hosts
+                **{
+                    'IMAGE': {
+                        'nargs': '+',
+                        'help': 'Path to image file',
+                    },
+                    ('--thumb-width', '-t'): {
+                        'help': 'Thumbnail width in pixels',
+                        'type': utils.argtypes.integer,
+                        'default': None,
+                    },
                 },
-                ('--thumb-width', '-t'): {
-                    'help': 'Thumbnail width in pixels',
-                    'type': utils.argtypes.integer,
-                    'default': None,
-                },
+                # Custom arguments defined by image host
+                **imghost.argument_definitions,
             },
-            # Custom arguments defined by image host
-            **imghost.argument_definitions,
         }
         for imghost in utils.imghosts.imghosts()
     }

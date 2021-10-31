@@ -111,6 +111,14 @@ class CommandBase(abc.ABC):
     The first name is the full name and the rest are short aliases.
     """
 
+    description = ''
+    """
+    Extended description
+
+    The class docstring is the main description. Use this class attribute to
+    generate text programmatically.
+    """
+
     argument_definitions = NotImplemented
     """
     CLI argument definitions for this command
@@ -132,16 +140,16 @@ class CommandBase(abc.ABC):
     :attr:`argument_definitions`.
     """
 
+    subcommand_descriptions = {}
+    """
+    Descriptions of subcommands
+
+    For each key in :attr:`subcommands`, this :class:`dict` may provide a longer
+    multiline (or even multiparagraph) description.
+    """
+
     subcommand_name = 'PLEASE_GIVE_THIS_SUBCOMMAND_A_PROPER_METAVAR'
-    """Reference to expected subcommand in help"""
-
-    description = ''
-    """
-    Extended description
-
-    The class docstring is the main description. Use this class attribute to
-    generate text programmatically.
-    """
+    """Reference to expected subcommand in help texts"""
 
     @classmethod
     def register(cls):
@@ -187,10 +195,16 @@ class CommandBase(abc.ABC):
             #        https://bugs.python.org/issue26510
             #        https://bugs.python.org/issue9253
             subparsers.required = True
-            for subcmd, args in cls.subcommands.items():
-                subparser = subparsers.add_parser(subcmd, formatter_class=_MyHelpFormatter)
-                subparser.set_defaults(subcommand=subcmd)
-                cls._add_args(subparser, args, cls._mutex_groups[subcmd])
+            for subcmd_name, subcmd_info in cls.subcommands.items():
+                description = subcmd_info.get('description', '')
+                args = subcmd_info.get('cli', {})
+                subparser = subparsers.add_parser(
+                    subcmd_name,
+                    description=description,
+                    formatter_class=_MyHelpFormatter,
+                )
+                subparser.set_defaults(subcommand=subcmd_name)
+                cls._add_args(subparser, args, cls._mutex_groups[subcmd_name])
 
     @staticmethod
     def _add_args(parser, argument_definitions, mutex_groups):
