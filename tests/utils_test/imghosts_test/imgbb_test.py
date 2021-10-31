@@ -4,7 +4,8 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies import errors
+from upsies import __project_name__, constants, errors
+from upsies.utils import fs
 from upsies.utils.http import Result
 from upsies.utils.imghosts import imgbb
 
@@ -28,6 +29,18 @@ def test_default_config():
             'apikey': '',
         },
     }
+
+
+def test_description():
+    assert imgbb.ImgbbImageHost.description == (
+        'You need an API key to upload images. You can get one by following these steps:\n'
+        '\n'
+        '  1. Create an account: https://imgbb.com/signup\n'
+        '  2. Go to https://api.imgbb.com/ and click on "Get API key".\n'
+        f'  3. Store your API key in {fs.tildify_path(constants.IMGHOSTS_FILEPATH)}:\n'
+        '\n'
+        f'       $ {__project_name__} set imghosts.imgbb.apikey <YOUR API KEY>'
+    )
 
 
 @pytest.mark.asyncio
