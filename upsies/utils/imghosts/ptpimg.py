@@ -2,8 +2,8 @@
 Image uploader for ptpimg.me
 """
 
-from ... import errors
-from .. import html, http
+from ... import __project_name__, constants, errors
+from .. import fs, html, http
 from .base import ImageHostBase
 
 import logging  # isort:skip
@@ -19,6 +19,15 @@ class PtpimgImageHost(ImageHostBase):
         'apikey': '',
         'base_url': 'https://ptpimg.me',
     }
+
+    description = (
+        'You need an API key to upload images.\n'
+        '\n'
+        '  1. Create an account: https://ptpimg.me/register.php\n'
+        f'  2. Store your API key in {fs.tildify_path(constants.IMGHOSTS_FILEPATH)}:\n'
+        '\n'
+        f'       $ {__project_name__} set --fetch-ptpimg-apikey EMAIL PASSWORD'
+    )
 
     async def _upload_image(self, image_path):
         if not self.options['apikey']:
