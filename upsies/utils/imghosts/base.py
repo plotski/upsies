@@ -83,6 +83,9 @@ class ImageHostBase(abc.ABC):
     argument_definitions = {}
     """CLI argument definitions (see :attr:`.CommandBase.argument_definitions`)"""
 
+    description = ''
+    """Any documentation, for example how to get an API key"""
+
     async def upload(self, image_path, cache=True):
         """
         Upload image file

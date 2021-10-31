@@ -92,6 +92,11 @@ def test_options_property():
     assert imghost.options == {'thumb_width': 0, 'foo': 1, 'bar': 99}
 
 
+def test_description():
+    imghost = make_TestImageHost()
+    assert imghost.description == ''
+
+
 @pytest.mark.parametrize('cache', (True, False))
 @pytest.mark.parametrize('thumb_width', (0, 123))
 @pytest.mark.asyncio
