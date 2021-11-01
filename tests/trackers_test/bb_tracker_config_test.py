@@ -27,6 +27,13 @@ def test_defaults():
 def test_argument_definitions():
     assert BbTrackerConfig.argument_definitions == {
         'submit': {
+            ('--anime', '--an'): {
+                'help': 'Tag upload as anime (ignored for movies)',
+                'action': 'store_true',
+            },
+            ('--poster', '--po'): {
+                'help': 'Path or URL to poster image',
+            },
             ('--screenshots', '--ss'): {
                 'help': ('How many screenshots to make '
                          f'(min={BbTrackerConfig.defaults["screenshots"].min}, '
@@ -35,13 +42,6 @@ def test_argument_definitions():
                     min=BbTrackerConfig.defaults['screenshots'].min,
                     max=BbTrackerConfig.defaults['screenshots'].max,
                 ),
-            },
-            ('--poster', '--po'): {
-                'help': 'Path or URL to poster image',
-            },
-            ('--anime', '--an'): {
-                'help': 'Tag upload as anime (ignored for movies)',
-                'action': 'store_true',
             },
             ('--only-description', '--od'): {
                 'help': 'Only generate description (do not upload anything)',

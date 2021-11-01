@@ -24,6 +24,13 @@ class BbTrackerConfig(TrackerConfigBase):
 
     argument_definitions = {
         'submit': {
+            ('--anime', '--an'): {
+                'help': 'Tag upload as anime (ignored for movies)',
+                'action': 'store_true',
+            },
+            ('--poster', '--po'): {
+                'help': 'Path or URL to poster image',
+            },
             ('--screenshots', '--ss'): {
                 'help': ('How many screenshots to make '
                          f'(min={defaults["screenshots"].min}, '
@@ -32,13 +39,6 @@ class BbTrackerConfig(TrackerConfigBase):
                     min=defaults['screenshots'].min,
                     max=defaults['screenshots'].max,
                 ),
-            },
-            ('--poster', '--po'): {
-                'help': 'Path or URL to poster image',
-            },
-            ('--anime', '--an'): {
-                'help': 'Tag upload as anime (ignored for movies)',
-                'action': 'store_true',
             },
             ('--only-description', '--od'): {
                 'help': 'Only generate description (do not upload anything)',
