@@ -829,7 +829,11 @@ class BbTrackerJobs(TrackerJobsBase):
         else:
             # Resize poster
             try:
-                resized_poster_path = image.resize(poster_path, width=300)
+                resized_poster_path = image.resize(
+                    image_file=poster_path,
+                    target_directory=poster_job.home_directory,
+                    width=300,
+                )
             except errors.ImageResizeError as e:
                 self.error(f'Poster resizing failed: {e}')
             else:

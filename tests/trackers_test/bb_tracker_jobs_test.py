@@ -1534,7 +1534,11 @@ async def test_get_resized_poster_url_fails_to_resize_poster(bb_tracker_jobs, mo
     poster_url = await bb_tracker_jobs.get_resized_poster_url(poster_job, poster_url_getter)
     assert poster_url is None
     assert get_poster_file_mock.call_args_list == [call(poster_job, poster_url_getter)]
-    assert resize_mock.call_args_list == [call('poster/path.jpg', width=300)]
+    assert resize_mock.call_args_list == [call(
+        image_file='poster/path.jpg',
+        target_directory=poster_job.home_directory,
+        width=300,
+    )]
     assert upload_mock.call_args_list == []
     assert error_mock.call_args_list == [call('Poster resizing failed: No resize!')]
 
@@ -1549,7 +1553,11 @@ async def test_get_resized_poster_url_fails_to_reupload_poster(bb_tracker_jobs, 
     poster_url = await bb_tracker_jobs.get_resized_poster_url(poster_job, poster_url_getter)
     assert poster_url is None
     assert get_poster_file_mock.call_args_list == [call(poster_job, poster_url_getter)]
-    assert resize_mock.call_args_list == [call('poster/path.jpg', width=300)]
+    assert resize_mock.call_args_list == [call(
+        image_file='poster/path.jpg',
+        target_directory=poster_job.home_directory,
+        width=300,
+    )]
     assert upload_mock.call_args_list == [call('path/to/resized.jpg')]
     assert error_mock.call_args_list == [call('Poster upload failed: nope')]
 
@@ -1564,7 +1572,11 @@ async def test_get_resized_poster_url_succeeds(bb_tracker_jobs, mocker):
     poster_url = await bb_tracker_jobs.get_resized_poster_url(poster_job, poster_url_getter)
     assert poster_url == 'http://real.poster.jpg'
     assert get_poster_file_mock.call_args_list == [call(poster_job, poster_url_getter)]
-    assert resize_mock.call_args_list == [call('poster/path.jpg', width=300)]
+    assert resize_mock.call_args_list == [call(
+        image_file='poster/path.jpg',
+        target_directory=poster_job.home_directory,
+        width=300,
+    )]
     assert upload_mock.call_args_list == [call('path/to/resized.jpg')]
     assert error_mock.call_args_list == []
 
