@@ -29,15 +29,6 @@ def test_defaults():
 def test_argument_definitions():
     assert BhdTrackerConfig.argument_definitions == {
         'submit': {
-            ('--screenshots', '--ss'): {
-                'help': ('How many screenshots to make '
-                         f'(min={BhdTrackerConfig.defaults["screenshots"].min}, '
-                         f'max={BhdTrackerConfig.defaults["screenshots"].max})'),
-                'type': argtypes.number_of_screenshots(
-                    min=BhdTrackerConfig.defaults['screenshots'].min,
-                    max=BhdTrackerConfig.defaults['screenshots'].max,
-                ),
-            },
             ('--custom-edition', '--ce'): {
                 'help': 'Non-standard edition, e.g. "Final Cut"',
                 'default': '',
@@ -50,6 +41,15 @@ def test_argument_definitions():
             ('--personal-rip', '--pr'): {
                 'help': 'Tag as your own encode',
                 'action': 'store_true',
+            },
+            ('--screenshots', '--ss'): {
+                'help': ('How many screenshots to make '
+                         f'(min={BhdTrackerConfig.defaults["screenshots"].min}, '
+                         f'max={BhdTrackerConfig.defaults["screenshots"].max})'),
+                'type': argtypes.number_of_screenshots(
+                    min=BhdTrackerConfig.defaults['screenshots'].min,
+                    max=BhdTrackerConfig.defaults['screenshots'].max,
+                ),
             },
             ('--special', '--sp'): {
                 'help': 'Tag as special episode, e.g. Christmas special (ignored for movie uploads)',

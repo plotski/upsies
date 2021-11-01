@@ -27,15 +27,6 @@ class BhdTrackerConfig(TrackerConfigBase):
 
     argument_definitions = {
         'submit': {
-            ('--screenshots', '--ss'): {
-                'help': ('How many screenshots to make '
-                         f'(min={defaults["screenshots"].min}, '
-                         f'max={defaults["screenshots"].max})'),
-                'type': argtypes.number_of_screenshots(
-                    min=defaults['screenshots'].min,
-                    max=defaults['screenshots'].max,
-                ),
-            },
             ('--custom-edition', '--ce'): {
                 'help': 'Non-standard edition, e.g. "Final Cut"',
                 'default': '',
@@ -50,6 +41,15 @@ class BhdTrackerConfig(TrackerConfigBase):
             ('--personal-rip', '--pr'): {
                 'help': 'Tag as your own encode',
                 'action': 'store_true',
+            },
+            ('--screenshots', '--ss'): {
+                'help': ('How many screenshots to make '
+                         f'(min={defaults["screenshots"].min}, '
+                         f'max={defaults["screenshots"].max})'),
+                'type': argtypes.number_of_screenshots(
+                    min=defaults['screenshots'].min,
+                    max=defaults['screenshots'].max,
+                ),
             },
             ('--special', '--sp'): {
                 'help': 'Tag as special episode, e.g. Christmas special (ignored for movie uploads)',
