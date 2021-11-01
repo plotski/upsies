@@ -825,7 +825,7 @@ class BbTrackerJobs(TrackerJobsBase):
     async def get_resized_poster_url(self, poster_job, poster_url_getter):
         poster_path = await self.get_poster_file(poster_job, poster_url_getter)
         if not poster_path:
-            self.error('Provide a poster file or URL with the --poster-file option.')
+            self.error('Provide a poster file or URL with the --poster option.')
         else:
             # Resize poster
             try:
@@ -844,14 +844,14 @@ class BbTrackerJobs(TrackerJobsBase):
                     poster_job.info = ''
 
     async def get_poster_file(self, poster_job, poster_url_getter):
-        if self.options.get('poster_file'):
+        if self.options.get('poster'):
             # Get poster from CLI argument
-            if re.search(r'^[a-z]+://', self.options['poster_file']):
+            if re.search(r'^[a-z]+://', self.options['poster']):
                 # CLI argument is URL
-                poster_url = self.options['poster_file']
+                poster_url = self.options['poster']
             else:
                 # CLI argument is file path
-                return self.options['poster_file']
+                return self.options['poster']
         else:
             # Get poster URL from webdb (e.g. "https://imdb.com/...jpg")
             poster_url = await poster_url_getter()

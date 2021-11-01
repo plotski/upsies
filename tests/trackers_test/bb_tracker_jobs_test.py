@@ -1521,7 +1521,7 @@ async def test_get_resized_poster_url_fails_to_get_poster_file(bb_tracker_jobs, 
     assert get_poster_file_mock.call_args_list == [call(poster_job, poster_url_getter)]
     assert resize_mock.call_args_list == []
     assert upload_mock.call_args_list == []
-    assert error_mock.call_args_list == [call('Provide a poster file or URL with the --poster-file option.')]
+    assert error_mock.call_args_list == [call('Provide a poster file or URL with the --poster option.')]
 
 @pytest.mark.asyncio
 async def test_get_resized_poster_url_fails_to_resize_poster(bb_tracker_jobs, mocker):
@@ -1571,7 +1571,7 @@ async def test_get_resized_poster_url_succeeds(bb_tracker_jobs, mocker):
 
 @pytest.mark.asyncio
 async def test_get_poster_file_gets_poster_url_from_cli_argument(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster_file': 'http://cli/poster.jpg'})
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster': 'http://cli/poster.jpg'})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock())
     poster_job = Mock(home_directory='path/to/job')
@@ -1584,7 +1584,7 @@ async def test_get_poster_file_gets_poster_url_from_cli_argument(bb_tracker_jobs
 
 @pytest.mark.asyncio
 async def test_get_poster_file_gets_poster_file_from_cli_argument(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster_file': 'path/to/cli/poster.jpg'})
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster': 'path/to/cli/poster.jpg'})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock())
     poster_job = Mock(home_directory='path/to/job')
@@ -1597,7 +1597,7 @@ async def test_get_poster_file_gets_poster_file_from_cli_argument(bb_tracker_job
 
 @pytest.mark.asyncio
 async def test_get_poster_file_fails_to_get_poster_file_from_poster_url_getter(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster_file': None})
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster': None})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock())
     poster_job = Mock(home_directory='path/to/job')
@@ -1610,7 +1610,7 @@ async def test_get_poster_file_fails_to_get_poster_file_from_poster_url_getter(b
 
 @pytest.mark.asyncio
 async def test_get_poster_file_fails_to_download_poster_from_cli_url(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster_file': 'http://cli/poster.jpg'})
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster': 'http://cli/poster.jpg'})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock(
         side_effect=errors.RequestError('Failed to download'),
