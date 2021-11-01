@@ -916,6 +916,10 @@ class BbTrackerJobs(TrackerJobsBase):
         )
         return ' / '.join(i for i in info if i)
 
+    _tags_translation = {
+        re.compile('^sci.?fi$'): 'science.fiction',
+    }
+
     async def get_tags(self):
         def normalize_tags(strings):
             normalized = []
@@ -965,10 +969,6 @@ class BbTrackerJobs(TrackerJobsBase):
             tags_string = assemble(tags)
 
         return tags_string
-
-    _tags_translation = {
-        re.compile('^sci.?fi$'): 'science.fiction',
-    }
 
     async def get_description(self):
         info_table = await asyncio.gather(
