@@ -117,7 +117,7 @@ class ImageHostBase(abc.ABC):
                     target_directory=self.cache_directory,
                 )
             except errors.ImageResizeError as e:
-                raise errors.RequestError(f'{image_path}: {e}')
+                raise errors.RequestError(e)
             else:
                 info['thumbnail_url'] = await self._get_image_url(thumbnail_path, cache=cache)
 
@@ -129,7 +129,7 @@ class ImageHostBase(abc.ABC):
             try:
                 url = await self._upload_image(image_path)
             except errors.RequestError as e:
-                raise errors.RequestError(f'{image_path}: {e}')
+                raise errors.RequestError(e)
             else:
                 _log.debug('Uploaded %r: %r', image_path, url)
                 self._store_url_to_cache(image_path, url)

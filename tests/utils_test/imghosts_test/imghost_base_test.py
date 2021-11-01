@@ -177,7 +177,7 @@ async def test_upload_catches_ResizeError(cache, resize_error, exp_request_error
     image_urls = ['https://localhost:123/foo.png', 'https://localhost:123/foo.thumb.png']
     mocker.patch.object(ih, '_get_image_url', AsyncMock(side_effect=image_urls))
 
-    with pytest.raises(type(exp_request_error), match=rf'^path/to/foo.png: {re.escape(str(exp_request_error))}$'):
+    with pytest.raises(type(exp_request_error), match=rf'^{re.escape(str(exp_request_error))}$'):
         await ih.upload('path/to/foo.png', cache=cache)
 
     assert resize_mock.call_args_list == [call(
@@ -223,7 +223,7 @@ async def test_get_image_url_prepends_image_path_to_request_error(mocker, tmp_pa
     mocker.patch.object(ih, '_upload_image', AsyncMock(side_effect=errors.RequestError('Connection refused')))
     mocker.patch.object(ih, '_get_url_from_cache', Mock(return_value='http://localhost:123/cached.image.jpg'))
     mocker.patch.object(ih, '_store_url_to_cache')
-    with pytest.raises(errors.RequestError, match=r'^path/to/image.jpg: Connection refused$'):
+    with pytest.raises(errors.RequestError, match=r'^Connection refused$'):
         await ih._get_image_url('path/to/image.jpg', cache=False)
     assert ih._get_url_from_cache.call_args_list == []
     assert ih._upload_image.call_args_list == [call('path/to/image.jpg')]
