@@ -1771,6 +1771,77 @@ async def test_get_tags_is_not_longer_than_200_characters(bb_tracker_jobs, mocke
 
 
 @pytest.mark.asyncio
+async def test_get_description_from_cli_file(bb_tracker_jobs, mocker, tmp_path):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_summary', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_webdbs', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_year', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_status', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_countries', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_runtime', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(side_effect=RuntimeError('should not be called')))
+    description = 'This is my custom description.\n'
+    filepath = tmp_path / 'description.txt'
+    filepath.write_text(description)
+    mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={'description': str(filepath)}))
+    error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
+    return_value = await bb_tracker_jobs.get_description()
+    assert return_value == description + bb_tracker_jobs.promotion
+    assert bb_tracker_jobs.error.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_get_description_from_unreadable_cli_file(bb_tracker_jobs, mocker, tmp_path):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_summary', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_webdbs', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_year', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_status', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_countries', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_runtime', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(side_effect=RuntimeError('should not be called')))
+    description = 'This is my custom description.\n'
+    filepath = tmp_path / 'description.txt'
+    filepath.write_text(description)
+    mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={'description': str(filepath)}))
+    mocker.patch.object(bb_tracker_jobs, 'error')
+    filepath.chmod(0o000)
+    try:
+        return_value = await bb_tracker_jobs.get_description()
+    finally:
+        filepath.chmod(0o600)
+    assert return_value == ''
+    assert bb_tracker_jobs.error.call_args_list == [call(f'Failed to read {filepath}: Permission denied')]
+
+@pytest.mark.asyncio
+async def test_get_description_from_cli_argument(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_summary', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_webdbs', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_year', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_status', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_countries', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_runtime', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(side_effect=RuntimeError('should not be called')))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(side_effect=RuntimeError('should not be called')))
+    description = 'This is my custom description.\n'
+    mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={'description': description}))
+    mocker.patch.object(bb_tracker_jobs, 'error')
+    return_value = await bb_tracker_jobs.get_description()
+    assert return_value == description + bb_tracker_jobs.promotion
+    assert bb_tracker_jobs.error.call_args_list == []
+
+@pytest.mark.asyncio
 async def test_get_description_for_movie(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
     mocker.patch.object(bb_tracker_jobs, 'format_description_summary', AsyncMock(return_value='summary'))
@@ -1784,6 +1855,7 @@ async def test_get_description_for_movie(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(return_value='cast'))
     mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(return_value='series screenshots'))
     mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(return_value='series mediainfo'))
+    mocker.patch.object(bb_tracker_jobs, 'error')
     description = await bb_tracker_jobs.get_description()
     assert description == (
         'summary'
@@ -1797,6 +1869,7 @@ async def test_get_description_for_movie(bb_tracker_jobs, mocker):
         'cast'
         '[/quote]'
     ) + bb_tracker_jobs.promotion
+    assert bb_tracker_jobs.error.call_args_list == []
 
 @pytest.mark.asyncio
 async def test_get_description_for_series(bb_tracker_jobs, mocker):
@@ -1812,6 +1885,7 @@ async def test_get_description_for_series(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(return_value='cast'))
     mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(return_value='series screenshots'))
     mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(return_value='series mediainfo'))
+    mocker.patch.object(bb_tracker_jobs, 'error')
     description = await bb_tracker_jobs.get_description()
     assert description == (
         'summary'
@@ -1827,6 +1901,7 @@ async def test_get_description_for_series(bb_tracker_jobs, mocker):
         'series screenshots'
         'series mediainfo'
     ) + bb_tracker_jobs.promotion
+    assert bb_tracker_jobs.error.call_args_list == []
 
 
 @pytest.mark.parametrize(

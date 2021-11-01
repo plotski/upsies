@@ -971,26 +971,40 @@ class BbTrackerJobs(TrackerJobsBase):
         return tags_string
 
     async def get_description(self):
-        info_table = await asyncio.gather(
-            self.format_description_webdbs(),
-            self.format_description_year(),
-            self.format_description_status(),
-            self.format_description_countries(),
-            self.format_description_runtime(),
-            self.format_description_directors(),
-            self.format_description_creators(),
-            self.format_description_cast(),
-        )
-        info_table_string = '\n'.join(str(item) for item in info_table
-                                      if item is not None)
-        parts = [
-            await self.format_description_summary() or '',
-            f'[quote]{info_table_string}[/quote]',
-        ]
+        parts = []
 
-        if self.is_series_release:
-            parts.append(await self.format_description_series_screenshots())
-            parts.append(await self.format_description_series_mediainfo())
+        if self.options.get('description', ''):
+            # Custom description
+            if os.path.exists(self.options['description']):
+                try:
+                    with open(self.options['description'], mode='r', encoding='utf-8') as f:
+                        parts.append(f.read())
+                except OSError as e:
+                    msg = e.strerror if e.strerror else str(e)
+                    self.error(f'Failed to read {self.options["description"]}: {msg}')
+                    return ''
+            else:
+                parts.append(self.options['description'])
+
+        else:
+            # Generated description
+            parts.append(await self.format_description_summary() or '')
+            info_table = await asyncio.gather(
+                self.format_description_webdbs(),
+                self.format_description_year(),
+                self.format_description_status(),
+                self.format_description_countries(),
+                self.format_description_runtime(),
+                self.format_description_directors(),
+                self.format_description_creators(),
+                self.format_description_cast(),
+            )
+            info_table_string = '\n'.join(str(item) for item in info_table
+                                          if item is not None)
+            parts.append(f'[quote]{info_table_string}[/quote]')
+            if self.is_series_release:
+                parts.append(await self.format_description_series_screenshots())
+                parts.append(await self.format_description_series_mediainfo())
 
         parts.append(self.promotion)
         return ''.join(parts)

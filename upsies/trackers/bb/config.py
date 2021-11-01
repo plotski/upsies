@@ -28,6 +28,9 @@ class BbTrackerConfig(TrackerConfigBase):
                 'help': 'Tag upload as anime (ignored for movies)',
                 'action': 'store_true',
             },
+            ('--description', '--de'): {
+                'help': 'Custom description as text or path to UTF-8 encoded text file',
+            },
             ('--poster', '--po'): {
                 'help': 'Path or URL to poster image',
             },
