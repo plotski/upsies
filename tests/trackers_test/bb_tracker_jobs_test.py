@@ -1799,7 +1799,7 @@ async def test_get_description_from_cli_file(description, exp_description, bb_tr
     filepath = tmp_path / 'description.txt'
     filepath.write_text(description)
     mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={'description': str(filepath)}))
-    error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
+    mocker.patch.object(bb_tracker_jobs, 'error')
     return_value = await bb_tracker_jobs.get_description()
     assert return_value == exp_description + bb_tracker_jobs.promotion
     assert bb_tracker_jobs.error.call_args_list == []
