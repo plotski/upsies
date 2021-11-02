@@ -1,5 +1,5 @@
 2021.??.??
-  * submit: Tracker-specific CLI options changed (see `upsies submit <TRACKER> -h`)
+  * submit: CLI options have changed (see `upsies submit <TRACKER> -h`)
   * Re-use hashed pieces from previously generated torrents if possible
   * Fixed finding the latest release for update checking
   * bB: New --description option takes a custom description text or the path to
