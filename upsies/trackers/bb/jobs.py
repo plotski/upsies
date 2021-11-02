@@ -494,12 +494,13 @@ class BbTrackerJobs(TrackerJobsBase):
     @cached_property
     def tvmaze_job(self):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
-        return jobs.webdb.WebDbSearchJob(
-            condition=self.make_job_condition('tvmaze_job', release.ReleaseType.season, release.ReleaseType.episode),
-            query=self.content_path,
-            db=self.tvmaze,
-            **self.common_job_args,
+        tvmaze_job = super().tvmaze_job
+        tvmaze_job.condition = self.make_job_condition(
+            'tvmaze_job',
+            release.ReleaseType.season,
+            release.ReleaseType.episode,
         )
+        return tvmaze_job
 
     @cached_property
     def series_title_job(self):

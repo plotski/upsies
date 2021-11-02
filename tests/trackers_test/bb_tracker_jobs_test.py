@@ -814,14 +814,10 @@ def test_fill_in_movie_description(bb_tracker_jobs, mocker):
 
 def test_tvmaze_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
-    WebDbSearchJob_mock = mocker.patch('upsies.jobs.webdb.WebDbSearchJob')
-    assert bb_tracker_jobs.tvmaze_job is WebDbSearchJob_mock.return_value
-    assert WebDbSearchJob_mock.call_args_list == [call(
-        condition=bb_tracker_jobs.make_job_condition.return_value,
-        query=bb_tracker_jobs.content_path,
-        db=bb_tracker_jobs.tvmaze,
-        **bb_tracker_jobs.common_job_args,
-    )]
+    parent_tvmaze_job_mock = Mock()
+    mocker.patch('upsies.trackers.base.TrackerJobsBase.tvmaze_job', PropertyMock(return_value=parent_tvmaze_job_mock))
+    assert bb_tracker_jobs.tvmaze_job is parent_tvmaze_job_mock
+    assert bb_tracker_jobs.tvmaze_job.condition is bb_tracker_jobs.make_job_condition.return_value
     assert bb_tracker_jobs.make_job_condition.call_args_list == [
         call('tvmaze_job', ReleaseType.series, ReleaseType.episode),
     ]
