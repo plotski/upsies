@@ -843,15 +843,15 @@ class BbTrackerJobs(TrackerJobsBase):
 
     async def get_poster_file(self, poster_job, poster_url_getter):
         if self.options.get('poster'):
-            # Get poster from CLI argument
+            # Get custom poster from user (e.g. CLI argument)
             if re.search(r'^[a-z]+://', self.options['poster']):
-                # CLI argument is URL
+                # Poster argument is URL
                 poster_url = self.options['poster']
             else:
-                # CLI argument is file path
+                # Poster is file path
                 return self.options['poster']
         else:
-            # Get poster URL from webdb (e.g. "https://imdb.com/...jpg")
+            # Get poster URL from webdb
             poster_url = await poster_url_getter()
 
         if not poster_url:
