@@ -43,6 +43,9 @@ class BbTrackerConfig(TrackerConfigBase):
                     max=defaults['screenshots'].max,
                 ),
             },
+            ('--tags', '--ta'): {
+                'help': 'Custom list of comma-separated tags',
+            },
             ('--only-description', '--od'): {
                 'help': 'Only generate description (do not upload anything)',
                 'action': 'store_true',

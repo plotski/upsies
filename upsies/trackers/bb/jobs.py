@@ -954,17 +954,24 @@ class BbTrackerJobs(TrackerJobsBase):
                 for item in seq
             )
 
-        # For movies, TVmaze ID is None and tvmaze is ignored.
-        # For series, IMDb might have information TVmaze is missing.
-        webdbs = (self.tvmaze, self.imdb)
+        if self.options.get('tags', ()):
+            # Get custom tags from user (e.g. CLI argument)
+            tags = self.options['tags'].split(',')
 
-        # Gather tags
-        tags = list(await self.try_webdbs(webdbs, 'genres'))
-        if self.is_movie_release:
-            tags.extend(await self.try_webdbs(webdbs, 'directors'))
-        elif self.is_series_release:
-            tags.extend(await self.try_webdbs(webdbs, 'creators'))
-        tags.extend(await self.try_webdbs(webdbs, 'cast'))
+        else:
+            # Get custom tags from webdb
+
+            # For movies, TVmaze ID is None and tvmaze is ignored.
+            # For series, IMDb might have information TVmaze is missing.
+            webdbs = (self.tvmaze, self.imdb)
+
+            # Gather tags
+            tags = list(await self.try_webdbs(webdbs, 'genres'))
+            if self.is_movie_release:
+                tags.extend(await self.try_webdbs(webdbs, 'directors'))
+            elif self.is_series_release:
+                tags.extend(await self.try_webdbs(webdbs, 'creators'))
+            tags.extend(await self.try_webdbs(webdbs, 'cast'))
 
         # Replace spaces, non-ASCII characters, etc
         tags = normalize_tags(tags)

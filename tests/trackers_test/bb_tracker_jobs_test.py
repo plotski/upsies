@@ -1713,6 +1713,18 @@ def test_get_movie_release_info(bb_tracker_jobs, mocker):
 
 
 @pytest.mark.asyncio
+async def test_get_tags_from_options(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value='not used'))
+    mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={
+        'tags': " hörrór , sci-fi, Jim J. Jackson, Émile 'E' Jaques, c~om^ed~y",
+    }))
+    tags = await bb_tracker_jobs.get_tags()
+    assert tags == 'horror,science.fiction,jim.j.jackson,emile.e.jaques,comedy'
+    assert bb_tracker_jobs.try_webdbs.call_args_list == []
+
+@pytest.mark.asyncio
 async def test_get_tags_for_movie(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=True))
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))

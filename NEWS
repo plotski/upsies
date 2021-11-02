@@ -4,6 +4,7 @@
   * Fixed finding the latest release for update checking
   * bB: New --description option takes a custom description text or the path to
     a text file
+  * bB: New --tags option takes a custom list of comma-separated tags
 
 
 2021.10.23
