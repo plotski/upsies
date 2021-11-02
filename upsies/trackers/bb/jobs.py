@@ -1004,6 +1004,11 @@ class BbTrackerJobs(TrackerJobsBase):
                 parts.append(await self.format_description_series_screenshots())
                 parts.append(await self.format_description_series_mediainfo())
 
+        # The promotion should be in a new paragraph. [quote]...[/quote] tags
+        # automatically start a new paragraph after the closing tag.
+        if not parts[-1].endswith(('[/quote]', '\n')):
+            parts.append('\n')
+
         parts.append(self.promotion)
         return ''.join(parts)
 
