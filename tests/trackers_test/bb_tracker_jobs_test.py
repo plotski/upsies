@@ -393,14 +393,10 @@ def test_handle_release_type_selected(choice, exp_type, bb_tracker_jobs, mocker)
 
 def test_imdb_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
-    WebDbSearchJob_mock = mocker.patch('upsies.jobs.webdb.WebDbSearchJob')
-    assert bb_tracker_jobs.imdb_job is WebDbSearchJob_mock.return_value
-    assert WebDbSearchJob_mock.call_args_list == [call(
-        condition=bb_tracker_jobs.make_job_condition.return_value,
-        query=bb_tracker_jobs.content_path,
-        db=bb_tracker_jobs.imdb,
-        **bb_tracker_jobs.common_job_args,
-    )]
+    parent_imdb_job_mock = Mock()
+    mocker.patch('upsies.trackers.base.TrackerJobsBase.imdb_job', PropertyMock(return_value=parent_imdb_job_mock))
+    assert bb_tracker_jobs.imdb_job is parent_imdb_job_mock
+    assert bb_tracker_jobs.imdb_job.condition is bb_tracker_jobs.make_job_condition.return_value
     assert bb_tracker_jobs.make_job_condition.call_args_list == [call('imdb_job', ReleaseType.movie)]
 
 

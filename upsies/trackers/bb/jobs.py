@@ -232,12 +232,9 @@ class BbTrackerJobs(TrackerJobsBase):
     @cached_property
     def imdb_job(self):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
-        return jobs.webdb.WebDbSearchJob(
-            condition=self.make_job_condition('imdb_job', release.ReleaseType.movie),
-            query=self.content_path,
-            db=self.imdb,
-            **self.common_job_args,
-        )
+        imdb_job = super().imdb_job
+        imdb_job.condition = self.make_job_condition('imdb_job', release.ReleaseType.movie)
+        return imdb_job
 
     @cached_property
     def movie_title_job(self):
