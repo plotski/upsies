@@ -2,9 +2,9 @@
 String formatting and parsing
 """
 
+import importlib
 import re
 import sys
-import importlib
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
