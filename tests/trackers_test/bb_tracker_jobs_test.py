@@ -1574,27 +1574,27 @@ async def test_get_resized_poster_url_succeeds(bb_tracker_jobs, mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_poster_file_gets_poster_url_from_cli_argument(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster': 'http://cli/poster.jpg'})
+async def test_get_poster_file_gets_poster_url_from_options(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster': 'http://options/poster.jpg'})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock())
     poster_job = Mock(home_directory='path/to/job')
     poster_url_getter = AsyncMock(return_value='http://original/poster/url.jpg')
     poster_file = await bb_tracker_jobs.get_poster_file(poster_job, poster_url_getter)
     assert poster_file == 'path/to/job/poster.bb.jpg'
-    assert download_mock.call_args_list == [call('http://cli/poster.jpg', 'path/to/job/poster.bb.jpg')]
+    assert download_mock.call_args_list == [call('http://options/poster.jpg', 'path/to/job/poster.bb.jpg')]
     assert poster_url_getter.call_args_list == []
     assert error_mock.call_args_list == []
 
 @pytest.mark.asyncio
-async def test_get_poster_file_gets_poster_file_from_cli_argument(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster': 'path/to/cli/poster.jpg'})
+async def test_get_poster_file_gets_poster_file_from_options(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster': 'path/to/options/poster.jpg'})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock())
     poster_job = Mock(home_directory='path/to/job')
     poster_url_getter = AsyncMock(return_value='http://original/poster/url.jpg')
     poster_file = await bb_tracker_jobs.get_poster_file(poster_job, poster_url_getter)
-    assert poster_file == 'path/to/cli/poster.jpg'
+    assert poster_file == 'path/to/options/poster.jpg'
     assert download_mock.call_args_list == []
     assert poster_url_getter.call_args_list == []
     assert error_mock.call_args_list == []
@@ -1613,8 +1613,8 @@ async def test_get_poster_file_fails_to_get_poster_file_from_poster_url_getter(b
     assert error_mock.call_args_list == [call('Failed to find poster URL.')]
 
 @pytest.mark.asyncio
-async def test_get_poster_file_fails_to_download_poster_from_cli_url(bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster': 'http://cli/poster.jpg'})
+async def test_get_poster_file_fails_to_download_poster_from_options_url(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'options', {'poster': 'http://options/poster.jpg'})
     error_mock = mocker.patch.object(bb_tracker_jobs, 'error')
     download_mock = mocker.patch('upsies.utils.http.download', AsyncMock(
         side_effect=errors.RequestError('Failed to download'),
@@ -1623,7 +1623,7 @@ async def test_get_poster_file_fails_to_download_poster_from_cli_url(bb_tracker_
     poster_url_getter = AsyncMock(return_value=None)
     poster_file = await bb_tracker_jobs.get_poster_file(poster_job, poster_url_getter)
     assert poster_file is None
-    assert download_mock.call_args_list == [call('http://cli/poster.jpg', 'path/to/job/poster.bb.jpg')]
+    assert download_mock.call_args_list == [call('http://options/poster.jpg', 'path/to/job/poster.bb.jpg')]
     assert poster_url_getter.call_args_list == []
     assert error_mock.call_args_list == [call('Poster download failed: Failed to download')]
 
@@ -1783,7 +1783,7 @@ async def test_get_tags_is_not_longer_than_200_characters(bb_tracker_jobs, mocke
     ),
 )
 @pytest.mark.asyncio
-async def test_get_description_from_cli_file(description, exp_description, bb_tracker_jobs, mocker, tmp_path):
+async def test_get_description_from_options_file(description, exp_description, bb_tracker_jobs, mocker, tmp_path):
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_summary', AsyncMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_webdbs', AsyncMock(side_effect=RuntimeError('should not be called')))
@@ -1805,7 +1805,7 @@ async def test_get_description_from_cli_file(description, exp_description, bb_tr
     assert bb_tracker_jobs.error.call_args_list == []
 
 @pytest.mark.asyncio
-async def test_get_description_from_unreadable_cli_file(bb_tracker_jobs, mocker, tmp_path):
+async def test_get_description_from_unreadable_options_file(bb_tracker_jobs, mocker, tmp_path):
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_summary', AsyncMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_webdbs', AsyncMock(side_effect=RuntimeError('should not be called')))
@@ -1840,7 +1840,7 @@ async def test_get_description_from_unreadable_cli_file(bb_tracker_jobs, mocker,
     ),
 )
 @pytest.mark.asyncio
-async def test_get_description_from_cli_argument(description, exp_description, bb_tracker_jobs, mocker):
+async def test_get_description_from_options_text(description, exp_description, bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_summary', AsyncMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_webdbs', AsyncMock(side_effect=RuntimeError('should not be called')))
