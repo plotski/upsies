@@ -62,7 +62,13 @@ def capitalize(text):
 
 
 def star_rating(rating, max_rating=10):
-    '''Return star rating string with the characters "★", "⯪" and "☆"'''
+    """
+    Return star rating string with the characters "★" (U+2605), "⯪" (U+2BEA) and
+    "☆" (U+2605)
+
+    :param float,int rating: Number between 0 and `max_rating`
+    :param float,int max_rating: Maximum rating
+    """
     import math
     rating = min(max_rating, max(0, rating))
     left = '\u2605' * math.floor(rating)
