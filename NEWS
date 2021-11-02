@@ -5,6 +5,7 @@
   * bB: New --description option takes a custom description text or the path to
     a text file
   * bB: New --tags option takes a custom list of comma-separated tags
+  * bB: Improved automatic sample exclusion
 
 
 2021.10.23

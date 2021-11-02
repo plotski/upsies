@@ -19,6 +19,7 @@ class BbTrackerConfig(TrackerConfigBase):
         'exclude'     : [
             r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample|extra|bonus|feature)',
+            r'(?i:sample\.[a-z]+)$',
         ],
     }
 
