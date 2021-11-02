@@ -4,9 +4,27 @@ String formatting and parsing
 
 import re
 import sys
+import importlib
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
+
+
+def group(name):
+    """
+    Return character group, e.g. "digits"
+
+    This function simply returns an attribute from the built-in :mod:`string`
+    module.
+
+    :raise ValueError: if the built-in :mod:`string` module doesn't have
+        attribute `name`
+    """
+    string_module = importlib.import_module('string')
+    try:
+        return getattr(string_module, name)
+    except AttributeError:
+        raise ValueError(f'No such character group: {name!r}')
 
 
 def autodecode(bytes):

@@ -6,6 +6,21 @@ from upsies.utils import string
 
 
 @pytest.mark.parametrize(
+    argnames='group, exp_string, exp_error',
+    argvalues=(
+        ('digits', '0123456789', None),
+        ('foo', None, "No such character group: 'foo'"),
+    ),
+)
+def test_group(group, exp_string, exp_error):
+    if exp_error:
+        with pytest.raises(ValueError, match=rf'^{re.escape(exp_error)}$'):
+            string.group(group)
+    else:
+        assert string.group(group) == exp_string
+
+
+@pytest.mark.parametrize(
     argnames='bytes, exp_string, exp_error',
     argvalues=(
         (b'\xf2\xd5\xd3\xd3\xcb\xc9\xca', 'Русский', None),  # Russian
