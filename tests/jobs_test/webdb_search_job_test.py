@@ -1,6 +1,6 @@
 import asyncio
 import sys
-from unittest.mock import Mock, call
+from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
@@ -101,6 +101,29 @@ async def test_WebDbSearchJob_initialize_sets_query_from_Query(tmp_path, foodb):
         query=Query(title='The Foo', year=2010),
     )
     assert job.query == Query('this query')
+    assert foodb.sanitize_query.call_args_list == [
+        call(Query(title='The Foo', year=2010)),
+    ]
+
+@pytest.mark.parametrize(
+    argnames='no_id_ok, exp_no_id_ok',
+    argvalues=(
+        (True, True),
+        (False, False),
+        (None, False),
+        (1, True),
+    ),
+)
+@pytest.mark.asyncio  # Ensure aioloop exists
+async def test_WebDbSearchJob_initialize_sets_no_id_ok(no_id_ok, exp_no_id_ok, tmp_path, foodb):
+    job = webdb.WebDbSearchJob(
+        home_directory=tmp_path,
+        cache_directory=tmp_path,
+        db=foodb,
+        query=Query(title='The Foo', year=2010),
+        no_id_ok=no_id_ok,
+    )
+    assert job.no_id_ok == exp_no_id_ok
     assert foodb.sanitize_query.call_args_list == [
         call(Query(title='The Foo', year=2010)),
     ]
@@ -319,18 +342,60 @@ def test_WebDbSearchJob_result_focused(job):
     assert job._info_updater.set_result.call_args_list == [call('The Result')]
 
 
-def test_WebDbSearchJob_result_selected(job):
+@pytest.mark.parametrize(
+    argnames='result, is_searching, no_id_ok, exp_is_finished, exp_output',
+    argvalues=(
+        (Mock(id='mock id'), False, False, True, ('mock id',)),
+        (Mock(id='mock id'), False, True, True, ('mock id',)),
+        (Mock(id='mock id'), True, False, False, ()),
+        (Mock(id='mock id'), True, True, False, ()),
+        (None, False, False, False, ()),
+        (None, False, True, True, ()),
+        (None, True, False, False, ()),
+        (None, True, True, False, ()),
+    ),
+)
+def test_WebDbSearchJob_result_selected(result, is_searching, no_id_ok, exp_is_finished, exp_output, job):
     assert not job.is_finished
-    job.result_selected(Mock(id='mock id'))
-    assert job.is_finished
-    assert job.output == ('mock id',)
+    job._is_searching = is_searching
+    job.no_id_ok = no_id_ok
+    job.result_selected(result)
+    assert job.is_finished is exp_is_finished
+    assert job.output == exp_output
 
-def test_WebDbSearchJob_result_selected_while_searching(job):
-    assert not job.is_finished
-    job._is_searching = True
-    job.result_selected(Mock(id='mock id'))
-    assert not job.is_finished
-    assert job.output == ()
+
+@pytest.mark.parametrize(
+    argnames='value, exp_value',
+    argvalues=(
+        (True, True),
+        (False, False),
+        (None, False),
+        (1, True),
+    ),
+)
+@pytest.mark.asyncio  # Ensure aioloop exists
+async def test_WebDbSearchJob_no_id_ok(value, exp_value, job):
+    assert job.no_id_ok is False
+    job.no_id_ok = value
+    assert job.no_id_ok is exp_value
+
+
+@pytest.mark.parametrize(
+    argnames='parent_exit_code, no_id_ok, exp_exit_code',
+    argvalues=(
+        (None, False, None),
+        (None, True, None),
+        (0, False, 0),
+        (0, True, 0),
+        (1, False, 1),
+        (1, True, 0),
+    ),
+)
+@pytest.mark.asyncio  # Ensure aioloop exists
+async def test_WebDbSearchJob_exit_code(parent_exit_code, no_id_ok, exp_exit_code, mocker, job):
+    mocker.patch('upsies.jobs.base.JobBase.exit_code', PropertyMock(return_value=parent_exit_code))
+    job.no_id_ok = no_id_ok
+    assert job.exit_code is exp_exit_code
 
 
 @pytest.fixture

@@ -68,13 +68,15 @@ class WebDbSearchJob(JobBase):
         """:class:`~.webdbs.common.Query` instance"""
         return self._query
 
-    def initialize(self, *, db, query):
+    def initialize(self, *, db, query, no_id_ok=False):
         """
         Set internal state
 
         :param WebDbApiBase db: Return value of :func:`.utils.webdbs.webdb`
         :param query: Path of the release (doesn't have to exist) or
             :class:`~.webdbs.common.Query` instance
+        :param no_id_ok: Whether this job will finish gracefully if no ID is
+            selected
         """
         assert isinstance(db, webdbs.WebDbApiBase), f'Not a WebDbApiBase: {db!r}'
         self._db = db
@@ -82,6 +84,7 @@ class WebDbSearchJob(JobBase):
             query = webdbs.Query.from_path(str(query))
         self._query = self._db.sanitize_query(query)
         self._query.signal.register('changed', self._handle_query_changed)
+        self.no_id_ok = no_id_ok
 
         self.signal.add('search_results')
         self.signal.add('searching_status')
@@ -197,7 +200,27 @@ class WebDbSearchJob(JobBase):
         if not self.is_searching:
             if result is not None:
                 self.send(str(result.id))
-            self.finish()
+            if result is not None or self.no_id_ok:
+                self.finish()
+
+    @property
+    def no_id_ok(self):
+        """Whether this job will finish gracefully if no ID is selected"""
+        return self._no_id_ok
+
+    @no_id_ok.setter
+    def no_id_ok(self, value):
+        self._no_id_ok = bool(value)
+
+    @property
+    def exit_code(self):
+        """`0` if job was successful, `> 0` otherwise, None while job is not finished"""
+        exit_code = super().exit_code
+        if exit_code is not None:
+            if exit_code != 0 and self.no_id_ok:
+                return 0
+            else:
+                return exit_code
 
 
 class _Searcher:
