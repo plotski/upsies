@@ -1722,7 +1722,7 @@ async def test_get_tags_for_movie(bb_tracker_jobs, mocker):
         # Directors
         ('Jim J. Jackson', "Émile 'E' Jaques"),
         # Cast
-        ('Foo', 'Bar', 'BaZ'),
+        ('F~o~o', ' Bar', 'BaZ '),
     )))
     tags = await bb_tracker_jobs.get_tags()
     assert tags == 'comedy,horror,science.fiction,jim.j.jackson,emile.e.jaques,foo,bar,baz'
@@ -1742,7 +1742,7 @@ async def test_get_tags_for_series(bb_tracker_jobs, mocker):
         # Creators
         ('Jim J. Jackson', "Émile 'E' Jaques"),
         # Cast
-        ('Foo', 'Bar', 'BaZ'),
+        ('~Foo~', ' Bar ', '  B,aZ  '),
     )))
     tags = await bb_tracker_jobs.get_tags()
     assert tags == 'comedy,horror,jim.j.jackson,emile.e.jaques,foo,bar,baz'

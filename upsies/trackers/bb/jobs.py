@@ -919,18 +919,27 @@ class BbTrackerJobs(TrackerJobsBase):
     }
 
     async def get_tags(self):
+        allowed_characters = (
+            string.group('ascii_lowercase')
+            + string.group('digits')
+            + '.'
+        )
+
         def normalize_tags(strings):
             normalized = []
             for s in strings:
                 s = (
                     s
+                    .strip()
                     .lower()
                     .replace(' ', '.')
                     .replace('-', '.')
                     .replace('\'', '.')
                 )
                 s = re.sub(r'\.+', '.', s)  # Dedup "."
-                s = unidecode.unidecode(s)  # Replace non-ASCII
+                s = unidecode.unidecode(s)  # Translate exotic characters to ASCII
+                s = ''.join(c for c in s    # Remove remaining non-ASCII characters
+                            if c in allowed_characters)
                 for regex, replacement in self._tags_translation.items():
                     if regex.search(s):
                         s = replacement
