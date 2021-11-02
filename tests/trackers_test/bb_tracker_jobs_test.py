@@ -139,14 +139,6 @@ def test_episode(episodes, exp_episode, bb_tracker_jobs, mocker):
     assert bb_tracker_jobs.episode == exp_episode
 
 
-def test_promotion(bb_tracker_jobs, mocker):
-    assert bb_tracker_jobs.promotion == ''.join((
-        '[align=right][size=1]Shared with ',
-        f'[url={__homepage__}]{__project_name__} {__version__}[/url]',
-        '[/size][/align]',
-    ))
-
-
 @pytest.mark.parametrize('output, exp_id', ((('123',), '123'), ((), None)))
 @pytest.mark.asyncio
 async def test_get_imdb_id_from_imdb_job(output, exp_id, bb_tracker_jobs, mocker):
@@ -1914,6 +1906,14 @@ async def test_get_description_for_series(bb_tracker_jobs, mocker):
         'series mediainfo'
     ) + bb_tracker_jobs.promotion
     assert bb_tracker_jobs.error.call_args_list == []
+
+
+def test_promotion(bb_tracker_jobs, mocker):
+    assert bb_tracker_jobs.promotion == ''.join((
+        '[align=right][size=1]Shared with ',
+        f'[url={__homepage__}]{__project_name__} {__version__}[/url]',
+        '[/size][/align]',
+    ))
 
 
 @pytest.mark.parametrize(

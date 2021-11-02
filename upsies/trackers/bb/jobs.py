@@ -58,12 +58,6 @@ class BbTrackerJobs(TrackerJobsBase):
         if match:
             return int(match.group(1))
 
-    promotion = (
-        '[align=right][size=1]Shared with '
-        f'[url={__homepage__}]{__project_name__} {__version__}[/url]'
-        '[/size][/align]'
-    )
-
     # Web DBs
 
     async def get_imdb_id(self):
@@ -1012,6 +1006,12 @@ class BbTrackerJobs(TrackerJobsBase):
 
         parts.append(self.promotion)
         return ''.join(parts)
+
+    promotion = (
+        '[align=right][size=1]Shared with '
+        f'[url={__homepage__}]{__project_name__} {__version__}[/url]'
+        '[/size][/align]'
+    )
 
     async def format_description_summary(self):
         summary = await self.try_webdbs((self.tvmaze, self.imdb), 'summary')
