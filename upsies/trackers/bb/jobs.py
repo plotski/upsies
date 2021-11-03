@@ -78,7 +78,7 @@ class BbTrackerJobs(TrackerJobsBase):
             if self.tvmaze_job.output:
                 return self.tvmaze_job.output[0]
 
-    async def try_webdbs(self, webdbs, method):
+    async def try_webdbs(self, webdbs, method, default=None):
         """
         Try to run `method` on each item in `webdbs` and return the first truthy
         return value
@@ -101,9 +101,13 @@ class BbTrackerJobs(TrackerJobsBase):
                 result = await result_getter(id)
                 if result:
                     return result
-        # Default to return value from final webdb, e.g. empty string, empty
-        # list, etc.
-        return result
+        try:
+            # Default to return value from final webdb, e.g. empty string, empty
+            # list, etc (these wouldn't be returned above, they are falsy)
+            return result
+        except NameError:
+            # Return default if we couldn't get an ID for any webdb
+            return default
 
     # Jobs
 
@@ -964,12 +968,12 @@ class BbTrackerJobs(TrackerJobsBase):
             webdbs = (self.tvmaze, self.imdb)
 
             # Gather tags
-            tags = list(await self.try_webdbs(webdbs, 'genres'))
+            tags = list(await self.try_webdbs(webdbs, 'genres', default=()))
             if self.is_movie_release:
-                tags.extend(await self.try_webdbs(webdbs, 'directors'))
+                tags.extend(await self.try_webdbs(webdbs, 'directors', default=()))
             elif self.is_series_release:
-                tags.extend(await self.try_webdbs(webdbs, 'creators'))
-            tags.extend(await self.try_webdbs(webdbs, 'cast'))
+                tags.extend(await self.try_webdbs(webdbs, 'creators', default=()))
+            tags.extend(await self.try_webdbs(webdbs, 'cast', default=()))
 
         # Replace spaces, non-ASCII characters, etc
         tags = normalize_tags(tags)
@@ -1033,7 +1037,7 @@ class BbTrackerJobs(TrackerJobsBase):
     )
 
     async def format_description_summary(self):
-        summary = await self.try_webdbs((self.tvmaze, self.imdb), 'summary')
+        summary = await self.try_webdbs((self.tvmaze, self.imdb), 'summary', default='')
         if summary:
             summary = '[quote]' + summary
             if self.is_episode_release and self.season and self.episode:
@@ -1121,7 +1125,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 return f'[b]Status[/b]: {status}'
 
     async def format_description_countries(self):
-        countries = await self.try_webdbs((self.tvmaze, self.imdb), 'countries')
+        countries = await self.try_webdbs((self.tvmaze, self.imdb), 'countries', default=())
         if countries:
             return (f'[b]Countr{"ies" if len(countries) > 1 else "y"}[/b]: '
                     + ', '.join(countries))
@@ -1138,7 +1142,7 @@ class BbTrackerJobs(TrackerJobsBase):
             else:
                 return f'{minutes}m'
 
-        runtimes = await self.try_webdbs((self.imdb, self.tvmaze), 'runtimes')
+        runtimes = await self.try_webdbs((self.imdb, self.tvmaze), 'runtimes', default=())
         if len(runtimes) == 1:
             runtime = tuple(runtimes.values())[0]
             return f'[b]Runtime[/b]: {format_runtime(runtime)}'
@@ -1159,14 +1163,14 @@ class BbTrackerJobs(TrackerJobsBase):
             return str(person)
 
     async def format_description_directors(self):
-        directors = await self.try_webdbs((self.imdb, self.tvmaze), 'directors')
+        directors = await self.try_webdbs((self.imdb, self.tvmaze), 'directors', default=())
         if directors:
             directors_links = [self._format_person(director) for director in directors]
             return (f'[b]Director{"s" if len(directors) > 1 else ""}[/b]: '
                     + ', '.join(directors_links))
 
     async def format_description_creators(self):
-        creators = await self.try_webdbs((self.tvmaze, self.imdb), 'creators')
+        creators = await self.try_webdbs((self.tvmaze, self.imdb), 'creators', default=())
         if creators:
             creators_links = [self._format_person(creator) for creator in creators]
             return (f'[b]Creator{"s" if len(creators) > 1 else ""}[/b]: '

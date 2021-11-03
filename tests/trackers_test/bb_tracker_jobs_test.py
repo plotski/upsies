@@ -249,6 +249,26 @@ async def test_try_webdbs_defaults_to_result_from_last_webdb(bb_tracker_jobs, mo
     assert db3.get_result.call_args_list == [call('456')]
     assert db4.get_result.call_args_list == [call('789')]
 
+@pytest.mark.asyncio
+async def test_try_webdbs_defaults_to_default_argument(bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_db1_id', AsyncMock(return_value=None), create=True)
+    mocker.patch.object(bb_tracker_jobs, 'get_db2_id', AsyncMock(return_value=None), create=True)
+    mocker.patch.object(bb_tracker_jobs, 'get_db3_id', AsyncMock(return_value=None), create=True)
+    db1 = Mock()
+    db2 = Mock()
+    db3 = Mock()
+    db1.configure_mock(name='db1', get_result=AsyncMock(return_value='db1 result'))
+    db2.configure_mock(name='db2', get_result=AsyncMock(return_value='db2 result'))
+    db3.configure_mock(name='db3', get_result=AsyncMock(return_value='db3 result'))
+    return_value = await bb_tracker_jobs.try_webdbs((db1, db2, db3), 'get_result', default='foo!')
+    assert return_value == 'foo!'
+    assert bb_tracker_jobs.get_db1_id.call_args_list == [call()]
+    assert bb_tracker_jobs.get_db2_id.call_args_list == [call()]
+    assert bb_tracker_jobs.get_db3_id.call_args_list == [call()]
+    assert db1.get_result.call_args_list == []
+    assert db2.get_result.call_args_list == []
+    assert db3.get_result.call_args_list == []
+
 
 @pytest.mark.asyncio
 async def test_jobs_before_upload(bb_tracker_jobs, mocker):
@@ -1731,9 +1751,9 @@ async def test_get_tags_for_movie(bb_tracker_jobs, mocker):
     tags = await bb_tracker_jobs.get_tags()
     assert tags == 'comedy,horror,science.fiction,jim.j.jackson,emile.e.jaques,foo,bar,baz'
     assert bb_tracker_jobs.try_webdbs.call_args_list == [
-        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'genres'),
-        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'directors'),
-        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'cast'),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'genres', default=()),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'directors', default=()),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'cast', default=()),
     ]
 
 @pytest.mark.asyncio
@@ -1751,9 +1771,9 @@ async def test_get_tags_for_series(bb_tracker_jobs, mocker):
     tags = await bb_tracker_jobs.get_tags()
     assert tags == 'comedy,horror,jim.j.jackson,emile.e.jaques,foo,bar,baz'
     assert bb_tracker_jobs.try_webdbs.call_args_list == [
-        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'genres'),
-        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'creators'),
-        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'cast'),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'genres', default=()),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'creators', default=()),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'cast', default=()),
     ]
 
 @pytest.mark.asyncio
@@ -1959,7 +1979,7 @@ async def test_format_description_summary(summary, episode_summary, exp_summary,
     summary = await bb_tracker_jobs.format_description_summary()
     assert summary == exp_summary
     assert bb_tracker_jobs.try_webdbs.call_args_list == [
-        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'summary'),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'summary', default=''),
     ]
     if summary and is_episode_release and season and episode:
         assert bb_tracker_jobs.format_description_episode_summary.call_args_list == [call()]
@@ -2235,7 +2255,7 @@ async def test_format_description_countries(countries, exp_text, bb_tracker_jobs
     text = await bb_tracker_jobs.format_description_countries()
     assert text == exp_text
     assert bb_tracker_jobs.try_webdbs.call_args_list == [
-        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'countries'),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'countries', default=()),
     ]
 
 
@@ -2257,10 +2277,12 @@ async def test_format_description_countries(countries, exp_text, bb_tracker_jobs
 )
 @pytest.mark.asyncio
 async def test_format_description_runtime(runtimes, exp_text, bb_tracker_jobs, mocker):
-    try_webdbs_mock = mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=runtimes))
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(return_value=runtimes))
     text = await bb_tracker_jobs.format_description_runtime()
     assert text == exp_text
-    assert try_webdbs_mock.call_args_list == [call((bb_tracker_jobs.imdb, bb_tracker_jobs.tvmaze), 'runtimes')]
+    assert bb_tracker_jobs.try_webdbs.call_args_list == [
+        call((bb_tracker_jobs.imdb, bb_tracker_jobs.tvmaze), 'runtimes', default=()),
+    ]
 
 
 @pytest.mark.parametrize(
