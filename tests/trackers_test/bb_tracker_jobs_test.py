@@ -418,6 +418,7 @@ def test_imdb_job(bb_tracker_jobs, mocker):
     assert bb_tracker_jobs.imdb_job is parent_imdb_job_mock
     assert bb_tracker_jobs.imdb_job.condition is bb_tracker_jobs.make_job_condition.return_value
     assert bb_tracker_jobs.make_job_condition.call_args_list == [call('imdb_job', ReleaseType.movie)]
+    assert bb_tracker_jobs.imdb_job.no_id_ok is True
 
 
 def test_movie_title_job(bb_tracker_jobs, mocker):
@@ -841,6 +842,7 @@ def test_tvmaze_job(bb_tracker_jobs, mocker):
     assert bb_tracker_jobs.make_job_condition.call_args_list == [
         call('tvmaze_job', ReleaseType.series, ReleaseType.episode),
     ]
+    assert bb_tracker_jobs.tvmaze_job.no_id_ok is True
 
 
 def test_series_title_job(bb_tracker_jobs, mocker):

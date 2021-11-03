@@ -238,6 +238,7 @@ class BbTrackerJobs(TrackerJobsBase):
         """:class:`~.jobs.webdb.WebDbSearchJob` instance"""
         imdb_job = super().imdb_job
         imdb_job.condition = self.make_job_condition('imdb_job', release.ReleaseType.movie)
+        imdb_job.no_id_ok = True
         return imdb_job
 
     @cached_property
@@ -504,6 +505,7 @@ class BbTrackerJobs(TrackerJobsBase):
             release.ReleaseType.season,
             release.ReleaseType.episode,
         )
+        tvmaze_job.no_id_ok = True
         return tvmaze_job
 
     @cached_property
