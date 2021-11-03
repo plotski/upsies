@@ -91,7 +91,8 @@ def create(*, content_path, announce, source, torrent_path,
                 progress_callback=progress_callback,
                 init_callback=init_callback,
             )
-            _store_cache_torrent(torrent)
+            if torrent.is_ready:
+                _store_cache_torrent(torrent)
 
         # Write torrent file
         try:

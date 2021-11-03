@@ -12,16 +12,20 @@ from upsies.utils import torrent
 
 
 @pytest.mark.parametrize(
-    argnames='torrent_path_exists, overwrite, exp_torrent_created',
+    argnames='torrent_path_exists, overwrite, torrent_is_ready, exp_torrent_created',
     argvalues=(
-        (True, True, True),
-        (True, False, False),
-        (False, True, True),
-        (False, False, True),
+        (True, True, True, True),
+        (True, True, False, True),
+        (True, False, True, False),
+        (True, False, False, False),
+        (False, True, True, True),
+        (False, True, False, True),
+        (False, False, True, True),
+        (False, False, False, True),
     ),
 )
 @pytest.mark.parametrize('torrent_from_cache', (False, True))
-def test_create(torrent_from_cache, torrent_path_exists, overwrite, exp_torrent_created, mocker, tmp_path):
+def test_create(torrent_from_cache, torrent_path_exists, overwrite, torrent_is_ready, exp_torrent_created, mocker, tmp_path):
     content_path = str(tmp_path / 'content')
     torrent_path = str(tmp_path / 'content.torrent')
     announce = 'http://foo'
@@ -32,7 +36,7 @@ def test_create(torrent_from_cache, torrent_path_exists, overwrite, exp_torrent_
 
     mocker.patch('upsies.utils.torrent._path_exists', return_value=torrent_path_exists)
     mocker.patch('upsies.utils.torrent._read_cache_torrent', return_value=Mock() if torrent_from_cache else None)
-    mocker.patch('upsies.utils.torrent._generate_torrent', return_value=Mock())
+    mocker.patch('upsies.utils.torrent._generate_torrent', return_value=Mock(is_ready=torrent_is_ready))
     mocker.patch('upsies.utils.torrent._store_cache_torrent')
     exp_torrent = torrent._read_cache_torrent.return_value or torrent._generate_torrent.return_value
 
@@ -66,7 +70,10 @@ def test_create(torrent_from_cache, torrent_path_exists, overwrite, exp_torrent_
                 progress_callback=progress_callback,
                 init_callback=init_callback,
             )]
-            assert torrent._store_cache_torrent.call_args_list == [call(exp_torrent)]
+            if torrent_is_ready:
+                assert torrent._store_cache_torrent.call_args_list == [call(exp_torrent)]
+            else:
+                assert torrent._store_cache_torrent.call_args_list == []
 
         assert exp_torrent.write.call_args_list == [call(torrent_path, overwrite=True)]
 
