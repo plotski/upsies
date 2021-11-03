@@ -339,10 +339,10 @@ class TextFieldJob(JobBase):
         """
         Get :attr:`text` from coroutine
 
-        :param coro: Coroutine that returns the new :attr:`text`
+        :param coro: Coroutine that returns the new :attr:`text` or `None` to
+            use `default_text`
         :param default_text: String to use if `coro` raises
-            :class:`~.errors.RequestError` or `None` to keep the original
-            :attr:`text` in that case
+            :class:`~.errors.RequestError` or if `coro` returns `None`
         :param finish_on_success: Whether to call :meth:`finish` after setting
             :attr:`text` to `coro` return value
         :param error_is_fatal: Whether to call :meth:`error` and :meth:`finish`
@@ -351,24 +351,34 @@ class TextFieldJob(JobBase):
         """
         self.read_only = True
         self.signal.emit('dialog_updating', self)
+
         try:
             # Try to set text field value, e.g. from IMDb
             text = await coro
+
         except errors.RequestError as e:
-            # Inform user about failure and allow them to make manual
-            # adjustments to default text
-            if error_is_fatal:
-                self.error(e)
-            else:
-                self.warn(e)
             if default_text is not None:
                 self.text = default_text
-        else:
-            # send() also finishes this job. This is important for caching.
-            if finish_on_success:
-                self.send(text)
+
+            if error_is_fatal:
+                # Finish the job with an error status
+                self.error(e)
             else:
+                # Inform user about failure and allow them to make manual
+                # adjustments to the default text
+                self.warn(e)
+
+        else:
+            if text is not None:
                 self.text = text
+            elif default_text is not None:
+                self.text = default_text
+
+            # We must call send() because it handles output caching, and it also
+            # finishes the job.
+            if finish_on_success and text is not None:
+                self.send(text)
+
         finally:
             # Always re-enable text field after we're done messing with it
             self.read_only = False
