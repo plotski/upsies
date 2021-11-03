@@ -427,7 +427,7 @@ def test_movie_title_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.movie_title_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.fill_in_movie_title,
+        'finished', bb_tracker_jobs.fill_in_movie_title,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='bb-movie-title',
@@ -445,9 +445,9 @@ def test_movie_title_job(bb_tracker_jobs, mocker):
     argnames='title, exp_error',
     argvalues=(
         ('the title', None),
-        ('', 'Invalid title: '),
-        (' ', 'Invalid title: '),
-        ('\t', 'Invalid title: '),
+        ('', 'Failed to autodetect title'),
+        (' ', 'Failed to autodetect title'),
+        ('\t', 'Failed to autodetect title'),
     ),
 )
 def test_movie_title_validator(title, exp_error, bb_tracker_jobs, mocker):
@@ -464,9 +464,9 @@ def test_fill_in_movie_title(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs.movie_title_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_title_job, 'add_task', Mock())
 
-    bb_tracker_jobs.fill_in_movie_title('tt0123')
+    bb_tracker_jobs.fill_in_movie_title('mock movie_title_job')
 
-    assert bb_tracker_jobs.get_movie_title.call_args_list == [call('tt0123')]
+    assert bb_tracker_jobs.get_movie_title.call_args_list == [call()]
     assert bb_tracker_jobs.movie_title_job.fetch_text.call_args_list == [call(
         coro=bb_tracker_jobs.get_movie_title.return_value,
         default_text=bb_tracker_jobs.release_name.title_with_aka,
@@ -476,28 +476,17 @@ def test_fill_in_movie_title(bb_tracker_jobs, mocker):
         bb_tracker_jobs.movie_title_job.fetch_text.return_value
     )]
 
-
-@pytest.mark.parametrize(
-    argnames='year, exp_text',
-    argvalues=(
-        ('2015', '2015'),
-        ('', ''),
-        ('UNKNOWN_YEAR', ''),
-    ),
-)
-def test_movie_year_job(year, exp_text, bb_tracker_jobs, mocker):
+def test_movie_year_job(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
     mocker.patch.object(bb_tracker_jobs, 'imdb_job')
-    mocker.patch.object(type(bb_tracker_jobs.release_name), 'year', PropertyMock(return_value=year))
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.movie_year_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.fill_in_movie_year,
+        'finished', bb_tracker_jobs.fill_in_movie_year,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='bb-movie-year',
         label='Year',
-        text=exp_text,
         condition=bb_tracker_jobs.make_job_condition.return_value,
         validator=bb_tracker_jobs.movie_year_validator,
         **bb_tracker_jobs.common_job_args,
@@ -512,7 +501,7 @@ def test_movie_year_job(year, exp_text, bb_tracker_jobs, mocker):
     argvalues=(
         ('2015', ''),
         ('', ''),
-        ('UNKNOWN_YEAR', 'Failed to autodetect year.'),
+        ('UNKNOWN_YEAR', 'Failed to autodetect year'),
     ),
 )
 def test_movie_year_validator(year, exp_error, bb_tracker_jobs, mocker):
@@ -527,15 +516,16 @@ def test_movie_year_validator(year, exp_error, bb_tracker_jobs, mocker):
 
 def test_fill_in_movie_year(bb_tracker_jobs, mocker):
     mocker.patch.object(type(bb_tracker_jobs), 'release_name', PropertyMock(year='2014'))
-    mocker.patch.object(bb_tracker_jobs.imdb, 'year', Mock())
+    mocker.patch('upsies.trackers.bb.BbTrackerJobs.get_movie_year', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_year_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_year_job, 'add_task', Mock())
 
-    bb_tracker_jobs.fill_in_movie_year('tt0123')
+    bb_tracker_jobs.fill_in_movie_year('mock movie_year_job')
 
-    assert bb_tracker_jobs.imdb.year.call_args_list == [call('tt0123')]
+    assert bb_tracker_jobs.get_movie_year.call_args_list == [call()]
     assert bb_tracker_jobs.movie_year_job.fetch_text.call_args_list == [call(
-        coro=bb_tracker_jobs.imdb.year.return_value,
+        coro=bb_tracker_jobs.get_movie_year.return_value,
+        default_text=bb_tracker_jobs.release_name.year,
         finish_on_success=True,
     )]
     assert bb_tracker_jobs.movie_year_job.add_task.call_args_list == [call(
@@ -733,7 +723,7 @@ def test_movie_tags_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.movie_tags_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.imdb_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.fill_in_movie_tags,
+        'finished', bb_tracker_jobs.fill_in_movie_tags,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='bb-movie-tags',
@@ -751,9 +741,9 @@ def test_movie_tags_job(bb_tracker_jobs, mocker):
     argnames='tags, exp_error',
     argvalues=(
         ('foo,bar,baz', None),
-        ('', 'Invalid tags: '),
-        (' ', 'Invalid tags: '),
-        ('\t', 'Invalid tags: '),
+        ('', 'Failed to generate tags (use --tags)'),
+        (' ', 'Failed to generate tags (use --tags)'),
+        ('\t', 'Failed to generate tags (use --tags)'),
     ),
 )
 def test_movie_tags_validator(tags, exp_error, bb_tracker_jobs, mocker):
@@ -768,7 +758,7 @@ def test_fill_in_movie_tags(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs.movie_tags_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_tags_job, 'add_task', Mock())
 
-    bb_tracker_jobs.fill_in_movie_tags('tt0123')
+    bb_tracker_jobs.fill_in_movie_tags('mock movie_tags_job')
 
     assert bb_tracker_jobs.get_tags.call_args_list == [call()]
     assert bb_tracker_jobs.movie_tags_job.fetch_text.call_args_list == [call(
@@ -804,12 +794,15 @@ def test_movie_description_job(bb_tracker_jobs, mocker):
     argnames='description, exp_error',
     argvalues=(
         ('Something happens.', None),
-        ('', 'Invalid description: '),
-        (' ', 'Invalid description: '),
-        ('\t', 'Invalid description: '),
+        ('', 'Failed to generate description (use --description)'),
+        (' ', 'Failed to generate description (use --description)'),
+        ('\t', 'Failed to generate description (use --description)'),
     ),
 )
-def test_movie_description_validator(description, exp_error, bb_tracker_jobs, mocker):
+@pytest.mark.parametrize('promotion', ('Use upsies!', ''))
+def test_movie_description_validator(promotion, description, exp_error, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'promotion', PropertyMock(return_value=promotion))
+    description += promotion
     if exp_error is None:
         bb_tracker_jobs.movie_description_validator(description)
     else:
@@ -821,7 +814,7 @@ def test_fill_in_movie_description(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs.movie_description_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.movie_description_job, 'add_task', Mock())
 
-    bb_tracker_jobs.fill_in_movie_description('ignored mock job')
+    bb_tracker_jobs.fill_in_movie_description('mock movie_description_job')
 
     assert bb_tracker_jobs.get_description.call_args_list == [call()]
     assert bb_tracker_jobs.movie_description_job.fetch_text.call_args_list == [call(
@@ -851,7 +844,7 @@ def test_series_title_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.series_title_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.tvmaze_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.fill_in_series_title,
+        'finished', bb_tracker_jobs.fill_in_series_title,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='bb-series-title',
@@ -870,10 +863,10 @@ def test_series_title_job(bb_tracker_jobs, mocker):
     argvalues=(
         ('The Title S01 [foo / bar / baz]', None),
         ('The Title S01 [foo / UNKNOWN_BAR / baz]', 'Failed to autodetect: bar'),
-        ('UNKNOWN_TITLE S01 [foo / bar / baz]', 'Failed to autodetect: title'),
-        ('', 'Invalid title: '),
-        (' ', 'Invalid title: '),
-        ('\t', 'Invalid title: '),
+        ('UNKNOWN_TITLE S01 [UNKNOWN_THIS / UNKNOWN_that / baz]', 'Failed to autodetect: title, this'),
+        ('', 'Failed to generate title'),
+        (' ', 'Failed to generate title'),
+        ('\t', 'Failed to generate title'),
     ),
 )
 def test_series_title_validator(title, exp_error, bb_tracker_jobs, mocker):
@@ -890,9 +883,9 @@ def test_fill_in_series_title(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs.series_title_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.series_title_job, 'add_task', Mock())
 
-    bb_tracker_jobs.fill_in_series_title('tt0123')
+    bb_tracker_jobs.fill_in_series_title('mock series_title_job')
 
-    assert bb_tracker_jobs.get_series_title_and_release_info.call_args_list == [call('tt0123')]
+    assert bb_tracker_jobs.get_series_title_and_release_info.call_args_list == [call()]
     assert bb_tracker_jobs.series_title_job.fetch_text.call_args_list == [call(
         coro=bb_tracker_jobs.get_series_title_and_release_info.return_value,
         default_text=bb_tracker_jobs.release_name.title_with_aka_and_year,
@@ -936,7 +929,7 @@ def test_series_tags_job(bb_tracker_jobs, mocker):
     TextFieldJob_mock = mocker.patch('upsies.jobs.dialog.TextFieldJob')
     assert bb_tracker_jobs.series_tags_job is TextFieldJob_mock.return_value
     assert bb_tracker_jobs.tvmaze_job.signal.register.call_args_list == [call(
-        'output', bb_tracker_jobs.fill_in_series_tags,
+        'finished', bb_tracker_jobs.fill_in_series_tags,
     )]
     assert TextFieldJob_mock.call_args_list == [call(
         name='bb-series-tags',
@@ -954,9 +947,9 @@ def test_series_tags_job(bb_tracker_jobs, mocker):
     argnames='tags, exp_error',
     argvalues=(
         ('foo,bar,baz', None),
-        ('', 'Invalid tags: '),
-        (' ', 'Invalid tags: '),
-        ('\t', 'Invalid tags: '),
+        ('', 'Failed to generate tags (use --tags)'),
+        (' ', 'Failed to generate tags (use --tags)'),
+        ('\t', 'Failed to generate tags (use --tags)'),
     ),
 )
 def test_series_tags_validator(tags, exp_error, bb_tracker_jobs, mocker):
@@ -1007,12 +1000,15 @@ def test_series_description_job(bb_tracker_jobs, mocker):
     argnames='description, exp_error',
     argvalues=(
         ('foo,bar,baz', None),
-        ('', 'Invalid description: '),
-        (' ', 'Invalid description: '),
-        ('\t', 'Invalid description: '),
+        ('', 'Failed to generate description (use --description)'),
+        (' ', 'Failed to generate description (use --description)'),
+        ('\t', 'Failed to generate description (use --description)'),
     ),
 )
-def test_series_description_validator(description, exp_error, bb_tracker_jobs, mocker):
+@pytest.mark.parametrize('promotion', ('Use upsies!', ''))
+def test_series_description_validator(promotion, description, exp_error, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'promotion', PropertyMock(return_value=promotion))
+    description += promotion
     if exp_error is None:
         bb_tracker_jobs.series_description_validator(description)
     else:
@@ -1024,7 +1020,7 @@ def test_fill_in_series_description(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs.series_description_job, 'fetch_text', Mock())
     mocker.patch.object(bb_tracker_jobs.series_description_job, 'add_task', Mock())
 
-    bb_tracker_jobs.fill_in_series_description('ignored mock job')
+    bb_tracker_jobs.fill_in_series_description('mock series_description_job')
 
     assert bb_tracker_jobs.get_description.call_args_list == [call()]
     assert bb_tracker_jobs.series_description_job.fetch_text.call_args_list == [call(
@@ -1377,44 +1373,74 @@ def test_release_info_limited_edition(editions, exp_text, bb_tracker_jobs, mocke
     assert bb_tracker_jobs.release_info_limited_edition == exp_text
 
 
-@pytest.mark.asyncio
-async def test_get_movie_title(bb_tracker_jobs, mocker):
-    mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
-    mocker.patch.object(type(bb_tracker_jobs.release_name), 'title_with_aka',
-                        PropertyMock(return_value='Title AKA Tilte'))
-    movie_title = await bb_tracker_jobs.get_movie_title('imdb id')
-    assert movie_title == 'Title AKA Tilte'
-    assert bb_tracker_jobs.release_name.fetch_info.call_args_list == [call(imdb_id='imdb id')]
-
-
 @pytest.mark.parametrize(
-    argnames='tvmaze_id, imdb_id, exp_fetch_info_calls',
+    argnames='imdb_id, title_with_aka, exp_movie_title',
     argvalues=(
-        ('tvmaze id', 'imdb id', [call(imdb_id='imdb id')]),
-        ('tvmaze id', '', []),
-        ('tvmaze id', None, []),
+        ('tt123', 'Title AKA Tilte', 'Title AKA Tilte'),
+        (None, 'Title AKA Tilte', None),
     ),
 )
 @pytest.mark.asyncio
-async def test_get_series_title_and_release_info_calls_fetch_info(tvmaze_id, imdb_id, exp_fetch_info_calls, bb_tracker_jobs, mocker):
+async def test_get_movie_title(imdb_id, title_with_aka, exp_movie_title, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value=imdb_id))
     mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
-    mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock(return_value=imdb_id))
-    await bb_tracker_jobs.get_series_title_and_release_info(tvmaze_id)
-    assert bb_tracker_jobs.tvmaze.imdb_id.call_args_list == [call(tvmaze_id)]
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'title_with_aka', PropertyMock(return_value=title_with_aka))
+    movie_title = await bb_tracker_jobs.get_movie_title()
+    assert movie_title == exp_movie_title
+    if imdb_id:
+        assert bb_tracker_jobs.release_name.fetch_info.call_args_list == [call(imdb_id=imdb_id)]
+    else:
+        assert bb_tracker_jobs.release_name.fetch_info.call_args_list == []
+
+
+@pytest.mark.parametrize(
+    argnames='imdb_id, year, exp_movie_year',
+    argvalues=(
+        ('tt123', '2009', '2009'),
+        (None, '2009', None),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_movie_year(imdb_id, year, exp_movie_year, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value=imdb_id))
+    mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'year', PropertyMock(return_value=year))
+    movie_year = await bb_tracker_jobs.get_movie_year()
+    assert movie_year == exp_movie_year
+    if imdb_id:
+        assert bb_tracker_jobs.release_name.fetch_info.call_args_list == [call(imdb_id=imdb_id)]
+    else:
+        assert bb_tracker_jobs.release_name.fetch_info.call_args_list == []
+
+
+@pytest.mark.parametrize(
+    argnames='imdb_id, exp_fetch_info_calls',
+    argvalues=(
+        ('imdb id', [call(imdb_id='imdb id')]),
+        ('', []),
+        (None, []),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_series_title_and_release_info_calls_fetch_info(imdb_id, exp_fetch_info_calls, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value=imdb_id))
+    mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
+    await bb_tracker_jobs.get_series_title_and_release_info()
+    assert bb_tracker_jobs.get_imdb_id.call_args_list == [call()]
     assert bb_tracker_jobs.release_name.fetch_info.call_args_list == exp_fetch_info_calls
 
 @pytest.mark.parametrize('year_required', (True, False))
 @pytest.mark.asyncio
 async def test_get_series_title_and_release_info_title_with_aka_and_year(year_required, bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
-    mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value='imdb id'))
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'title_with_aka',
                         PropertyMock(return_value='Title AKA Tilte'))
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'year_required',
                         PropertyMock(return_value=year_required))
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'year',
                         PropertyMock(return_value='2015'))
-    title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
+    title = await bb_tracker_jobs.get_series_title_and_release_info()
     if year_required:
         assert title.startswith('Title AKA Tilte (2015) [UNKNOWN')
     else:
@@ -1434,10 +1460,10 @@ async def test_get_series_title_and_release_info_title_with_aka_and_year(year_re
 @pytest.mark.asyncio
 async def test_get_series_title_and_release_info_season(is_season_release, season, exp_season_in_string, bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
-    mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value='imdb id'))
     mocker.patch.object(type(bb_tracker_jobs), 'is_season_release', PropertyMock(return_value=is_season_release))
     mocker.patch.object(type(bb_tracker_jobs), 'season', PropertyMock(return_value=season))
-    title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
+    title = await bb_tracker_jobs.get_series_title_and_release_info()
     if exp_season_in_string:
         assert ' - Season 5 [UNKNOWN' in title
     else:
@@ -1457,10 +1483,10 @@ async def test_get_series_title_and_release_info_season(is_season_release, seaso
 @pytest.mark.asyncio
 async def test_get_series_title_and_release_info_episode(is_episode_release, episodes, exp_episode_in_string, bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
-    mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value='imdb id'))
     mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=is_episode_release))
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'episodes', PropertyMock(return_value=episodes))
-    title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
+    title = await bb_tracker_jobs.get_series_title_and_release_info()
     if exp_episode_in_string:
         assert ' S05E10 [UNKNOWN' in title
     else:
@@ -1469,7 +1495,7 @@ async def test_get_series_title_and_release_info_episode(is_episode_release, epi
 @pytest.mark.asyncio
 async def test_get_series_title_and_release_info_has_release_info(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
-    mocker.patch.object(bb_tracker_jobs.tvmaze, 'imdb_id', AsyncMock())
+    mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value='imdb id'))
     mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=False))
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'episodes', PropertyMock(return_value=False))
 
@@ -1504,7 +1530,7 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_commentary', PropertyMock(return_value='w. Commentary'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_subtitles', PropertyMock(return_value='w. Subtitles'))
 
-    title = await bb_tracker_jobs.get_series_title_and_release_info('tvmaze id')
+    title = await bb_tracker_jobs.get_series_title_and_release_info()
     exp_info = ('[BluRay / x264 / E-AC-3 / MKV / 1080p / '
                 'PROPER / REPACK / '
                 'REMUX / 10-bit / HDR10 / '
@@ -1624,7 +1650,7 @@ async def test_get_poster_file_fails_to_get_poster_file_from_poster_url_getter(b
     assert poster_file is None
     assert download_mock.call_args_list == []
     assert poster_url_getter.call_args_list == [call()]
-    assert error_mock.call_args_list == [call('Failed to find poster URL.')]
+    assert error_mock.call_args_list == [call('Failed to find poster URL (use --poster)')]
 
 @pytest.mark.asyncio
 async def test_get_poster_file_fails_to_download_poster_from_options_url(bb_tracker_jobs, mocker):
@@ -1946,6 +1972,25 @@ async def test_get_description_for_series(bb_tracker_jobs, mocker):
         'series mediainfo'
         '\n'
     ) + bb_tracker_jobs.promotion
+    assert bb_tracker_jobs.error.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_get_description_without_webdb_id(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=True))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_summary', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_webdbs', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_year', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_status', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_countries', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_runtime', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'error')
+    description = await bb_tracker_jobs.get_description()
+    assert description == bb_tracker_jobs.promotion
     assert bb_tracker_jobs.error.call_args_list == []
 
 

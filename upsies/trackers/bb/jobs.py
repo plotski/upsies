@@ -243,7 +243,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_title_job(self):
-        self.imdb_job.signal.register('output', self.fill_in_movie_title)
+        self.imdb_job.signal.register('finished', self.fill_in_movie_title)
         return jobs.dialog.TextFieldJob(
             name=self.get_job_name('movie-title'),
             label='Title',
@@ -255,30 +255,23 @@ class BbTrackerJobs(TrackerJobsBase):
     def movie_title_validator(self, text):
         text = text.strip()
         if not text:
-            raise ValueError(f'Invalid title: {text}')
+            raise ValueError(f'Failed to autodetect title')
 
-    def fill_in_movie_title(self, imdb_id):
-        default_text = self.release_name.title_with_aka
-        coro = self.get_movie_title(imdb_id)
+    def fill_in_movie_title(self, job_):
         task = self.movie_title_job.fetch_text(
-            coro=coro,
-            default_text=default_text,
+            coro=self.get_movie_title(),
+            default_text=self.release_name.title_with_aka,
             finish_on_success=False,
         )
         self.movie_title_job.add_task(task)
 
     @cached_property
     def movie_year_job(self):
-        self.imdb_job.signal.register('output', self.fill_in_movie_year)
-        if self.release_name.year == 'UNKNOWN_YEAR':
-            guessed_year = ''
-        else:
-            guessed_year = self.release_name.year
+        self.imdb_job.signal.register('finished', self.fill_in_movie_year)
         return jobs.dialog.TextFieldJob(
             name=self.get_job_name('movie-year'),
             label='Year',
             condition=self.make_job_condition('movie_year_job', release.ReleaseType.movie),
-            text=guessed_year,
             validator=self.movie_year_validator,
             **self.common_job_args,
         )
@@ -288,12 +281,12 @@ class BbTrackerJobs(TrackerJobsBase):
         self.release_name.year = text
         # release_name.year is now "UNKNOWN_YEAR" if year is required but not known
         if self.release_name.year == 'UNKNOWN_YEAR':
-            raise ValueError('Failed to autodetect year.')
+            raise ValueError('Failed to autodetect year')
 
-    def fill_in_movie_year(self, imdb_id):
-        coro = self.imdb.year(imdb_id)
+    def fill_in_movie_year(self, job_):
         task = self.movie_year_job.fetch_text(
-            coro=coro,
+            coro=self.get_movie_year(),
+            default_text=self.release_name.year,
             finish_on_success=True,
         )
         self.movie_year_job.add_task(task)
@@ -448,7 +441,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def movie_tags_job(self):
-        self.imdb_job.signal.register('output', self.fill_in_movie_tags)
+        self.imdb_job.signal.register('finished', self.fill_in_movie_tags)
         return jobs.dialog.TextFieldJob(
             name=self.get_job_name('movie-tags'),
             label='Tags',
@@ -460,12 +453,11 @@ class BbTrackerJobs(TrackerJobsBase):
     def movie_tags_validator(self, text):
         text = text.strip()
         if not text:
-            raise ValueError(f'Invalid tags: {text}')
+            raise ValueError('Failed to generate tags (use --tags)')
 
-    def fill_in_movie_tags(self, imdb_id):
-        coro = self.get_tags()
+    def fill_in_movie_tags(self, job_):
         task = self.movie_tags_job.fetch_text(
-            coro=coro,
+            coro=self.get_tags(),
             finish_on_success=True,
         )
         self.movie_tags_job.add_task(task)
@@ -483,13 +475,12 @@ class BbTrackerJobs(TrackerJobsBase):
 
     def movie_description_validator(self, text):
         text = text.strip()
-        if not text:
-            raise ValueError(f'Invalid description: {text}')
+        if not text or text == self.promotion:
+            raise ValueError('Failed to generate description (use --description)')
 
-    def fill_in_movie_description(self, _):
-        coro = self.get_description()
+    def fill_in_movie_description(self, job_):
         task = self.movie_description_job.fetch_text(
-            coro=coro,
+            coro=self.get_description(),
             finish_on_success=True,
         )
         self.movie_description_job.add_task(task)
@@ -510,7 +501,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def series_title_job(self):
-        self.tvmaze_job.signal.register('output', self.fill_in_series_title)
+        self.tvmaze_job.signal.register('finished', self.fill_in_series_title)
         return jobs.dialog.TextFieldJob(
             name=self.get_job_name('series-title'),
             label='Title',
@@ -522,17 +513,15 @@ class BbTrackerJobs(TrackerJobsBase):
     def series_title_validator(self, text):
         text = text.strip()
         if not text:
-            raise ValueError(f'Invalid title: {text}')
+            raise ValueError('Failed to generate title')
         unknown = ', '.join(u.lower() for u in re.findall(r'UNKNOWN_([A-Z_]+)', text))
         if unknown:
             raise ValueError(f'Failed to autodetect: {unknown}')
 
-    def fill_in_series_title(self, tvmaze_id):
-        coro = self.get_series_title_and_release_info(tvmaze_id)
-        default_text = self.release_name.title_with_aka_and_year
+    def fill_in_series_title(self, job_):
         task = self.series_title_job.fetch_text(
-            coro=coro,
-            default_text=default_text,
+            coro=self.get_series_title_and_release_info(),
+            default_text=self.release_name.title_with_aka_and_year,
             finish_on_success=False,
         )
         self.series_title_job.add_task(task)
@@ -554,7 +543,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @cached_property
     def series_tags_job(self):
-        self.tvmaze_job.signal.register('output', self.fill_in_series_tags)
+        self.tvmaze_job.signal.register('finished', self.fill_in_series_tags)
         return jobs.dialog.TextFieldJob(
             name=self.get_job_name('series-tags'),
             label='Tags',
@@ -566,12 +555,11 @@ class BbTrackerJobs(TrackerJobsBase):
     def series_tags_validator(self, text):
         text = text.strip()
         if not text:
-            raise ValueError(f'Invalid tags: {text}')
+            raise ValueError('Failed to generate tags (use --tags)')
 
-    def fill_in_series_tags(self, tvmaze_id):
-        coro = self.get_tags()
+    def fill_in_series_tags(self, job_):
         task = self.series_tags_job.fetch_text(
-            coro=coro,
+            coro=self.get_tags(),
             finish_on_success=True,
         )
         self.series_tags_job.add_task(task)
@@ -589,13 +577,12 @@ class BbTrackerJobs(TrackerJobsBase):
 
     def series_description_validator(self, text):
         text = text.strip()
-        if not text:
-            raise ValueError(f'Invalid description: {text}')
+        if not text or text == self.promotion:
+            raise ValueError('Failed to generate description (use --description)')
 
-    def fill_in_series_description(self, _):
-        coro = self.get_description()
+    def fill_in_series_description(self, job_):
         task = self.series_description_job.fetch_text(
-            coro=coro,
+            coro=self.get_description(),
             finish_on_success=True,
         )
         self.series_description_job.add_task(task)
@@ -760,12 +747,20 @@ class BbTrackerJobs(TrackerJobsBase):
 
     # Metadata generators
 
-    async def get_movie_title(self, imdb_id):
-        await self.release_name.fetch_info(imdb_id=imdb_id)
-        return self.release_name.title_with_aka
+    async def get_movie_title(self):
+        imdb_id = await self.get_imdb_id()
+        if imdb_id:
+            await self.release_name.fetch_info(imdb_id=imdb_id)
+            return self.release_name.title_with_aka
 
-    async def get_series_title_and_release_info(self, tvmaze_id):
-        imdb_id = await self.tvmaze.imdb_id(tvmaze_id)
+    async def get_movie_year(self):
+        imdb_id = await self.get_imdb_id()
+        if imdb_id:
+            await self.release_name.fetch_info(imdb_id=imdb_id)
+            return self.release_name.year
+
+    async def get_series_title_and_release_info(self):
+        imdb_id = await self.get_imdb_id()
         if imdb_id:
             await self.release_name.fetch_info(imdb_id=imdb_id)
 
@@ -859,7 +854,7 @@ class BbTrackerJobs(TrackerJobsBase):
             poster_url = await poster_url_getter()
 
         if not poster_url:
-            self.error('Failed to find poster URL.')
+            self.error('Failed to find poster URL (use --poster)')
         else:
             # Download poster
             poster_job.info = f'Downloading poster: {poster_url}'
@@ -1005,9 +1000,20 @@ class BbTrackerJobs(TrackerJobsBase):
                 parts.append(self.options['description'])
 
         else:
-            # Generated description
-            parts.append(await self.format_description_summary() or '')
-            info_table = await asyncio.gather(
+            async def extend_parts(*coros, sep='', fmt='{text}'):
+                info_table = await asyncio.gather(*coros)
+                text = sep.join(
+                    str(item) for item in info_table
+                    if item is not None
+                )
+                if text:
+                    parts.append(fmt.format(text=text))
+
+            # Summary
+            await extend_parts(self.format_description_summary())
+
+            # Table-like quote block with details
+            await extend_parts(
                 self.format_description_webdbs(),
                 self.format_description_year(),
                 self.format_description_status(),
@@ -1016,21 +1022,25 @@ class BbTrackerJobs(TrackerJobsBase):
                 self.format_description_directors(),
                 self.format_description_creators(),
                 self.format_description_cast(),
+                sep='\n',
+                fmt='[quote]{text}[/quote]',
             )
-            info_table_string = '\n'.join(str(item) for item in info_table
-                                          if item is not None)
-            parts.append(f'[quote]{info_table_string}[/quote]')
-            if self.is_series_release:
-                parts.append(await self.format_description_series_screenshots())
-                parts.append(await self.format_description_series_mediainfo())
 
-        # The promotion should be in a new paragraph. [quote]...[/quote] tags
-        # automatically start a new paragraph after the closing tag.
-        if not parts[-1].endswith(('[/quote]', '\n')):
+            # Series also have screenshots and mediainfo in their description
+            if self.is_series_release:
+                await extend_parts(
+                    self.format_description_series_screenshots(),
+                    self.format_description_series_mediainfo(),
+                )
+
+        # The promotion must be below. A closing [/quote] tags automatically
+        # appends a newline when rendered. Otherwise, append a newline
+        # character.
+        if parts and not parts[-1].endswith(('[/quote]', '\n')):
             parts.append('\n')
 
         parts.append(self.promotion)
-        return ''.join(parts)
+        return ''.join(parts).strip()
 
     promotion = (
         '[align=right][size=1]Shared with '
