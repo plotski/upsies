@@ -312,7 +312,7 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def add_torrent_job(self):
         """:class:`~.jobs.torrent.AddTorrentJob` instance"""
-        if self.bittorrent_client:
+        if self.bittorrent_client and self.create_torrent_job:
             add_torrent_job = jobs.torrent.AddTorrentJob(
                 autostart=False,
                 client=self.bittorrent_client,

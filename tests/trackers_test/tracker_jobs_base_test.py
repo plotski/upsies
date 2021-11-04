@@ -171,40 +171,43 @@ def test_create_torrent_job_is_singleton(mocker):
     assert tracker_jobs.create_torrent_job is tracker_jobs.create_torrent_job
 
 
-def test_add_torrent_job_without_bittorrent_client_argument(mocker):
+@pytest.mark.parametrize(
+    argnames='bittorrent_client, create_torrent_job, exp_add_torrent_job_is_None',
+    argvalues=(
+        (Mock(), Mock(), False),
+        (None, Mock(), True),
+        (Mock(), None, True),
+    ),
+)
+def test_add_torrent_job(bittorrent_client, create_torrent_job, exp_add_torrent_job_is_None, mocker):
     AddTorrentJob_mock = mocker.patch('upsies.jobs.torrent.AddTorrentJob')
-    tracker_jobs = make_TestTrackerJobs(
-        content_path='path/to/content',
-        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
-        bittorrent_client=None,
-    )
-    assert tracker_jobs.add_torrent_job is None
-    assert AddTorrentJob_mock.call_args_list == []
-
-def test_add_torrent_job_with_add_to_client_argument(mocker):
-    AddTorrentJob_mock = mocker.patch('upsies.jobs.torrent.AddTorrentJob')
-    mocker.patch('upsies.jobs.torrent.CreateTorrentJob')
-    mocker.patch('upsies.utils.fs.dirname', Mock(return_value='path/to/content/dir'))
+    dirname_mock = mocker.patch('upsies.utils.fs.dirname', Mock(return_value='path/to/content/dir'))
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         tracker='mock tracker',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
-        bittorrent_client='bittorrent client mock',
+        bittorrent_client=bittorrent_client,
     )
-    assert tracker_jobs.add_torrent_job is AddTorrentJob_mock.return_value
-    assert AddTorrentJob_mock.call_args_list == [
-        call(
-            autostart=False,
-            client='bittorrent client mock',
-            download_path='path/to/content/dir',
-            home_directory='path/to/home',
-            ignore_cache='mock bool',
-        ),
-    ]
-    assert tracker_jobs.create_torrent_job.signal.register.call_args_list == [
-        call('output', tracker_jobs.add_torrent_job.enqueue),
-        call('finished', tracker_jobs.finalize_add_torrent_job),
-    ]
+    mocker.patch.object(type(tracker_jobs), 'create_torrent_job', PropertyMock(return_value=create_torrent_job))
+    if exp_add_torrent_job_is_None:
+        assert tracker_jobs.add_torrent_job is None
+        assert AddTorrentJob_mock.call_args_list == []
+    else:
+        assert tracker_jobs.add_torrent_job is AddTorrentJob_mock.return_value
+        assert AddTorrentJob_mock.call_args_list == [
+            call(
+                autostart=False,
+                client=bittorrent_client,
+                download_path='path/to/content/dir',
+                home_directory='path/to/home',
+                ignore_cache='mock bool',
+            ),
+        ]
+        assert tracker_jobs.create_torrent_job.signal.register.call_args_list == [
+            call('output', tracker_jobs.add_torrent_job.enqueue),
+            call('finished', tracker_jobs.finalize_add_torrent_job),
+        ]
+        assert dirname_mock.call_args_list == [call(tracker_jobs.content_path)]
 
 def test_add_torrent_job_is_singleton(mocker):
     mocker.patch('upsies.jobs.torrent.AddTorrentJob', side_effect=(Mock(), Mock()))
