@@ -270,9 +270,29 @@ async def test_try_webdbs_defaults_to_default_argument(bb_tracker_jobs, mocker):
     assert db3.get_result.call_args_list == []
 
 
+@pytest.mark.parametrize(
+    argnames='disabled_generic_job_name, exp_missing_make_job_condition_calls',
+    argvalues=(
+        ('mediainfo_job', [call('mediainfo_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode)]),
+        ('scene_check_job', [call('scene_check_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode)]),
+        ('create_torrent_job', [
+            call('create_torrent_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
+            call('add_torrent_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
+            call('copy_torrent_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
+        ]),
+        ('screenshots_job', [
+            call('screenshots_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
+            call('upload_screenshots_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
+        ]),
+        ('upload_screenshots_job', [call('upload_screenshots_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode)]),
+        ('add_torrent_job', [call('add_torrent_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode)]),
+        ('copy_torrent_job', [call('copy_torrent_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode)]),
+    ),
+)
 @pytest.mark.asyncio
-async def test_jobs_before_upload(bb_tracker_jobs, mocker):
-    make_job_condition_mock = mocker.patch('upsies.trackers.bb.jobs.BbTrackerJobs.make_job_condition')
+async def test_jobs_before_upload(disabled_generic_job_name, exp_missing_make_job_condition_calls, bb_tracker_jobs, mocker):
+    mocker.patch.object(bb_tracker_jobs, 'make_job_condition')
+    mocker.patch.object(type(bb_tracker_jobs), disabled_generic_job_name, PropertyMock(return_value=None))
     assert bb_tracker_jobs.jobs_before_upload == (
         # Generic jobs
         bb_tracker_jobs.release_type_job,
@@ -304,7 +324,7 @@ async def test_jobs_before_upload(bb_tracker_jobs, mocker):
         bb_tracker_jobs.series_description_job,
     )
 
-    assert make_job_condition_mock.call_args_list == [
+    exp_make_job_condition_calls = [
         call('mediainfo_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
         call('scene_check_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
         call('create_torrent_job', ReleaseType.movie, ReleaseType.season, ReleaseType.episode),
@@ -330,6 +350,9 @@ async def test_jobs_before_upload(bb_tracker_jobs, mocker):
         call('series_tags_job', ReleaseType.season, ReleaseType.episode),
         call('series_description_job', ReleaseType.season, ReleaseType.episode),
     ]
+    for missing_call in exp_missing_make_job_condition_calls:
+        exp_make_job_condition_calls.remove(missing_call)
+    assert bb_tracker_jobs.make_job_condition.call_args_list == exp_make_job_condition_calls
 
 
 @pytest.mark.parametrize(
