@@ -331,7 +331,7 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def copy_torrent_job(self):
         """:class:`~.jobs.torrent.CopyTorrentJob` instance"""
-        if self.torrent_destination:
+        if self.torrent_destination and self.create_torrent_job:
             copy_torrent_job = jobs.torrent.CopyTorrentJob(
                 autostart=False,
                 destination=self.torrent_destination,

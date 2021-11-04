@@ -235,37 +235,40 @@ def test_finalize_add_torrent_job(mocker):
     assert tracker_jobs.add_torrent_job.finalize.call_args_list == [call()]
 
 
-def test_copy_torrent_job_without_torrent_destination_argument(mocker):
+@pytest.mark.parametrize(
+    argnames='torrent_destination, create_torrent_job, exp_copy_torrent_job_is_None',
+    argvalues=(
+        ('some/path', Mock(), False),
+        (None, Mock(), True),
+        ('some/path', None, True),
+    ),
+)
+def test_copy_torrent_job(torrent_destination, create_torrent_job, exp_copy_torrent_job_is_None, tracker, mocker):
     CopyTorrentJob_mock = mocker.patch('upsies.jobs.torrent.CopyTorrentJob')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
-        torrent_destination=None,
+        torrent_destination=torrent_destination,
+        tracker=tracker,
     )
-    assert tracker_jobs.copy_torrent_job is None
-    assert CopyTorrentJob_mock.call_args_list == []
-
-def test_copy_torrent_job_with_torrent_destination_argument(mocker):
-    CopyTorrentJob_mock = mocker.patch('upsies.jobs.torrent.CopyTorrentJob')
-    mocker.patch('upsies.jobs.torrent.CreateTorrentJob')
-    tracker_jobs = make_TestTrackerJobs(
-        content_path='path/to/content',
-        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
-        torrent_destination='path/to/torrent/destination',
-    )
-    assert tracker_jobs.copy_torrent_job is CopyTorrentJob_mock.return_value
-    assert CopyTorrentJob_mock.call_args_list == [
-        call(
-            autostart=False,
-            destination='path/to/torrent/destination',
-            home_directory='path/to/home',
-            ignore_cache='mock bool',
-        ),
-    ]
-    assert tracker_jobs.create_torrent_job.signal.register.call_args_list == [
-        call('output', tracker_jobs.copy_torrent_job.enqueue),
-        call('finished', tracker_jobs.finalize_copy_torrent_job),
-    ]
+    mocker.patch.object(type(tracker_jobs), 'create_torrent_job', PropertyMock(return_value=create_torrent_job))
+    if exp_copy_torrent_job_is_None:
+        assert tracker_jobs.copy_torrent_job is None
+        assert CopyTorrentJob_mock.call_args_list == []
+    else:
+        assert tracker_jobs.copy_torrent_job is CopyTorrentJob_mock.return_value
+        assert CopyTorrentJob_mock.call_args_list == [
+            call(
+                autostart=False,
+                destination=torrent_destination,
+                home_directory='path/to/home',
+                ignore_cache='mock bool',
+            ),
+        ]
+        assert tracker_jobs.create_torrent_job.signal.register.call_args_list == [
+            call('output', tracker_jobs.copy_torrent_job.enqueue),
+            call('finished', tracker_jobs.finalize_copy_torrent_job),
+        ]
 
 def test_copy_torrent_job_is_singleton(mocker):
     mocker.patch('upsies.jobs.torrent.CopyTorrentJob', side_effect=(Mock(), Mock()))
