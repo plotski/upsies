@@ -24,7 +24,7 @@ def tracker():
     tracker = Mock()
     tracker.configure_mock(
         name='AsdF',
-        config={
+        options={
             'announce' : 'http://foo.bar',
             'source'   : 'AsdF',
             'exclude'  : ('a', 'b'),
