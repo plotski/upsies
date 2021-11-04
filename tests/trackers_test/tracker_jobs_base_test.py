@@ -479,40 +479,38 @@ def test_image_host_config():
     assert TrackerJobsBase.image_host_config == {}
 
 
-def test_upload_screenshots_job_without_image_host_argument(mocker):
+@pytest.mark.parametrize(
+    argnames='image_host, screenshots_job, exp_upload_screenshots_job_is_None',
+    argvalues=(
+        (Mock(), Mock(), False),
+        (None, Mock(), True),
+        (Mock(), None, True),
+    ),
+)
+def test_upload_screenshots_job(image_host, screenshots_job, exp_upload_screenshots_job_is_None, mocker):
     ImageHostJob_mock = mocker.patch('upsies.jobs.imghost.ImageHostJob')
     mocker.patch('upsies.jobs.screenshots.ScreenshotsJob')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
-        image_host=None,
+        image_host=image_host,
     )
-    assert tracker_jobs.upload_screenshots_job is None
-    assert ImageHostJob_mock.call_args_list == []
-
-def test_upload_screenshots_job_with_image_host_argument(mocker):
-    ImageHostJob_mock = mocker.patch('upsies.jobs.imghost.ImageHostJob')
-    mocker.patch('upsies.jobs.screenshots.ScreenshotsJob')
-    image_host_mock = Mock()
-    tracker_jobs = make_TestTrackerJobs(
-        content_path='path/to/content',
-        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
-        image_host=image_host_mock,
-    )
-    assert tracker_jobs.upload_screenshots_job is ImageHostJob_mock.return_value
-    assert ImageHostJob_mock.call_args_list == [
-        call(
-            imghost=image_host_mock,
+    mocker.patch.object(type(tracker_jobs), 'screenshots_job', PropertyMock(return_value=screenshots_job))
+    if exp_upload_screenshots_job_is_None:
+        assert tracker_jobs.upload_screenshots_job is None
+        assert ImageHostJob_mock.call_args_list == []
+    else:
+        assert tracker_jobs.upload_screenshots_job is ImageHostJob_mock.return_value
+        assert ImageHostJob_mock.call_args_list == [call(
+            imghost=image_host,
             home_directory='path/to/home',
             ignore_cache='mock bool',
-        ),
-    ]
-    # ScreenshotsJob also registers a callback for "timestamps", but that
-    # doesn't concern us
-    assert tracker_jobs.screenshots_job.signal.register.call_args_list[-2:] == [
-        call('output', tracker_jobs.upload_screenshots_job.enqueue),
-        call('finished', tracker_jobs.finalize_upload_screenshots_job),
-    ]
+        )]
+        # ScreenshotsJob also registers a callback for "timestamps"
+        assert tracker_jobs.screenshots_job.signal.register.call_args_list[-2:] == [
+            call('output', tracker_jobs.upload_screenshots_job.enqueue),
+            call('finished', tracker_jobs.finalize_upload_screenshots_job),
+        ]
 
 def test_upload_screenshots_job_is_singleton(mocker):
     mocker.patch('upsies.jobs.imghost.ImageHostJob', side_effect=(Mock(), Mock()))

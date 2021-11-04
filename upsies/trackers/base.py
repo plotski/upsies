@@ -450,7 +450,7 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def upload_screenshots_job(self):
         """:class:`~.jobs.imghost.ImageHostJob` instance"""
-        if self.image_host:
+        if self.image_host and self.screenshots_job:
             imghost_job = jobs.imghost.ImageHostJob(
                 imghost=self.image_host,
                 **self.common_job_args,
