@@ -913,49 +913,10 @@ class BbTrackerJobs(TrackerJobsBase):
         )
         return ' / '.join(i for i in info if i)
 
-    _tags_translation = {
-        re.compile('^sci.?fi$'): 'science.fiction',
-    }
-
     async def get_tags(self):
-        allowed_characters = (
-            string.group('ascii_lowercase')
-            + string.group('digits')
-            + '.'
-        )
-
-        def normalize_tags(strings):
-            normalized = []
-            for s in strings:
-                s = (
-                    s
-                    .strip()
-                    .lower()
-                    .replace(' ', '.')
-                    .replace('-', '.')
-                    .replace('\'', '.')
-                )
-                s = re.sub(r'\.+', '.', s)  # Dedup "."
-                s = unidecode.unidecode(s)  # Translate exotic characters to ASCII
-                s = ''.join(c for c in s    # Remove remaining non-ASCII characters
-                            if c in allowed_characters)
-                for regex, replacement in self._tags_translation.items():
-                    if regex.search(s):
-                        s = replacement
-                        break
-                normalized.append(s)
-            return normalized
-
-        def assemble(*sequences):
-            return ','.join(
-                item
-                for seq in sequences
-                for item in seq
-            )
-
         if self.options.get('tags', ()):
             # Get custom tags from user (e.g. CLI argument)
-            tags = self.options['tags'].split(',')
+            tags_list = self.options['tags'].split(',')
 
         else:
             # Get custom tags from webdb
@@ -965,21 +926,55 @@ class BbTrackerJobs(TrackerJobsBase):
             webdbs = (self.tvmaze, self.imdb)
 
             # Gather tags
-            tags = list(await self.try_webdbs(webdbs, 'genres', default=()))
+            tags_list = list(await self.try_webdbs(webdbs, 'genres', default=()))
             if self.is_movie_release:
-                tags.extend(await self.try_webdbs(webdbs, 'directors', default=()))
+                tags_list.extend(await self.try_webdbs(webdbs, 'directors', default=()))
             elif self.is_series_release:
-                tags.extend(await self.try_webdbs(webdbs, 'creators', default=()))
-            tags.extend(await self.try_webdbs(webdbs, 'cast', default=()))
+                tags_list.extend(await self.try_webdbs(webdbs, 'creators', default=()))
+            tags_list.extend(await self.try_webdbs(webdbs, 'cast', default=()))
+
+        return self.normalize_tags(tags_list)
+
+    _tags_translation = {
+        re.compile('^sci.?fi$'): 'science.fiction',
+    }
+
+    def normalize_tags(self, tags):
+        allowed_characters = (
+            string.group('ascii_lowercase')
+            + string.group('digits')
+            + '.'
+        )
 
         # Replace spaces, non-ASCII characters, etc
-        tags = normalize_tags(tags)
+        normalized = []
+        for tag in tags:
+            tag = (
+                str(tag)
+                .strip()
+                .lower()
+                .replace(' ', '.')
+                .replace('-', '.')
+                .replace("'", '')
+            )
+            tag = re.sub(r'\.+', '.', tag)  # Dedup "."
+            tag = unidecode.unidecode(tag)  # Translate exotic characters to ASCII
+            tag = ''.join(c for c in tag    # Remove remaining non-ASCII characters
+                        if c in allowed_characters)
+            for regex, replacement in self._tags_translation.items():
+                if regex.search(tag):
+                    tag = replacement
+                    break
+            normalized.append(tag)
+
+        def join_tags(tags):
+            return ','.join(str(tag) for tag in tags if tag)
 
         # Maximum length of concatenated tags is 200 characters
-        tags_string = assemble(tags)
+        tags_string = join_tags(normalized)
         while len(tags_string) > 200:
-            del tags[-1]
-            tags_string = assemble(tags)
+            del normalized[-1]
+            tags_string = join_tags(normalized)
 
         return tags_string
 
