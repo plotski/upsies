@@ -255,7 +255,7 @@ class BbTrackerJobs(TrackerJobsBase):
     def movie_title_validator(self, text):
         text = text.strip()
         if not text:
-            raise ValueError(f'Failed to autodetect title')
+            raise ValueError('Failed to autodetect title')
 
     def fill_in_movie_title(self, job_):
         task = self.movie_title_job.fetch_text(
@@ -960,7 +960,7 @@ class BbTrackerJobs(TrackerJobsBase):
             tag = re.sub(r'\.+', '.', tag)  # Dedup "."
             tag = unidecode.unidecode(tag)  # Translate exotic characters to ASCII
             tag = ''.join(c for c in tag    # Remove remaining non-ASCII characters
-                        if c in allowed_characters)
+                          if c in allowed_characters)
             for regex, replacement in self._tags_translation.items():
                 if regex.search(tag):
                     tag = replacement
