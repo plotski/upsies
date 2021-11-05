@@ -499,13 +499,18 @@ def test_tags_job(bhd_tracker_jobs, mocker):
 @pytest.mark.parametrize('hybrid, exp_hybrid_tag', (('Hybrid', 'Hybrid'), ('', None)))
 @pytest.mark.parametrize('has_commentary, exp_commentary_tag', ((True, 'Commentary'), (False, None)))
 @pytest.mark.parametrize('has_dual_audio, exp_dual_audio_tag', ((True, 'DualAudio'), (False, None)))
-@pytest.mark.parametrize('edition, exp_open_matte_tag', ((['Open Matte'], 'OpenMatte'), ([], None)))
+@pytest.mark.parametrize('edition, exp_edition_string', (
+    (['Open Matte'], 'OpenMatte'),
+    (['2in1'], '2in1'),
+    (['2in1', 'Open Matte'], 'OpenMatte\n2in1'),
+    ([], None),
+))
 @pytest.mark.parametrize('is_scene_release, exp_scene_tag', ((True, 'Scene'), (False, None)))
 @pytest.mark.parametrize('options, exp_personal_tag', (({'personal_rip': True}, 'Personal'), ({'personal_rip': False}, None)))
 @pytest.mark.asyncio
 async def test_autodetect_tags(options, exp_personal_tag,
                                is_scene_release, exp_scene_tag,
-                               edition, exp_open_matte_tag,
+                               edition, exp_edition_string,
                                has_dual_audio, exp_dual_audio_tag,
                                has_commentary, exp_commentary_tag,
                                hybrid, exp_hybrid_tag,
@@ -535,7 +540,7 @@ async def test_autodetect_tags(options, exp_personal_tag,
         exp_hybrid_tag,
         exp_commentary_tag,
         exp_dual_audio_tag,
-        exp_open_matte_tag,
+        exp_edition_string,
         exp_scene_tag,
         exp_personal_tag,
     ]

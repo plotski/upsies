@@ -318,13 +318,14 @@ class BhdTrackerJobs(TrackerJobsBase):
             tags.append('DualAudio')
         if 'Open Matte' in self.release_name.edition:
             tags.append('OpenMatte')
+        if '2in1' in self.release_name.edition:
+            tags.append('2in1')
         if self.get_job_attribute(self.scene_check_job, 'is_scene_release'):
             tags.append('Scene')
         if self.options['personal_rip']:
             tags.append('Personal')
 
         # TODO: 4kRemaster (waiting for https://github.com/guessit-io/guessit/pull/701)
-        # TODO: 2in1 (waiting for https://github.com/guessit-io/guessit/pull/702)
         # TODO: 2D3D
         # TODO: 3D
         # TODO: EnglishDub
