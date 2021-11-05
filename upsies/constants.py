@@ -33,16 +33,6 @@ GUESSIT_OPTIONS = {
         'xXx',
     ],
     'advanced_config': {
-        # https://github.com/guessit-io/guessit/pull/678
-        'audio_codec': {
-            'audio_channels': {
-                '1.0': [
-                    '1ch',
-                    'mono',
-                    're:(1[\\W_]0(?:ch)?)(?=[^\\d]|$)',
-                ],
-            },
-        },
     },
 }
 """`options` argument for :meth:`.GuessItApi.guessit`"""
