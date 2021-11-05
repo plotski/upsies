@@ -979,9 +979,10 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     _streaming_service_regex = re.compile(r'[ \.]([A-Z]+)[ \.](?i:WEB-?(?:DL|Rip))(?:[ \.]|$)')
     _streaming_service_translation = {
-        re.compile(r'(?i:IT)') : 'iT',
+        re.compile(r'(?i:IT)'): 'iT',
+        re.compile(r'(?i:ATVP)'): 'APTV',
         # Not a streaming service
-        re.compile(r'OAR') : '',  # Original Aspect Ratio
+        re.compile(r'OAR'): '',  # Original Aspect Ratio
     }
 
     def _get_service(self):
