@@ -33,7 +33,7 @@ setuptools.setup(
     install_requires=[
         'httpx==0.*,>=0.20.0',
         'beautifulsoup4==4.*',
-        'guessit==3.*,>=3.3.0',
+        'guessit==3.*,>=3.4.0',
         'natsort==7.*',
         'packaging>=21.0',
         'prompt_toolkit==3.*,>=3.0.6',
