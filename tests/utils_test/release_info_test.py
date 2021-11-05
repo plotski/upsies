@@ -293,6 +293,7 @@ edition_samples = (
     # TODO: Enable when support was added to guessit:
     #       https://github.com/guessit-io/guessit/commit/ddf8e772d735bc80940ba3068c5014d79499a618
     # ('The Foo 2000 Open Matte 1080p BluRay DTS x264-ASDF', {'edition': ['Open Matte']}),
+    ('The Foo 2000 1080p BluRay 2in1 DTS x264-ASDF', {'edition': ['2in1']}),
     ('The Foo 2000 1080p BluRay DV DTS x264-ASDF', {'edition': ['Dolby Vision']}),
     ('The Foo 2000 1080p BluRay DoVi DTS x264-ASDF', {'edition': ['Dolby Vision']}),
     ('The Foo 2000 1080p BluRay Dolby Vision DTS x264-ASDF', {'edition': ['Dolby Vision']}),

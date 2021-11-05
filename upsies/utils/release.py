@@ -963,6 +963,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
             edition.append('OAR')
         if 'Dual Audio' in guessit_other:
             edition.append('Dual Audio')
+        if '2in1' in guessit_other:
+            edition.append('2in1')
 
         # HDR format
         for hdr_format, regex in self._hdr_regexes.items():
