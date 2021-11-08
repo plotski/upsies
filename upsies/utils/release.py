@@ -972,7 +972,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
             match = self._remastered_regex.search(self.release_name_params)
             if match:
                 remastered_string = match.group(1)
-                return '4k' in remastered_string
+                return '4k' in remastered_string.lower()
 
         if 'Remastered' in edition and is_4k_source():
             edition[edition.index('Remastered')] = '4k Remastered'

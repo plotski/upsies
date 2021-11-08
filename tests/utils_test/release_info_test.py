@@ -266,8 +266,8 @@ edition_samples = (
     ('The Foo 2000 Limited 1080p BluRay DTS x264-ASDF', {'edition': ['Limited']}),
     ('The Foo 2000 Remastered 1080p BluRay DTS x264-ASDF', {'edition': ['Remastered']}),
     ('The Foo 2000 restored 1080p BluRay DTS x264-ASDF', {'edition': ['Restored']}),
-    ('The Foo 2000 4k remastered 1080p BluRay DTS x264-ASDF', {'edition': ['4k Remastered']}),
-    ('The Foo 2000 4k RESTORED 1080p BluRay DTS x264-ASDF', {'edition': ['4k Restored']}),
+    ('The Foo 2000 4k ReMastered 1080p BluRay DTS x264-ASDF', {'edition': ['4k Remastered']}),
+    ('The Foo 2000 4K RESTORED 1080p BluRay DTS x264-ASDF', {'edition': ['4k Restored']}),
     ('The Foo 2000 Special Edition 1080p BluRay DTS x264-ASDF', {'edition': ['Special Edition']}),
     # TODO: Enable when support was added to guessit:
     # ('The Foo 2000 Special 1080p BluRay DTS x264-ASDF', {'edition': ['Special Edition']}),
