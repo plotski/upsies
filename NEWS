@@ -1,4 +1,4 @@
-2021.??.??
+2021.11.08
   * submit: CLI options have changed (see `upsies submit <TRACKER> -h`)
   * Re-use hashed pieces from previously generated torrents if possible
   * Fixed finding the latest release for update checking
@@ -6,6 +6,7 @@
     a text file
   * bB: New --tags option takes a custom list of comma-separated tags
   * bB: Improved automatic sample exclusion
+  * Added support for 2in1 and (4k)Remastered/Restored tags
 
 
 2021.10.23
