@@ -934,7 +934,6 @@ class ReleaseInfo(collections.abc.MutableMapping):
         'Special Edition': re.compile(r'Special'),
         'Theatrical Cut': re.compile(r'Theatrical'),
         'Ultimate Cut': re.compile(r'Ultimate'),
-        'Remastered': re.compile(r'(?:Restored|Remaster(?:ed|))'),
     }
     _proper_repack_regex = re.compile(r'(?:[ \.]|^)((?i:proper|repack\d*))(?:[ \.]|$)')
     _hdr_regexes = {
@@ -943,7 +942,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         'HDR10': re.compile(r'(?:[ \.]|^)(?i:HDR10)(?:[^\+]|$)'),
         'HDR': re.compile(r'(?:[ \.]|^)(?i:HDR)(?:[^10\+]|$)'),
     }
-    _remaster_regex = re.compile(r'(?:[ \.]|^)((?i:4k[ \.]+|)(?i:remaster(?:ed|)|restored))(?:[ \.]|$)')
+    _remastered_regex = re.compile(r'(?:[ \.]|^)((?i:4k[ \.]+|)(?i:remaster(?:ed|)|restored))(?:[ \.]|$)')
 
     def _get_edition(self):
         edition = _as_list(self._guess.get('edition'))
@@ -967,13 +966,18 @@ class ReleaseInfo(collections.abc.MutableMapping):
             edition.append('Dual Audio')
         if '2in1' in guessit_other:
             edition.append('2in1')
-        if 'Remastered' in edition:
+
+        def is_4k_source():
             # guessit only detects remastered, not if it's from 4k
-            match = self._remaster_regex.search(self.release_name_params)
+            match = self._remastered_regex.search(self.release_name_params)
             if match:
                 remastered_string = match.group(1)
-                if '4k' in remastered_string:
-                    edition[edition.index('Remastered')] = '4k Remaster'
+                return '4k' in remastered_string
+
+        if 'Remastered' in edition and is_4k_source():
+            edition[edition.index('Remastered')] = '4k Remastered'
+        elif 'Restored' in edition and is_4k_source():
+            edition[edition.index('Restored')] = '4k Restored'
 
         # HDR format
         for hdr_format, regex in self._hdr_regexes.items():
