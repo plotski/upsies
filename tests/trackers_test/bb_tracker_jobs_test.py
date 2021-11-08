@@ -1397,6 +1397,18 @@ def test_release_info_limited_edition(editions, exp_text, bb_tracker_jobs, mocke
 
 
 @pytest.mark.parametrize(
+    argnames='editions, exp_text',
+    argvalues=(
+        (('Foo',), None),
+        (('2in1',), '2in1'),
+    ),
+)
+def test_release_info_2in1(editions, exp_text, bb_tracker_jobs, mocker, tmp_path):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'edition', PropertyMock(return_value=editions))
+    assert bb_tracker_jobs.release_info_2in1 == exp_text
+
+
+@pytest.mark.parametrize(
     argnames='imdb_id, title_with_aka, exp_movie_title',
     argvalues=(
         ('tt123', 'Title AKA Tilte', 'Title AKA Tilte'),
@@ -1548,6 +1560,7 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_criterion_edition', PropertyMock(return_value='Criterion Edition'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_special_edition', PropertyMock(return_value='Special Edition'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_limited_edition', PropertyMock(return_value='Limited'))
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_2in1', PropertyMock(return_value='2in1'))
 
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_dual_audio', PropertyMock(return_value='Dual Audio'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_commentary', PropertyMock(return_value='w. Commentary'))
@@ -1558,7 +1571,7 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
                 'PROPER / REPACK / '
                 'REMUX / 10-bit / HDR10 / '
                 "Uncensored / Uncut / Unrated / Remastered / Director's Cut / Theatrical Cut / IMAX / "
-                'Extended Edition / Anniversary Edition / Criterion Edition / Special Edition / Limited / '
+                'Extended Edition / Anniversary Edition / Criterion Edition / Special Edition / Limited / 2in1 / '
                 'Dual Audio / w. Commentary / w. Subtitles]')
     assert title.endswith(exp_info)
 
@@ -1763,6 +1776,7 @@ def test_get_movie_release_info(bb_tracker_jobs, mocker):
         'release_info_criterion_edition': 'Criterion Edition',
         'release_info_special_edition': 'Special Edition',
         'release_info_limited_edition': 'Limited',
+        'release_info_2in1': '2in1',
 
         # Features
         'release_info_dual_audio': 'Dual Audio',

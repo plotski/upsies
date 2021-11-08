@@ -745,6 +745,12 @@ class BbTrackerJobs(TrackerJobsBase):
         if 'Limited' in self.release_name.edition:
             return 'Limited'
 
+    @property
+    def release_info_2in1(self):
+        print(self.release_name.edition)
+        if '2in1' in self.release_name.edition:
+            return '2in1'
+
     # Metadata generators
 
     async def get_movie_title(self):
@@ -806,6 +812,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_criterion_edition,
             self.release_info_special_edition,
             self.release_info_limited_edition,
+            self.release_info_2in1,
 
             # Features
             self.release_info_dual_audio,
@@ -905,6 +912,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_criterion_edition,
             self.release_info_special_edition,
             self.release_info_limited_edition,
+            self.release_info_2in1,
 
             # Features
             self.release_info_dual_audio,
