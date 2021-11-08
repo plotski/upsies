@@ -1283,10 +1283,22 @@ def test_release_info_unrated(editions, exp_text, bb_tracker_jobs, mocker, tmp_p
     argnames='release_name, exp_text',
     argvalues=(
         ('Foo.2000.BluRay.720p.DTS.5.1.x264-ASDF', None),
-        ('Foo.2000.Remaster.BluRay.720p.DTS.5.1.x264-ASDF', 'Remastered'),
+
+        ('Foo.2000.REMASTER.BluRay.720p.DTS.5.1.x264-ASDF', 'Remastered'),
         ('Foo.2000.Remastered.BluRay.720p.DTS.5.1.x264-ASDF', 'Remastered'),
-        ('Foo.2000.4k.Remaster.BluRay.720p.DTS.5.1.x264-ASDF', '4k Remaster'),
-        ('Foo.2000.4k.Remastered.BluRay.720p.DTS.5.1.x264-ASDF', '4k Remaster'),
+        ('Foo.2000.restored.BluRay.720p.DTS.5.1.x264-ASDF', 'Remastered'),
+
+        ('Foo 2000 remaster BluRay 720p DTS 5.1 x264-ASDF', 'Remastered'),
+        ('Foo 2000 Remastered BluRay 720p DTS 5.1 x264-ASDF', 'Remastered'),
+        ('Foo 2000 RESTORED BluRay 720p DTS 5.1 x264-ASDF', 'Remastered'),
+
+        ('Foo.2000.4k.REMASTER.BluRay.720p.DTS.5.1.x264-ASDF', '4k Remaster'),
+        ('Foo.2000.4k.remastered.BluRay.720p.DTS.5.1.x264-ASDF', '4k Remaster'),
+        ('Foo.2000.4k.Restored.BluRay.720p.DTS.5.1.x264-ASDF', '4k Remaster'),
+
+        ('Foo 2000 4kremaster BluRay 720p DTS 5.1 x264-ASDF', '4k Remaster'),
+        ('Foo 2000 4kREMASTERED BluRay 720p DTS 5.1 x264-ASDF', '4k Remaster'),
+        ('Foo 2000 4kRestored BluRay 720p DTS 5.1 x264-ASDF', '4k Remaster'),
     ),
 )
 def test_release_info_remastered(release_name, exp_text, bb_tracker_jobs, mocker, tmp_path):

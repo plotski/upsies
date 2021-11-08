@@ -695,9 +695,9 @@ class BbTrackerJobs(TrackerJobsBase):
     @property
     def release_info_remastered(self):
         for name in fs.file_and_parent(self.content_path):
-            if re.search(r'[ \.](?i:4k[ \.]remaster)', name):
+            if re.search(r'[ \.](?i:4k[ \.]*(?:remaster(?:ed|)|restored))[ \.]', name):
                 return '4k Remaster'
-            elif re.search(r'[ \.](?i:remaster(ed|))[ \.]', name):
+            elif re.search(r'[ \.](?i:remaster(?:ed|)|restored)[ \.]', name):
                 return 'Remastered'
 
     @property
