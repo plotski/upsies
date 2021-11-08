@@ -1280,31 +1280,15 @@ def test_release_info_unrated(editions, exp_text, bb_tracker_jobs, mocker, tmp_p
 
 
 @pytest.mark.parametrize(
-    argnames='release_name, exp_text',
+    argnames='editions, exp_text',
     argvalues=(
-        ('Foo.2000.BluRay.720p.DTS.5.1.x264-ASDF', None),
-
-        ('Foo.2000.REMASTER.BluRay.720p.DTS.5.1.x264-ASDF', 'Remastered'),
-        ('Foo.2000.Remastered.BluRay.720p.DTS.5.1.x264-ASDF', 'Remastered'),
-        ('Foo.2000.restored.BluRay.720p.DTS.5.1.x264-ASDF', 'Remastered'),
-
-        ('Foo 2000 remaster BluRay 720p DTS 5.1 x264-ASDF', 'Remastered'),
-        ('Foo 2000 Remastered BluRay 720p DTS 5.1 x264-ASDF', 'Remastered'),
-        ('Foo 2000 RESTORED BluRay 720p DTS 5.1 x264-ASDF', 'Remastered'),
-
-        ('Foo.2000.4k.REMASTER.BluRay.720p.DTS.5.1.x264-ASDF', '4k Remaster'),
-        ('Foo.2000.4k.remastered.BluRay.720p.DTS.5.1.x264-ASDF', '4k Remaster'),
-        ('Foo.2000.4k.Restored.BluRay.720p.DTS.5.1.x264-ASDF', '4k Remaster'),
-
-        ('Foo 2000 4kremaster BluRay 720p DTS 5.1 x264-ASDF', '4k Remaster'),
-        ('Foo 2000 4kREMASTERED BluRay 720p DTS 5.1 x264-ASDF', '4k Remaster'),
-        ('Foo 2000 4kRestored BluRay 720p DTS 5.1 x264-ASDF', '4k Remaster'),
+        (('Foo',), None),
+        (('Remastered',), 'Remastered'),
+        (('4k Remaster',), '4k Remaster'),
     ),
 )
-def test_release_info_remastered(release_name, exp_text, bb_tracker_jobs, mocker, tmp_path):
-    content_path = tmp_path / f'{release_name}.mkv'
-    content_path.write_text('teh data')
-    mocker.patch.object(type(bb_tracker_jobs), 'content_path', PropertyMock(return_value=str(content_path)))
+def test_release_info_remastered(editions, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'edition', PropertyMock(return_value=editions))
     assert bb_tracker_jobs.release_info_remastered == exp_text
 
 
