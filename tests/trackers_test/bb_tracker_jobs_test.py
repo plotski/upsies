@@ -1284,7 +1284,9 @@ def test_release_info_unrated(editions, exp_text, bb_tracker_jobs, mocker, tmp_p
     argvalues=(
         (('Foo',), None),
         (('Remastered',), 'Remastered'),
-        (('4k Remaster',), '4k Remaster'),
+        (('Restored',), 'Restored'),
+        (('4k Remastered',), '4k Remaster'),
+        (('4k Restored',), '4k Restored'),
     ),
 )
 def test_release_info_remastered(editions, exp_text, bb_tracker_jobs, mocker):

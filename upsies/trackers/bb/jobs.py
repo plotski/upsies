@@ -694,10 +694,14 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def release_info_remastered(self):
-        if '4k Remaster' in self.release_name.edition:
+        if '4k Remastered' in self.release_name.edition:
             return '4k Remaster'
+        elif '4k Restored' in self.release_name.edition:
+            return '4k Restored'
         elif 'Remastered' in self.release_name.edition:
             return 'Remastered'
+        elif 'Restored' in self.release_name.edition:
+            return 'Restored'
 
     @property
     def release_info_directors_cut(self):
