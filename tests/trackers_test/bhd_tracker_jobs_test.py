@@ -502,6 +502,7 @@ def test_tags_job(bhd_tracker_jobs, mocker):
 @pytest.mark.parametrize('edition, exp_edition_string', (
     (['Open Matte'], 'OpenMatte'),
     (['2in1'], '2in1'),
+    (['4k Remastered'], '4kRemaster'), (['Remastered'], None), (['Restored'], None), (['4k Restored'], None),
     (['2in1', 'Open Matte'], 'OpenMatte\n2in1'),
     ([], None),
 ))
