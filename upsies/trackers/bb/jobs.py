@@ -750,7 +750,6 @@ class BbTrackerJobs(TrackerJobsBase):
 
     @property
     def release_info_2in1(self):
-        print(self.release_name.edition)
         if '2in1' in self.release_name.edition:
             return '2in1'
 
