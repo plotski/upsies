@@ -25,10 +25,10 @@ def test_dump_writes_BeautifulSoup_instance(tmp_path):
     assert (tmp_path / 'foo.html').read_text() == '<html>\n foo\n</html>'
 
 
-def test_as_text_removes_html_tags(tmp_path):
+def test_as_text_removes_html_tags():
     assert html.as_text('<html>foo</html>') == 'foo'
 
-def test_as_text_deduplicates_whitespace(tmp_path):
+def test_as_text_deduplicates_whitespace():
     assert html.as_text('<html>foo</html>') == 'foo'
     assert html.as_text('\n<html>  f o   o\n\n bar</html>\n\n') == 'f o o\nbar'
 
