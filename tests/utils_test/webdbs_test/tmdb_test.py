@@ -221,7 +221,7 @@ async def test_search_result_title_english(query, exp_title_english, api, store_
     argvalues=(
         (Query('The Blues Brothers', year=1980), 'The Blues Brothers'),
         (Query('Deadwind', year=2018), 'Karppi'),
-        (Query('Anyone Can Play', year=1968), 'Le dolce signore'),
+        (Query('Anyone Can Play', year=1968), 'Le dolci signore'),
     ),
     ids=lambda value: str(value),
 )
@@ -352,8 +352,8 @@ async def test_creators(id, exp_creators, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_directors'),
     argvalues=(
-        ('movie/125244', (('James Algar', 'http://themoviedb.org/person/5690-james-algar'),
-                          ('Jack Kinney', 'http://themoviedb.org/person/74565-jack-kinney'))),
+        ('movie/125244', (('Jack Kinney', 'http://themoviedb.org/person/74565-jack-kinney'),
+                          ('James Algar', 'http://themoviedb.org/person/5690-james-algar'))),
         ('movie/334536', (('Oz Perkins', 'http://themoviedb.org/person/90609-oz-perkins'),)),
         ('tv/1406', ()),
         ('tv/74802', ()),
@@ -396,8 +396,8 @@ async def test_genres(id, exp_genres, api, store_response):
 @pytest.mark.parametrize(
     argnames='id, exp_url',
     argvalues=(
-        ('movie/525', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg'),
-        ('movie/334536', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/b4knSJfiPgWiRzeJFU4nrtyBQDm.jpg'),
+        ('movie/525', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/b0hq1d2d7FIvRGNLewKLm79JNTK.jpg'),
+        ('movie/334536', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/1XClORu9OKD0uiHqDcBy3mXr5mZ.jpg'),
         ('tv/1406', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/4Yp35DVbVOAWkfQUIQ7pbh3u0aN.jpg'),
         ('tv/74802', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/cUKqWS2v7D6DVKQze2Iz2netwRH.jpg'),
         ('tv/66260', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/1VaaYENYc8SHsyeudATNZVVfzyx.jpg'),
@@ -475,7 +475,7 @@ async def test_summary(id, exp_summary, api, store_response):
     argvalues=(
         ('movie/11841', 'The 36th Chamber of Shaolin', '少林三十六房'),
         ('movie/334536', "The Blackcoat's Daughter", "The Blackcoat's Daughter"),
-        ('movie/3405', 'Anyone Can Play', 'Le dolce signore'),
+        ('movie/3405', 'Anyone Can Play', 'Le dolci signore'),
         ('movie/525', 'The Blues Brothers', 'The Blues Brothers'),
         ('movie/22156', 'The Nest', 'Nid de guêpes'),
         ('tv/1406', 'Deadwood', 'Deadwood'),

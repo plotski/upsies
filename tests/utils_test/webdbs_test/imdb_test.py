@@ -175,7 +175,7 @@ async def test_search_result_cast(query, exp_cast, api, store_response):
         (Query('Star Wars', type=ReleaseType.movie, year=1977), ('USA', 'UK')),
         (Query('Bron Broen', type=ReleaseType.series, year=2011), ('Sweden', 'Denmark', 'Germany')),
         (Query('The Forest', type=ReleaseType.series, year=2017), ('France',)),
-        (Query('Karppi', type=ReleaseType.series, year=2018), ('Finland', 'Germany')),
+        (Query('Karppi', type=ReleaseType.series, year=2018), ('Finland', 'Germany', 'France')),
     ),
     ids=lambda value: str(value),
 )
