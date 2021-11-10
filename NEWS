@@ -1,3 +1,7 @@
+2021.??.??
+  * Purge <script> tags from cached HTML (reduces size by ~40%)
+
+
 2021.11.09
   * Removed debugging print()
 

@@ -3,6 +3,7 @@ HTTP methods with caching
 """
 
 import asyncio
+import builtins
 import collections
 import http
 import io
@@ -458,6 +459,19 @@ def _get_file_object(filepath):
 
 
 def _to_cache(cache_file, bytes):
+    if not isinstance(bytes, builtins.bytes):
+        raise TypeError(f'Not a bytes object: {bytes!r}')
+
+    # Try to remove <script> tags
+    if b'<script' in bytes:
+        try:
+            string = str(bytes, encoding='utf-8', errors='strict')
+        except UnicodeDecodeError:
+            pass
+        else:
+            string = html.purge_javascript(string)
+            bytes = string.encode('utf-8')
+
     try:
         fs.mkdir(fs.dirname(cache_file))
         with open(cache_file, 'wb') as f:

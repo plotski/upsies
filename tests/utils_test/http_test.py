@@ -1163,11 +1163,31 @@ def test_from_cache_refuses_to_read_old_cache_file(cached_data, max_age, cache_f
     assert cached_result == exp_return_value
 
 
+def test_to_cache_requires_bytes_object(tmp_path):
+    cache_file = str(tmp_path / 'cachefile')
+    with pytest.raises(TypeError, match=r"^Not a bytes object: 'foo'$"):
+        http._to_cache(cache_file, 'foo')
+    assert not os.path.exists(cache_file)
+
+@pytest.mark.parametrize(
+    argnames='bytes, exp_cached_bytes',
+    argvalues=(
+        (b'foo <script>bar</script> baz', b'foo  baz'),
+        (b'foo <script with="attribute">bar</script> baz', b'foo  baz'),
+        (b'a < b && b > c', b'a < b && b > c'),
+        (b'\xc3\x28 <script', b'\xc3\x28 <script'),
+    ),
+)
+def test_to_cache_removes_javascript_if_possible(bytes, exp_cached_bytes, mocker, tmp_path):
+    cache_file = str(tmp_path / 'cached')
+    http._to_cache(cache_file, bytes)
+    assert open(cache_file, 'rb').read() == exp_cached_bytes
+
 def test_to_cache_cannot_create_cache_directory(mocker):
     mocker.patch('builtins.open')
     mkdir_mock = mocker.patch('upsies.utils.fs.mkdir', side_effect=OSError('No'))
     with pytest.raises(RuntimeError, match=r'^Unable to write cache file mock/path: No$'):
-        http._to_cache('mock/path', 'data')
+        http._to_cache('mock/path', b'data')
     assert mkdir_mock.call_args_list == [call('mock')]
 
 def test_to_cache_cannot_write_cache_file(mocker):
@@ -1176,14 +1196,14 @@ def test_to_cache_cannot_write_cache_file(mocker):
     filehandle = open_mock.return_value.__enter__.return_value
     filehandle.write.side_effect = OSError('No')
     with pytest.raises(RuntimeError, match=r'^Unable to write cache file mock/path: No$'):
-        http._to_cache('mock/path', 'data')
+        http._to_cache('mock/path', b'data')
     assert mkdir_mock.call_args_list == [call('mock')]
 
-def test_to_cache_can_write_cache_file(mocker):
+def test_to_cache_writes_cache_file(mocker):
     open_mock = mocker.patch('builtins.open')
     mkdir_mock = mocker.patch('upsies.utils.fs.mkdir')
     filehandle = open_mock.return_value.__enter__.return_value
-    assert http._to_cache('mock/path', 'data') is None
+    assert http._to_cache('mock/path', b'data') is None
     assert open_mock.call_args_list == [call('mock/path', 'wb')]
-    assert filehandle.write.call_args_list == [call('data')]
+    assert filehandle.write.call_args_list == [call(b'data')]
     assert mkdir_mock.call_args_list == [call('mock')]
