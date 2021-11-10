@@ -31,3 +31,26 @@ def test_as_text_removes_html_tags(tmp_path):
 def test_as_text_deduplicates_whitespace(tmp_path):
     assert html.as_text('<html>foo</html>') == 'foo'
     assert html.as_text('\n<html>  f o   o\n\n bar</html>\n\n') == 'f o o\nbar'
+
+
+def test_purge_javascript():
+    string = (
+        '<html>\n'
+        'a\n'
+        '<script>foo</script>\n'
+        'b<script with="attribute">bar</script>\n'
+        'c\n'
+        '<script>\n'
+        '    baz\n'
+        '</script>\n'
+        '</html>\n'
+    )
+    assert html.purge_javascript(string) == (
+        '<html>\n'
+        'a\n'
+        '\n'
+        'b\n'
+        'c\n'
+        '\n'
+        '</html>\n'
+    )

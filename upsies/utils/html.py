@@ -42,3 +42,15 @@ def as_text(html):
     text = parse(html).get_text()
     text = re.sub(r'(\s)\s+', r'\1', text, flags=re.MULTILINE).strip()
     return text
+
+
+def purge_javascript(html):
+    """
+    Return `html` with <script> tags removed
+
+    :param str html: HTML string
+    """
+    soup = parse(html)
+    for script_tag in soup.find_all('script'):
+        script_tag.decompose()
+    return str(soup)
