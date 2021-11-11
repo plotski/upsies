@@ -87,8 +87,8 @@ Only do this if you don't care or if :ref:`installing with pipx
    $ # Remove upsies (but not its dependencies)
    $ pip uninstall upsies
 
-Installing Latest Commit
-------------------------
+Installing from Git Repository
+------------------------------
 
 If you just want to run the current development version without having to clone,
 you can also do that with `pipx`_.
