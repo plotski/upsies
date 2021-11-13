@@ -161,7 +161,7 @@ def default_track(type, path, default=NO_DEFAULT_VALUE):
     except (KeyError, IndexError):
         pass
 
-    raise errors.ContentError(f'{path}: No {type.lower()} track found')
+    raise errors.ContentError(f'{path}: No {type.lower()} track found: {all_tracks!r}')
 
 
 def width(path, default=NO_DEFAULT_VALUE):
