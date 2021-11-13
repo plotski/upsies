@@ -6,9 +6,12 @@ OS Support
 
 Any Linux or Unix distribution that provides the dependencies below should work.
 
-Feel free to try other operating systems and report any issues_ you find.
+For Windows, the instructions below reportedly work in WSL_.
+
+Feel free to report any issues_ you find with your OS.
 
 .. _issues: https://github.com/plotski/upsies/issues
+.. _WSL: https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux
 
 Dependencies
 ------------
