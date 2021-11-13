@@ -381,21 +381,29 @@ def test_sanitize_filename_on_windows(mocker):
     assert fs.sanitize_filename('foo<bar>baz :a"b/c \\1|2?3*4.txt') == 'foo_bar_baz _a_b_c _1_2_3_4.txt'
 
 
-def test_sanitize_path(mocker):
-    mock_sanitize_filename = mocker.patch('upsies.utils.fs.sanitize_filename', side_effect=(
-        '<sanitized filename 1>',
-        '<sanitized filename 2>',
-        '<sanitized filename 3>',
-        '<sanitized filename 4>',
-    ))
+@pytest.mark.parametrize(
+    argnames='os_family, sep, path, exp_sanitized_path',
+    argvalues=(
+        ('unix', '/', 'C:\\foo<bar>baz :a"b/c \\ 1|2?3*4.txt', 'C:\\foo<bar>baz :a"b/c \\ 1|2?3*4.txt'),
+        ('windows', '\\', 'C:\\foo<bar>baz :a"b/c \\ 1|2?3*4.txt', 'C:\\foo_bar_baz _a_b_c \\ 1_2_3_4.txt'),
+    ),
+)
+def test_sanitize_path(os_family, sep, path, exp_sanitized_path, mocker):
+    mocker.patch('upsies.utils.fs.os_family', return_value=os_family)
+    if os_family == 'unix':
+        mocker.patch('os.path.splitdrive', return_value=('', path))
+    elif os_family == 'windows':
+        drive_letter, path = path.split(':', maxsplit=1)
+        mocker.patch('os.path.splitdrive', return_value=(f'{drive_letter}:', path))
+    else:
+        mocker.patch('os.path.splitdrive', side_effect=RuntimeError('Trying to add support for a new OS?'))
+
     import os
-    mocker.patch.object(os, 'sep', ':')
-    assert fs.sanitize_path('foo:bar:baz') == ':'.join((
-        '<sanitized filename 1>',
-        '<sanitized filename 2>',
-        '<sanitized filename 3>',
-    ))
-    assert mock_sanitize_filename.call_args_list == [call('foo'), call('bar'), call('baz')]
+    mocker.patch.object(os, 'sep', sep)
+    sanitized_path = fs.sanitize_path(path)
+    print(sanitized_path)
+    print(exp_sanitized_path)
+    assert sanitized_path == exp_sanitized_path
 
 
 @pytest.mark.parametrize(

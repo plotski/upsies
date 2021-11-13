@@ -236,7 +236,6 @@ def sanitize_filename(filename):
         illegal_chars = ('<', '>', ':', '"', '/', '\\', '|', '?', '*')
     else:
         illegal_chars = ('/',)
-
     for char in illegal_chars:
         filename = filename.replace(char, '_')
     return filename
@@ -248,9 +247,21 @@ def sanitize_path(path):
 
     `path` is split at :attr:`os.sep` and the resulting items are passed to
     :func:`sanitize_filename` and joined.
+
+    On Windows, the drive (e.g. "C:") is not sanitized to keep the ":".
     """
+    # Get drive from Windows paths (e.g. "C:") because we don't want to sanitize
+    # the ":", which is illegal otherwise
+    drive, path = os.path.splitdrive(path)
     segments = str(path).split(os.sep)
-    return os.sep.join(sanitize_filename(segment) for segment in segments)
+    sanitized_segments = [sanitize_filename(segment) for segment in segments]
+    if drive:
+        sanitized_segments.insert(0, drive)
+    return os.sep.join(
+        sanitized_segment
+        for sanitized_segment in sanitized_segments
+        if sanitized_segment
+    )
 
 
 def tildify_path(path):
