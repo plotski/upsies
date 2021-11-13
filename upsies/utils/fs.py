@@ -255,13 +255,7 @@ def sanitize_path(path):
     drive, path = os.path.splitdrive(path)
     segments = str(path).split(os.sep)
     sanitized_segments = [sanitize_filename(segment) for segment in segments]
-    if drive:
-        sanitized_segments.insert(0, drive)
-    return os.sep.join(
-        sanitized_segment
-        for sanitized_segment in sanitized_segments
-        if sanitized_segment
-    )
+    return drive + os.sep.join(sanitized_segments)
 
 
 def tildify_path(path):

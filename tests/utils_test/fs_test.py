@@ -385,7 +385,9 @@ def test_sanitize_filename_on_windows(mocker):
     argnames='os_family, sep, path, exp_sanitized_path',
     argvalues=(
         ('unix', '/', 'C:\\foo<bar>baz :a"b/c \\ 1|2?3*4.txt', 'C:\\foo<bar>baz :a"b/c \\ 1|2?3*4.txt'),
+        ('unix', '/', '/foo<bar>baz :a"b/c \\ 1|2?3*4.txt', '/foo<bar>baz :a"b/c \\ 1|2?3*4.txt'),
         ('windows', '\\', 'C:\\foo<bar>baz :a"b/c \\ 1|2?3*4.txt', 'C:\\foo_bar_baz _a_b_c \\ 1_2_3_4.txt'),
+        ('windows', '\\', '/foo<bar>baz :a"b/c \\ 1|2?3*4.txt', '/foo<bar>baz :a_b_c \\ 1_2_3_4.txt'),
     ),
 )
 def test_sanitize_path(os_family, sep, path, exp_sanitized_path, mocker):
@@ -401,8 +403,6 @@ def test_sanitize_path(os_family, sep, path, exp_sanitized_path, mocker):
     import os
     mocker.patch.object(os, 'sep', sep)
     sanitized_path = fs.sanitize_path(path)
-    print(sanitized_path)
-    print(exp_sanitized_path)
     assert sanitized_path == exp_sanitized_path
 
 
