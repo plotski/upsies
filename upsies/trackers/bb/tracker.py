@@ -169,22 +169,24 @@ class BbTracker(TrackerBase):
 
             # Try to find error message
             error_tag = doc.find('p', style=re.compile(r'color: red'))
-            if error_tag:
+            try:
                 error_msg = error_tag.string.strip()
                 if error_msg:
                     raise errors.RequestError(f'Upload failed: {error_msg}')
+            except AttributeError:
+                pass
 
             # Try to find different type of error message
             # (e.g. "The exact same torrent file already exists on the site!")
-            error_header_tag = doc.find('h2', string=re.compile(r'^\s*Error\s*$'))
-            if error_header_tag:
+            try:
+                error_header_tag = doc.find('h2', string=re.compile(r'^\s*Error\s*$'))
                 parent_tag = error_header_tag.parent
-                if parent_tag:
-                    error_msg_tag = parent_tag.find('p')
-                    if error_msg_tag:
-                        error_msg = error_msg_tag.string.strip()
-                        if error_msg:
-                            raise errors.RequestError(f'Upload failed: {error_msg}')
+                error_msg_tag = parent_tag.find('p')
+                error_msg = error_msg_tag.string.strip()
+                if error_msg:
+                    raise errors.RequestError(f'Upload failed: {error_msg}')
+            except AttributeError:
+                pass
 
             # Try to find warning (e.g. "Your torrent has been uploaded however,
             # you must re-download the torrent file from <a
