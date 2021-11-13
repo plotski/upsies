@@ -186,6 +186,24 @@ class BbTracker(TrackerBase):
                         if error_msg:
                             raise errors.RequestError(f'Upload failed: {error_msg}')
 
+            # Try to find warning (e.g. "Your torrent has been uploaded however,
+            # you must re-download the torrent file from <a
+            # href="torrents.php?id=123456">here</a>, because of the following
+            # warnings: The torrent did not have the correct announce URL."
+            try:
+                warning_header_tag = doc.find('h1', string=re.compile(r'^\s*Warning\s*$'))
+                content_tag = warning_header_tag.parent
+                warnings = [
+                    warning_tag.get_text().strip()
+                    for warning_tag in content_tag.find_all('li')
+                ]
+                if warnings:
+                    for warning in warnings:
+                        self.warn(warning)
+                    return None
+            except AttributeError:
+                pass
+
             # Unable to find error message
             html.dump(response, 'upload.html')
             raise RuntimeError('Failed to find error message. See upload.html.')

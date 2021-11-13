@@ -475,8 +475,68 @@ async def test_upload_finds_empty_error_message(mocker):
         await tracker.upload(tracker_jobs_mock)
     assert html_dump_mock.call_args_list == [call(response, 'upload.html')]
 
+@pytest.mark.parametrize('headers', ({'Location': 'somewhere.php'}, {}))
+@pytest.mark.parametrize(
+    argnames='page, exp_message',
+    argvalues=(
+        pytest.param(
+            'upload.warning1',
+            r'foo',
+            id='upload.warning1',
+        ),
+    ),
+)
 @pytest.mark.asyncio
-async def test_upload_fails_to_find_error_message(mocker):
+async def test_upload_finds_warning_message(page, exp_message, headers, get_html_page, mocker):
+    response = Result(
+        text=get_html_page('bb', page),
+        bytes=b'not relevant',
+        headers=headers,
+    )
+    mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
+    tracker = BbTracker(
+        options={
+            'base_url': 'http://bb.local',
+        },
+    )
+    tracker_jobs_mock = Mock()
+    mocker.patch.object(tracker, 'warn')
+    torrent_page_url = await tracker.upload(tracker_jobs_mock)
+    assert torrent_page_url is None
+    assert tracker.warn.call_args_list == [
+        call('The torrent did not have the correct announce URL.'),
+        call('The mediainfo was not encoded in ROT13.'),
+        call('Your mom.'),
+    ]
+
+@pytest.mark.parametrize(
+    argnames='html_string',
+    argvalues=(
+        ('<html><body><h2>Warning</h2>Your torrent has been uploaded however, blablabla</body></html>',),
+    ),
+)
+@pytest.mark.asyncio
+async def test_upload_handles_incomplete_warning_message(html_string, mocker):
+    response = Result(
+        text=html_string,
+        bytes=b'not relevant',
+    )
+    mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
+    tracker = BbTracker(
+        options={
+            'base_url': 'http://bb.local',
+        },
+    )
+    tracker_jobs_mock = Mock()
+    html_dump_mock = mocker.patch('upsies.utils.html.dump')
+    mocker.patch.object(tracker, 'warn')
+    with pytest.raises(RuntimeError, match=r'^Failed to find error message\. See upload\.html\.$'):
+        await tracker.upload(tracker_jobs_mock)
+    assert html_dump_mock.call_args_list == [call(response, 'upload.html')]
+    assert tracker.warn.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_upload_fails_to_find_error_or_warning_message(mocker):
     response = Result(
         text='''
         <html>
