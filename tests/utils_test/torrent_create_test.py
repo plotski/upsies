@@ -25,7 +25,11 @@ from upsies.utils import torrent
     ),
 )
 @pytest.mark.parametrize('torrent_from_cache', (False, True))
-def test_create(torrent_from_cache, torrent_path_exists, overwrite, torrent_is_ready, exp_torrent_created, mocker, tmp_path):
+@pytest.mark.parametrize('reuse_torrent_path', (None, '', 'path/to/file.torrent'))
+def test_create(reuse_torrent_path,
+                torrent_from_cache,
+                torrent_path_exists, overwrite, torrent_is_ready, exp_torrent_created,
+                mocker, tmp_path):
     content_path = str(tmp_path / 'content')
     torrent_path = str(tmp_path / 'content.torrent')
     announce = 'http://foo'
@@ -49,6 +53,7 @@ def test_create(torrent_from_cache, torrent_path_exists, overwrite, torrent_is_r
         progress_callback=progress_callback,
         overwrite=overwrite,
         exclude=exclude,
+        reuse_torrent_path=reuse_torrent_path,
     )
     assert t_path == torrent_path
     if not overwrite:
@@ -57,10 +62,18 @@ def test_create(torrent_from_cache, torrent_path_exists, overwrite, torrent_is_r
         assert torrent._path_exists.call_args_list == []
 
     if exp_torrent_created:
-        assert torrent._read_cache_torrent.call_args_list == [call(content_path=content_path, exclude=exclude)]
+        assert torrent._read_cache_torrent.call_args_list == [call(
+            content_path=content_path,
+            exclude=exclude,
+            cache_torrent_path=reuse_torrent_path,
+        )]
         if torrent_from_cache:
             assert exp_torrent.trackers == ((announce,))
             assert exp_torrent.source == source
+            if reuse_torrent_path:
+                assert torrent._store_cache_torrent.call_args_list == [call(exp_torrent)]
+            else:
+                assert torrent._store_cache_torrent.call_args_list == []
         else:
             assert torrent._generate_torrent.call_args_list == [call(
                 content_path=content_path,

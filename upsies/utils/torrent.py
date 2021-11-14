@@ -18,7 +18,7 @@ torf = LazyModule(module='torf', namespace=globals())
 
 def create(*, content_path, announce, source, torrent_path,
            init_callback, progress_callback,
-           overwrite=False, exclude=()):
+           overwrite=False, exclude=(), reuse_torrent_path=None):
     """
     Generate and write torrent file
 
@@ -59,6 +59,10 @@ def create(*, content_path, announce, source, torrent_path,
     :param bool overwrite: Whether to overwrite `torrent_path` if it exists
     :param exclude: Sequence of regular expressions that are matched against
         file system paths. Matching files are not included in the torrent.
+    :param reuse_torrent_path: Path to existing torrent file to get hashed
+        pieces and piece size from. This argument is ignored if the files in the
+        provided torrent do not match the files we want or if it can't be read
+        for any reason.
 
     :raise TorrentError: if anything goes wrong
 
@@ -75,12 +79,15 @@ def create(*, content_path, announce, source, torrent_path,
         # Try to read piece hashes from cache
         torrent = _read_cache_torrent(
             content_path=content_path,
+            cache_torrent_path=reuse_torrent_path,
             exclude=exclude,
         )
         if torrent:
             # Update metadata in generic torrent
             torrent.trackers = (announce,)
             torrent.source = source
+            if reuse_torrent_path:
+                _store_cache_torrent(torrent)
         else:
             # Reading cached piece hashes failed for some reason
             torrent = _generate_torrent(
