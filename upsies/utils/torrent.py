@@ -135,7 +135,7 @@ def _store_cache_torrent(torrent):
     cache_torrent.write(cache_torrent_path, overwrite=True)
 
 
-def _read_cache_torrent(content_path, exclude):
+def _read_cache_torrent(content_path, exclude, cache_torrent_path=None):
     try:
         torrent = torf.Torrent(
             path=content_path,
@@ -144,7 +144,8 @@ def _read_cache_torrent(content_path, exclude):
             created_by=f'{__project_name__} {__version__}',
             creation_date=time.time(),
         )
-        cache_torrent_path = _get_cache_torrent_path(torrent, create_directory=False)
+        if not cache_torrent_path:
+            cache_torrent_path = _get_cache_torrent_path(torrent, create_directory=False)
         cache_torrent = torf.Torrent.read(cache_torrent_path)
     except torf.TorfError:
         return None

@@ -314,6 +314,32 @@ def test_read_cache_torrent_returns_Torrent_instance(mocker, tmp_path):
         Torrent_mock.read.return_value, Torrent_mock.return_value,
     )]
 
+def test_read_cache_torrent_from_provided_torrent_path(mocker, tmp_path):
+    content_path = str(tmp_path / 'content')
+    exclude = ('foo', 'bar', 'baz')
+    Torrent_mock = mocker.patch('torf.Torrent')
+    mocker.patch('upsies.utils.torrent._get_cache_torrent_path')
+    mocker.patch('upsies.utils.torrent._copy_torrent_info')
+    mocker.patch('time.time', return_value='mock time')
+    t = torrent._read_cache_torrent(
+        content_path,
+        exclude=exclude,
+        cache_torrent_path='path/to/file.torrent',
+    )
+    assert t is Torrent_mock.return_value
+    assert Torrent_mock.call_args_list == [call(
+        path=content_path,
+        exclude_regexs=exclude,
+        private=True,
+        created_by=f'{__project_name__} {__version__}',
+        creation_date='mock time',
+    )]
+    assert torrent._get_cache_torrent_path.call_args_list == []
+    assert Torrent_mock.read.call_args_list == [call('path/to/file.torrent')]
+    assert torrent._copy_torrent_info.call_args_list == [call(
+        Torrent_mock.read.return_value, Torrent_mock.return_value,
+    )]
+
 def test_read_cache_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
     content_path = str(tmp_path / 'content')
     exclude = ('foo', 'bar', 'baz')
