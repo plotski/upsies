@@ -137,9 +137,6 @@ def test_create_handles_TorfError_from_torrent_write(mocker, tmp_path):
     mocker.patch('upsies.utils.torrent._store_cache_torrent')
     torrent._read_cache_torrent.return_value.write.side_effect = torf.TorfError('nope')
 
-    print('cached_torrent:', torrent._read_cache_torrent.return_value)
-    print('created_torrent:', torrent._generate_torrent.return_value)
-
     with pytest.raises(errors.TorrentError, match=r'^nope$'):
         torrent.create(
             content_path=str(tmp_path / 'content'),
