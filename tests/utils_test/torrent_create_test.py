@@ -283,6 +283,7 @@ def test_store_cache_torrent(mocker, tmp_path):
     )]
     assert Torrent_mock.return_value.write.call_args_list == [call(
         torrent._get_cache_torrent_path.return_value,
+        overwrite=True,
     )]
 
 

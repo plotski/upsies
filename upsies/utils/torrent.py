@@ -132,7 +132,7 @@ def _store_cache_torrent(torrent):
     )
     _copy_torrent_info(torrent, cache_torrent)
     cache_torrent_path = _get_cache_torrent_path(cache_torrent, create_directory=True)
-    cache_torrent.write(cache_torrent_path)
+    cache_torrent.write(cache_torrent_path, overwrite=True)
 
 
 def _read_cache_torrent(content_path, exclude):
