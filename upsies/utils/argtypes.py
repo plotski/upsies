@@ -26,6 +26,12 @@ def client(value):
 def content(value):
     """Existing path to release file(s)"""
     path = release(value)
+    return existing_path(path)
+
+
+def existing_path(value):
+    """Path to existing path"""
+    path = str(value)
     if not os.path.exists(path):
         raise argparse.ArgumentTypeError(f'No such file or directory: {value}')
     else:

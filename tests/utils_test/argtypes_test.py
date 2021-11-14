@@ -1,4 +1,5 @@
 import argparse
+import pathlib
 import re
 from unittest.mock import call, patch
 
@@ -19,25 +20,32 @@ def test_client_invalid_value():
         argtypes.client('foo')
 
 
+def test_content(mocker):
+    release_mock = mocker.patch('upsies.utils.argtypes.release', return_value='release/path')
+    existing_path_mock = mocker.patch('upsies.utils.argtypes.existing_path', return_value='existing/path')
+    assert argtypes.content('given/path') == 'existing/path'
+    assert release_mock.call_args_list == [call('given/path')]
+    assert existing_path_mock.call_args_list == [call('release/path')]
+
+
 @pytest.mark.parametrize(
     argnames='path, path_exists, exp_exc',
     argvalues=(
         ('path/to/foo', True, None),
+        (pathlib.Path('path/to/foo'), True, None),
         ('path/to/foo', False, argparse.ArgumentTypeError('No such file or directory: path/to/foo')),
     ),
-    ids=lambda v: str(v),
+    ids=lambda v: repr(v),
 )
-def test_content(path, path_exists, exp_exc, mocker):
-    release_mock = mocker.patch('upsies.utils.argtypes.release', return_value='release/path')
+def test_existing_path(path, path_exists, exp_exc, mocker):
     exists_mock = mocker.patch('os.path.exists', return_value=path_exists)
     if path_exists:
-        assert argtypes.content(path) == release_mock.return_value
+        assert argtypes.existing_path(path) == str(path)
     else:
         with pytest.raises(type(exp_exc), match=rf'^{re.escape(str(exp_exc))}$'):
             argtypes.content(path)
+    assert exists_mock.call_args_list == [call(str(path))]
 
-    assert release_mock.call_args_list == [call(path)]
-    assert exists_mock.call_args_list == [call(release_mock.return_value)]
 
 @pytest.mark.parametrize('imghost', utils.imghosts.imghost_names())
 def test_imghost_valid_value(imghost):
