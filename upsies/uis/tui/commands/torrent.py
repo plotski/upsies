@@ -2,7 +2,7 @@
 Commands related to torrent files
 """
 
-from .... import jobs, trackers, utils
+from .... import constants, jobs, trackers, utils
 from .base import CommandBase
 
 
@@ -87,6 +87,14 @@ class torrent_create(CommandBase):
                         'type': utils.argtypes.regex,
                         'default': (),
                     },
+                    ('--reuse-torrent', '-t'): {
+                        'metavar': 'TORRENT',
+                        'help': ('Use hashed pieces from TORRENT instead of generating '
+                                 'them again or getting them from '
+                                 f'{utils.fs.tildify_path(constants.GENERIC_TORRENTS_DIRPATH)}\n'
+                                 "NOTE: This option is ignored if TORRENT doesn't match properly."),
+                        'type': utils.argtypes.existing_path,
+                    },
                     ('--add-to', '-a'): {
                         'type': utils.argtypes.client,
                         'metavar': 'CLIENT',
@@ -116,6 +124,7 @@ class torrent_create(CommandBase):
             cache_directory=self.cache_directory,
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
+            reuse_torrent_path=self.args.reuse_torrent,
             tracker=trackers.tracker(
                 name=self.tracker_name,
                 options={**self.config['trackers'][self.tracker_name],
