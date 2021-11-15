@@ -397,23 +397,22 @@ def test_read_cache_torrent_handles_TorfError_from_Torrent_read(mocker, tmp_path
 
 
 @pytest.mark.parametrize(
-    argnames='cache_dirpath, create_directory',
+    argnames='generic_torrents_dirpath, create_directory',
     argvalues=(
-        ('path/to/cache', False),
-        ('path/to/cache', True),
+        ('path/to/generic_torrents', False),
+        ('path/to/generic_torrents', True),
     ),
     ids=lambda v: str(v),
 )
-def test_get_cache_torrent_path(cache_dirpath, create_directory, mocker, tmp_path):
-    cache_dirpath = str(tmp_path / cache_dirpath)
-    mocker.patch('upsies.constants.CACHE_DIRPATH', cache_dirpath)
+def test_get_cache_torrent_path(generic_torrents_dirpath, create_directory, mocker, tmp_path):
+    generic_torrents_dirpath = str(tmp_path / generic_torrents_dirpath)
+    mocker.patch('upsies.constants.GENERIC_TORRENTS_DIRPATH', generic_torrents_dirpath)
     mock_mkdir = mocker.patch('upsies.utils.fs.mkdir')
     mock_get_torrent_id = mocker.patch('upsies.utils.torrent._get_torrent_id', return_value='D34DB33F')
 
     cache_torrent = SimpleNamespace(name='The Torrent')
     exp_cache_torrent_path = os.path.join(
-        cache_dirpath,
-        'generic_torrents',
+        generic_torrents_dirpath,
         f'{cache_torrent.name}.{mock_get_torrent_id.return_value}.torrent',
     )
     cache_torrent_path = torrent._get_cache_torrent_path(cache_torrent, create_directory=create_directory)
@@ -425,11 +424,12 @@ def test_get_cache_torrent_path(cache_dirpath, create_directory, mocker, tmp_pat
     assert mock_get_torrent_id.call_args_list == [call(cache_torrent)]
 
 def test_get_cache_torrent_path_handles_ContentError_from_mkdir(mocker, tmp_path):
-    cache_torrent = Mock()
-    mocker.patch('upsies.constants.CACHE_DIRPATH', str(tmp_path / 'cache'))
+    generic_torrents_dirpath = str(tmp_path / 'generic_torrents')
+    mocker.patch('upsies.constants.GENERIC_TORRENTS_DIRPATH', generic_torrents_dirpath)
     mocker.patch('upsies.utils.fs.mkdir', side_effect=errors.ContentError('nope'))
     mocker.patch('upsies.utils.torrent._get_torrent_id', return_value='D34DB33F')
-    with pytest.raises(errors.TorrentError, match=rf'^{tmp_path / "cache" / "generic_torrents"}: nope$'):
+    cache_torrent = Mock()
+    with pytest.raises(errors.TorrentError, match=rf'^{generic_torrents_dirpath}: nope$'):
         torrent._get_cache_torrent_path(cache_torrent, create_directory=True)
 
 

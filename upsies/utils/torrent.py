@@ -162,7 +162,7 @@ def _read_cache_torrent(content_path, exclude, cache_torrent_path=None):
 
 
 def _get_cache_torrent_path(torrent, create_directory=True):
-    directory = os.path.join(constants.CACHE_DIRPATH, 'generic_torrents')
+    directory = constants.GENERIC_TORRENTS_DIRPATH
     if create_directory:
         try:
             fs.mkdir(directory)
