@@ -95,10 +95,12 @@ class TrackerJobsBase(abc.ABC):
     For a description of the arguments see the corresponding properties.
     """
 
-    def __init__(self, *, content_path, tracker, torrent_destination=None,
+    def __init__(self, *, content_path, tracker,
+                 reuse_torrent_path=None, torrent_destination=None,
                  exclude_files=(), options=None, image_host=None,
                  bittorrent_client=None, common_job_args=None):
         self._content_path = content_path
+        self._reuse_torrent_path = reuse_torrent_path
         self._tracker = tracker
         self._image_host = image_host
         self._bittorrent_client = bittorrent_client
@@ -126,6 +128,15 @@ class TrackerJobsBase(abc.ABC):
         This is the same object that was passed as a initialization argument.
         """
         return self._tracker
+
+    @property
+    def reuse_torrent_path(self):
+        """
+        Path to an existing torrent file that matches :attr:`content_path`
+
+        See :func:`.torrent.create`.
+        """
+        return self._reuse_torrent_path
 
     @property
     def torrent_destination(self):
@@ -304,6 +315,7 @@ class TrackerJobsBase(abc.ABC):
         """:class:`~.jobs.torrent.CreateTorrentJob` instance"""
         return jobs.torrent.CreateTorrentJob(
             content_path=self.content_path,
+            reuse_torrent_path=self.reuse_torrent_path,
             tracker=self.tracker,
             exclude_files=self._exclude_files,
             **self.common_job_args,

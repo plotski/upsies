@@ -39,6 +39,7 @@ def make_TestTrackerJobs(**kwargs):
 
     default_kwargs = {
         'content_path': '',
+        'reuse_torrent_path': '',
         'tracker': Mock(),
         'image_host': '',
         'bittorrent_client': Mock(),
@@ -52,6 +53,7 @@ def make_TestTrackerJobs(**kwargs):
 def test_arguments():
     kwargs = {
         'content_path': Mock(),
+        'reuse_torrent_path': Mock(),
         'tracker': Mock(),
         'image_host': Mock(),
         'bittorrent_client': Mock(),
@@ -146,6 +148,7 @@ def test_create_torrent_job(mocker):
     CreateTorrentJob_mock = mocker.patch('upsies.jobs.torrent.CreateTorrentJob')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
+        reuse_torrent_path='path/to/existing.torrent',
         tracker='mock tracker',
         exclude_files=('a', 'b', 'c'),
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
@@ -154,6 +157,7 @@ def test_create_torrent_job(mocker):
     assert CreateTorrentJob_mock.call_args_list == [
         call(
             content_path='path/to/content',
+            reuse_torrent_path='path/to/existing.torrent',
             tracker='mock tracker',
             exclude_files=('a', 'b', 'c'),
             home_directory='path/to/home',
