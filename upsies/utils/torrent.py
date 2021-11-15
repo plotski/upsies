@@ -172,13 +172,17 @@ def _get_cache_torrent_path(torrent, create_directory=True):
         except errors.ContentError as e:
             raise errors.TorrentError(f'{directory}: {e}')
 
-    cache_id = {
-        'files': [(str(f), f.size) for f in torrent.files],
-        'piece_size': torrent.piece_size,
-    }
-    cache_id_string = utils.semantic_hash(cache_id)
-    filename = f'{torrent.name}.{cache_id_string}.torrent'
+    cache_id = _get_torrent_id(torrent)
+    filename = f'{torrent.name}.{cache_id}.torrent'
     return os.path.join(directory, filename)
+
+
+def _get_torrent_id(torrent):
+    id_info = {
+        'name': torrent.name,
+        'files': tuple((str(f), f.size) for f in torrent.files),
+    }
+    return utils.semantic_hash(id_info)
 
 
 def _copy_torrent_info(from_torrent, to_torrent):

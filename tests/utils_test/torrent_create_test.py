@@ -396,38 +396,25 @@ def test_read_cache_torrent_handles_TorfError_from_Torrent_read(mocker, tmp_path
     assert torrent._copy_torrent_info.call_args_list == []
 
 
-class MockFile(str):
-    def __new__(cls, string, size):
-        self = super().__new__(cls, string)
-        self.size = size
-        return self
-
 @pytest.mark.parametrize(
-    argnames='cache_torrent, cache_dirpath, create_directory',
+    argnames='cache_dirpath, create_directory',
     argvalues=(
-        (
-            SimpleNamespace(name='Foo', piece_size=123, files=(MockFile('a', size=123), MockFile('b', size=456))),
-            'path/to/cache',
-            False,
-        ),
-        (
-            SimpleNamespace(name='Foo', piece_size=123, files=(MockFile('a', size=123), MockFile('b', size=456))),
-            'path/to/cache',
-            True,
-        ),
+        ('path/to/cache', False),
+        ('path/to/cache', True),
     ),
     ids=lambda v: str(v),
 )
-def test_get_cache_torrent_path(cache_torrent, cache_dirpath, create_directory, mocker, tmp_path):
+def test_get_cache_torrent_path(cache_dirpath, create_directory, mocker, tmp_path):
     cache_dirpath = str(tmp_path / cache_dirpath)
     mocker.patch('upsies.constants.CACHE_DIRPATH', cache_dirpath)
     mock_mkdir = mocker.patch('upsies.utils.fs.mkdir')
-    mock_semantic_hash = mocker.patch('upsies.utils.semantic_hash', return_value='D34DB33F')
+    mock_get_torrent_id = mocker.patch('upsies.utils.torrent._get_torrent_id', return_value='D34DB33F')
 
+    cache_torrent = SimpleNamespace(name='The Torrent')
     exp_cache_torrent_path = os.path.join(
         cache_dirpath,
         'generic_torrents',
-        f'{cache_torrent.name}.{mock_semantic_hash.return_value}.torrent',
+        f'{cache_torrent.name}.{mock_get_torrent_id.return_value}.torrent',
     )
     cache_torrent_path = torrent._get_cache_torrent_path(cache_torrent, create_directory=create_directory)
     assert cache_torrent_path == cache_torrent_path
@@ -435,20 +422,36 @@ def test_get_cache_torrent_path(cache_torrent, cache_dirpath, create_directory, 
         assert mock_mkdir.call_args_list == [call(os.path.dirname(exp_cache_torrent_path))]
     else:
         assert mock_mkdir.call_args_list == []
-    assert mock_semantic_hash.call_args_list == [call(
-        {
-            'files': [(str(f), f.size) for f in cache_torrent.files],
-            'piece_size': cache_torrent.piece_size,
-        },
-    )]
+    assert mock_get_torrent_id.call_args_list == [call(cache_torrent)]
 
 def test_get_cache_torrent_path_handles_ContentError_from_mkdir(mocker, tmp_path):
     cache_torrent = Mock()
     mocker.patch('upsies.constants.CACHE_DIRPATH', str(tmp_path / 'cache'))
     mocker.patch('upsies.utils.fs.mkdir', side_effect=errors.ContentError('nope'))
-    mocker.patch('upsies.utils.semantic_hash', return_value='D34DB33F')
+    mocker.patch('upsies.utils.torrent._get_torrent_id', return_value='D34DB33F')
     with pytest.raises(errors.TorrentError, match=rf'^{tmp_path / "cache" / "generic_torrents"}: nope$'):
         torrent._get_cache_torrent_path(cache_torrent, create_directory=True)
+
+
+def test_get_torrent_id(mocker):
+    class MockFile(str):
+        def __new__(cls, string, size):
+            self = super().__new__(cls, string)
+            self.size = size
+            return self
+
+    mock_torrent = SimpleNamespace(
+        name='Foo',
+        files=(MockFile('a', size=123), MockFile('b', size=456)),
+    )
+    mock_semantic_hash = mocker.patch('upsies.utils.semantic_hash', return_value='D34DB33F')
+
+    cache_id = torrent._get_torrent_id(mock_torrent)
+    assert cache_id == 'D34DB33F'
+    assert mock_semantic_hash.call_args_list == [call({
+        'name': 'Foo',
+        'files': (('a', 123), ('b', 456)),
+    })]
 
 
 @pytest.mark.parametrize(
