@@ -72,7 +72,7 @@ class AsyncMock(Mock):
 async def test_get_cache_directory(cache_directory, default_cache_directory, exp_cache_directory, mocker):
     mocker.patch('upsies.constants.DEFAULT_CACHE_DIRECTORY', default_cache_directory)
     mocker.patch('upsies.utils.http.cache_directory', cache_directory)
-    assert http._get_cache_directory() is exp_cache_directory
+    assert http._get_cache_directory() == exp_cache_directory
 
 
 @pytest.mark.parametrize(

@@ -339,10 +339,11 @@ def test_default_track_returns_first_track_if_no_default_tag_exists(tracks_mock)
 
 @patch('upsies.utils.video.tracks')
 def test_default_track_fails_to_find_any_track(track_mock):
-    track_mock.return_value = {}
-    with pytest.raises(errors.ContentError, match=r'^foo.mkv: No audio track found$'):
+    tracks = {'foo': 'bar'}
+    track_mock.return_value = tracks
+    with pytest.raises(errors.ContentError, match=rf'^foo.mkv: No audio track found: {re.escape(str(tracks))}$'):
         video.default_track('audio', 'foo.mkv')
-    with pytest.raises(errors.ContentError, match=r'^foo.mkv: No video track found$'):
+    with pytest.raises(errors.ContentError, match=rf'^foo.mkv: No video track found: {re.escape(str(tracks))}$'):
         video.default_track('video', 'foo.mkv')
 
 

@@ -440,7 +440,7 @@ async def test_upload_succeeds(category, exp_category_code, ignore_dupes, exp_da
         ('Something went wrong', 'Upload failed: Something went wrong'),
         ('The torrent contained one or more possible dupes. Please check carefully!',
          ('Upload failed: The torrent contained one or more possible dupes. Please check carefully!\n'
-          'Use --ignore-dupes to enforce the upload.')),
+          'Use --ignore-dupes to force the upload.')),
     ),
 )
 @pytest.mark.asyncio
