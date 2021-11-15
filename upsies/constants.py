@@ -12,6 +12,9 @@ from . import __project_name__
 CACHE_DIRPATH = os.path.join(XDG_CACHE_HOME, __project_name__)
 """Path cache directory"""
 
+GENERIC_TORRENTS_DIRPATH = os.path.join(CACHE_DIRPATH, 'generic_torrents')
+"""Path to directory that contains cached torrents for re-using piece hashes"""
+
 CONFIG_FILEPATH = os.path.join(XDG_CONFIG_HOME, __project_name__, 'config.ini')
 """Path to general configuration file"""
 
