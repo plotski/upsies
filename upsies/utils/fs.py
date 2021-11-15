@@ -47,14 +47,14 @@ def projectdir(content_path, base=None):
 
     :param str content_path: Path to torrent content
     :param str base: Location of the project directory; defaults to
-        :attr:`~.constants.CACHE_DIRPATH`
+        :attr:`~.constants.DEFAULT_CACHE_DIRECTORY`
 
     :raise ContentError: if `content_path` exists and is not a directory or has
         insufficient permissions
     """
     if content_path:
         if not base:
-            base = constants.CACHE_DIRPATH
+            base = constants.DEFAULT_CACHE_DIRECTORY
         path = os.path.join(base, basename(content_path) + f'.{__project_name__}')
     else:
         path = '.'

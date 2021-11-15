@@ -43,8 +43,12 @@ cache_directory = None
 """
 Where to store cached responses
 
-If this is set to a falsy value, default to :attr:`~.constants.CACHE_DIRPATH`.
+If this is set to a falsy value, default to
+:attr:`~.constants.DEFAULT_CACHE_DIRECTORY`.
 """
+
+def _get_cache_directory():
+    return cache_directory or constants.DEFAULT_CACHE_DIRECTORY
 
 
 async def close():
@@ -371,7 +375,7 @@ def _load_cookies(cookies):
     if isinstance(cookies, (collections.abc.Mapping, http.cookiejar.CookieJar)):
         return cookies
     elif cookies and isinstance(cookies, (str, pathlib.Path)):
-        filepath_abs = os.path.join(constants.CACHE_DIRPATH, cookies)
+        filepath_abs = os.path.join(_get_cache_directory(), cookies)
         cookie_jar = http.cookiejar.LWPCookieJar(filepath_abs)
         try:
             cookie_jar.load()
@@ -389,7 +393,7 @@ def _load_cookies(cookies):
 
 
 def _save_cookies(filepath, domain):
-    filepath_abs = os.path.join(constants.CACHE_DIRPATH, filepath)
+    filepath_abs = os.path.join(_get_cache_directory(), filepath)
     _log.debug('Saving cookies for %r to %r', domain, filepath_abs)
     file_cookie_jar = http.cookiejar.LWPCookieJar(filepath_abs)
     for cookie in _client.cookies.jar:
@@ -524,6 +528,6 @@ def _cache_file(method, url, params={}):
         params_str = ''
 
     return os.path.join(
-        cache_directory or constants.CACHE_DIRPATH,
+        _get_cache_directory(),
         fs.sanitize_filename(make_filename(method, url, params_str)),
     )

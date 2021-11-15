@@ -35,7 +35,7 @@ def make_TestImageHost(default_config=None, **kwargs):
 
 
 def test_cache_directory_property(mocker, tmp_path):
-    mocker.patch('upsies.constants.CACHE_DIRPATH', 'mock/cache/path')
+    mocker.patch('upsies.constants.DEFAULT_CACHE_DIRECTORY', 'mock/cache/path')
     imghost = make_TestImageHost()
     assert imghost.cache_directory == 'mock/cache/path'
     imghost = make_TestImageHost(cache_directory=tmp_path)
@@ -302,7 +302,7 @@ def test_store_url_to_cache_fails_to_write(mocker, tmp_path):
 )
 @pytest.mark.parametrize('image_dir', (None, 'some/relative/path', '/absolute/path'))
 def test_cache_file(mocker, image_dir, cache_dir, cache_id, exp_cache_dir):
-    mocker.patch('upsies.constants.CACHE_DIRPATH', exp_cache_dir)
+    mocker.patch('upsies.constants.DEFAULT_CACHE_DIRECTORY', exp_cache_dir)
     ih = make_TestImageHost(cache_directory=cache_dir)
     mocker.patch.object(ih, '_get_cache_id_as_string', return_value=cache_id)
     image_name = 'foo.png'

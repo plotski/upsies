@@ -30,5 +30,5 @@ def store_response(data_dir):
     cache_dir = os.path.join(data_dir, 'webdbs')
     if not os.path.exists(cache_dir):
         os.mkdir(cache_dir)
-    with patch('upsies.constants.CACHE_DIRPATH', cache_dir):
+    with patch('upsies.constants.DEFAULT_CACHE_DIRECTORY', cache_dir):
         yield

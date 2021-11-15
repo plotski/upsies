@@ -20,7 +20,7 @@ class ImageHostBase(abc.ABC):
     Base class for image uploaders
 
     :param str cache_directory: Where to cache URLs; defaults to
-        :attr:`.constants.CACHE_DIRPATH`
+        :attr:`.constants.DEFAULT_CACHE_DIRECTORY`
     :param options: User configuration options for this image host,
         e.g. authentication details, thumbnail size, etc
     :type options: :class:`dict`-like
@@ -31,7 +31,7 @@ class ImageHostBase(abc.ABC):
         self._options.update()
         if options is not None:
             self._options.update(options)
-        self.cache_directory = cache_directory if cache_directory else constants.CACHE_DIRPATH
+        self._cache_dir = cache_directory if cache_directory else constants.DEFAULT_CACHE_DIRECTORY
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)

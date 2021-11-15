@@ -9,10 +9,10 @@ from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 
 from . import __project_name__
 
-CACHE_DIRPATH = os.path.join(XDG_CACHE_HOME, __project_name__)
-"""Path cache directory"""
+DEFAULT_CACHE_DIRECTORY = os.path.join(XDG_CACHE_HOME, __project_name__)
+"""Default path cache directory if config option ``cache_directory`` is not set"""
 
-GENERIC_TORRENTS_DIRPATH = os.path.join(CACHE_DIRPATH, 'generic_torrents')
+GENERIC_TORRENTS_DIRPATH = os.path.join(DEFAULT_CACHE_DIRECTORY, 'generic_torrents')
 """Path to directory that contains cached torrents for re-using piece hashes"""
 
 CONFIG_FILEPATH = os.path.join(XDG_CONFIG_HOME, __project_name__, 'config.ini')

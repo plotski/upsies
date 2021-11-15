@@ -87,7 +87,7 @@ def test_assert_dir_usable_with_unexecutable_directory(tmp_path):
 )
 @patch('upsies.utils.fs.mkdir')
 def test_projectdir(mkdir_mock, tmp_path, mocker, content_path, base, exp_projectdir):
-    mocker.patch('upsies.constants.CACHE_DIRPATH', base or 'default_path')
+    mocker.patch('upsies.constants.DEFAULT_CACHE_DIRECTORY', base or 'default_path')
     fs.projectdir.cache_clear()
     path = fs.projectdir(content_path, base=base)
     assert path == exp_projectdir

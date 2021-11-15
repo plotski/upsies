@@ -61,6 +61,21 @@ class AsyncMock(Mock):
 
 
 @pytest.mark.parametrize(
+    argnames=('cache_directory, default_cache_directory, exp_cache_directory'),
+    argvalues=(
+        ('my/custom/path', 'the/default/path', 'my/custom/path'),
+        ('', 'the/default/path', 'the/default/path'),
+        (None, 'the/default/path', 'the/default/path'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_get_cache_directory(cache_directory, default_cache_directory, exp_cache_directory, mocker):
+    mocker.patch('upsies.constants.DEFAULT_CACHE_DIRECTORY', default_cache_directory)
+    mocker.patch('upsies.utils.http.cache_directory', cache_directory)
+    assert http._get_cache_directory() is exp_cache_directory
+
+
+@pytest.mark.parametrize(
     argnames=('auth', 'cache', 'max_cache_age', 'user_agent', 'follow_redirects', 'timeout', 'cookies'),
     argvalues=(
         (None, False, 123, False, True, 1, 'mock cookies a'),
@@ -1090,7 +1105,7 @@ def test_cache_file_without_params(method, mocker):
         return filename.replace('a', '#')
 
     mocker.patch('upsies.utils.fs.sanitize_filename', side_effect=sanitize_filename)
-    mocker.patch.object(http, 'cache_directory', '/tmp/foo')
+    mocker.patch.object(http, '_get_cache_directory', return_value='/tmp/foo')
     url = 'http://localhost:123/foo/bar'
     exp_cache_file = f'/tmp/foo/{method.upper()}.http://loc#lhost:123/foo/b#r'
     assert http._cache_file(method, url) == exp_cache_file
@@ -1101,7 +1116,7 @@ def test_cache_file_with_params(method, mocker):
         return filename.replace('a', '#')
 
     mocker.patch('upsies.utils.fs.sanitize_filename', side_effect=sanitize_filename)
-    mocker.patch.object(http, 'cache_directory', '/tmp/foo')
+    mocker.patch.object(http, '_get_cache_directory', return_value='/tmp/foo')
     url = 'http://localhost:123'
     params = {'foo': 'a b c', 'bar': 12}
     exp_cache_file = f'/tmp/foo/{method.upper()}.http://loc#lhost:123?foo=#+b+c&b#r=12'
@@ -1113,7 +1128,7 @@ def test_cache_file_with_very_long_params(method, mocker):
         return filename.replace('a', '#')
 
     mocker.patch('upsies.utils.fs.sanitize_filename', side_effect=sanitize_filename)
-    mocker.patch.object(http, 'cache_directory', '/tmp/foo')
+    mocker.patch.object(http, '_get_cache_directory', return_value='/tmp/foo')
     url = 'http://localhost:123'
     params = {'foo': 'a b c ' * 100, 'bar': 12}
     exp_cache_file = (
@@ -1121,17 +1136,6 @@ def test_cache_file_with_very_long_params(method, mocker):
         f'[HASH:{sanitize_filename(semantic_hash(params))}]'
     )
     assert http._cache_file(method, url, params=params) == exp_cache_file
-
-@pytest.mark.parametrize('method', ('GET', 'POST'))
-def test_cache_file_defaults_to_CACHE_DIRPATH(method, mocker):
-    def sanitize_filename(filename):
-        return filename.replace('a', '#')
-
-    mocker.patch('upsies.utils.fs.sanitize_filename', side_effect=sanitize_filename)
-    mocker.patch('upsies.constants.CACHE_DIRPATH', '/tmp/bar')
-    url = 'http://localhost:123'
-    exp_cache_file = f'/tmp/bar/{method.upper()}.http://loc#lhost:123'
-    assert http._cache_file(method, url) == exp_cache_file
 
 
 def test_from_cache_with_nonexisting_cache_file():

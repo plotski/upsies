@@ -166,7 +166,7 @@ class JobBase(abc.ABC):
                  ignore_cache=False, hidden=False, autostart=True,
                  condition=None, callbacks={}, **kwargs):
         self._home_directory = home_directory if home_directory else ''
-        self._cache_directory = cache_directory if cache_directory else constants.CACHE_DIRPATH
+        self._cache_directory = cache_directory if cache_directory else constants.DEFAULT_CACHE_DIRECTORY
         self._ignore_cache = bool(ignore_cache)
         self._hidden = bool(hidden)
         self._autostart = bool(autostart)

@@ -5,7 +5,7 @@ from . import constants, trackers, utils
 defaults = {
     'config': {
         'main': {
-            'cache_directory': constants.CACHE_DIRPATH,
+            'cache_directory': constants.DEFAULT_CACHE_DIRECTORY,
             'max_cache_size': utils.types.Bytes.from_string('20 MB'),
         },
     },
