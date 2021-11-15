@@ -2,7 +2,7 @@
 Generate all required metadata and upload to tracker
 """
 
-from .... import jobs, trackers, utils
+from .... import constants, jobs, trackers, utils
 from .base import CommandBase
 
 
@@ -38,6 +38,14 @@ class submit(CommandBase):
                                  '(matched case-sensitively against path in torrent)'),
                         'type': utils.argtypes.regex,
                         'default': (),
+                    },
+                    ('--reuse-torrent', '-t'): {
+                        'metavar': 'TORRENT',
+                        'help': ('Use hashed pieces from TORRENT instead of generating '
+                                 'them again or getting them from '
+                                 f'{utils.fs.tildify_path(constants.GENERIC_TORRENTS_DIRPATH)}\n'
+                                 "NOTE: This option is ignored if TORRENT doesn't match properly."),
+                        'type': utils.argtypes.existing_path,
                     },
                     ('--add-to', '-a'): {
                         'type': utils.argtypes.client,
@@ -106,6 +114,7 @@ class submit(CommandBase):
         return self.tracker.TrackerJobs(
             options=self.tracker_options,
             content_path=self.args.CONTENT,
+            reuse_torrent_path=self.args.reuse_torrent,
             tracker=self.tracker,
             image_host=self._get_imghost(),
             bittorrent_client=self._get_btclient(),
