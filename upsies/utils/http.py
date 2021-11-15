@@ -41,7 +41,7 @@ _client = httpx.AsyncClient(
 
 cache_directory = None
 """
-Where to store cached requests
+Where to store cached responses
 
 If this is set to a falsy value, default to :attr:`~.constants.CACHE_DIRPATH`.
 """
