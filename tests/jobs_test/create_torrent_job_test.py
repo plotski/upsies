@@ -131,11 +131,13 @@ def test_CreateTorrentJob_initialize(tracker, tmp_path):
         cache_directory=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
+        reuse_torrent_path='path/to/existing.torrent',
         tracker=tracker,
     )
     assert job._content_path == 'path/to/foo'
     assert job._torrent_path == f'{tmp_path / "foo"}.asdf.torrent'
     assert job._exclude_files == list(tracker.options['exclude'])
+    assert job._reuse_torrent_path == 'path/to/existing.torrent'
     assert job.info == ''
     assert job._torrent_process is None
 
@@ -167,6 +169,7 @@ def job(tmp_path, tracker):
         cache_directory=tmp_path,
         ignore_cache=False,
         content_path='path/to/foo',
+        reuse_torrent_path='path/to/existing.torrent',
         tracker=tracker,
     )
 
@@ -313,15 +316,16 @@ def test_CreateTorrentJob_start_torrent_creation_process(job, mocker):
         name=job.name,
         target=_torrent_process,
         kwargs={
-            'content_path' : 'path/to/foo',
-            'torrent_path' : os.path.join(
+            'content_path': 'path/to/foo',
+            'torrent_path': os.path.join(
                 job.home_directory,
                 f'foo.{job._tracker.options["source"].lower()}.torrent',
             ),
-            'overwrite'    : False,
-            'announce'     : announce_url,
-            'source'       : job._tracker.options['source'],
-            'exclude'      : job._exclude_files,
+            'reuse_torrent_path': job._reuse_torrent_path,
+            'overwrite': False,
+            'announce': announce_url,
+            'source': job._tracker.options['source'],
+            'exclude': job._exclude_files,
         },
         init_callback=job._handle_file_tree,
         info_callback=job._handle_progress_update,

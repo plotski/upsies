@@ -44,12 +44,14 @@ class CreateTorrentJob(base.JobBase):
     label = 'Torrent'
     cache_id = None
 
-    def initialize(self, *, tracker, content_path, exclude_files=()):
+    def initialize(self, *, tracker, content_path, exclude_files=(), reuse_torrent_path=None):
         """
         Set internal state
 
         :param TrackerBase tracker: Return value of :func:`.trackers.tracker`
         :param content_path: Path to file or directory
+        :param reuse_torrent_path: Path to existing torrent file to reuse piece
+            hashes from (see :func:`~.utils.torrent.create`)
         :param exclude_files: Sequence of glob patterns (:class:`str`) and
             :class:`re.Pattern` objects that are matched against the relative
             path within the generated torrent
@@ -59,6 +61,7 @@ class CreateTorrentJob(base.JobBase):
         """
         self._tracker = tracker
         self._content_path = content_path
+        self._reuse_torrent_path = reuse_torrent_path
         self._torrent_path = os.path.join(
             self.home_directory,
             f'{fs.basename(content_path)}.{tracker.name.lower()}.torrent',
@@ -109,12 +112,13 @@ class CreateTorrentJob(base.JobBase):
             name=self.name,
             target=_torrent_process,
             kwargs={
-                'content_path' : self._content_path,
-                'torrent_path' : self._torrent_path,
-                'overwrite'    : self.ignore_cache,
-                'announce'     : announce_url,
-                'source'       : self._tracker.options['source'],
-                'exclude'      : self._exclude_files,
+                'content_path': self._content_path,
+                'torrent_path': self._torrent_path,
+                'reuse_torrent_path': self._reuse_torrent_path,
+                'overwrite': self.ignore_cache,
+                'announce': announce_url,
+                'source': self._tracker.options['source'],
+                'exclude': self._exclude_files,
             },
             init_callback=self._handle_file_tree,
             info_callback=self._handle_progress_update,
