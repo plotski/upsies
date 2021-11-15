@@ -1,5 +1,8 @@
 2021.??.??
   * Purge <script> tags from cached HTML (reduces size by ~40%)
+  * submit/torrent-create: Added --reuse-torrent/-t option to take pieces hashes
+    from an existing torrent (this happens automatically when torrents are
+    created with upsies)
 
 
 2021.11.09
