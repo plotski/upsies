@@ -228,7 +228,7 @@ class NblTracker(base.TrackerBase):
             if error and error.string:
                 _log.debug('NBL error: %r', doc)
                 if 'torrent contained one or more possible dupes' in error.string:
-                    msg = f'{error.string}\nUse --ignore-dupes to enforce the upload.'
+                    msg = f'{error.string}\nUse --ignore-dupes to force the upload.'
                 else:
                     msg = error.string
                 raise errors.RequestError(f'Upload failed: {msg}')
