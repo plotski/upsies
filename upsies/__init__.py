@@ -18,7 +18,7 @@ def application_setup(config):
 
     utils.http.cache_directory = os.path.join(
         config['config']['main']['cache_directory'],
-        'http',
+        'http_responses',
     )
 
 
