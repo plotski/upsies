@@ -144,6 +144,7 @@ def _store_cache_torrent(torrent):
 
 def _read_cache_torrent(content_path, exclude, cache_torrent_path=None):
     try:
+        # Create the Torrent we're going to use
         torrent = torf.Torrent(
             path=content_path,
             exclude_regexs=exclude,
@@ -151,14 +152,19 @@ def _read_cache_torrent(content_path, exclude, cache_torrent_path=None):
             created_by=f'{__project_name__} {__version__}',
             creation_date=time.time(),
         )
+        # Create the Torrent to get hashed pieces from
         if not cache_torrent_path:
             cache_torrent_path = _get_cache_torrent_path(torrent, create_directory=False)
         cache_torrent = torf.Torrent.read(cache_torrent_path)
     except torf.TorfError:
-        return None
+        pass
     else:
-        _copy_torrent_info(cache_torrent, torrent)
-        return torrent
+        # Make sure the cached torrent metainfo matches what we expect
+        id_wanted = _get_torrent_id(torrent)
+        id_cached = _get_torrent_id(cache_torrent)
+        if id_cached == id_wanted:
+            _copy_torrent_info(cache_torrent, torrent)
+            return torrent
 
 
 def _get_cache_torrent_path(torrent, create_directory=True):
