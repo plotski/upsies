@@ -258,7 +258,7 @@ class TextFieldJob(JobBase):
 
     @text.setter
     def text(self, text):
-        self._text = str(text)
+        self._text = self._normalizer(str(text))
         self.signal.emit('dialog_updated', self)
 
     @property
@@ -293,7 +293,7 @@ class TextFieldJob(JobBase):
         if self.is_finished:
             return 0
 
-    def initialize(self, *, name, label, text='', validator=None, obscured=False, read_only=False):
+    def initialize(self, *, name, label, text='', validator=None, normalizer=None, obscured=False, read_only=False):
         """
         Set internal state
 
@@ -303,6 +303,8 @@ class TextFieldJob(JobBase):
         :param validator: Callable that gets text before job is finished. If
             `ValueError` is raised, it is displayed as a warning instead of
             finishing the job.
+        :param normalizer: Callable that gets text and returns the new text. It
+            is called before `validator`. It should not raise any exceptions.
         :param validator: callable or None
         :param bool obscured: Whether :attr:`obscured` is set to `True`
             initially
@@ -312,6 +314,7 @@ class TextFieldJob(JobBase):
         self._name = str(name)
         self._label = str(label)
         self._validator = validator or (lambda _: None)
+        self._normalizer = normalizer or (lambda text: text)
         self.signal.add('dialog_updating')
         self.signal.add('dialog_updated')
         self.signal.add('accepted')
@@ -327,6 +330,7 @@ class TextFieldJob(JobBase):
         to :meth:`warn` and do not finish. Otherwise, pass `output` to
         :meth:`~.base.JobBase.send` and :meth:`~.base.JobBase.finish` this job.
         """
+        output = self._normalizer(output)
         try:
             self._validator(output)
         except ValueError as e:

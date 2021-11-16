@@ -36,6 +36,7 @@ def test_label_property(make_TextFieldJob):
 def test_text_property(read_only, make_TextFieldJob):
     job = make_TextFieldJob(name='foo', label='Foo', text='0',
                             validator=Mock(side_effect=ValueError('No likey')),
+                            normalizer=Mock(side_effect=str.capitalize),
                             read_only=read_only)
     cb = Mock()
     job.signal.register('dialog_updating', cb.dialog_updating)
@@ -48,7 +49,7 @@ def test_text_property(read_only, make_TextFieldJob):
     assert cb.dialog_updating.call_args_list == []
     assert cb.dialog_updated.call_args_list == [call(job)]
     job.text = 'foo'
-    assert job.text == 'foo'
+    assert job.text == 'Foo'
     assert cb.dialog_updating.call_args_list == []
     assert cb.dialog_updated.call_args_list == [call(job), call(job)]
 
@@ -82,22 +83,55 @@ def test_read_only_property(make_TextFieldJob):
 
 
 def test_send_valid_text(make_TextFieldJob):
-    validator = Mock()
-    job = make_TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
-    assert validator.call_args_list == []
+    callables = Mock()
+    callables.normalizer = Mock(side_effect=str.upper)
+    job = make_TextFieldJob(
+        name='foo',
+        label='Foo',
+        text='bar',
+        validator=callables.validator,
+        normalizer=callables.normalizer,
+    )
+    assert callables.mock_calls == [
+        call.normalizer('bar'),
+    ]
+    assert job.text == 'BAR'
+    assert job.output == ()
+
+    callables.reset_mock()
     job.send('baz')
-    assert validator.call_args_list == [call('baz')]
+
+    assert callables.mock_calls == [
+        call.normalizer('baz'),
+        call.validator('BAZ'),
+    ]
     assert job.warnings == ()
     assert job.is_finished
     assert job.exit_code == 0
-    assert job.output == ('baz',)
+    assert job.output == ('BAZ',)
 
 def test_send_invalid_text(make_TextFieldJob):
-    validator = Mock(side_effect=ValueError('Nope'))
-    job = make_TextFieldJob(name='foo', label='Foo', text='bar', validator=validator)
-    assert validator.call_args_list == []
+    callables = Mock()
+    callables.validator = Mock(side_effect=ValueError('Nope'))
+    callables.normalizer = Mock(side_effect=str.upper)
+    job = make_TextFieldJob(
+        name='foo',
+        label='Foo',
+        text='bar',
+        validator=callables.validator,
+        normalizer=callables.normalizer,
+    )
+    assert callables.mock_calls == [
+        call.normalizer('bar'),
+    ]
+
+    callables.reset_mock()
     job.send('baz')
-    assert validator.call_args_list == [call('baz')]
+
+    assert callables.mock_calls == [
+        call.normalizer('baz'),
+        call.validator('BAZ'),
+    ]
     assert job.warnings == ('Nope',)
     assert not job.is_finished
     assert job.exit_code is None
