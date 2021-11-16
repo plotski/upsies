@@ -1868,6 +1868,7 @@ async def test_get_tags_for_unknown_type(bb_tracker_jobs, mocker):
     ])]
 
 
+@pytest.mark.parametrize('tags_type', (str, list))
 @pytest.mark.parametrize(
     argnames='tags, exp_string',
     argvalues=(
@@ -1877,7 +1878,9 @@ async def test_get_tags_for_unknown_type(bb_tracker_jobs, mocker):
         (('Mark Hamill',) * 100, ','.join(('mark.hamill',) * 16)),
     ),
 )
-def test_normalize_tags(tags, exp_string, bb_tracker_jobs, mocker):
+def test_normalize_tags(tags, tags_type, exp_string, bb_tracker_jobs, mocker):
+    if tags_type is str:
+        tags = ','.join(tags)
     string = bb_tracker_jobs.normalize_tags(tags)
     assert string == exp_string
 

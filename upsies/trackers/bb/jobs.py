@@ -950,6 +950,9 @@ class BbTrackerJobs(TrackerJobsBase):
     }
 
     def normalize_tags(self, tags):
+        if isinstance(tags, str):
+            tags = tags.split(',')
+
         allowed_characters = (
             string.group('ascii_lowercase')
             + string.group('digits')
