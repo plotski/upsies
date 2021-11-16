@@ -978,6 +978,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 if regex.search(tag):
                     tag = replacement
                     break
+            tag = tag.strip(',.')           # Remove leading/trailing tag/space separators
             normalized.append(tag)
 
         def join_tags(tags):

@@ -1881,6 +1881,7 @@ async def test_get_tags_for_unknown_type(bb_tracker_jobs, mocker):
 def test_normalize_tags(tags, tags_type, exp_string, bb_tracker_jobs, mocker):
     if tags_type is str:
         tags = ','.join(tags)
+    tags = f'[!,.{tags},.!]'
     string = bb_tracker_jobs.normalize_tags(tags)
     assert string == exp_string
 
