@@ -1845,6 +1845,28 @@ async def test_get_tags_for_series(bb_tracker_jobs, mocker):
         'This Gal', 'That Dudette',
     ])]
 
+@pytest.mark.asyncio
+async def test_get_tags_for_unknown_type(bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=False))
+    mocker.patch.object(bb_tracker_jobs, 'normalize_tags', Mock(return_value='normalized,tags'))
+    mocker.patch.object(bb_tracker_jobs, 'try_webdbs', AsyncMock(side_effect=(
+        # Genres
+        ('comedy', 'horror', 'sci-fi'),
+        # Cast
+        ('This Gal', 'That Dudette'),
+    )))
+    tags = await bb_tracker_jobs.get_tags()
+    assert tags == 'normalized,tags'
+    assert bb_tracker_jobs.try_webdbs.call_args_list == [
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'genres', default=()),
+        call((bb_tracker_jobs.tvmaze, bb_tracker_jobs.imdb), 'cast', default=()),
+    ]
+    assert bb_tracker_jobs.normalize_tags.call_args_list == [call([
+        'comedy', 'horror', 'sci-fi',
+        'This Gal', 'That Dudette',
+    ])]
+
 
 @pytest.mark.parametrize(
     argnames='tags, exp_string',
