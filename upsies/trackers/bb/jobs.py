@@ -475,7 +475,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     def movie_description_validator(self, text):
         text = text.strip()
-        if not text or text == self.promotion:
+        if not text:
             raise ValueError('Failed to generate description (use --description)')
 
     def fill_in_movie_description(self, job_):
@@ -577,7 +577,7 @@ class BbTrackerJobs(TrackerJobsBase):
 
     def series_description_validator(self, text):
         text = text.strip()
-        if not text or text == self.promotion:
+        if not text:
             raise ValueError('Failed to generate description (use --description)')
 
     def fill_in_series_description(self, job_):
@@ -1031,27 +1031,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 fmt='[quote]{text}[/quote]',
             )
 
-            # Series also have screenshots and mediainfo in their description
-            if self.is_series_release:
-                await extend_parts(
-                    self.format_description_series_screenshots(),
-                    self.format_description_series_mediainfo(),
-                )
-
-        # The promotion must be below. A closing [/quote] tags automatically
-        # appends a newline when rendered. Otherwise, append a newline
-        # character.
-        if parts and not parts[-1].endswith(('[/quote]', '\n')):
-            parts.append('\n')
-
-        parts.append(self.promotion)
         return ''.join(parts).strip()
-
-    promotion = (
-        '[align=right][size=1]Shared with '
-        f'[url={__homepage__}]{__project_name__} {__version__}[/url]'
-        '[/size][/align]'
-    )
 
     async def format_description_summary(self):
         summary = await self.try_webdbs((self.tvmaze, self.imdb), 'summary', default='')
@@ -1199,26 +1179,6 @@ class BbTrackerJobs(TrackerJobsBase):
             actors_links = [self._format_person(actor) for actor in actors]
             return ('[b]Cast[/b]: ' + ', '.join(actors_links))
 
-    async def format_description_series_screenshots(self):
-        screenshots_bbcode_parts = []
-        await self.upload_screenshots_job.wait()
-        screenshot_urls = self.get_job_output(self.upload_screenshots_job)
-        if screenshot_urls:
-            for url in screenshot_urls:
-                screenshots_bbcode_parts.append(f'[img={url}]')
-            screenshots_bbcode = '\n\n'.join(screenshots_bbcode_parts)
-            return (
-                '[quote]\n'
-                f'[align=center]{screenshots_bbcode}[/align]\n'
-                '[/quote]'
-            )
-
-    async def format_description_series_mediainfo(self):
-        await self.mediainfo_job.wait()
-        mediainfo = self.get_job_output(self.mediainfo_job, slice=0)
-        if mediainfo:
-            return f'[mediainfo]{mediainfo}[/mediainfo]\n'
-
     # Web form data
 
     @property
@@ -1251,7 +1211,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 'resolution': self.get_job_attribute(self.movie_resolution_job, 'choice'),
                 'remaster_title': self.get_job_output(self.movie_release_info_job, slice=0),
                 'tags': self.get_job_output(self.movie_tags_job, slice=0),
-                'desc': self.get_job_output(self.movie_description_job, slice=0),
+                'desc': self.post_data_description,
                 'release_desc': self.get_job_output(self.mediainfo_job, slice=0),
                 'image': self.get_job_output(self.movie_poster_job, slice=0),
             }
@@ -1266,7 +1226,7 @@ class BbTrackerJobs(TrackerJobsBase):
                 'type': 'Anime' if self.options['anime'] else 'TV',
                 'title': self.get_job_output(self.series_title_job, slice=0),
                 'tags': self.get_job_output(self.series_tags_job, slice=0),
-                'desc': self.get_job_output(self.series_description_job, slice=0),
+                'desc': self.post_data_description,
                 'image': self.get_job_output(self.series_poster_job, slice=0),
             }
             if self.get_job_attribute(self.scene_check_job, 'is_scene_release'):
@@ -1280,3 +1240,47 @@ class BbTrackerJobs(TrackerJobsBase):
     def post_data_screenshot_urls(self):
         urls = self.get_job_output(self.upload_screenshots_job)
         return {f'screenshot{i}': url for i, url in enumerate(urls, start=1)}
+
+    @property
+    def post_data_description(self):
+        parts = []
+
+        if self.is_movie_release:
+            # Screenshots and mediainfo are submitted separately
+            parts.append(self.get_job_output(self.movie_description_job, slice=0))
+
+        elif self.is_series_release:
+            parts.append(self.get_job_output(self.series_description_job, slice=0))
+
+            # Append screenshots
+            screenshot_urls = self.get_job_output(self.upload_screenshots_job)
+            screenshots_bbcode_parts = [
+                f'[img={url}]'
+                for url in screenshot_urls
+            ]
+            screenshots_bbcode = '\n\n'.join(screenshots_bbcode_parts)
+            if screenshots_bbcode:
+                parts.append(
+                    '[quote]\n'
+                    f'[align=center]{screenshots_bbcode}[/align]\n'
+                    '[/quote]'
+                )
+
+            # Append mediainfo
+            mediainfo = self.get_job_output(self.mediainfo_job, slice=0)
+            if mediainfo:
+                parts.append(f'[mediainfo]{mediainfo}[/mediainfo]')
+
+        # Append self promotion below. A closing [/quote] tag automatically
+        # renders a newline. Otherwise, we must add a newline character.
+        if parts and not parts[-1].endswith(('[/quote]', '\n')):
+            parts.append('\n')
+        parts.append(self.promotion)
+
+        return ''.join(parts)
+
+    promotion = (
+        '[align=right][size=1]Shared with '
+        f'[url={__homepage__}]{__project_name__} {__version__}[/url]'
+        '[/size][/align]'
+    )

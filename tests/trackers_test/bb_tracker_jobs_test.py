@@ -822,10 +822,7 @@ def test_movie_description_job(bb_tracker_jobs, mocker):
         ('\t', 'Failed to generate description (use --description)'),
     ),
 )
-@pytest.mark.parametrize('promotion', ('Use upsies!', ''))
-def test_movie_description_validator(promotion, description, exp_error, bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'promotion', PropertyMock(return_value=promotion))
-    description += promotion
+def test_movie_description_validator(description, exp_error, bb_tracker_jobs, mocker):
     if exp_error is None:
         bb_tracker_jobs.movie_description_validator(description)
     else:
@@ -1028,10 +1025,7 @@ def test_series_description_job(bb_tracker_jobs, mocker):
         ('\t', 'Failed to generate description (use --description)'),
     ),
 )
-@pytest.mark.parametrize('promotion', ('Use upsies!', ''))
-def test_series_description_validator(promotion, description, exp_error, bb_tracker_jobs, mocker):
-    mocker.patch.object(type(bb_tracker_jobs), 'promotion', PropertyMock(return_value=promotion))
-    description += promotion
+def test_series_description_validator(description, exp_error, bb_tracker_jobs, mocker):
     if exp_error is None:
         bb_tracker_jobs.series_description_validator(description)
     else:
@@ -1869,8 +1863,8 @@ def test_normalize_tags(tags, exp_string, bb_tracker_jobs, mocker):
 @pytest.mark.parametrize(
     argnames='description, exp_description',
     argvalues=(
-        ('This is my custom description.', 'This is my custom description.\n'),
-        ('This is my custom description.\n', 'This is my custom description.\n'),
+        ('This is my custom description.', 'This is my custom description.'),
+        ('This is my custom description.\n', 'This is my custom description.'),
         ('This is my [quote]custom description.[/quote]', 'This is my [quote]custom description.[/quote]'),
     ),
 )
@@ -1886,14 +1880,12 @@ async def test_get_description_from_options_file(description, exp_description, b
     mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(side_effect=RuntimeError('should not be called')))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(side_effect=RuntimeError('should not be called')))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(side_effect=RuntimeError('should not be called')))
     filepath = tmp_path / 'description.txt'
     filepath.write_text(description)
     mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={'description': str(filepath)}))
     mocker.patch.object(bb_tracker_jobs, 'error')
     return_value = await bb_tracker_jobs.get_description()
-    assert return_value == exp_description + bb_tracker_jobs.promotion
+    assert return_value == exp_description
     assert bb_tracker_jobs.error.call_args_list == []
 
 @pytest.mark.asyncio
@@ -1908,8 +1900,6 @@ async def test_get_description_from_unreadable_options_file(bb_tracker_jobs, moc
     mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(side_effect=RuntimeError('should not be called')))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(side_effect=RuntimeError('should not be called')))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(side_effect=RuntimeError('should not be called')))
     description = 'This is my custom description.\n'
     filepath = tmp_path / 'description.txt'
     filepath.write_text(description)
@@ -1926,8 +1916,8 @@ async def test_get_description_from_unreadable_options_file(bb_tracker_jobs, moc
 @pytest.mark.parametrize(
     argnames='description, exp_description',
     argvalues=(
-        ('This is my custom description.', 'This is my custom description.\n'),
-        ('This is my custom description.\n', 'This is my custom description.\n'),
+        ('This is my custom description.', 'This is my custom description.'),
+        ('This is my custom description.\n', 'This is my custom description.'),
         ('This is my [quote]custom description.[/quote]', 'This is my [quote]custom description.[/quote]'),
     ),
 )
@@ -1943,12 +1933,10 @@ async def test_get_description_from_options_text(description, exp_description, b
     mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(side_effect=RuntimeError('should not be called')))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(side_effect=RuntimeError('should not be called')))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(side_effect=RuntimeError('should not be called')))
     mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={'description': description}))
     mocker.patch.object(bb_tracker_jobs, 'error')
     return_value = await bb_tracker_jobs.get_description()
-    assert return_value == exp_description + bb_tracker_jobs.promotion
+    assert return_value == exp_description
     assert bb_tracker_jobs.error.call_args_list == []
 
 @pytest.mark.asyncio
@@ -1963,8 +1951,6 @@ async def test_get_description_for_movie(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(return_value='directors'))
     mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(return_value=None))
     mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(return_value='cast'))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(return_value='series screenshots'))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(return_value='series mediainfo'))
     mocker.patch.object(bb_tracker_jobs, 'error')
     description = await bb_tracker_jobs.get_description()
     assert description == (
@@ -1978,7 +1964,7 @@ async def test_get_description_for_movie(bb_tracker_jobs, mocker):
         'directors\n'
         'cast'
         '[/quote]'
-    ) + bb_tracker_jobs.promotion
+    )
     assert bb_tracker_jobs.error.call_args_list == []
 
 @pytest.mark.asyncio
@@ -1993,8 +1979,6 @@ async def test_get_description_for_series(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(return_value=None))
     mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(return_value='creators'))
     mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(return_value='cast'))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(return_value='series screenshots'))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(return_value='series mediainfo'))
     mocker.patch.object(bb_tracker_jobs, 'error')
     description = await bb_tracker_jobs.get_description()
     assert description == (
@@ -2008,10 +1992,7 @@ async def test_get_description_for_series(bb_tracker_jobs, mocker):
         'creators\n'
         'cast'
         '[/quote]'
-        'series screenshots'
-        'series mediainfo'
-        '\n'
-    ) + bb_tracker_jobs.promotion
+    )
     assert bb_tracker_jobs.error.call_args_list == []
 
 @pytest.mark.asyncio
@@ -2026,20 +2007,10 @@ async def test_get_description_without_webdb_id(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(return_value=None))
     mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(return_value=None))
     mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(return_value=None))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(return_value=None))
-    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(return_value=None))
     mocker.patch.object(bb_tracker_jobs, 'error')
     description = await bb_tracker_jobs.get_description()
-    assert description == bb_tracker_jobs.promotion
+    assert description == ''
     assert bb_tracker_jobs.error.call_args_list == []
-
-
-def test_promotion(bb_tracker_jobs, mocker):
-    assert bb_tracker_jobs.promotion == ''.join((
-        '[align=right][size=1]Shared with ',
-        f'[url={__homepage__}]{__project_name__} {__version__}[/url]',
-        '[/size][/align]',
-    ))
 
 
 @pytest.mark.parametrize(
@@ -2430,49 +2401,6 @@ async def test_format_description_cast(actors, exp_text, bb_tracker_jobs, mocker
 
 
 @pytest.mark.parametrize(
-    argnames='screenshot_urls, exp_text',
-    argvalues=(
-        ((), None),
-        (('http://screenshot1.url',),
-         ('[quote]\n[align=center]'
-          '[img=http://screenshot1.url]'
-          '[/align]\n[/quote]')),
-        (('http://screenshot1.url', 'http://screenshot2.url'),
-         ('[quote]\n[align=center]'
-          '[img=http://screenshot1.url]\n\n'
-          '[img=http://screenshot2.url]'
-          '[/align]\n[/quote]')),
-    ),
-)
-@pytest.mark.asyncio
-async def test_format_description_series_screenshots(screenshot_urls, exp_text, bb_tracker_jobs, mocker):
-    mocker.patch.object(bb_tracker_jobs.upload_screenshots_job, 'wait', AsyncMock())
-    mocker.patch.object(bb_tracker_jobs, 'get_job_output', return_value=screenshot_urls)
-    text = await bb_tracker_jobs.format_description_series_screenshots()
-    assert text == exp_text
-    assert bb_tracker_jobs.upload_screenshots_job.wait.call_args_list == [call()]
-    assert bb_tracker_jobs.get_job_output.call_args_list == [call(bb_tracker_jobs.upload_screenshots_job)]
-
-
-@pytest.mark.parametrize(
-    argnames='mediainfo, exp_text',
-    argvalues=(
-        (None, None),
-        ('', None),
-        ('mock mediainfo', '[mediainfo]mock mediainfo[/mediainfo]\n'),
-    ),
-)
-@pytest.mark.asyncio
-async def test_format_description_series_mediainfo(mediainfo, exp_text, bb_tracker_jobs, mocker):
-    mocker.patch.object(bb_tracker_jobs.mediainfo_job, 'wait', AsyncMock())
-    mocker.patch.object(bb_tracker_jobs, 'get_job_output', return_value=mediainfo)
-    text = await bb_tracker_jobs.format_description_series_mediainfo()
-    assert text == exp_text
-    assert bb_tracker_jobs.mediainfo_job.wait.call_args_list == [call()]
-    assert bb_tracker_jobs.get_job_output.call_args_list == [call(bb_tracker_jobs.mediainfo_job, slice=0)]
-
-
-@pytest.mark.parametrize(
     argnames='isolated_jobs, parent_ok, exp_ok',
     argvalues=(
         ((), 'parent value', 'parent value'),
@@ -2506,8 +2434,10 @@ async def test_post_data_for_movie(anime, is_scene_release, bb_tracker_jobs, moc
     mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={'anime': anime}))
     mocker.patch.object(type(bb_tracker_jobs), 'post_data_screenshot_urls', PropertyMock(
         return_value={'screenshot1': 'http://foo', 'screenshot2': 'http://bar'}))
+    mocker.patch.object(type(bb_tracker_jobs), 'post_data_description', PropertyMock(
+        return_value='description value'))
 
-    def mock_get_job_output(job, slice):
+    def mock_get_job_output(job, slice=None):
         if job is bb_tracker_jobs.movie_title_job:
             assert slice == 0 ; return 'title value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_year_job:
@@ -2516,8 +2446,6 @@ async def test_post_data_for_movie(anime, is_scene_release, bb_tracker_jobs, moc
             assert slice == 0 ; return 'release_info value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_tags_job:
             assert slice == 0 ; return 'tags value'  # noqa: E702 multiple statements on one line
-        if job is bb_tracker_jobs.movie_description_job:
-            assert slice == 0 ; return 'description value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.mediainfo_job:
             assert slice == 0 ; return 'mediainfo value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.movie_poster_job:
@@ -2575,14 +2503,14 @@ async def test_post_data_for_series(anime, is_scene_release, bb_tracker_jobs, mo
     mocker.patch.object(type(bb_tracker_jobs), 'options', PropertyMock(return_value={'anime': anime}))
     mocker.patch.object(type(bb_tracker_jobs), 'post_data_screenshot_urls', PropertyMock(
         return_value={'screenshot1': 'http://foo', 'screenshot2': 'http://bar'}))
+    mocker.patch.object(type(bb_tracker_jobs), 'post_data_description', PropertyMock(
+        return_value='description value'))
 
-    def mock_get_job_output(job, slice):
+    def mock_get_job_output(job, slice=None):
         if job is bb_tracker_jobs.series_title_job:
             assert slice == 0 ; return 'title value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.series_tags_job:
             assert slice == 0 ; return 'tags value'  # noqa: E702 multiple statements on one line
-        if job is bb_tracker_jobs.series_description_job:
-            assert slice == 0 ; return 'description value'  # noqa: E702 multiple statements on one line
         if job is bb_tracker_jobs.series_poster_job:
             assert slice == 0 ; return 'poster value'  # noqa: E702 multiple statements on one line
         raise AssertionError(f'Job was not supposed to get involved: {job!r}')
@@ -2628,3 +2556,86 @@ async def test_post_data_screenshot_urls(bb_tracker_jobs, mocker):
     assert bb_tracker_jobs.get_job_output.call_args_list == [
         call(bb_tracker_jobs.upload_screenshots_job),
     ]
+
+
+@pytest.mark.parametrize(
+    argnames='is_movie_release, is_series_release',
+    argvalues=(
+        (False, False),
+        (True, False),
+        (False, True),
+        (True, True),
+    ),
+)
+@pytest.mark.parametrize(
+    argnames='description',
+    argvalues=(
+        '',
+        'plain text',
+        'plain text\n',
+        '[quote]quoted text[/quote]',
+        '[quote]quoted text[/quote]\n',
+    ),
+)
+@pytest.mark.parametrize(
+    argnames='screenshot_urls',
+    argvalues=(
+        (),
+        ('http://screenshot1.url', 'http://screenshot2.url'),
+    ),
+    ids=lambda v: str(v),
+)
+@pytest.mark.parametrize(
+    argnames='mediainfo',
+    argvalues=(
+        '',
+        'mocked mediainfo',
+    ),
+    ids=lambda v: str(v),
+)
+@pytest.mark.asyncio
+async def test_post_data_description(mediainfo, screenshot_urls, description,
+                                     is_movie_release, is_series_release,
+                                     bb_tracker_jobs, mocker):
+    def mock_get_job_output(job, slice=None):
+        if job is bb_tracker_jobs.movie_description_job:
+            return f'movie description: {description}'
+        elif job is bb_tracker_jobs.series_description_job:
+            return f'series description: {description}'
+        elif job is bb_tracker_jobs.upload_screenshots_job:
+            return screenshot_urls
+        elif job is bb_tracker_jobs.mediainfo_job:
+            return mediainfo
+
+    mocker.patch.object(bb_tracker_jobs, 'get_job_output', side_effect=mock_get_job_output)
+    mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=is_movie_release))
+    mocker.patch.object(type(bb_tracker_jobs), 'is_series_release', PropertyMock(return_value=is_series_release))
+
+    exp_description = ''
+    if is_movie_release:
+        exp_description += f'movie description: {description}'
+    elif is_series_release:
+        exp_description += f'series description: {description}'
+        if screenshot_urls:
+            exp_description += (
+                '[quote]\n[align=center]'
+                + '\n\n'.join(f'[img={url}]' for url in screenshot_urls)
+                + '[/align]\n[/quote]'
+            )
+        if mediainfo:
+            exp_description += '[mediainfo]mocked mediainfo[/mediainfo]'
+
+    if exp_description and not (exp_description.endswith('[/quote]') or exp_description.endswith('\n')):
+        exp_description += '\n'
+    exp_description += bb_tracker_jobs.promotion
+
+    description = bb_tracker_jobs.post_data_description
+    assert description == exp_description
+
+
+def test_promotion(bb_tracker_jobs, mocker):
+    assert bb_tracker_jobs.promotion == ''.join((
+        '[align=right][size=1]Shared with ',
+        f'[url={__homepage__}]{__project_name__} {__version__}[/url]',
+        '[/size][/align]',
+    ))
