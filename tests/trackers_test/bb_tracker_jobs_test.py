@@ -753,6 +753,7 @@ def test_movie_tags_job(bb_tracker_jobs, mocker):
         label='Tags',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         validator=bb_tracker_jobs.movie_tags_validator,
+        normalizer=bb_tracker_jobs.normalize_tags,
         **bb_tracker_jobs.common_job_args,
     )]
     assert bb_tracker_jobs.make_job_condition.call_args_list == [
@@ -956,6 +957,7 @@ def test_series_tags_job(bb_tracker_jobs, mocker):
         label='Tags',
         condition=bb_tracker_jobs.make_job_condition.return_value,
         validator=bb_tracker_jobs.series_tags_validator,
+        normalizer=bb_tracker_jobs.normalize_tags,
         **bb_tracker_jobs.common_job_args,
     )]
     assert bb_tracker_jobs.make_job_condition.call_args_list == [

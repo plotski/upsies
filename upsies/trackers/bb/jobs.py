@@ -447,6 +447,7 @@ class BbTrackerJobs(TrackerJobsBase):
             label='Tags',
             condition=self.make_job_condition('movie_tags_job', release.ReleaseType.movie),
             validator=self.movie_tags_validator,
+            normalizer=self.normalize_tags,
             **self.common_job_args,
         )
 
@@ -549,6 +550,7 @@ class BbTrackerJobs(TrackerJobsBase):
             label='Tags',
             condition=self.make_job_condition('series_tags_job', release.ReleaseType.season, release.ReleaseType.episode),
             validator=self.series_tags_validator,
+            normalizer=self.normalize_tags,
             **self.common_job_args,
         )
 
