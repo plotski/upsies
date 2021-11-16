@@ -330,7 +330,9 @@ async def _request(
             if result is not None:
                 return result
 
-        _log.debug('%s: %r: %r', method, url, params)
+        _log.debug('Sending request: %r', request)
+        # _log.debug('Request headers: %r', request.headers)
+        # _log.debug('Request data: %r', await request.aread())
         try:
             response = await _client.send(
                 request=request,
@@ -361,6 +363,8 @@ async def _request(
                 cache_file = _cache_file(method, url, params)
                 _to_cache(cache_file, response.content)
 
+            # _log.debug('Response content: %r', response.content)
+            # _log.debug('Response headers: %r', response.headers)
             return Result(
                 text=response.text,
                 bytes=response.content,

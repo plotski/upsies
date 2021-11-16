@@ -214,6 +214,7 @@ class NblTracker(base.TrackerBase):
         )
 
         # Upload response should redirect to torrent page via "Location" header
+        _log.debug('Looking for "Location" in response headers: %r', response.headers)
         torrent_page_url = urllib.parse.urljoin(
             self.options['base_url'],
             response.headers.get('Location', ''),
