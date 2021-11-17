@@ -37,6 +37,7 @@ def os_family():
 
 
 try:
+    # New in Python 3.8
     from functools import cached_property
 except ImportError:
     import functools
