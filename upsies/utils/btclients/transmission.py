@@ -19,11 +19,6 @@ class TransmissionClientApi(ClientApiBase):
     Transmission daemon API
 
     Reference: https://github.com/transmission/transmission/blob/master/extras/rpc-spec.txt
-
-    :param str username: Username used for authentication
-    :param str password: Password used for authentication
-    :param str url: Transmission RPC URL, defaults to
-        "http://localhost:9091/transmission/rpc"
     """
 
     DEFAULT_URL = 'http://localhost:9091/transmission/rpc'
