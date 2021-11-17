@@ -42,6 +42,8 @@ setuptools.setup(
         'torf==3.*',
         'Unidecode==1.2.*',
         'chardet==4.*',
+        # Needed for asynccontextmanager backport for Python 3.6
+        'async_generator==1.10; python_version<"3.7"',
     ],
     entry_points={'console_scripts': ['upsies = upsies.uis.tui:main']},
 )

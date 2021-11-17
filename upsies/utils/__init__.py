@@ -60,6 +60,13 @@ except ImportError:
                 return value
 
 
+try:
+    # New in Python 3.7
+    from contextlib import asynccontextmanager
+except ImportError:
+    from async_generator import asynccontextmanager
+
+
 # https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/util/lazy_loader.py
 class LazyModule(_types.ModuleType):
     """

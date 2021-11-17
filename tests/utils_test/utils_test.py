@@ -24,6 +24,21 @@ def test_cached_property_caches_return_value_of_decorated_function():
     assert foo.bar == 'asdf'
 
 
+def test_asyncontextmanager():
+    import sys
+
+    from upsies.utils import asynccontextmanager
+
+    if sys.version_info < (3, 7):
+        import async_generator
+        assert asynccontextmanager is async_generator.asynccontextmanager
+    else:
+        import contextlib
+        assert asynccontextmanager is contextlib.asynccontextmanager
+        with pytest.raises(ImportError):
+            import async_generator
+
+
 def test_submodules_finds_modules_and_packages(mocker):
     mocker.patch('os.listdir', return_value=(
         '_this_is_private',
