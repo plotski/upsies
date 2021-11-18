@@ -5,6 +5,8 @@ Client API for qBittorrent
 import os
 import urllib
 
+import torf
+
 from ... import errors
 from .. import asynccontextmanager, http
 from .base import ClientApiBase
@@ -39,7 +41,7 @@ class QbittorrentClientApi(ClientApiBase):
         url = '/'.join((
             self.config['url'].rstrip('/'),
             'api/v2',
-            path,
+            path.lstrip('/'),
         ))
         return await http.post(
             url=url,
@@ -58,10 +60,7 @@ class QbittorrentClientApi(ClientApiBase):
             raise errors.RequestError('Authentication failed')
 
     async def _logout(self):
-        try:
-            await self._request(path='auth/logout')
-        except errors.RequestError:
-            _log.debug('Ignoring failed logout request')
+        await self._request(path='auth/logout')
 
     @asynccontextmanager
     async def _session(self):
@@ -82,21 +81,21 @@ class QbittorrentClientApi(ClientApiBase):
         if download_path:
             data['savepath'] = str(os.path.abspath(download_path))
 
+        async with self._session():
+            response = await self._request('torrents/add', files=files, data=data)
+            if response == 'Ok.':
+                return self._get_torrent_hash(torrent_path)
+            else:
+                raise errors.RequestError('Unknown error')
+
+    def _get_torrent_hash(self, torrent_path):
+        # TODO: Get the info hash from `response` when this is closed:
+        #       https://github.com/qbittorrent/qBittorrent/issues/4879
+        #       For older versions of qBittorrent, default to getting the hash
+        #       from the torrent file.
         try:
-            async with self._session():
-                response = await self._request('torrents/add', files=files, data=data)
-                if response != 'Ok.':
-                    raise errors.RequestError('Unknown error')
-                else:
-                    # FUTURE TODO: Get the info hash from `response` when this
-                    #              is closed:
-                    #              https://github.com/qbittorrent/qBittorrent/issues/4879
-                    #              This attempt should fail silently and default
-                    #              to getting the hash from the torrent file for
-                    #              older versions of qBittorrent.
-
-                    # TODO: Obtain info hash from torrent file and return it.
-                    pass
-
-        except errors.RequestError as e:
-            raise errors.TorrentError(e)
+            torrent = torf.Torrent.read(torrent_path)
+        except torf.TorfError as e:
+            raise errors.RequestError(e)
+        else:
+            return torrent.torrent_hash
