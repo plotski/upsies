@@ -240,7 +240,7 @@ class AddTorrentJob(base.QueueJobBase):
                 torrent_path=torrent_path,
                 download_path=self._download_path,
             )
-        except errors.TorrentError as e:
+        except errors.RequestError as e:
             self.error(f'Failed to add {torrent_path} to {self._client.name}: {e}')
         else:
             if torrent_hash:

@@ -72,9 +72,9 @@ async def test_handle_input_complains_about_large_torrent_file(make_AddTorrentJo
     assert job.output == ()
 
 @pytest.mark.asyncio
-async def test_handle_input_catches_TorrentError(make_AddTorrentJob):
+async def test_handle_input_catches_RequestError(make_AddTorrentJob):
     job = make_AddTorrentJob()
-    job._client.add_torrent.side_effect = errors.TorrentError('No such file or whatever')
+    job._client.add_torrent.side_effect = errors.RequestError('No such file or whatever')
     await job.handle_input('foo.torrent')
     assert job.errors == (
         'Failed to add foo.torrent to mocksy: No such file or whatever',
@@ -128,7 +128,7 @@ async def test_handle_input_sets_info_property_on_failure(make_AddTorrentJob):
         assert job.info == infos.pop(0)
 
     job = make_AddTorrentJob()
-    job._client.add_torrent.side_effect = errors.TorrentError('No')
+    job._client.add_torrent.side_effect = errors.RequestError('No')
     job.signal.register('adding', info_cb)
     job.signal.register('added', info_cb)
     job.signal.register('error', info_cb)

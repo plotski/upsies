@@ -47,7 +47,7 @@ class ClientApiBase(abc.ABC):
         :param str download_path: Path to the directory where the torrent's
             content is or `None` to use the client's default
 
-        :raise TorrentError: if adding `torrent_path` fails
+        :raise RequestError: if adding `torrent_path` fails
 
         :return: Info hash of the added torrent
         """

@@ -60,20 +60,21 @@ class TransmissionClientApi(ClientApiBase):
                 self._headers[self.CSRF_HEADER] = e.headers[self.CSRF_HEADER]
                 return await self._request(data)
             elif e.status_code == self.AUTH_ERROR_CODE:
-                raise errors.TorrentError('Authentication failed')
+                raise errors.RequestError('Authentication failed')
             else:
-                raise errors.TorrentError(e)
-
-        try:
+                raise errors.RequestError(e)
+        else:
             return response.json()
-        except errors.RequestError as e:
-            raise errors.TorrentError(e)
 
     async def add_torrent(self, torrent_path, download_path=None):
-        torrent_data = str(
-            base64.b64encode(self.read_torrent_file(torrent_path)),
-            encoding='ascii',
-        )
+        try:
+            torrent_data = str(
+                base64.b64encode(self.read_torrent_file(torrent_path)),
+                encoding='ascii',
+            )
+        except errors.TorrentError as e:
+            raise errors.RequestError(e)
+
         request = {
             'method' : 'torrent-add',
             'arguments' : {
@@ -90,6 +91,6 @@ class TransmissionClientApi(ClientApiBase):
         elif 'torrent-duplicate' in arguments:
             return arguments['torrent-duplicate']['hashString']
         elif 'result' in info:
-            raise errors.TorrentError(str(info['result']).capitalize())
+            raise errors.RequestError(str(info['result']).capitalize())
         else:
             raise RuntimeError(f'Unexpected response: {info}')
