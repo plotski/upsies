@@ -82,11 +82,20 @@ async def test_handle_input_catches_TorrentError(make_AddTorrentJob):
     assert job.output == ()
 
 @pytest.mark.asyncio
-async def test_handle_input_sends_torrent_id(make_AddTorrentJob):
+async def test_handle_input_sends_torrent_hash(make_AddTorrentJob):
     job = make_AddTorrentJob()
     job._client.add_torrent.return_value = '12345'
     await job.handle_input('foo.torrent')
     assert job.output == ('12345',)
+    assert job.errors == ()
+
+@pytest.mark.parametrize('torrent_hash', (None, ''))
+@pytest.mark.asyncio
+async def test_handle_input_does_not_send_falsy_torrent_hash(torrent_hash, make_AddTorrentJob):
+    job = make_AddTorrentJob()
+    job._client.add_torrent.return_value = torrent_hash
+    await job.handle_input('foo.torrent')
+    assert job.output == ()
     assert job.errors == ()
 
 @pytest.mark.asyncio

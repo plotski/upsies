@@ -243,8 +243,9 @@ class AddTorrentJob(base.QueueJobBase):
         except errors.TorrentError as e:
             self.error(f'Failed to add {torrent_path} to {self._client.name}: {e}')
         else:
-            self.send(torrent_hash)
-            self.signal.emit('added', torrent_hash)
+            if torrent_hash:
+                self.send(torrent_hash)
+                self.signal.emit('added', torrent_hash)
 
 
 class CopyTorrentJob(base.QueueJobBase):
