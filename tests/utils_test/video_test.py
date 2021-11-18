@@ -767,6 +767,7 @@ def test_has_dual_audio_forwards_ContentError_from_tracks(mocker):
         ([{'Title': 'Commentary with Foo'}], True),
         ([{'Title': "Foo's commentary"}], True),
         ([{'Title': "THE FRICKIN' COMMENTARY, OMG"}], True),
+        ([{'Title': "Director's Comments"}], True),
     ),
     ids=lambda v: str(v),
 )

@@ -462,7 +462,8 @@ def has_commentary(path, default=NO_DEFAULT_VALUE):
 
     audio_tracks = tracks(path).get('Audio', ())
     for track in audio_tracks:
-        if 'commentary' in track.get('Title', '').lower():
+        title = track.get('Title', '').lower()
+        if any(word in title for word in ('commentary', 'comments')):
             return True
     return False
 
