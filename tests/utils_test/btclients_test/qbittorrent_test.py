@@ -203,7 +203,7 @@ async def test_add_torrent_handles_RequestError_from_adding(check_after_add, dow
         },
     }
     exp_data = {
-        'skip_checking': 'true' if check_after_add else 'false',
+        'skip_checking': 'false' if check_after_add else 'true',
     }
     if download_path:
         exp_data['savepath'] = os.path.abspath(download_path)
