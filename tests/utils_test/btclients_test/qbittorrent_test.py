@@ -221,7 +221,7 @@ async def test_get_torrent_hash(exception, exp_exception, mocker):
     client = qbittorrent.QbittorrentClientApi()
     read_mock = mocker.patch('torf.Torrent.read',
                              side_effect=exception,
-                             return_value=Mock(torrent_hash=torrent_hash))
+                             return_value=Mock(infohash=torrent_hash))
     if exp_exception:
         with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
             client._get_torrent_hash(torrent_path)

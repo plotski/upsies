@@ -98,4 +98,4 @@ class QbittorrentClientApi(ClientApiBase):
         except torf.TorfError as e:
             raise errors.RequestError(e)
         else:
-            return torrent.torrent_hash
+            return torrent.infohash
