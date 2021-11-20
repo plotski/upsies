@@ -5,7 +5,7 @@ from unittest.mock import Mock, call
 import pytest
 import torf
 
-from upsies import errors
+from upsies import errors, utils
 from upsies.utils.btclients import qbittorrent
 
 
@@ -31,6 +31,7 @@ def test_default_config():
         'url': 'http://localhost:8080',
         'username': '',
         'password': '',
+        'check_after_add': utils.types.Bool(False),
     }
 
 
@@ -169,11 +170,13 @@ async def test_add_torrent_handles_RequestError_from_authentication(login_except
     ids=lambda v: repr(v),
 )
 @pytest.mark.parametrize('download_path', (None, '', 'path/to/downloads'))
+@pytest.mark.parametrize('check_after_add', (True, False, None, 'truthy'))
 @pytest.mark.asyncio
-async def test_add_torrent_handles_RequestError_from_adding(download_path, response, exception, exp_exception, mocker):
+async def test_add_torrent_handles_RequestError_from_adding(check_after_add, download_path,
+                                                            response, exception, exp_exception, mocker):
     torrent_path = 'path/to/file.torrent'
     torrent_hash = 'D34DB33F'
-    client = qbittorrent.QbittorrentClientApi()
+    client = qbittorrent.QbittorrentClientApi(config={'check_after_add': check_after_add})
 
     mocker.patch.object(client, '_login', AsyncMock())
     mocker.patch.object(client, '_logout', AsyncMock())
@@ -199,10 +202,11 @@ async def test_add_torrent_handles_RequestError_from_adding(download_path, respo
             'mimetype': 'application/x-bittorrent',
         },
     }
+    exp_data = {
+        'skip_checking': 'true' if check_after_add else 'false',
+    }
     if download_path:
-        exp_data = {'savepath': os.path.abspath(download_path)}
-    else:
-        exp_data = {}
+        exp_data['savepath'] = os.path.abspath(download_path)
     assert client._request.call_args_list == [call('torrents/add', files=exp_files, data=exp_data)]
 
 

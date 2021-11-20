@@ -7,7 +7,7 @@ import urllib
 
 import torf
 
-from ... import errors
+from ... import errors, utils
 from .. import asynccontextmanager, http
 from .base import ClientApiBase
 
@@ -28,6 +28,7 @@ class QbittorrentClientApi(ClientApiBase):
         'url': 'http://localhost:8080',
         'username': '',
         'password': '',
+        'check_after_add': utils.types.Bool('no'),
     }
 
     def __init__(self, *args, **kwargs):
@@ -77,7 +78,10 @@ class QbittorrentClientApi(ClientApiBase):
                 'mimetype': 'application/x-bittorrent',
             },
         }
-        data = {}
+
+        data = {
+            'skip_checking': 'true' if self.config['check_after_add'] else 'false',
+        }
         if download_path:
             data['savepath'] = str(os.path.abspath(download_path))
 
