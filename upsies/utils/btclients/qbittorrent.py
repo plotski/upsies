@@ -19,7 +19,7 @@ class QbittorrentClientApi(ClientApiBase):
     """
     qBittorrent API
 
-    Reference: https://github.com/qbittorrent/qBittorrent/wiki/Web-API-Documentation
+    Reference: https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)
     """
 
     name = 'qbittorrent'
