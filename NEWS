@@ -1,9 +1,9 @@
 2021.??.??
   * Added support for qBittorrent
   * Purge <script> tags from cached HTML (reduces size by ~40%)
-  * submit/torrent-create: Added --reuse-torrent/-t option to take pieces hashes
-    from an existing torrent (this happens automatically when torrents are
-    created with upsies)
+  * submit/torrent-create: Added --reuse-torrent/-t option to get piece hashes
+    from an existing torrent instead of hashing all the content (this happens
+    automatically when torrents are created with upsies)
   * bB: Submit generated screenshots and mediainfo when a custom description is
     given for a season or episode submission with --description
   * bB: Normalize tags provided through --tags or entered in the TUI
