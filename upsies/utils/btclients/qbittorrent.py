@@ -80,7 +80,7 @@ class QbittorrentClientApi(ClientApiBase):
         }
 
         data = {
-            'skip_checking': 'true' if self.config['check_after_add'] else 'false',
+            'skip_checking': 'false' if self.config['check_after_add'] else 'true',
         }
         if download_path:
             data['savepath'] = str(os.path.abspath(download_path))
