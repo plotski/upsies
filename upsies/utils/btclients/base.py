@@ -5,6 +5,8 @@ Base class for client APIs
 import abc
 import copy
 
+import torf
+
 from ... import errors
 
 
@@ -66,3 +68,17 @@ class ClientApiBase(abc.ABC):
                 return f.read()
         except OSError as e:
             raise errors.TorrentError(f'{torrent_path}: {e.strerror}')
+
+    @staticmethod
+    def read_torrent(torrent_path):
+        """
+        Return :class:`~torf.Torrent` object
+
+        :param str torrent_path: Path to torrent file
+
+        :raise TorrentError: if reading from `torrent_path` fails
+        """
+        try:
+            return torf.Torrent.read(torrent_path)
+        except torf.TorfError as e:
+            raise errors.TorrentError(e)

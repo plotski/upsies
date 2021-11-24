@@ -1,3 +1,5 @@
+from unittest.mock import call
+
 import pytest
 
 from upsies import errors
@@ -48,3 +50,17 @@ def test_read_torrent_file_raises_TorrentError(tmp_path):
             btclients.ClientApiBase.read_torrent_file(torrent_file)
     finally:
         torrent_file.chmod(0o600)
+
+
+def test_read_torrent_returns_Torrent_object(mocker):
+    Torrent_read_mock = mocker.patch('torf.Torrent.read', return_value='mock torrent object')
+    torrent = btclients.ClientApiBase.read_torrent('path/to/file.torrent')
+    assert torrent == 'mock torrent object'
+    assert Torrent_read_mock.call_args_list == [call('path/to/file.torrent')]
+
+def test_read_torrent_raises_TorrentError(mocker):
+    import torf
+    Torrent_read_mock = mocker.patch('torf.Torrent.read', side_effect=torf.TorfError('argh'))
+    with pytest.raises(errors.TorrentError, match=r'^argh$'):
+        btclients.ClientApiBase.read_torrent('path/to/file.torrent')
+    assert Torrent_read_mock.call_args_list == [call('path/to/file.torrent')]
