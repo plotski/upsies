@@ -5,8 +5,6 @@ Client API for qBittorrent
 import os
 import urllib
 
-import torf
-
 from ... import errors, utils
 from .. import asynccontextmanager, http
 from .base import ClientApiBase
@@ -98,8 +96,6 @@ class QbittorrentClientApi(ClientApiBase):
         #       For older versions of qBittorrent, default to getting the hash
         #       from the torrent file.
         try:
-            torrent = torf.Torrent.read(torrent_path)
-        except torf.TorfError as e:
+            return self.read_torrent(torrent_path).infohash
+        except errors.TorrentError as e:
             raise errors.RequestError(e)
-        else:
-            return torrent.infohash

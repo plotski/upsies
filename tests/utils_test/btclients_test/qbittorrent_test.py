@@ -3,7 +3,6 @@ import re
 from unittest.mock import Mock, call
 
 import pytest
-import torf
 
 from upsies import errors, utils
 from upsies.utils.btclients import qbittorrent
@@ -214,7 +213,7 @@ async def test_add_torrent_handles_RequestError_from_adding(check_after_add, dow
     argnames='exception, exp_exception',
     argvalues=(
         (None, None),
-        (torf.TorfError('Permission denied'), errors.RequestError('Permission denied')),
+        (errors.TorrentError('Permission denied'), errors.RequestError('Permission denied')),
     ),
     ids=lambda v: repr(v),
 )
@@ -223,12 +222,14 @@ async def test_get_torrent_hash(exception, exp_exception, mocker):
     torrent_path = 'path/to/file.torrent'
     torrent_hash = 'D34DB33F'
     client = qbittorrent.QbittorrentClientApi()
-    read_mock = mocker.patch('torf.Torrent.read',
-                             side_effect=exception,
-                             return_value=Mock(infohash=torrent_hash))
+    mocker.patch.object(
+        client, 'read_torrent',
+        side_effect=exception,
+        return_value=Mock(infohash=torrent_hash),
+    )
     if exp_exception:
         with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
             client._get_torrent_hash(torrent_path)
     else:
         assert client._get_torrent_hash(torrent_path) == torrent_hash
-    assert read_mock.call_args_list == [call(torrent_path)]
+    assert client.read_torrent.call_args_list == [call(torrent_path)]
