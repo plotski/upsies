@@ -57,7 +57,7 @@ class ClientApiBase(abc.ABC):
     @staticmethod
     def read_torrent_file(torrent_path):
         """
-        Return bytes from torrent file
+        Return :class:`bytes` from torrent file
 
         :param str torrent_path: Path to torrent file
 
