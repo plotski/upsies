@@ -335,7 +335,7 @@ class TorrentFileStream:
 
     Example:
     >>> torrent = torf.Torrent(...)
-    >>> TorrentFileStream(torrent, location='path/to/files') as tfs:
+    >>> with TorrentFileStream(torrent, location='path/to/files') as tfs:
     >>>     # Get the 29th piece of the concatenated file stream
     >>>     piece = tfs.get_piece(29)
     """
