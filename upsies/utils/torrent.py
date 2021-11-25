@@ -349,6 +349,15 @@ class TorrentFileStream:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def close(self):
+        """
+        Close all opened files
+
+        This is called automatically when the instance is used as a context
+        manager.
+        """
         for filepath, fh in tuple(self._open_files.items()):
             fh.close()
             del self._open_files[filepath]

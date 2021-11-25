@@ -41,11 +41,23 @@ class Torrent:
 def test_behaviour_as_context_manager(mocker):
     torrent = Torrent(piece_size=123, files=(File('a', 1), File('b', 2), File('c', 3)))
     tfs = TorrentFileStream(torrent, location='foo/path')
-    mocked_open_files = [Mock(), Mock(), Mock()]
+    mocker.patch.object(tfs, 'close')
+    assert tfs.close.call_args_list == []
     with tfs as x:
         assert x is tfs
-        for i,mof in enumerate(mocked_open_files):
-            tfs._open_files[f'path/to/{i}'] = mof
+        assert tfs.close.call_args_list == []
+    assert tfs.close.call_args_list == [call()]
+
+
+def test_close(mocker):
+    torrent = Torrent(piece_size=123, files=(File('a', 1), File('b', 2), File('c', 3)))
+    tfs = TorrentFileStream(torrent, location='foo/path')
+    mocked_open_files = [Mock(), Mock(), Mock()]
+    tfs._open_files = {
+        f'path/to/{i}': mof
+        for i,mof in enumerate(mocked_open_files)
+    }
+    tfs.close()
     for mof in mocked_open_files:
         assert mof.close.call_args_list == [call()]
     assert tfs._open_files == {}
@@ -523,11 +535,12 @@ def test_get_open_file_fails_to_open_file(mocker):
 
 def test_get_open_file_opens_file_only_once(mocker):
     exists_mock = mocker.patch('os.path.exists', return_value=True)
-    open_mock = mocker.patch('builtins.open', side_effect=('mock file handle1', 'mock file handle2'))
+    fh1, fh2 = (Mock(), Mock())
+    open_mock = mocker.patch('builtins.open', side_effect=(fh1, fh2))
     torrent = Torrent(piece_size=123, files=(File('a', 1), File('b', 2), File('c', 3)))
     tfs = TorrentFileStream(torrent, location='foo/path')
     for _ in range(5):
-        assert tfs._get_open_file('b') == 'mock file handle1'
+        assert tfs._get_open_file('b') == fh1
     assert exists_mock.call_args_list == [call('foo/path/b')]
     assert open_mock.call_args_list == [call('foo/path/b', 'rb')]
 
