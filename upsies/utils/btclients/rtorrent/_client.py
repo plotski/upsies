@@ -56,8 +56,6 @@ class RtorrentClientApi(ClientApiBase):
             kwargs = {
                 'uri': self.config['url'],
             }
-        print(kwargs)
-        _log.debug('Creating XMLRPC Proxy: %r', kwargs)
         return xmlrpc.client.ServerProxy(**kwargs)
 
     def _request(self, method, *args):
