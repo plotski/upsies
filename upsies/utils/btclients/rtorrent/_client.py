@@ -120,20 +120,19 @@ class RtorrentClientApi(ClientApiBase):
     def _get_torrent_data_with_resume_fields(self, torrent_path, download_path):
         _log.debug('Adding libtorrent_resume fields')
         torrent = self.read_torrent(torrent_path)
-        filestream = utils.torrent.TorrentFileStream(torrent, download_path)
-
         files = []
-        for file in torrent.files:
-            filepath = os.path.join(download_path, file)
-            files.append({
-                'mtime': self._get_mtime(filepath),
-                # Number of chunks in this file
-                'completed': len(filestream.get_piece_indexes_for_file(file)),
-                # rtorrent_fast_resume.pl sets priority to 0 while autotorrent
-                # sets it to 1. Not sure what's better or if this matters at
-                # all.
-                'priority': 0,
-            })
+        with utils.torrent.TorrentFileStream(torrent, download_path) as filestream:
+            for file in torrent.files:
+                filepath = os.path.join(download_path, file)
+                files.append({
+                    'mtime': self._get_mtime(filepath),
+                    # Number of chunks in this file
+                    'completed': len(filestream.get_piece_indexes_for_file(file)),
+                    # rtorrent_fast_resume.pl sets priority to 0 while autotorrent
+                    # sets it to 1. Not sure what's better or if this matters at
+                    # all.
+                    'priority': 0,
+                })
 
         piece_count = len(torrent.metainfo['info']['pieces']) // 20
         torrent.metainfo['libtorrent_resume'] = {
