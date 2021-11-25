@@ -67,6 +67,8 @@ class RtorrentClientApi(ClientApiBase):
             return attr(*args)
         except http.client.HTTPException as e:
             raise errors.RequestError(e)
+        except xmlrpc.client.ProtocolError as e:
+            raise errors.RequestError(e.errmsg)
         except OSError as e:
             msg = e.strerror if e.strerror else str(e)
             raise errors.RequestError(msg)

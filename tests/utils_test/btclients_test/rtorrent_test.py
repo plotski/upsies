@@ -3,6 +3,7 @@ import http
 import os
 import types
 import urllib
+import xmlrpc
 from unittest.mock import Mock, PropertyMock, call, patch
 
 import pytest
@@ -73,6 +74,7 @@ def test_request_succeeds():
     argnames='exception',
     argvalues=(
         http.client.HTTPException('nope'),
+        xmlrpc.client.ProtocolError('host:8080', 123, 'nope', {'foo': 'bar'}),
         OSError('nope'),
         OSError(123, 'nope'),
     ),
