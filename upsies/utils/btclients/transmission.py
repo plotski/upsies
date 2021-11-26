@@ -30,6 +30,7 @@ class TransmissionClientApi(ClientApiBase):
     }
 
     name = 'transmission'
+    label = 'Transmission'
 
     default_config = {
         'url': DEFAULT_URL,

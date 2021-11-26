@@ -21,6 +21,7 @@ class QbittorrentClientApi(ClientApiBase):
     """
 
     name = 'qbittorrent'
+    label = 'qBittorrent'
 
     default_config = {
         'url': 'http://localhost:8080',

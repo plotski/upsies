@@ -23,7 +23,12 @@ class ClientApiBase(abc.ABC):
     @property
     @abc.abstractmethod
     def name(self):
-        """Name of the BitTorrent client"""
+        """Lowercase name of the BitTorrent client"""
+
+    @property
+    @abc.abstractmethod
+    def label(self):
+        """Properly capitalized :attr:`name` of the BitTorrent client"""
 
     @property
     def config(self):

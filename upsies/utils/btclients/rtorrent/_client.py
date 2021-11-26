@@ -22,6 +22,7 @@ class RtorrentClientApi(ClientApiBase):
     """
 
     name = 'rtorrent'
+    label = 'rTorrent'
 
     default_config = {
         'url': 'http://localhost:5000/',

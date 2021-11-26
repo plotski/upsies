@@ -11,6 +11,7 @@ class DummyClientApi(ClientApiBase):
     """Dummy client API for testing and debugging"""
 
     name = 'dummy'
+    label = 'DummyTorrent'
 
     default_config = {
         'hash': 'DE4DB33F',

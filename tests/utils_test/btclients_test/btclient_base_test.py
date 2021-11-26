@@ -12,6 +12,7 @@ def make_TestClientApi(default_config=None, **kwargs):
 
     class TestClientApi(btclients.ClientApiBase):
         name = 'testorrent'
+        label = 'TestTorrent'
         default_config = default_config_ or {}
 
         async def add_torrent(self, torrent_path, download_path=None):
