@@ -17,8 +17,9 @@ class RtorrentClientApi(ClientApiBase):
     rtorrent API
 
     References:
-        https://github.com/rakshasa/rtorrent/wiki/RPC-Setup-XMLRPC
+        https://github.com/rakshasa/rtorrent/wiki/rTorrent-0.9-Comprehensive-Command-list-(WIP)
         https://docs.python.org/3/library/xmlrpc.client.html
+        https://github.com/rakshasa/rtorrent/wiki/RPC-Setup-XMLRPC
     """
 
     name = 'rtorrent'
