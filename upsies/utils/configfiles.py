@@ -24,6 +24,23 @@ def _any2string(value):
     return ' '.join(str(v) for v in value) if _is_list(value) else str(value)
 
 
+def config_value(value, *, description=''):
+    """
+    Add keyword arguments as attributes to `value`
+
+    :param value: Any object
+    :param str description: Explains what `value` is for and/or the possible
+        values it can have
+    """
+    clsname = type(value).__name__ + '_value'
+    bases = (type(value),)
+    attrs = {
+        'description': str(description),
+    }
+    cls = type(clsname, bases, attrs)
+    return cls(value)
+
+
 class ConfigFiles(collections.abc.MutableMapping):
     """
     Combine multiple INI-style configuration files into nested dictionaries

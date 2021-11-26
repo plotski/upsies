@@ -38,6 +38,20 @@ def test_any2string(value, exp_value):
     assert configfiles._any2string(value) == exp_value
 
 
+@pytest.mark.parametrize(
+    argnames='value, description',
+    argvalues=(
+        ('foo', 'This is a string'),
+        (123, 'This is an int'),
+        ([1, 2, 3], 'This is a list'),
+    ),
+)
+def test_config_value(value, description):
+    v = configfiles.config_value(value, description=description)
+    assert v == value
+    assert v.description == description
+
+
 def test_ConfigDict_implements_delitem():
     d = configfiles._ConfigDict({'foo': 'bar', 'bar': 'abc'})
     del d['bar']
