@@ -2,6 +2,8 @@
 Change or show configuration file options
 """
 
+import textwrap
+
 from .... import constants, defaults, errors, jobs, utils
 from .base import CommandBase
 
@@ -11,9 +13,27 @@ def _make_pretty_option_list():
     for option in defaults.option_paths():
         option_type = defaults.option_type(option)
         option_type_name = option_type.__name__.lower()
-        if option_type_name == 'str':
-            option_type_name = 'string'
-        lines.append(f'{option} ({option_type_name})')
+        option_type_name = {
+            'str': 'string',
+            'int': 'integer',
+        }.get(option_type_name, option_type_name)
+
+        text = [f'{option} ({option_type_name})']
+
+        # Add description indented
+        description = getattr(option_type, 'description', '')
+        if description:
+            description_lines = []
+            for paragraph in description.strip().split('\n'):
+                description_lines.extend(
+                    textwrap.wrap(
+                        text=paragraph,
+                        width=72,
+                    )
+                )
+            text.extend('  ' + line for line in description_lines)
+        lines.append('\n  '.join(text))
+
     return '\n  '.join(lines)
 
 
