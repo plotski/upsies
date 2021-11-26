@@ -40,14 +40,11 @@ class ConfigFiles(collections.abc.MutableMapping):
     {'bar': "This is bar's value", 'baz': 'Another value'}
     >>> config["main"]["foo"]["bar"] = 'Zatoichi'
 
-    For convenience, `"."` is used as a delimiter.
+    For convenience, `"."` in the key is used as a delimiter.
 
     >>> config["main.foo.bar"] = "Ichi"
     >>> config["main.foo.bar"]
     'Ichi'
-
-    List values use ``"\\n  "`` (newline followed by two spaces) as separators
-    between items.
 
     :param defaults: Nested directory structure as described above with
         default values
@@ -234,6 +231,9 @@ class ConfigFiles(collections.abc.MutableMapping):
         """
         Save current configuration to file(s)
 
+        List values use ``"\\n  "`` (newline followed by two spaces) as
+        separators between items.
+
         :param sections: Paths to sections, subsections or options to save. Save
             all sections with no arguments.
 
@@ -284,11 +284,11 @@ class _ConfigDict(collections.abc.MutableMapping):
     """
     Dictionary that only accepts certain keys and value types
 
-    :param dict dct: Initial values
-    :param dict keys: Allowed keys. Values are ignored. If omitted, keys from
-        `dct` are used.
-    :param dict types: Value converters, converters get a value and must return
-        the value to store
+    :param dict dct: Nested mapping of initial values
+    :param dict keys: Nested mapping of allowed keys. Leaf values are
+        ignored. If omitted, keys from `dct` are used.
+    :param dict types: Nested mapping of value converters. Converters get a
+        value as a positional argument and return the converted value.
 
     Getting or setting keys that are not in `keys` raises `KeyError`.
 
