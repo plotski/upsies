@@ -3,7 +3,7 @@ Image uploader for ptpimg.me
 """
 
 from ... import __project_name__, constants, errors
-from .. import fs, html, http
+from .. import configfiles, fs, html, http
 from .base import ImageHostBase
 
 import logging  # isort:skip
@@ -16,8 +16,14 @@ class PtpimgImageHost(ImageHostBase):
     name = 'ptpimg'
 
     default_config = {
-        'apikey': '',
         'base_url': 'https://ptpimg.me',
+        'apikey': configfiles.config_value(
+            value='',
+            description=(
+                f'Run ``{__project_name__} ui {name} -h`` '
+                'for instructions on how to get an API key.'
+            ),
+        ),
     }
 
     description = (

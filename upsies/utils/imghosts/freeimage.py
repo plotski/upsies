@@ -5,7 +5,7 @@ Image uploader for freeimage.host
 import json
 
 from ... import errors
-from ...utils import http
+from ... import utils
 from .base import ImageHostBase
 
 import logging  # isort:skip
@@ -19,12 +19,15 @@ class FreeimageImageHost(ImageHostBase):
 
     default_config = {
         'base_url': 'https://freeimage.host',
-        'apikey': '6d207e02198a847aa98d0a2a901485a5',
+        'apikey': utils.configfiles.config_value(
+            value='6d207e02198a847aa98d0a2a901485a5',
+            description='The default value is the public API key from https://freeimage.host/page/api.',
+        ),
     }
 
     async def _upload_image(self, image_path):
         try:
-            response = await http.post(
+            response = await utils.http.post(
                 url=self.options['base_url'] + '/api/1/upload',
                 cache=False,
                 data={

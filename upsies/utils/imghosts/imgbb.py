@@ -5,7 +5,7 @@ Image uploader for imgbb.com
 import json
 
 from ... import __project_name__, constants, errors
-from ...utils import fs, http
+from ...utils import configfiles, fs, http
 from .base import ImageHostBase
 
 import logging  # isort:skip
@@ -19,7 +19,13 @@ class ImgbbImageHost(ImageHostBase):
 
     default_config = {
         'base_url': 'https://api.imgbb.com',
-        'apikey': '',
+        'apikey': configfiles.config_value(
+            value='',
+            description=(
+                f'Run ``{__project_name__} ui {name} -h`` '
+                'for instructions on how to get an API key.'
+            ),
+        ),
     }
 
     description = (

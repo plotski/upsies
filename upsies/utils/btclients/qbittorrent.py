@@ -27,7 +27,10 @@ class QbittorrentClientApi(ClientApiBase):
         'url': 'http://localhost:8080',
         'username': '',
         'password': '',
-        'check_after_add': utils.types.Bool('no'),
+        'check_after_add': utils.configfiles.config_value(
+            value=utils.types.Bool('no'),
+            description=f'Whether to tell {label} to verify pieces after adding the torrent.',
+        ),
     }
 
     def __init__(self, *args, **kwargs):

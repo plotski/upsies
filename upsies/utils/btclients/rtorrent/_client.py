@@ -26,8 +26,20 @@ class RtorrentClientApi(ClientApiBase):
     label = 'rTorrent'
 
     default_config = {
-        'url': 'http://localhost:5000/',
-        'check_after_add': utils.types.Bool('no'),
+        'url': utils.configfiles.config_value(
+            value='http://localhost:5000/',
+            description=(
+                'Formats:\n'
+                '  [https|http]://<username>:<password>@<host>:<port>\n'
+                '  [https|http]://<host>:<port>\n'
+                '  scgi://<host>:<port>\n'
+                '  scgi:///path/to/rtorrent/rpc.socket'
+            ),
+        ),
+        'check_after_add': utils.configfiles.config_value(
+            value=utils.types.Bool('no'),
+            description=f'Whether to tell {label} to verify pieces after adding the torrent.',
+        ),
     }
 
     add_torrent_timeout = 10
