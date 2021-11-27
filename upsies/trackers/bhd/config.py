@@ -4,22 +4,49 @@ Concrete :class:`~.base.TrackerConfigBase` subclass for BHD
 
 import base64
 
-from ...utils import argtypes, imghosts, types
+from ...utils import argtypes, configfiles, imghosts, types
 from ..base import TrackerConfigBase
 
 
 class BhdTrackerConfig(TrackerConfigBase):
     defaults = {
-        'upload_url'       : base64.b64decode('aHR0cHM6Ly9iZXlvbmQtaGQubWUvYXBpL3VwbG9hZA==').decode('ascii'),
-        'announce_url'     : base64.b64decode('aHR0cHM6Ly90cmFja2VyLmJleW9uZC1oZC5tZToyMDUzL2Fubm91bmNl').decode('ascii'),
-        'announce_passkey' : '',
-        'apikey'           : '',
-        'source'           : 'BHD',
-        'anonymous'        : types.Bool('no'),
-        'draft'            : types.Bool('no'),
-        'image_host'       : types.Choice('imgbox', options=(imghost.name for imghost in imghosts.imghosts())),
-        'screenshots'      : types.Integer(4, min=3, max=10),
-        'exclude'          : [
+        'upload_url': base64.b64decode('aHR0cHM6Ly9iZXlvbmQtaGQubWUvYXBpL3VwbG9hZA==').decode('ascii'),
+        'announce_url': configfiles.config_value(
+            value=base64.b64decode('aHR0cHM6Ly9iZXlvbmQtaGQubWUvYW5ub3VuY2U=').decode('ascii'),
+            description='The announce URL without the private passkey.',
+        ),
+        'announce_passkey': configfiles.config_value(
+            value='',
+            description=(
+                'The private part of the announce URL.\n'
+                'Get it from the website: "My Security" -> "Passkey"'
+            ),
+        ),
+        'apikey': configfiles.config_value(
+            value='',
+            description=(
+                'Your personal private API key.\n'
+                'Get it from the website: "My Security" -> "API key"'
+            ),
+        ),
+        'source': 'BHD',
+        'anonymous': configfiles.config_value(
+            value=types.Bool('no'),
+            description='Whether your username is displayed on your uploads.',
+        ),
+        'draft': configfiles.config_value(
+            value=types.Bool('no'),
+            description=(
+                'Whether your uploads are stashed under "Torrents" -> "Drafts" '
+                'after the upload instead of going live.'
+            ),
+        ),
+        'image_host': types.Choice('imgbox', options=(imghost.name for imghost in imghosts.imghosts())),
+        'screenshots': configfiles.config_value(
+            value=types.Integer(4, min=3, max=10),
+            description='How many screenshots to make.',
+        ),
+        'exclude': [
             r'\.(?i:txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample)',
         ],
