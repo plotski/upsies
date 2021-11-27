@@ -6,8 +6,8 @@ import abc
 import builtins
 
 from .. import jobs
-from ..utils import (btclients, cached_property, fs, release, signal, types,
-                     webdbs)
+from ..utils import (btclients, cached_property, configfiles, fs, release,
+                     signal, types, webdbs)
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -21,14 +21,26 @@ class TrackerConfigBase(dict):
     """
 
     _defaults = {
-        'source'     : '',
-        'exclude'    : [],
-        'add-to'     : types.Choice(
+        'source': configfiles.config_value(
             value='',
-            empty_ok=True,
-            options=(client.name for client in btclients.clients()),
+            description='Value of the "source" field in generated torrents.',
         ),
-        'copy-to'    : '',
+        'exclude': configfiles.config_value(
+            value=[],
+            description='List of regular expressions. Matching files are excluded from generated torrents.',
+        ),
+        'add-to': configfiles.config_value(
+            value=types.Choice(
+                value='',
+                empty_ok=True,
+                options=(client.name for client in btclients.clients()),
+            ),
+            description=('BitTorrent client to add torrent to after submission.'),
+        ),
+        'copy-to': configfiles.config_value(
+            value='',
+            description='Directory path to copy torrent to after submission.',
+        ),
     }
 
     defaults = {}
