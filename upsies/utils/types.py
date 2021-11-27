@@ -69,7 +69,7 @@ def Choice(value, options, empty_ok=False):
     :raise ValueError: if instantiation is attempted with a value that is not in
         `options`
     """
-    options_str = tuple(str(o) for o in options)
+    options_str = tuple(sorted(str(o) for o in options))
 
     class Choice(str):
         options = options_str
