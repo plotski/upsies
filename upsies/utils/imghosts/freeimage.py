@@ -4,8 +4,7 @@ Image uploader for freeimage.host
 
 import json
 
-from ... import errors
-from ... import utils
+from ... import errors, utils
 from .base import ImageHostBase
 
 import logging  # isort:skip
