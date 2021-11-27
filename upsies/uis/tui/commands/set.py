@@ -13,12 +13,26 @@ def _make_pretty_option_list():
     for option in defaults.option_paths():
         option_type = defaults.option_type(option)
         option_type_name = option_type.__name__.lower()
-        option_type_name = {
-            'str': 'string',
-            'int': 'integer',
-        }.get(option_type_name, option_type_name)
-
+        file, section, name = option.split('.', maxsplit=2)
+        default_value = defaults.defaults[file][section][name]
         text = [f'{option} ({option_type_name})']
+
+        if option_type_name == 'list':
+            if default_value:
+                text.append(f'  Default: {default_value[0]}')
+                for item in default_value[1:]:
+                    text.append(f'           {item}')
+            else:
+                text.append('  Default: <empty>')
+        else:
+            text.append(f'  Default: {default_value}')
+
+        if option_type_name == 'int':
+            option_type_name = 'integer'
+        elif option_type_name == 'str':
+            option_type_name = 'string'
+        elif option_type_name == 'choice':
+            text.append(f'  Choices: {", ".join(default_value.options)}')
 
         # Add description indented
         description = getattr(option_type, 'description', '')
@@ -34,7 +48,7 @@ def _make_pretty_option_list():
             text.extend('  ' + line for line in description_lines)
         lines.append('\n  '.join(text))
 
-    return '\n  '.join(lines)
+    return '\n\n  '.join(lines)
 
 
 class set(CommandBase):
@@ -52,8 +66,6 @@ class set(CommandBase):
     given as multiple arguments, they are concatenated with single spaces. In
     the INI file, list items are delimited by one line break and one or more
     spaces (e.g. "\\n    ").
-
-    Bytes values can handle units like "kB", "MB", "GiB", etc.
     """
 
     names = ('set',)
