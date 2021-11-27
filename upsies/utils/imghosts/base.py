@@ -8,7 +8,7 @@ import copy
 import os
 
 from ... import __project_name__, constants, errors
-from .. import fs, image
+from .. import configfiles, fs, image
 from . import common
 
 import logging  # isort:skip
@@ -69,7 +69,13 @@ class ImageHostBase(abc.ABC):
         return self._options
 
     default_config_common = {
-        'thumb_width': 0,  # No thumbnail
+        'thumb_width': configfiles.config_value(
+            value=0,
+            description=(
+                'Thumbnail width in pixels or 0 for no thumbnail. '
+                'Trackers may ignore this option and use a hardcoded thumbnail width.'
+            ),
+        ),
     }
     """Default user configuration for all subclasses"""
 
