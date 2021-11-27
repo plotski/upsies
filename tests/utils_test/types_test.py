@@ -86,7 +86,7 @@ def test_Choice_valid_values(value, options):
 )
 def test_Choice_empty_ok(empty_ok, error_expected):
     if error_expected:
-        with pytest.raises(ValueError, match=r'^Not one of foo, bar: $'):
+        with pytest.raises(ValueError, match=r'^Not one of bar, foo: $'):
             types.Choice('', options=('foo', 'bar'), empty_ok=empty_ok)
     else:
         choice = types.Choice('', options=('foo', 'bar'), empty_ok=empty_ok)
@@ -109,7 +109,7 @@ def test_Choice_invalid_values(value, options, exp_error):
 
 def test_Choice_repr():
     choice = types.Choice('bar', options=('foo', 'bar', 'baz'))
-    assert repr(choice) == "Choice('bar', options=('foo', 'bar', 'baz'))"
+    assert repr(choice) == "Choice('bar', options=('bar', 'baz', 'foo'))"
 
 
 @pytest.mark.parametrize(

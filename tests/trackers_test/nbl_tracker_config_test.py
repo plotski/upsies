@@ -10,7 +10,6 @@ def test_defaults():
         'password'   : '',
         'exclude'    : [],
         'source'     : 'NBL',
-        'image_host' : '',
         'add-to'     : '',
         'copy-to'    : '',
     }

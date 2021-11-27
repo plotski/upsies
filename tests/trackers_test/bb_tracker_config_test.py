@@ -89,7 +89,7 @@ def test_screenshots_option():
 
 def test_image_host_option():
     config = BbTrackerConfig()
-    imghost_names = ', '.join(imghost.name for imghost in imghosts.imghosts())
+    imghost_names = ', '.join(sorted(imghost.name for imghost in imghosts.imghosts()))
 
     with pytest.raises(ValueError, match=rf'^Not one of {imghost_names}: foo$'):
         type(config['image_host'])('foo')

@@ -72,6 +72,7 @@ def tracker_config():
 def btclient():
     class TestClient(ClientApiBase):
         name = 'mock client'
+        label = 'Mock Client'
         default_config = {}
         add_torrent = AsyncMock()
 
