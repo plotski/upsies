@@ -8,6 +8,7 @@
   * bB: Submit generated screenshots and mediainfo when a custom description is
     given for a season or episode submission with --description
   * bB: Normalize tags provided through --tags or entered in the TUI
+  * Configuration options are now better documented (upsies set -h)
 
 
 2021.11.09
