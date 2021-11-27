@@ -4,19 +4,22 @@ Concrete :class:`~.base.TrackerConfigBase` subclass for bB
 
 import base64
 
-from ...utils import argtypes, imghosts, types
+from ...utils import argtypes, configfiles, imghosts, types
 from ..base import TrackerConfigBase
 
 
 class BbTrackerConfig(TrackerConfigBase):
     defaults = {
-        'base_url'    : base64.b64decode('aHR0cHM6Ly9iYWNvbmJpdHMub3Jn').decode('ascii'),
-        'username'    : '',
-        'password'    : '',
-        'source'      : 'bB',
-        'image_host'  : types.Choice('imgbox', options=(imghost.name for imghost in imghosts.imghosts())),
-        'screenshots' : types.Integer(2, min=2, max=10),
-        'exclude'     : [
+        'base_url': base64.b64decode('aHR0cHM6Ly9iYWNvbmJpdHMub3Jn').decode('ascii'),
+        'username': '',
+        'password': '',
+        'source': 'bB',
+        'image_host': types.Choice('imgbox', options=(imghost.name for imghost in imghosts.imghosts())),
+        'screenshots': configfiles.config_value(
+            value=types.Integer(2, min=2, max=10),
+            description='How many screenshots to make.',
+        ),
+        'exclude': [
             r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample|extra|bonus|feature)',
             r'(?i:sample\.[a-z]+)$',
