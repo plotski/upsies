@@ -22,7 +22,6 @@ class NblTrackerConfig(base.TrackerConfigBase):
         'password'   : '',
         'exclude'    : [],
         'source'     : 'NBL',
-        'image_host' : '',
     }
 
     argument_definitions = {
