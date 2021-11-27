@@ -32,7 +32,7 @@ def config_value(value, *, description=''):
     :param str description: Explains what `value` is for and/or the possible
         values it can have
     """
-    clsname = type(value).__name__ + '_value'
+    clsname = type(value).__name__
     bases = (type(value),)
     attrs = {
         'description': str(description),
