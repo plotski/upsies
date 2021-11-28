@@ -10,8 +10,8 @@ def test_defaults():
         'password'   : '',
         'exclude'    : [],
         'source'     : 'NBL',
-        'add-to'     : '',
-        'copy-to'    : '',
+        'add_to'     : '',
+        'copy_to'    : '',
     }
 
 

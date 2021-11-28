@@ -15,8 +15,8 @@ def test_defaults():
         'source'      : 'bB',
         'image_host'  : 'imgbox',
         'screenshots' : 2,
-        'add-to'      : '',
-        'copy-to'     : '',
+        'add_to'      : '',
+        'copy_to'     : '',
         'exclude'     : [
             r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample|extra|bonus|feature)',

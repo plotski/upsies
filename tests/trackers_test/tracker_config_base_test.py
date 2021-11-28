@@ -13,8 +13,8 @@ def test_no_config():
     assert TestTrackerConfig() == {
         'source': '',
         'exclude': [],
-        'add-to': '',
-        'copy-to': '',
+        'add_to': '',
+        'copy_to': '',
         'foo': '1',
         'bar': '',
         'baz': 'asdf',
@@ -31,8 +31,8 @@ def test_config_overloads_defaults():
     assert TestTrackerConfig({'bar': 'hello', 'foo': '2', 'source': '123'}) == {
         'source': '123',
         'exclude': [],
-        'add-to': '',
-        'copy-to': '',
+        'add_to': '',
+        'copy_to': '',
         'foo': '2',
         'bar': 'hello',
         'baz': 'asdf',
@@ -55,11 +55,11 @@ def test_add_to_option():
         defaults = {}
 
     with pytest.raises(ValueError, match=r'^Not one of [a-z, ]+: foo$'):
-        TestTrackerConfig({'add-to': 'foo'})
+        TestTrackerConfig({'add_to': 'foo'})
 
     config = TestTrackerConfig()
     with pytest.raises(ValueError, match=r'^Not one of [a-z, ]+: foo$'):
-        type(config['add-to'])('foo')
+        type(config['add_to'])('foo')
 
 
 def test_argument_definitions():

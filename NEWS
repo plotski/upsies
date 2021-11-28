@@ -1,4 +1,6 @@
 2021.??.??
+  * Renamed options trackers.*.(add|copy)-to to trackers.*.(add|copy)_to for
+    consistency with other option names (sorry for the inconvenience)
   * Added support for rtorrent
   * Added support for qBittorrent
   * Purge <script> tags from cached HTML (reduces size by ~40%)

@@ -16,9 +16,9 @@ def test_defaults():
         'anonymous'        : types.Bool('no'),
         'draft'            : types.Bool('no'),
         'image_host'       : 'imgbox',
-        'add-to'           : '',
         'screenshots'      : 4,
-        'copy-to'          : '',
+        'add_to'           : '',
+        'copy_to'          : '',
         'exclude'          : [
             r'\.(?i:txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample)',

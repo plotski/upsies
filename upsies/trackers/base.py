@@ -29,7 +29,7 @@ class TrackerConfigBase(dict):
             value=[],
             description='List of regular expressions. Matching files are excluded from generated torrents.',
         ),
-        'add-to': configfiles.config_value(
+        'add_to': configfiles.config_value(
             value=types.Choice(
                 value='',
                 empty_ok=True,
@@ -37,7 +37,7 @@ class TrackerConfigBase(dict):
             ),
             description=('BitTorrent client to add torrent to after submission.'),
         ),
-        'copy-to': configfiles.config_value(
+        'copy_to': configfiles.config_value(
             value='',
             description='Directory path to copy torrent to after submission.',
         ),

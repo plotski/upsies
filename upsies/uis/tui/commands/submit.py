@@ -149,7 +149,7 @@ class submit(CommandBase):
 
     def _get_btclient(self):
         btclient_name = (getattr(self.args, 'add_to', None)
-                         or self.tracker_options.get('add-to', None)
+                         or self.tracker_options.get('add_to', None)
                          or None)
         if btclient_name:
             return utils.btclients.client(
@@ -159,5 +159,5 @@ class submit(CommandBase):
 
     def _get_torrent_destination(self):
         return (getattr(self.args, 'copy_to', None)
-                or self.tracker_options.get('copy-to', None)
+                or self.tracker_options.get('copy_to', None)
                 or None)
