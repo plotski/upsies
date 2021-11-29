@@ -1,8 +1,7 @@
 2021.??.??
   * Renamed options trackers.*.(add|copy)-to to trackers.*.(add|copy)_to for
     consistency with other option names (sorry for the inconvenience)
-  * Added support for rtorrent
-  * Added support for qBittorrent
+  * Added support for qBittorrent, rTorrent and Deluge
   * Purge <script> tags from cached HTML (reduces size by ~40%)
   * submit/torrent-create: Added --reuse-torrent/-t option to get piece hashes
     from an existing torrent instead of hashing all the content (this happens

@@ -33,6 +33,7 @@ setuptools.setup(
     install_requires=[
         'beautifulsoup4==4.*',
         'chardet==4.*',
+        'deluge-client==1.*',
         'guessit==3.*,>=3.4.0',
         'httpx==0.*,>=0.20.0',
         'natsort==7.*',
