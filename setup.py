@@ -31,9 +31,10 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        'httpx==0.*,>=0.20.0',
         'beautifulsoup4==4.*',
+        'chardet==4.*',
         'guessit==3.*,>=3.4.0',
+        'httpx==0.*,>=0.20.0',
         'natsort==7.*',
         'packaging>=21.0',
         'prompt_toolkit==3.*,>=3.0.6',
@@ -41,7 +42,6 @@ setuptools.setup(
         'pyxdg',
         'torf==3.*',
         'Unidecode==1.2.*',
-        'chardet==4.*',
         # Needed for asynccontextmanager backport for Python 3.6
         'async_generator==1.10; python_version<"3.7"',
     ],
