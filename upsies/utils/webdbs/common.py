@@ -280,19 +280,19 @@ class SearchResult:
                  genres=(), summary='', title, title_english='',
                  title_original=''):
         self._info = {
-            'id' : id,
-            'title' : str(title),
-            'type' : ReleaseType(type),
-            'url' : str(url),
-            'year' : str(year),
+            'id': id,
+            'title': str(title),
+            'type': ReleaseType(type),
+            'url': str(url),
+            'year': str(year),
             # These may be coroutine functions
-            'cast' : cast,
-            'countries' : countries,
-            'directors' : directors,
-            'genres' : genres,
-            'summary' : summary,
-            'title_english' : title_english,
-            'title_original' : title_original,
+            'cast': cast,
+            'countries': countries,
+            'directors': directors,
+            'genres': genres,
+            'summary': summary,
+            'title_english': title_english,
+            'title_original': title_original,
         }
 
     def __getattr__(self, name):
