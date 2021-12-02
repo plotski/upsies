@@ -31,7 +31,7 @@ async def test_search_handles_id_in_query(api, store_response):
     results = await api.search(Query(id=35256))
     assert len(results) == 1
     assert (await results[0].cast())[:3] == ('Son Ye Jin', 'Jung Hae In', 'Jang So Yun')
-    assert results[0].countries == ['Korea, Republic of']
+    assert results[0].countries == ('South Korea',)
     assert results[0].id == 35256
     assert results[0].genres == ('drama', 'romance')
     assert results[0].summary.startswith('Yoon Jin Ah is a single woman in her 30s who works')
@@ -119,17 +119,16 @@ async def test_search_result_cast(title, exp_cast, api, store_response):
 @pytest.mark.parametrize(
     argnames=('title', 'exp_countries'),
     argvalues=(
-        ('Star Wars: Clone Wars', ['United States']),
-        ('Something in the Rain', ['Korea, Republic of']),
-        ('Le Chalet', ['France']),
-        ('Bron / Broen', ['Sweden']),
+        ('Star Wars: Clone Wars', ('United States',)),
+        ('Something in the Rain', ('South Korea',)),
+        ('Le Chalet', ('France',)),
+        ('Bron / Broen', ('Sweden',)),
     ),
 )
 @pytest.mark.asyncio
 async def test_search_result_countries(title, exp_countries, api, store_response):
     results = await api.search(Query(title))
     results_dict = {r.title: r for r in results}
-    print(results_dict)
     assert results_dict[title].countries == exp_countries
 
 
@@ -300,10 +299,10 @@ async def test_cast_deduplicates_actors_with_multiple_roles(api, store_response)
 @pytest.mark.parametrize(
     argnames=('id', 'exp_countries'),
     argvalues=(
-        (1259, ['United States']),
-        (35256, ['Korea, Republic of']),
-        (36072, ['France']),
-        (1910, ['Sweden']),
+        (1259, ('United States',)),
+        (35256, ('South Korea',)),
+        (36072, ('France',)),
+        (1910, ('Sweden',)),
         (None, ()),
     ),
 )

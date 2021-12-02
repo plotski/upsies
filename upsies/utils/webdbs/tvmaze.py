@@ -92,7 +92,7 @@ class TvmazeApi(WebDbApiBase):
             )
         return ()
 
-    async def countries(self, id):
+    async def _countries(self, id):
         if id:
             show = await self._get_show(id)
             return _get_countries(show)
@@ -293,5 +293,5 @@ def _get_countries(show):
         if country:
             name = country.get('name', None)
             if name:
-                return [name]
+                return (name,)
     return ''

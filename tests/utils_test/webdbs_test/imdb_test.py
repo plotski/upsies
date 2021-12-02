@@ -44,7 +44,7 @@ def api():
             ReleaseType.movie,
             '1980',
             (),
-            ('USA',),
+            ('United States',),
             ('John Landis',),
             ('action', 'adventure', 'comedy'),
             ('Jake Blues rejoins with his brother Elwood after being released from prison, '
@@ -172,7 +172,7 @@ async def test_search_result_cast(query, exp_cast, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_countries'),
     argvalues=(
-        (Query('Star Wars', type=ReleaseType.movie, year=1977), ('USA', 'UK')),
+        (Query('Star Wars', type=ReleaseType.movie, year=1977), ('United States', 'United Kingdom')),
         (Query('Bron Broen', type=ReleaseType.series, year=2011), ('Sweden', 'Denmark', 'Germany')),
         (Query('The Forest', type=ReleaseType.series, year=2017), ('France',)),
         (Query('Karppi', type=ReleaseType.series, year=2018), ('Finland', 'Germany', 'France')),
@@ -436,15 +436,15 @@ async def test_cast(id, exp_cast, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_countries'),
     argvalues=(
-        ('tt0080455', ('USA',)),  # Blues Brothers (movie)
+        ('tt0080455', ('United States',)),  # Blues Brothers (movie)
         ('tt3286052', ('Canada',)),  # February (movie)
-        ('tt0192802', ('UK',)),  # Wind in the Willows (TV movie)
-        ('tt0471711', ('USA',)),  # Bender's Big Score (Video)
-        ('tt0097270', ('UK',)),  # Elephant (TV Short)
+        ('tt0192802', ('United Kingdom',)),  # Wind in the Willows (TV movie)
+        ('tt0471711', ('United States',)),  # Bender's Big Score (Video)
+        ('tt0097270', ('United Kingdom',)),  # Elephant (TV Short)
         ('tt3472226', ('Sweden',)),  # Kung Fury (Short)
         ('tt1733785', ('Sweden', 'Denmark', 'Germany')),  # The Bridge (series)
-        ('tt0348914', ('USA',)),  # Deadwood (series)
-        ('tt0556307', ('USA',)),  # Deadwood - S02E04 (episode)
+        ('tt0348914', ('United States',)),  # Deadwood (series)
+        ('tt0556307', ('United States',)),  # Deadwood - S02E04 (episode)
         (None, ()),
     ),
     ids=lambda value: str(value),

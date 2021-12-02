@@ -6,6 +6,13 @@ from upsies.utils import webdbs
 from upsies.utils.types import ReleaseType
 
 
+class AsyncMock(Mock):
+    def __call__(self, *args, **kwargs):
+        async def coro(_sup=super()):
+            return _sup.__call__(*args, **kwargs)
+        return coro()
+
+
 def test_Query_title():
     q = webdbs.Query()
     cb = Mock()
@@ -270,7 +277,7 @@ def test_SearchResult_with_all_info():
         'genres' : ('foo', 'some bar'),
         'cast' : ('This Guy', 'That Dude'),
         'summary' : 'I dunno.',
-        'countries' : ['Antarctica'],
+        'countries' : ('Antarctica',),
     }
     sr = webdbs.SearchResult(**info)
     for k, v in info.items():
@@ -343,6 +350,30 @@ def test_SearchResult_preserves_id_type(id, exp_type):
     result = webdbs.SearchResult(**info)
     assert result.id == id
     assert isinstance(result.id, exp_type)
+
+@pytest.mark.parametrize(
+    argnames=('countries', 'exp_countries'),
+    argvalues=(
+        (['US'], ('United States',)),
+        (AsyncMock(return_value=['US']), ('United States',)),
+    ),
+)
+@pytest.mark.asyncio
+async def test_SearchResult_normalizes_countries(countries, exp_countries):
+    info = {
+        'id' : id,
+        'type': ReleaseType.series,
+        'url' : 'http://foo.bar/123',
+        'year' : '2000',
+        'title' : 'Foo',
+        'countries': countries,
+    }
+    result = webdbs.SearchResult(**info)
+    if callable(result.countries):
+        countries = await result.countries()
+    else:
+        countries = result.countries
+    assert countries == exp_countries
 
 
 def test_Person():

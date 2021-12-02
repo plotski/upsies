@@ -26,7 +26,7 @@ def make_TestWebDbApi(default_config=None, **kwargs):
         directors = AsyncMock()
         creators = AsyncMock()
         cast = AsyncMock()
-        countries = AsyncMock()
+        _countries = AsyncMock()
         genres = AsyncMock()
         poster_url = AsyncMock()
         rating_min = 0.0
@@ -88,7 +88,7 @@ async def test_gather(webdb):
         'year': 'mock year',
     }
     assert webdb.cast.call_args_list == [call('mock id')]
-    assert webdb.countries.call_args_list == []
+    assert webdb._countries.call_args_list == []
     assert webdb.summary.call_args_list == []
     assert webdb.title_english.call_args_list == []
     assert webdb.title_original.call_args_list == []

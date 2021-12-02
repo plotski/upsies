@@ -110,7 +110,7 @@ class TmdbApi(WebDbApiBase):
                 cast.extend(self._get_persons(card))
         return tuple(cast)
 
-    async def countries(self, id):
+    async def _countries(self, id):
         raise NotImplementedError('Country lookup is not implemented for TMDb')
 
     async def creators(self, id):

@@ -112,19 +112,14 @@ class ImdbApi(WebDbApiBase):
                 cast.extend(self._get_persons(cast_tag))
         return tuple(cast)
 
-    _country_translation = {
-        'United States': 'USA',
-        'United Kingdom': 'UK',
-    }
-
-    async def countries(self, id):
+    async def _countries(self, id):
         countries = []
         if id:
             soup = await self._get_soup(f'title/{id}/')
             a_tags = soup.find_all(href=re.compile(r'/search/title.*?country_of_origin='))
             for a_tag in a_tags:
                 country = ''.join(a_tag.stripped_strings)
-                countries.append(self._country_translation.get(country, country))
+                countries.append(country)
         return tuple(countries)
 
     _creators_label_regex = re.compile('^Creators?:?$')

@@ -3,9 +3,10 @@ Classes and functions that are used by all :class:`~.base.WebDbApiBase`
 subclasses
 """
 
+import functools
 import re
 
-from .. import release, signal
+from .. import iso, release, signal
 from ..types import ReleaseType
 
 import logging  # isort:skip
@@ -287,13 +288,20 @@ class SearchResult:
             'year': str(year),
             # These may be coroutine functions
             'cast': cast,
-            'countries': countries,
             'directors': directors,
             'genres': genres,
             'summary': summary,
             'title_english': title_english,
             'title_original': title_original,
         }
+
+        if callable(countries):
+            @functools.wraps(countries)
+            async def normalize_countries():
+                return iso.country_name(await countries())
+            self._info['countries'] = normalize_countries
+        else:
+            self._info['countries'] = iso.country_name(countries)
 
     def __getattr__(self, name):
         try:

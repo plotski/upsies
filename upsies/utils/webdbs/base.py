@@ -6,6 +6,7 @@ import abc
 import asyncio
 import copy
 
+from .. import iso
 from .common import Query
 
 
@@ -72,9 +73,14 @@ class WebDbApiBase(abc.ABC):
     async def cast(self, id):
         """Return list of cast names"""
 
-    @abc.abstractmethod
     async def countries(self, id):
         """Return list of country names"""
+        countries = await self._countries(id)
+        return iso.country_name(countries)
+
+    @abc.abstractmethod
+    async def _countries(self, id):
+        pass
 
     @abc.abstractmethod
     async def creators(self, id):
