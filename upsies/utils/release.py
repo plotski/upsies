@@ -243,13 +243,14 @@ class ReleaseName(collections.abc.Mapping):
         """
         Combination of :attr:`title`, :attr:`title_aka` and :attr:`year`
 
-        For movies, the :attr:`year` is always appended to the
-        :attr:`title`. For series, the :attr:`year` is appended if
-        :attr:`year_required` is `True`.
+        If :attr:`year_required` is `True`, :attr:`year` is appended.
+        If :attr:`country_required` is `True`, :attr:`country` is appended.
 
         :attr:`title_aka` is appended if it is truthy.
         """
         title = [self.title_with_aka]
+        if self.country_required:
+            title.append(self.country)
         if self.year_required:
             title.append(self.year)
         return ' '.join(title)

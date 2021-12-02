@@ -221,22 +221,50 @@ def test_title_with_aka_is_translated(ReleaseInfo_mock):
 
 
 @pytest.mark.parametrize(
-    argnames='release_info, year_required, exp_title_with_aka_and_year',
+    argnames='aka, year, year_required, country, country_required, exp_title_with_aka_and_year',
     argvalues=(
-        ({'title': 'The Foo', 'aka': '', 'year': '2015'}, True, 'The Foo 2015'),
-        ({'title': 'The Foo', 'aka': '', 'year': '2015'}, False, 'The Foo'),
-        ({'title': 'The Foo', 'aka': 'The Bar', 'year': '2015'}, False, 'The Foo AKA The Bar'),
-        ({'title': 'The Foo', 'aka': 'The Bar', 'year': '2015'}, True, 'The Foo AKA The Bar 2015'),
-        ({'title': 'The Foo', 'aka': 'The Bar', 'year': ''}, False, 'The Foo AKA The Bar'),
-        ({'title': 'The Foo', 'aka': 'The Bar', 'year': ''}, True, 'The Foo AKA The Bar UNKNOWN_YEAR'),
+        ('', '', False, '', False, 'The Foo'),
+        ('', '', False, '', True, 'The Foo UNKNOWN_COUNTRY'),
+        ('', '', False, 'UK', False, 'The Foo'),
+        ('', '', False, 'UK', True, 'The Foo UK'),
+
+        ('', '', True, '', False, 'The Foo UNKNOWN_YEAR'),
+        ('', '', True, '', True, 'The Foo UNKNOWN_COUNTRY UNKNOWN_YEAR'),
+        ('', '', True, 'UK', False, 'The Foo UNKNOWN_YEAR'),
+        ('', '', True, 'UK', True, 'The Foo UK UNKNOWN_YEAR'),
+
+        ('', '2015', True, '', False, 'The Foo 2015'),
+        ('', '2015', True, '', True, 'The Foo UNKNOWN_COUNTRY 2015'),
+        ('', '2015', True, 'UK', False, 'The Foo 2015'),
+        ('', '2015', True, 'UK', True, 'The Foo UK 2015'),
+
+        ('The Bar', '', False, '', False, 'The Foo AKA The Bar'),
+        ('The Bar', '', False, '', True, 'The Foo AKA The Bar UNKNOWN_COUNTRY'),
+        ('The Bar', '', False, 'UK', False, 'The Foo AKA The Bar'),
+        ('The Bar', '', False, 'UK', True, 'The Foo AKA The Bar UK'),
+
+        ('The Bar', '', True, '', False, 'The Foo AKA The Bar UNKNOWN_YEAR'),
+        ('The Bar', '', True, '', True, 'The Foo AKA The Bar UNKNOWN_COUNTRY UNKNOWN_YEAR'),
+        ('The Bar', '', True, 'UK', False, 'The Foo AKA The Bar UNKNOWN_YEAR'),
+        ('The Bar', '', True, 'UK', True, 'The Foo AKA The Bar UK UNKNOWN_YEAR'),
+
+        ('The Bar', '2015', True, '', False, 'The Foo AKA The Bar 2015'),
+        ('The Bar', '2015', True, '', True, 'The Foo AKA The Bar UNKNOWN_COUNTRY 2015'),
+        ('The Bar', '2015', True, 'UK', False, 'The Foo AKA The Bar 2015'),
+        ('The Bar', '2015', True, 'UK', True, 'The Foo AKA The Bar UK 2015'),
     ),
     ids=lambda v: str(v),
 )
-@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
-def test_title_with_aka_and_year(ReleaseInfo_mock, release_info, year_required, exp_title_with_aka_and_year):
-    ReleaseInfo_mock.return_value = release_info
+def test_title_with_aka_and_year(aka, year, year_required, country, country_required, exp_title_with_aka_and_year, mocker):
+    mocker.patch('upsies.utils.release.ReleaseInfo', Mock(return_value={
+        'title': 'The Foo',
+        'aka': aka,
+        'year': year,
+        'country': country,
+    }))
     rn = ReleaseName('path/to/something')
     rn.year_required = year_required
+    rn.country_required = country_required
     assert rn.title_with_aka_and_year == exp_title_with_aka_and_year
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
