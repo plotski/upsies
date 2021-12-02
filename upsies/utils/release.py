@@ -55,9 +55,9 @@ class _translated_property:
             return self
         else:
             value = self.fget(obj)
-            return self._translate(value, obj._translate)
+            return self._apply_translation(value, obj._translate)
 
-    def _translate(self, value, tables):
+    def _apply_translation(self, value, tables):
         def translate(string):
             table = tables.get(self.name, {})
             for regex, replacement in table.items():
