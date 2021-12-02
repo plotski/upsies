@@ -9,7 +9,7 @@ import re
 import deluge_client
 
 from ... import errors, utils
-from .. import asynccontextmanager, http
+from .. import asynccontextmanager
 from .base import ClientApiBase
 
 import logging  # isort:skip
