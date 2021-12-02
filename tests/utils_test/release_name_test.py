@@ -4,6 +4,7 @@ from unittest.mock import Mock, PropertyMock, call, patch
 
 import pytest
 
+from upsies.utils import webdbs
 from upsies.utils.release import Episodes, ReleaseName
 from upsies.utils.types import ReleaseType
 
@@ -1172,7 +1173,7 @@ async def test_fetch_info(guessed_type, found_type, exp_type, db_name, callback,
 
     mocker.patch.object(rn, '_update_attributes', AsyncMock())
     mocker.patch.object(rn, '_update_type', AsyncMock())
-    mocker.patch.object(rn, '_update_year_required', AsyncMock())
+    mocker.patch.object(rn, '_update_year_country_required', AsyncMock())
 
     db_id = f'mock {db_name} id'
     db = getattr(rn, f'_{db_name}')
@@ -1183,7 +1184,7 @@ async def test_fetch_info(guessed_type, found_type, exp_type, db_name, callback,
 
     assert rn._update_attributes.call_args_list == [call(db, db_id)]
     assert rn._update_type.call_args_list == [call(db, db_id)]
-    assert rn._update_year_required.call_args_list == [call()]
+    assert rn._update_year_country_required.call_args_list == [call()]
 
     if callback:
         assert callback.call_args_list == [call(rn)]
@@ -1192,12 +1193,12 @@ async def test_fetch_info(guessed_type, found_type, exp_type, db_name, callback,
 @pytest.mark.parametrize(
     argnames='info',
     argvalues=(
-        {'title_original': 'Le Foo', 'title_english': 'The Foo', 'year': '2000'},
-        {'title_original': 'Le Foo', 'title_english': '', 'year': '2000'},
-        {'title_original': 'Le Foo', 'title_english': 'The Foo', 'year': ''},
-        {'title_original': 'Le Foo', 'title_english': 'The Foo', 'year': None},
-        {'title_original': 'Le Foo', 'title_english': None, 'year': '2000'},
-        {'title_original': None, 'title_english': 'The Foo', 'year': '2000'},
+        {'title_original': 'Le Foo', 'title_english': 'The Foo', 'year': '2000', 'countries': ''},
+        {'title_original': 'Le Foo', 'title_english': '', 'year': '2000', 'countries': ''},
+        {'title_original': 'Le Foo', 'title_english': 'The Foo', 'year': '', 'countries': ''},
+        {'title_original': 'Le Foo', 'title_english': 'The Foo', 'year': None, 'countries': ''},
+        {'title_original': 'Le Foo', 'title_english': None, 'year': '2000', 'countries': ''},
+        {'title_original': None, 'title_english': 'The Foo', 'year': '2000', 'countries': 'France'},
     ),
     ids=lambda v: str(v),
 )
@@ -1210,12 +1211,14 @@ async def test_update_attributes(info, mocker):
     rn.title = 'Guessed Title'
     rn.title_ak = 'Guessed AKA'
     rn.year = '1999'
+    rn.country = 'US'
     await rn._update_attributes(db_mock, id_mock)
     assert rn.title == info.get('title_original') or 'Guessed Title'
     assert rn.title_aka == info.get('title_english') or 'Guessed AKA'
     assert rn.year == info.get('year') or '1999'
+    assert rn.country == 'FR' if info.get('country') else 'US'
     assert db_mock.gather.call_args_list == [
-        call(id_mock, 'title_english', 'title_original', 'year'),
+        call(id_mock, 'title_english', 'title_original', 'year', 'countries'),
     ]
 
 
@@ -1259,33 +1262,84 @@ async def test_update_type(guessed_type, db_type, exp_type, mocker):
 
 
 @pytest.mark.parametrize(
-    argnames='type, results, exp_year_required',
+    argnames='types, results, exp_year_required, exp_country_required',
     argvalues=(
-        (ReleaseType.movie, (Mock(title='The Foo'), Mock(title='the bar')), True),
-        (ReleaseType.movie, (Mock(title='The Foo'), Mock(title='the föö')), True),
-        (ReleaseType.season, (Mock(title='The Foo'), Mock(title='the bar')), None),
-        (ReleaseType.season, (Mock(title='The Foo'), Mock(title='the föö')), True),
-        (ReleaseType.episode, (Mock(title='The Foo'), Mock(title='the bar')), None),
-        (ReleaseType.episode, (Mock(title='The Foo'), Mock(title='the föö')), True),
+        # Movies always need a year and never a country
+        ((ReleaseType.movie,), (), True, False),
+
+        # Series: different names, same year, same countries
+        ((ReleaseType.season, ReleaseType.episode), (
+            ('The Foo', '2000', ['US']),
+            ('The Foe', '2000', ['US']),
+            ('The Bar', '2000', ['US']),
+        ), None, None),
+
+        # Series: same name, different year, different countries
+        ((ReleaseType.season, ReleaseType.episode), (
+            ('The FOO', '2000', ['US']),
+            ('the Föö', '2020', ['UK']),
+            ('The Foe', '2000', ['US']),
+        ), None, True),
+
+        # Series: same name, same year, different countries
+        ((ReleaseType.season, ReleaseType.episode), (
+            ('The FOO', '2000', ['US']),
+            ('the Föö', '2000', ['UK']),
+            ('The Foe', '2000', ['US']),
+        ), None, True),
+
+        # Series: same name, different year, same countries
+        ((ReleaseType.season, ReleaseType.episode), (
+            ('The FOO', '2000', ['US']),
+            ('the Föö', '2020', ['US']),
+            ('The Foe', '2000', ['US']),
+        ), True, None),
+
+        # Series: same name, same year, same countries
+        ((ReleaseType.season, ReleaseType.episode), (
+            ('The FOO', '2000', ['US']),
+            ('the Föö', '2000', ['US']),
+            ('The Foe', '2000', ['US']),
+        ), None, None),
     ),
     ids=lambda v: str(v),
 )
 @pytest.mark.asyncio
-async def test_update_year_required(type, results, exp_year_required, mocker):
-    rn = ReleaseName('path/to/something')
-    mocker.patch.object(rn, '_info', {'type': type, 'title': 'The Foo'})
-    mocker.patch('upsies.utils.webdbs.imdb.ImdbApi.search', AsyncMock(return_value=results))
+async def test_update_year_country_required(types, results, exp_year_required, exp_country_required, mocker):
+    from types import SimpleNamespace
+    mocked_results = [
+        SimpleNamespace(title=r[0], year=r[1], countries=AsyncMock(return_value=r[2]))
+        for r in results
+    ]
 
-    orig_year_required = rn.year_required
+    for type in types:
+        rn = ReleaseName('path/to/something')
+        mocker.patch.object(rn, '_info', {'type': type, 'title': 'The Foo'})
+        search_mock = mocker.patch('upsies.utils.webdbs.imdb.ImdbApi.search', AsyncMock(return_value=mocked_results))
 
-    if type is ReleaseType.movie:
-        assert rn.year_required is True
-    else:
-        assert rn.year_required is False
+        orig_year_required = rn.year_required
+        orig_country_required = rn.country_required
 
-    await rn._update_year_required()
+        if type is ReleaseType.movie:
+            assert rn.year_required is True
+        else:
+            assert rn.year_required is False
+        assert rn.country_required is False
 
-    if exp_year_required is None:
-        assert rn.year_required is orig_year_required
-    else:
-        assert rn.year_required is exp_year_required
+        await rn._update_year_country_required()
+
+        if exp_year_required is None:
+            assert rn.year_required is orig_year_required
+        else:
+            assert rn.year_required is exp_year_required
+
+        if exp_country_required is None:
+            assert rn.country_required is orig_country_required
+        else:
+            assert rn.country_required is exp_country_required
+
+        if type in (ReleaseType.season, ReleaseType.episode):
+            exp_query = webdbs.Query(title='The Foo', type=ReleaseType.series)
+            assert search_mock.call_args_list == [call(exp_query)]
+        else:
+            assert search_mock.call_args_list == []

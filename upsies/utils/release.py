@@ -650,6 +650,8 @@ class ReleaseName(collections.abc.Mapping):
           - :attr:`type`
           - :attr:`year`
           - :attr:`year_required`
+          - :attr:`country`
+          - :attr:`country_required`
 
         :return: The method's instance (`self`) for convenience
         """
@@ -660,7 +662,7 @@ class ReleaseName(collections.abc.Mapping):
             db = getattr(self, db_name)
             await self._update_attributes(db, id)
         await self._update_type(self._imdb, id)
-        await self._update_year_required()
+        await self._update_year_country_required()
         _log.debug('Release name updated with IMDb info: %s', self)
 
         if callback is not None:
@@ -673,6 +675,7 @@ class ReleaseName(collections.abc.Mapping):
             'title_english',
             'title_original',
             'year',
+            'countries',
         )
         for attr, key in (
             ('title', 'title_original'),
@@ -683,6 +686,9 @@ class ReleaseName(collections.abc.Mapping):
             if info[key]:
                 setattr(self, attr, info[key])
 
+        if info['countries']:
+            self.country = iso.country_tld(info['countries'][0]).upper()
+
     async def _update_type(self, db, id):
         # Use type from database if possible. ReleaseInfo can misdetect type
         # (e.g. if mini-series doesn't contain "S01"). But if ReleaseInfo
@@ -691,21 +697,44 @@ class ReleaseName(collections.abc.Mapping):
         if db_type and self.type is not ReleaseType.episode:
             self.type = db_type
 
-    async def _update_year_required(self):
+    async def _update_year_country_required(self):
         if self.type in (ReleaseType.season, ReleaseType.episode):
-            # Find out if there are multiple series with this title
-            query = webdbs.Query(title=self.title, type=ReleaseType.series)
-            results = await self._imdb.search(query)
-
             def normalize_title(title):
                 return unidecode.unidecode(title.casefold())
 
+            # Find result with the same title, removing any "smart" matches
             title_normalized = normalize_title(self.title)
-            same_titles = tuple(f'{r.title} year={r.year} imdb_id={r.id}' for r in results
-                                if normalize_title(r.title) == title_normalized)
-            if len(same_titles) >= 2:
-                _log.debug('Found multiple search results for %r: %r', query, same_titles)
-                self.year_required = True
+            query = webdbs.Query(title=self.title, type=ReleaseType.series)
+            results = [
+                {
+                    'title': normalize_title(result.title),
+                    'year': result.year,
+                    'countries': await result.countries(),
+                }
+                for result in await self._imdb.search(query)
+                if title_normalized == normalize_title(result.title)
+            ]
+
+            def has_duplicates(seq):
+                tupl = tuple(seq)
+                for item in tupl:
+                    if tupl.count(item) > 1:
+                        return True
+                return False
+
+            def make_title(result, country=False, year=False):
+                parts = [result['title']]
+                if country and result['countries']:
+                    parts.append(result['countries'][0])
+                if year and result['year']:
+                    parts.append(result['year'])
+                return ','.join(parts)
+
+            if has_duplicates(make_title(r) for r in results):
+                if not has_duplicates(make_title(r, country=True) for r in results):
+                    self.country_required = True
+                elif not has_duplicates(make_title(r, year=True) for r in results):
+                    self.year_required = True
 
     def format(self, sep=' '):
         """Assemble all parts into string"""
