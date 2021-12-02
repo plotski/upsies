@@ -60,7 +60,7 @@ def test_str(ReleaseInfo_mock):
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
-    assert len(rn) == 21
+    assert len(rn) == 23
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -357,6 +357,67 @@ def test_year_required(ReleaseInfo_mock, type, year_required, year, exp_year):
     rn.year_required = year_required
     assert rn.year_required is year_required
     assert rn.year == exp_year
+
+
+@pytest.mark.parametrize('country_required', (False, True))
+@pytest.mark.parametrize('country', (None, '', 'UK'))
+def test_country_getter(country, country_required, mocker):
+    mocker.patch('upsies.utils.release.ReleaseInfo', Mock(return_value={
+        'country': country,
+    }))
+    rn = ReleaseName('path/to/something')
+    rn.country_required = country_required
+    if country_required:
+        if country:
+            assert rn.country == country
+        else:
+            assert rn.country == 'UNKNOWN_COUNTRY'
+    else:
+        if country:
+            assert rn.country == country
+        else:
+            assert rn.country == ''
+
+@pytest.mark.parametrize(
+    argnames='country, exp_country',
+    argvalues=(
+        ('UK', 'UK'),
+        ([1, 2, 3], '[1, 2, 3]'),
+        ('', ''),
+        (None, ''),
+    ),
+)
+def test_country_setter(country, exp_country, mocker):
+    mocker.patch('upsies.utils.release.ReleaseInfo', Mock(return_value={}))
+    rn = ReleaseName('path/to/something')
+    assert rn.country == ''
+    rn.country = country
+    assert rn.country == exp_country
+
+def test_country_is_translated(mocker):
+    mocker.patch('upsies.utils.release.ReleaseInfo', Mock(return_value={
+        'country': 'UK',
+    }))
+    translation = {
+        'country': {
+            re.compile(r'^(.+)$'): r'[\1]',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    assert rn.country == '[UK]'
+    rn.country = 'US'
+    assert rn.country == '[US]'
+
+
+def test_country_required(mocker):
+    mocker.patch('upsies.utils.release.ReleaseInfo', Mock(return_value={}))
+    rn = ReleaseName('path/to/something')
+    assert not hasattr(rn, '_country_required')
+    assert rn.country_required is False
+    rn.country_required = 1
+    assert rn.country_required is True
+    rn.country_required = 0
+    assert rn.country_required is False
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))

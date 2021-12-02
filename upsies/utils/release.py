@@ -295,6 +295,40 @@ class ReleaseName(collections.abc.Mapping):
         self._year_required = bool(value)
 
     @_translated_property
+    def country(self):
+        """
+        Release country or "UNKNOWN_COUNTRY" if :attr:`country_required` is set,
+        empty string otherwise
+
+        See also :meth:`fetch_info`.
+        """
+        country = self._info.get('country')
+        if self.country_required:
+            return country or 'UNKNOWN_COUNTRY'
+        else:
+            return country or ''
+
+    @country.setter
+    def country(self, value):
+        if not value:
+            self._info['country'] = ''
+        else:
+            self._info['country'] = str(value)
+
+    @property
+    def country_required(self):
+        """
+        Whether :attr:`title_with_aka_and_year` includes :attr:`country`
+
+        See also :meth:`fetch_info`.
+        """
+        return getattr(self, '_country_required', False)
+
+    @country_required.setter
+    def country_required(self, value):
+        self._country_required = bool(value)
+
+    @_translated_property
     def episodes(self):
         """
         Season and episodes in "S01E02"-style format or "UNKNOWN_SEASON" for season
