@@ -73,6 +73,7 @@ def test_iter():
         'type',
         'title',
         'aka',
+        'country',
         'year',
         'episodes',
         'episode_title',
@@ -89,7 +90,7 @@ def test_iter():
 
 def test_len():
     ri = release.ReleaseInfo('foo.mkv')
-    assert len(ri) == 15
+    assert len(ri) == 16
 
 
 def test_repr():
@@ -138,7 +139,7 @@ def test_release_name_params_default():
 
 
 def assert_info(release_name,
-                type=ReleaseType.unknown, title='', aka='', year='', episodes={},
+                type=ReleaseType.unknown, title='', aka='', country='', year='', episodes={},
                 edition=[], resolution='', service='', source='',
                 audio_codec='', audio_channels='', video_codec='', group='', has_commentary=False):
     # Test space- and dot-separated release name
@@ -156,6 +157,7 @@ def assert_info(release_name,
             assert info['type'] == type
             assert info['title'] == title
             assert info['aka'] == aka
+            assert info['country'] == country
             assert info['year'] == year
             assert info['episodes'] == episodes
             assert info['edition'] == edition
@@ -174,12 +176,20 @@ def assert_info(release_name,
      {'type': ReleaseType.movie, 'title': 'The Foo', 'year': '2000',
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
+    ('The Foo UK 2000 1080p NF WEB-DL AAC2.0 H.264-ASDF',
+     {'type': ReleaseType.movie, 'title': 'The Foo', 'country': 'UK', 'year': '2000',
+      'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
+      'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo S01E04S02 1080p NF WEB-DL AAC2.0 H.264-ASDF',
      {'type': ReleaseType.episode, 'title': 'The Foo', 'year': '', 'episodes': {'1': ('4',), '2': ()},
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo S01 1080p NF WEB-DL AAC2.0 H.264-ASDF',
      {'type': ReleaseType.season, 'title': 'The Foo', 'year': '', 'episodes': {'1': ()},
+      'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
+      'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
+    ('The Foo US S01 1080p NF WEB-DL AAC2.0 H.264-ASDF',
+     {'type': ReleaseType.season, 'title': 'The Foo', 'country': 'US', 'year': '', 'episodes': {'1': ()},
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
     ('The Foo 2000 S01 1080p NF WEB-DL AAC2.0 H.264-ASDF',

@@ -19,7 +19,7 @@ import natsort
 import unidecode
 
 from .. import constants, errors
-from ..utils import scene, webdbs
+from ..utils import iso, scene, webdbs
 from . import LazyModule, cached_property, fs, video
 from .types import ReleaseType
 
@@ -908,6 +908,19 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
     def _get_year(self):
         return _as_string(self._guess.get('year') or '')
+
+    _country_translation = {
+        'UK': re.compile(r'^GB$'),
+    }
+
+    def _get_country(self):
+        country = iso.country_tld(
+            _as_string(self._guess.get('country') or '')
+        ).upper()
+        for country_, regex in self._country_translation.items():
+            if regex.search(country):
+                country = country_
+        return country
 
     def _get_episodes(self):
         if 'episodes' not in self._guess:
