@@ -29,7 +29,7 @@ def foodb(mocker):
         search = AsyncMock()
         cast = AsyncMock()
         creators = AsyncMock()
-        countries = AsyncMock()
+        _countries = AsyncMock()
         directors = AsyncMock()
         genres = AsyncMock()
         poster_url = AsyncMock()
