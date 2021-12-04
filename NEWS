@@ -1,16 +1,19 @@
-2021.??.??
+2021.12.04
   * Renamed options trackers.*.(add|copy)-to to trackers.*.(add|copy)_to for
     consistency with other option names (sorry for the inconvenience)
   * Added support for qBittorrent, rTorrent and Deluge
-  * Append 2-letter country code (ccTLD) to make it unique if necessary
-  * Purge <script> tags from cached HTML (reduces size by ~40%)
+  * Try to make non-unique TV show titles unique by appending 2-letter country
+    code (ccTLD) or year
   * submit/torrent-create: Added --reuse-torrent/-t option to get piece hashes
     from an existing torrent instead of hashing all the content (this happens
     automatically when torrents are created with upsies)
-  * bB: Submit generated screenshots and mediainfo when a custom description is
-    given for a season or episode submission with --description
-  * bB: Normalize tags provided through --tags or entered in the TUI
   * Configuration options are now better documented (upsies set -h)
+  * bB: Submit automatically generated screenshots and mediainfo when a custom
+    description is given for a season or episode submission with --description
+    (previously, the custom description needed to include screenshots and
+    mediainfo)
+  * bB: Normalize tags provided through --tags or entered in the TUI
+  * Purge <script> tags from cached HTML (reduces size by ~40%)
 
 
 2021.11.09
