@@ -1,6 +1,8 @@
 .. image:: https://img.shields.io/pypi/pyversions/upsies
+           :target:
 
 .. image:: https://img.shields.io/pypi/l/upsies
+           :target:
 
 .. image:: https://img.shields.io/pypi/v/upsies
            :target: https://pypi.org/project/upsies/
