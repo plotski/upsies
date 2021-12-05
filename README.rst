@@ -1,8 +1,18 @@
-.. image:: https://img.shields.io/pypi/v/upsies :alt: PyPI
-.. image:: https://img.shields.io/pypi/l/upsies :alt: PyPI - License
-.. image:: https://img.shields.io/pypi/dm/upsies :alt: PyPI - Downloads
-.. image:: https://img.shields.io/github/commit-activity/m/plotski/upsies :alt: GitHub commit activity
-.. image:: https://img.shields.io/librariesio/release/pypi/upsies :alt: Libraries.io dependency status for latest release
+.. image:: https://img.shields.io/pypi/pyversions/upsies
+
+.. image:: https://img.shields.io/pypi/l/upsies
+
+.. image:: https://img.shields.io/pypi/v/upsies
+           :target: https://pypi.org/project/upsies/
+
+.. image:: https://img.shields.io/librariesio/release/pypi/upsies
+           :target: https://github.com/plotski/upsies/network/dependencies
+
+.. image:: https://img.shields.io/github/commit-activity/m/plotski/upsies
+           :target: https://github.com/plotski/upsies/commits/master
+
+.. image:: https://img.shields.io/pypi/dm/upsies
+           :target: https://pypistats.org/packages/upsies
 
 ``upsies`` is a toolkit for collecting, generating, normalizing and sharing
 video metadata. It comes with a command line interface and can be used in shell
