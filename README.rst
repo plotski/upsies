@@ -1,5 +1,7 @@
 .. image:: https://img.shields.io/pypi/pyversions/upsies
+           :target: https://www.python.org/
 .. image:: https://img.shields.io/pypi/l/upsies
+           :target: https://www.gnu.org/licenses/gpl-3.0.en.html
 .. image:: https://img.shields.io/pypi/v/upsies
            :target: https://pypi.org/project/upsies/
 .. image:: https://img.shields.io/librariesio/release/pypi/upsies
