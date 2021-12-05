@@ -1,18 +1,11 @@
 .. image:: https://img.shields.io/pypi/pyversions/upsies
-           :target:
-
 .. image:: https://img.shields.io/pypi/l/upsies
-           :target:
-
 .. image:: https://img.shields.io/pypi/v/upsies
            :target: https://pypi.org/project/upsies/
-
 .. image:: https://img.shields.io/librariesio/release/pypi/upsies
            :target: https://github.com/plotski/upsies/network/dependencies
-
 .. image:: https://img.shields.io/github/commit-activity/m/plotski/upsies
            :target: https://github.com/plotski/upsies/commits/master
-
 .. image:: https://img.shields.io/pypi/dm/upsies
            :target: https://pypistats.org/packages/upsies
 
