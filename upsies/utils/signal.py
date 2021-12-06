@@ -42,7 +42,7 @@ class Signal:
 
     @property
     def signals(self):
-        """Mutable dictionary of signals mapped to a lists of callbacks"""
+        """Mutable dictionary of signals mapped to lists of callbacks"""
         return self._signals
 
     def record(self, signal):
