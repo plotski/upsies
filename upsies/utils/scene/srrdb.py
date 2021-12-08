@@ -1,3 +1,4 @@
+import re
 from base64 import b64decode
 
 from .. import http
@@ -17,11 +18,19 @@ class SrrDbApi(base.SceneDbApiBase):
     _search_url = f'https://{_url_base}/api/search'
     _details_url = f'https://{_url_base}/api/details'
 
+    _keyword_separators_regex = re.compile(r'[,]')
+
     async def _search(self, keywords, group):
         if group:
             keywords = list(keywords)
             keywords.append(f'group:{group}')
-        keywords_path = '/'.join((kw.lower() for kw in keywords))
+
+        keywords_path = '/'.join(
+            kw.lower()
+            for keyword in keywords
+            for kw in self._keyword_separators_regex.split(keyword)
+        )
+
         search_url = f'{self._search_url}/{keywords_path}'
         _log.debug('Scene search URL: %r', search_url)
         response = (await http.get(search_url, cache=True)).json()
