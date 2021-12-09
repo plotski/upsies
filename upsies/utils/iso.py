@@ -3,11 +3,14 @@ Translation between country names and various codes
 """
 
 import functools
+import logging
 
 
 @functools.lru_cache(maxsize=None)
 def _get_country_converter():
     import country_converter
+    country_converter_logger = logging.getLogger('country_converter')
+    country_converter_logger.setLevel(logging.CRITICAL)
     return country_converter.CountryConverter()
 
 
