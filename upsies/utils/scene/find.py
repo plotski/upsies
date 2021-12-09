@@ -98,26 +98,24 @@ class SceneQuery:
             object with the keys ``title``, ``year``, ``episodes``,
             ``resolution``, ``source``, ``video_codec`` and ``group``.
         """
-        info = dict(release)
-
         # Replace H.264/5 with H264/5
-        info['video_codec'] = re.sub(r'\.', '', info['video_codec'])
+        release['video_codec'] = re.sub(r'\.', '', release['video_codec'])
 
         # Replace WEB-DL with WEB
-        if info.get('source') == 'WEB-DL':
-            info['source'] = 'WEB'
+        if release.get('source') == 'WEB-DL':
+            release['source'] = 'WEB'
 
         # Group and episodes are handled separately the other keywords
-        needed_keys = [k for k in common.get_needed_keys(info)
+        needed_keys = [k for k in common.get_needed_keys(release)
                        if k not in ('group', 'episodes')]
-        keywords = [info[key] for key in needed_keys
-                    if key in info]
+        keywords = [release[key] for key in needed_keys
+                    if key in release]
         query = cls(
             *keywords,
             group=release.get('group', ''),
-            episodes=info.get('episodes', {}),
+            episodes=release.get('episodes', {}),
         )
-        _log.debug('SceneQuery from %r: %r', info, query)
+        _log.debug('SceneQuery from %r: %r', release, query)
         return query
 
     async def search(self, search_coro_func, only_existing_releases=True):
