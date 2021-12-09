@@ -42,7 +42,7 @@ setuptools.setup(
         'guessit==3.*,>=3.4.0',
         'httpx==0.*,>=0.20.0',
         'natsort==8.*',
-        'packaging>=21.0',
+        'packaging',
         'prompt_toolkit==3.*,>=3.0.6',
         'pyimgbox==1.*',
         'pyxdg',
