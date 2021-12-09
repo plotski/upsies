@@ -1,3 +1,9 @@
+2021.12.09
+  * Fix detection of interlaced MBAFF/PAFF video
+  * Fix searching SrrDB for release names containing ","
+  * Fix " not found in regex" printed to stdout
+
+
 2021.12.04
   * Renamed options trackers.*.(add|copy)-to to trackers.*.(add|copy)_to for
     consistency with other option names (sorry for the inconvenience)
