@@ -457,7 +457,17 @@ def test_height_with_default_value(video_track, default, exp_return_value, exp_e
         assert video.height(path, default=default) == exp_return_value
 
 
-@pytest.mark.parametrize('scan_type, exp_scan_type', (('Progressive', 'p'), ('Interlaced', 'i'), (None, 'p')))
+@pytest.mark.parametrize(
+    argnames='scan_type, exp_scan_type',
+    argvalues=(
+        (None, 'p'),
+        ('', 'p'),
+        ('Progressive', 'p'),
+        ('Interlaced', 'i'),
+        ('MBAFF', 'i'),
+        ('PAFF', 'i'),
+    ),
+)
 @pytest.mark.parametrize(
     argnames='width, height, par, exp_resolution',
     argvalues=(
@@ -491,6 +501,7 @@ def test_resolution(width, height, par, exp_resolution, scan_type, exp_scan_type
         'PixelAspectRatio': par,
         'ScanType': scan_type,
     })
+    # Remove any None values
     for key in tuple(default_track_mock.return_value):
         if default_track_mock.return_value[key] is None:
             del default_track_mock.return_value[key]
@@ -511,8 +522,6 @@ def test_resolution(width, height, par, exp_resolution, scan_type, exp_scan_type
         ({'@type': 'Video', 'Width': '123'},
          errors.ContentError('Unable to determine video resolution')),
         ({'@type': 'Video', 'Height': '123'},
-         errors.ContentError('Unable to determine video resolution')),
-        ({'@type': 'Video', 'Height': '123', 'Width': '456', 'ScanType': ''},
          errors.ContentError('Unable to determine video resolution')),
         ({},
          errors.ContentError('Unable to determine video resolution')),

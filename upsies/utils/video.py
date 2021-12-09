@@ -247,17 +247,19 @@ def resolution(path, default=NO_DEFAULT_VALUE):
     video_track = default_track('video', path)
     try:
         std_resolution = _get_closest_standard_resolution(video_track)
+        scan_type = _scan_type(video_track)
     except errors.ContentError:
         raise errors.ContentError('Unable to determine video resolution')
     else:
-        try:
-            # "p" or "i", default to "p"
-            scan = video_track.get('ScanType', 'Progressive')[0].lower()
-        except (KeyError, IndexError, TypeError):
-            raise errors.ContentError('Unable to determine video resolution')
-        else:
-            _log.debug('Detected resolution: %s%s', std_resolution, scan)
-            return f'{std_resolution}{scan}'
+        return f'{std_resolution}{scan_type}'
+
+def _scan_type(video_track):
+    # "p" or "i", default to "p"
+    scan_type = str(video_track.get('ScanType', 'Progressive')).lower()
+    if scan_type in ('interlaced', 'mbaff', 'paff'):
+        return 'i'
+    else:
+        return 'p'
 
 _standard_resolutions = (
     # (width, height, standard resolution)
