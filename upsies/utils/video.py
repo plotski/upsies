@@ -245,13 +245,9 @@ def resolution(path, default=NO_DEFAULT_VALUE):
         return default
 
     video_track = default_track('video', path)
-    try:
-        std_resolution = _get_closest_standard_resolution(video_track)
-        scan_type = _scan_type(video_track)
-    except errors.ContentError:
-        raise errors.ContentError('Unable to determine video resolution')
-    else:
-        return f'{std_resolution}{scan_type}'
+    std_resolution = _get_closest_standard_resolution(video_track)
+    scan_type = _scan_type(video_track)
+    return f'{std_resolution}{scan_type}'
 
 def _scan_type(video_track):
     # "p" or "i", default to "p"
