@@ -12,6 +12,13 @@ from upsies import errors
 from upsies.utils.btclients import rtorrent
 
 
+class AsyncMock(Mock):
+    def __call__(self, *args, **kwargs):
+        async def coro(_sup=super()):
+            return _sup.__call__(*args, **kwargs)
+        return coro()
+
+
 def test_name():
     assert rtorrent.RtorrentClientApi.name == 'rtorrent'
 
@@ -109,6 +116,7 @@ def test_get_torrent_hashes(mocker):
 @pytest.mark.asyncio
 async def test_add_torrent_succeeds(download_path, exp_directory_set, mocker):
     client = rtorrent.RtorrentClientApi()
+    mocker.patch.object(client, '_get_load_command', AsyncMock(return_value='load.raw_start_verbose'))
     mocker.patch.object(client, '_get_torrent_data', return_value='mock torrent data')
     mocker.patch.object(client, 'read_torrent', return_value=Mock(infohash='D34DB33F'))
     mocker.patch.object(client, '_request')
@@ -154,6 +162,7 @@ async def test_add_torrent_fails_to_get_torrent_data(mocker):
 @pytest.mark.asyncio
 async def test_add_torrent_fails_to_read_torrent(mocker):
     client = rtorrent.RtorrentClientApi()
+    mocker.patch.object(client, '_get_load_command', AsyncMock(return_value='load.raw_start_verbose'))
     mocker.patch.object(client, '_get_torrent_data', return_value='mock torrent data')
     mocker.patch.object(client, 'read_torrent', side_effect=errors.TorrentError('no'))
     mocker.patch.object(client, '_request')
@@ -174,6 +183,7 @@ async def test_add_torrent_fails_to_read_torrent(mocker):
 @pytest.mark.asyncio
 async def test_add_torrent_fails_after_timeout(mocker):
     client = rtorrent.RtorrentClientApi()
+    mocker.patch.object(client, '_get_load_command', AsyncMock(return_value='load.raw_start_verbose'))
     mocker.patch.object(client, '_get_torrent_data', return_value='mock torrent data')
     mocker.patch.object(client, 'read_torrent', return_value=Mock(infohash='D34DB33F'))
     mocker.patch.object(client, '_request')

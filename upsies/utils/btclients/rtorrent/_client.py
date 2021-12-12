@@ -90,6 +90,17 @@ class RtorrentClientApi(ClientApiBase):
     def _get_torrent_hashes(self):
         return tuple(infohash.lower() for infohash in self._request('download_list'))
 
+    async def _get_load_command(self):
+        available_commands = self._request('system.listMethods')
+        wanted_commands = (
+            'load.raw_start_verbose',
+            'load.raw_start',
+        )
+        for cmd in wanted_commands:
+            if cmd in available_commands:
+                return cmd
+        raise RuntimeError(f'Failed to find load command')
+
     async def add_torrent(self, torrent_path, download_path=None):
         _log.info('Adding to rtorrent: %r', torrent_path)
         torrent_path = str(os.path.abspath(torrent_path))
@@ -106,7 +117,7 @@ class RtorrentClientApi(ClientApiBase):
                         + download_path.replace('"', r'\"')
                         + '"')
 
-        self._request('load.raw_start_verbose', *args)
+        self._request(await self._get_load_command(), *args)
         try:
             infohash = self.read_torrent(torrent_path).infohash
         except errors.TorrentError as e:
