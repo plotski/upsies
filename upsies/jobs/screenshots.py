@@ -250,7 +250,7 @@ def _screenshots_process(output_queue, input_queue,
                     fs.basename(video_file) + f'.{ts}.png',
                 )
                 try:
-                    image.screenshot(
+                    screenshot_file = image.screenshot(
                         video_file=video_file,
                         screenshot_file=screenshot_file,
                         timestamp=ts,
