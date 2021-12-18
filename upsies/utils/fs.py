@@ -252,7 +252,7 @@ def sanitize_path(path):
     """
     # Get drive from Windows paths (e.g. "C:") because we don't want to sanitize
     # the ":", which is illegal otherwise
-    drive, path = os.path.splitdrive(path)
+    drive, path = os.path.splitdrive(str(path))
     segments = str(path).split(os.sep)
     sanitized_segments = [sanitize_filename(segment) for segment in segments]
     return drive + os.sep.join(sanitized_segments)
