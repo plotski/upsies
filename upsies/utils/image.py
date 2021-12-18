@@ -22,7 +22,7 @@ def _ffmpeg_executable():
 
 def _make_screenshot_cmd(video_file, timestamp, screenshot_file):
     # ffmpeg's "image2" image file muxer uses "%" for string formatting
-    screenshot_file = utils.fs.sanitize_path(str(screenshot_file).replace('%', '%%'))
+    screenshot_file = screenshot_file.replace('%', '%%')
     return (
         _ffmpeg_executable(),
         '-y',
@@ -46,7 +46,11 @@ def screenshot(video_file, timestamp, screenshot_file, overwrite=False):
     :param str screenshot_file: Path to screenshot file
     :param bool overwrite: Whether to overwrite `screenshot_file` if it exists
 
+    .. note:: It is important to use the returned file path because it is passed
+              through :func:`~.fs.sanitize_path` to make sure it can exist.
+
     :raise ScreenshotError: if something goes wrong
+
     :return: Path to screenshot file
     """
     # See if file is readable before we do further checks and launch ffmpeg
@@ -61,6 +65,9 @@ def screenshot(video_file, timestamp, screenshot_file, overwrite=False):
             raise errors.ScreenshotError(f'Invalid timestamp: {timestamp!r}')
     elif not isinstance(timestamp, (int, float)):
         raise errors.ScreenshotError(f'Invalid timestamp: {timestamp!r}')
+
+    # Make `screenshot_file` compatible to the file system
+    screenshot_file = utils.fs.sanitize_path(screenshot_file)
 
     # Check for previously created screenshot
     if not overwrite and os.path.exists(screenshot_file):
@@ -92,7 +99,7 @@ def screenshot(video_file, timestamp, screenshot_file, overwrite=False):
 
 def _make_resize_cmd(image_file, dimensions, resized_file):
     # ffmpeg's "image2" image file muxer uses "%" for string formatting
-    resized_file = utils.fs.sanitize_path(resized_file.replace('%', '%%'))
+    resized_file = resized_file.replace('%', '%%')
     return (
         _ffmpeg_executable(),
         '-y',
@@ -117,6 +124,9 @@ def resize(image_file, width=0, height=0, target_directory=None, target_filename
     If `width` and `height` are falsy (the default) return `image_file` if
     `target_directory` and `target_filename` are falsy or copy `image_file` to
     the target path.
+
+    .. note:: It is important to use the returned file path because it is passed
+              through :func:`~.fs.sanitize_path` to make sure it can exist.
 
     :raise ImageResizeError: if resizing fails
 
@@ -153,7 +163,10 @@ def resize(image_file, width=0, height=0, target_directory=None, target_filename
         else:
             return utils.fs.dirname(image_file)
 
-    target_filepath = os.path.join(get_target_directory(), get_target_filename())
+    # Assemble full target filepath and make sure it can exist
+    target_filepath = utils.fs.sanitize_path(
+        os.path.join(get_target_directory(), get_target_filename()),
+    )
 
     if not width and not height:
         # Nothing to resize
