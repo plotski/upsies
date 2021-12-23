@@ -196,6 +196,7 @@ def resize(image_file, width=0, height=0, target_directory=None, target_filename
     cmd = _make_resize_cmd(image_file, ffmpeg_params, target_filepath)
     output = utils.subproc.run(cmd, ignore_errors=True, join_stderr=True)
     if not os.path.exists(target_filepath):
-        raise errors.ImageResizeError(f'Failed to resize: {output}')
+        error = output or 'Unknown reason'
+        raise errors.ImageResizeError(f'Failed to resize: {error}')
     else:
         return str(target_filepath)

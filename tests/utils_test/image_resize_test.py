@@ -22,18 +22,12 @@ def test_make_resize_cmd(image_file, dimensions, resized_file, exp_args):
     cmd = image._make_resize_cmd(image_file, dimensions, resized_file)
     assert cmd == (image._ffmpeg_executable(),) + exp_args
 
-def test_make_resize_cmd_sanitizes_path(mocker):
-    def sanitize_path(path):
-        for c in (os.sep, '\\', '?', '<', '>', ':'):
-            path = path.replace(c, '_')
-        return path
-
-    resized_path = rf'path{os.sep}with:some\potentially?illegal<characters>.100%.png'
-    mocker.patch('upsies.utils.fs.sanitize_path', side_effect=sanitize_path)
+def test_make_resize_cmd_handles_percent_characters(mocker):
+    resized_path = rf'path/to/%.png'
     cmd = image._make_resize_cmd('a.png', '10:20', resized_path)
     assert cmd == (image._ffmpeg_executable(),) + (
         '-y', '-loglevel', 'level+error', '-i', 'file:a.png', '-vf', 'scale=10:20',
-        r'file:path_with_some_potentially_illegal_characters_.100%%.png',
+        r'file:path/to/%%.png',
     )
 
 
@@ -70,6 +64,7 @@ def test_resize_with_invalid_height(mocker):
 )
 def test_resize_with_valid_dimensions(width, height, target_filename, target_directory, extension, mocker, tmp_path):
     mocker.patch('upsies.utils.fs.assert_file_readable')
+    mocker.patch('upsies.utils.fs.sanitize_path', side_effect=lambda path: path + '.sanitized')
     mocker.patch('upsies.utils.image._ffmpeg_executable', return_value='ffmpeg')
 
     image_file = tmp_path / f'a.{extension}'
@@ -95,14 +90,14 @@ def test_resize_with_valid_dimensions(width, height, target_filename, target_dir
     exp_target_filepath = os.path.join(exp_target_directory, exp_target_filename)
 
     def create_target_filepath(*_, **__):
-        path = pathlib.Path(exp_target_filepath)
+        path = pathlib.Path(exp_target_filepath + '.sanitized')
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b'resized image')
 
     run_mock = mocker.patch('upsies.utils.subproc.run', side_effect=create_target_filepath)
 
     resized_file = image.resize(image_file, width, height, target_directory, target_filename)
-    assert resized_file == exp_target_filepath
+    assert resized_file == exp_target_filepath + '.sanitized'
     assert os.path.exists(resized_file)
 
     if width and height:
@@ -120,6 +115,15 @@ def test_resize_with_valid_dimensions(width, height, target_filename, target_dir
         assert run_mock.call_args_list == [call(exp_ffmpeg_cmd, ignore_errors=True, join_stderr=True)]
     else:
         assert run_mock.call_args_list == []
+
+def test_resize_with_same_source_and_target(mocker, tmp_path):
+    mocker.patch('upsies.utils.fs.assert_file_readable')
+    mkdir_mock = mocker.patch('upsies.utils.fs.mkdir')
+    run_mock = mocker.patch('upsies.utils.subproc.run')
+    resized_file = image.resize('path/to/image.jpg', target_directory='path/to', target_filename='image.jpg')
+    assert resized_file == 'path/to/image.jpg'
+    assert mkdir_mock.call_args_list == []
+    assert run_mock.call_args_list == []
 
 def test_resize_with_uncreatable_target_directory(mocker, tmp_path):
     mocker.patch('upsies.utils.fs.assert_file_readable')
