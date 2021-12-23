@@ -250,7 +250,7 @@ def _screenshots_process(output_queue, input_queue,
                     fs.basename(video_file) + f'.{ts}.png',
                 )
                 try:
-                    screenshot_file = image.screenshot(
+                    actual_screenshot_file = image.screenshot(
                         video_file=video_file,
                         screenshot_file=screenshot_file,
                         timestamp=ts,
@@ -259,7 +259,7 @@ def _screenshots_process(output_queue, input_queue,
                 except errors.ScreenshotError as e:
                     output_queue.put((daemon.MsgType.error, str(e)))
                 else:
-                    output_queue.put((daemon.MsgType.info, ('screenshot', screenshot_file)))
+                    output_queue.put((daemon.MsgType.info, ('screenshot', actual_screenshot_file)))
 
 
 def _shall_terminate(input_queue):
