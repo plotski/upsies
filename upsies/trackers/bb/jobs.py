@@ -728,7 +728,7 @@ class BbTrackerJobs(TrackerJobsBase):
     @property
     def release_info_anniversary_edition(self):
         for name in fs.file_and_parent(self.content_path):
-            match = re.search(r'(?i:[ \.](?:(\d+)th[ \.]|)Anniversary[ \.])', name)
+            match = re.search(rf'(?i:{release.DELIM}(?:(\d+)th{release.DELIM}|)Anniversary{release.DELIM})', name)
             if match:
                 if match.group(1):
                     return f'{match.group(1)}th Anniversary Edition'

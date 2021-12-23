@@ -32,6 +32,13 @@ logging.getLogger('rebulk').setLevel(logging.WARNING)
 _guessit = LazyModule(module='guessit.api', name='_guessit', namespace=globals())
 
 
+DELIM = r'[ \.-]'
+"""
+Regular expression that matches a single delimiter between release name
+parts, usually ``"."`` or ``" "``
+"""
+
+
 class _translated_property:
     """
     Property that is automatically translated on lookup
@@ -857,8 +864,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
         path = self._abspath
 
         # guessit doesn't detect AC3 if it's called "AC-3"
-        path = re.sub(r'([ \.])(?i:AC-?3)([ \.])', r'\1AC3\2', path)
-        path = re.sub(r'([ \.])(?i:E-?AC-?3)([ \.])', r'\1EAC3\2', path)
+        path = re.sub(rf'({DELIM})(?i:AC-?3)({DELIM})', r'\1AC3\2', path)
+        path = re.sub(rf'({DELIM})(?i:E-?AC-?3)({DELIM})', r'\1EAC3\2', path)
 
         # _log.debug('Running guessit on %r with %r', path, constants.GUESSIT_OPTIONS)
         guess = dict(_guessit.default_api.guessit(path, options=constants.GUESSIT_OPTIONS))
@@ -909,11 +916,11 @@ class ReleaseInfo(collections.abc.MutableMapping):
             return ReleaseType.movie
 
     _title_split_regex = re.compile(
-        r'[ \.]+(?:'
+        rf'[ \.](?:'
         r'\d{4}|'  # Year
-        r'(?i:[SE]\d+)+|'
-        r'((?i:Season|Episode)[ \.]*\d+[ \.]*)+|'
-        r')[ \.]+'
+        r'(?i:[SE]\d+)+|'  # Sxx or SxxExx
+        rf'((?i:Season|Episode)[ \.]*\d+[ \.]*)+|'
+        rf')[ \.]'
     )
 
     @cached_property
@@ -933,7 +940,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
                 return self._title_split_regex.split(name, maxsplit=1)[-1]
 
         # Default to the file/parent that contains either " " or "." (without
-        # file extension)
+        # the "." from the extension)
         for name in fs.file_and_parent(path_no_ext):
             if ' ' in name or '.' in name:
                 return name
@@ -941,7 +948,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         # Default to file name
         return fs.basename(path_no_ext)
 
-    _title_aka_regex = re.compile(r'[ \.]+AKA[ \.]+')
+    _title_aka_regex = re.compile(rf'{DELIM}AKA{DELIM}')
 
     @cached_property
     def _title_parts(self):
@@ -1012,14 +1019,14 @@ class ReleaseInfo(collections.abc.MutableMapping):
         'Theatrical Cut': re.compile(r'Theatrical'),
         'Ultimate Cut': re.compile(r'Ultimate'),
     }
-    _proper_repack_regex = re.compile(r'(?:[ \.]|^)((?i:proper|repack\d*))(?:[ \.]|$)')
+    _proper_repack_regex = re.compile(rf'(?:{DELIM}|^)((?i:proper|repack\d*))(?:{DELIM}|$)')
     _hdr_regexes = {
-        'Dolby Vision': re.compile(r'(?:[ \.]|^)(?i:DV|DoVi|Dolby[ \.]Vision)(?:[ \.]|$)'),
-        'HDR10+': re.compile(r'(?:[ \.]|^)(?i:HDR10\+)(?:[ \.]|$)'),
-        'HDR10': re.compile(r'(?:[ \.]|^)(?i:HDR10)(?:[^\+]|$)'),
-        'HDR': re.compile(r'(?:[ \.]|^)(?i:HDR)(?:[^10\+]|$)'),
+        'Dolby Vision': re.compile(rf'(?:{DELIM}|^)(?i:DV|DoVi|Dolby{DELIM}Vision)(?:{DELIM}|$)'),
+        'HDR10+': re.compile(rf'(?:{DELIM}|^)(?i:HDR10\+)(?:{DELIM}|$)'),
+        'HDR10': re.compile(rf'(?:{DELIM}|^)(?i:HDR10)(?:[^\+]|$)'),
+        'HDR': re.compile(rf'(?:{DELIM}|^)(?i:HDR)(?:[^10\+]|$)'),
     }
-    _remastered_regex = re.compile(r'(?:[ \.]|^)((?i:4k[ \.]+|)(?i:remaster(?:ed|)|restored))(?:[ \.]|$)')
+    _remastered_regex = re.compile(rf'(?:{DELIM}|^)((?i:4k{DELIM}+|)(?i:remaster(?:ed|)|restored))(?:{DELIM}|$)')
 
     def _get_edition(self):
         edition = _as_list(self._guess.get('edition'))
@@ -1067,7 +1074,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     def _get_resolution(self):
         return _as_string(self._guess.get('screen_size', ''))
 
-    _streaming_service_regex = re.compile(r'[ \.]([A-Z]+)[ \.](?i:WEB-?(?:DL|Rip))(?:[ \.]|$)')
+    _streaming_service_regex = re.compile(rf'{DELIM}([A-Z]+){DELIM}(?i:WEB-?(?:DL|Rip))(?:{DELIM}|$)')
     _streaming_service_translation = {
         re.compile(r'(?i:IT)'): 'iT',
         re.compile(r'(?i:ATVP)'): 'APTV',
@@ -1113,8 +1120,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
         re.compile(r'(?i:web)')      : 'WEB-DL',
     }
     # Look for "Hybrid" after year or season
-    _hybrid_regex = re.compile(r'[ \.]hybrid[ \.]', flags=re.IGNORECASE)
-    _web_source_regex = re.compile(r'[ \.](WEB-?(?:DL|Rip))(?:[ \.]|$)', flags=re.IGNORECASE)
+    _hybrid_regex = re.compile(rf'{DELIM}hybrid{DELIM}', flags=re.IGNORECASE)
+    _web_source_regex = re.compile(rf'{DELIM}(WEB-?(?:DL|Rip))(?:{DELIM}|$)', flags=re.IGNORECASE)
 
     def _get_source(self):
         source = self._guess.get('source', '')
@@ -1201,7 +1208,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
             return audio_codec
 
-    _audio_channels_regex = re.compile(r'[ \.](\d\.\d)[ \.]')
+    _audio_channels_regex = re.compile(rf'{DELIM}(\d\.\d){DELIM}')
 
     def _get_audio_channels(self):
         audio_channels = _as_string(self._guess.get('audio_channels', ''))
@@ -1211,8 +1218,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
                 return match.group(1)
         return audio_channels
 
-    _x264_regex = re.compile(r'(?:^|[\. ])(?i:x264)(?:[\. -]|$)')
-    _x265_regex = re.compile(r'(?:^|[\. ])(?i:x265)(?:[\. -]|$)')
+    _x264_regex = re.compile(rf'(?:{DELIM}|^)(?i:x264)(?:{DELIM}|$)')
+    _x265_regex = re.compile(rf'(?:{DELIM}|^)(?i:x265)(?:{DELIM}|$)')
 
     def _get_video_codec(self):
         video_codec = _as_string(self._guess.get('video_codec', ''))
@@ -1229,7 +1236,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     def _get_group(self):
         return _as_string(self._guess.get('release_group', ''))
 
-    _has_commentary_regex = re.compile(r'[\. ](?i:plus[\. -]+comm|commentary)[\. -]')
+    _has_commentary_regex = re.compile(rf'{DELIM}(?i:plus{DELIM}+comm|commentary){DELIM}')
 
     def _get_has_commentary(self):
         if self._guess.get('has_commentary', None) is None:
@@ -1254,7 +1261,7 @@ class Episodes(dict):
     empty string.
     """
 
-    regex = re.compile(r'(?:^|[\. ])((?i:[SE]\d+)+)(?:[\. ]|$)')
+    regex = re.compile(rf'(?:{DELIM}|^)((?i:[SE]\d+)+)(?:{DELIM}|$)')
     """Regular expression that matches "S01E02"-like episode information"""
 
     @classmethod
@@ -1287,7 +1294,7 @@ class Episodes(dict):
         def split_episodes(string):
             return {str(int(e)) for e in string.split('E') if e.strip()}
 
-        for word in re.split(r'[ \.]', str(value)):
+        for word in re.split(DELIM, str(value)):
             word = word.upper()
             if cls.has_episodes_info(word):
                 for part in (k for k in word.split('S') if k):

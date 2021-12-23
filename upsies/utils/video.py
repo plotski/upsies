@@ -9,7 +9,7 @@ import os
 import re
 
 from .. import constants, errors
-from . import closest_number, fs, os_family, subproc
+from . import closest_number, fs, os_family, release, subproc
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -645,7 +645,7 @@ def first_video(path):
 
         # Find S\d+E01 in files to get the most common case without getting at
         # video durations
-        first_video_regex = re.compile(r'(?:^|[ \.])S\d+E0*1[ \.]')
+        first_video_regex = re.compile(rf'(?:^|{release.DELIM})S\d+E0*1{release.DELIM}')
         for file in files:
             if first_video_regex.search(os.path.basename(file)):
                 _log.debug('Found first episode: %r', file)

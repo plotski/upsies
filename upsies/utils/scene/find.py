@@ -194,7 +194,7 @@ class SceneQuery:
         if release_info['episode_title']:
             # Escape special characters in each word and
             # join words with "space or period" regex
-            episode_title_regex = r'[ \.]{1,}'.join(
+            episode_title_regex = rf'{release.DELIM}+'.join(
                 re.escape(word)
                 for word in release_info['episode_title'].split()
             )
