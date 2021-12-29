@@ -24,7 +24,7 @@ class scene_search(CommandBase):
     Foo.S03.720p
        Find any 720p release of the third season of "Foo".
 
-    Foo.S01E01E02 S02E03E04.720p
+    Foo.S01E01E02S02E03E04.720p
        Find any 720p encodes of episodes 1 & 2 from season 1 and episodes 3 & 4
        from season 2.
     """
