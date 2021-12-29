@@ -105,7 +105,7 @@ class SceneQuery:
         if release.get('source') == 'WEB-DL':
             release['source'] = 'WEB'
 
-        # Group and episodes are handled separately the other keywords
+        # Group and episodes are handled separately from the other keywords
         needed_keys = [k for k in common.get_needed_keys(release)
                        if k not in ('group', 'episodes')]
         keywords = [release[key] for key in needed_keys
