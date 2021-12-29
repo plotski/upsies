@@ -153,7 +153,8 @@ class SceneQuery:
             _log.debug('Looking for existing episodes: %r', self.episodes)
 
             def get_wanted_episodes(season):
-                # Combine episodes from any season ('') with episodes from given season
+                # Combine episodes from any season with episodes from given
+                # season (season being empty string means "any season")
                 eps = None
                 if '' in self.episodes:
                     eps = self.episodes['']
