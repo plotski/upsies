@@ -112,7 +112,6 @@ class WebDbApiBase(abc.ABC):
     async def rating_max(self):
         """Maximum :meth:`rating` value"""
 
-    @abc.abstractmethod
     async def runtimes(self, id):
         """
         Return mapping of runtimes
@@ -122,6 +121,17 @@ class WebDbApiBase(abc.ABC):
 
         The key of the default cut is ``default``.
         """
+        runtimes = {}
+        for key, runtime in (await self._runtimes(id)).items():
+            key = iso.country_name(key)
+            print(key, runtime)
+            if key not in runtimes and runtime not in runtimes.values():
+                runtimes[key] = runtime
+        return runtimes
+
+    @abc.abstractmethod
+    async def _runtimes(self, id):
+        pass
 
     @abc.abstractmethod
     async def summary(self, id):

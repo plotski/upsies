@@ -205,7 +205,7 @@ class ImdbApi(WebDbApiBase):
         re.compile(r'^(?i:approx)\w*$'),
     )
 
-    async def runtimes(self, id):
+    async def _runtimes(self, id):
         runtimes = {}
         if id:
             soup = await self._get_soup(f'title/{id}/technical')

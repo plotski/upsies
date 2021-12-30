@@ -167,7 +167,7 @@ class TmdbApi(WebDbApiBase):
                 except (ValueError, TypeError):
                     pass
 
-    async def runtimes(self, id):
+    async def _runtimes(self, id):
         runtimes = {}
         if id:
             soup = await self._get_soup(id)

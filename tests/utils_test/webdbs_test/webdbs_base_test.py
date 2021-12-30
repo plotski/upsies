@@ -32,7 +32,7 @@ def make_TestWebDbApi(default_config=None, **kwargs):
         rating_min = 0.0
         rating_max = 10.0
         rating = AsyncMock()
-        runtimes = AsyncMock()
+        _runtimes = AsyncMock()
         summary = AsyncMock()
         title_english = AsyncMock()
         title_original = AsyncMock()
@@ -69,6 +69,23 @@ def test_sanitize_query(webdb):
     assert webdb.sanitize_query(q) == q
     with pytest.raises(TypeError, match=r'^Not a Query instance: 123$'):
         webdb.sanitize_query(123)
+
+
+@pytest.mark.parametrize(
+    argnames='runtimes, exp_runtimes',
+    argvalues=(
+        ({'usa': '123', 'Peoples Republic of China': '456', 'default': '789'},
+         {'United States': '123', 'China': '456', 'default': '789'}),
+        ({'usa': '123', 'Peoples Republic of China': '456', 'default': '123'},
+         {'United States': '123', 'China': '456'}),
+    ),
+)
+@pytest.mark.asyncio
+async def test_runtimes(runtimes, exp_runtimes, webdb, mocker):
+    mocker.patch.object(webdb, '_runtimes', AsyncMock(return_value=runtimes))
+    return_value = await webdb.runtimes('mock id')
+    assert return_value == exp_runtimes
+    assert webdb._runtimes.call_args_list == [call('mock id')]
 
 
 @pytest.mark.asyncio

@@ -36,7 +36,7 @@ def foodb(mocker):
         rating = AsyncMock()
         rating_min = 0
         rating_max = 10
-        runtimes = AsyncMock()
+        _runtimes = AsyncMock()
         summary = AsyncMock()
         title_english = AsyncMock()
         title_original = AsyncMock()
