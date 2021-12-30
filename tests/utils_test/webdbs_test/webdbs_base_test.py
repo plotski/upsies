@@ -72,6 +72,20 @@ def test_sanitize_query(webdb):
 
 
 @pytest.mark.parametrize(
+    argnames='countries, exp_countries',
+    argvalues=(
+        (('usa', 'Peoples Republic of China'), ('United States', 'China')),
+    ),
+)
+@pytest.mark.asyncio
+async def test_countries(countries, exp_countries, webdb, mocker):
+    mocker.patch.object(webdb, '_countries', AsyncMock(return_value=countries))
+    return_value = await webdb.countries('mock id')
+    assert return_value == exp_countries
+    assert webdb._countries.call_args_list == [call('mock id')]
+
+
+@pytest.mark.parametrize(
     argnames='runtimes, exp_runtimes',
     argvalues=(
         ({'usa': '123', 'Peoples Republic of China': '456', 'default': '789'},
