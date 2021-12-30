@@ -85,6 +85,9 @@ def test_assert_not_abbreviated_filename(filename, should_raise):
         ('Justified.S02.720p.BluRay.x264-REWARD', SceneCheckResult.false),  # REWARD only released S01 + S04
         ('Justified.720p.BluRay.x264-REWARD', SceneCheckResult.unknown),
 
+        # Series: Lots of seasons and episodes
+        ('Friends.S10.1080p.BluRay.x264-TENEIGHTY', SceneCheckResult.true),
+
         # Ignore resolution for DVDRip
         ('The.Fall.Guy.S02.480p.DVDRip.XviD.AAC-nodlabs', SceneCheckResult.true),
 
