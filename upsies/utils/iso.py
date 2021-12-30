@@ -47,7 +47,8 @@ def country_name(country):
     :type country: str or sequence
 
     :return: Country name or :class:`tuple` of country names, depending on
-        `country` argument
+        `country` argument, or `country` if it can't be associated with any
+        country
     """
     return _convert(country, 'name_short')
 
