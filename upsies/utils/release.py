@@ -916,11 +916,11 @@ class ReleaseInfo(collections.abc.MutableMapping):
             return ReleaseType.movie
 
     _title_split_regex = re.compile(
-        rf'[ \.](?:'
+        r'[ \.](?:'
         r'\d{4}|'  # Year
         r'(?i:[SE]\d+)+|'  # Sxx or SxxExx
-        rf'((?i:Season|Episode)[ \.]*\d+[ \.]*)+|'
-        rf')[ \.]'
+        r'((?i:Season|Episode)[ \.]*\d+[ \.]*)+|'
+        r')[ \.]'
     )
 
     @cached_property

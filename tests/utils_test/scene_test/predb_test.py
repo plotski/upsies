@@ -4,7 +4,7 @@ from unittest.mock import Mock, call
 import pytest
 
 from upsies import errors
-from upsies.utils.scene import SceneQuery, predb
+from upsies.utils.scene import predb
 
 
 class AsyncMock(Mock):

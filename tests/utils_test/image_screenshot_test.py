@@ -1,6 +1,6 @@
 import os
 import re
-from unittest.mock import Mock, call, patch
+from unittest.mock import call
 
 import pytest
 
@@ -25,7 +25,7 @@ def test_make_screenshot_cmd(video_file, timestamp, screenshot_file, exp_args):
     assert cmd == (image._ffmpeg_executable(),) + exp_args
 
 def test_make_screenshot_cmd_handles_percent_characters(mocker):
-    screenshot_path = rf'path/to/%.png'
+    screenshot_path = r'path/to/%.png'
     cmd = image._make_screenshot_cmd('video.mkv', 123, screenshot_path)
     assert cmd == (image._ffmpeg_executable(),) + (
         '-y', '-loglevel', 'level+error', '-ss', '123', '-i', 'video.mkv',
@@ -50,7 +50,7 @@ def test_nonexisting_video_file(mocker):
 
 @pytest.mark.parametrize('invalid_timestamp', ('anywhere', [1, 2, 3]))
 def test_invalid_timestamp(invalid_timestamp, mocker):
-    assert_file_readable_mock = mocker.patch('upsies.utils.fs.assert_file_readable', return_value=True)
+    mocker.patch('upsies.utils.fs.assert_file_readable', return_value=True)
     sanitize_path_mock = mocker.patch('upsies.utils.fs.sanitize_path', return_value='sanitized path')
     run_mock = mocker.patch('upsies.utils.subproc.run')
 

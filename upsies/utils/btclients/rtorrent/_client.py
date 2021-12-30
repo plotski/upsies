@@ -99,7 +99,7 @@ class RtorrentClientApi(ClientApiBase):
         for cmd in wanted_commands:
             if cmd in available_commands:
                 return cmd
-        raise RuntimeError(f'Failed to find load command')
+        raise RuntimeError('Failed to find load command')
 
     async def add_torrent(self, torrent_path, download_path=None):
         _log.info('Adding to rtorrent: %r', torrent_path)

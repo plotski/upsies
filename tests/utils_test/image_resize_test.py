@@ -23,7 +23,7 @@ def test_make_resize_cmd(image_file, dimensions, resized_file, exp_args):
     assert cmd == (image._ffmpeg_executable(),) + exp_args
 
 def test_make_resize_cmd_handles_percent_characters(mocker):
-    resized_path = rf'path/to/%.png'
+    resized_path = r'path/to/%.png'
     cmd = image._make_resize_cmd('a.png', '10:20', resized_path)
     assert cmd == (image._ffmpeg_executable(),) + (
         '-y', '-loglevel', 'level+error', '-i', 'file:a.png', '-vf', 'scale=10:20',
