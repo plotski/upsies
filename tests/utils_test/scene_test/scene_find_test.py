@@ -71,15 +71,15 @@ async def test_search(dbs, exp_results, exp_exception, exp_queried_db_names, moc
     db_order = [db.name for db in dbs]
     if exp_exception:
         with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
-            await find.search('mock posarg', dbs=db_order, kwarg='mock kwarg')
+            await find.search('mock query', dbs=db_order, only_existing_releases='mock bool')
     else:
-        results = await find.search('mock posarg', dbs=db_order, kwarg='mock kwarg')
+        results = await find.search('mock query', dbs=db_order, only_existing_releases='mock bool')
         assert results == exp_results
 
     db_map = {db.name: db for db in dbs}
     for db_name in exp_queried_db_names:
         db = db_map[db_name]
-        assert db.calls == [call('mock posarg', kwarg='mock kwarg')]
+        assert db.calls == [call('mock query', only_existing_releases='mock bool')]
 
 
 def test_SceneQuery_from_string(mocker):

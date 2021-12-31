@@ -14,7 +14,7 @@ _log = logging.getLogger(__name__)
 natsort = LazyModule(module='natsort', namespace=globals())
 
 
-async def search(*args, dbs=('predb', 'srrdb'), **kwargs):
+async def search(query, dbs=('predb', 'srrdb'), only_existing_releases=True):
     """
     Search scene databases
 
@@ -24,9 +24,9 @@ async def search(*args, dbs=('predb', 'srrdb'), **kwargs):
     Failed requests are ignored unless all requests fail, in which case they are
     combined into a single :class:`~.errors.RequestError`.
 
+    :param query: :class:`SceneQuery` object
     :param dbs: Sequence of :attr:`~.base.SceneDbApiBase.name` values
-
-    All other arguments are forwarded to :attr:`~.base.SceneDbApiBase.search`.
+    :param only_existing_releases: See :meth:`.SceneQuery.search`
 
     :return: Sequence of release names as :class:`str`
 
@@ -38,7 +38,7 @@ async def search(*args, dbs=('predb', 'srrdb'), **kwargs):
     for db_name in dbs:
         db = scenedb(db_name)
         try:
-            result = await db.search(*args, **kwargs)
+            result = await db.search(query, only_existing_releases=only_existing_releases)
         except errors.RequestError as e:
             _log.debug('Collecting scene search error: %r', e)
             exceptions.append(e)
