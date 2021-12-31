@@ -403,7 +403,7 @@ class JobBase(abc.ABC):
         :param coro: Any awaitable object
         :param callback: Callable that is called with the return value of `coro`
         :param bool finish_when_done: Whether to call :meth:`finish` when `coro`
-            is done
+            returns or raises an exception
 
         :return: :class:`asyncio.Task` instance
         """
