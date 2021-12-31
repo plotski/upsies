@@ -124,7 +124,6 @@ class WebDbApiBase(abc.ABC):
         runtimes = {}
         for key, runtime in (await self._runtimes(id)).items():
             key = iso.country_name(key)
-            print(key, runtime)
             if key not in runtimes and runtime not in runtimes.values():
                 runtimes[key] = runtime
         return runtimes
