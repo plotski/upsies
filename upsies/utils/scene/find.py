@@ -62,14 +62,6 @@ class SceneQuery:
     :param episodes: :class:`~.release.Episodes`-like mapping
     """
 
-    def __init__(self, *keywords, group='', episodes={}):
-        # Split each keyword
-        self._keywords = tuple(k.strip() for kw in keywords
-                               for k in str(kw).split()
-                               if k.strip() and k.strip() != '-')
-        self._group = str(group)
-        self._episodes = episodes
-
     @classmethod
     def from_string(cls, string):
         """
@@ -117,6 +109,14 @@ class SceneQuery:
         )
         _log.debug('SceneQuery from %r: %r', release, query)
         return query
+
+    def __init__(self, *keywords, group='', episodes={}):
+        # Split each keyword
+        self._keywords = tuple(k.strip() for kw in keywords
+                               for k in str(kw).split()
+                               if k.strip() and k.strip() != '-')
+        self._group = str(group)
+        self._episodes = episodes
 
     async def search(self, search_coro_func, only_existing_releases=True):
         """
