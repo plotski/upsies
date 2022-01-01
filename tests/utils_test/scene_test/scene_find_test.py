@@ -4,7 +4,6 @@ from unittest.mock import Mock, call
 import pytest
 
 from upsies import errors
-from upsies.utils.release import Episodes
 from upsies.utils.scene import find
 
 
@@ -82,59 +81,32 @@ async def test_search(dbs, exp_results, exp_exception, exp_queried_db_names, moc
         assert db.calls == [call('mock query', only_existing_releases='mock bool')]
 
 
-def test_SceneQuery_from_string(mocker):
-    ReleaseInfo_mock = mocker.patch('upsies.utils.release.ReleaseInfo')
-    from_release_mock = mocker.patch('upsies.utils.scene.find.SceneQuery.from_release')
-    query = find.SceneQuery.from_string('foo')
-    assert ReleaseInfo_mock.call_args_list == [call('foo', strict=True)]
-    assert from_release_mock.call_args_list == [call(ReleaseInfo_mock.return_value)]
-    assert query.keywords == from_release_mock.return_value.keywords
-    assert query.group == from_release_mock.return_value.group
-    assert query.episodes == from_release_mock.return_value.episodes
-
-
 @pytest.mark.parametrize(
-    argnames='release, needed_keys, exp_keywords, exp_group, exp_episodes',
+    argnames='raised_by_ReleaseInfo, raised_by_from_release, exp_exception',
     argvalues=(
-        (
-            {
-                'title': 'The Foo',
-                'year': '2004',
-                'resolution': '720p',
-                'source': 'BluRay',
-                'video_codec': 'x264',
-                'group': 'ASDF',
-                'episodes': Episodes({}),
-            },
-            ('title', 'episodes', 'resolution'),
-            ('The', 'Foo', '720p'),
-            'ASDF',
-            {},
-        ),
-        (
-            {
-                'title': 'The Foo',
-                'year': '',
-                'resolution': '720p',
-                'source': 'WEB-DL',
-                'video_codec': 'x264',
-                'group': 'ASDF',
-                'episodes': Episodes({'1': ('1', '2')}),
-            },
-            ('title', 'source', 'group'),
-            ('The', 'Foo', 'WEB'),
-            'ASDF',
-            {'1': ('1', '2')},
-        ),
+        (None, None, None),
+        (errors.ContentError('bad release name'), None, errors.SceneError('bad release name')),
+        (None, errors.ContentError('something something'), errors.SceneError('something something')),
     ),
-    ids=lambda v: str(v),
 )
-def test_SceneQuery_from_release(release, needed_keys, exp_keywords, exp_group, exp_episodes, mocker):
-    mocker.patch('upsies.utils.scene.common.get_needed_keys', return_value=needed_keys)
-    query = find.SceneQuery.from_release(release)
-    assert query.keywords == exp_keywords
-    assert query.group == exp_group
-    assert query.episodes == exp_episodes
+def test_SceneQuery_from_string(raised_by_ReleaseInfo, raised_by_from_release, exp_exception, mocker):
+    ReleaseInfo_mock = mocker.patch('upsies.utils.release.ReleaseInfo', side_effect=raised_by_ReleaseInfo)
+    from_release_mock = mocker.patch('upsies.utils.scene.find.SceneQuery.from_release', side_effect=raised_by_from_release)
+
+    if exp_exception:
+        with pytest.raises(errors.SceneError, match=rf'^{re.escape(str(exp_exception))}$'):
+            find.SceneQuery.from_string('foo')
+    else:
+        query = find.SceneQuery.from_string('foo')
+        assert query.keywords == from_release_mock.return_value.keywords
+        assert query.group == from_release_mock.return_value.group
+        assert query.episodes == from_release_mock.return_value.episodes
+
+    assert ReleaseInfo_mock.call_args_list == [call('foo', strict=True)]
+    if not raised_by_ReleaseInfo:
+        assert from_release_mock.call_args_list == [call(ReleaseInfo_mock.return_value)]
+    else:
+        assert from_release_mock.call_args_list == []
 
 
 @pytest.mark.parametrize(
@@ -151,30 +123,127 @@ def test_SceneQuery_from_release_normalizes_h26x(video_codec, exp_keyword, mocke
     query = find.SceneQuery.from_release({'video_codec': video_codec})
     assert query.keywords == (exp_keyword,)
 
+@pytest.mark.parametrize(
+    argnames='source, exp_keyword',
+    argvalues=(
+        ('WEB-DL', 'WEB'),
+        ('WEB', 'WEB'),
+        ('WEBRip', 'WEBRip'),
+    ),
+)
+def test_SceneQuery_from_release_normalizes_webdl(source, exp_keyword, mocker):
+    mocker.patch('upsies.utils.scene.common.get_needed_keys', return_value=('source',))
+    query = find.SceneQuery.from_release({'source': source})
+    assert query.keywords == (exp_keyword,)
 
+@pytest.mark.parametrize(
+    argnames='release, needed_keys, exp_keywords, exp_group, exp_episodes',
+    argvalues=(
+        (
+            {
+                'title': 'The Foo',
+                'year': '2004',
+                'resolution': '720p',
+                'source': 'BluRay',
+                'video_codec': 'x264',
+                'group': 'ASDF',
+                'episodes': {},
+            },
+            ('title', 'episodes', 'resolution'),
+            ('The', 'Foo', '720p'),
+            'ASDF',
+            {},
+        ),
+        (
+            {
+                'title': 'The Foo',
+                'year': '',
+                'resolution': '720p',
+                'source': 'WEB-DL',
+                'video_codec': 'x264',
+                'group': 'ASDF',
+                'episodes': {'1': ('1', '2')},
+            },
+            ('title', 'source', 'group'),
+            ('The', 'Foo', 'WEB'),
+            'ASDF',
+            {'1': ('1', '2')},
+        ),
+    ),
+    ids=lambda v: str(v),
+)
+def test_SceneQuery_from_release_separates_group_and_episodes(release, needed_keys, exp_keywords, exp_group, exp_episodes, mocker):
+    mocker.patch('upsies.utils.scene.common.get_needed_keys', return_value=needed_keys)
+    query = find.SceneQuery.from_release(release)
+    assert query.keywords == exp_keywords
+    assert query.group == exp_group
+    assert query.episodes == exp_episodes
+
+@pytest.mark.parametrize(
+    argnames='episodes, exp_keyword',
+    argvalues=(
+        ({'1': ('2',)}, 'S01E02'),
+        ({'1': ('2', '3')}, None),
+        ({'1': ()}, None),
+        ({'1': ('2',), '3': ()}, None),
+        ({'1': ('2',), '3': ('4',)}, None),
+    ),
+)
+def test_SceneQuery_from_release_includes_single_episodes_only(episodes, exp_keyword, mocker):
+    mocker.patch('upsies.utils.scene.common.get_needed_keys', return_value=('episodes',))
+    query = find.SceneQuery.from_release({'episodes': episodes})
+    if exp_keyword is None:
+        assert query.keywords == ()
+    else:
+        assert query.keywords == (exp_keyword,)
+
+
+@pytest.mark.parametrize('group', (None, 'ASDF'))
+@pytest.mark.parametrize('episodes', ({}, {'1': ('2', '3', '4')}))
 @pytest.mark.parametrize(
     argnames='keywords, exp_keywords',
     argvalues=(
-        (('foo', 'bar'), ('foo', 'bar')),
-        (('foo', 'S01', 'bar'), ('foo', 'bar')),
-        (('foo', 'S01E2', 'bar'), ('foo', 'bar')),
-        (('foo', 'E3E04S01E2', 'bar'), ('foo', 'bar')),
+        ([' foo ', ' bar  baz'], ('foo', 'bar', 'baz')),
+        ([' foo ', ' bar - baz'], ('foo', 'bar', 'baz')),
+        ([' foo ', ' S01 ', 'bar'], ('foo', 'bar')),
+        ([' foo ', ' S01S02 ', 'bar'], ('foo', 'bar')),
+        ([' foo ', ' S01E10 ', 'bar'], ('foo', 'S01E10', 'bar')),
+        ([' foo ', ' S01E10E11 ', 'bar'], ('foo', 'S01E10E11', 'bar')),
+        ([' foo ', ' S01E10E11S02E12E13 ', 'bar'], ('foo', 'S01E10E11S02E12E13', 'bar')),
+        ([' foo ', ' S01 S02E10E11 ', 'bar'], ('foo', 'S02E10E11', 'bar')),
+    ),
+    ids=lambda v: str(v),
+)
+def test_SceneQuery_init(keywords, exp_keywords, group, episodes, mocker):
+    query = find.SceneQuery(*keywords, group=group, episodes=episodes)
+    assert query.keywords == exp_keywords
+    assert query.episodes == episodes
+    assert query.group == group
+
+
+@pytest.mark.parametrize(
+    argnames='only_existing_releases, exp_only_existing_releases',
+    argvalues=(
+        (None, True),
+        (True, True),
+        (False, False),
     ),
 )
 @pytest.mark.asyncio
-async def test_SceneQuery_search_calls_given_coroutine_function(keywords, exp_keywords):
-    query = find.SceneQuery(*keywords, group='baz')
-    search = AsyncMock(return_value=('20', 'C', '1', 'b'))
-    results = await query.search(search)
-    assert results == ['1', '20', 'b', 'C']
-    assert search.call_args_list == [call(exp_keywords, group='baz')]
+async def test_SceneQuery_search(only_existing_releases, exp_only_existing_releases, mocker):
+    query = find.SceneQuery('this', 'that', group='ASDF')
+    mocker.patch.object(query, '_handle_results')
+    search_coro_func = AsyncMock(return_value=('foo', 'bar', 'baz'))
 
-@pytest.mark.asyncio
-async def test_SceneQuery_search_raises_RequestError():
-    query = find.SceneQuery('foo', 'bar', group='baz')
-    search = AsyncMock(side_effect=errors.RequestError('no'))
-    with pytest.raises(errors.RequestError, match=r'^no$'):
-        await query.search(search)
+    if only_existing_releases is None:
+        return_value = await query.search(search_coro_func)
+    else:
+        return_value = await query.search(search_coro_func, only_existing_releases=only_existing_releases)
+
+    assert return_value is query._handle_results.return_value
+    assert query._handle_results.call_args_list == [
+        call(('foo', 'bar', 'baz'), exp_only_existing_releases)
+    ]
 
 
 @pytest.mark.parametrize(
@@ -307,18 +376,71 @@ def test_SceneQuery_repr(keywords, group, episodes, exp_repr):
 
 
 @pytest.mark.parametrize(
-    argnames='keywords1, keywords2, group1, group2, episodes1, episodes2, exp_equality',
+    argnames='query1, query2, exp_return_value',
     argvalues=(
-        (('foo', 'bar',), ('foo', 'bar',), 'GRP', 'GRP', {1: ()}, {1: ()}, True),
-        (('foo', 'bar',), ('foo', 'baz',), 'GRP', 'GRP', {1: ()}, {1: ()}, False),
-        (('foo', 'bar',), ('foo', 'bar',), 'GP', 'GRP', {1: ()}, {1: ()}, False),
-        (('foo', 'bar',), ('foo', 'bar',), 'GRP', 'GRP', {1: (3,)}, {1: (4,)}, False),
-        (('foo', 'bar',), ('foo', 'bar',), 'GRP', 'GRP', {}, {}, True),
-        (('foo', 'bar',), ('foo', 'bar',), '', '', {}, {}, True),
-        ((), (), '', '', {}, {}, True),
+        (
+            find.SceneQuery('foo', 'bar', group='GRP', episodes={'1': ('2', '3')}),
+            find.SceneQuery('foo', 'bar', group='GRP', episodes={'1': ('2', '3')}),
+            True,
+        ),
+        (
+            find.SceneQuery('foo', 'bar', group='GRP', episodes={'1': ()}),
+            find.SceneQuery('foo', 'bar', group='GRP', episodes={'1': ()}),
+            True,
+        ),
+        (
+            find.SceneQuery('foo', 'bar', group='GRP'),
+            find.SceneQuery('foo', 'bar', group='GRP'),
+            True,
+        ),
+        (
+            find.SceneQuery('foo', 'bar'),
+            find.SceneQuery('foo', 'bar'),
+            True,
+        ),
+        (
+            find.SceneQuery(),
+            find.SceneQuery(),
+            True,
+        ),
+        (
+            find.SceneQuery('foo', 'bar', group='GR_'),
+            find.SceneQuery('foo', 'bar', group='GRP'),
+            False,
+        ),
+        (
+            find.SceneQuery('foo', 'bar', episodes={'1': ()}),
+            find.SceneQuery('foo', 'bar', episodes={'2': ()}),
+            False,
+        ),
+        (
+            find.SceneQuery('foo', 'bar', episodes={'1': ('2',)}),
+            find.SceneQuery('foo', 'bar', episodes={'1': ('3',)}),
+            False,
+        ),
+        (
+            find.SceneQuery('foo', 'bar', episodes={'1': ('2',)}),
+            find.SceneQuery('foo', 'bar', episodes={'1': ('2', '3')}),
+            False,
+        ),
+        (
+            find.SceneQuery('foo', 'bar'),
+            find.SceneQuery('foo', 'baz'),
+            False,
+        ),
+        (
+            find.SceneQuery('foo', 'bar'),
+            'not a SceneQuery object',
+            NotImplemented,
+        ),
     )
 )
-def test_SceneQuery_equality(keywords1, keywords2, group1, group2, episodes1, episodes2, exp_equality):
-    a = find.SceneQuery(keywords1, group=group1, episodes=episodes1)
-    b = find.SceneQuery(keywords2, group=group2, episodes=episodes2)
-    assert (a == b) is exp_equality
+def test_SceneQuery_equality(query1, query2, exp_return_value):
+    assert query1.__eq__(query2) is exp_return_value
+    assert query2.__eq__(query1) is exp_return_value
+    if exp_return_value is NotImplemented:
+        assert query1.__ne__(query2) is NotImplemented
+        assert query2.__ne__(query1) is NotImplemented
+    else:
+        assert query1.__ne__(query2) is not bool(exp_return_value)
+        assert query2.__ne__(query1) is not bool(exp_return_value)

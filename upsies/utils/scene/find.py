@@ -102,6 +102,16 @@ class SceneQuery:
                        if k not in ('group', 'episodes')]
         keywords = [release[key] for key in needed_keys
                     if key in release]
+
+        # Add single episode ("SxxEyy"), but not season pack ("Sxx") or anything
+        # else (e.g. "SxxEyyEzz")
+        seasons = tuple(release.get('episodes', {}).keys())
+        episodes = tuple(episode
+                         for episodes in release.get('episodes', {}).values()
+                         for episode in episodes)
+        if len(seasons) == 1 and len(episodes) == 1:
+            keywords.append(f'S{int(seasons[0]):02d}E{int(episodes[0]):02d}')
+
         query = cls(
             *keywords,
             group=release.get('group', ''),
@@ -111,11 +121,34 @@ class SceneQuery:
         return query
 
     def __init__(self, *keywords, group='', episodes={}):
-        # Split each keyword
-        self._keywords = tuple(k.strip() for kw in keywords
-                               for k in str(kw).split()
-                               if k.strip() and k.strip() != '-')
-        self._group = str(group)
+        # Split each keyword at spaces
+        kws = (k.strip()
+               for kw in keywords
+               for k in str(kw).split())
+
+        # Remove season packs (keep "SxxEyy" but not "Sxx") because scene
+        # releases are not season packs and we don't find anything if we look
+        # for "S05". For season packs, we try to find all episodes of all
+        # seasons and extract the relevant episodes in _handle_results().
+        def exclude_season_pack(kw):
+            if release.Episodes.is_episodes_info(kw):
+                episodes = release.Episodes.from_string(kw)
+                for season in tuple(episodes):
+                    if not episodes[season]:
+                        del episodes[season]
+                return str(episodes)
+            else:
+                return kw
+
+        kws = (exclude_season_pack(kw) for kw in kws)
+
+        # Remove empty keywords
+        # (I forgot why "-" is removed. Please explain if you know!)
+        kws = (kw for kw in kws
+               if kw and kw != '-')
+
+        self._keywords = tuple(kws)
+        self._group = str(group) if group else None
         self._episodes = episodes
 
     async def search(self, search_coro_func, only_existing_releases=True):
@@ -131,18 +164,13 @@ class SceneQuery:
             contain all episodes for every season pack in :attr:`keywords`.
             Otherwise, fake season pack release names are included in the
             returned results.
-
-        Any `keywords` that look like "S01", "S02E03", etc are removed in the
-        search request. The search results are then filtered for the specific
-        :attr:`episodes` given and returned in natural sort order.
         """
-        keywords = tuple(kw for kw in self.keywords
-                         if not re.match(r'^(?i:[SE]\d+|)+$', kw))
-        _log.debug('Searching for scene release: %r', keywords)
-        results = await search_coro_func(keywords, group=self.group)
+        _log.debug('Searching for scene release: %r, episodes=%r, group=%r',
+                   self.keywords, self.episodes, self.group)
+        results = await search_coro_func(self.keywords, group=self.group)
         return self._handle_results(results, only_existing_releases)
 
-    def _handle_results(self, results, only_existing_releases=True):
+    def _handle_results(self, results, only_existing_releases):
         def sorted_and_deduped(results):
             return natsort.natsorted(set(results), key=str.casefold)
 

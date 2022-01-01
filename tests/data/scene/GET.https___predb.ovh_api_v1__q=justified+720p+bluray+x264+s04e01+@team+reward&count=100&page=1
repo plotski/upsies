@@ -1,0 +1,25 @@
+{
+    "status": "success",
+    "message": "",
+    "data": {
+        "rowCount": 1,
+        "rows": [
+            {
+                "id": 6043325,
+                "name": "Justified.S04E01.720p.BluRay.X264-REWARD",
+                "team": "REWARD",
+                "cat": "TV-HD",
+                "genre": "Action__Crime__Drama",
+                "url": "",
+                "size": 2237.9,
+                "files": 48,
+                "preAt": 1381278121,
+                "nuke": null
+            }
+        ],
+        "offset": 0,
+        "reqCount": 100,
+        "total": 1,
+        "time": 0.001196374
+    }
+}
