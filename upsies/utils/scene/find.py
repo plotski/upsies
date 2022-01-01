@@ -91,7 +91,7 @@ class SceneQuery:
             ``resolution``, ``source``, ``video_codec`` and ``group``.
         """
         # Replace H.264/5 with H264/5
-        release['video_codec'] = re.sub(r'\.', '', release['video_codec'])
+        release['video_codec'] = re.sub(r'\.', '', release.get('video_codec', ''))
 
         # Replace WEB-DL with WEB
         if release.get('source') == 'WEB-DL':
