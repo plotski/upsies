@@ -43,7 +43,7 @@ class SceneSearchJob(JobBase):
         self.signal.add('search_results')
 
     def execute(self):
-        """Send search query"""
+        """Create background search task"""
         self.add_task(self._search(), finish_when_done=True)
 
     async def _search(self):
