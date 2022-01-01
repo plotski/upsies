@@ -88,12 +88,34 @@ def test_Episodes_repr():
         ('Foo.2015.S01E02.720p.BluRay.x264-ASDF', True),
         ('Foo.2015.S01S02.720p.BluRay.x264-ASDF', True),
         ('Foo.2015.S01E01E02.720p.BluRay.x264-ASDF', True),
+        ('Foo.2015.720p.BluRay.x264-ASDF', False),
     ),
     ids=lambda v: str(v),
 )
 def test_has_episodes_info(release_name, exp_value):
-    assert release.Episodes.has_episodes_info(release_name) == exp_value
-    assert release.Episodes.has_episodes_info(release_name.lower()) == exp_value
+    assert release.Episodes.has_episodes_info(release_name) is exp_value
+    assert release.Episodes.has_episodes_info(release_name.lower()) is exp_value
+
+
+@pytest.mark.parametrize(
+    argnames=('string', 'exp_value'),
+    argvalues=(
+        ('S01', True),
+        ('S01E02', True),
+        ('S01E02E03', True),
+        ('S01S02', True),
+        ('S01S02E03', True),
+        ('S01E02S03E04', True),
+        ('S01E02E03S04E05S06', True),
+        ('E01E02', True),
+        ('.S01', False),
+        ('S01.', False),
+    ),
+    ids=lambda v: str(v),
+)
+def test_is_episodes_info(string, exp_value):
+    assert release.Episodes.is_episodes_info(string) is exp_value
+    assert release.Episodes.is_episodes_info(string.lower()) is exp_value
 
 
 @pytest.mark.parametrize(
