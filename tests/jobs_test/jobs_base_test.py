@@ -419,11 +419,22 @@ def test_error_emits_error_signal(error, job, mocker):
     job.error(error)
     assert job.signal.emit.call_args_list == [call('error', error), call('finished', job)]
 
-def test_error_finishes_job(job, mocker):
+@pytest.mark.parametrize(
+    argnames='finish, exp_finished',
+    argvalues=(
+        (None, True),
+        (True, True),
+        (False, False),
+    ),
+)
+def test_error_finishes_job(finish, exp_finished, job, mocker):
     job.start()
     assert not job.is_finished
-    job.error('foo')
-    assert job.is_finished
+    if finish is None:
+        job.error('foo')
+    else:
+        job.error('foo', finish=finish)
+    assert job.is_finished is exp_finished
 
 def test_error_on_finished_job(job, mocker):
     mocker.patch.object(job.signal, 'emit')
