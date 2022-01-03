@@ -4,6 +4,7 @@ Swiss Army knife
 
 import asyncio
 import collections
+import functools
 import hashlib
 import importlib
 import inspect
@@ -365,6 +366,12 @@ def is_regex_pattern(object):
         return isinstance(object, typing.Pattern)
 
 
+_unsupported_semantic_hash_types = (
+    collections.abc.Iterator,
+    collections.abc.Iterable,
+    collections.abc.Generator,
+)
+
 def semantic_hash(obj):
     """
     Return SHA256 hash for `obj` that stays the same between Python interpreter
@@ -373,18 +380,24 @@ def semantic_hash(obj):
     https://github.com/schollii/sandals/blob/master/json_sem_hash.py
     """
     def as_str(obj):
-        if isinstance(obj, collections.abc.Mapping):
-            sorted_keys = sorted(as_str(k) for k in obj.keys())
-            return {as_str(k): as_str(obj[k]) for k in sorted_keys}
-        elif isinstance(obj, str):
-            return str(obj)
-        elif isinstance(obj, collections.abc.Sequence):
-            sorted_items = sorted(as_str(i) for i in obj)
-            return [as_str(val) for val in sorted_items]
+        if isinstance(obj, str):
+            return obj
+
+        elif isinstance(obj, collections.abc.Mapping):
+            stringified = ((as_str(k), as_str(v)) for k, v in obj.items())
+            return as_str(sorted(stringified))
+
+        elif isinstance(obj, (collections.abc.Sequence, collections.abc.Set)):
+            stringified = (as_str(item) for item in obj)
+            return ''.join(sorted(stringified))
+
+        elif isinstance(obj, _unsupported_semantic_hash_types):
+            raise RuntimeError(f'Unsupported type: {type(obj)}: {obj!r}')
+
         else:
             return str(obj)
 
-    return hashlib.sha256(bytes(repr(as_str(obj)), 'UTF-8')).hexdigest()
+    return hashlib.sha256(bytes(as_str(obj), 'utf-8')).hexdigest()
 
 
 from . import (argtypes, browser, btclients, configfiles, daemon, fs, html,

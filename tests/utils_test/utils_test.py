@@ -1,4 +1,3 @@
-import hashlib
 import re
 from unittest.mock import Mock, call
 
@@ -302,18 +301,42 @@ def test_is_regex_pattern(object, exp_return_value, mocker):
 @pytest.mark.parametrize(
     argnames='obj, exp_id',
     argvalues=(
-        ('foo',
-         b"'foo'"),
-        (23,
-         b"'23'"),
-        (['foo', 'bar', 'baz'],
-         b"['bar', 'baz', 'foo']"),
-        ({'c': (5, 6, 4), 'a': 1, 'b': [2, 1, 3]},
-         b"{'a': '1', 'b': ['1', '2', '3'], 'c': ['4', '5', '6']}"),
-        ({'a': ('a', 2, 3.0), 'c': 1, 'b': 'two'},
-         b"{'a': ['2', '3.0', 'a'], 'b': 'two', 'c': '1'}"),
+        # Strings and other simple objects
+        ('foo', b'foo'),
+        (23, b'23'),
+        (2.3, b'2.3'),
+
+        # Iterables
+        (['foo', 'bar', 'baz', 4], b'4barbazfoo'),
+        (['foo', 'bar', 'baz', (4, 'five')], b'4fivebarbazfoo'),
+        ([('foo', 'bar', 'baz'), {'hey': 'ho'}], b'barbazfooheyho'),
+        ([('foo', 'bar', 'baz'), {'hey': ['h', 0]}], b'0hheybarbazfoo'),
+        ([(1, 2, 3), ('5', 6.0), {7: ['eigh', 't']}], b'12356.07eight'),
+        ([(1, 2, 3, (4.1, 4.2)), ('5', 6.0), {7: ['eigh', 't']}], b'1234.14.256.07eight'),
+
+        # Mappings
+        ({'a': 1, 'b': 2, 'c': 3}, b'1a2b3c'),
+        ({('a', 'b'): 1, 'c': 2}, b'1ab2c'),
+        ({('a', 'b', (1, 2)): 'what', 'c': 3}, b'12abwhat3c'),
+        ({('a', 'b', (1, (2, 3))): 'what', 'c': 3}, b'123abwhat3c'),
+        ({'what': ('a', 'b', (1, (2, 3))), 'c': 3}, b'123abwhat3c'),
     ),
     ids=lambda v: str(v),
 )
-def test_semantic_hash(obj, exp_id):
-    assert utils.semantic_hash(obj) == hashlib.sha256(exp_id).hexdigest()
+def test_semantic_hash(obj, exp_id, mocker):
+    sha256_mock = mocker.patch('hashlib.sha256')
+    assert utils.semantic_hash(obj) == sha256_mock.return_value.hexdigest.return_value
+    assert sha256_mock.call_args_list == [call(exp_id)]
+
+@pytest.mark.parametrize(
+    argnames='obj',
+    argvalues=(
+        (i for i in range(10)),
+    ),
+    ids=lambda v: repr(v),
+)
+def test_semantic_hash_gets_unsupported_type(obj, mocker):
+    sha256_mock = mocker.patch('hashlib.sha256')
+    with pytest.raises(RuntimeError, match=rf'Unsupported type: {type(obj)!r}: {obj!r}'):
+        utils.semantic_hash(obj)
+    assert sha256_mock.call_args_list == []
