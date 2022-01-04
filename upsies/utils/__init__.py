@@ -61,6 +61,36 @@ except ImportError:
                 return value
 
 
+def asyncmemoize(func):
+    """
+    Cache return value of `func` using arguments as the key
+
+    The cache key is generated with :func:`semantic_hash`, so arguments don't
+    need to be hashable, they just need a unique string representation.
+
+    Exceptions are also cached and re-raised.
+    """
+    cache = {}
+
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        key = semantic_hash((args, kwargs))
+        if key not in cache:
+            try:
+                result = cache[key] = await func(*args, **kwargs)
+            except BaseException as e:
+                result = cache[key] = e
+        else:
+            result = cache[key]
+
+        if isinstance(result, BaseException):
+            raise result
+        else:
+            return result
+
+    return wrapper
+
+
 try:
     # New in Python 3.7
     from contextlib import asynccontextmanager

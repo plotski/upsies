@@ -6,6 +6,13 @@ import pytest
 from upsies import utils
 
 
+class AsyncMock(Mock):
+    def __call__(self, *args, **kwargs):
+        async def coro(_sup=super()):
+            return _sup.__call__(*args, **kwargs)
+        return coro()
+
+
 def test_cached_property_caches_return_value_of_decorated_function():
     calculation_mock = Mock()
     calculation_mock.return_value = 'expensive result'
@@ -21,6 +28,123 @@ def test_cached_property_caches_return_value_of_decorated_function():
         assert calculation_mock.call_args_list == [call()]
     foo.bar = 'asdf'
     assert foo.bar == 'asdf'
+
+
+@pytest.mark.asyncio
+async def test_asyncmemoize_caches_return_values():
+    def a(*args, **kwargs):
+        args_str = ', '.join(args)
+        kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
+        return f'a({args_str}, {kwargs_str})'
+
+    def b(*args, **kwargs):
+        args_str = ', '.join(args)
+        kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
+        return f'b({args_str}, {kwargs_str})'
+
+    a_mock = AsyncMock(side_effect=a)
+    b_mock = AsyncMock(side_effect=b)
+    a_memoized = utils.asyncmemoize(a_mock)
+    b_memoized = utils.asyncmemoize(b_mock)
+    mocks = Mock()
+    mocks.attach_mock(a_mock, 'a')
+    mocks.attach_mock(b_mock, 'b')
+
+    for _ in range(3):
+        assert await a_memoized('foo', bar='baz') == 'a(foo, bar=baz)'
+        assert mocks.mock_calls == [
+            call.a('foo', bar='baz'),
+        ]
+
+    for _ in range(3):
+        assert await a_memoized('this', that='what') == 'a(this, that=what)'
+        assert mocks.mock_calls == [
+            call.a('foo', bar='baz'),
+            call.a('this', that='what'),
+        ]
+
+    for _ in range(3):
+        assert await b_memoized('this', that='what') == 'b(this, that=what)'
+        assert mocks.mock_calls == [
+            call.a('foo', bar='baz'),
+            call.a('this', that='what'),
+            call.b('this', that='what'),
+        ]
+
+    for _ in range(3):
+        assert await a_memoized('x', 'y', 'z') == 'a(x, y, z, )'
+        assert mocks.mock_calls == [
+            call.a('foo', bar='baz'),
+            call.a('this', that='what'),
+            call.b('this', that='what'),
+            call.a('x', 'y', 'z'),
+        ]
+
+@pytest.mark.asyncio
+async def test_asyncmemoize_caches_exceptions():
+    def a(exccls, *args, **kwargs):
+        args_str = ', '.join(args)
+        kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
+        raise exccls(f'a({args_str}, {kwargs_str})')
+
+    def b(exccls, *args, **kwargs):
+        args_str = ', '.join(args)
+        kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
+        raise exccls(f'b({args_str}, {kwargs_str})')
+
+    a_mock = AsyncMock(side_effect=a)
+    b_mock = AsyncMock(side_effect=b)
+    a_memoized = utils.asyncmemoize(a_mock)
+    b_memoized = utils.asyncmemoize(b_mock)
+    mocks = Mock()
+    mocks.attach_mock(a_mock, 'a')
+    mocks.attach_mock(b_mock, 'b')
+
+    for _ in range(3):
+        with pytest.raises(RuntimeError, match=r'a\(foo, bar=baz\)'):
+            await a_memoized(RuntimeError, 'foo', bar='baz')
+        assert mocks.mock_calls == [
+            call.a(RuntimeError, 'foo', bar='baz'),
+        ]
+
+    for _ in range(3):
+        with pytest.raises(TypeError, match=r'a\(this, that=what\)'):
+            await a_memoized(TypeError, 'this', that='what')
+        assert mocks.mock_calls == [
+            call.a(RuntimeError, 'foo', bar='baz'),
+            call.a(TypeError, 'this', that='what'),
+        ]
+
+    for _ in range(3):
+        with pytest.raises(BaseException, match=r'b\(this, that=what\)'):
+            await b_memoized(BaseException, 'this', that='what')
+        assert mocks.mock_calls == [
+            call.a(RuntimeError, 'foo', bar='baz'),
+            call.a(TypeError, 'this', that='what'),
+            call.b(BaseException, 'this', that='what'),
+        ]
+
+    for _ in range(3):
+        with pytest.raises(ValueError, match=r'a\(x, y, z, \)'):
+            await a_memoized(ValueError, 'x', 'y', 'z')
+        assert mocks.mock_calls == [
+            call.a(RuntimeError, 'foo', bar='baz'),
+            call.a(TypeError, 'this', that='what'),
+            call.b(BaseException, 'this', that='what'),
+            call.a(ValueError, 'x', 'y', 'z'),
+        ]
+
+def test_asyncmemoize_properly_wraps_function():
+    def a(exccls, *args, **kwargs):
+        """This is a()"""
+
+    a_memoized = utils.asyncmemoize(a)
+    assert a_memoized.__module__ is a.__module__
+    assert a_memoized.__name__ is a.__name__
+    assert a_memoized.__qualname__ is a.__qualname__
+    assert a_memoized.__annotations__ is a.__annotations__
+    assert a_memoized.__doc__ is a.__doc__
+    assert a_memoized.__wrapped__ is a
 
 
 def test_asyncontextmanager():
