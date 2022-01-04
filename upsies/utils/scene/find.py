@@ -215,8 +215,8 @@ class SceneQuery:
 
     @staticmethod
     def _create_season_pack_name(release_name):
-        # Remove episode from release name to create season pack name
-        season_pack = re.sub(r'\b(S\d{2,})E\d{2,}\b', r'\1', release_name)
+        # Remove episode(s) from release name to create season pack name
+        season_pack = re.sub(r'\b(S\d{2,})*(E\d{2,})*\b', r'\1', release_name)
 
         # Remove episode title
         release_info = release.ReleaseInfo(release_name)

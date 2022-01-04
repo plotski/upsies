@@ -336,6 +336,7 @@ async def test_SceneQuery_handle_results_with_only_existing_releases(episodes, e
         ('X.S01E01.Episode.Title.REAL.DVDRip.x264-ASDF', 'X.S01.REAL.DVDRip.x264-ASDF'),
         ('X.S01E01.French.DVDRip.x264-ASDF', 'X.S01.French.DVDRip.x264-ASDF'),
         ('X.S01E01.Episode.Title.German.DL.DVDRip.x264-ASDF', 'X.S01.German.DL.DVDRip.x264-ASDF'),
+        ('X.S01E01E02.Episode.Title.German.DL.DVDRip.x264-ASDF', 'X.S01.German.DL.DVDRip.x264-ASDF'),
     ),
 )
 def test_SceneQuery_create_season_pack_name(episode, exp_season_pack):
