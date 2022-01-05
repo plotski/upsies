@@ -69,6 +69,9 @@ def asyncmemoize(func):
     need to be hashable, they just need a unique string representation.
 
     Exceptions are also cached and re-raised.
+
+    The decorated function has a `clear_cache` method that can be called to
+    remove all cached return values of that function.
     """
     cache = {}
 
@@ -87,6 +90,11 @@ def asyncmemoize(func):
             raise result
         else:
             return result
+
+    def clear_cache():
+        """Remove any previously cached return values"""
+        cache.clear()
+    wrapper.clear_cache = clear_cache
 
     return wrapper
 

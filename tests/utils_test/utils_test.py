@@ -81,6 +81,68 @@ async def test_asyncmemoize_caches_return_values():
         ]
 
 @pytest.mark.asyncio
+async def test_asyncmemoize_clear_cache():
+    def a(*args, **kwargs):
+        args_str = ', '.join(args)
+        kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
+        return f'a({args_str}, {kwargs_str})'
+
+    def b(*args, **kwargs):
+        args_str = ', '.join(args)
+        kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
+        return f'b({args_str}, {kwargs_str})'
+
+    a_mock = AsyncMock(side_effect=a)
+    b_mock = AsyncMock(side_effect=b)
+    a_memoized = utils.asyncmemoize(a_mock)
+    b_memoized = utils.asyncmemoize(b_mock)
+    mocks = Mock()
+    mocks.attach_mock(a_mock, 'a')
+    mocks.attach_mock(b_mock, 'b')
+
+    for _ in range(3):
+        assert await a_memoized('foo', bar='baz') == 'a(foo, bar=baz)'
+        assert mocks.mock_calls == [
+            call.a('foo', bar='baz'),
+        ]
+
+    for _ in range(3):
+        assert await b_memoized('this', that='what') == 'b(this, that=what)'
+        assert mocks.mock_calls == [
+            call.a('foo', bar='baz'),
+            call.b('this', that='what'),
+        ]
+
+    a_memoized.clear_cache()
+
+    for _ in range(3):
+        assert await a_memoized('foo', bar='baz') == 'a(foo, bar=baz)'
+        assert mocks.mock_calls == [
+            call.a('foo', bar='baz'),
+            call.b('this', that='what'),
+            call.a('foo', bar='baz'),
+        ]
+
+    for _ in range(3):
+        assert await b_memoized('this', that='what') == 'b(this, that=what)'
+        assert mocks.mock_calls == [
+            call.a('foo', bar='baz'),
+            call.b('this', that='what'),
+            call.a('foo', bar='baz'),
+        ]
+
+    b_memoized.clear_cache()
+
+    for _ in range(3):
+        assert await b_memoized('this', that='what') == 'b(this, that=what)'
+        assert mocks.mock_calls == [
+            call.a('foo', bar='baz'),
+            call.b('this', that='what'),
+            call.a('foo', bar='baz'),
+            call.b('this', that='what'),
+        ]
+
+@pytest.mark.asyncio
 async def test_asyncmemoize_caches_exceptions():
     def a(exccls, *args, **kwargs):
         args_str = ', '.join(args)
