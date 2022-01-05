@@ -193,7 +193,7 @@ class SceneQuery:
         self._group = str(group) if group else None
         self._episodes = episodes
 
-    async def search(self, search_coro_func, only_existing_releases=True):
+    async def search(self, search_coro_func, only_existing_releases=None):
         """
         Pre-process query and post-process results from `search_coro_func`
 
@@ -202,13 +202,13 @@ class SceneQuery:
 
         :param search_coro_func: Coroutine function with the call signature
             `(keywords, group)` that returns a sequence of release names
-        :param bool only_existing_releases: If this is truthy, the results
-            contain all episodes for every season pack in :attr:`keywords`.
-            Otherwise, fake season pack release names are included in the
-            returned results.
+        :param bool only_existing_releases: If this is truthy (the default), the
+            results contain all episodes for every season pack in
+            :attr:`keywords`.  Otherwise, fake season pack release names are
+            included in the returned results.
         """
-        _log.debug('Searching for scene release: %r, episodes=%r, group=%r',
-                   self.keywords, self.episodes, self.group)
+        if only_existing_releases is None:
+            only_existing_releases = True
         results = await search_coro_func(self.keywords, group=self.group)
         return self._handle_results(results, only_existing_releases)
 

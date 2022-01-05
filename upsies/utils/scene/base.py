@@ -39,7 +39,7 @@ class SceneDbApiBase(abc.ABC):
     def default_config(self):
         """Default user configuration as a dictionary"""
 
-    async def search(self, query, only_existing_releases=True):
+    async def search(self, query, only_existing_releases=None):
         """
         Search for scene release
 
