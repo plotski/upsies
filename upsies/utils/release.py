@@ -1344,16 +1344,22 @@ class Episodes(dict):
                 else:
                     raise ValueError(f'Invalid {name}: {value!r}')
             elif isinstance(value, str):
-                if value == '' or value.isdigit():
+                if value.isdigit():
                     return str(value)
                 else:
                     raise ValueError(f'Invalid {name}: {value!r}')
             else:
                 raise TypeError(f'Invalid {name}: {value!r}')
 
+        def number_or_empty_string(name, value):
+            if value == '':
+                return str(value)
+            else:
+                return number(name, value)
+
         validated_args = {}
         for season, episodes in dict(*args, **kwargs).items():
-            season = number('season', season)
+            season = number_or_empty_string('season', season)
             if not isinstance(episodes, collections.abc.Iterable):
                 raise TypeError(f'Invalid episodes: {episodes!r}')
             else:
