@@ -48,24 +48,18 @@ class SceneSearchJob(JobBase):
 
     async def _search(self):
         try:
-            query = scene.SceneQuery.from_string(self._content_path)
-        except errors.SceneError as e:
+            results = await scene.search(self._content_path)
+        except (errors.RequestError, errors.SceneError) as e:
             self.error(e)
         else:
-            try:
-                results = await scene.search(query)
-            except (errors.RequestError, errors.SceneError) as e:
-                self.error(e)
+            if results:
+                for result in results:
+                    self.send(result)
             else:
-                _log.debug('Handling results: %r', results)
-                if results:
-                    for result in results:
-                        self.send(result)
-                else:
-                    self.error('No results')
-                self.signal.emit('search_results', results)
-            finally:
-                self.finish()
+                self.error('No results')
+            self.signal.emit('search_results', results)
+        finally:
+            self.finish()
 
 
 class SceneCheckJob(JobBase):
