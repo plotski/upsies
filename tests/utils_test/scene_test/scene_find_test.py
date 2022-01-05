@@ -3,7 +3,8 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies import errors
+from upsies import constants, errors
+from upsies.utils import release
 from upsies.utils.scene import find
 
 
@@ -29,6 +30,83 @@ def make_db_class(name, exception):
                 return f'{name} search results'
 
     return MockSceneDb()
+
+
+@pytest.mark.parametrize(
+    argnames='query, exp_query',
+    argvalues=(
+        ('path/to/release', find.SceneQuery.from_string('path/to/release')),
+        (release.ReleaseInfo('release name'), find.SceneQuery.from_release(release.ReleaseInfo('release name'))),
+        (('some', 'thing', 'else'), ('some', 'thing', 'else')),
+    ),
+)
+@pytest.mark.asyncio
+async def test_search_finds_query_results_directly(query, exp_query, mocker):
+    mock_results = 'mock results'
+    mock_dbs = ('mock db 1', 'mock db 2')
+    mock_only_existing_releases = 'mock only existing releases'
+    multisearch_mock = mocker.patch('upsies.utils.scene.find._multisearch', AsyncMock(return_value=mock_results))
+
+    results = await find.search(query, mock_dbs, only_existing_releases=mock_only_existing_releases)
+    assert results == mock_results
+    assert multisearch_mock.call_args_list == [call(mock_dbs, exp_query, mock_only_existing_releases)]
+
+@pytest.mark.parametrize(
+    argnames='query, exp_first_query, exp_perform_episode_searches',
+    argvalues=(
+        (find.SceneQuery('mock query'), find.SceneQuery('mock query'), False),
+        (release.ReleaseInfo('release name'), find.SceneQuery.from_release(release.ReleaseInfo('release name')), False),
+        ('mock query', find.SceneQuery('mock query'), True),
+    ),
+)
+@pytest.mark.asyncio
+async def test_search_finds_results_from_generated_episodes(query, exp_first_query, exp_perform_episode_searches, mocker):
+    # find.search() is memoized
+    find.search.clear_cache()
+
+    mock_dbs = ('mock db 1', 'mock db 2')
+    mock_episode_queries = (
+        find.SceneQuery('mock episode query 1'),
+        find.SceneQuery('mock episode query 2'),
+    )
+    mock_episode_results = (['mock episode result 1', 'mock episode result 2'],
+                            ['mock episode result 3', 'mock episode result 4'])
+    mock_only_existing_releases = 'mock only existing releases'
+    generate_episode_queries_mock = mocker.patch(
+        'upsies.utils.scene.find._generate_episode_queries',
+        return_value=mock_episode_queries,
+    )
+    multisearch_mock = mocker.patch('upsies.utils.scene.find._multisearch', AsyncMock(
+        side_effect=(
+            (),                    # First query yields no results
+        ) + mock_episode_results,  # The actual results
+
+    ))
+
+    if exp_perform_episode_searches:
+        exp_results = [result
+                       for results in mock_episode_results
+                       for result in results]
+    else:
+        exp_results = None
+
+    results = await find.search(query, mock_dbs, only_existing_releases=mock_only_existing_releases)
+    assert results == exp_results
+
+    if exp_perform_episode_searches:
+        assert multisearch_mock.call_args_list == [
+            call(mock_dbs, exp_first_query, mock_only_existing_releases),
+            call(mock_dbs, mock_episode_queries[0], mock_only_existing_releases),
+            call(mock_dbs, mock_episode_queries[1], mock_only_existing_releases),
+        ]
+        assert generate_episode_queries_mock.call_args_list == [
+            call(query),
+        ]
+    else:
+        assert multisearch_mock.call_args_list == [
+            call(mock_dbs, exp_first_query, mock_only_existing_releases),
+        ]
+        assert generate_episode_queries_mock.call_args_list == []
 
 
 @pytest.mark.parametrize(
@@ -64,21 +142,51 @@ def make_db_class(name, exception):
     ),
 )
 @pytest.mark.asyncio
-async def test_search(dbs, exp_results, exp_exception, exp_queried_db_names, mocker):
+async def test_multisearch(dbs, exp_results, exp_exception, exp_queried_db_names, mocker):
     mocker.patch('upsies.utils.scene.scenedb', side_effect=dbs)
 
     db_order = [db.name for db in dbs]
     if exp_exception:
         with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
-            await find.search('mock query', dbs=db_order, only_existing_releases='mock bool')
+            await find._multisearch(db_order, 'mock query', only_existing_releases='mock bool')
     else:
-        results = await find.search('mock query', dbs=db_order, only_existing_releases='mock bool')
+        results = await find._multisearch(db_order, 'mock query', only_existing_releases='mock bool')
         assert results == exp_results
 
     db_map = {db.name: db for db in dbs}
     for db_name in exp_queried_db_names:
         db = db_map[db_name]
         assert db.calls == [call('mock query', only_existing_releases='mock bool')]
+
+
+@pytest.mark.parametrize(
+    argnames='path, files, exp_queries',
+    argvalues=(
+        ('Foo.2000.WEB-DL.H.264', ('a', 'b', 'c'), ()),
+        ('Foo.S01E01.WEB-DL.H.264', ('a', 'b', 'c'), ()),
+        (
+            'Foo.S01.WEB-DL.H.264',
+            ('foo.s01e01.mkv', 'foo.s01e02.mkv', 'foo.s01e03.mkv'),
+            (
+                find.SceneQuery.from_string('foo.s01e01.mkv'),
+                find.SceneQuery.from_string('foo.s01e02.mkv'),
+                find.SceneQuery.from_string('foo.s01e03.mkv'),
+            ),
+        ),
+        (
+            'Foo.S01.WEB-DL.H.264',
+            ('stupid-filenames01e01.mkv', 'stupid-filenames01e02.mkv', 'stupid-filenames01e03.mkv'),
+            (),
+        ),
+    ),
+)
+def test_generate_episode_queries(path, files, exp_queries, mocker):
+    file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=files)
+    queries = tuple(find._generate_episode_queries(path))
+    assert queries == exp_queries
+    assert file_list_mock.call_args_list == [
+        call(path, extensions=constants.VIDEO_FILE_EXTENSIONS),
+    ]
 
 
 @pytest.mark.parametrize(
@@ -235,10 +343,7 @@ async def test_SceneQuery_search(only_existing_releases, exp_only_existing_relea
     mocker.patch.object(query, '_handle_results')
     search_coro_func = AsyncMock(return_value=('foo', 'bar', 'baz'))
 
-    if only_existing_releases is None:
-        return_value = await query.search(search_coro_func)
-    else:
-        return_value = await query.search(search_coro_func, only_existing_releases=only_existing_releases)
+    return_value = await query.search(search_coro_func, only_existing_releases=only_existing_releases)
 
     assert return_value is query._handle_results.return_value
     assert query._handle_results.call_args_list == [

@@ -2,10 +2,11 @@
 Search for scene release
 """
 
+import collections
 import re
 
-from ... import errors
-from .. import LazyModule, release
+from ... import constants, errors
+from .. import LazyModule, asyncmemoize, fs, release
 from . import common
 
 import logging  # isort:skip
@@ -14,7 +15,8 @@ _log = logging.getLogger(__name__)
 natsort = LazyModule(module='natsort', namespace=globals())
 
 
-async def search(query, dbs=('predb', 'srrdb'), only_existing_releases=True):
+@asyncmemoize
+async def search(query, dbs=('predb', 'srrdb'), only_existing_releases=None):
     """
     Search scene databases
 
@@ -24,33 +26,73 @@ async def search(query, dbs=('predb', 'srrdb'), only_existing_releases=True):
     Failed requests are ignored unless all requests fail, in which case they are
     combined into a single :class:`~.errors.RequestError`.
 
-    :param query: :class:`SceneQuery` object
+    If there are no results and `query` is a directory path that looks like a
+    season pack, perform one search per video file in that directory or any
+    subdirectory. This is necessary to find mixed season packs.
+
+    :param query: :class:`SceneQuery` object or :class:`str` to pass to
+        :meth:`SceneQuery.from_string` or :class:`~.collections.abc.Mapping` to
+        pass to :meth:`SceneQuery.from_release`
     :param dbs: Sequence of :attr:`~.base.SceneDbApiBase.name` values
     :param only_existing_releases: See :meth:`.SceneQuery.search`
 
-    :return: Sequence of release names as :class:`str`
+    :return: Sequence of release names (:class:`str`)
 
     :raise RequestError: if all search requests fail
     """
+    path = None
+    if isinstance(query, str):
+        path = query
+        query = SceneQuery.from_string(query)
+    elif isinstance(query, collections.abc.Mapping):
+        query = SceneQuery.from_release(query)
+
+    results = await _multisearch(dbs, query, only_existing_releases)
+    if results:
+        return results
+    elif path:
+        combined_results = []
+        for episode_query in _generate_episode_queries(path):
+            results = await _multisearch(dbs, episode_query, only_existing_releases)
+            combined_results.extend(results)
+        return combined_results
+
+
+async def _multisearch(dbs, query, only_existing_releases):
+    # Send the same query to multiple DBs
     from . import scenedb
 
     exceptions = []
     for db_name in dbs:
         db = scenedb(db_name)
         try:
-            result = await db.search(query, only_existing_releases=only_existing_releases)
+            results = await db.search(query, only_existing_releases=only_existing_releases)
         except errors.RequestError as e:
             _log.debug('Collecting scene search error: %r', e)
             exceptions.append(e)
         else:
-            _log.debug('Returning first scene search result: %r', result)
-            return result
+            _log.debug('Returning scene search results: %r', results)
+            return results
 
     if exceptions:
         msg = 'All queries failed: ' + ', '.join(str(e) for e in exceptions)
         raise errors.RequestError(msg)
     else:
         return []
+
+
+def _generate_episode_queries(path):
+    info = release.ReleaseInfo(path)
+    if info['type'] is release.ReleaseType.season:
+        # Create `query` from each `episode_path`
+        episode_paths = fs.file_list(path, extensions=constants.VIDEO_FILE_EXTENSIONS)
+        for episode_path in episode_paths:
+            _log.debug('Creating query for episode: %r', episode_path)
+            try:
+                yield SceneQuery.from_string(episode_path)
+            except errors.SceneError as e:
+                # Episode may be an abbreviated scene name like foo-bars03e11.mkv
+                _log.debug('Ignoring exception: %r', e)
 
 
 class SceneQuery:
