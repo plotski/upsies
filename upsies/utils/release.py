@@ -1253,12 +1253,22 @@ class ReleaseInfo(collections.abc.MutableMapping):
 
 class Episodes(dict):
     """
-    :class:`dict` subclass that maps season numbers to sequences of episode
-    numbers
+    :class:`dict` subclass that maps season numbers to lists of episode numbers
 
     All keys and values are :class:`str` objects. All episodes from a season are
     indicated by an empty sequence. For episodes from any sason, the key is an
     empty string.
+
+    This class accepts the same arguments as :class:`dict`.
+
+    To provide seasons as keyword arguments, you need to prefix "S" to each
+    keyword. This is because numbers can't be keyword arguments, but it also
+    looks nicer.
+
+    >>> e = Episodes({"1": ["1", "2", "3"], "2": []})
+    >>> e.update(S01=[3, "4"], S3=range(2, 4), s05=[], S=[10, "E11", 12])
+    >>> e
+    >>> Episodes({'1': ['1', '2', '3', '4'], '2': [], '3': ['2', '3'], '5': [], '': ['10', '11', '12']})
     """
 
     regex = re.compile(rf'(?:{DELIM}|^)((?i:[SE]\d+)+)(?:{DELIM}|$)')
@@ -1337,35 +1347,79 @@ class Episodes(dict):
         return episodes
 
     def __init__(self, *args, **kwargs):
-        def number(name, value):
-            if isinstance(value, int):
-                if value >= 0:
-                    return str(value)
-                else:
-                    raise ValueError(f'Invalid {name}: {value!r}')
-            elif isinstance(value, str):
-                if value.isdigit():
-                    return str(value)
-                else:
-                    raise ValueError(f'Invalid {name}: {value!r}')
-            else:
-                raise TypeError(f'Invalid {name}: {value!r}')
+        super().__init__()
+        self._set(*args, **kwargs)
 
-        def number_or_empty_string(name, value):
-            if value == '':
+    def update(self, *args, clear=False, **kwargs):
+        """
+        Set specific episodes from specific seasons, remove all other episodes and
+        seasons
+
+        :params bool clear: Whether to remove all seasons and episodes first
+        """
+        if clear:
+            self.clear()
+        self._set(*args, **kwargs)
+
+    def _set(self, *args, **kwargs):
+        # Validate all values before applying any changes
+        validated = {}
+        update = dict(*args, **kwargs)
+        for season, episodes in update.items():
+            season = self._normalize_season(season)
+            if not isinstance(episodes, collections.abc.Iterable) or isinstance(episodes, str):
+                episodes = [self._normalize_episode(episodes)]
+            else:
+                episodes = [self._normalize_episode(e) for e in episodes]
+
+            if season in validated:
+                validated[season].extend(episodes)
+            else:
+                validated[season] = episodes
+
+        # Set validated values
+        for season, episodes in validated.items():
+            if season in self:
+                self[season].extend(episodes)
+            else:
+                self[season] = episodes
+
+            # Remove duplicates
+            self[season][:] = set(self[season])
+
+            # Sort naturally
+            self[season].sort(key=natsort.natsort_key)
+
+    def _normalize_season(self, value):
+        return self._normalize(value, name='season', prefix='S', empty_string_ok=True)
+
+    def _normalize_episode(self, value):
+        return self._normalize(value, name='episode', prefix='E', empty_string_ok=False)
+
+    def _normalize(self, value, name, prefix=None, empty_string_ok=False):
+        if isinstance(value, int):
+            if value >= 0:
                 return str(value)
-            else:
-                return number(name, value)
 
-        validated_args = {}
-        for season, episodes in dict(*args, **kwargs).items():
-            season = number_or_empty_string('season', season)
-            if not isinstance(episodes, collections.abc.Iterable):
-                raise TypeError(f'Invalid episodes: {episodes!r}')
-            else:
-                episodes = tuple(number('episode', e) for e in episodes)
-            validated_args[season] = episodes
-        return super().__init__(validated_args)
+        elif isinstance(value, str):
+            if value == '' and empty_string_ok:
+                return str(value)
+
+            if value.isdigit():
+                return str(int(value))
+
+            if prefix and len(value) >= len(prefix):
+                prefix_ = value[:len(prefix)].casefold()
+                if prefix_ == prefix.casefold():
+                    actual_value = value[len(prefix):]
+                    return self._normalize(
+                        actual_value,
+                        name=name,
+                        prefix=None,
+                        empty_string_ok=empty_string_ok,
+                    )
+
+        raise TypeError(f'Invalid {name}: {value!r}')
 
     def remove_specific_episodes(self):
         """Remove episodes from each season, leaving only complete seasons"""
