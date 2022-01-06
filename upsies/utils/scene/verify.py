@@ -71,8 +71,8 @@ async def is_scene_release(release):
     #       Examples:
     #         - Prospect.2018.720p.BluRay.DD5.1.x264-LoRD
     #         - How.The.Grinch.Stole.Christmas.2000.720p.BluRay.DTS.x264-EbP
-    query = SceneQuery.from_release(release_info)
-    results = await find.search(query)
+
+    results = await find.search(release)
     if results:
         # Do we have enough information to pinpoint a single release?
         needed_keys = common.get_needed_keys(release_info)
