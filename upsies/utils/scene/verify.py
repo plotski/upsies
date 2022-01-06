@@ -118,8 +118,7 @@ async def release_files(release_name):
     # season pack, and then we can call release_files() for each episode.
     release_info = utils.release.ReleaseInfo(release_name)
     if release_info['type'] is ReleaseType.season:
-        query = SceneQuery.from_release(release_info)
-        results = await find.search(query)
+        results = await find.search(release_info)
         if results:
             files = await asyncio.gather(
                 *(_srrdb.release_files(result) for result in results)
@@ -134,7 +133,7 @@ async def release_files(release_name):
     elif release_info['type'] is ReleaseType.episode:
         # Remove single episodes from seasons
         release_info['episodes'].remove_specific_episodes()
-        results = await find.search(SceneQuery.from_release(release_info))
+        results = await find.search(release_info)
         if len(results) == 1:
             _log.debug('Getting files from single result: %r', results[0])
             files = await _srrdb.release_files(results[0])
