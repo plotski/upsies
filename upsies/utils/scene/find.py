@@ -118,7 +118,7 @@ class SceneQuery:
             :class:`~.errors.ContentError`
         """
         try:
-            return cls.from_release(release.ReleaseInfo(string, strict=True))
+            return cls.from_release(release.ReleaseInfo(string, strict=False))
         except errors.ContentError as e:
             raise errors.SceneError(e)
 

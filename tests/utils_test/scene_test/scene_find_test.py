@@ -216,7 +216,7 @@ def test_SceneQuery_from_string(raised_by_ReleaseInfo, raised_by_from_release, e
         assert query.group == from_release_mock.return_value.group
         assert query.episodes == from_release_mock.return_value.episodes
 
-    assert ReleaseInfo_mock.call_args_list == [call('foo', strict=True)]
+    assert ReleaseInfo_mock.call_args_list == [call('foo', strict=False)]
     if not raised_by_ReleaseInfo:
         assert from_release_mock.call_args_list == [call(ReleaseInfo_mock.return_value)]
     else:
