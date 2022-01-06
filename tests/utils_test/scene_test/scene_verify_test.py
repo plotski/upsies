@@ -61,13 +61,11 @@ def test_assert_not_abbreviated_filename_and_is_abbreviated_filename(filename, s
 @pytest.mark.parametrize(
     argnames='release_name, exp_return_value',
     argvalues=(
-        # Movie: Abbreviated file in properly named directory
-        ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv', SceneCheckResult.true),
-        ('Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/ly-dellmdm1080p.mkv', SceneCheckResult.true),
-        ('dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity/ly-dellmdm1080p.mkv', SceneCheckResult.true),
-
         # Movie: Properly named file
         ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', SceneCheckResult.true),
+
+        # Movie: Properly named file in lower-case
+        ('dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity.mkv', SceneCheckResult.true),
 
         # Movie: Properly named file in properly named directory
         ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', SceneCheckResult.true),
@@ -75,8 +73,10 @@ def test_assert_not_abbreviated_filename_and_is_abbreviated_filename(filename, s
         # Movie: Abbreviated file without properly named parent directory
         ('path/to/ly-dellmdm1080p.mkv', SceneCheckResult.unknown),
 
-        # Movie: Properly named file in lower-case
-        ('dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity.mkv', SceneCheckResult.true),
+        # Movie: Abbreviated file in properly named directory
+        ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv', SceneCheckResult.true),
+        ('Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/ly-dellmdm1080p.mkv', SceneCheckResult.true),
+        ('dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity/ly-dellmdm1080p.mkv', SceneCheckResult.true),
 
         # Series: Scene released season pack
         ('Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT', SceneCheckResult.true),
