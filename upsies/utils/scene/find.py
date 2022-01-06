@@ -7,7 +7,7 @@ import re
 
 from ... import constants, errors
 from .. import LazyModule, asyncmemoize, fs, release
-from . import common
+from . import common, verify
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -88,11 +88,8 @@ def _generate_episode_queries(path):
         episode_paths = fs.file_list(path, extensions=constants.VIDEO_FILE_EXTENSIONS)
         for episode_path in episode_paths:
             _log.debug('Creating query for episode: %r', episode_path)
-            try:
+            if not verify.is_abbreviated_filename(episode_path):
                 yield SceneQuery.from_string(episode_path)
-            except errors.SceneError as e:
-                # Episode may be an abbreviated scene name like foo-bars03e11.mkv
-                _log.debug('Ignoring exception: %r', e)
 
 
 class SceneQuery:
