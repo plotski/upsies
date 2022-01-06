@@ -38,7 +38,7 @@ class AsyncMock(Mock):
         ('asdf.mkv', False),
     ),
 )
-def test_assert_not_abbreviated_filename(filename, should_raise):
+def test_assert_not_abbreviated_filename_and_is_abbreviated_filename(filename, should_raise):
     exp_msg = re.escape(
         f'Provide parent directory of abbreviated scene file: {filename}'
     )
@@ -47,9 +47,15 @@ def test_assert_not_abbreviated_filename(filename, should_raise):
             verify.assert_not_abbreviated_filename(filename)
         with pytest.raises(errors.SceneError, match=rf'^{exp_msg}$'):
             verify.assert_not_abbreviated_filename(f'path/to/{filename}')
+
+        assert verify.is_abbreviated_filename(filename)
+        assert verify.is_abbreviated_filename(f'path/to/{filename}')
     else:
         verify.assert_not_abbreviated_filename(filename)
         verify.assert_not_abbreviated_filename(f'path/to/{filename}')
+
+        assert not verify.is_abbreviated_filename(filename)
+        assert not verify.is_abbreviated_filename(f'path/to/{filename}')
 
 
 @pytest.mark.parametrize(

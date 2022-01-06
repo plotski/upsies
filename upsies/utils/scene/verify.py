@@ -39,6 +39,19 @@ def assert_not_abbreviated_filename(filepath):
             )
 
 
+def is_abbreviated_filename(filepath):
+    """
+    Whether `filepath` points to an abbreviated scene release file name like
+    ``abd-mother.mkv``
+    """
+    try:
+        assert_not_abbreviated_filename(filepath)
+    except errors.SceneError:
+        return True
+    else:
+        return False
+
+
 async def is_scene_release(release):
     """
     Check if `release` is a scene release or not
