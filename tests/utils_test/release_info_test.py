@@ -12,8 +12,9 @@ from upsies.utils.types import ReleaseType
     argnames='strict, exception, exp_exception',
     argvalues=(
         (False, None, None),
-        (False, errors.ContentError('Error!'), None),
-        (True, errors.ContentError('Error!'), errors.ContentError('Error!')),
+        (False, errors.SceneAbbreviatedFilenameError('foo'), None),
+        (True, errors.SceneAbbreviatedFilenameError('foo'),
+         errors.ContentError(errors.SceneAbbreviatedFilenameError('foo'))),
         (True, None, None),
     ),
     ids=lambda v: str(v),

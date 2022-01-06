@@ -811,7 +811,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
         if strict:
             try:
                 scene.assert_not_abbreviated_filename(path)
-            except errors.SceneError as e:
+            except errors.SceneAbbreviatedFilenameError as e:
                 raise errors.ContentError(e)
         self._path = str(path)
         self._abspath = os.path.abspath(self._path)

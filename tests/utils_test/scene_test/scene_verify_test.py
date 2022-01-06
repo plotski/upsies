@@ -39,13 +39,11 @@ class AsyncMock(Mock):
     ),
 )
 def test_assert_not_abbreviated_filename_and_is_abbreviated_filename(filename, should_raise):
-    exp_msg = re.escape(
-        f'Provide parent directory of abbreviated scene file: {filename}'
-    )
+    exp_msg = re.escape(f'Abbreviated scene file name is verboten: {filename}')
     if should_raise:
-        with pytest.raises(errors.SceneError, match=rf'^{exp_msg}$'):
+        with pytest.raises(errors.SceneAbbreviatedFilenameError, match=rf'^{exp_msg}$'):
             verify.assert_not_abbreviated_filename(filename)
-        with pytest.raises(errors.SceneError, match=rf'^{exp_msg}$'):
+        with pytest.raises(errors.SceneAbbreviatedFilenameError, match=rf'^{exp_msg}$'):
             verify.assert_not_abbreviated_filename(f'path/to/{filename}')
 
         assert verify.is_abbreviated_filename(filename)
@@ -414,14 +412,14 @@ async def test_verify_release_files(content_path, release_name, file_sizes, exp_
 @pytest.mark.asyncio
 async def test_verify_release_gets_abbreviated_scene_file_name(mocker):
     assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.verify.assert_not_abbreviated_filename', Mock(
-        side_effect=errors.SceneError('nope'),
+        side_effect=errors.SceneAbbreviatedFilenameError('nope'),
     ))
     is_scene_release_mock = mocker.patch('upsies.utils.scene.verify.is_scene_release', AsyncMock())
     verify_release_name_mock = mocker.patch('upsies.utils.scene.verify.verify_release_name', AsyncMock())
     verify_release_files_mock = mocker.patch('upsies.utils.scene.verify.verify_release_files', AsyncMock())
     is_scene, exceptions = await verify.verify_release('mock/path', 'Mock.Release')
     assert is_scene is SceneCheckResult.unknown
-    assert exceptions == (errors.SceneError('nope'),)
+    assert exceptions == (errors.SceneAbbreviatedFilenameError('nope'),)
     assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
     assert is_scene_release_mock.call_args_list == []
     assert verify_release_name_mock.call_args_list == []

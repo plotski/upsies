@@ -34,9 +34,7 @@ def assert_not_abbreviated_filename(filepath):
     filename = os.path.basename(filepath)
     for regex in _abbreviated_scene_filename_regexs:
         if regex.search(filename):
-            raise errors.SceneError(
-                f'Provide parent directory of abbreviated scene file: {filename}'
-            )
+            raise errors.SceneAbbreviatedFilenameError(filename)
 
 
 def is_abbreviated_filename(filepath):
@@ -46,7 +44,7 @@ def is_abbreviated_filename(filepath):
     """
     try:
         assert_not_abbreviated_filename(filepath)
-    except errors.SceneError:
+    except errors.SceneAbbreviatedFilenameError:
         return True
     else:
         return False

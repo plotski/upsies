@@ -142,3 +142,13 @@ class SceneMissingInfoError(UpsiesError):
     """Missing information about a file from a scene release"""
     def __init__(self, file_name):
         super().__init__(f'Missing information: {file_name}')
+
+class SceneAbbreviatedFilenameError(UpsiesError):
+    """
+    An abbreviated scene file name (e.g. foo-bar.mkv) was provided
+
+    These contain almost no information and should always be provided via a
+    properly named parent directory.
+    """
+    def __init__(self, file_name):
+        super().__init__(f'Abbreviated scene file name is verboten: {file_name}')

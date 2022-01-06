@@ -101,7 +101,7 @@ def release(value):
     path = str(value)
     try:
         scene.assert_not_abbreviated_filename(path)
-    except errors.SceneError as e:
+    except errors.SceneAbbreviatedFilenameError as e:
         raise argparse.ArgumentTypeError(e)
     else:
         return path

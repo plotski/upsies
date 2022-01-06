@@ -134,7 +134,8 @@ def test_regex_invalid_value(regex, exp_msg):
     argvalues=(
         ('path/to/foo', 'path/to/foo', None, None),
         (123, '123', None, None),
-        ('path/to/foo', 'path/to/foo', errors.SceneError('bar'), argparse.ArgumentTypeError('bar')),
+        ('path/to/foo', 'path/to/foo', errors.SceneAbbreviatedFilenameError('bar'),
+         argparse.ArgumentTypeError(errors.SceneAbbreviatedFilenameError('bar'))),
         ('path/to/foo', 'path/to/foo', RuntimeError('baz'), RuntimeError('baz')),
     ),
     ids=lambda v: str(v),
