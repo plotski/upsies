@@ -61,9 +61,6 @@ async def test_search_finds_query_results_directly(query, exp_query, mocker):
 )
 @pytest.mark.asyncio
 async def test_search_finds_results_from_generated_episodes(query, exp_first_query, exp_perform_episode_searches, mocker):
-    # find.search() is memoized
-    find.search.clear_cache()
-
     mock_dbs = ('mock db 1', 'mock db 2')
     mock_episode_queries = (
         find.SceneQuery('mock episode query 1'),
