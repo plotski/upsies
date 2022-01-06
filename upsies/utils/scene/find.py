@@ -229,7 +229,7 @@ class SceneQuery:
                 if '' in self.episodes:
                     eps = self.episodes['']
                 if season in self.episodes:
-                    eps = (eps or ()) + self.episodes[season]
+                    eps = (eps or []) + self.episodes[season]
                 return eps
 
             # Translate single episodes into season packs.
@@ -237,8 +237,9 @@ class SceneQuery:
             for result in results:
                 for result_season, result_eps in release.Episodes.from_string(result).items():
                     wanted_episodes = get_wanted_episodes(result_season)
-                    # () means season pack
-                    if wanted_episodes == ():
+
+                    # [] means season pack
+                    if wanted_episodes == []:
                         if only_existing_releases:
                             # Add episode from wanted season pack
                             _log.debug('Adding episode from season pack: %r', result)
@@ -247,6 +248,7 @@ class SceneQuery:
                             season_pack = self._create_season_pack_name(result)
                             _log.debug('Adding season pack: %r', season_pack)
                             matches.append(season_pack)
+
                     elif wanted_episodes is not None:
                         for ep in result_eps:
                             if ep in wanted_episodes:

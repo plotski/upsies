@@ -160,10 +160,10 @@ async def test_multisearch(dbs, exp_results, exp_exception, exp_queried_db_names
 
 
 @pytest.mark.parametrize(
-    argnames='path, files, exp_queries',
+    argnames='path, files, exp_queries, exp_file_list_called',
     argvalues=(
-        ('Foo.2000.WEB-DL.H.264', ('a', 'b', 'c'), ()),
-        ('Foo.S01E01.WEB-DL.H.264', ('a', 'b', 'c'), ()),
+        ('Foo.2000.WEB-DL.H.264', ('a', 'b', 'c'), (), False),
+        ('Foo.S01E01.WEB-DL.H.264', ('a', 'b', 'c'), (), False),
         (
             'Foo.S01.WEB-DL.H.264',
             ('foo.s01e01.mkv', 'foo.s01e02.mkv', 'foo.s01e03.mkv'),
@@ -172,21 +172,27 @@ async def test_multisearch(dbs, exp_results, exp_exception, exp_queried_db_names
                 find.SceneQuery.from_string('foo.s01e02.mkv'),
                 find.SceneQuery.from_string('foo.s01e03.mkv'),
             ),
+            True,
         ),
         (
             'Foo.S01.WEB-DL.H.264',
             ('stupid-filenames01e01.mkv', 'stupid-filenames01e02.mkv', 'stupid-filenames01e03.mkv'),
             (),
+            True,
         ),
     ),
+    ids=lambda v: str(v),
 )
-def test_generate_episode_queries(path, files, exp_queries, mocker):
+def test_generate_episode_queries(path, files, exp_queries, exp_file_list_called, mocker):
     file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=files)
     queries = tuple(find._generate_episode_queries(path))
     assert queries == exp_queries
-    assert file_list_mock.call_args_list == [
-        call(path, extensions=constants.VIDEO_FILE_EXTENSIONS),
-    ]
+    if exp_file_list_called:
+        assert file_list_mock.call_args_list == [
+            call(path, extensions=constants.VIDEO_FILE_EXTENSIONS),
+        ]
+    else:
+        assert file_list_mock.call_args_list == []
 
 
 @pytest.mark.parametrize(
@@ -355,18 +361,18 @@ async def test_SceneQuery_search(only_existing_releases, exp_only_existing_relea
     argnames='episodes, exp_matches',
     argvalues=(
         ({}, 'ALL'),
-        ({'1': ()}, ['X.S01.x264-ASDF']),
-        ({'2': ()}, ['X.S02.x264-ASDF']),
-        ({'1': (), '2': ()}, ['X.S01.x264-ASDF', 'X.S02.x264-ASDF']),
-        ({'': ('2', '3')}, ['X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
-        ({'': ('2',), '2': ('1',)}, ['X.S01E02.x264-ASDF', 'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF']),
-        ({'1': ('2',)}, ['X.S01E02.x264-ASDF']),
-        ({'2': ('1', '3')}, ['X.S02E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
-        ({'1': ('1',), '2': ('3',)}, ['X.S01E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
-        ({'1': (), '2': ('2',)}, ['X.S01.x264-ASDF', 'X.S02E02.x264-ASDF']),
-        ({'1': ('2',), '2': ()}, ['X.S01E02.x264-ASDF', 'X.S02.x264-ASDF']),
-        ({'3': ()}, []),
-        ({'': ('4',)}, []),
+        ({'1': []}, ['X.S01.x264-ASDF']),
+        ({'2': []}, ['X.S02.x264-ASDF']),
+        ({'1': [], '2': []}, ['X.S01.x264-ASDF', 'X.S02.x264-ASDF']),
+        ({'': ['2', '3']}, ['X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'': ['2'], '2': ['1']}, ['X.S01E02.x264-ASDF', 'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF']),
+        ({'1': ['2']}, ['X.S01E02.x264-ASDF']),
+        ({'2': ['1', '3']}, ['X.S02E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'1': ['1'], '2': ['3']}, ['X.S01E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'1': [], '2': ['2']}, ['X.S01.x264-ASDF', 'X.S02E02.x264-ASDF']),
+        ({'1': ['2'], '2': []}, ['X.S01E02.x264-ASDF', 'X.S02.x264-ASDF']),
+        ({'3': []}, []),
+        ({'': ['4']}, []),
     ),
     ids=lambda v: str(v),
 )
@@ -391,19 +397,19 @@ def test_SceneQuery_handle_results_without_only_existing_releases(episodes, exp_
     argnames='episodes, exp_matches',
     argvalues=(
         ({}, 'ALL'),
-        ({'1': ()}, ['X.S01E01.x264-ASDF', 'X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF']),
-        ({'2': ()}, ['X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
-        ({'1': (), '2': ()}, ['X.S01E01.x264-ASDF', 'X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF',
+        ({'1': []}, ['X.S01E01.x264-ASDF', 'X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF']),
+        ({'2': []}, ['X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'1': [], '2': []}, ['X.S01E01.x264-ASDF', 'X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF',
                               'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
-        ({'': ('2', '3')}, ['X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
-        ({'': ('2',), '2': ('1',)}, ['X.S01E02.x264-ASDF', 'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF']),
-        ({'1': ('2',)}, ['X.S01E02.x264-ASDF']),
-        ({'2': ('1', '3')}, ['X.S02E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
-        ({'1': ('1',), '2': ('3',)}, ['X.S01E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
-        ({'1': (), '2': ('2',)}, ['X.S01E01.x264-ASDF', 'X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF', 'X.S02E02.x264-ASDF']),
-        ({'1': ('2',), '2': ()}, ['X.S01E02.x264-ASDF', 'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
-        ({'3': ()}, []),
-        ({'': ('4',)}, []),
+        ({'': ['2', '3']}, ['X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'': ['2'], '2': ['1']}, ['X.S01E02.x264-ASDF', 'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF']),
+        ({'1': ['2']}, ['X.S01E02.x264-ASDF']),
+        ({'2': ['1', '3']}, ['X.S02E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'1': ['1'], '2': ['3']}, ['X.S01E01.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'1': [], '2': ['2']}, ['X.S01E01.x264-ASDF', 'X.S01E02.x264-ASDF', 'X.S01E03.x264-ASDF', 'X.S02E02.x264-ASDF']),
+        ({'1': ['2'], '2': []}, ['X.S01E02.x264-ASDF', 'X.S02E01.x264-ASDF', 'X.S02E02.x264-ASDF', 'X.S02E03.x264-ASDF']),
+        ({'3': []}, []),
+        ({'': ['4']}, []),
     ),
     ids=lambda v: str(v),
 )
