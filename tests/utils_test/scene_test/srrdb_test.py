@@ -15,19 +15,19 @@ class AsyncMock(Mock):
 
 @pytest.fixture
 def api():
-    return srrdb.SrrDbApi()
+    return srrdb.SrrdbApi()
 
 
 def test_name():
-    assert srrdb.SrrDbApi.name == 'srrdb'
+    assert srrdb.SrrdbApi.name == 'srrdb'
 
 
 def test_label():
-    assert srrdb.SrrDbApi.label == 'srrDB'
+    assert srrdb.SrrdbApi.label == 'srrDB'
 
 
 def test_default_config():
-    assert srrdb.SrrDbApi.default_config == {}
+    assert srrdb.SrrdbApi.default_config == {}
 
 
 @pytest.mark.parametrize('group', (None, '', 'ASDF'), ids=lambda v: str(v))

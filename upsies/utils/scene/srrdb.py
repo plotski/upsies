@@ -8,7 +8,7 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class SrrDbApi(base.SceneDbApiBase):
+class SrrdbApi(base.SceneDbApiBase):
     name = 'srrdb'
     label = 'srrDB'
 

@@ -14,7 +14,7 @@ from .find import SceneQuery
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-_srrdb = srrdb.SrrDbApi()
+_srrdb = srrdb.SrrdbApi()
 
 _abbreviated_scene_filename_regexs = (
     # Match names with group in front
@@ -99,7 +99,7 @@ async def release_files(release_name):
     Map release file names to file information
 
     This function uses :func:`~.find.search` for searching and
-    :class:`~.srrdb.SrrDbApi` to get the file information.
+    :class:`~.srrdb.SrrdbApi` to get the file information.
 
     :param str release_name: Exact name of the release
     """
