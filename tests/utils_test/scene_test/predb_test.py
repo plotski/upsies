@@ -16,19 +16,19 @@ class AsyncMock(Mock):
 
 @pytest.fixture
 def api():
-    return predb.PreDbApi()
+    return predb.PredbApi()
 
 
 def test_name():
-    assert predb.PreDbApi.name == 'predb'
+    assert predb.PredbApi.name == 'predb'
 
 
 def test_label():
-    assert predb.PreDbApi.label == 'PreDB'
+    assert predb.PredbApi.label == 'PreDB'
 
 
 def test_default_config():
-    assert predb.PreDbApi.default_config == {}
+    assert predb.PredbApi.default_config == {}
 
 
 @pytest.mark.asyncio
@@ -147,7 +147,7 @@ async def test_request_all_pages_does_not_request_pages_indefinitely(api, mocker
             1,
             {'status': 'not success', 'message': 'Something went wrong'},
             None,
-            errors.RequestError(f'{predb.PreDbApi.label}: Something went wrong'),
+            errors.RequestError(f'{predb.PredbApi.label}: Something went wrong'),
         ),
     ),
     ids=lambda v: str(v),
