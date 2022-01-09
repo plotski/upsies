@@ -101,7 +101,7 @@ class SceneError(UpsiesError):
 class SceneRenamedError(SceneError):
     """Renamed scene release"""
     def __init__(self, *, original_name, existing_name):
-        super().__init__(f'Release name should be: {original_name}')
+        super().__init__(f'{existing_name} should be named {original_name}')
         self._original_name = original_name
         self._existing_name = existing_name
 
