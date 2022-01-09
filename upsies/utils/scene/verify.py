@@ -83,12 +83,10 @@ async def is_scene_release(release):
         else:
             return SceneCheckResult.unknown
 
-    # If this is a file like "abd-mother.mkv" without a properly named parent
-    # directory and we didn't find it above, it's possibly a scene release, but
-    # we can't be sure.
-    try:
-        assert_not_abbreviated_filename(release_info.path)
-    except errors.SceneError:
+    # If this is a file like "abd-mother.mkv", it's possibly a scene release,
+    # but we can't be sure. If it is placed in a properly named parent
+    # directory, ReleaseInfo() should've picked that up above.
+    if is_abbreviated_filename(release_info.path):
         return SceneCheckResult.unknown
 
     return SceneCheckResult.false
