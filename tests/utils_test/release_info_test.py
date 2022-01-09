@@ -206,6 +206,10 @@ def assert_info(release_name,
       'episodes': {'1': ['2'], '3': ['4']},
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
+    ('The Foo S01 1080p NF WEB-DL AAC2.0 H.264-ASDF/asdf-foos01e02.mkv',
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'episodes': {'1': ['2']},
+      'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
+      'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
 ))
 def test_type_and_year_season_and_episode(release_name, expected):
     assert_info(release_name, **expected)

@@ -871,7 +871,8 @@ class ReleaseInfo(collections.abc.MutableMapping):
         guess = dict(_guessit.default_api.guessit(path, options=constants.GUESSIT_OPTIONS))
         # _log.debug('Original guess: %r', guess)
 
-        # We do our own episode parsing to preserve order
+        # We try to do our own episode parsing to preserve order and support
+        # multiple seasons and episodes
         for name in fs.file_and_parent(path):
             if Episodes.has_episodes_info(name):
                 guess['episodes'] = Episodes.from_string(name)
@@ -886,6 +887,23 @@ class ReleaseInfo(collections.abc.MutableMapping):
             for e in episodes:
                 string.append(f'E{e:02d}')
             guess['episodes'] = Episodes.from_string(''.join(string))
+
+        # If we got an abbreviated file name (e.g. "group-titles01e02.mkv"),
+        # guessit can't (and shouldn't) handle it. Try to find episode
+        # information in it.
+        if guess['episodes']:
+            episodes_string = str(guess['episodes'])
+            if (
+                'S' in episodes_string
+                and 'E' not in episodes_string
+                and scene.is_abbreviated_filename(path)
+            ):
+                filename = fs.basename(path)
+                match = re.search(r'((?i:[SE]\d+)+)', filename)
+                if match:
+                    episodes = Episodes.from_string(match.group(1))
+                    guess['episodes'].update(episodes)
+                    _log.debug('Found episodes in abbreviated file name: %r: %r', filename, guess['episodes'])
 
         return guess
 
