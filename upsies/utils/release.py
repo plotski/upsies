@@ -894,20 +894,9 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return _guessit.default_api.advanced_config
 
     def _get_type(self):
-        for name in fs.file_and_parent(self._path):
-            if Episodes.has_episodes_info(name):
-                episodes = Episodes.from_string(name)
-                if any(episodes.values()):
-                    return ReleaseType.episode
-                else:
-                    return ReleaseType.season
-
-        guessit_type = _as_string(self._guess.get('type'))
-        if not guessit_type:
-            return ReleaseType.unknown
-        elif guessit_type == 'episode':
-            # guessit doesn't detect season packs; check if at least one episode
-            # is specified
+        # guessit doesn't differentiate between episodes and season packs.
+        # Check if at least one episode is specified.
+        if self['episodes']:
             if any(episodes for episodes in self['episodes'].values()):
                 return ReleaseType.episode
             else:
