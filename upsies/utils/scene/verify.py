@@ -152,36 +152,76 @@ async def verify_release_name(content_path, release_name):
     """
     Check if release was renamed
 
-    :param content_path: Path to release file or directory
+    :param content_path: Path to release file or directory (does not have to
+        exist)
     :param release_name: Known exact release name, e.g. from :func:`search`
         results
 
-    `content_path` is ok if its last segment is equal to `release_name` (file
-    extension is ignored) or equal to one of the files from the release
-    specified by `release_name`.
-
     :raise SceneRenamedError: if release was renamed
-    :raise SceneError: if release name is not a scene release or if
-        `content_path` points to an abbreviated file name
-        (e.g. "abd-mother.mkv")
+    :raise SceneError: if release name is not a scene release
     """
-    assert_not_abbreviated_filename(content_path)
+    _log.debug('Verifying release name: %r =? %r', content_path, release_name)
+
     if not await is_scene_release(release_name):
         raise errors.SceneError(f'Not a scene release: {release_name}')
 
-    content_filename = utils.fs.basename(content_path)
-    content_release_name = utils.fs.strip_extension(content_filename)
-
-    if content_release_name == release_name:
-        return
-
     files = await release_files(release_name)
-    if content_filename in files:
-        return
+    content_path = content_path.strip(os.sep)
+    content_filename = utils.fs.basename(content_path)
+
+    # The payload of the release is its largest file
+    main_release_file = sorted(
+        (info for info in files.values()),
+        key=lambda info: info['size'],
+    )[0]['file_name']
+
+    # Generate list of paths that are valid for this release
+    acceptable_paths = [release_name]
+
+    # Properly named directory that contains the released file. This covers
+    # abbreviated files and all other files.
+    for file in files:
+        acceptable_paths.append(os.path.join(release_name, file))
+
+    # Any non-abbreviated files may exist outside of a properly named parent
+    # directory
+    for file in files:
+        if not is_abbreviated_filename(file):
+            acceptable_paths.append(file)
+
+    # Standalone file is also ok if it is named after `release_name` and it has
+    # the same file extension as the main file
+    main_release_file_extension = utils.fs.file_extension(main_release_file)
+    acceptable_paths.append('.'.join((release_name, main_release_file_extension)))
+
+    # Release is correctly named if `content_path` ends with any acceptable path
+    for path in (p.strip(os.sep) for p in acceptable_paths):
+        if re.search(rf'(?:^|{re.escape(os.sep)}){re.escape(path)}$', content_path):
+            return
+
+    # All attempts to match `content_path` against `release_name` have failed.
+    # Produce a useful error message.
+    if is_abbreviated_filename(content_path):
+        # Abbreviated files should never be handled without a parent
+        original_name = os.path.join(release_name, main_release_file)
+    elif utils.fs.file_extension(content_path):
+        # Assume `content_path` refers to a file, not a directory
+        # NOTE: `content_path` may not exist
+        original_name = main_release_file
+    else:
+        # Assume `content_path` refers to directory
+        original_name = release_name
+
+    # Use the same number of parent directories for original/existing path. If
+    # original_name contains the parent directory, we also want the parent
+    # directory in existing_name.
+    original_name_parts_count = original_name.count(os.sep)
+    content_path_parts = content_path.split(os.sep)
+    existing_name = os.sep.join(content_path_parts[-original_name_parts_count - 1:])
 
     raise errors.SceneRenamedError(
-        original_name=release_name,
-        existing_name=content_release_name,
+        original_name=original_name,
+        existing_name=existing_name,
     )
 
 

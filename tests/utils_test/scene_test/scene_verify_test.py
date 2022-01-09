@@ -217,75 +217,139 @@ async def test_release_files(release_name, exp_return_value, store_response):
     assert await verify.release_files(release_name) == exp_return_value
 
 
+@pytest.mark.parametrize('parent_path', ('', 'path/to'))
 @pytest.mark.parametrize(
     argnames='content_path, release_name, exp_exception',
     argvalues=(
-        # Abbreviated file in properly named directory
-        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv',
-         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         errors.SceneError('Provide parent directory of abbreviated scene file: ly-dellmdm1080p.mkv')),
-
-        # Abbreviated file in non-release directory
-        ('path/to/ly-dellmdm1080p.mkv',
-         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         errors.SceneError('Provide parent directory of abbreviated scene file: ly-dellmdm1080p.mkv')),
-
-        # Non-scene release
-        ('path/to/Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv',
+        # [MOVIE] Non-scene release
+        ('Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv',
          'Rampart.2011.1080p.Bluray.DD5.1.x264-DON',
          errors.SceneError('Not a scene release: Rampart.2011.1080p.Bluray.DD5.1.x264-DON')),
 
-        # Properly named directory
-        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/',
+        # [MOVIE RELEASE] Properly named directory
+        ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
          'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
          None),
 
-        # Properly named file
-        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
+        # [MOVIE RELEASE] Properly named directory with trailing os.sep
+        ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/',
          'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
          None),
 
-        # Renamed
-        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.X264-LiViDiTY',
+        # [MOVIE RELEASE] Properly named file from abbreviated file name
+        ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
+         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+         None),
+
+        # [MOVIE RELEASE] Renamed release name
+        ('Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY',
          'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
          errors.SceneRenamedError(original_name='Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-                                  existing_name='Dellamorte.Dellamore.1994.1080p.BluRay.X264-LiViDiTY')),
+                                  existing_name='Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY')),
 
-        # File from release
-        ('path/to/side.effects.2013.720p.bluray.x264-sparks.mkv',
+        # [MOVIE] Abbreviated file in properly named directory
+        ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv',
+         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+         None),
+
+        # [MOVIE] Abbreviated file in renamed directory
+        ('Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/ly-dellmdm1080p.mkv',
+         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+         errors.SceneRenamedError(original_name='Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv',
+                                  existing_name='Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/ly-dellmdm1080p.mkv')),
+
+        # [MOVIE] File from release
+        ('side.effects.2013.720p.bluray.x264-sparks.mkv',
          'Side.Effects.2013.720p.BluRay.x264-SPARKS',
          None),
 
-        # Renamed file from release
-        ('path/to/side.effects.2013.720p.bluray.x264-SPARKS.mkv',
+        # [MOVIE] Renamed file from release
+        ('side.effects.2013.720p.bluray.x264-SPARKS.mkv',
          'Side.Effects.2013.720p.BluRay.x264-SPARKS',
-         errors.SceneRenamedError(original_name='Side.Effects.2013.720p.BluRay.x264-SPARKS',
+         errors.SceneRenamedError(original_name='side.effects.2013.720p.bluray.x264-sparks.mkv',
                                   existing_name='side.effects.2013.720p.bluray.x264-SPARKS.mkv')),
 
-        # Multi-file release
-        ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-         'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-         (),),
+        # [SEASON] Abbreviated file names; properly named season directory
+        ('Friends.S10.1080p.BluRay.x264-TENEIGHTY/',
+         'Friends.S10.1080p.BluRay.x264-TENEIGHTY',
+         None),
 
-        # Renamed multi-file release
-        ('path/to/Bored.to.Death.S01.Extras.720p.BluRay.x264-iNGOT',
+        # [SEASON] Abbreviated file names; renamed season directory
+        ('Friends.S10.1080p.Blu-ray.x264-TENEIGHTY/',
+         'Friends.S10.1080p.BluRay.x264-TENEIGHTY',
+         errors.SceneRenamedError(original_name='Friends.S10.1080p.BluRay.x264-TENEIGHTY',
+                                  existing_name='Friends.S10.1080p.Blu-ray.x264-TENEIGHTY')),
+
+        # [SEASON] Normal file names; properly named season directory
+        ('Fawlty.Towers.S01.720p.BluRay.x264-SHORTBREHD/',
+         'Fawlty.Towers.S01.720p.BluRay.x264-SHORTBREHD',
+         None),
+
+        # [SEASON] Normal file names; properly named season directory
+        ('Fawlty.Towers.S01.720p.Blu-ray.x264-SHORTBREHD/',
+         'Fawlty.Towers.S01.720p.BluRay.x264-SHORTBREHD',
+         errors.SceneRenamedError(original_name='Fawlty.Towers.S01.720p.BluRay.x264-SHORTBREHD',
+                                  existing_name='Fawlty.Towers.S01.720p.Blu-ray.x264-SHORTBREHD')),
+
+        # [EPISODE] Abbreviated file name in properly named episode directory
+        ('Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv',
+         'Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY',
+         None),
+
+        # [EPISODE] Abbreviated file name in renamed episode directory
+        ('Friends.S10E17E18.1080p.Blu-ray.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv',
+         'Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY',
+         errors.SceneRenamedError(original_name='Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv',
+                                  existing_name='Friends.S10E17E18.1080p.Blu-ray.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv')),
+
+        # [EPISODE] Renamed abbreviated file name in properly episode directory
+        ('Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY/teneighty-friends.s10e17e18.mkv',
+         'Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY',
+         errors.SceneRenamedError(original_name='Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv',
+                                  existing_name='Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY/teneighty-friends.s10e17e18.mkv')),
+
+        # [EPISODE] Renamed abbreviated file name in renamed episode directory
+        ('Friends.S10E17E18.1080p.Blu-ray.x264-TENEIGHTY/teneighty-friends.s10e17e18.mkv',
+         'Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY',
+         errors.SceneRenamedError(original_name='Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv',
+                                  existing_name='Friends.S10E17E18.1080p.Blu-ray.x264-TENEIGHTY/teneighty-friends.s10e17e18.mkv')),
+
+        # [EPISODE] Normal file name
+        ('Fawlty.Towers.S01E06.720p.BluRay.x264-SHORTBREHD.mkv',
+         'Fawlty.Towers.S01E06.720p.BluRay.x264-SHORTBREHD',
+         None),
+
+        # [EPISODE] Normal renamed file name
+        ('Fawlty.Towers.S01E06.720p.Blu-ray.x264-SHORTBREHD.mkv',
+         'Fawlty.Towers.S01E06.720p.BluRay.x264-SHORTBREHD',
+         errors.SceneRenamedError(original_name='Fawlty.Towers.S01E06.720p.BluRay.x264-SHORTBREHD.mkv',
+                                  existing_name='Fawlty.Towers.S01E06.720p.Blu-ray.x264-SHORTBREHD.mkv')),
+
+        # [EXTRAS] Multi-file release
+        ('Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+         'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+         None),
+
+        # [EXTRAS] Renamed multi-file release
+        ('Bored.to.Death.S01.Extras.720p.BluRay.x264-iNGOT',
          'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
          errors.SceneRenamedError(original_name='Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
                                   existing_name='Bored.to.Death.S01.Extras.720p.BluRay.x264-iNGOT')),
 
-        # Single file from multi-file release
-        ('path/to/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
+        # [EXTRAS] Single file from multi-file release
+        ('Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
          'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
          None),
     ),
 )
 @pytest.mark.asyncio
-async def test_verify_release_name(content_path, release_name, exp_exception, store_response):
+async def test_verify_release_name(content_path, release_name, exp_exception, parent_path, store_response):
+    full_content_path = os.path.join(parent_path, content_path)
     if exp_exception:
         with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
-            await verify.verify_release_name(content_path, release_name)
+            await verify.verify_release_name(full_content_path, release_name)
     else:
-        await verify.verify_release_name(content_path, release_name)
+        await verify.verify_release_name(full_content_path, release_name)
 
 
 @pytest.mark.parametrize(
