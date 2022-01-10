@@ -186,6 +186,22 @@ async def verify_release_name(content_path, release_name):
         if not is_abbreviated_filename(file):
             acceptable_paths.append(file)
 
+    # If `release_name` is an episode, we must also consider that it is release
+    # inside a season pack parent directory. This only matters if we're dealing
+    # with an abbreviated file name.
+    if is_abbreviated_filename(content_path):
+        season_pack_name = re.sub(
+            (
+                rf'((?i:{utils.release.DELIM}|S\d+))'
+                r'(?i:E\d+)+'
+                rf'((?i:{utils.release.DELIM}|$))'
+            ),
+            r'\1\2',
+            release_name,
+        )
+        for file in files:
+            acceptable_paths.append(f'{season_pack_name}/{file}')
+
     # Standalone file is also ok if it is named `release_name` with the same
     # file extension as the main file
     main_release_file_extension = utils.fs.file_extension(main_release_file)
