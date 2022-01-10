@@ -284,7 +284,7 @@ async def verify_release_files(content_path, release_name):
             exp_filesizes = {content_path: get_release_filesize(filename)}
 
     # Compare expected file sizes to actual file sizes
-    _log.debug('file sizes: %r', exp_filesizes)
+    _log.debug('File sizes: %r', exp_filesizes)
     for filepath, exp_size in exp_filesizes.items():
         filename = utils.fs.basename(filepath)
         actual_size = utils.fs.file_size(filepath)
