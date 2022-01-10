@@ -355,107 +355,133 @@ async def test_verify_release_name(content_path, release_name, exp_exception, pa
 @pytest.mark.parametrize(
     argnames='content_path, release_name, file_sizes, exp_exceptions',
     argvalues=(
-        # Abbreviated file in properly named directory
-        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv',
-         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         (('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv', 7044061767),),
-         (errors.SceneError('Provide parent directory of abbreviated scene file: ly-dellmdm1080p.mkv'),)),
+        pytest.param(
+            'path/to/Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv',
+            'Rampart.2011.1080p.Bluray.DD5.1.x264-DON',
+            (('path/to/Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv', 7793811601),),
+            (errors.SceneError('Not a scene release: Rampart.2011.1080p.Bluray.DD5.1.x264-DON'),),
+            id='Non-scene release',
+        ),
 
-        # Abbreviated file in non-release directory
-        ('path/to/ly-dellmdm1080p.mkv',
-         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         (('path/to/ly-dellmdm1080p.mkv', 7044061767),),
-         (errors.SceneError('Provide parent directory of abbreviated scene file: ly-dellmdm1080p.mkv'),)),
+        pytest.param(
+            'path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv',
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+            (('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv', 7044061767),),
+            (),
+            id='Abbreviated file in properly named directory with correct size',
+        ),
 
-        # Non-scene release
-        ('path/to/Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv',
-         'Rampart.2011.1080p.Bluray.DD5.1.x264-DON',
-         (('path/to/Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv', 7793811601),),
-         (errors.SceneError('Not a scene release: Rampart.2011.1080p.Bluray.DD5.1.x264-DON'),)),
+        pytest.param(
+            'path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv',
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+            (('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv', 123),),
+            (errors.SceneFileSizeError(filename='ly-dellmdm1080p.mkv', original_size=7044061767, existing_size=123),),
+            id='Abbreviated file in properly named directory with wrong size',
+        ),
 
-        # Abbreviated file in properly named directory with correct size
-        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/',
-         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         (('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv', 7044061767),),
-         ()),
+        pytest.param(
+            'path/to/ly-dellmdm1080p.mkv',
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+            (('path/to/ly-dellmdm1080p.mkv', 7044061767),),
+            (),
+            id='Abbreviated file in non-release directory with correct size',
+        ),
 
-        # Abbreviated file in properly named directory with wrong size
-        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/',
-         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         (('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv', 123),),
-         (errors.SceneFileSizeError(filename='ly-dellmdm1080p.mkv',
-                                    original_size=7044061767, existing_size=123),)),
+        pytest.param(
+            'path/to/ly-dellmdm1080p.mkv',
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+            (('path/to/ly-dellmdm1080p.mkv', 123),),
+            (errors.SceneFileSizeError(filename='ly-dellmdm1080p.mkv', original_size=7044061767, existing_size=123),),
+            id='Abbreviated file in non-release directory with wrong size',
+        ),
 
-        # Properly named file with correct size
-        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
-         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         (('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', 7044061767),),
-         ()),
+        pytest.param(
+            'path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+            (('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', 7044061767),),
+            (),
+            id='Properly named file with correct size',
+        ),
 
-        # Properly named file with wrong size
-        ('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
-         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         (('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', 123),),
-         (errors.SceneFileSizeError(filename='Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
-                                    original_size=7044061767, existing_size=123),)),
+        pytest.param(
+            'path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+            (('path/to/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', 123),),
+            (errors.SceneFileSizeError(filename='Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
+                                       original_size=7044061767, existing_size=123),),
+            id='Properly named file with wrong size',
+        ),
 
-        # Renamed file with correct size
-        ('path/to/dellamorte.dellamore.1994.1080p.bluray.x264-lividity.mkv',
-         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         (('path/to/dellamorte.dellamore.1994.1080p.bluray.x264-lividity.mkv', 7044061767),),
-         ()),
+        pytest.param(
+            'path/to/dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity.mkv',
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+            (('path/to/dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity.mkv', 7044061767),),
+            (),
+            id='Renamed file with correct size',
+        ),
 
-        # Renamed file with wrong size
-        ('path/to/dellamorte.dellamore.1994.1080p.bluray.x264-lividity.mkv',
-         'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         (('path/to/dellamorte.dellamore.1994.1080p.bluray.x264-lividity.mkv', 123),),
-         (errors.SceneFileSizeError(filename='dellamorte.dellamore.1994.1080p.bluray.x264-lividity.mkv',
-                                    original_size=7044061767, existing_size=123),)),
+        pytest.param(
+            'path/to/dellamorte.dellamore.1994.1080p.bluray.x264-lividity.mkv',
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+            (('path/to/dellamorte.dellamore.1994.1080p.bluray.x264-lividity.mkv', 123),),
+            (errors.SceneFileSizeError(filename='dellamorte.dellamore.1994.1080p.bluray.x264-lividity.mkv',
+                                       original_size=7044061767, existing_size=123),),
+            id='Renamed file with wrong size',
+        ),
 
-        # Missing scene release info
-        # (I think this was released with wrong episode order.)
-        ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS',
-         'The.Fall.S02.720p.BluRay.x264-7SinS',
-         (('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e01-720p.mkv', 2340971701),
-          ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e02-720p.mkv', 2345872861),
-          ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e03-720p.mkv', 2345958712),
-          ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e04-720p.mkv', 2346136836),
-          ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e05-720p.mkv', 123),  # No info about this one
-          ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e06-720p.mkv', 3517999979)),
-         (errors.SceneFileSizeError(filename='7s-tf-s02e02-720p.mkv',
-                                    original_size=2345872860, existing_size=2345872861),
-          errors.SceneMissingInfoError('7s-tf-s02e05-720p.mkv'),
-          errors.SceneFileSizeError(filename='7s-tf-s02e06-720p.mkv',
-                                    original_size=3517999978, existing_size=3517999979))),
+        pytest.param(
+            'path/to/The.Fall.S02.720p.BluRay.x264-7SinS',
+            'The.Fall.S02.720p.BluRay.x264-7SinS',
+            (('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e01-720p.mkv', 2340971701),
+             ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e02-720p.mkv', 2345872861),
+             ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e03-720p.mkv', 2345958712),
+             ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e04-720p.mkv', 2346136836),
+             ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e05-720p.mkv', 123),  # No info about this one
+             ('path/to/The.Fall.S02.720p.BluRay.x264-7SinS/7s-tf-s02e06-720p.mkv', 3517999979)),
+            (errors.SceneFileSizeError(filename='7s-tf-s02e02-720p.mkv', original_size=2345872860, existing_size=2345872861),
+             errors.SceneMissingInfoError('7s-tf-s02e05-720p.mkv'),
+             errors.SceneFileSizeError(filename='7s-tf-s02e06-720p.mkv', original_size=3517999978, existing_size=3517999979)),
+            id='Missing scene release info / wrong episode order in release',
+        ),
 
-        # Multi-file release
-        ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-         'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-         (('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01.Jonathan.Amess.Brooklyn.720p.BluRay.x264-iNGOT.mkv', 518652629),
-          ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv', 779447228),
-          ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01E03.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv', 30779540),
-          ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv', 138052913),
-          ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01E08.Deleted.Scene.1.720p.BluRay.x264-iNGOT.mkv', 68498554),
-          ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01E08.Deleted.Scene.2.720p.BluRay.x264-iNGOT.mkv', 45583011),),
-         (errors.SceneFileSizeError(filename='Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
-                                    original_size=138052914, existing_size=138052913),)),
+        pytest.param(
+            'path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+            'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+            (('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01.Jonathan.Amess.Brooklyn.720p.BluRay.x264-iNGOT.mkv', 518652629),
+             ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv', 779447228),
+             ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01E03.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv', 30779540),
+             ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv', 138052913),
+             ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01E08.Deleted.Scene.1.720p.BluRay.x264-iNGOT.mkv', 68498554),
+             ('path/to/Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT/Bored.to.Death.S01E08.Deleted.Scene.2.720p.BluRay.x264-iNGOT.mkv', 45583011),),
+            (errors.SceneFileSizeError(filename='Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
+                                       original_size=138052914, existing_size=138052913),),
+            id='Multi-file release',
+        ),
 
-        # Single file from multi-file release
-        ('path/to/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
-         'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-         (('path/to/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv', 779447228),),
-         (),),
-        ('path/to/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
-         'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-         (('path/to/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv', 779447229),),
-         (errors.SceneFileSizeError(filename='Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
-                                    original_size=779447228, existing_size=779447229),)),
+        pytest.param(
+            'path/to/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
+            'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+            (('path/to/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv', 779447228),),
+            (),
+            id='Single file from multi-file release',
+        ),
 
-        # Renamed single file from multi-file release
-        ('path/to/Bored.to.Death.S01.MAKING.OF.720p.BluRay.x264-iNGOT.mkv',
-         'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-         (('path/to/Bored.to.Death.S01.MAKING.OF.720p.BluRay.x264-iNGOT.mkv', 779447228),),
-         (errors.SceneMissingInfoError('Bored.to.Death.S01.MAKING.OF.720p.BluRay.x264-iNGOT.mkv'),),),
+        pytest.param(
+            'path/to/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
+            'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+            (('path/to/Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv', 779447229),),
+            (errors.SceneFileSizeError(filename='Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
+                                       original_size=779447228, existing_size=779447229),),
+            id='Single file from multi-file release',
+        ),
+
+        pytest.param(
+            'path/to/Bored.to.Death.S01.MAKING.OF.720p.BluRay.x264-iNGOT.mkv',
+            'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+            (('path/to/Bored.to.Death.S01.MAKING.OF.720p.BluRay.x264-iNGOT.mkv', 779447228),),
+            (errors.SceneMissingInfoError('Bored.to.Death.S01.MAKING.OF.720p.BluRay.x264-iNGOT.mkv'),),
+            id='Renamed single file from multi-file release',
+        ),
     ),
 )
 @pytest.mark.asyncio

@@ -231,21 +231,15 @@ async def verify_release_files(content_path, release_name):
     :param release_name: Known exact release name, e.g. from :func:`search`
         results
 
-    The return value is a sequence of :class:`~.errors.SceneError` exceptions.
-    For every file that is part of the scene release specified by
-    `release_name`, include:
+    The return value is a sequence of :class:`~.errors.SceneError` exceptions:
 
-        * :class:`~.errors.SceneFileSizeError` if it has the wrong size
-        * :class:`~.errors.SceneMissingInfoError` if file information is missing
-        * :class:`~.errors.SceneError` if release name is not a scene release or
-          if `content_path` points to an abbreviated file name
-          (e.g. "abd-mother.mkv")
+        * :class:`~.errors.SceneFileSizeError` if a file has the wrong size
+        * :class:`~.errors.SceneMissingInfoError` if information about a file
+          cannot be found
+        * :class:`~.errors.SceneError` if `release_name` is not a scene release
     """
     exceptions = []
-    try:
-        assert_not_abbreviated_filename(content_path)
-    except errors.SceneError as e:
-        exceptions.append(e)
+
     if not await is_scene_release(release_name):
         exceptions.append(errors.SceneError(f'Not a scene release: {release_name}'))
     if exceptions:
@@ -294,9 +288,9 @@ async def verify_release_files(content_path, release_name):
                     )
                 )
             else:
-                _log.debug('Correct size: %s', filename)
+                _log.debug('Correct size: %s', filepath)
         else:
-            _log.debug('No such file: %s', filename)
+            _log.debug('No such file: %s', filepath)
 
     return tuple(e for e in exceptions if e)
 
