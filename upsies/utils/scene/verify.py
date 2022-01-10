@@ -123,9 +123,8 @@ async def release_files(release_name):
             files = {fname:f for files_ in files for fname,f in files_.items()}
             _log.debug('Season pack from multiple episode releases: %r', files)
 
-    # If scene released season pack (or any other multi-file thing) and we're
-    # searching for a single episode, we might not get any results. Search for
-    # the season pack to get all files.
+    # If scene released season pack and we're searching for a single episode, we
+    # might not get any results. Search for the season pack to get all files.
     elif release_info['type'] is ReleaseType.episode:
         # Remove single episodes from seasons
         release_info['episodes'].remove_specific_episodes()
@@ -187,8 +186,8 @@ async def verify_release_name(content_path, release_name):
         if not is_abbreviated_filename(file):
             acceptable_paths.append(file)
 
-    # Standalone file is also ok if it is named after `release_name` and it has
-    # the same file extension as the main file
+    # Standalone file is also ok if it is named `release_name` with the same
+    # file extension as the main file
     main_release_file_extension = utils.fs.file_extension(main_release_file)
     acceptable_paths.append('.'.join((release_name, main_release_file_extension)))
 
@@ -204,7 +203,7 @@ async def verify_release_name(content_path, release_name):
         original_name = os.path.join(release_name, main_release_file)
     elif utils.fs.file_extension(content_path):
         # Assume `content_path` refers to a file, not a directory
-        # NOTE: `content_path` may not exist
+        # NOTE: We can't use os.path.isdir(), `content_path` may not exist.
         original_name = main_release_file
     else:
         # Assume `content_path` refers to directory
