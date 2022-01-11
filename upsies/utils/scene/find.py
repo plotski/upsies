@@ -6,7 +6,7 @@ import collections
 import re
 
 from ... import constants, errors
-from .. import LazyModule, fs, release
+from .. import LazyModule, asyncmemoize, fs, release
 from . import common, verify
 
 import logging  # isort:skip
@@ -15,6 +15,7 @@ _log = logging.getLogger(__name__)
 natsort = LazyModule(module='natsort', namespace=globals())
 
 
+@asyncmemoize
 async def search(query, dbs=('predb', 'srrdb'), only_existing_releases=None):
     """
     Search scene databases

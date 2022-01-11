@@ -47,6 +47,8 @@ async def test_search_finds_query_results_directly(query, exp_query, mocker):
     mock_only_existing_releases = 'mock only existing releases'
     multisearch_mock = mocker.patch('upsies.utils.scene.find._multisearch', AsyncMock(return_value=mock_results))
 
+    # find.search() is memoized (see utils.asyncmemoize)
+    find.search.clear_cache()
     results = await find.search(query, mock_dbs, only_existing_releases=mock_only_existing_releases)
     assert results == mock_results
     assert multisearch_mock.call_args_list == [call(mock_dbs, exp_query, mock_only_existing_releases)]
@@ -87,6 +89,8 @@ async def test_search_finds_results_from_generated_episodes(query, exp_first_que
     else:
         exp_results = None
 
+    # find.search() is memoized (see utils.asyncmemoize)
+    find.search.clear_cache()
     results = await find.search(query, mock_dbs, only_existing_releases=mock_only_existing_releases)
     assert results == exp_results
 
