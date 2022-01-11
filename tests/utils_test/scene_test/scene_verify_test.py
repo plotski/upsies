@@ -4,7 +4,7 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from upsies import errors
+from upsies import constants, errors
 from upsies.utils.release import ReleaseInfo
 from upsies.utils.scene import verify
 from upsies.utils.types import SceneCheckResult
@@ -634,40 +634,318 @@ async def test_verify_release_files(content_path, release_name, file_sizes, exp_
 
 
 @pytest.mark.asyncio
-async def test_verify_release_gets_abbreviated_scene_file_name(mocker):
-    assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.verify.assert_not_abbreviated_filename', Mock(
-        side_effect=errors.SceneAbbreviatedFilenameError('nope'),
-    ))
-    is_scene_release_mock = mocker.patch('upsies.utils.scene.verify.is_scene_release', AsyncMock())
-    verify_release_name_mock = mocker.patch('upsies.utils.scene.verify.verify_release_name', AsyncMock())
-    verify_release_files_mock = mocker.patch('upsies.utils.scene.verify.verify_release_files', AsyncMock())
-    is_scene, exceptions = await verify.verify_release('mock/path', 'Mock.Release')
-    assert is_scene is SceneCheckResult.unknown
-    assert exceptions == (errors.SceneAbbreviatedFilenameError('nope'),)
-    assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
-    assert is_scene_release_mock.call_args_list == []
-    assert verify_release_name_mock.call_args_list == []
-    assert verify_release_files_mock.call_args_list == []
+async def test_verify_release_gets_release_name(mocker):
+    _verify_release_mock = mocker.patch('upsies.utils.scene.verify._verify_release', AsyncMock())
+    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=True))
+    _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock())
+
+    content_path = 'mock/path/to/Mock.Release'
+    release_name = 'Mock.Release'
+    return_value = await verify.verify_release(content_path, release_name)
+
+    assert return_value is _verify_release_mock.return_value
+    assert _verify_release_mock.call_args_list == [call(content_path, release_name)]
+    assert isdir_mock.call_args_list == []
+    assert _verify_release_per_file_mock.call_args_list == []
 
 @pytest.mark.asyncio
-async def test_verify_release_gets_nonscene_release_name(mocker):
-    assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.verify.assert_not_abbreviated_filename')
+async def test_verify_release_gets_no_release_name_and_finds_no_matching_scene_release(mocker):
+    _verify_release_mock = mocker.patch('upsies.utils.scene.verify._verify_release', AsyncMock())
+    search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
+        return_value=(),
+    ))
+    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=True))
+    _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock())
+
+    content_path = 'mock/path/to/Mock.Release'
+    return_value = await verify.verify_release(content_path)
+
+    assert return_value == (SceneCheckResult.false, ())
+    assert search_mock.call_args_list == [call(content_path)]
+    assert _verify_release_mock.call_args_list == []
+    assert isdir_mock.call_args_list == []
+    assert _verify_release_per_file_mock.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_verify_release_finds_valid_scene_release(mocker):
+    verify_release_results = {
+        'The.Foo.2000.x264-AAA': (SceneCheckResult.false, ()),
+        'The.Foo.2000.x264-BBB': (SceneCheckResult.unknown, ()),
+        'The.Foo.2000.x264-CCC': (SceneCheckResult.true, (errors.SceneRenamedError(original_name='foo', existing_name='bar'),)),
+        'The.Foo.2000.x264-DDD': (SceneCheckResult.true, ()),
+        'The.Foo.2000.x264-EEE': (SceneCheckResult.true, (errors.SceneFileSizeError('foo', original_size=123, existing_size=456),)),
+    }
+
+    _verify_release_mock = mocker.patch('upsies.utils.scene.verify._verify_release', AsyncMock(
+        side_effect=tuple(verify_release_results.values()),
+    ))
+    search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
+        return_value=tuple(verify_release_results.keys()),
+    ))
+    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=True))
+    _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock())
+
+    content_path = 'mock/path/to/Mock.Release'
+    return_value = await verify.verify_release(content_path)
+
+    assert return_value == (SceneCheckResult.true, ())
+    assert search_mock.call_args_list == [call(content_path)]
+    assert _verify_release_mock.call_args_list == [
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-AAA'),
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-BBB'),
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-CCC'),
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-DDD'),
+    ]
+    assert isdir_mock.call_args_list == []
+    assert _verify_release_per_file_mock.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_verify_release_finds_only_nonscene_releases(mocker):
+    verify_release_results = {
+        'The.Foo.2000.x264-AAA': (SceneCheckResult.false, ()),
+        'The.Foo.2000.x264-BBB': (SceneCheckResult.unknown, ()),
+    }
+
+    _verify_release_mock = mocker.patch('upsies.utils.scene.verify._verify_release', AsyncMock(
+        side_effect=tuple(verify_release_results.values()),
+    ))
+    search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
+        return_value=tuple(verify_release_results.keys()),
+    ))
+    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=True))
+    _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock())
+
+    content_path = 'mock/path/to/Mock.Release'
+    return_value = await verify.verify_release(content_path)
+
+    assert return_value is _verify_release_per_file_mock.return_value
+    assert search_mock.call_args_list == [call(content_path)]
+    assert _verify_release_mock.call_args_list == [
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-AAA'),
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-BBB'),
+    ]
+    assert isdir_mock.call_args_list == [call(content_path)]
+    assert _verify_release_per_file_mock.call_args_list == [call(content_path)]
+
+@pytest.mark.asyncio
+async def test_verify_release_finds_only_scene_releases_with_exceptions(mocker):
+    verify_release_results = {
+        'The.Foo.2000.x264-AAA': (SceneCheckResult.true, (errors.SceneRenamedError(original_name='foo', existing_name='bar'),)),
+        'The.Foo.2000.x264-BBB': (SceneCheckResult.unknown, ()),
+        'The.Foo.2000.x264-CCC': (SceneCheckResult.true, (errors.SceneFileSizeError('foo', original_size=123, existing_size=456),)),
+    }
+
+    _verify_release_mock = mocker.patch('upsies.utils.scene.verify._verify_release', AsyncMock(
+        side_effect=tuple(verify_release_results.values()),
+    ))
+    search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
+        return_value=tuple(verify_release_results.keys()),
+    ))
+    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=True))
+    _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock(
+        return_value='_verify_release_per_file return value',
+    ))
+
+    content_path = 'mock/path/to/Mock.Release'
+    return_value = await verify.verify_release(content_path)
+
+    assert return_value == '_verify_release_per_file return value'
+    assert search_mock.call_args_list == [call(content_path)]
+    assert _verify_release_mock.call_args_list == [
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-AAA'),
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-BBB'),
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-CCC'),
+    ]
+    assert isdir_mock.call_args_list == [call(content_path)]
+    assert _verify_release_per_file_mock.call_args_list == [call(content_path)]
+
+@pytest.mark.parametrize(
+    argnames='isdir, exp_verify_release_per_file_is_called',
+    argvalues=(
+        (True, True),
+        (False, False),
+    ),
+)
+@pytest.mark.asyncio
+async def test_verify_release_finds_nothing(isdir, exp_verify_release_per_file_is_called, mocker):
+    verify_release_results = {
+        'The.Foo.2000.x264-AAA': (SceneCheckResult.false, ()),
+        'The.Foo.2000.x264-BBB': (SceneCheckResult.unknown, ()),
+    }
+
+    _verify_release_mock = mocker.patch('upsies.utils.scene.verify._verify_release', AsyncMock(
+        side_effect=tuple(verify_release_results.values()),
+    ))
+    search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
+        return_value=tuple(verify_release_results.keys()),
+    ))
+    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=isdir))
+    _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock(
+        return_value='_verify_release_per_file return value',
+    ))
+
+    content_path = 'mock/path/to/Mock.Release'
+    return_value = await verify.verify_release(content_path)
+
+    if exp_verify_release_per_file_is_called:
+        assert return_value == '_verify_release_per_file return value'
+    else:
+        assert return_value == (SceneCheckResult.false, ())
+    assert search_mock.call_args_list == [call(content_path)]
+    assert _verify_release_mock.call_args_list == [
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-AAA'),
+        call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-BBB'),
+    ]
+    assert isdir_mock.call_args_list == [call(content_path)]
+    if exp_verify_release_per_file_is_called:
+        assert _verify_release_per_file_mock.call_args_list == [call(content_path)]
+    else:
+        assert _verify_release_per_file_mock.call_args_list == []
+
+
+@pytest.mark.parametrize(
+    argnames='mock_data, exp_search_calls, exp_verify_release_calls, exp_is_scene_release, exp_exceptions',
+    argvalues=(
+        pytest.param(
+            {
+                'foo.mkv': (
+                    {'release_name': 'Foo-AAA', 'is_scene_release': SceneCheckResult.false, 'exceptions': ()},
+                    {'release_name': 'Foo-BBB', 'is_scene_release': SceneCheckResult.true, 'exceptions': ()},
+                ),
+                'bar.mp4': (
+                    {'release_name': 'Bar-AAA', 'is_scene_release': SceneCheckResult.true, 'exceptions': ()},
+                    {'release_name': 'Bar-BBB', 'is_scene_release': SceneCheckResult.true,
+                     'exceptions': (errors.SceneError('never found'),)},
+                ),
+            },
+            [call('foo.mkv'), call('bar.mp4')],
+            [call('foo.mkv', 'Foo-AAA'), call('foo.mkv', 'Foo-BBB'), call('bar.mp4', 'Bar-AAA')],
+            SceneCheckResult.true,
+            (),
+            id='Verification is stopped after first match is found',
+        ),
+
+        pytest.param(
+            {
+                'foo.mkv': (
+                    {'release_name': 'Foo-AAA', 'is_scene_release': SceneCheckResult.false, 'exceptions': ()},
+                    {'release_name': 'Foo-BBB', 'is_scene_release': SceneCheckResult.unknown, 'exceptions': ()},
+                ),
+                'bar.mp4': (
+                    {'release_name': 'Bar-AAA', 'is_scene_release': SceneCheckResult.true, 'exceptions': ()},
+                    {'release_name': 'Bar-BBB', 'is_scene_release': SceneCheckResult.true,
+                     'exceptions': (errors.SceneError('never found'),)},
+                ),
+            },
+            [call('foo.mkv'), call('bar.mp4')],
+            [call('foo.mkv', 'Foo-AAA'), call('foo.mkv', 'Foo-BBB'), call('bar.mp4', 'Bar-AAA')],
+            SceneCheckResult.unknown,
+            (),
+            id='One scene check is unknown',
+        ),
+
+        pytest.param(
+            {
+                'foo.mkv': (
+                    {'release_name': 'Foo-AAA', 'is_scene_release': SceneCheckResult.false, 'exceptions': ()},
+                    {'release_name': 'Foo-BBB', 'is_scene_release': SceneCheckResult.false, 'exceptions': ()},
+                ),
+                'bar.mp4': (
+                    {'release_name': 'Bar-AAA', 'is_scene_release': SceneCheckResult.false, 'exceptions': ()},
+                    {'release_name': 'Bar-BBB', 'is_scene_release': SceneCheckResult.false, 'exceptions': ()},
+                ),
+            },
+            [call('foo.mkv'), call('bar.mp4')],
+            [call('foo.mkv', 'Foo-AAA'), call('foo.mkv', 'Foo-BBB'), call('bar.mp4', 'Bar-AAA'), call('bar.mp4', 'Bar-BBB')],
+            SceneCheckResult.false,
+            (),
+            id='All scene checks are false',
+        ),
+
+        pytest.param(
+            {
+                'foo.mkv': (
+                    {'release_name': 'Foo-AAA', 'is_scene_release': SceneCheckResult.true, 'exceptions': (errors.SceneError('foo!'),)},
+                    {'release_name': 'Foo-BBB', 'is_scene_release': SceneCheckResult.true, 'exceptions': ()},
+                ),
+                'bar.mp4': (
+                    {'release_name': 'Bar-AAA', 'is_scene_release': SceneCheckResult.true, 'exceptions': ()},
+                    {'release_name': 'Bar-BBB', 'is_scene_release': SceneCheckResult.true, 'exceptions': ()},
+                ),
+            },
+            [call('foo.mkv'), call('bar.mp4')],
+            [call('foo.mkv', 'Foo-AAA'), call('foo.mkv', 'Foo-BBB'), call('bar.mp4', 'Bar-AAA')],
+            SceneCheckResult.true,
+            (errors.SceneError('foo!'),),
+            id='One scene check returns exceptions',
+        ),
+
+        pytest.param(
+            {
+                'foo.mkv': (
+                    {'release_name': 'Foo-AAA', 'is_scene_release': SceneCheckResult.true, 'exceptions': (errors.SceneError('foo!'),)},
+                    {'release_name': 'Foo-BBB', 'is_scene_release': SceneCheckResult.true, 'exceptions': ()},
+                ),
+                'bar.mp4': (
+                    {'release_name': 'Bar-AAA', 'is_scene_release': SceneCheckResult.false, 'exceptions': ()},
+                    {'release_name': 'Bar-BBB', 'is_scene_release': SceneCheckResult.true, 'exceptions': (errors.SceneError('bar!'),)},
+                ),
+            },
+            [call('foo.mkv'), call('bar.mp4')],
+            [call('foo.mkv', 'Foo-AAA'), call('foo.mkv', 'Foo-BBB'), call('bar.mp4', 'Bar-AAA'), call('bar.mp4', 'Bar-BBB')],
+            SceneCheckResult.true,
+            (errors.SceneError('foo!'), errors.SceneError('bar!'), ),
+            id='Multiple scene checks return exceptions',
+        ),
+    ),
+)
+@pytest.mark.asyncio
+async def test__verify_release_per_file_verifies_each_search_result(
+    mock_data, exp_search_calls, exp_verify_release_calls,
+    exp_is_scene_release, exp_exceptions, mocker
+):
+    file_list_mock = mocker.patch('upsies.utils.fs.file_list', Mock(
+        return_value=mock_data.keys(),
+    ))
+    search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
+        side_effect=(
+            tuple(data['release_name'] for data in datas)
+            for datas in mock_data.values()
+        )
+    ))
+    _verify_release_mock = mocker.patch('upsies.utils.scene.verify._verify_release', AsyncMock(
+        side_effect=tuple(
+            (data['is_scene_release'], data['exceptions'])
+            for datas in mock_data.values()
+            for data in datas
+        )
+    ))
+
+    is_scene_release, exceptions = await verify._verify_release_per_file('path/to/content')
+    assert is_scene_release == exp_is_scene_release
+    assert exceptions == exp_exceptions
+
+    assert file_list_mock.call_args_list == [call('path/to/content', extensions=constants.VIDEO_FILE_EXTENSIONS)]
+    assert search_mock.call_args_list == exp_search_calls
+    assert _verify_release_mock.call_args_list == exp_verify_release_calls
+
+
+@pytest.mark.asyncio
+async def test__verify_release_gets_nonscene_release_name(mocker):
     is_scene_release_mock = mocker.patch('upsies.utils.scene.verify.is_scene_release', AsyncMock(
         return_value=SceneCheckResult.false,
     ))
     verify_release_name_mock = mocker.patch('upsies.utils.scene.verify.verify_release_name', AsyncMock())
     verify_release_files_mock = mocker.patch('upsies.utils.scene.verify.verify_release_files', AsyncMock())
-    is_scene, exceptions = await verify.verify_release('mock/path', 'Mock.Release')
+    is_scene, exceptions = await verify._verify_release('mock/path', 'Mock.Release')
     assert is_scene is SceneCheckResult.false
     assert exceptions == ()
-    assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
     assert is_scene_release_mock.call_args_list == [call('Mock.Release')]
     assert verify_release_name_mock.call_args_list == []
     assert verify_release_files_mock.call_args_list == []
 
 @pytest.mark.asyncio
-async def test_verify_release_gets_wrong_release_name(mocker):
-    assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.verify.assert_not_abbreviated_filename')
+async def test__verify_release_gets_wrong_release_name(mocker):
     is_scene_release_mock = mocker.patch('upsies.utils.scene.verify.is_scene_release', AsyncMock(
         return_value=SceneCheckResult.true,
     ))
@@ -677,17 +955,15 @@ async def test_verify_release_gets_wrong_release_name(mocker):
     verify_release_files_mock = mocker.patch('upsies.utils.scene.verify.verify_release_files', AsyncMock(
         return_value=(),
     ))
-    is_scene, exceptions = await verify.verify_release('mock/path', 'Mock.Release')
+    is_scene, exceptions = await verify._verify_release('mock/path', 'Mock.Release')
     assert is_scene is SceneCheckResult.true
     assert exceptions == (errors.SceneRenamedError(original_name='foo', existing_name='bar'),)
-    assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
     assert is_scene_release_mock.call_args_list == [call('Mock.Release')]
     assert verify_release_name_mock.call_args_list == [call('mock/path', 'Mock.Release')]
     assert verify_release_files_mock.call_args_list == [call('mock/path', 'Mock.Release')]
 
 @pytest.mark.asyncio
-async def test_verify_release_gets_wrong_release_files(mocker):
-    assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.verify.assert_not_abbreviated_filename')
+async def test__verify_release_gets_wrong_release_files(mocker):
     is_scene_release_mock = mocker.patch('upsies.utils.scene.verify.is_scene_release', AsyncMock(
         return_value=SceneCheckResult.true,
     ))
@@ -698,20 +974,18 @@ async def test_verify_release_gets_wrong_release_files(mocker):
             errors.SceneFileSizeError('bar', original_size=100, existing_size=200),
         ),
     ))
-    is_scene, exceptions = await verify.verify_release('mock/path', 'Mock.Release')
+    is_scene, exceptions = await verify._verify_release('mock/path', 'Mock.Release')
     assert is_scene is SceneCheckResult.true
     assert exceptions == (
         errors.SceneFileSizeError('foo', original_size=123, existing_size=456),
         errors.SceneFileSizeError('bar', original_size=100, existing_size=200),
     )
-    assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
     assert is_scene_release_mock.call_args_list == [call('Mock.Release')]
     assert verify_release_name_mock.call_args_list == [call('mock/path', 'Mock.Release')]
     assert verify_release_files_mock.call_args_list == [call('mock/path', 'Mock.Release')]
 
 @pytest.mark.asyncio
-async def test_verify_release_gets_wrong_release_name_and_files(mocker):
-    assert_not_abbreviated_filename_mock = mocker.patch('upsies.utils.scene.verify.assert_not_abbreviated_filename')
+async def test__verify_release_gets_wrong_release_name_and_wrong_files(mocker):
     is_scene_release_mock = mocker.patch('upsies.utils.scene.verify.is_scene_release', AsyncMock(
         return_value=SceneCheckResult.true,
     ))
@@ -724,14 +998,13 @@ async def test_verify_release_gets_wrong_release_name_and_files(mocker):
             errors.SceneFileSizeError('bar', original_size=100, existing_size=200),
         ),
     ))
-    is_scene, exceptions = await verify.verify_release('mock/path', 'Mock.Release')
+    is_scene, exceptions = await verify._verify_release('mock/path', 'Mock.Release')
     assert is_scene is SceneCheckResult.true
     assert exceptions == (
         errors.SceneRenamedError(original_name='foo', existing_name='bar'),
         errors.SceneFileSizeError('foo', original_size=123, existing_size=456),
         errors.SceneFileSizeError('bar', original_size=100, existing_size=200),
     )
-    assert assert_not_abbreviated_filename_mock.call_args_list == [call('mock/path')]
     assert is_scene_release_mock.call_args_list == [call('Mock.Release')]
     assert verify_release_name_mock.call_args_list == [call('mock/path', 'Mock.Release')]
     assert verify_release_files_mock.call_args_list == [call('mock/path', 'Mock.Release')]

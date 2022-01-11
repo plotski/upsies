@@ -3,13 +3,13 @@ Check if scene release was altered
 """
 
 import asyncio
+import collections
 import os
 import re
 
-from ... import errors, utils
+from ... import constants, errors, utils
 from ..types import ReleaseType, SceneCheckResult
 from . import common, find, srrdb
-from .find import SceneQuery
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -309,40 +309,109 @@ async def verify_release_files(content_path, release_name):
     return tuple(e for e in exceptions if e)
 
 
-async def verify_release(content_path, release_name):
+async def verify_release(content_path, release_name=None):
     """
-    Combine :func:`is_scene_release`, :func:`verify_release_name` and
+    Find matching scene releases and apply :func:`verify_release_name` and
     :func:`verify_release_files`
 
-    It is safe to pass non-scene releases and will result in the return value
-    `(SceneCheckResult.false, ())`.
-
     :param content_path: Path to release file or directory
-    :param release_name: Known exact release name, e.g. from :func:`search`
-        results
+    :param release_name: Known exact release name or `None` to :func:`search`
+        for `content_path`
 
     :return: :class:`~.types.SceneCheckResult` enum from
         :func:`is_scene_release` and sequence of :class:`~.errors.SceneError`
         exceptions from :func:`verify_release_name` and
         :func:`verify_release_files`
     """
-    # Don't allow abbreviated scene release files, e.g. "abd-mother.mkv"
-    try:
-        assert_not_abbreviated_filename(content_path)
-    except errors.SceneError as e:
-        return SceneCheckResult.unknown, (e,)
+    if release_name:
+        return await _verify_release(content_path, release_name)
+
+    # Find possible `release_name` values. For season packs that were released
+    # as single episodes, this will get us a sequence of episode release names.
+    existing_release_names = await find.search(content_path)
+    if not existing_release_names:
+        return SceneCheckResult.false, ()
+
+    # Maybe `content_path` was released by scene as it is (as file or directory)
+    combined_exceptions = []
+    for existing_release_name in existing_release_names:
+        is_scene_release, exceptions = await _verify_release(content_path, existing_release_name)
+        if is_scene_release:
+            if not exceptions:
+                return SceneCheckResult.true, ()
+            else:
+                combined_exceptions.extend(exceptions)
+
+    if os.path.isdir(content_path):
+        # Maybe `content_path` is a directory (e.g. season pack) and scene released
+        # single files (e.g. episodes).
+        return await _verify_release_per_file(content_path)
+    else:
+        return SceneCheckResult.false, ()
+
+
+async def _verify_release_per_file(content_path):
+    _log.debug('Verifying each file beneath %r', content_path)
+    is_scene_releases = []
+    combined_exceptions = collections.defaultdict(lambda: [])
+    filepaths = list(utils.fs.file_list(content_path, extensions=constants.VIDEO_FILE_EXTENSIONS))
+    for filepath in filepaths:
+        existing_release_names = await find.search(filepath)
+        _log.debug('Search results for %r: %r', filepath, existing_release_names)
+
+        # If there are no search results, default to "not a scene release"
+        is_scene_release = SceneCheckResult.false
+
+        # Match each existing_release_name against filepath
+        for existing_release_name in existing_release_names:
+            is_scene_release, exceptions = await _verify_release(filepath, existing_release_name)
+            _log.debug('Verifyied %r against %r: %r, %r',
+                       filepath, existing_release_name, is_scene_release, exceptions)
+            if is_scene_release and not exceptions:
+                # Match found, don't check other existing_release_names
+                break
+            elif is_scene_release:
+                # Remember exceptions per file (makes debugging easier)
+                combined_exceptions[filepath].extend(exceptions)
+
+        # Remember the SceneCheckResult when the for loop ended. True if we
+        # found a scene release at any point, other it's the value of the last
+        # existing_release_name.
+        is_scene_releases.append(is_scene_release)
+
+    # Collapse `is_scene_releases` into a single value
+    if is_scene_releases and all(isr is SceneCheckResult.true for isr in is_scene_releases):
+        _log.debug('All files are scene releases')
+        is_scene_release = SceneCheckResult.true
+    elif is_scene_releases and all(isr is SceneCheckResult.false for isr in is_scene_releases):
+        _log.debug('All files are non-scene releases')
+        is_scene_release = SceneCheckResult.false
+    else:
+        _log.debug('Uncertain scene status: %r', is_scene_releases)
+        is_scene_release = SceneCheckResult.unknown
+
+    return is_scene_release, tuple(exception
+                                   for exceptions in combined_exceptions.values()
+                                   for exception in exceptions)
+
+
+async def _verify_release(content_path, release_name):
+    _log.debug('Verifying %r against release: %r', content_path, release_name)
 
     # Stop other checks if this is not a scene release
     is_scene = await is_scene_release(release_name)
     if not is_scene:
-        return is_scene, ()
+        return SceneCheckResult.false, ()
 
     # Combine exceptions from verify_release_name() and verify_release_files()
     exceptions = []
+
+    # verify_release_name() can only produce one exception, so it is raised
     try:
         await verify_release_name(content_path, release_name)
     except errors.SceneError as e:
         exceptions.append(e)
-    finally:
-        exceptions.extend(await verify_release_files(content_path, release_name))
-        return is_scene, tuple(exceptions)
+
+    # verify_release_files() can produce multiple exceptions, so it returns them
+    exceptions.extend(await verify_release_files(content_path, release_name))
+    return is_scene, tuple(exceptions)
