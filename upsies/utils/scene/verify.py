@@ -50,6 +50,7 @@ def is_abbreviated_filename(filepath):
         return False
 
 
+@utils.asyncmemoize
 async def is_scene_release(release):
     """
     Check if `release` is a scene release or not
