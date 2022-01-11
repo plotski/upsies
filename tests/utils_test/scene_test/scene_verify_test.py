@@ -59,46 +59,116 @@ def test_assert_not_abbreviated_filename_and_is_abbreviated_filename(filename, s
 @pytest.mark.parametrize(
     argnames='release_name, exp_return_value',
     argvalues=(
-        # Movie: Properly named file
-        ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', SceneCheckResult.true),
+        pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', SceneCheckResult.true,
+            id='Movie: Properly named file',
+        ),
+        pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY.mkv', SceneCheckResult.true,
+            id='Movie: Properly named file',
+        ),
+        pytest.param(
+            'dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity.mkv', SceneCheckResult.true,
+            id='Movie: Properly named file',
+        ),
 
-        # Movie: Properly named file in lower-case
-        ('dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity.mkv', SceneCheckResult.true),
+        pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', SceneCheckResult.true,
+            id='Movie: Properly named file in properly named directory',
+        ),
+        pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', SceneCheckResult.true,
+            id='Movie: Properly named file in properly named directory',
+        ),
+        pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY.mkv', SceneCheckResult.true,
+            id='Movie: Properly named file in properly named directory',
+        ),
 
-        # Movie: Properly named file in properly named directory
-        ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', SceneCheckResult.true),
+        pytest.param(
+            'path/to/ly-dellmdm1080p.mkv', SceneCheckResult.unknown,
+            id='Movie: Abbreviated file without usably named parent directory',
+        ),
 
-        # Movie: Abbreviated file without properly named parent directory
-        ('path/to/ly-dellmdm1080p.mkv', SceneCheckResult.unknown),
+        pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv', SceneCheckResult.true,
+            id='Movie: Abbreviated file in usably named directory',
+        ),
+        pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/ly-dellmdm1080p.mkv', SceneCheckResult.true,
+            id='Movie: Abbreviated file in usably named directory',
+        ),
+        pytest.param(
+            'dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity/ly-dellmdm1080p.mkv', SceneCheckResult.true,
+            id='Movie: Abbreviated file in usably named directory',
+        ),
 
-        # Movie: Abbreviated file in properly named directory
-        ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv', SceneCheckResult.true),
-        ('Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/ly-dellmdm1080p.mkv', SceneCheckResult.true),
-        ('dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity/ly-dellmdm1080p.mkv', SceneCheckResult.true),
+        pytest.param(
+            'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT', SceneCheckResult.true,
+            id='Series: Scene released season pack',
+        ),
+        pytest.param(
+            'bored.to.death.s01.720p.bluray.x264-ingot', SceneCheckResult.true,
+            id='Series: Scene released season pack',
+        ),
+        pytest.param(
+            'Bored.to.Death.S01.Jonathan.Amess.Brooklyn.720p.BluRay.x264-iNGOT.mkv', SceneCheckResult.true,
+            id='Series: Scene released season pack',
+        ),
+        pytest.param(
+            'bored.to.death.s01.720p.bluray.x264-ingot.mkv', SceneCheckResult.true,
+            id='Series: Scene released season pack',
+        ),
 
-        # Series: Scene released season pack
-        ('Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT', SceneCheckResult.true),
-        ('bored.to.death.s01.720p.bluray.x264-ingot', SceneCheckResult.true),
-        ('Bored.to.Death.S01.Jonathan.Amess.Brooklyn.720p.BluRay.x264-iNGOT.mkv', SceneCheckResult.true),
-        ('bored.to.death.s01.720p.bluray.x264-ingot.mkv', SceneCheckResult.true),
+        pytest.param(
+            'Justified.S04E01.720p.BluRay.x264-REWARD', SceneCheckResult.true,
+            id='Series: Scene released single episodes',
+        ),
 
-        # Series: Scene released single episodes
-        ('Justified.S04E01.720p.BluRay.x264-REWARD', SceneCheckResult.true),
-        ('Justified.S04E99.720p.BluRay.x264-REWARD', SceneCheckResult.false),
-        ('Justified.S04.720p.BluRay.x264-REWARD', SceneCheckResult.true),
-        ('Justified.S02.720p.BluRay.x264-REWARD', SceneCheckResult.false),  # REWARD only released S01 + S04
-        ('Justified.720p.BluRay.x264-REWARD', SceneCheckResult.unknown),
+        pytest.param(
+            'Justified.S04E99.720p.BluRay.x264-REWARD', SceneCheckResult.false,
+            id='Series: Scene released single episodes',
+        ),
 
-        # Series: Lots of seasons and episodes
-        ('Friends.S10.1080p.BluRay.x264-TENEIGHTY', SceneCheckResult.true),
+        pytest.param(
+            'Justified.S04.720p.BluRay.x264-REWARD', SceneCheckResult.true,
+            id='Series: Scene released single episodes',
+        ),
 
-        # Ignore resolution for DVDRip
-        ('The.Fall.Guy.S02.480p.DVDRip.XviD.AAC-nodlabs', SceneCheckResult.true),
+        pytest.param(
+            'Justified.S02.720p.BluRay.x264-REWARD', SceneCheckResult.false,
+            id='Series: Missing season from scene group',
+        ),
 
-        # Non-scene release
-        ('Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv', SceneCheckResult.false),
-        ('Damnation.S01.720p.AMZN.WEB-DL.DDP5.1.H.264-AJP69', SceneCheckResult.false),
-        ('Damnation.S01E03.One.Penny.720p.AMZN.WEB-DL.DD+5.1.H.264-AJP69.mkv', SceneCheckResult.false),
+        pytest.param(
+            'Justified.720p.BluRay.x264-REWARD', SceneCheckResult.unknown,
+            id='Series: Not enough information in release name',
+        ),
+
+        pytest.param(
+            'Friends.S10.1080p.BluRay.x264-TENEIGHTY', SceneCheckResult.true,
+            id='Series: Lots of seasons and episodes',
+        ),
+
+        pytest.param(
+            'The.Fall.Guy.S02.480p.DVDRip.XviD.AAC-nodlabs', SceneCheckResult.true,
+            id='Resolution is ignored for DVDRip',
+        ),
+
+        pytest.param(
+            'Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv', SceneCheckResult.false,
+            id='Non-scene movie release',
+        ),
+
+        pytest.param(
+            'Damnation.S01.720p.AMZN.WEB-DL.DDP5.1.H.264-AJP69', SceneCheckResult.false,
+            id='Non-scene season release',
+        ),
+
+        pytest.param(
+            'Damnation.S01E03.One.Penny.720p.AMZN.WEB-DL.DD+5.1.H.264-AJP69.mkv', SceneCheckResult.false,
+            id='Non-scene episode release',
+        ),
     ),
 )
 @pytest.mark.asyncio
@@ -125,91 +195,104 @@ async def test_is_scene_release_with_no_needed_keys(mocker):
 @pytest.mark.parametrize(
     argnames='release_name, exp_return_value',
     argvalues=(
-        # Looking for single-file release when original release was single-file
-        ('Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-         {'ly-dellmdm1080p.mkv': {'release_name': 'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
-                                  'file_name': 'ly-dellmdm1080p.mkv',
-                                  'size': 7044061767,
-                                  'crc': 'B59CE234'}}),
+        pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+            {'ly-dellmdm1080p.mkv': {'release_name': 'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY',
+                                     'file_name': 'ly-dellmdm1080p.mkv',
+                                     'size': 7044061767,
+                                     'crc': 'B59CE234'}},
+            id='Looking for single-file release when original release was single-file',
+        ),
 
-        # Looking for multi-file release when original release was multi-file
-        ('Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-         {'Bored.to.Death.S01.Jonathan.Amess.Brooklyn.720p.BluRay.x264-iNGOT.mkv':
-          {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-           'file_name': 'Bored.to.Death.S01.Jonathan.Amess.Brooklyn.720p.BluRay.x264-iNGOT.mkv',
-           'size': 518652629,
-           'crc': '497277ED'},
-          'Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv':
-          {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-           'file_name': 'Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
-           'size': 779447228,
-           'crc': '8C8C0AE7'},
-          'Bored.to.Death.S01E03.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv':
-          {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-           'file_name': 'Bored.to.Death.S01E03.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
-           'size': 30779540,
-           'crc': '0ECBEBE8'},
-          'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv':
-          {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-           'file_name': 'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
-           'size': 138052914,
-           'crc': 'E4E41C29'},
-          'Bored.to.Death.S01E08.Deleted.Scene.1.720p.BluRay.x264-iNGOT.mkv':
-          {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-           'file_name': 'Bored.to.Death.S01E08.Deleted.Scene.1.720p.BluRay.x264-iNGOT.mkv',
-           'size': 68498554,
-           'crc': '085C6946'},
-          'Bored.to.Death.S01E08.Deleted.Scene.2.720p.BluRay.x264-iNGOT.mkv':
-          {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-           'file_name': 'Bored.to.Death.S01E08.Deleted.Scene.2.720p.BluRay.x264-iNGOT.mkv',
-           'size': 45583011,
-           'crc': '7B822E59'}}),
+        pytest.param(
+            'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+            {'Bored.to.Death.S01.Jonathan.Amess.Brooklyn.720p.BluRay.x264-iNGOT.mkv':
+             {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+              'file_name': 'Bored.to.Death.S01.Jonathan.Amess.Brooklyn.720p.BluRay.x264-iNGOT.mkv',
+              'size': 518652629,
+              'crc': '497277ED'},
+             'Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv':
+             {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+              'file_name': 'Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
+              'size': 779447228,
+              'crc': '8C8C0AE7'},
+             'Bored.to.Death.S01E03.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv':
+             {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+              'file_name': 'Bored.to.Death.S01E03.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
+              'size': 30779540,
+              'crc': '0ECBEBE8'},
+             'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv':
+             {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+              'file_name': 'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
+              'size': 138052914,
+              'crc': 'E4E41C29'},
+             'Bored.to.Death.S01E08.Deleted.Scene.1.720p.BluRay.x264-iNGOT.mkv':
+             {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+              'file_name': 'Bored.to.Death.S01E08.Deleted.Scene.1.720p.BluRay.x264-iNGOT.mkv',
+              'size': 68498554,
+              'crc': '085C6946'},
+             'Bored.to.Death.S01E08.Deleted.Scene.2.720p.BluRay.x264-iNGOT.mkv':
+             {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+              'file_name': 'Bored.to.Death.S01E08.Deleted.Scene.2.720p.BluRay.x264-iNGOT.mkv',
+              'size': 45583011,
+              'crc': '7B822E59'}},
+            id='Looking for multi-file release when original release was multi-file',
+        ),
 
-        # Looking for multi-file release when original releases where single-file
-        ('Fawlty.Towers.S01.720p.BluRay.x264-SHORTBREHD',
-         {'Fawlty.Towers.S01E01.720p.BluRay.x264-SHORTBREHD.mkv':
-          {'release_name': 'Fawlty.Towers.S01E01.720p.BluRay.x264-SHORTBREHD',
-           'file_name': 'Fawlty.Towers.S01E01.720p.BluRay.x264-SHORTBREHD.mkv',
-           'size': 1559430969, 'crc': 'B334CBEA'},
-          'Fawlty.Towers.S01E02.720p.BluRay.x264-SHORTBREHD.mkv':
-          {'release_name': 'Fawlty.Towers.S01E02.720p.BluRay.x264-SHORTBREHD',
-           'file_name': 'Fawlty.Towers.S01E02.720p.BluRay.x264-SHORTBREHD.mkv',
-           'size': 1168328357, 'crc': '156FDC0E'},
-          'Fawlty.Towers.S01E03.720p.BluRay.x264-SHORTBREHD.mkv':
-          {'release_name': 'Fawlty.Towers.S01E03.720p.BluRay.x264-SHORTBREHD',
-           'file_name': 'Fawlty.Towers.S01E03.720p.BluRay.x264-SHORTBREHD.mkv',
-           'size': 1559496197, 'crc': '5EAAAEC3'},
-          'Fawlty.Towers.S01E04.720p.BluRay.x264-SHORTBREHD.mkv':
-          {'release_name': 'Fawlty.Towers.S01E04.720p.BluRay.x264-SHORTBREHD',
-           'file_name': 'Fawlty.Towers.S01E04.720p.BluRay.x264-SHORTBREHD.mkv',
-           'size': 1560040644, 'crc': '4AAB7B8F'},
-          'Fawlty.Towers.S01E05.720p.BluRay.x264-SHORTBREHD.mkv':
-          {'release_name': 'Fawlty.Towers.S01E05.720p.BluRay.x264-SHORTBREHD',
-           'file_name': 'Fawlty.Towers.S01E05.720p.BluRay.x264-SHORTBREHD.mkv',
-           'size': 1559747905, 'crc': '40A2568C'},
-          'Fawlty.Towers.S01E06.720p.BluRay.x264-SHORTBREHD.mkv':
-          {'release_name': 'Fawlty.Towers.S01E06.720p.BluRay.x264-SHORTBREHD',
-           'file_name': 'Fawlty.Towers.S01E06.720p.BluRay.x264-SHORTBREHD.mkv',
-           'size': 1559556862, 'crc': '9FAB6E5F'}}),
+        pytest.param(
+            'Fawlty.Towers.S01.720p.BluRay.x264-SHORTBREHD',
+            {'Fawlty.Towers.S01E01.720p.BluRay.x264-SHORTBREHD.mkv':
+             {'release_name': 'Fawlty.Towers.S01E01.720p.BluRay.x264-SHORTBREHD',
+              'file_name': 'Fawlty.Towers.S01E01.720p.BluRay.x264-SHORTBREHD.mkv',
+              'size': 1559430969, 'crc': 'B334CBEA'},
+             'Fawlty.Towers.S01E02.720p.BluRay.x264-SHORTBREHD.mkv':
+             {'release_name': 'Fawlty.Towers.S01E02.720p.BluRay.x264-SHORTBREHD',
+              'file_name': 'Fawlty.Towers.S01E02.720p.BluRay.x264-SHORTBREHD.mkv',
+              'size': 1168328357, 'crc': '156FDC0E'},
+             'Fawlty.Towers.S01E03.720p.BluRay.x264-SHORTBREHD.mkv':
+             {'release_name': 'Fawlty.Towers.S01E03.720p.BluRay.x264-SHORTBREHD',
+              'file_name': 'Fawlty.Towers.S01E03.720p.BluRay.x264-SHORTBREHD.mkv',
+              'size': 1559496197, 'crc': '5EAAAEC3'},
+             'Fawlty.Towers.S01E04.720p.BluRay.x264-SHORTBREHD.mkv':
+             {'release_name': 'Fawlty.Towers.S01E04.720p.BluRay.x264-SHORTBREHD',
+              'file_name': 'Fawlty.Towers.S01E04.720p.BluRay.x264-SHORTBREHD.mkv',
+              'size': 1560040644, 'crc': '4AAB7B8F'},
+             'Fawlty.Towers.S01E05.720p.BluRay.x264-SHORTBREHD.mkv':
+             {'release_name': 'Fawlty.Towers.S01E05.720p.BluRay.x264-SHORTBREHD',
+              'file_name': 'Fawlty.Towers.S01E05.720p.BluRay.x264-SHORTBREHD.mkv',
+              'size': 1559747905, 'crc': '40A2568C'},
+             'Fawlty.Towers.S01E06.720p.BluRay.x264-SHORTBREHD.mkv':
+             {'release_name': 'Fawlty.Towers.S01E06.720p.BluRay.x264-SHORTBREHD',
+              'file_name': 'Fawlty.Towers.S01E06.720p.BluRay.x264-SHORTBREHD.mkv',
+              'size': 1559556862, 'crc': '9FAB6E5F'}},
+            id='Looking for multi-file release when original releases where single-file',
+        ),
 
-        # Looking for single episode from multi-file release
-        ('Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
-         {'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv':
-          {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-           'file_name': 'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
-           'size': 138052914,
-           'crc': 'E4E41C29'}}),
+        pytest.param(
+            'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
+            {'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv':
+             {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+              'file_name': 'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
+              'size': 138052914,
+              'crc': 'E4E41C29'}},
+            id='Looking for single episode from multi-file release',
+        ),
 
-        # Looking for single non-episode file from multi-file release
-        ('Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT',
-         {'Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv':
-          {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
-           'file_name': 'Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
-           'size': 779447228,
-           'crc': '8C8C0AE7'}}),
+        pytest.param(
+            'Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT',
+            {'Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv':
+             {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+              'file_name': 'Bored.to.Death.S01.Making.of.720p.BluRay.x264-iNGOT.mkv',
+              'size': 779447228,
+              'crc': '8C8C0AE7'}},
+            id='Looking for single non-episode file from multi-file release',
+        ),
 
-        # Non-scene release
-        ('Foo.2015.1080p.Bluray.DD5.1.x264-DON.mkv', {}),
+        pytest.param(
+            'Foo.2015.1080p.Bluray.DD5.1.x264-DON.mkv',
+            {},
+            id='Non-scene release',
+        ),
     ),
 )
 @pytest.mark.asyncio
