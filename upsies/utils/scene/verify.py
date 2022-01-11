@@ -164,7 +164,6 @@ async def verify_release_name(content_path, release_name):
 
     files = await release_files(release_name)
     content_path = content_path.strip(os.sep)
-    content_filename = utils.fs.basename(content_path)
 
     # The payload of the release is its largest file
     main_release_file = sorted(
