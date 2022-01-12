@@ -435,7 +435,7 @@ async def test_release_files(release_name, exp_return_value, store_response):
             'Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY',
             errors.SceneRenamedError(original_name='Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv',
                                      existing_name='Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY/teneighty-friends.s10e17e18.mkv'),
-            id='[EPISODE] Renamed abbreviated file name in properly episode directory',
+            id='[EPISODE] Renamed abbreviated file name in properly named episode directory',
         ),
 
         pytest.param(
