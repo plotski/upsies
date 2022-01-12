@@ -652,7 +652,6 @@ async def test_verify_release_files(content_path, release_name, file_sizes, exp_
 @pytest.mark.asyncio
 async def test_verify_release_gets_release_name(mocker):
     _verify_release_mock = mocker.patch('upsies.utils.scene.verify._verify_release', AsyncMock())
-    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=True))
     _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock())
 
     content_path = 'mock/path/to/Mock.Release'
@@ -661,7 +660,6 @@ async def test_verify_release_gets_release_name(mocker):
 
     assert return_value is _verify_release_mock.return_value
     assert _verify_release_mock.call_args_list == [call(content_path, release_name)]
-    assert isdir_mock.call_args_list == []
     assert _verify_release_per_file_mock.call_args_list == []
 
 @pytest.mark.asyncio
@@ -670,7 +668,6 @@ async def test_verify_release_gets_no_release_name_and_finds_no_matching_scene_r
     search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
         return_value=(),
     ))
-    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=True))
     _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock())
 
     content_path = 'mock/path/to/Mock.Release'
@@ -679,7 +676,6 @@ async def test_verify_release_gets_no_release_name_and_finds_no_matching_scene_r
     assert return_value == (SceneCheckResult.false, ())
     assert search_mock.call_args_list == [call(content_path)]
     assert _verify_release_mock.call_args_list == []
-    assert isdir_mock.call_args_list == []
     assert _verify_release_per_file_mock.call_args_list == []
 
 @pytest.mark.asyncio
@@ -698,7 +694,6 @@ async def test_verify_release_finds_valid_scene_release(mocker):
     search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
         return_value=tuple(verify_release_results.keys()),
     ))
-    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=True))
     _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock())
 
     content_path = 'mock/path/to/Mock.Release'
@@ -712,7 +707,6 @@ async def test_verify_release_finds_valid_scene_release(mocker):
         call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-CCC'),
         call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-DDD'),
     ]
-    assert isdir_mock.call_args_list == []
     assert _verify_release_per_file_mock.call_args_list == []
 
 @pytest.mark.asyncio
@@ -728,7 +722,6 @@ async def test_verify_release_finds_only_nonscene_releases(mocker):
     search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
         return_value=tuple(verify_release_results.keys()),
     ))
-    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=True))
     _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock())
 
     content_path = 'mock/path/to/Mock.Release'
@@ -740,7 +733,6 @@ async def test_verify_release_finds_only_nonscene_releases(mocker):
         call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-AAA'),
         call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-BBB'),
     ]
-    assert isdir_mock.call_args_list == [call(content_path)]
     assert _verify_release_per_file_mock.call_args_list == [call(content_path)]
 
 @pytest.mark.asyncio
@@ -757,7 +749,6 @@ async def test_verify_release_finds_only_scene_releases_with_exceptions(mocker):
     search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
         return_value=tuple(verify_release_results.keys()),
     ))
-    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=True))
     _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock(
         return_value='_verify_release_per_file return value',
     ))
@@ -772,18 +763,10 @@ async def test_verify_release_finds_only_scene_releases_with_exceptions(mocker):
         call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-BBB'),
         call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-CCC'),
     ]
-    assert isdir_mock.call_args_list == [call(content_path)]
     assert _verify_release_per_file_mock.call_args_list == [call(content_path)]
 
-@pytest.mark.parametrize(
-    argnames='isdir, exp_verify_release_per_file_is_called',
-    argvalues=(
-        (True, True),
-        (False, False),
-    ),
-)
 @pytest.mark.asyncio
-async def test_verify_release_finds_nothing(isdir, exp_verify_release_per_file_is_called, mocker):
+async def test_verify_release_finds_nothing(mocker):
     verify_release_results = {
         'The.Foo.2000.x264-AAA': (SceneCheckResult.false, ()),
         'The.Foo.2000.x264-BBB': (SceneCheckResult.unknown, ()),
@@ -795,7 +778,6 @@ async def test_verify_release_finds_nothing(isdir, exp_verify_release_per_file_i
     search_mock = mocker.patch('upsies.utils.scene.find.search', AsyncMock(
         return_value=tuple(verify_release_results.keys()),
     ))
-    isdir_mock = mocker.patch('os.path.isdir', Mock(return_value=isdir))
     _verify_release_per_file_mock = mocker.patch('upsies.utils.scene.verify._verify_release_per_file', AsyncMock(
         return_value='_verify_release_per_file return value',
     ))
@@ -803,20 +785,13 @@ async def test_verify_release_finds_nothing(isdir, exp_verify_release_per_file_i
     content_path = 'mock/path/to/Mock.Release'
     return_value = await verify.verify_release(content_path)
 
-    if exp_verify_release_per_file_is_called:
-        assert return_value == '_verify_release_per_file return value'
-    else:
-        assert return_value == (SceneCheckResult.false, ())
+    assert return_value == '_verify_release_per_file return value'
     assert search_mock.call_args_list == [call(content_path)]
     assert _verify_release_mock.call_args_list == [
         call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-AAA'),
         call('mock/path/to/Mock.Release', 'The.Foo.2000.x264-BBB'),
     ]
-    assert isdir_mock.call_args_list == [call(content_path)]
-    if exp_verify_release_per_file_is_called:
-        assert _verify_release_per_file_mock.call_args_list == [call(content_path)]
-    else:
-        assert _verify_release_per_file_mock.call_args_list == []
+    assert _verify_release_per_file_mock.call_args_list == [call(content_path)]
 
 
 @pytest.mark.parametrize(

@@ -360,12 +360,9 @@ async def verify_release(content_path, release_name=None):
         if is_scene_release and not exceptions:
             return SceneCheckResult.true, ()
 
-    if os.path.isdir(content_path):
-        # Maybe `content_path` is a directory (e.g. season pack) and scene released
-        # single files (e.g. episodes).
-        return await _verify_release_per_file(content_path)
-    else:
-        return SceneCheckResult.false, ()
+    # Maybe `content_path` is a directory (season pack) and scene released
+    # single files (episodes).
+    return await _verify_release_per_file(content_path)
 
 
 async def _verify_release_per_file(content_path):
