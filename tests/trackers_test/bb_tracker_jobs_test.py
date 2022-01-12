@@ -2008,6 +2008,8 @@ async def test_get_description_for_series(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(return_value=None))
     mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(return_value='creators'))
     mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(return_value='cast'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(return_value='screenshots'))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(return_value='mediainfo'))
     mocker.patch.object(bb_tracker_jobs, 'error')
     description = await bb_tracker_jobs.get_description()
     assert description == (
@@ -2021,6 +2023,8 @@ async def test_get_description_for_series(bb_tracker_jobs, mocker):
         'creators\n'
         'cast'
         '[/quote]'
+        'screenshots'
+        'mediainfo'
     )
     assert bb_tracker_jobs.error.call_args_list == []
 
@@ -2036,6 +2040,8 @@ async def test_get_description_without_webdb_id(bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs, 'format_description_directors', AsyncMock(return_value=None))
     mocker.patch.object(bb_tracker_jobs, 'format_description_creators', AsyncMock(return_value=None))
     mocker.patch.object(bb_tracker_jobs, 'format_description_cast', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_screenshots', AsyncMock(return_value=None))
+    mocker.patch.object(bb_tracker_jobs, 'format_description_series_mediainfo', AsyncMock(return_value=None))
     mocker.patch.object(bb_tracker_jobs, 'error')
     description = await bb_tracker_jobs.get_description()
     assert description == ''
@@ -2430,6 +2436,83 @@ async def test_format_description_cast(actors, exp_text, bb_tracker_jobs, mocker
 
 
 @pytest.mark.parametrize(
+    argnames='screenshot_urls, exp_text',
+    argvalues=(
+        ((), None),
+        (
+            (
+                'http://foo.local/screenshot1.jpg',
+            ),
+            (
+                '[quote]\n'
+                f'[align=center][img=http://foo.local/screenshot1.jpg][/align]\n'
+                '[/quote]'
+            ),
+        ),
+        (
+            (
+                'http://foo.local/screenshot1.jpg',
+                'http://foo.local/screenshot2.jpg',
+            ),
+            (
+                '[quote]\n[align=center]'
+                f'[img=http://foo.local/screenshot1.jpg]\n\n'
+                f'[img=http://foo.local/screenshot2.jpg]'
+                '[/align]\n[/quote]'
+            ),
+        ),
+        (
+            (
+                'http://foo.local/screenshot1.jpg',
+                'http://foo.local/screenshot2.jpg',
+                'http://foo.local/screenshot3.jpg',
+            ),
+            (
+                '[quote]\n[align=center]'
+                f'[img=http://foo.local/screenshot1.jpg]\n\n'
+                f'[img=http://foo.local/screenshot2.jpg]\n\n'
+                f'[img=http://foo.local/screenshot3.jpg]'
+                '[/align]\n[/quote]'
+            ),
+        ),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_series_screenshots(screenshot_urls, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'upload_screenshots_job', PropertyMock(
+        return_value=Mock(wait=AsyncMock()),
+    ))
+    mocker.patch.object(bb_tracker_jobs, 'get_job_output', Mock(
+        return_value=screenshot_urls,
+    ))
+    text = await bb_tracker_jobs.format_description_series_screenshots()
+    assert text == exp_text
+    assert bb_tracker_jobs.upload_screenshots_job.wait.call_args_list == [call()]
+    assert bb_tracker_jobs.get_job_output.call_args_list == [call(bb_tracker_jobs.upload_screenshots_job)]
+
+
+@pytest.mark.parametrize(
+    argnames='mediainfo, exp_text',
+    argvalues=(
+        ('', None),
+        ('mock mediainfo', '[mediainfo]mock mediainfo[/mediainfo]'),
+    ),
+)
+@pytest.mark.asyncio
+async def test_format_description_series_mediainfo(mediainfo, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs), 'mediainfo_job', PropertyMock(
+        return_value=Mock(wait=AsyncMock()),
+    ))
+    mocker.patch.object(bb_tracker_jobs, 'get_job_output', Mock(
+        return_value=mediainfo,
+    ))
+    text = await bb_tracker_jobs.format_description_series_mediainfo()
+    assert text == exp_text
+    assert bb_tracker_jobs.mediainfo_job.wait.call_args_list == [call()]
+    assert bb_tracker_jobs.get_job_output.call_args_list == [call(bb_tracker_jobs.mediainfo_job, slice=0)]
+
+
+@pytest.mark.parametrize(
     argnames='isolated_jobs, parent_ok, exp_ok',
     argvalues=(
         ((), 'parent value', 'parent value'),
@@ -2606,35 +2689,13 @@ async def test_post_data_screenshot_urls(bb_tracker_jobs, mocker):
         '[quote]quoted text[/quote]\n',
     ),
 )
-@pytest.mark.parametrize(
-    argnames='screenshot_urls',
-    argvalues=(
-        (),
-        ('http://screenshot1.url', 'http://screenshot2.url'),
-    ),
-    ids=lambda v: str(v),
-)
-@pytest.mark.parametrize(
-    argnames='mediainfo',
-    argvalues=(
-        '',
-        'mocked mediainfo',
-    ),
-    ids=lambda v: str(v),
-)
 @pytest.mark.asyncio
-async def test_post_data_description(mediainfo, screenshot_urls, description,
-                                     is_movie_release, is_series_release,
-                                     bb_tracker_jobs, mocker):
+async def test_post_data_description(description, is_movie_release, is_series_release, bb_tracker_jobs, mocker):
     def mock_get_job_output(job, slice=None):
         if job is bb_tracker_jobs.movie_description_job:
             return f'movie description: {description}'
         elif job is bb_tracker_jobs.series_description_job:
             return f'series description: {description}'
-        elif job is bb_tracker_jobs.upload_screenshots_job:
-            return screenshot_urls
-        elif job is bb_tracker_jobs.mediainfo_job:
-            return mediainfo
 
     mocker.patch.object(bb_tracker_jobs, 'get_job_output', side_effect=mock_get_job_output)
     mocker.patch.object(type(bb_tracker_jobs), 'is_movie_release', PropertyMock(return_value=is_movie_release))
@@ -2645,14 +2706,6 @@ async def test_post_data_description(mediainfo, screenshot_urls, description,
         exp_description += f'movie description: {description}'
     elif is_series_release:
         exp_description += f'series description: {description}'
-        if screenshot_urls:
-            exp_description += (
-                '[quote]\n[align=center]'
-                + '\n\n'.join(f'[img={url}]' for url in screenshot_urls)
-                + '[/align]\n[/quote]'
-            )
-        if mediainfo:
-            exp_description += '[mediainfo]mocked mediainfo[/mediainfo]'
 
     if exp_description and not (exp_description.endswith('[/quote]') or exp_description.endswith('\n')):
         exp_description += '\n'

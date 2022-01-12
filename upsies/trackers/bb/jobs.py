@@ -1038,6 +1038,14 @@ class BbTrackerJobs(TrackerJobsBase):
                 fmt='[quote]{text}[/quote]',
             )
 
+            # Season and episode description also contains screenshots and
+            # mediainfo
+            if self.is_series_release:
+                await extend_parts(
+                    self.format_description_series_screenshots(),
+                    self.format_description_series_mediainfo(),
+                )
+
         return ''.join(parts).strip()
 
     async def format_description_summary(self):
@@ -1186,6 +1194,27 @@ class BbTrackerJobs(TrackerJobsBase):
             actors_links = [self._format_person(actor) for actor in actors]
             return ('[b]Cast[/b]: ' + ', '.join(actors_links))
 
+    async def format_description_series_screenshots(self):
+        await self.upload_screenshots_job.wait()
+        screenshot_urls = self.get_job_output(self.upload_screenshots_job)
+        screenshots_bbcode_parts = [
+            f'[img={url}]'
+            for url in screenshot_urls
+        ]
+        screenshots_bbcode = '\n\n'.join(screenshots_bbcode_parts)
+        if screenshots_bbcode:
+            return (
+                '[quote]\n'
+                f'[align=center]{screenshots_bbcode}[/align]\n'
+                '[/quote]'
+            )
+
+    async def format_description_series_mediainfo(self):
+        await self.mediainfo_job.wait()
+        mediainfo = self.get_job_output(self.mediainfo_job, slice=0)
+        if mediainfo:
+            return f'[mediainfo]{mediainfo}[/mediainfo]'
+
     # Web form data
 
     @property
@@ -1258,25 +1287,6 @@ class BbTrackerJobs(TrackerJobsBase):
 
         elif self.is_series_release:
             parts.append(self.get_job_output(self.series_description_job, slice=0))
-
-            # Append screenshots
-            screenshot_urls = self.get_job_output(self.upload_screenshots_job)
-            screenshots_bbcode_parts = [
-                f'[img={url}]'
-                for url in screenshot_urls
-            ]
-            screenshots_bbcode = '\n\n'.join(screenshots_bbcode_parts)
-            if screenshots_bbcode:
-                parts.append(
-                    '[quote]\n'
-                    f'[align=center]{screenshots_bbcode}[/align]\n'
-                    '[/quote]'
-                )
-
-            # Append mediainfo
-            mediainfo = self.get_job_output(self.mediainfo_job, slice=0)
-            if mediainfo:
-                parts.append(f'[mediainfo]{mediainfo}[/mediainfo]')
 
         # Append self promotion below. A closing [/quote] tag automatically
         # renders a newline. Otherwise, we must add a newline character.
