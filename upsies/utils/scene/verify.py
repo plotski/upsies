@@ -376,7 +376,7 @@ async def _verify_release_per_file(content_path):
     _log.debug('Verifying each file beneath %r', content_path)
     is_scene_releases = []
     combined_exceptions = collections.defaultdict(lambda: [])
-    filepaths = list(utils.fs.file_list(content_path, extensions=constants.VIDEO_FILE_EXTENSIONS))
+    filepaths = utils.fs.file_list(content_path, extensions=constants.VIDEO_FILE_EXTENSIONS)
     for filepath in filepaths:
         existing_release_names = await find.search(filepath)
         _log.debug('Search results for %r: %r', filepath, existing_release_names)
