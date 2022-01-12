@@ -355,14 +355,10 @@ async def verify_release(content_path, release_name=None):
         return SceneCheckResult.false, ()
 
     # Maybe `content_path` was released by scene as it is (as file or directory)
-    combined_exceptions = []
     for existing_release_name in existing_release_names:
         is_scene_release, exceptions = await _verify_release(content_path, existing_release_name)
-        if is_scene_release:
-            if not exceptions:
-                return SceneCheckResult.true, ()
-            else:
-                combined_exceptions.extend(exceptions)
+        if is_scene_release and not exceptions:
+            return SceneCheckResult.true, ()
 
     if os.path.isdir(content_path):
         # Maybe `content_path` is a directory (e.g. season pack) and scene released
