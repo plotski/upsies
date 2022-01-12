@@ -4,6 +4,7 @@ Check if scene release was altered
 
 import asyncio
 import collections
+import difflib
 import os
 import re
 
@@ -166,11 +167,31 @@ async def verify_release_name(content_path, release_name):
     files = await release_files(release_name)
     content_path = content_path.strip(os.sep)
 
-    # The payload of the release is its largest file
-    main_release_file = sorted(
-        (info for info in files.values()),
-        key=lambda info: info['size'],
-    )[0]['file_name']
+    # Figure out which file is the actual payload. Note that the release may not
+    # contain any files, e.g. Wrecked.2011.DiRFiX.LIMITED.FRENCH.720p.BluRay.X264-LOST.
+    main_release_file = None
+    if files:
+        content_file_extension = utils.fs.file_extension(content_path)
+        if content_file_extension:
+            # `content_path` points to a file, not a directory
+            content_file = utils.fs.basename(content_path)
+            # We don't know if `content_file` was renamed, so we find the match
+            # in the actual file names
+            filename_matches = difflib.get_close_matches(content_file, files)
+            if filename_matches:
+                main_release_file = filename_matches[0]
+
+        if not main_release_file:
+            # Default to the largest file if the release has files
+            main_release_file = sorted(
+                (info for info in files.values()),
+                key=lambda info: info['size'],
+            )[0]['file_name']
+
+    # No files in this release, default to `release_name`
+    if not main_release_file:
+        main_release_file = release_name
+    _log.debug('Main release file: %r', main_release_file)
 
     # Generate list of paths that are valid for this release
     acceptable_paths = {release_name}

@@ -408,6 +408,14 @@ async def test_release_files(release_name, exp_return_value, store_response):
         ),
 
         pytest.param(
+            'Friends.S10.1080p.Blu-ray.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv',
+            'Friends.S10.1080p.BluRay.x264-TENEIGHTY',
+            errors.SceneRenamedError(original_name='Friends.S10.1080p.BluRay.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv',
+                                     existing_name='Friends.S10.1080p.Blu-ray.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv'),
+            id='[EPISODE] Abbreviated file name in renamed season directory',
+        ),
+
+        pytest.param(
             'Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY/teneighty-friendss10e17e18.mkv',
             'Friends.S10E17E18.1080p.BluRay.x264-TENEIGHTY',
             None,
@@ -473,6 +481,14 @@ async def test_release_files(release_name, exp_return_value, store_response):
             'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
             None,
             id='[EXTRAS] Single file from multi-file release',
+        ),
+
+        pytest.param(
+            'foo',
+            'Wrecked.2011.DiRFiX.LIMITED.FRENCH.720p.BluRay.X264-LOST',
+            errors.SceneRenamedError(original_name='Wrecked.2011.DiRFiX.LIMITED.FRENCH.720p.BluRay.X264-LOST',
+                                     existing_name='foo'),
+            id='Empty release',
         ),
     ),
 )
