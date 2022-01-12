@@ -387,7 +387,7 @@ async def _verify_release_per_file(content_path):
         # Match each existing_release_name against filepath
         for existing_release_name in existing_release_names:
             is_scene_release, exceptions = await _verify_release(filepath, existing_release_name)
-            _log.debug('Verifyied %r against %r: %r, %r',
+            _log.debug('Verified %r against %r: %r, %r',
                        filepath, existing_release_name, is_scene_release, exceptions)
             if is_scene_release and not exceptions:
                 # Match found, don't check other existing_release_names
