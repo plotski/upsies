@@ -207,9 +207,9 @@ async def verify_release_name(content_path, release_name):
         if not is_abbreviated_filename(file):
             acceptable_paths.add(file)
 
-    # If `release_name` is an episode, we must also consider that it is release
-    # inside a season pack parent directory. This only matters if we're dealing
-    # with an abbreviated file name.
+    # If `release_name` is an episode, it may be inside a season pack parent
+    # directory. This only matters if we're dealing with an abbreviated file
+    # name; normal file names are independent of their parent directory name.
     if is_abbreviated_filename(content_path):
         season_pack_name = re.sub(
             (
