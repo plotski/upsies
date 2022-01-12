@@ -111,7 +111,6 @@ class SceneCheckJob(JobBase):
         """
         self._content_path = content_path
         self._is_scene_release = None
-        self._release_name = fs.strip_extension(fs.basename(content_path))
         self.signal.add('ask_release_name')
         self.signal.add('ask_is_scene_release')
         self.signal.add('checked')
@@ -131,40 +130,19 @@ class SceneCheckJob(JobBase):
         """Start asynchronous background worker task"""
         self.add_task(
             self._catch_errors(
-                self._find_release_name()
-            )
+                self._verify(),
+            ),
         )
 
-    async def _find_release_name(self):
-        is_scene_release = await scene.is_scene_release(self._content_path)
-        if is_scene_release is types.SceneCheckResult.false:
-            _log.debug('Not a scene release: %r', self._content_path)
-            self._handle_scene_check_result(types.SceneCheckResult.false)
+    async def _verify(self):
+        _log.debug('Verifying release: %r', self._content_path)
+        results = await scene.search(self._content_path, only_existing_releases=False)
+        if len(results) >= 2:
+            # If there are multiple search results, ask the user against which
+            # scene release to verify `content_path`
+            self.signal.emit('ask_release_name', results)
         else:
-            # Find specific release name. If there are multiple search results,
-            # ask the user to pick one.
-            query = scene.SceneQuery.from_string(self._content_path)
-            results = await scene.search(query, only_existing_releases=False)
-            if not results:
-                _log.debug('No search results: %r', self._content_path)
-                self._handle_scene_check_result(types.SceneCheckResult.unknown)
-
-            # Autopick if release name is in search results
-            elif self._release_name in results:
-                _log.debug('Autopicking from search results: %r', self._release_name)
-                await self._verify_release(self._release_name)
-
-            # Autopick single result if we know it's a scene release. If there
-            # is missing information (e.g. no group), is_scene_release() returns
-            # SceneCheckResult.unknown and we ask the user.
-            elif len(results) == 1 and is_scene_release is types.SceneCheckResult.true:
-                release_name = results[0]
-                _log.debug('Autopicking only search result: %r', release_name)
-                await self._verify_release(release_name)
-
-            else:
-                _log.debug('Asking for release name: %r', results)
-                self.signal.emit('ask_release_name', results)
+            await self._verify_release()
 
     def user_selected_release_name(self, release_name):
         """
@@ -184,8 +162,7 @@ class SceneCheckJob(JobBase):
         else:
             self._handle_scene_check_result(types.SceneCheckResult.false)
 
-    async def _verify_release(self, release_name):
-        _log.debug('Verifying release: %r', release_name)
+    async def _verify_release(self, release_name=None):
         is_scene_release, exceptions = await scene.verify_release(self._content_path, release_name)
         self._handle_scene_check_result(is_scene_release, exceptions)
 
@@ -198,7 +175,7 @@ class SceneCheckJob(JobBase):
 
         serious_errors = [e for e in exceptions if not isinstance(e, errors.SceneMissingInfoError)]
         for e in serious_errors:
-            self.error(e)
+            self.error(e, finish=False)
 
         if serious_errors:
             self.finish()
