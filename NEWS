@@ -2,6 +2,8 @@
   * Improved scene detection for season packs
   * Attempt to fix screenshot creation on Windows
   * bB: Less common sources can now be selected manually
+  * bB: With --only-description, include screenshots and mediainfo for season
+    and episode release
 
 
 2021.12.12
