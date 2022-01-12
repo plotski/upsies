@@ -173,18 +173,18 @@ async def verify_release_name(content_path, release_name):
     )[0]['file_name']
 
     # Generate list of paths that are valid for this release
-    acceptable_paths = [release_name]
+    acceptable_paths = {release_name}
 
     # Properly named directory that contains the released file. This covers
     # abbreviated files and all other files.
     for file in files:
-        acceptable_paths.append(os.path.join(release_name, file))
+        acceptable_paths.add(os.path.join(release_name, file))
 
     # Any non-abbreviated files may exist outside of a properly named parent
     # directory
     for file in files:
         if not is_abbreviated_filename(file):
-            acceptable_paths.append(file)
+            acceptable_paths.add(file)
 
     # If `release_name` is an episode, we must also consider that it is release
     # inside a season pack parent directory. This only matters if we're dealing
@@ -200,12 +200,12 @@ async def verify_release_name(content_path, release_name):
             release_name,
         )
         for file in files:
-            acceptable_paths.append(f'{season_pack_name}/{file}')
+            acceptable_paths.add(f'{season_pack_name}/{file}')
 
     # Standalone file is also ok if it is named `release_name` with the same
     # file extension as the main file
     main_release_file_extension = utils.fs.file_extension(main_release_file)
-    acceptable_paths.append('.'.join((release_name, main_release_file_extension)))
+    acceptable_paths.add('.'.join((release_name, main_release_file_extension)))
 
     # Release is correctly named if `content_path` ends with any acceptable path
     for path in (p.strip(os.sep) for p in acceptable_paths):
