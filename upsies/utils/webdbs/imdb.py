@@ -5,6 +5,7 @@ API for imdb.com
 import functools
 import re
 import string
+import unidecode
 
 from ... import utils
 from ..types import ReleaseType
@@ -319,7 +320,11 @@ class ImdbApi(WebDbApiBase):
 
     def _normalize_title(self, title):
         """Return casefolded `title` without punctuation and deduplicated whitespace"""
-        return ' '.join(title.translate(self._normalize_title_translation).casefold().split())
+        title = unidecode.unidecode(title)
+        title = title.translate(self._normalize_title_translation)
+        title = title.casefold()
+        title = ' '.join(title.split())
+        return title
 
     _ignored_akas_keys = (
         re.compile(r'\(TV title\)$'),
