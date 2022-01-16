@@ -116,7 +116,7 @@ async def release_files(release_name):
     # season pack, and then we can call release_files() for each episode.
     release_info = utils.release.ReleaseInfo(release_name)
     if release_info['type'] is ReleaseType.season:
-        results = await find.search(release_info)
+        results = await find.search(release_info, only_existing_releases=True)
         if results:
             files = await asyncio.gather(
                 *(_srrdb.release_files(result) for result in results)

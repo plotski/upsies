@@ -269,6 +269,23 @@ async def test_is_scene_release_with_no_needed_keys(mocker):
         ),
 
         pytest.param(
+            'Drunk.History.S01.720p.HDTV.x264-2HD',
+            {
+                'drunk.history.s01e02.720p.hdtv.x264-2hd.mkv': {
+                    'release_name': 'Drunk.History.S01E02.720p.HDTV.x264-2HD',
+                    'file_name': 'drunk.history.s01e02.720p.hdtv.x264-2hd.mkv',
+                    'size': 534364440, 'crc': 'F074DA2A',
+                },
+                'drunk.history.s01e03.720p.hdtv.x264-2hd.mkv': {
+                    'release_name': 'Drunk.History.S01E03.720p.HDTV.x264-2HD',
+                    'file_name': 'drunk.history.s01e03.720p.hdtv.x264-2hd.mkv',
+                    'size': 525260014, 'crc': 'BBA99EED',
+                },
+            },
+            id='Looking for incomplete season pack',
+        ),
+
+        pytest.param(
             'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv',
             {'Bored.to.Death.S01E04.Deleted.Scene.720p.BluRay.x264-iNGOT.mkv':
              {'release_name': 'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
