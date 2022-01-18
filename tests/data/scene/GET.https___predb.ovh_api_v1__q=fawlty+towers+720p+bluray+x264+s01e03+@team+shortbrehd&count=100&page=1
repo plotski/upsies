@@ -1,0 +1,25 @@
+{
+    "status": "success",
+    "message": "",
+    "data": {
+        "rowCount": 1,
+        "rows": [
+            {
+                "id": 9588006,
+                "name": "Fawlty.Towers.S01E03.720p.BluRay.x264-SHORTBREHD",
+                "team": "SHORTBREHD",
+                "cat": "TV-BLURAY-X264",
+                "genre": "",
+                "url": "",
+                "size": 1487,
+                "files": 32,
+                "preAt": 1574249556,
+                "nuke": null
+            }
+        ],
+        "offset": 0,
+        "reqCount": 100,
+        "total": 1,
+        "time": 0.001575328
+    }
+}

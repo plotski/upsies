@@ -94,6 +94,40 @@ async def is_scene_release(release):
     return SceneCheckResult.false
 
 
+async def is_mixed_scene_release(directory):
+    """
+    Whether `directory` is a season pack with scene releases from different
+    groups
+    """
+    if not os.path.isdir(directory):
+        return False
+
+    release_info = utils.release.ReleaseInfo(directory)
+    if release_info['type'] is not ReleaseType.season:
+        return False
+
+    groups_found = set()
+    for filepath in utils.fs.file_list(directory):
+        # Ignore files without release group
+        filepath_info = utils.release.ReleaseInfo(filepath)
+        if filepath_info['group']:
+
+            # Find relevant scene release(s)
+            results = await find.search(filepath)
+            for result in results:
+
+                # Collect group names
+                result_info = utils.release.ReleaseInfo(result)
+                if result_info['group']:
+                    groups_found.add(result_info['group'])
+
+                # If there are 2 or more different groups, we know enough
+                if len(groups_found) >= 2:
+                    return True
+
+    return False
+
+
 async def release_files(release_name):
     """
     Map release file names to file information
