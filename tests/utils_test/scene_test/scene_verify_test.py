@@ -60,113 +60,137 @@ def test_assert_not_abbreviated_filename_and_is_abbreviated_filename(filename, s
     argnames='release_name, exp_return_value',
     argvalues=(
         pytest.param(
-            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', SceneCheckResult.true,
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
+            SceneCheckResult.true,
             id='Movie: Properly named file',
         ),
         pytest.param(
-            'Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY.mkv', SceneCheckResult.true,
+            'Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY.mkv',
+            SceneCheckResult.true,
             id='Movie: Properly named file',
         ),
         pytest.param(
-            'dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity.mkv', SceneCheckResult.true,
+            'dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity.mkv',
+            SceneCheckResult.true,
             id='Movie: Properly named file',
         ),
 
         pytest.param(
-            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', SceneCheckResult.true,
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
+            SceneCheckResult.true,
             id='Movie: Properly named file in properly named directory',
         ),
         pytest.param(
-            'Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv', SceneCheckResult.true,
+            'Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
+            SceneCheckResult.true,
             id='Movie: Properly named file in properly named directory',
         ),
         pytest.param(
-            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY.mkv', SceneCheckResult.true,
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY.mkv',
+            SceneCheckResult.true,
             id='Movie: Properly named file in properly named directory',
         ),
 
         pytest.param(
-            'path/to/ly-dellmdm1080p.mkv', SceneCheckResult.unknown,
+            'path/to/ly-dellmdm1080p.mkv',
+            SceneCheckResult.unknown,
             id='Movie: Abbreviated file without usably named parent directory',
         ),
 
         pytest.param(
-            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv', SceneCheckResult.true,
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY/ly-dellmdm1080p.mkv',
+            SceneCheckResult.true,
             id='Movie: Abbreviated file in usably named directory',
         ),
         pytest.param(
-            'Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/ly-dellmdm1080p.mkv', SceneCheckResult.true,
+            'Dellamorte.Dellamore.1994.1080p.Blu-ray.x264-LiViDiTY/ly-dellmdm1080p.mkv',
+            SceneCheckResult.true,
             id='Movie: Abbreviated file in usably named directory',
         ),
         pytest.param(
-            'dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity/ly-dellmdm1080p.mkv', SceneCheckResult.true,
+            'dellamorte.dellamore.1994.1080p.blu-ray.x264-lividity/ly-dellmdm1080p.mkv',
+            SceneCheckResult.true,
             id='Movie: Abbreviated file in usably named directory',
         ),
 
         pytest.param(
-            'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT', SceneCheckResult.true,
+            'Bored.to.Death.S01.EXTRAS.720p.BluRay.x264-iNGOT',
+            SceneCheckResult.true,
             id='Series: Scene released season pack',
         ),
         pytest.param(
-            'bored.to.death.s01.720p.bluray.x264-ingot', SceneCheckResult.true,
+            'bored.to.death.s01.720p.bluray.x264-ingot',
+            SceneCheckResult.true,
             id='Series: Scene released season pack',
         ),
         pytest.param(
-            'Bored.to.Death.S01.Jonathan.Amess.Brooklyn.720p.BluRay.x264-iNGOT.mkv', SceneCheckResult.true,
+            'Bored.to.Death.S01.Jonathan.Amess.Brooklyn.720p.BluRay.x264-iNGOT.mkv',
+            SceneCheckResult.true,
             id='Series: Scene released season pack',
         ),
         pytest.param(
-            'bored.to.death.s01.720p.bluray.x264-ingot.mkv', SceneCheckResult.true,
+            'bored.to.death.s01.720p.bluray.x264-ingot.mkv',
+            SceneCheckResult.true,
             id='Series: Scene released season pack',
         ),
 
         pytest.param(
-            'Justified.S04E01.720p.BluRay.x264-REWARD', SceneCheckResult.true,
+            'Justified.S04E01.720p.BluRay.x264-REWARD',
+            SceneCheckResult.true,
             id='Series: Scene released single episodes',
         ),
 
         pytest.param(
-            'Justified.S04E99.720p.BluRay.x264-REWARD', SceneCheckResult.false,
+            'Justified.S04E99.720p.BluRay.x264-REWARD',
+            SceneCheckResult.false,
             id='Series: Scene released single episodes',
         ),
 
         pytest.param(
-            'Justified.S04.720p.BluRay.x264-REWARD', SceneCheckResult.true,
+            'Justified.S04.720p.BluRay.x264-REWARD',
+            SceneCheckResult.true,
             id='Series: Scene released single episodes',
         ),
 
         pytest.param(
-            'Justified.S02.720p.BluRay.x264-REWARD', SceneCheckResult.false,
+            'Justified.S02.720p.BluRay.x264-REWARD',
+            SceneCheckResult.false,
             id='Series: Missing season from scene group',
         ),
 
         pytest.param(
-            'Justified.720p.BluRay.x264-REWARD', SceneCheckResult.unknown,
+            'Justified.720p.BluRay.x264-REWARD',
+            SceneCheckResult.unknown,
             id='Series: Not enough information in release name',
         ),
 
         pytest.param(
-            'Friends.S10.1080p.BluRay.x264-TENEIGHTY', SceneCheckResult.true,
+            'Friends.S10.1080p.BluRay.x264-TENEIGHTY',
+            SceneCheckResult.true,
             id='Series: Lots of seasons and episodes',
         ),
 
         pytest.param(
-            'The.Fall.Guy.S02.480p.DVDRip.XviD.AAC-nodlabs', SceneCheckResult.true,
+            'The.Fall.Guy.S02.480p.DVDRip.XviD.AAC-nodlabs',
+            SceneCheckResult.true,
             id='Resolution is ignored for DVDRip',
         ),
 
         pytest.param(
-            'Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv', SceneCheckResult.false,
+            'Rampart.2011.1080p.Bluray.DD5.1.x264-DON.mkv',
+            SceneCheckResult.false,
             id='Non-scene movie release',
         ),
 
         pytest.param(
-            'Damnation.S01.720p.AMZN.WEB-DL.DDP5.1.H.264-AJP69', SceneCheckResult.false,
+            'Damnation.S01.720p.AMZN.WEB-DL.DDP5.1.H.264-AJP69',
+            SceneCheckResult.false,
             id='Non-scene season release',
         ),
 
         pytest.param(
-            'Damnation.S01E03.One.Penny.720p.AMZN.WEB-DL.DD+5.1.H.264-AJP69.mkv', SceneCheckResult.false,
+            'Damnation.S01E03.One.Penny.720p.AMZN.WEB-DL.DD+5.1.H.264-AJP69.mkv',
+            SceneCheckResult.false,
             id='Non-scene episode release',
         ),
     ),
