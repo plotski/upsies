@@ -4,7 +4,7 @@ from unittest.mock import Mock, call
 import pytest
 
 from upsies import errors
-from upsies.utils.scene import predb
+from upsies.utils.scene import predbovh
 
 
 class AsyncMock(Mock):
@@ -16,19 +16,19 @@ class AsyncMock(Mock):
 
 @pytest.fixture
 def api():
-    return predb.PredbApi()
+    return predbovh.PredbovhApi()
 
 
 def test_name():
-    assert predb.PredbApi.name == 'predb'
+    assert predbovh.PredbovhApi.name == 'predbovh'
 
 
 def test_label():
-    assert predb.PredbApi.label == 'PreDB'
+    assert predbovh.PredbovhApi.label == 'PreDB.ovh'
 
 
 def test_default_config():
-    assert predb.PredbApi.default_config == {}
+    assert predbovh.PredbovhApi.default_config == {}
 
 
 @pytest.mark.asyncio
@@ -147,7 +147,7 @@ async def test_request_all_pages_does_not_request_pages_indefinitely(api, mocker
             1,
             {'status': 'not success', 'message': 'Something went wrong'},
             None,
-            errors.RequestError(f'{predb.PredbApi.label}: Something went wrong'),
+            errors.RequestError(f'{predbovh.PredbovhApi.label}: Something went wrong'),
         ),
     ),
     ids=lambda v: str(v),

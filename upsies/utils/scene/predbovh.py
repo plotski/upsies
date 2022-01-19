@@ -8,9 +8,9 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-class PredbApi(base.SceneDbApiBase):
-    name = 'predb'
-    label = 'PreDB'
+class PredbovhApi(base.SceneDbApiBase):
+    name = 'predbovh'
+    label = 'PreDB.ovh'
 
     default_config = {}
 

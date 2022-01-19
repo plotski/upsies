@@ -16,7 +16,7 @@ natsort = LazyModule(module='natsort', namespace=globals())
 
 
 @asyncmemoize
-async def search(query, dbs=('predb', 'srrdb'), only_existing_releases=None):
+async def search(query, dbs=('predbovh', 'srrdb'), only_existing_releases=None):
     """
     Search scene databases
 
