@@ -8,7 +8,7 @@ from . import predb, srrdb
 from .base import SceneDbApiBase
 from .find import SceneQuery, search
 from .verify import (assert_not_abbreviated_filename, is_abbreviated_filename,
-                     is_scene_release, is_mixed_scene_release, release_files,
+                     is_mixed_scene_release, is_scene_release, release_files,
                      verify_release, verify_release_files, verify_release_name)
 
 

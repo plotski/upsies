@@ -4,7 +4,6 @@ import pytest
 
 from upsies import errors
 from upsies.jobs.scene import SceneCheckJob
-from upsies.utils.scene import SceneQuery
 from upsies.utils.types import SceneCheckResult
 
 

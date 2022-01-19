@@ -2445,7 +2445,7 @@ async def test_format_description_cast(actors, exp_text, bb_tracker_jobs, mocker
             ),
             (
                 '[quote]\n'
-                f'[align=center][img=http://foo.local/screenshot1.jpg][/align]\n'
+                '[align=center][img=http://foo.local/screenshot1.jpg][/align]\n'
                 '[/quote]'
             ),
         ),
@@ -2456,8 +2456,8 @@ async def test_format_description_cast(actors, exp_text, bb_tracker_jobs, mocker
             ),
             (
                 '[quote]\n[align=center]'
-                f'[img=http://foo.local/screenshot1.jpg]\n\n'
-                f'[img=http://foo.local/screenshot2.jpg]'
+                '[img=http://foo.local/screenshot1.jpg]\n\n'
+                '[img=http://foo.local/screenshot2.jpg]'
                 '[/align]\n[/quote]'
             ),
         ),
@@ -2469,9 +2469,9 @@ async def test_format_description_cast(actors, exp_text, bb_tracker_jobs, mocker
             ),
             (
                 '[quote]\n[align=center]'
-                f'[img=http://foo.local/screenshot1.jpg]\n\n'
-                f'[img=http://foo.local/screenshot2.jpg]\n\n'
-                f'[img=http://foo.local/screenshot3.jpg]'
+                '[img=http://foo.local/screenshot1.jpg]\n\n'
+                '[img=http://foo.local/screenshot2.jpg]\n\n'
+                '[img=http://foo.local/screenshot3.jpg]'
                 '[/align]\n[/quote]'
             ),
         ),
