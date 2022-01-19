@@ -34,7 +34,7 @@ class TextField:
         self._text = text
         self._width = width
         self._height = height
-        self._throbber = utils.Throbber(callback=self.set_text)
+        self._activity_indicator = utils.ActivityIndicator(callback=self.set_text)
         self.container = Window(
             content=FormattedTextControl(lambda: self.text),
             width=width,
@@ -76,11 +76,11 @@ class TextField:
     @property
     def is_loading(self):
         """Whether an activity indicator is displayed"""
-        return self._throbber.active
+        return self._activity_indicator.active
 
     @is_loading.setter
     def is_loading(self, is_loading):
-        self._throbber.active = is_loading
+        self._activity_indicator.active = is_loading
 
     def __pt_container__(self):
         return self.container
@@ -91,7 +91,7 @@ class InputField:
 
     def __init__(self, text='', width=None, extend_width=True, read_only=False,
                  on_accepted=None, on_changed=None, style=''):
-        self._throbber = utils.Throbber(callback=self.set_text)
+        self._activity_indicator = utils.ActivityIndicator(callback=self.set_text)
         self.read_only = read_only
         self.on_accepted = on_accepted
         self.buffer = Buffer(
@@ -148,11 +148,11 @@ class InputField:
     @property
     def is_loading(self):
         """Whether an activity indicator is displayed"""
-        return self._throbber.active
+        return self._activity_indicator.active
 
     @is_loading.setter
     def is_loading(self, is_loading):
-        self._throbber.active = is_loading
+        self._activity_indicator.active = is_loading
 
     def __pt_container__(self):
         return self.container

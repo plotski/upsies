@@ -22,7 +22,7 @@ def is_tty():
         return False
 
 
-class Throbber:
+class ActivityIndicator:
     """
     Provide alternating activity indicator string to callback at fixed intervals
 
@@ -31,11 +31,13 @@ class Throbber:
     :param states: Sequence of strings that are cycled through and passed to
         `callback` individually
     :param float interval: Delay between calls to `callback`
-    :param bool active: Whether the throbber is throbbing right away
+    :param bool active: Whether `callback` is called right away
+    :param str format: Format string to embedd the activity indicator in;
+        ``{indicator}`` is replaced with one of the `states`
     """
 
     def __init__(self, *, callback=None, states=('⠷', '⠯', '⠟', '⠻', '⠽', '⠾'),
-                 interval=0.25, active=False, format='{throbber}'):
+                 interval=0.25, active=False, format='{indicator}'):
         self._iterator = itertools.cycle(states)
         self._interval = float(interval)
         self._callback = callback or None
@@ -58,7 +60,7 @@ class Throbber:
 
     @property
     def next_state(self):
-        return self._format.format(throbber=next(self._iterator))
+        return self._format.format(indicator=next(self._iterator))
 
     def _iterate(self):
         if self.active:

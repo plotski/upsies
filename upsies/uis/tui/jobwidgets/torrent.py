@@ -64,9 +64,9 @@ class CreateTorrentJobWidget(JobWidgetBase):
             width=Dimension(min=55, max=100),
         )
 
-        self._throbber = utils.Throbber(
-            callback=self.handle_throbber_state,
-            format='Getting announce URL {throbber}'
+        self._activity_indicator = utils.ActivityIndicator(
+            callback=self.handle_activity_indicator_state,
+            format='Getting announce URL {indicator}'
         )
         self.job.signal.register('announce_url', self.handle_announce_url)
         self.job.signal.register('file_tree', self.handle_file_tree)
@@ -95,7 +95,7 @@ class CreateTorrentJobWidget(JobWidgetBase):
             align=getattr(HorizontalAlign, align.upper()),
         )
 
-    def handle_throbber_state(self, state):
+    def handle_activity_indicator_state(self, state):
         self.job.info = state
         self.invalidate()
 
@@ -104,9 +104,9 @@ class CreateTorrentJobWidget(JobWidgetBase):
 
     def handle_announce_url(self, announce_url):
         if announce_url is Ellipsis:
-            self._throbber.active = True
+            self._activity_indicator.active = True
         else:
-            self._throbber.active = False
+            self._activity_indicator.active = False
 
     def handle_progress_update(self, status):
         self._progress.percent = status.percent_done

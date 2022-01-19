@@ -189,8 +189,8 @@ class _SearchResults(DynamicContainer):
         self._year_width = 4
         self._type_width = 6
         self._title_width = width - self._year_width - self._type_width - 2
-        self._throbber = utils.Throbber(callback=self._throbber_callback)
-        self._throbber_string = '...'
+        self._activity_indicator = utils.ActivityIndicator(callback=self._activity_indicator_callback)
+        self._activity_indicator_string = ''
         super().__init__(
             lambda: Window(
                 content=FormattedTextControl(self._get_text_fragments, focusable=False),
@@ -202,11 +202,11 @@ class _SearchResults(DynamicContainer):
 
     @property
     def is_searching(self):
-        return self._throbber.active
+        return self._activity_indicator.active
 
     @is_searching.setter
     def is_searching(self, value):
-        self._throbber.active = bool(value)
+        self._activity_indicator.active = bool(value)
 
     @property
     def results(self):
@@ -238,13 +238,13 @@ class _SearchResults(DynamicContainer):
     def select_last(self):
         self._focused_index = len(self._results) - 1
 
-    def _throbber_callback(self, string):
-        self._throbber_string = string
+    def _activity_indicator_callback(self, string):
+        self._activity_indicator_string = string
         get_app().invalidate()
 
     def _get_text_fragments(self):
         if self.is_searching:
-            return [('class:dialog.search.results', self._throbber_string)]
+            return [('class:dialog.search.results', self._activity_indicator_string)]
         elif not self._results:
             return 'No results'
 
