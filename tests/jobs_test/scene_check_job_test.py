@@ -104,7 +104,7 @@ async def test_verify_asks_user_if_there_are_multiple_search_results(make_SceneC
     assert job._verify_release.call_args_list == []
 
 @pytest.mark.asyncio
-async def test_verify_verifies_release_if_is_one_search_result(make_SceneCheckJob, mocker):
+async def test_verify_verifies_release_if_there_is_one_search_result(make_SceneCheckJob, mocker):
     search_mock = mocker.patch('upsies.utils.scene.search', AsyncMock(
         return_value=('single mock release',),
     ))
