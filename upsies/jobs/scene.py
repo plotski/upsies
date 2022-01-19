@@ -136,13 +136,17 @@ class SceneCheckJob(JobBase):
 
     async def _verify(self):
         _log.debug('Verifying release: %r', self._content_path)
-        results = await scene.search(self._content_path, only_existing_releases=False)
-        if len(results) >= 2:
-            # If there are multiple search results, ask the user against which
-            # scene release to verify `content_path`
-            self.signal.emit('ask_release_name', results)
-        else:
+        if await scene.is_mixed_scene_release(self._content_path):
+            # We don't want to prompt the user if this is a mixed release
             await self._verify_release()
+        else:
+            results = await scene.search(self._content_path, only_existing_releases=False)
+            if len(results) >= 2:
+                # If there are multiple search results, ask the user which one
+                # `content_path` is supposed to be
+                self.signal.emit('ask_release_name', results)
+            else:
+                await self._verify_release()
 
     def user_selected_release_name(self, release_name):
         """
