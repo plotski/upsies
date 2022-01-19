@@ -5,7 +5,7 @@ from prompt_toolkit.layout.controls import FormattedTextControl
 
 from ....utils import cached_property
 from ....utils.types import SceneCheckResult
-from .. import widgets
+from .. import utils, widgets
 from . import JobWidgetBase
 
 import logging  # isort:skip
@@ -27,16 +27,27 @@ class SceneCheckJobWidget(JobWidgetBase):
     def setup(self):
         self._question = FormattedTextControl('')
         self._radiolist = widgets.RadioList()
+        self._throbber = utils.Throbber(
+            callback=self._handle_throbber_state,
+            active=True,
+        )
         self.job.signal.register('ask_release_name', self._ask_release_name)
         self.job.signal.register('ask_is_scene_release', self._ask_is_scene_release)
 
+    def _handle_throbber_state(self, state):
+        self.job.info = state
+
     def _ask_release_name(self, release_names):
         _log.debug('Asking for release name: %r', release_names)
+        self._throbber.active = False
+        self.job.info = ''
 
         def handle_release_name(choice):
             _log.debug('Got release name: %r', choice)
             self.invalidate()
             self.job.user_selected_release_name(choice[1])
+            self._throbber.active = True
+            self._radiolist.choices = ()
 
         self._radiolist.on_accepted = handle_release_name
         self._radiolist.choices = [(release_name, release_name) for release_name in release_names]
