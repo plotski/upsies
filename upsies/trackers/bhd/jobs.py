@@ -272,7 +272,7 @@ class BhdTrackerJobs(TrackerJobsBase):
                         raise RuntimeError(f'No thumbnail for {screenshot}')
                     cells.append(f'[url={screenshot}][img]{screenshot.thumbnail_url}[/img][/url]')
             # Space between columns
-            rows.append(' '.join(cells))
+            rows.append('   '.join(cells))
         screenshots = '[center]\n' + '\n\n'.join(rows) + '\n[/center]'
         promotion = (
             '[right][size=1]'
