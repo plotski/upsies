@@ -14,9 +14,9 @@ class SrrdbApi(base.SceneDbApiBase):
 
     default_config = {}
 
-    _url_base = b64decode('d3d3LnNycmRiLmNvbQ==').decode('ascii')
-    _search_url = f'https://{_url_base}/api/search'
-    _details_url = f'https://{_url_base}/api/details'
+    _url_base = b64decode('YXBpLnNycmRiLmNvbQ==').decode('ascii')
+    _search_url = f'https://{_url_base}/v1/search'
+    _details_url = f'https://{_url_base}/v1/details'
 
     _keyword_separators_regex = re.compile(r'[,]')
 
