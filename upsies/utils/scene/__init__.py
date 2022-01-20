@@ -4,7 +4,7 @@ Scene release search and verification
 
 from ... import utils
 from .. import release
-from . import predbovh, srrdb
+from . import predbde, predbovh, srrdb
 from .base import SceneDbApiBase
 from .find import SceneQuery, search
 from .verify import (assert_not_abbreviated_filename, is_abbreviated_filename,
