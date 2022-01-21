@@ -332,7 +332,7 @@ def file_list(path, extensions=(), min_age=None, max_age=None, follow_dirlinks=F
     Unreadable directories are excluded.
 
     :param str path: Path to a directory
-    :param str extensions: Exclude files without one of these extensions
+    :param str extensions: Only include files with one of these extensions
     :param min_age: Exclude files that are younger than this
     :type min_age: int or float
     :param max_age: Exclude files that are older than this
