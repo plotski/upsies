@@ -52,8 +52,8 @@ def create(*, content_path, announce, source, torrent_path,
                    ('Yah.mkv', 3883247384),
                )),
            )
-    :param str progress_callback: Callable that is called at regular intervals
-        with a :class:`CreateTorrentStatus` object as a positional argument.
+    :param progress_callback: Callable that is called at regular intervals with
+        a :class:`CreateTorrentProgress` object as a positional argument.
         Torrent creation is cancelled if `progress_callback` returns `True` or
         any other truthy value.
     :param bool overwrite: Whether to overwrite `torrent_path` if it exists
@@ -250,7 +250,7 @@ class _CreateTorrentCallbackWrapper:
         seconds_total = seconds_elapsed + seconds_remaining
         time_finished = self._time_started + seconds_total
 
-        status = CreateTorrentStatus(
+        progress = CreateTorrentProgress(
             bytes_per_second=bytes_per_second,
             filepath=filepath,
             percent_done=percent_done,
@@ -264,7 +264,7 @@ class _CreateTorrentCallbackWrapper:
             time_started=self._time_started,
             total_size=torrent.size,
         )
-        return self._callback(status)
+        return self._callback(progress)
 
     def _maintain_samples(self, new_sample, samples, trim_condition):
         samples.append(new_sample)
@@ -288,8 +288,8 @@ class _CreateTorrentCallbackWrapper:
         ) / sum(weights)
 
 
-class CreateTorrentStatus(collections.namedtuple(
-    typename='CreateTorrentStatus',
+class CreateTorrentProgress(collections.namedtuple(
+    typename='CreateTorrentProgress',
     field_names=(
         'bytes_per_second',
         'filepath',

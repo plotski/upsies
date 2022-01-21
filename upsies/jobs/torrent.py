@@ -36,7 +36,7 @@ class CreateTorrentJob(base.JobBase):
         ``progress_update``
             Emitted at roughly equal intervals to provide information about the
             torrent creation progress. Registered callbacks get a
-            :class:`~.torrent.CreateTorrentStatus` instance as a positional
+            :class:`~.torrent.CreateTorrentProgress` instance as a positional
             argument.
     """
 
