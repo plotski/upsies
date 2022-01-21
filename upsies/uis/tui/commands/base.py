@@ -72,8 +72,40 @@ class CommandBase(abc.ABC):
     :param config: :class:`~.configfiles.ConfigFiles` object
     """
 
+    _keybindings_description = (
+        "You can cancel any command with Escape, Ctrl+c or Ctrl+g.\n"
+        "\n"
+        "In the TUI, the usual Emacs keybindings are supported. Here is an incomplete list:\n"
+        "\n"
+        "  Ctrl+f         Move forward character-wise\n"
+        "  Ctrl+b         Move backward character-wise\n"
+        "  Alt+f          Move forward word-wise\n"
+        "  Alt+b          Move backward word-wise\n"
+        "  Ctrl+a         Move leftmost position\n"
+        "  Ctrl+e         Move rightmost position\n"
+        "  Ctrl+d         Delete character under cursor\n"
+        "  Alt+d          Delete from cursor to rightmost end of word\n"
+        "  Alt+Backspace  Delete from cursor to leftmost end of word\n"
+        "  Ctrl+k         Delete from cursor to end of line\n"
+        "  Ctrl+Space     Start marking region\n"
+        "  Ctrl+w         Cut region between mark (Ctrl+Space) and cursor\n"
+        "  Alt+w          Copy region between mark (Ctrl+Space) and cursor\n"
+        "  Ctrl+y         Paste region\n"
+        "  Ctrl+/         Undo most recent change\n"
+    )
+
     _argparser = argparse.ArgumentParser(
         description=__description__,
+        epilog='keybindings:\n' + '\n'.join((
+            '\n'.join(textwrap.wrap(
+                text=paragraph,
+                width=90,
+                replace_whitespace=False,
+                initial_indent='  ',
+                subsequent_indent='  ',
+            ))
+            for paragraph in _keybindings_description.strip().split('\n')
+        )),
         formatter_class=_MyHelpFormatter,
     )
     _argparser.add_argument('--version',
