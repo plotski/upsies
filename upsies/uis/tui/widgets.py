@@ -61,16 +61,23 @@ class TextField:
             else:
                 height = None
 
-            # prompt_toolkit has no support for word wrapping.
-            paragraphs = text.split('\n')
-            self._text = '\n\n'.join(textwrap.fill(
-                paragraph,
-                width=width,
-                max_lines=height,
-                placeholder='…',
-            ) for paragraph in paragraphs)
+            if height == 1:
+                # Remove newlines. Don't do word wrapping to avoid replacing
+                # long words with "…" with lots of available free space.
+                self._text = text.replace('\n', ' ')
+            else:
+                # prompt_toolkit has no support for word wrapping.
+                paragraphs = text.split('\n')
+                self._text = '\n\n'.join(textwrap.fill(
+                    paragraph,
+                    width=width,
+                    max_lines=height,
+                    placeholder='…',
+                ) for paragraph in paragraphs)
+
         else:
             self._text = text
+
         get_app().invalidate()
 
     @property
