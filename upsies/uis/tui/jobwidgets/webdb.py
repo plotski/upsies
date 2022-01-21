@@ -15,20 +15,20 @@ _log = logging.getLogger(__name__)
 
 class WebDbSearchJobWidget(JobWidgetBase):
     def setup(self):
-        right_column_width = 40
+        total_width = 75
+        left_column_width = 30
+        right_column_width = total_width - left_column_width - 1
         self._widgets = {
+            # First row
             'id': widgets.TextField(width=15, style='class:dialog.search.info'),
             'query': widgets.InputField(
                 style='class:dialog.search.query',
                 text=str(self.job.query),
                 on_accepted=self.handle_query,
             ),
-            'search_results': _SearchResults(width=40),
-            'summary': widgets.TextField(
-                style='class:dialog.search.info',
-                width=right_column_width,
-                height=8,
-            ),
+
+            # Right column
+            'search_results': _SearchResults(width=right_column_width),
             'title_original': widgets.TextField(
                 style='class:dialog.search.info',
                 width=right_column_width,
@@ -39,24 +39,31 @@ class WebDbSearchJobWidget(JobWidgetBase):
                 width=right_column_width,
                 height=1,
             ),
+
+            # Left column
+            'summary': widgets.TextField(
+                style='class:dialog.search.info',
+                width=left_column_width,
+                height=8,
+            ),
             'genres': widgets.TextField(
                 style='class:dialog.search.info',
-                width=right_column_width,
+                width=left_column_width,
                 height=2,
             ),
             'directors': widgets.TextField(
                 style='class:dialog.search.info',
-                width=right_column_width,
+                width=left_column_width,
                 height=1,
             ),
             'cast': widgets.TextField(
                 style='class:dialog.search.info',
-                width=right_column_width,
+                width=left_column_width,
                 height=2,
             ),
             'countries': widgets.TextField(
                 style='class:dialog.search.info',
-                width=right_column_width,
+                width=left_column_width,
                 height=1,
             ),
         }
