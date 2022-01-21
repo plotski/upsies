@@ -277,7 +277,7 @@ def file_extension(path):
     :rtype: str
     """
     filename = os.path.basename(path)
-    match = re.search(r'\.([a-zA-Z0-9]{1,3})$', filename)
+    match = re.search(r'\.([a-zA-Z0-9]{1,})$', filename)
     if match:
         return match.group(1).lower()
     return ''

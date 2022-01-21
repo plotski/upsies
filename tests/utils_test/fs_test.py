@@ -431,6 +431,7 @@ def test_tildify_path(home, path, exp_path, mocker):
         ('path/to/Something.x264-GRP.MP4', 'mp4'),
         ('path/to/Something.x264-GRP', ''),
         (Path('some/path') / 'to' / 'file.mkv', 'mkv'),
+        ('path/to/Something.x264-GRP.torrent', 'torrent'),
     ),
 )
 def test_file_extension(path, exp_extension):
