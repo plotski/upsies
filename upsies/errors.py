@@ -21,10 +21,6 @@ class UpsiesError(Exception):
             return NotImplemented
 
 
-class CancelledError(UpsiesError):
-    """User cancelled an operation"""
-
-
 class ConfigError(UpsiesError):
     """Error while reading/writing config file or setting config file option"""
 

@@ -34,7 +34,7 @@ def _main(args=None):
         exit_code = ui.run(cmd.jobs_active)
 
     # UI was terminated by user prematurely
-    except errors.CancelledError as e:
+    except KeyboardInterrupt as e:
         print(e, file=sys.stderr)
         return 1
 
