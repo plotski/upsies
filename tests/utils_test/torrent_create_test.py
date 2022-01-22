@@ -40,9 +40,9 @@ def test_create(reuse_torrent_path,
 
     mocker.patch('upsies.utils.torrent._path_exists', return_value=torrent_path_exists)
     mocker.patch('upsies.utils.torrent._read_cache_torrent', return_value=Mock() if torrent_from_cache else None)
-    mocker.patch('upsies.utils.torrent._generate_torrent', return_value=Mock(is_ready=torrent_is_ready))
+    mocker.patch('upsies.utils.torrent._get_generated_torrent', return_value=Mock(is_ready=torrent_is_ready))
     mocker.patch('upsies.utils.torrent._store_cache_torrent')
-    exp_torrent = torrent._read_cache_torrent.return_value or torrent._generate_torrent.return_value
+    exp_torrent = torrent._read_cache_torrent.return_value or torrent._get_generated_torrent.return_value
 
     t_path = torrent.create(
         content_path=content_path,
@@ -75,7 +75,7 @@ def test_create(reuse_torrent_path,
             else:
                 assert torrent._store_cache_torrent.call_args_list == []
         else:
-            assert torrent._generate_torrent.call_args_list == [call(
+            assert torrent._get_generated_torrent.call_args_list == [call(
                 content_path=content_path,
                 announce=announce,
                 source=source,
@@ -92,7 +92,7 @@ def test_create(reuse_torrent_path,
 
     else:
         assert torrent._read_cache_torrent.call_args_list == []
-        assert torrent._generate_torrent.call_args_list == []
+        assert torrent._get_generated_torrent.call_args_list == []
         assert torrent._store_cache_torrent.call_args_list == []
         assert exp_torrent.write.call_args_list == []
 
@@ -110,7 +110,7 @@ def test_create_validates_arguments(announce, source, exp_error, mocker, tmp_pat
 
     mocker.patch('upsies.utils.torrent._path_exists', return_value=False)
     mocker.patch('upsies.utils.torrent._read_cache_torrent')
-    mocker.patch('upsies.utils.torrent._generate_torrent')
+    mocker.patch('upsies.utils.torrent._get_generated_torrent')
     mocker.patch('upsies.utils.torrent._store_cache_torrent')
 
     with pytest.raises(errors.TorrentError, match=rf'^{re.escape(exp_error)}$'):
@@ -125,7 +125,7 @@ def test_create_validates_arguments(announce, source, exp_error, mocker, tmp_pat
         )
     assert torrent._path_exists.call_args_list == []
     assert torrent._read_cache_torrent.call_args_list == []
-    assert torrent._generate_torrent.call_args_list == []
+    assert torrent._get_generated_torrent.call_args_list == []
     assert torrent._store_cache_torrent.call_args_list == []
 
 def test_create_handles_TorfError_from_torrent_write(mocker, tmp_path):
@@ -133,7 +133,7 @@ def test_create_handles_TorfError_from_torrent_write(mocker, tmp_path):
 
     mocker.patch('upsies.utils.torrent._path_exists', return_value=False)
     mocker.patch('upsies.utils.torrent._read_cache_torrent')
-    mocker.patch('upsies.utils.torrent._generate_torrent')
+    mocker.patch('upsies.utils.torrent._get_generated_torrent')
     mocker.patch('upsies.utils.torrent._store_cache_torrent')
     torrent._read_cache_torrent.return_value.write.side_effect = torf.TorfError('nope')
 
@@ -149,7 +149,7 @@ def test_create_handles_TorfError_from_torrent_write(mocker, tmp_path):
         )
 
 
-def test_generate_torrent(mocker, tmp_path):
+def test_get_generated_torrent(mocker, tmp_path):
     content_path = str(tmp_path / 'content')
     exclude = ('foo', 'bar', 'baz')
     announce = 'http://announce.mock'
@@ -164,7 +164,7 @@ def test_generate_torrent(mocker, tmp_path):
     mocker.patch('upsies.utils.torrent._make_file_tree')
     mocker.patch('time.time', return_value=time)
 
-    t = torrent._generate_torrent(
+    t = torrent._get_generated_torrent(
         content_path=content_path,
         announce=announce,
         source=source,
@@ -191,7 +191,7 @@ def test_generate_torrent(mocker, tmp_path):
     )]
 
 @pytest.mark.parametrize('init_callback_return_value', (True, 'cancel', 1))
-def test_generate_torrent_does_not_generate_torrent_if_init_callback_returns_truth(init_callback_return_value, mocker, tmp_path):
+def test_get_generated_torrent_does_not_generate_if_init_callback_returns_truth(init_callback_return_value, mocker, tmp_path):
     content_path = str(tmp_path / 'content')
     exclude = ('foo', 'bar', 'baz')
     announce = 'http://announce.mock'
@@ -206,7 +206,7 @@ def test_generate_torrent_does_not_generate_torrent_if_init_callback_returns_tru
     mocker.patch('upsies.utils.torrent._make_file_tree')
     mocker.patch('time.time', return_value=time)
 
-    t = torrent._generate_torrent(
+    t = torrent._get_generated_torrent(
         content_path=content_path,
         announce=announce,
         source=source,
@@ -229,7 +229,7 @@ def test_generate_torrent_does_not_generate_torrent_if_init_callback_returns_tru
     assert init_callback.call_args_list == [call(torrent._make_file_tree.return_value)]
     assert Torrent_mock.return_value.generate.call_args_list == []
 
-def test_generate_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
+def test_get_generated_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
     content_path = str(tmp_path / 'content')
     exclude = ('foo', 'bar', 'baz')
     announce = 'http://announce.mock'
@@ -245,7 +245,7 @@ def test_generate_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
     mocker.patch('time.time', return_value=time)
 
     with pytest.raises(errors.TorrentError, match=r'^nope$'):
-        torrent._generate_torrent(
+        torrent._get_generated_torrent(
             content_path=content_path,
             announce=announce,
             source=source,
@@ -267,7 +267,7 @@ def test_generate_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
     assert init_callback.call_args_list == []
     assert Torrent_mock.return_value.generate.call_args_list == []
 
-def test_generate_torrent_handles_TorfError_from_Torrent_generate(mocker, tmp_path):
+def test_get_generated_torrent_handles_TorfError_from_Torrent_generate(mocker, tmp_path):
     content_path = str(tmp_path / 'content')
     exclude = ('foo', 'bar', 'baz')
     announce = 'http://announce.mock'
@@ -284,7 +284,7 @@ def test_generate_torrent_handles_TorfError_from_Torrent_generate(mocker, tmp_pa
     mocker.patch('time.time', return_value=time)
 
     with pytest.raises(errors.TorrentError, match=r'^nope$'):
-        torrent._generate_torrent(
+        torrent._get_generated_torrent(
             content_path=content_path,
             announce=announce,
             source=source,

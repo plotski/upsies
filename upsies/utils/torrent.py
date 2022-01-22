@@ -90,7 +90,7 @@ def create(*, content_path, announce, source, torrent_path,
                 _store_cache_torrent(torrent)
         else:
             # Reading cached piece hashes failed for some reason
-            torrent = _generate_torrent(
+            torrent = _get_generated_torrent(
                 content_path=content_path,
                 announce=announce,
                 source=source,
@@ -110,7 +110,7 @@ def create(*, content_path, announce, source, torrent_path,
     return torrent_path
 
 
-def _generate_torrent(*, content_path, announce, source, exclude, init_callback, progress_callback):
+def _get_generated_torrent(*, content_path, announce, source, exclude, init_callback, progress_callback):
     callback = _CreateTorrentCallbackWrapper(progress_callback)
     try:
         torrent = torf.Torrent(
