@@ -110,6 +110,35 @@ def create(*, content_path, announce, source, torrent_path,
     return torrent_path
 
 
+def _get_cached_torrent(path, content_path, exclude, info_callback):
+    # Get piece hashes from existing torrent
+    if os.path.isdir(path):
+        # Find matching torrent in directory
+        for cache_torrent_path in fs.file_list(path, extensions=('torrent',)):
+            cancelled = info_callback(cache_torrent_path)
+            if cancelled:
+                return None
+            else:
+                torrent = _read_cache_torrent(
+                    content_path=content_path,
+                    cache_torrent_path=cache_torrent_path,
+                    exclude=exclude,
+                )
+                if torrent:
+                    return torrent
+    else:
+        # Get piece hashes from given torrent file
+        cancelled = info_callback(path)
+        if cancelled:
+            return None
+        else:
+            return _read_cache_torrent(
+                content_path=content_path,
+                cache_torrent_path=path,
+                exclude=exclude,
+            )
+
+
 def _get_generated_torrent(*, content_path, announce, source, exclude, init_callback, progress_callback):
     callback = _CreateTorrentCallbackWrapper(progress_callback)
     try:
