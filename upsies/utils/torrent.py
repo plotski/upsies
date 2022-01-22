@@ -122,8 +122,11 @@ def _generate_torrent(*, content_path, announce, source, exclude, init_callback,
             created_by=f'{__project_name__} {__version__}',
             creation_date=time.time(),
         )
-        init_callback(_make_file_tree(torrent.filetree))
-        torrent.generate(callback=callback, interval=1.0)
+        cancelled = init_callback(_make_file_tree(torrent.filetree))
+        if cancelled:
+            return None
+        else:
+            torrent.generate(callback=callback, interval=1.0)
     except torf.TorfError as e:
         raise errors.TorrentError(e)
     else:

@@ -156,7 +156,7 @@ def test_generate_torrent(mocker, tmp_path):
     source = 'ASDF',
     created_by = f'{__project_name__} {__version__}'
     time = 'mock time'
-    init_callback = Mock()
+    init_callback = Mock(return_value=False)
     progress_callback = Mock()
 
     Torrent_mock = mocker.patch('torf.Torrent')
@@ -190,6 +190,45 @@ def test_generate_torrent(mocker, tmp_path):
         interval=1.0,
     )]
 
+@pytest.mark.parametrize('init_callback_return_value', (True, 'cancel', 1))
+def test_generate_torrent_does_not_generate_torrent_if_init_callback_returns_truth(init_callback_return_value, mocker, tmp_path):
+    content_path = str(tmp_path / 'content')
+    exclude = ('foo', 'bar', 'baz')
+    announce = 'http://announce.mock'
+    source = 'ASDF',
+    created_by = f'{__project_name__} {__version__}'
+    time = 'mock time'
+    init_callback = Mock(return_value=init_callback_return_value)
+    progress_callback = Mock()
+
+    Torrent_mock = mocker.patch('torf.Torrent')
+    mocker.patch('upsies.utils.torrent._CreateTorrentCallbackWrapper')
+    mocker.patch('upsies.utils.torrent._make_file_tree')
+    mocker.patch('time.time', return_value=time)
+
+    t = torrent._generate_torrent(
+        content_path=content_path,
+        announce=announce,
+        source=source,
+        exclude=exclude,
+        init_callback=init_callback,
+        progress_callback=progress_callback,
+    )
+    assert t is None
+    assert Torrent_mock.call_args_list == [call(
+        path=content_path,
+        exclude_regexs=exclude,
+        trackers=((announce,),),
+        private=True,
+        source=source,
+        created_by=created_by,
+        creation_date=time,
+    )]
+    assert torrent._CreateTorrentCallbackWrapper.call_args_list == [call(progress_callback)]
+    assert torrent._make_file_tree.call_args_list == [call(Torrent_mock.return_value.filetree)]
+    assert init_callback.call_args_list == [call(torrent._make_file_tree.return_value)]
+    assert Torrent_mock.return_value.generate.call_args_list == []
+
 def test_generate_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
     content_path = str(tmp_path / 'content')
     exclude = ('foo', 'bar', 'baz')
@@ -197,7 +236,7 @@ def test_generate_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
     source = 'ASDF',
     created_by = f'{__project_name__} {__version__}'
     time = 'mock time'
-    init_callback = Mock()
+    init_callback = Mock(return_value=False)
     progress_callback = Mock()
 
     Torrent_mock = mocker.patch('torf.Torrent', side_effect=torf.TorfError('nope'))
@@ -235,7 +274,7 @@ def test_generate_torrent_handles_TorfError_from_Torrent_generate(mocker, tmp_pa
     source = 'ASDF',
     created_by = f'{__project_name__} {__version__}'
     time = 'mock time'
-    init_callback = Mock()
+    init_callback = Mock(return_value=False)
     progress_callback = Mock()
 
     Torrent_mock = mocker.patch('torf.Torrent')
