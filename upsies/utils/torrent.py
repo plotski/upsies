@@ -246,22 +246,22 @@ class _CreateTorrentCallbackWrapper:
     def __init__(self, callback):
         self._callback = callback
         self._progress_samples = []
-        self._time_started = datetime.datetime.now()
+        self._time_started = time.time()
 
     def __call__(self, torrent, filepath, pieces_done, pieces_total):
-        time_now = datetime.datetime.now()
+        time_now = time.time()
         percent_done = pieces_done / pieces_total * 100
         seconds_elapsed = time_now - self._time_started
 
-        def progress_samples_trim_condition(samples):
-            oldest_sample_age = time_now - samples[0][0]
-            return oldest_sample_age > datetime.timedelta(seconds=10)
+        def get_sample_age(sample):
+            time_sample = sample[0]
+            return time_now - time_sample
 
-        self._maintain_samples(
-            samples=self._progress_samples,
-            new_sample=(time_now, pieces_done),
-            trim_condition=progress_samples_trim_condition,
-        )
+        # Limit number of samples to use for estimates
+        samples = self._progress_samples
+        samples.append((time_now, pieces_done))
+        while samples and get_sample_age(samples[0]) > 10:
+            del samples[0]
 
         # Estimate how long torrent creation will take
         if len(self._progress_samples) >= 2:
@@ -274,10 +274,10 @@ class _CreateTorrentCallbackWrapper:
             bytes_per_second = types.Bytes(pieces_per_second * torrent.piece_size)
             pieces_remaining = pieces_total - pieces_done
             bytes_remaining = pieces_remaining * torrent.piece_size
-            seconds_remaining = datetime.timedelta(seconds=bytes_remaining / bytes_per_second)
+            seconds_remaining = bytes_remaining / bytes_per_second
         else:
             bytes_per_second = types.Bytes(0)
-            seconds_remaining = datetime.timedelta(seconds=0)
+            seconds_remaining = 0
 
         seconds_total = seconds_elapsed + seconds_remaining
         time_finished = self._time_started + seconds_total
@@ -289,19 +289,14 @@ class _CreateTorrentCallbackWrapper:
             piece_size=torrent.piece_size,
             pieces_done=pieces_done,
             pieces_total=pieces_total,
-            seconds_elapsed=seconds_elapsed,
-            seconds_remaining=seconds_remaining,
-            seconds_total=seconds_total,
-            time_finished=time_finished,
-            time_started=self._time_started,
+            seconds_elapsed=datetime.timedelta(seconds=seconds_elapsed),
+            seconds_remaining=datetime.timedelta(seconds=seconds_remaining),
+            seconds_total=datetime.timedelta(seconds=seconds_total),
+            time_finished=datetime.datetime.fromtimestamp(time_finished),
+            time_started=datetime.datetime.fromtimestamp(self._time_started),
             total_size=torrent.size,
         )
         return self._callback(progress)
-
-    def _maintain_samples(self, new_sample, samples, trim_condition):
-        samples.append(new_sample)
-        while samples and trim_condition(samples):
-            del samples[0]
 
     def _get_average(self, samples, weight_factor, get_value=lambda sample: sample):
         # Give recent samples more weight than older samples

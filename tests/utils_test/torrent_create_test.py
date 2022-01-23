@@ -656,6 +656,13 @@ def test_make_file_tree():
 
 
 def test_CreateTorrentCallbackWrapper(mocker):
+    seconds_started = 100
+    seconds_increment = 3
+    mocker.patch('time.time', side_effect=itertools.count(
+        start=seconds_started,
+        step=seconds_increment,
+    ))
+
     progress_cb = Mock()
     cbw = torrent._CreateTorrentCallbackWrapper(progress_cb)
     pieces_total = 12
@@ -663,13 +670,16 @@ def test_CreateTorrentCallbackWrapper(mocker):
         return_value = cbw(Mock(piece_size=450, size=5000), 'current/file', pieces_done, pieces_total)
         assert return_value is progress_cb.return_value
         status = progress_cb.call_args[0][0]
+
+        assert status.filepath == 'current/file'
         assert status.percent_done == max(0, min(100, pieces_done / pieces_total * 100))
         assert status.piece_size == 450
-        assert status.total_size == 5000
         assert status.pieces_done == pieces_done
         assert status.pieces_total == pieces_total
-        assert status.filepath == 'current/file'
+        assert status.seconds_elapsed == datetime.timedelta(seconds=seconds_increment * (pieces_done + 1))
+        assert status.time_started == datetime.datetime.fromtimestamp(seconds_started)
+        assert status.total_size == 5000
 
         # TODO: If you're a Python wizard, feel free to add tests for these
-        #       CreateTorrentProgress attributes: seconds_elapsed,
-        #       seconds_remaining, seconds_total, time_finished, time_started
+        #       CreateTorrentProgress attributes: bytes_per_second,
+        #       seconds_remaining, seconds_total, time_finished
