@@ -330,6 +330,7 @@ def test_edition(release_name, exp_values):
 
 source_samples = (
     ('DVDRip', 'DVDRip'), ('dvdrip', 'DVDRip'), ('dvd rip', 'DVDRip'), ('DVDRip hybrid', 'Hybrid DVDRip'),
+    ('TVRip', 'TVRip'), ('tvrip', 'TVRip'), ('tv-rip', 'TVRip'),
     ('BluRay', 'BluRay'), ('bluray', 'BluRay'), ('Blu-ray', 'BluRay'),
     ('Blu-ray Hybrid REMUX', 'Hybrid BluRay Remux'), ('Ultra HD Blu-ray', 'BluRay'),
     ('WEB-DL', 'WEB-DL'), ('WEBDL', 'WEB-DL'), ('web-dl', 'WEB-DL'), ('webdl', 'WEB-DL'),

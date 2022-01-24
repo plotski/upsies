@@ -1122,6 +1122,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
     _source_translation = {
         re.compile(r'(?i:blu-?ray)') : 'BluRay',
         re.compile(r'(?i:dvd-?rip)') : 'DVDRip',
+        re.compile(r'(?i:tv-?rip)')  : 'TVRip',
         re.compile(r'(?i:web-?dl)')  : 'WEB-DL',
         re.compile(r'(?i:web-?rip)') : 'WEBRip',
         re.compile(r'(?i:web)')      : 'WEB-DL',
@@ -1147,15 +1148,17 @@ class ReleaseInfo(collections.abc.MutableMapping):
                 source = match.group(1)
 
         elif source == 'DVD':
-            # Detect DVDRip
             if 'Rip' in self._guess.get('other', ()):
                 source = 'DVDRip'
-            # Detect DVD images
             else:
                 if 'DVD9' in self.release_name_params:
                     source = 'DVD9'
                 elif 'DVD5' in self.release_name_params:
                     source = 'DVD5'
+
+        elif source == 'TV':
+            if 'Rip' in self._guess.get('other', ()):
+                source = 'TVRip'
 
         if source:
             # Fix spelling
