@@ -109,12 +109,17 @@ def create(*, content_path, announce, source, torrent_path,
 
     return torrent_path
 
+def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, info_callback):
+    def with_updated_metadata(torrent):
+        if torrent:
+            for name, value in metadata.items():
+                setattr(torrent, name, value)
+            return torrent
 
-def _get_cached_torrent(path, content_path, exclude, info_callback):
     # Get piece hashes from existing torrent
-    if os.path.isdir(path):
+    if reuse_torrent_path and os.path.isdir(reuse_torrent_path):
         # Find matching torrent in directory
-        for cache_torrent_path in fs.file_list(path, extensions=('torrent',)):
+        for cache_torrent_path in fs.file_list(reuse_torrent_path, extensions=('torrent',)):
             cancelled = info_callback(cache_torrent_path)
             if cancelled:
                 return None
@@ -125,18 +130,16 @@ def _get_cached_torrent(path, content_path, exclude, info_callback):
                     exclude=exclude,
                 )
                 if torrent:
-                    return torrent
+                    return with_updated_metadata(torrent)
     else:
         # Get piece hashes from given torrent file
-        cancelled = info_callback(path)
-        if cancelled:
-            return None
-        else:
-            return _read_cache_torrent(
+        return with_updated_metadata(
+            _read_cache_torrent(
                 content_path=content_path,
-                cache_torrent_path=path,
+                cache_torrent_path=reuse_torrent_path,
                 exclude=exclude,
             )
+        )
 
 
 def _get_generated_torrent(*, content_path, announce, source, exclude, init_callback, progress_callback):
