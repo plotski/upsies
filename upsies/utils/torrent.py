@@ -17,7 +17,7 @@ torf = LazyModule(module='torf', namespace=globals())
 
 
 def create(*, content_path, announce, source, torrent_path,
-           init_callback, progress_callback,
+           init_callback, progress_callback, info_callback,
            overwrite=False, exclude=(), reuse_torrent_path=None):
     """
     Generate and write torrent file
@@ -53,9 +53,8 @@ def create(*, content_path, announce, source, torrent_path,
                )),
            )
     :param progress_callback: Callable that is called at regular intervals with
-        a :class:`CreateTorrentProgress` object as a positional argument.
-        Torrent creation is cancelled if `progress_callback` returns `True` or
-        any other truthy value.
+        a :class:`CreateTorrentProgress` object as a positional argument
+    :param info_callback: Callable that is called with an informational message
     :param bool overwrite: Whether to overwrite `torrent_path` if it exists
     :param exclude: Sequence of regular expressions that are matched against
         file system paths. Matching files are not included in the torrent.
@@ -63,6 +62,12 @@ def create(*, content_path, announce, source, torrent_path,
         pieces and piece size from. This argument is ignored if the files in the
         provided torrent do not match the files we want or if it can't be read
         for any reason.
+
+        If this is a directory, search it recursively for ``*.torrent`` files
+        and use the first one (in natural sort order) that matches.
+
+    Callbacks can cancel the torrent creation by returning `True` or any other
+    truthy value.
 
     :raise TorrentError: if anything goes wrong
 
@@ -73,23 +78,22 @@ def create(*, content_path, announce, source, torrent_path,
     if not source:
         raise errors.TorrentError('Source is empty')
 
+    torrent = None
     if overwrite or not _path_exists(torrent_path):
-        torrent = None
-
-        # Try to read piece hashes from cache
-        torrent = _read_cache_torrent(
+        # Try to get existing torrent from global cache or `reuse_torrent_path`
+        torrent = _get_cached_torrent(
             content_path=content_path,
-            cache_torrent_path=reuse_torrent_path,
             exclude=exclude,
+            metadata={
+                'trackers': (announce,),
+                'source': source,
+            },
+            reuse_torrent_path=reuse_torrent_path,
+            info_callback=info_callback,
         )
-        if torrent:
-            # Update metadata in generic torrent
-            torrent.trackers = (announce,)
-            torrent.source = source
-            if reuse_torrent_path:
-                _store_cache_torrent(torrent)
-        else:
-            # Reading cached piece hashes failed for some reason
+
+        if not torrent:
+            # Create pieces hashes
             torrent = _get_generated_torrent(
                 content_path=content_path,
                 announce=announce,
@@ -98,16 +102,19 @@ def create(*, content_path, announce, source, torrent_path,
                 progress_callback=progress_callback,
                 init_callback=init_callback,
             )
-            if torrent.is_ready:
-                _store_cache_torrent(torrent)
 
-        # Write torrent file
+    if torrent and torrent.is_ready:
+        # Write generic torrent
+        _store_cache_torrent(torrent)
+
+        # Write torrent to `torrent_path`
         try:
             torrent.write(torrent_path, overwrite=True)
         except torf.TorfError as e:
             raise errors.TorrentError(e)
+        else:
+            return torrent_path
 
-    return torrent_path
 
 def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, info_callback):
     def with_updated_metadata(torrent):
