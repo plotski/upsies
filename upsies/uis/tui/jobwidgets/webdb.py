@@ -15,8 +15,8 @@ _log = logging.getLogger(__name__)
 
 class WebDbSearchJobWidget(JobWidgetBase):
     def setup(self):
-        total_width = 75
-        left_column_width = 30
+        total_width = 80
+        left_column_width = 36
         right_column_width = total_width - left_column_width - 1
         self._widgets = {
             # First row
