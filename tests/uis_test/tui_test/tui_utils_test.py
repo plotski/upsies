@@ -54,85 +54,84 @@ def test_is_tty(stdin, stdout, stderr, stdin_isatty, stdout_isatty, stderr_isatt
 
 
 @pytest.mark.asyncio  # Ensure aioloop exists
-async def test_Throbber_active_argument():
-    throbber = utils.Throbber(active=1)
-    assert throbber.active is True
-    throbber = utils.Throbber(active=0)
-    assert throbber.active is False
+async def test_ActivityIndicator_active_argument():
+    ai = utils.ActivityIndicator(active=1)
+    assert ai.active is True
+    ai = utils.ActivityIndicator(active=0)
+    assert ai.active is False
 
 @pytest.mark.asyncio  # Ensure aioloop exists
-async def test_Throbber_active_property(mocker):
-    mocker.patch('upsies.uis.tui.utils.Throbber._iterate')
-    throbber = utils.Throbber()
-    assert throbber.active is False
-    assert throbber._iterate.call_args_list == []
-    throbber.active = 1
-    assert throbber.active is True
-    assert throbber._iterate.call_args_list == [call()]
-    throbber.active = 0
-    assert throbber.active is False
-    assert throbber._iterate.call_args_list == [call()]
-    throbber.active = 'yes'
-    assert throbber.active is True
-    assert throbber._iterate.call_args_list == [call(), call()]
+async def test_ActivityIndicator_active_property(mocker):
+    mocker.patch('upsies.uis.tui.utils.ActivityIndicator._iterate')
+    ai = utils.ActivityIndicator()
+    assert ai.active is False
+    assert ai._iterate.call_args_list == []
+    ai.active = 1
+    assert ai.active is True
+    assert ai._iterate.call_args_list == [call()]
+    ai.active = 0
+    assert ai.active is False
+    assert ai._iterate.call_args_list == [call()]
+    ai.active = 'yes'
+    assert ai.active is True
+    assert ai._iterate.call_args_list == [call(), call()]
 
 @pytest.mark.asyncio  # Ensure aioloop exists
-async def test_Throbber_active_property_calls_iterate(mocker, event_loop):
-    throbber = utils.Throbber(interval=0)
+async def test_ActivityIndicator_active_property_calls_iterate(mocker, event_loop):
+    ai = utils.ActivityIndicator(interval=0)
     call_later_mock = mocker.patch.object(event_loop, 'call_later')
     assert call_later_mock.call_args_list == []
-    throbber.active = True
-    assert call_later_mock.call_args_list == [call(0.0, throbber._iterate)]
-
+    ai.active = True
+    assert call_later_mock.call_args_list == [call(0.0, ai._iterate)]
 
 @pytest.mark.asyncio  # Ensure aioloop exists
-async def test_Throbber_iterate_while_not_active(mocker, event_loop):
+async def test_ActivityIndicator_iterate_while_not_active(mocker, event_loop):
     cb = Mock()
-    throbber = utils.Throbber(callback=cb, interval=123, states=('a', 'b', 'c'))
+    ai = utils.ActivityIndicator(callback=cb, interval=123, states=('a', 'b', 'c'))
     call_later_mock = mocker.patch.object(event_loop, 'call_later')
-    throbber._iterate()
+    ai._iterate()
     assert cb.call_args_list == []
     assert call_later_mock.call_args_list == []
-    throbber._iterate()
+    ai._iterate()
     assert cb.call_args_list == []
     assert call_later_mock.call_args_list == []
-    throbber._iterate()
+    ai._iterate()
     assert cb.call_args_list == []
     assert call_later_mock.call_args_list == []
 
 
 @pytest.mark.asyncio  # Ensure aioloop exists
-async def test_Throbber_iterate_while_active(mocker, event_loop):
+async def test_ActivityIndicator_iterate_while_active(mocker, event_loop):
     cb = Mock()
-    throbber = utils.Throbber(callback=cb, interval=123, states=('a', 'b', 'c'),
-                              active=False, format='<{throbber}>')
+    ai = utils.ActivityIndicator(callback=cb, interval=123, states=('a', 'b', 'c'),
+                                 active=False, format='<{indicator}>')
     call_later_mock = mocker.patch.object(event_loop, 'call_later')
     assert cb.call_args_list == []
     assert call_later_mock.call_args_list == []
-    throbber.active = True
+    ai.active = True
     assert cb.call_args_list == [
         call('<a>'),
     ]
     assert call_later_mock.call_args_list == [
-        call(123.0, throbber._iterate),
+        call(123.0, ai._iterate),
     ]
-    throbber._iterate()
+    ai._iterate()
     assert cb.call_args_list == [
         call('<a>'),
         call('<b>'),
     ]
     assert call_later_mock.call_args_list == [
-        call(123.0, throbber._iterate),
-        call(123.0, throbber._iterate),
+        call(123.0, ai._iterate),
+        call(123.0, ai._iterate),
     ]
-    throbber._iterate()
+    ai._iterate()
     assert cb.call_args_list == [
         call('<a>'),
         call('<b>'),
         call('<c>'),
     ]
     assert call_later_mock.call_args_list == [
-        call(123.0, throbber._iterate),
-        call(123.0, throbber._iterate),
-        call(123.0, throbber._iterate),
+        call(123.0, ai._iterate),
+        call(123.0, ai._iterate),
+        call(123.0, ai._iterate),
     ]
