@@ -121,7 +121,7 @@ class CreateTorrentJob(base.JobBase):
                 'exclude': self._exclude_files,
             },
             init_callback=self._handle_file_tree,
-            info_callback=self._handle_progress_update,
+            info_callback=self._handle_info_update,
             error_callback=self._handle_error,
             result_callback=self._handle_torrent_created,
             finished_callback=self.finish,
@@ -137,8 +137,9 @@ class CreateTorrentJob(base.JobBase):
     def _handle_file_tree(self, file_tree):
         self.signal.emit('file_tree', file_tree)
 
-    def _handle_progress_update(self, status):
-        self.signal.emit('progress_update', status)
+    def _handle_info_update(self, info):
+        if isinstance(info, torrent.CreateTorrentProgress):
+            self.signal.emit('progress_update', info)
 
     def _handle_torrent_created(self, torrent_path=None):
         _log.debug('Torrent created: %r', torrent_path)
@@ -155,24 +156,37 @@ class CreateTorrentJob(base.JobBase):
 
 
 def _torrent_process(output_queue, input_queue, *args, **kwargs):
-    def init_callback(file_tree):
-        output_queue.put((daemon.MsgType.init, file_tree))
-
-    def progress_callback(progress):
+    def terminate_signal_sent():
         try:
             typ, msg = input_queue.get_nowait()
         except queue.Empty:
             pass
         else:
             if typ == daemon.MsgType.terminate:
-                # Any truthy return value cancels torrent.create()
-                return 'cancel'
+                return True
+        return False
 
-        output_queue.put((daemon.MsgType.info, progress))
+    def init_callback(file_tree):
+        if terminate_signal_sent():
+            return 'cancel'
+        else:
+            output_queue.put((daemon.MsgType.init, file_tree))
+
+    def progress_callback(progress):
+        if terminate_signal_sent():
+            return 'cancel'
+        else:
+            output_queue.put((daemon.MsgType.info, progress))
+
+    def info_callback(message):
+        if terminate_signal_sent():
+            return 'cancel'
+        else:
+            output_queue.put((daemon.MsgType.info, message))
 
     kwargs['init_callback'] = init_callback
     kwargs['progress_callback'] = progress_callback
-
+    kwargs['info_callback'] = info_callback
     try:
         torrent_path = torrent.create(*args, **kwargs)
     except errors.TorrentError as e:

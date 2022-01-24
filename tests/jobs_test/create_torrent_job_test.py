@@ -10,6 +10,7 @@ import pytest
 from upsies import errors
 from upsies.jobs.torrent import CreateTorrentJob, _torrent_process
 from upsies.utils.daemon import MsgType
+from upsies.utils.torrent import CreateTorrentProgress
 
 
 class AsyncMock(Mock):
@@ -48,6 +49,7 @@ def test_torrent_process_creates_torrent(create_mock, queues):
     assert create_mock.call_args_list == [call(
         init_callback=Callable(),
         progress_callback=Callable(),
+        info_callback=Callable(),
         some='argument',
         another='one',
     )]
@@ -79,13 +81,35 @@ def test_torrent_process_sends_progress(mocker, queues):
     assert queues.output.get() == (MsgType.info, 50)
     assert queues.output.get() == (MsgType.info, 100)
 
-def test_torrent_process_cancels_when_terminator_is_in_input_queue(mocker, queues):
+def test_torrent_process_sends_info(mocker, queues):
+    def create_mock(info_callback, **kwargs):
+        for msg in ('a', 'b', 'c'):
+            info_callback(msg)
+
+    mocker.patch('upsies.utils.torrent.create', create_mock)
+    _torrent_process(queues.output, queues.input, some='argument')
+    assert queues.output.get() == (MsgType.info, 'a')
+    assert queues.output.get() == (MsgType.info, 'b')
+    assert queues.output.get() == (MsgType.info, 'c')
+
+@pytest.mark.parametrize(
+    argnames='callback_name, exp_msg_type',
+    argvalues=(
+        ('init_callback', MsgType.init),
+        ('progress_callback', MsgType.info),
+        ('info_callback', MsgType.info),
+    ),
+)
+def test_torrent_process_cancels_when_terminator_is_in_input_queue(callback_name, exp_msg_type, mocker, queues):
     # sleep() and avoid joining any queue threads to avoid BrokenPipeError
-    def create_mock(progress_callback, **kwargs):
+    def create_mock(**kwargs):
+        callback = kwargs[callback_name]
         for i in range(1, 10):
+            if i >= 3:
+                queues.input.put((MsgType.info, None))
             if i >= 5:
                 queues.input.put((MsgType.terminate, None))
-            if progress_callback(i):
+            if callback(i):
                 break
             time.sleep(0.1)
         return 'mocked result'
@@ -95,8 +119,8 @@ def test_torrent_process_cancels_when_terminator_is_in_input_queue(mocker, queue
     info = []
     while not queues.output.empty():
         info.append(queues.output.get(timeout=0.5))
-    assert (MsgType.info, 5) in info
-    assert (MsgType.info, 9) not in info
+    assert (exp_msg_type, 5) in info
+    assert (exp_msg_type, 9) not in info
 
 
 @pytest.fixture
@@ -328,7 +352,7 @@ def test_CreateTorrentJob_start_torrent_creation_process(job, mocker):
             'exclude': job._exclude_files,
         },
         init_callback=job._handle_file_tree,
-        info_callback=job._handle_progress_update,
+        info_callback=job._handle_info_update,
         error_callback=job._handle_error,
         result_callback=job._handle_torrent_created,
         finished_callback=job.finish,
@@ -356,15 +380,52 @@ def test_handle_file_tree(job):
     assert cb.call_args_list == [call('nested file tree sequence')]
 
 
-def test_handle_progress_update(job):
+def test_handle_info_update(job):
     cb = Mock()
     job.signal.register('progress_update', cb)
-    job._handle_progress_update(10)
-    assert cb.call_args_list == [call(10)]
-    job._handle_progress_update(50)
-    assert cb.call_args_list == [call(10), call(50)]
-    job._handle_progress_update(100)
-    assert cb.call_args_list == [call(10), call(50), call(100)]
+    job._handle_info_update(CreateTorrentProgress(
+        bytes_per_second='mock bytes_per_second',
+        filepath='mock filepath',
+        percent_done='mock percent_done',
+        piece_size='mock piece_size',
+        pieces_done='mock pieces_done',
+        pieces_total='mock pieces_total',
+        seconds_elapsed='mock seconds_elapsed',
+        seconds_remaining='mock seconds_remaining',
+        seconds_total='mock seconds_total',
+        time_finished='mock time_finished',
+        time_started='mock time_started',
+        total_size='mock total_size',
+    ))
+    assert cb.call_args_list == [call(CreateTorrentProgress(
+        bytes_per_second='mock bytes_per_second',
+        filepath='mock filepath',
+        percent_done='mock percent_done',
+        piece_size='mock piece_size',
+        pieces_done='mock pieces_done',
+        pieces_total='mock pieces_total',
+        seconds_elapsed='mock seconds_elapsed',
+        seconds_remaining='mock seconds_remaining',
+        seconds_total='mock seconds_total',
+        time_finished='mock time_finished',
+        time_started='mock time_started',
+        total_size='mock total_size',
+    ))]
+    job._handle_info_update('This is a message.')
+    assert cb.call_args_list == [call(CreateTorrentProgress(
+        bytes_per_second='mock bytes_per_second',
+        filepath='mock filepath',
+        percent_done='mock percent_done',
+        piece_size='mock piece_size',
+        pieces_done='mock pieces_done',
+        pieces_total='mock pieces_total',
+        seconds_elapsed='mock seconds_elapsed',
+        seconds_remaining='mock seconds_remaining',
+        seconds_total='mock seconds_total',
+        time_finished='mock time_finished',
+        time_started='mock time_started',
+        total_size='mock total_size',
+    ))]
 
 
 @pytest.mark.parametrize(
