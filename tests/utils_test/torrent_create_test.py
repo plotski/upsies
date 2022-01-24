@@ -419,7 +419,7 @@ def test_get_generated_torrent_handles_TorfError_from_Torrent_generate(mocker, t
 
 def test_store_cache_torrent(mocker, tmp_path):
     Torrent_mock = mocker.patch('torf.Torrent')
-    mocker.patch('upsies.utils.torrent._get_cache_torrent_path')
+    mocker.patch('upsies.utils.torrent._get_generic_torrent_path')
     mocker.patch('upsies.utils.torrent._copy_torrent_info')
     mocker.patch('time.time', return_value='mock time')
     mock_torrent = Mock()
@@ -433,12 +433,12 @@ def test_store_cache_torrent(mocker, tmp_path):
     assert torrent._copy_torrent_info.call_args_list == [call(
         mock_torrent, Torrent_mock.return_value,
     )]
-    assert torrent._get_cache_torrent_path.call_args_list == [call(
+    assert torrent._get_generic_torrent_path.call_args_list == [call(
         Torrent_mock.return_value,
         create_directory=True,
     )]
     assert Torrent_mock.return_value.write.call_args_list == [call(
-        torrent._get_cache_torrent_path.return_value,
+        torrent._get_generic_torrent_path.return_value,
         overwrite=True,
     )]
 
@@ -449,7 +449,7 @@ def test_read_cache_torrent_from_generated_path(cache_torrent_path, torrent_ids_
     content_path = str(tmp_path / 'content')
     exclude = ('foo', 'bar', 'baz')
     Torrent_mock = mocker.patch('torf.Torrent')
-    mocker.patch('upsies.utils.torrent._get_cache_torrent_path', return_value='path/to/cache.torrent')
+    mocker.patch('upsies.utils.torrent._get_generic_torrent_path', return_value='path/to/cache.torrent')
     mocker.patch('upsies.utils.torrent._copy_torrent_info')
     mocker.patch('time.time', return_value='mock time')
 
@@ -472,14 +472,14 @@ def test_read_cache_torrent_from_generated_path(cache_torrent_path, torrent_ids_
     )]
 
     if cache_torrent_path:
-        assert torrent._get_cache_torrent_path.call_args_list == []
+        assert torrent._get_generic_torrent_path.call_args_list == []
         assert Torrent_mock.read.call_args_list == [call(cache_torrent_path)]
     else:
-        assert torrent._get_cache_torrent_path.call_args_list == [call(
+        assert torrent._get_generic_torrent_path.call_args_list == [call(
             Torrent_mock.return_value,
             create_directory=False,
         )]
-        assert Torrent_mock.read.call_args_list == [call(torrent._get_cache_torrent_path.return_value)]
+        assert Torrent_mock.read.call_args_list == [call(torrent._get_generic_torrent_path.return_value)]
 
     if torrent_ids_match:
         assert torrent._copy_torrent_info.call_args_list == [call(
@@ -494,7 +494,7 @@ def test_read_cache_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
     content_path = str(tmp_path / 'content')
     exclude = ('foo', 'bar', 'baz')
     Torrent_mock = mocker.patch('torf.Torrent', side_effect=torf.TorfError('nope'))
-    mocker.patch('upsies.utils.torrent._get_cache_torrent_path')
+    mocker.patch('upsies.utils.torrent._get_generic_torrent_path')
     mocker.patch('upsies.utils.torrent._copy_torrent_info')
     mocker.patch('time.time', return_value='mock time')
     t = torrent._read_cache_torrent(content_path, exclude=exclude)
@@ -506,7 +506,7 @@ def test_read_cache_torrent_handles_TorfError_from_Torrent(mocker, tmp_path):
         created_by=f'{__project_name__} {__version__}',
         creation_date='mock time',
     )]
-    assert torrent._get_cache_torrent_path.call_args_list == []
+    assert torrent._get_generic_torrent_path.call_args_list == []
     assert Torrent_mock.read.call_args_list == []
     assert torrent._copy_torrent_info.call_args_list == []
 
@@ -514,7 +514,7 @@ def test_read_cache_torrent_handles_TorfError_from_Torrent_read(mocker, tmp_path
     content_path = str(tmp_path / 'content')
     exclude = ('foo', 'bar', 'baz')
     Torrent_mock = mocker.patch('torf.Torrent', Mock(read=Mock(side_effect=torf.TorfError('nope'))))
-    mocker.patch('upsies.utils.torrent._get_cache_torrent_path')
+    mocker.patch('upsies.utils.torrent._get_generic_torrent_path')
     mocker.patch('upsies.utils.torrent._copy_torrent_info')
     mocker.patch('time.time', return_value='mock time')
     t = torrent._read_cache_torrent(content_path, exclude=exclude)
@@ -526,12 +526,12 @@ def test_read_cache_torrent_handles_TorfError_from_Torrent_read(mocker, tmp_path
         created_by=f'{__project_name__} {__version__}',
         creation_date='mock time',
     )]
-    assert torrent._get_cache_torrent_path.call_args_list == [call(
+    assert torrent._get_generic_torrent_path.call_args_list == [call(
         Torrent_mock.return_value,
         create_directory=False,
     )]
     assert Torrent_mock.read.call_args_list == [call(
-        torrent._get_cache_torrent_path.return_value
+        torrent._get_generic_torrent_path.return_value
     )]
     assert torrent._copy_torrent_info.call_args_list == []
 
@@ -544,7 +544,7 @@ def test_read_cache_torrent_handles_TorfError_from_Torrent_read(mocker, tmp_path
     ),
     ids=lambda v: str(v),
 )
-def test_get_cache_torrent_path(generic_torrents_dirpath, create_directory, mocker, tmp_path):
+def test_get_generic_torrent_path(generic_torrents_dirpath, create_directory, mocker, tmp_path):
     generic_torrents_dirpath = str(tmp_path / generic_torrents_dirpath)
     mocker.patch('upsies.constants.GENERIC_TORRENTS_DIRPATH', generic_torrents_dirpath)
     mock_mkdir = mocker.patch('upsies.utils.fs.mkdir')
@@ -555,7 +555,7 @@ def test_get_cache_torrent_path(generic_torrents_dirpath, create_directory, mock
         generic_torrents_dirpath,
         f'{cache_torrent.name}.{mock_get_torrent_id.return_value}.torrent',
     )
-    cache_torrent_path = torrent._get_cache_torrent_path(cache_torrent, create_directory=create_directory)
+    cache_torrent_path = torrent._get_generic_torrent_path(cache_torrent, create_directory=create_directory)
     assert cache_torrent_path == cache_torrent_path
     if create_directory:
         assert mock_mkdir.call_args_list == [call(os.path.dirname(exp_cache_torrent_path))]
@@ -563,14 +563,14 @@ def test_get_cache_torrent_path(generic_torrents_dirpath, create_directory, mock
         assert mock_mkdir.call_args_list == []
     assert mock_get_torrent_id.call_args_list == [call(cache_torrent)]
 
-def test_get_cache_torrent_path_handles_ContentError_from_mkdir(mocker, tmp_path):
+def test_get_generic_torrent_path_handles_ContentError_from_mkdir(mocker, tmp_path):
     generic_torrents_dirpath = str(tmp_path / 'generic_torrents')
     mocker.patch('upsies.constants.GENERIC_TORRENTS_DIRPATH', generic_torrents_dirpath)
     mocker.patch('upsies.utils.fs.mkdir', side_effect=errors.ContentError('nope'))
     mocker.patch('upsies.utils.torrent._get_torrent_id', return_value='D34DB33F')
     cache_torrent = Mock()
     with pytest.raises(errors.TorrentError, match=rf'^{generic_torrents_dirpath}: nope$'):
-        torrent._get_cache_torrent_path(cache_torrent, create_directory=True)
+        torrent._get_generic_torrent_path(cache_torrent, create_directory=True)
 
 
 def test_get_torrent_id(mocker):

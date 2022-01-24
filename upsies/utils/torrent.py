@@ -170,7 +170,7 @@ def _store_cache_torrent(torrent):
         comment='This torrent is used to cache previously hashed pieces.',
     )
     _copy_torrent_info(torrent, cache_torrent)
-    cache_torrent_path = _get_cache_torrent_path(cache_torrent, create_directory=True)
+    cache_torrent_path = _get_generic_torrent_path(cache_torrent, create_directory=True)
     cache_torrent.write(cache_torrent_path, overwrite=True)
 
 
@@ -186,7 +186,7 @@ def _read_cache_torrent(content_path, exclude, cache_torrent_path=None):
         )
         # Create the Torrent to get hashed pieces from
         if not cache_torrent_path:
-            cache_torrent_path = _get_cache_torrent_path(torrent, create_directory=False)
+            cache_torrent_path = _get_generic_torrent_path(torrent, create_directory=False)
         cache_torrent = torf.Torrent.read(cache_torrent_path)
     except torf.TorfError:
         pass
@@ -199,7 +199,7 @@ def _read_cache_torrent(content_path, exclude, cache_torrent_path=None):
             return torrent
 
 
-def _get_cache_torrent_path(torrent, create_directory=True):
+def _get_generic_torrent_path(torrent, create_directory=True):
     directory = constants.GENERIC_TORRENTS_DIRPATH
     if create_directory:
         try:
