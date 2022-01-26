@@ -40,12 +40,16 @@ class submit(CommandBase):
                         'default': (),
                     },
                     ('--reuse-torrent', '-t'): {
+                        'nargs': '+',
                         'metavar': 'TORRENT',
                         'help': ('Use hashed pieces from TORRENT instead of generating '
                                  'them again or getting them from '
-                                 f'{utils.fs.tildify_path(constants.GENERIC_TORRENTS_DIRPATH)}\n'
+                                 f'{utils.fs.tildify_path(constants.GENERIC_TORRENTS_DIRPATH)}.\n'
+                                 'TORRENT may also be a directory, which is searched recursively '
+                                 'for a matching *.torrent file.\n'
                                  "NOTE: This option is ignored if TORRENT doesn't match properly."),
                         'type': utils.argtypes.existing_path,
+                        'default': (),
                     },
                     ('--add-to', '-a'): {
                         'type': utils.argtypes.client,
@@ -114,7 +118,10 @@ class submit(CommandBase):
         return self.tracker.TrackerJobs(
             options=self.tracker_options,
             content_path=self.args.CONTENT,
-            reuse_torrent_path=self.args.reuse_torrent,
+            reuse_torrent_path=(
+                tuple(self.args.reuse_torrent)
+                + tuple(self.config['config']['torrent-create']['reuse_torrent_paths'])
+            ),
             tracker=self.tracker,
             image_host=self._get_imghost(),
             bittorrent_client=self._get_btclient(),
