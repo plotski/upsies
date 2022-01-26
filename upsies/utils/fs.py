@@ -329,6 +329,9 @@ def file_list(path, extensions=(), min_age=None, max_age=None, follow_dirlinks=F
     If `path` is not a directory, it is returned as a single item in a list
     unless `extensions` are given and they don't match.
 
+    If `path` is any falsy value (e.g. ``""`` or `None`), return an empty
+    sequence.
+
     Unreadable directories are excluded.
 
     :param str path: Path to a directory
@@ -352,7 +355,10 @@ def file_list(path, extensions=(), min_age=None, max_age=None, follow_dirlinks=F
         age = round(now - statinfo.st_atime)
         return (min_age or age) <= age <= (max_age or age)
 
-    if not os.path.isdir(path):
+    if not path:
+        # Handle any false value, e.g. "" or `None`
+        return ()
+    elif not os.path.isdir(path):
         if ext_ok(path):
             return (str(path),)
         else:

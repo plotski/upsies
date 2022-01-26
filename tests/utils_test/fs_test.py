@@ -610,6 +610,10 @@ def test_file_list_filters_by_age(tmp_path):
         str(tmp_path / 'c'),
     )
 
+@pytest.mark.parametrize('path', ('', None, 0))
+def test_file_list_if_path_is_falsy(path):
+    assert fs.file_list(path, extensions=('txt',)) == ()
+
 def test_file_list_if_path_is_matching_nondirectory(tmp_path):
     path = tmp_path / 'foo.txt'
     path.write_bytes(b'foo')
