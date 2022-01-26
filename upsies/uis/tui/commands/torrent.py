@@ -121,6 +121,11 @@ class torrent_create(CommandBase):
     def tracker_name(self):
         return self.args.subcommand.lower()
 
+    @property
+    def home_directory(self):
+        """Create torrent file in current working directory"""
+        return '.'
+
     @utils.cached_property
     def create_torrent_job(self):
         return jobs.torrent.CreateTorrentJob(

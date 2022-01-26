@@ -4,6 +4,7 @@
     from
   * Improved scene detection for mixed season packs
   * "upsies --help" provides basic documentation for keybindings
+  * torrent-create: Put created torrent file in current working directory
 
 
 2022.01.15
