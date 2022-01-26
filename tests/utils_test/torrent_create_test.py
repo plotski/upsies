@@ -173,14 +173,13 @@ def test_create_handles_TorfError_from_torrent_write(torrent_provider, mocker, t
         )
 
 
-def test_get_cached_torrent_from_directory(mocker):
+def test_get_cached_torrent(mocker):
     reuse_torrent_path = 'path/to/cache_directory'
     content_path = 'path/to/content'
     exclude = ('*.jpg',)
 
     cached_torrent = Mock(name='2.torrent object')
 
-    isdir_mock = mocker.patch('os.path.isdir', return_value=True)
     file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=(
         f'{i}.torrent' for i in range(1, 100)
     ))
@@ -200,7 +199,6 @@ def test_get_cached_torrent_from_directory(mocker):
     assert t is cached_torrent
     assert t.tracker == ('http://localhost:123',)
     assert t.source == 'ASDF'
-    assert isdir_mock.call_args_list == [call('path/to/cache_directory')]
     assert file_list_mock.call_args_list == [call('path/to/cache_directory', extensions=('torrent',))]
     assert info_callback.call_args_list == [call('1.torrent'), call('2.torrent')]
     assert read_cache_torrent_mock.call_args_list == [
@@ -208,12 +206,11 @@ def test_get_cached_torrent_from_directory(mocker):
         call(content_path='path/to/content', cache_torrent_path='2.torrent', exclude=('*.jpg',)),
     ]
 
-def test_get_cached_torrent_from_directory_when_info_callback_cancels(mocker):
+def test_get_cached_torrent_when_info_callback_cancels(mocker):
     reuse_torrent_path = 'path/to/cache_directory'
     content_path = 'path/to/content'
     exclude = ('*.jpg',)
 
-    isdir_mock = mocker.patch('os.path.isdir', return_value=True)
     file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=(
         f'{i}.torrent' for i in range(1, 100)
     ))
@@ -230,7 +227,6 @@ def test_get_cached_torrent_from_directory_when_info_callback_cancels(mocker):
         info_callback=info_callback,
     )
     assert t is None
-    assert isdir_mock.call_args_list == [call('path/to/cache_directory')]
     assert file_list_mock.call_args_list == [call('path/to/cache_directory', extensions=('torrent',))]
     assert info_callback.call_args_list == [call('1.torrent'), call('2.torrent'), call('3.torrent')]
     assert read_cache_torrent_mock.call_args_list == [
@@ -238,70 +234,11 @@ def test_get_cached_torrent_from_directory_when_info_callback_cancels(mocker):
         call(content_path='path/to/content', cache_torrent_path='2.torrent', exclude=('*.jpg',)),
     ]
 
-def test_get_cached_torrent_from_file(mocker):
-    reuse_torrent_path = 'path/to/cached.torrent'
-    content_path = 'path/to/content'
-    exclude = ('*.jpg',)
-
-    cached_torrent = Mock(name='torrent object')
-
-    isdir_mock = mocker.patch('os.path.isdir', return_value=False)
-    file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=())
-    read_cache_torrent_mock = mocker.patch('upsies.utils.torrent._read_cache_torrent', return_value=cached_torrent)
-    info_callback = Mock(return_value=False)
-
-    t = torrent._get_cached_torrent(
-        reuse_torrent_path=reuse_torrent_path,
-        content_path=content_path,
-        exclude=exclude,
-        metadata={'tracker': ('http://localhost:123',), 'source': 'ASDF'},
-        info_callback=info_callback,
-    )
-    assert t is cached_torrent
-    assert t.tracker == ('http://localhost:123',)
-    assert t.source == 'ASDF'
-    assert isdir_mock.call_args_list == [call('path/to/cached.torrent')]
-    assert file_list_mock.call_args_list == []
-    assert info_callback.call_args_list == []
-    assert read_cache_torrent_mock.call_args_list == [
-        call(content_path='path/to/content', cache_torrent_path='path/to/cached.torrent', exclude=('*.jpg',)),
-    ]
-
 @pytest.mark.parametrize('reuse_torrent_path', (None, ''))
-def test_get_cached_torrent_from_generic_torrent(reuse_torrent_path, mocker):
+def test_get_cached_torrent_when_reuse_torrent_path_is_falsy(reuse_torrent_path, mocker):
     content_path = 'path/to/content'
     exclude = ('*.jpg',)
 
-    cached_torrent = Mock(name='torrent object')
-
-    isdir_mock = mocker.patch('os.path.isdir', return_value=False)
-    file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=())
-    read_cache_torrent_mock = mocker.patch('upsies.utils.torrent._read_cache_torrent', return_value=cached_torrent)
-    info_callback = Mock(return_value=False)
-
-    t = torrent._get_cached_torrent(
-        reuse_torrent_path=reuse_torrent_path,
-        content_path=content_path,
-        exclude=exclude,
-        metadata={'tracker': ('http://localhost:123',), 'source': 'ASDF'},
-        info_callback=info_callback,
-    )
-    assert t is cached_torrent
-    assert t.tracker == ('http://localhost:123',)
-    assert t.source == 'ASDF'
-    assert isdir_mock.call_args_list == []
-    assert file_list_mock.call_args_list == []
-    assert info_callback.call_args_list == []
-    assert read_cache_torrent_mock.call_args_list == [
-        call(content_path='path/to/content', cache_torrent_path=reuse_torrent_path, exclude=('*.jpg',)),
-    ]
-
-@pytest.mark.parametrize('reuse_torrent_path', (None, ''))
-def test_get_cached_torrent_when_no_cached_torrent_exists(reuse_torrent_path, mocker):
-    content_path = 'path/to/content'
-    exclude = ('*.jpg',)
-
-    isdir_mock = mocker.patch('os.path.isdir', return_value=False)
     file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=())
     read_cache_torrent_mock = mocker.patch('upsies.utils.torrent._read_cache_torrent', return_value=None)
     info_callback = Mock(return_value=False)
@@ -314,12 +251,9 @@ def test_get_cached_torrent_when_no_cached_torrent_exists(reuse_torrent_path, mo
         info_callback=info_callback,
     )
     assert t is None
-    assert isdir_mock.call_args_list == []
-    assert file_list_mock.call_args_list == []
+    assert file_list_mock.call_args_list == [call(reuse_torrent_path, extensions=('torrent',))]
     assert info_callback.call_args_list == []
-    assert read_cache_torrent_mock.call_args_list == [
-        call(content_path='path/to/content', cache_torrent_path=reuse_torrent_path, exclude=('*.jpg',)),
-    ]
+    assert read_cache_torrent_mock.call_args_list == []
 
 
 def test_get_generated_torrent(mocker, tmp_path):

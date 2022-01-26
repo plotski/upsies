@@ -118,35 +118,24 @@ def create(*, content_path, announce, source, torrent_path,
 
 def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, info_callback):
     def with_updated_metadata(torrent):
-        if torrent:
-            for name, value in metadata.items():
-                setattr(torrent, name, value)
-            return torrent
+        for name, value in metadata.items():
+            setattr(torrent, name, value)
+        return torrent
 
-    # Get piece hashes from existing torrent
-    if reuse_torrent_path and os.path.isdir(reuse_torrent_path):
-        # Find matching torrent in directory
-        for cache_torrent_path in fs.file_list(reuse_torrent_path, extensions=('torrent',)):
-            cancelled = info_callback(cache_torrent_path)
-            if cancelled:
-                return None
-            else:
-                torrent = _read_cache_torrent(
-                    content_path=content_path,
-                    cache_torrent_path=cache_torrent_path,
-                    exclude=exclude,
-                )
-                if torrent:
-                    return with_updated_metadata(torrent)
-    else:
-        # Get piece hashes from given torrent file
-        return with_updated_metadata(
-            _read_cache_torrent(
+    # Iterate over .torrent files. If `reuse_torrent_path` is not a directory,
+    # it's iterated over by fs.file_list().
+    for cache_torrent_path in fs.file_list(reuse_torrent_path, extensions=('torrent',)):
+        cancelled = info_callback(cache_torrent_path)
+        if cancelled:
+            return None
+        else:
+            torrent = _read_cache_torrent(
                 content_path=content_path,
-                cache_torrent_path=reuse_torrent_path,
+                cache_torrent_path=cache_torrent_path,
                 exclude=exclude,
             )
-        )
+            if torrent:
+                return with_updated_metadata(torrent)
 
 
 def _get_generated_torrent(*, content_path, announce, source, exclude, init_callback, progress_callback):
