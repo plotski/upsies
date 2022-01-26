@@ -129,8 +129,8 @@ class torrent_create(CommandBase):
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
             reuse_torrent_path=(
-                list(self.args.reuse_torrent)
-                + list(self.config['config']['torrent-create']['reuse_torrent_paths'])
+                tuple(self.args.reuse_torrent)
+                + tuple(self.config['config']['torrent-create']['reuse_torrent_paths'])
             ),
             tracker=trackers.tracker(
                 name=self.tracker_name,
