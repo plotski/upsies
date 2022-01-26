@@ -92,9 +92,12 @@ class torrent_create(CommandBase):
                         'metavar': 'TORRENT',
                         'help': ('Use hashed pieces from TORRENT instead of generating '
                                  'them again or getting them from '
-                                 f'{utils.fs.tildify_path(constants.GENERIC_TORRENTS_DIRPATH)}\n'
+                                 f'{utils.fs.tildify_path(constants.GENERIC_TORRENTS_DIRPATH)}.\n'
+                                 'TORRENT may also be a directory, which is searched recursively '
+                                 'for a matching *.torrent file.\n'
                                  "NOTE: This option is ignored if TORRENT doesn't match properly."),
                         'type': utils.argtypes.existing_path,
+                        'default': (),
                     },
                     ('--add-to', '-a'): {
                         'type': utils.argtypes.client,
@@ -125,7 +128,10 @@ class torrent_create(CommandBase):
             cache_directory=self.cache_directory,
             ignore_cache=self.args.ignore_cache,
             content_path=self.args.CONTENT,
-            reuse_torrent_path=self.args.reuse_torrent,
+            reuse_torrent_path=(
+                list(self.args.reuse_torrent)
+                + list(self.config['config']['torrent-create']['reuse_torrent_paths'])
+            ),
             tracker=trackers.tracker(
                 name=self.tracker_name,
                 options={**self.config['trackers'][self.tracker_name],

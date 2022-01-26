@@ -17,6 +17,16 @@ defaults = {
                 ),
             ),
         },
+        'torrent-create': {
+            'reuse_torrent_paths': utils.configfiles.config_value(
+                value=[],
+                description=(
+                    'List of directories to search for a *.torrent file '
+                    'to get piece hashes from instead of generating the '
+                    'pieces hashes from file contents.\n'
+                ),
+            ),
+        },
     },
 
     'trackers': {
