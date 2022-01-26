@@ -1,4 +1,7 @@
 2022.??.??
+  * New option: config.torrent-create.reuse_torrent_paths provides a list of
+    directories that contain torrent files which are used to get piece hashes
+    from
   * Improved scene detection for mixed season packs
   * "upsies --help" provides basic documentation for keybindings
 
