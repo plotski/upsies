@@ -88,6 +88,7 @@ class torrent_create(CommandBase):
                         'default': (),
                     },
                     ('--reuse-torrent', '-t'): {
+                        'nargs': '+',
                         'metavar': 'TORRENT',
                         'help': ('Use hashed pieces from TORRENT instead of generating '
                                  'them again or getting them from '

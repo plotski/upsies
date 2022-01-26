@@ -173,8 +173,8 @@ def test_create_handles_TorfError_from_torrent_write(torrent_provider, mocker, t
         )
 
 
-def test_get_cached_torrent(mocker):
-    reuse_torrent_path = 'path/to/cache_directory'
+@pytest.mark.parametrize('reuse_torrent_path', ('some/path', ['some/path']))
+def test_get_cached_torrent(reuse_torrent_path, mocker):
     content_path = 'path/to/content'
     exclude = ('*.jpg',)
 
@@ -199,7 +199,7 @@ def test_get_cached_torrent(mocker):
     assert t is cached_torrent
     assert t.tracker == ('http://localhost:123',)
     assert t.source == 'ASDF'
-    assert file_list_mock.call_args_list == [call('path/to/cache_directory', extensions=('torrent',))]
+    assert file_list_mock.call_args_list == [call('some/path', extensions=('torrent',))]
     assert info_callback.call_args_list == [call('1.torrent'), call('2.torrent')]
     assert read_cache_torrent_mock.call_args_list == [
         call(content_path='path/to/content', cache_torrent_path='1.torrent', exclude=('*.jpg',)),
@@ -234,7 +234,7 @@ def test_get_cached_torrent_when_info_callback_cancels(mocker):
         call(content_path='path/to/content', cache_torrent_path='2.torrent', exclude=('*.jpg',)),
     ]
 
-@pytest.mark.parametrize('reuse_torrent_path', (None, ''))
+@pytest.mark.parametrize('reuse_torrent_path', (None, '', [None], [None, '']), ids=lambda v: repr(v))
 def test_get_cached_torrent_when_reuse_torrent_path_is_falsy(reuse_torrent_path, mocker):
     content_path = 'path/to/content'
     exclude = ('*.jpg',)
@@ -251,7 +251,34 @@ def test_get_cached_torrent_when_reuse_torrent_path_is_falsy(reuse_torrent_path,
         info_callback=info_callback,
     )
     assert t is None
-    assert file_list_mock.call_args_list == [call(reuse_torrent_path, extensions=('torrent',))]
+    if isinstance(reuse_torrent_path, list):
+        assert file_list_mock.call_args_list == [
+            call(path, extensions=('torrent',))
+            for path in reuse_torrent_path
+        ]
+    else:
+        assert file_list_mock.call_args_list == []
+    assert info_callback.call_args_list == []
+    assert read_cache_torrent_mock.call_args_list == []
+
+def test_get_cached_torrent_gets_invalid_reuse_torrent_path_value(mocker):
+    reuse_torrent_path = 123
+    content_path = 'path/to/content'
+    exclude = ('*.jpg',)
+
+    file_list_mock = mocker.patch('upsies.utils.fs.file_list', return_value=())
+    read_cache_torrent_mock = mocker.patch('upsies.utils.torrent._read_cache_torrent', return_value=None)
+    info_callback = Mock(return_value=False)
+
+    with pytest.raises(ValueError, match='Invalid reuse_torrent_path value: 123'):
+        t = torrent._get_cached_torrent(
+            reuse_torrent_path=reuse_torrent_path,
+            content_path=content_path,
+            exclude=exclude,
+            metadata={'tracker': ('http://localhost:123',), 'source': 'ASDF'},
+            info_callback=info_callback,
+        )
+    assert file_list_mock.call_args_list == []
     assert info_callback.call_args_list == []
     assert read_cache_torrent_mock.call_args_list == []
 

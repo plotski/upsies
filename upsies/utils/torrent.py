@@ -59,12 +59,15 @@ def create(*, content_path, announce, source, torrent_path,
     :param exclude: Sequence of regular expressions that are matched against
         file system paths. Matching files are not included in the torrent.
     :param reuse_torrent_path: Path to existing torrent file to get hashed
-        pieces and piece size from. This argument is ignored if the files in the
-        provided torrent do not match the files we want or if it can't be read
-        for any reason.
+        pieces and piece size from.
 
         If this is a directory, search it recursively for ``*.torrent`` files
         and use the first one (in natural sort order) that matches.
+
+        Non-existing or otherwise unreadable paths as well as falsy values
+        (e.g. ``""`` or `None`) are silently ignored.
+
+        If this is a sequence, its items are handled as described above.
 
     Callbacks can cancel the torrent creation by returning `True` or any other
     truthy value.
@@ -122,20 +125,31 @@ def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, inf
             setattr(torrent, name, value)
         return torrent
 
-    # Iterate over .torrent files. If `reuse_torrent_path` is not a directory,
-    # it's iterated over by fs.file_list().
-    for cache_torrent_path in fs.file_list(reuse_torrent_path, extensions=('torrent',)):
-        cancelled = info_callback(cache_torrent_path)
-        if cancelled:
-            return None
-        else:
-            torrent = _read_cache_torrent(
-                content_path=content_path,
-                cache_torrent_path=cache_torrent_path,
-                exclude=exclude,
-            )
-            if torrent:
-                return with_updated_metadata(torrent)
+    if not reuse_torrent_path:
+        reuse_torrent_paths = ()
+    elif isinstance(reuse_torrent_path, str):
+        reuse_torrent_paths = (reuse_torrent_path,)
+    elif isinstance(reuse_torrent_path, collections.abc.Iterable):
+        reuse_torrent_paths = reuse_torrent_path
+    else:
+        raise ValueError(f'Invalid reuse_torrent_path value: {reuse_torrent_path!r}')
+
+    # Iterate over .torrent files in each path in `reuse_torrent_paths`.
+    # If `reuse_torrent_path` is not a directory, it's iterated over by
+    # fs.file_list().
+    for path in reuse_torrent_paths:
+        for cache_torrent_path in fs.file_list(path, extensions=('torrent',)):
+            cancelled = info_callback(cache_torrent_path)
+            if cancelled:
+                return None
+            else:
+                torrent = _read_cache_torrent(
+                    content_path=content_path,
+                    cache_torrent_path=cache_torrent_path,
+                    exclude=exclude,
+                )
+                if torrent:
+                    return with_updated_metadata(torrent)
 
 
 def _get_generated_torrent(*, content_path, announce, source, exclude, init_callback, progress_callback):
