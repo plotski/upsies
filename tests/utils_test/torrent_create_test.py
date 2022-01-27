@@ -271,7 +271,7 @@ def test_get_cached_torrent_gets_invalid_reuse_torrent_path_value(mocker):
     info_callback = Mock(return_value=False)
 
     with pytest.raises(ValueError, match='Invalid reuse_torrent_path value: 123'):
-        t = torrent._get_cached_torrent(
+        torrent._get_cached_torrent(
             reuse_torrent_path=reuse_torrent_path,
             content_path=content_path,
             exclude=exclude,
