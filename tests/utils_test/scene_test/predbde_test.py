@@ -43,7 +43,7 @@ def test_default_config():
 @pytest.mark.asyncio
 async def test_search(q, results, exp_results, api, mocker):
     mocker.patch.object(api, '_get_q', return_value=q)
-    mocker.patch.object(api, '_request_all_pages', return_value=results)
+    mocker.patch.object(api, '_request_all_pages', AsyncMock(return_value=results))
     results = await api._search(('kw1', 'kw2'), group='ASDF')
     assert results == exp_results
     assert api._get_q.call_args_list == [call(('kw1', 'kw2'), 'ASDF')]
