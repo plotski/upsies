@@ -140,6 +140,7 @@ class BbTracker(TrackerBase):
             return announce_url_tag['value']
         else:
             _log.debug('%s: Failed to find announce URL', self.name)
+            raise RuntimeError(f'Failed to find announce URL in HTML:\n{doc.prettify()}')
 
     async def upload(self, tracker_jobs):
         _log.debug('Uploading %r', tracker_jobs.post_data)
