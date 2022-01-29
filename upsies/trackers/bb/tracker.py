@@ -104,6 +104,7 @@ class BbTracker(TrackerBase):
                 match = cls._auth_token_regex.search(logout_link_href)
                 if match:
                     return match.group(1)
+        _log.debug('Failed to find auth token in HTML:\n%s', html.dump(doc, 'loginbug.html'))
 
     def _store_auth_token(self, doc):
         auth_token = self._get_auth_token(doc)
@@ -140,7 +141,6 @@ class BbTracker(TrackerBase):
             return announce_url_tag['value']
         else:
             _log.debug('%s: Failed to find announce URL', self.name)
-            raise RuntimeError(f'Failed to find announce URL in HTML:\n{doc.prettify()}')
 
     async def upload(self, tracker_jobs):
         _log.debug('Uploading %r', tracker_jobs.post_data)
