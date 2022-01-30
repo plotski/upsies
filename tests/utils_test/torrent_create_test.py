@@ -148,7 +148,6 @@ def test_create_handles_TorfError_from_torrent_write(torrent_provider, mocker, t
         is_ready=True,
         write=Mock(side_effect=torf.TorfError('nope')),
     )
-    print('--', exp_torrent.is_ready)
     mocker.patch('upsies.utils.torrent._path_exists', return_value=False)
     mocker.patch('upsies.utils.torrent._store_generic_torrent')
     if torrent_provider == '_get_cached_torrent':
