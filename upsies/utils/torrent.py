@@ -143,10 +143,10 @@ def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, inf
             if cancelled:
                 return None
             else:
-                torrent = _read_cache_torrent(
+                torrent = _read_torrent(
                     content_path=content_path,
-                    cache_torrent_path=cache_torrent_path,
                     exclude=exclude,
+                    torrent_path=cache_torrent_path,
                 )
                 if torrent:
                     return with_updated_metadata(torrent)
@@ -187,29 +187,27 @@ def _store_generic_torrent(torrent):
     generic_torrent.write(generic_torrent_path, overwrite=True)
 
 
-def _read_cache_torrent(content_path, exclude, cache_torrent_path=None):
+def _read_torrent(content_path, exclude, torrent_path):
     try:
         # Create the Torrent we're going to use, but it's missing the hashes
-        torrent = torf.Torrent(
+        new_torrent = torf.Torrent(
             path=content_path,
             exclude_regexs=exclude,
             private=True,
             created_by=f'{__project_name__} {__version__}',
             creation_date=time.time(),
         )
-        # Read existing torrent that has the hashes
-        if not cache_torrent_path:
-            cache_torrent_path = _get_generic_torrent_path(torrent, create_directory=False)
-        cache_torrent = torf.Torrent.read(cache_torrent_path)
+        # Read existing torrent
+        old_torrent = torf.Torrent.read(torrent_path)
     except torf.TorfError:
         pass
     else:
         # If both torrents match, we can copy the hashes
-        id_wanted = _get_torrent_id(torrent)
-        id_cached = _get_torrent_id(cache_torrent)
-        if id_cached == id_wanted:
-            _copy_torrent_info(cache_torrent, torrent)
-            return torrent
+        id_new = _get_torrent_id(new_torrent)
+        id_old = _get_torrent_id(old_torrent)
+        if id_old == id_new:
+            _copy_torrent_info(old_torrent, new_torrent)
+            return new_torrent
 
 
 def _get_generic_torrent_path(torrent, create_directory=True):
