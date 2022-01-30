@@ -126,13 +126,24 @@ def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, inf
         return torrent
 
     if not reuse_torrent_path:
-        reuse_torrent_paths = ()
+        reuse_torrent_paths = []
     elif isinstance(reuse_torrent_path, str):
-        reuse_torrent_paths = (reuse_torrent_path,)
+        reuse_torrent_paths = [reuse_torrent_path]
     elif isinstance(reuse_torrent_path, collections.abc.Iterable):
-        reuse_torrent_paths = reuse_torrent_path
+        reuse_torrent_paths = [p for p in reuse_torrent_path if p]
     else:
         raise ValueError(f'Invalid reuse_torrent_path value: {reuse_torrent_path!r}')
+
+    # Try generic torrent first
+    try:
+        torrent = torf.Torrent(path=content_path, exclude_regexs=exclude)
+    except torf.TorfError as e:
+        pass
+    else:
+        reuse_torrent_paths.insert(0, _get_generic_torrent_path(
+            torrent=torrent,
+            create_directory=False,
+        ))
 
     # Iterate over .torrent files in each path in `reuse_torrent_paths`.
     # If `reuse_torrent_path` is not a directory, it's iterated over by
