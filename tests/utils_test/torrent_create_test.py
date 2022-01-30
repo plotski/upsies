@@ -27,7 +27,7 @@ def test_create_validates_arguments(announce, source, exp_error, mocker, tmp_pat
     mocker.patch('upsies.utils.torrent._path_exists', return_value=False)
     mocker.patch('upsies.utils.torrent._read_cache_torrent')
     mocker.patch('upsies.utils.torrent._get_generated_torrent')
-    mocker.patch('upsies.utils.torrent._store_cache_torrent')
+    mocker.patch('upsies.utils.torrent._store_generic_torrent')
 
     with pytest.raises(errors.TorrentError, match=rf'^{re.escape(exp_error)}$'):
         torrent.create(
@@ -43,7 +43,7 @@ def test_create_validates_arguments(announce, source, exp_error, mocker, tmp_pat
     assert torrent._path_exists.call_args_list == []
     assert torrent._read_cache_torrent.call_args_list == []
     assert torrent._get_generated_torrent.call_args_list == []
-    assert torrent._store_cache_torrent.call_args_list == []
+    assert torrent._store_generic_torrent.call_args_list == []
 
 @pytest.mark.parametrize(
     argnames='overwrite, torrent_exists, cached_torrent, generated_torrent',
@@ -84,7 +84,7 @@ def test_create(overwrite, torrent_exists, cached_torrent, generated_torrent,
     mocker.patch('upsies.utils.torrent._path_exists', return_value=torrent_exists)
     mocker.patch('upsies.utils.torrent._get_cached_torrent', return_value=cached_torrent)
     mocker.patch('upsies.utils.torrent._get_generated_torrent', return_value=generated_torrent)
-    mocker.patch('upsies.utils.torrent._store_cache_torrent')
+    mocker.patch('upsies.utils.torrent._store_generic_torrent')
 
     if (overwrite or not torrent_exists) and cached_torrent:
         exp_torrent = cached_torrent
@@ -137,7 +137,7 @@ def test_create(overwrite, torrent_exists, cached_torrent, generated_torrent,
             assert torrent._get_generated_torrent.call_args_list == []
 
     if exp_torrent and exp_torrent.is_ready:
-        assert torrent._store_cache_torrent.call_args_list == [call(exp_torrent)]
+        assert torrent._store_generic_torrent.call_args_list == [call(exp_torrent)]
         assert exp_torrent.write.call_args_list == [call(torrent_path, overwrite=True)]
 
 @pytest.mark.parametrize('torrent_provider', ('_get_cached_torrent', '_get_generated_torrent'))
@@ -150,7 +150,7 @@ def test_create_handles_TorfError_from_torrent_write(torrent_provider, mocker, t
     )
     print('--', exp_torrent.is_ready)
     mocker.patch('upsies.utils.torrent._path_exists', return_value=False)
-    mocker.patch('upsies.utils.torrent._store_cache_torrent')
+    mocker.patch('upsies.utils.torrent._store_generic_torrent')
     if torrent_provider == '_get_cached_torrent':
         mocker.patch('upsies.utils.torrent._get_cached_torrent', return_value=exp_torrent)
         mocker.patch('upsies.utils.torrent._get_generated_torrent', return_value=None)
@@ -444,13 +444,13 @@ def test_get_generated_torrent_handles_TorfError_from_Torrent_generate(mocker, t
     )]
 
 
-def test_store_cache_torrent(mocker, tmp_path):
+def test_store_generic_torrent(mocker, tmp_path):
     Torrent_mock = mocker.patch('torf.Torrent')
     mocker.patch('upsies.utils.torrent._get_generic_torrent_path')
     mocker.patch('upsies.utils.torrent._copy_torrent_info')
     mocker.patch('time.time', return_value='mock time')
     mock_torrent = Mock()
-    torrent._store_cache_torrent(mock_torrent)
+    torrent._store_generic_torrent(mock_torrent)
     assert Torrent_mock.call_args_list == [call(
         private=True,
         created_by=f'{__project_name__} {__version__}',

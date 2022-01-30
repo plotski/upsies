@@ -108,7 +108,7 @@ def create(*, content_path, announce, source, torrent_path,
 
     if torrent and torrent.is_ready:
         # Write generic torrent
-        _store_cache_torrent(torrent)
+        _store_generic_torrent(torrent)
 
         # Write torrent to `torrent_path`
         try:
@@ -175,16 +175,16 @@ def _get_generated_torrent(*, content_path, announce, source, exclude, init_call
         return torrent
 
 
-def _store_cache_torrent(torrent):
-    cache_torrent = torf.Torrent(
+def _store_generic_torrent(torrent):
+    generic_torrent = torf.Torrent(
         private=True,
         created_by=f'{__project_name__} {__version__}',
         creation_date=time.time(),
         comment='This torrent is used to cache previously hashed pieces.',
     )
-    _copy_torrent_info(torrent, cache_torrent)
-    cache_torrent_path = _get_generic_torrent_path(cache_torrent, create_directory=True)
-    cache_torrent.write(cache_torrent_path, overwrite=True)
+    _copy_torrent_info(torrent, generic_torrent)
+    generic_torrent_path = _get_generic_torrent_path(generic_torrent, create_directory=True)
+    generic_torrent.write(generic_torrent_path, overwrite=True)
 
 
 def _read_cache_torrent(content_path, exclude, cache_torrent_path=None):
