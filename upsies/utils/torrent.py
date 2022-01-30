@@ -137,7 +137,7 @@ def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, inf
     # Try generic torrent first
     try:
         torrent = torf.Torrent(path=content_path, exclude_regexs=exclude)
-    except torf.TorfError as e:
+    except torf.TorfError:
         pass
     else:
         reuse_torrent_paths.insert(0, _get_generic_torrent_path(
