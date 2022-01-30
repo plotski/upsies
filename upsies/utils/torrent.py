@@ -138,15 +138,15 @@ def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, inf
     # If `reuse_torrent_path` is not a directory, it's iterated over by
     # fs.file_list().
     for path in reuse_torrent_paths:
-        for cache_torrent_path in fs.file_list(path, extensions=('torrent',)):
-            cancelled = info_callback(cache_torrent_path)
+        for torrent_path in fs.file_list(path, extensions=('torrent',)):
+            cancelled = info_callback(torrent_path)
             if cancelled:
                 return None
             else:
                 torrent = _read_torrent(
                     content_path=content_path,
                     exclude=exclude,
-                    torrent_path=cache_torrent_path,
+                    torrent_path=torrent_path,
                 )
                 if torrent:
                     return with_updated_metadata(torrent)
