@@ -433,29 +433,6 @@ async def test_SceneQuery_handle_results_with_only_existing_releases(episodes, e
         assert handled_results == exp_matches
 
 
-@pytest.mark.parametrize(
-    argnames='episode, exp_season_pack',
-    argvalues=(
-        ('X.S01.1080p.BluRay.x264-ASDF', 'X.S01.1080p.BluRay.x264-ASDF'),
-        ('X.S01E01.1080p.BluRay.x264-ASDF', 'X.S01.1080p.BluRay.x264-ASDF'),
-        ('X.S01E01.Episode.Title.1080p.BluRay.x264-ASDF', 'X.S01.1080p.BluRay.x264-ASDF'),
-        ('X.S01E01.Episode.Title.1080i.BluRay.x264-ASDF', 'X.S01.1080i.BluRay.x264-ASDF'),
-        ('X.S01E01.Episode.Title.DVDRip.x264-ASDF', 'X.S01.DVDRip.x264-ASDF'),
-        ('X.S01E01.Episode.Title.REPACK.720p.BluRay.x264-ASDF', 'X.S01.REPACK.720p.BluRay.x264-ASDF'),
-        ('X.S01E01.Episode.Title.PROPER.720p.BluRay.x264-ASDF', 'X.S01.PROPER.720p.BluRay.x264-ASDF'),
-        ('X.S01E01.Episode.Title.DUTCH.DVDRip.x264-ASDF', 'X.S01.DUTCH.DVDRip.x264-ASDF'),
-        ('X.S01E01.Episode.Title.iNTERNAL.DVDRip.x264-ASDF', 'X.S01.iNTERNAL.DVDRip.x264-ASDF'),
-        ('X.S01E01.Episode.Title.REAL.DVDRip.x264-ASDF', 'X.S01.REAL.DVDRip.x264-ASDF'),
-        ('X.S01E01.French.DVDRip.x264-ASDF', 'X.S01.French.DVDRip.x264-ASDF'),
-        ('X.S01E01.Episode.Title.German.DL.DVDRip.x264-ASDF', 'X.S01.German.DL.DVDRip.x264-ASDF'),
-        ('X.S01E01E02.Episode.Title.German.DL.DVDRip.x264-ASDF', 'X.S01.German.DL.DVDRip.x264-ASDF'),
-    ),
-)
-def test_SceneQuery_create_season_pack_name(episode, exp_season_pack):
-    season_pack = find.SceneQuery._create_season_pack_name(episode)
-    assert season_pack == exp_season_pack
-
-
 def test_SceneQuery_keywords():
     query = find.SceneQuery('foo bar', ' - ', 'baz', '', '  ', 21)
     assert query.keywords == ('foo', 'bar', 'baz', '21')

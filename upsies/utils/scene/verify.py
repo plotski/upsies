@@ -245,15 +245,7 @@ async def verify_release_name(content_path, release_name):
     # directory. This only matters if we're dealing with an abbreviated file
     # name; normal file names are independent of their parent directory name.
     if is_abbreviated_filename(content_path):
-        season_pack_name = re.sub(
-            (
-                rf'((?i:{utils.release.DELIM}|S\d+))'
-                r'(?i:E\d+)+'
-                rf'((?i:{utils.release.DELIM}|$))'
-            ),
-            r'\1\2',
-            release_name,
-        )
+        season_pack_name = common.get_season_pack_name(release_name)
         for file in files:
             acceptable_paths.add(f'{season_pack_name}/{file}')
 
