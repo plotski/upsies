@@ -45,6 +45,7 @@ def test_get_needed_keys(release_info, exp_keys, source, irrelevant_keys):
         ('X.S01E01.French.DVDRip.x264-ASDF', 'X.S01.French.DVDRip.x264-ASDF'),
         ('X.S01E01.Episode.Title.German.DL.DVDRip.x264-ASDF', 'X.S01.German.DL.DVDRip.x264-ASDF'),
         ('X.S01E01E02.Episode.Title.German.DL.DVDRip.x264-ASDF', 'X.S01.German.DL.DVDRip.x264-ASDF'),
+        ('X.S01E03-E04.Episode.Title.German.DL.DVDRip.x264-ASDF', 'X.S01.German.DL.DVDRip.x264-ASDF'),
     ),
 )
 def test_get_season_pack_name(release_name, exp_season_pack):

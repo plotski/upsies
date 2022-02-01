@@ -42,7 +42,16 @@ def get_needed_keys(release_info):
 def get_season_pack_name(release_name):
     """Remove episode information (e.g. "E03") from `release_name`"""
     # Remove episode(s) from release name to create season pack name
-    season_pack = re.sub(r'\b(S\d{2,})*(E\d{2,})*\b', r'\1', release_name)
+    season_pack = re.sub(
+        (
+            r'\b'
+            rf'(S\d{{2,}})'
+            rf'(?:{release.DELIM}*E\d{{2,}})+'
+            r'\b'
+        ),
+        r'\1',
+        release_name,
+    )
 
     # Remove episode title
     release_info = release.ReleaseInfo(release_name)
