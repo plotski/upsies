@@ -104,7 +104,6 @@ class BbTracker(TrackerBase):
                 match = cls._auth_token_regex.search(logout_link_href)
                 if match:
                     return match.group(1)
-        _log.debug('Failed to find auth token in HTML:\n%s', html.dump(doc, 'loginbug.html'))
 
     def _store_auth_token(self, doc):
         auth_token = self._get_auth_token(doc)
