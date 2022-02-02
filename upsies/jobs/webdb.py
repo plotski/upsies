@@ -61,7 +61,7 @@ class WebDbSearchJob(JobBase):
     @property
     def cache_id(self):
         """Database :attr:`~.WebDbApiBase.name` and :attr:`query`"""
-        return (self._db.name, self.query)
+        return self.query
 
     @property
     def query(self):

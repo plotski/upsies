@@ -70,7 +70,7 @@ def test_WebDbSearchJob_label(job):
 
 
 def test_WebDbSearchJob_cache_id(job):
-    assert job.cache_id == (job._db.name, job.query)
+    assert job.cache_id == job.query
 
 
 def test_WebDbSearchJob_query(job):
