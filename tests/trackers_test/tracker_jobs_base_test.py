@@ -338,7 +338,7 @@ def test_release_name_job(tracker, mocker):
     ]
 
 def test_release_name_job_is_singleton(mocker):
-    mocker.patch('upsies.jobs.release_name.ReleaseNameJob', side_effect=(Mock(), Mock()))
+    mocker.patch('upsies.jobs.dialog.TextFieldJob', side_effect=(Mock(), Mock()))
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
@@ -370,7 +370,6 @@ def test_update_release_name(mocker):
 
 def test_imdb_job(mocker):
     WebDbSearchJob_mock = mocker.patch('upsies.jobs.webdb.WebDbSearchJob')
-    mocker.patch('upsies.jobs.release_name.ReleaseNameJob')
     webdb_mock = mocker.patch('upsies.utils.webdbs.webdb')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
