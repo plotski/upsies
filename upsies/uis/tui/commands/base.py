@@ -389,6 +389,6 @@ class CommandBase(abc.ABC):
         ``config.main.cache_directory`` otherwise.
         """
         if hasattr(self.args, 'CONTENT') or hasattr(self.args, 'RELEASE'):
-            return os.path.join(self.home_directory, '.cache')
+            return os.path.join(self.home_directory, '.joboutput')
         else:
             return self.config['config']['main']['cache_directory']
