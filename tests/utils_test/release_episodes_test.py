@@ -165,6 +165,7 @@ def test_Episodes_normalize(value, name, prefix, empty_string_ok, exp_return_val
         ('E01E2S03E04E05.baz', {'': ['1', '2'], '3': ['4', '5']}),
         ('S09E08S03E06S9E1', {'9': ['1', '8',], '3': ['6',]}),
         ('E01S03E06.bar.E02', {'': ['1', '2',], '3': ['6',]}),
+        ('S03E14-E15', {'3': ['14', '15',]}),
     ),
     ids=lambda v: str(v),
 )

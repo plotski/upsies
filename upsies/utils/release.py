@@ -1316,12 +1316,14 @@ class Episodes(dict):
             >>> Episodes.from_string('E01S03E06.bar.E02')
             {'': ('1', '2',), '3': ('6',)}
         """
-        seasons = collections.defaultdict(lambda: set())
+        def only_digits(string):
+            return ''.join(c for c in string if c in '0123456789')
 
         def split_episodes(string):
-            return {str(int(e)) for e in string.split('E') if e.strip()}
+            return {only_digits(e) for e in string.split('E') if e.strip()}
 
-        for word in re.split(DELIM, str(value)):
+        seasons = collections.defaultdict(lambda: set())
+        for word in re.split(r'[\. ]+', str(value)):
             word = word.upper()
             if cls.has_episodes_info(word):
                 for part in (k for k in word.split('S') if k):
@@ -1330,6 +1332,7 @@ class Episodes(dict):
                     episodes = re.sub(r'^\d+', '', part)
                     episodes = split_episodes(episodes) if episodes else ()
                     seasons[season].update(episodes)
+
         args = {season: tuple(natsort.natsorted(episodes))
                 for season, episodes in natsort.natsorted(seasons.items())}
         return cls(args)
