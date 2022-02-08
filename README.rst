@@ -30,10 +30,12 @@ Features
 * Generate standardized release name
 * Create screenshots at hand-picked or auto-generated timestamps
 * Upload screenshots to an image hosting service
-* Create ``.torrent`` file and add it to supported BitTorrent client or copy it
-  to a watch directory
-* Identify scene releases and check if they were altered
-* Submit metadata to a supported tracker
+* Create ``.torrent`` file from scratch or from existing torrent file by copying
+  piece size and piece hashes
+* Add ``.torrent`` file to supported BitTorrent client or copy it to a watch
+  directory
+* Identify and verify scene releases
+* Submit generated metadata to a supported tracker
 * Do everything simultaneously
 
 ``upsies`` is developed on `GitHub <https://github.com/plotski/upsies>`_.
