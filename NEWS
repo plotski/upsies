@@ -1,5 +1,7 @@
 2022.??.??
   * scene-check: Don't ask for release name for NOGROUP releases
+  * release-name: Dates in release names (e.g. "2015-09-25"), are interpreted as
+    episode air dates and used instead of the usual "SxxExx" if that's missing
   * IMDb: Remove "and" from query because searching for "Foo and Bar" doesn't
     find "Foo & Bar"
 
