@@ -20,6 +20,18 @@ def api():
 
 
 @pytest.mark.parametrize(
+    argnames='query, exp_query',
+    argvalues=(
+        (Query('Foo and Bar'), Query('foo bar')),
+        (Query('Foo & Bar'), Query('foo & bar')),
+    ),
+)
+def test_sanitize_query(query, exp_query, api, store_response):
+    return_value = api.sanitize_query(query)
+    assert return_value == exp_query
+
+
+@pytest.mark.parametrize(
     argnames='id, title, title_english, title_original, type, year, cast, countries, directors, genres, summary',
     argvalues=(
         (

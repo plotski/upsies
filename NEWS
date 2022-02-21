@@ -1,3 +1,8 @@
+2022.??.??
+  * IMDb: Remove "and" from query because searching for "Foo and Bar" doesn't
+    find "Foo & Bar"
+
+
 2022.02.08
   * New option: config.torrent-create.reuse_torrent_paths provides a list of
     directories that contain torrent files from which to get piece hashes from

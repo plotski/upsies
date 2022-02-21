@@ -47,6 +47,17 @@ class ImdbApi(WebDbApiBase):
         ReleaseType.episode: 'tv_series,tv_miniseries',
     }
 
+    def sanitize_query(self, query):
+        """
+        Remove ``"and"`` from :attr:`.Query.title` because IMDb doesn't find ``"Foo
+        & Bar"`` if we search for ``"Foo and Bar"``. It's seems to work vice
+        versa, i.e. the query ``"Foo and Bar"`` finds ``"Foo & Bar"``, so we
+        keep any ``"&"``.
+        """
+        query = super().sanitize_query(query)
+        query.title = re.sub(r'\s(?i:and)(\s)', r'\1', query.title)
+        return query
+
     async def search(self, query):
         _log.debug('Searching IMDb for %s', query)
 
