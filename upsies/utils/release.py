@@ -889,8 +889,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
             guess['episodes'] = Episodes.from_string(''.join(string))
 
         # If we got an abbreviated file name (e.g. "group-titles01e02.mkv"),
-        # guessit can't (and shouldn't) handle it. Try to find episode
-        # information in it.
+        # guessit can't handle it. Try to find episode information in it.
         if guess['episodes']:
             episodes_string = str(guess['episodes'])
             if (
