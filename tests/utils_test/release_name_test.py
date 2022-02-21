@@ -356,33 +356,17 @@ def test_year_is_translated(ReleaseInfo_mock):
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
-    argnames='type, year_required, year, exp_year',
+    argnames='year_required, year, exp_year',
     argvalues=(
-        (ReleaseType.movie, False, '1234', '1234'),
-        (ReleaseType.movie, False, '', 'UNKNOWN_YEAR'),
-        (ReleaseType.movie, True, '1234', '1234'),
-        (ReleaseType.movie, True, '', 'UNKNOWN_YEAR'),
-        (ReleaseType.season, False, '1234', '1234'),
-        (ReleaseType.season, False, '', ''),
-        (ReleaseType.season, True, '1234', '1234'),
-        (ReleaseType.season, True, '', 'UNKNOWN_YEAR'),
-        (ReleaseType.episode, False, '1234', '1234'),
-        (ReleaseType.episode, False, '', ''),
-        (ReleaseType.episode, True, '1234', '1234'),
-        (ReleaseType.episode, True, '', 'UNKNOWN_YEAR'),
-        (ReleaseType.unknown, False, '1234', '1234'),
-        (ReleaseType.unknown, False, '', ''),
-        (ReleaseType.unknown, True, '1234', '1234'),
-        (ReleaseType.unknown, True, '', 'UNKNOWN_YEAR'),
+        (False, '', ''),
+        (True, '', 'UNKNOWN_YEAR'),
+        (False, '1234', '1234'),
+        (True, '1234', '1234'),
     ),
 )
-def test_year_required(ReleaseInfo_mock, type, year_required, year, exp_year):
-    ReleaseInfo_mock.return_value = {'year': year, 'type': type}
+def test_year_required(ReleaseInfo_mock, year_required, year, exp_year):
+    ReleaseInfo_mock.return_value = {'year': year}
     rn = ReleaseName('path/to/something')
-    if type is ReleaseType.movie:
-        assert rn.year_required is True
-    else:
-        assert rn.year_required is False
     rn.year_required = year_required
     assert rn.year_required is year_required
     assert rn.year == exp_year

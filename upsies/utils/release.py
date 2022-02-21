@@ -265,12 +265,12 @@ class ReleaseName(collections.abc.Mapping):
     @_translated_property
     def year(self):
         """
-        Release year or "UNKNOWN_YEAR" for movies, empty string for series unless
-        :attr:`year_required` is set
+        Release year or "UNKNOWN_YEAR" if :attr:`year_required` is set, empty string
+        otherwise
 
         See also :meth:`fetch_info`.
         """
-        if self.type is ReleaseType.movie or self.year_required:
+        if self.year_required:
             return self._info.get('year') or 'UNKNOWN_YEAR'
         else:
             return self._info.get('year') or ''
