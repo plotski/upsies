@@ -1,4 +1,5 @@
 2022.??.??
+  * scene-check: Don't ask for release name for NOGROUP releases
   * IMDb: Remove "and" from query because searching for "Foo and Bar" doesn't
     find "Foo & Bar"
 

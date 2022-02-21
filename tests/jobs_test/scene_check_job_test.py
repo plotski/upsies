@@ -84,8 +84,19 @@ async def test_execute(make_SceneCheckJob, mocker):
     assert job._verify.call_args_list == [call()]
 
 
+@pytest.mark.parametrize(
+    argnames='scene_check_result, exp_finalize_called',
+    argvalues=(
+        (SceneCheckResult.false, True),
+        (SceneCheckResult.unknown, False),
+        (SceneCheckResult.true, False),
+    ),
+)
 @pytest.mark.asyncio
-async def test_verify_verifies_release_if_it_is_mixed(make_SceneCheckJob, mocker):
+async def test_verify_finalizes_early_if_not_scene(scene_check_result, exp_finalize_called, make_SceneCheckJob, mocker):
+    is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock(
+        return_value=scene_check_result,
+    ))
     is_mixed_scene_release_mock = mocker.patch('upsies.utils.scene.is_mixed_scene_release', AsyncMock(
         return_value=True,
     ))
@@ -97,10 +108,48 @@ async def test_verify_verifies_release_if_it_is_mixed(make_SceneCheckJob, mocker
     ))
 
     job = make_SceneCheckJob(content_path='path/to/foo')
+    mocker.patch.object(job, 'finalize', Mock())
     ask_release_name = Mock()
     job.signal.register('ask_release_name', ask_release_name)
     await job._verify()
 
+    assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
+    if exp_finalize_called:
+        assert job.finalize.call_args_list == [call(SceneCheckResult.false)]
+        assert is_mixed_scene_release_mock.call_args_list == []
+        assert ask_release_name.call_args_list == []
+        assert search_mock.call_args_list == []
+        assert job._verify_release.call_args_list == []
+    else:
+        assert job.finalize.call_args_list == []
+        assert is_mixed_scene_release_mock.call_args_list == [call('path/to/foo')]
+        assert ask_release_name.call_args_list == []
+        assert search_mock.call_args_list == []
+        assert job._verify_release.call_args_list == [call()]
+
+@pytest.mark.asyncio
+async def test_verify_verifies_release_if_it_is_mixed(make_SceneCheckJob, mocker):
+    is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock(
+        return_value=SceneCheckResult.true,
+    ))
+    is_mixed_scene_release_mock = mocker.patch('upsies.utils.scene.is_mixed_scene_release', AsyncMock(
+        return_value=True,
+    ))
+    search_mock = mocker.patch('upsies.utils.scene.search', AsyncMock(
+        return_value=('first mock release', 'second mock release'),
+    ))
+    mocker.patch('upsies.jobs.scene.SceneCheckJob._verify_release', AsyncMock(
+        return_value=('mock is_scene_release', 'mock exceptions'),
+    ))
+
+    job = make_SceneCheckJob(content_path='path/to/foo')
+    mocker.patch.object(job, 'finalize', Mock())
+    ask_release_name = Mock()
+    job.signal.register('ask_release_name', ask_release_name)
+    await job._verify()
+
+    assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
+    assert job.finalize.call_args_list == []
     assert is_mixed_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert ask_release_name.call_args_list == []
     assert search_mock.call_args_list == []
@@ -108,6 +157,9 @@ async def test_verify_verifies_release_if_it_is_mixed(make_SceneCheckJob, mocker
 
 @pytest.mark.asyncio
 async def test_verify_asks_user_if_there_are_multiple_search_results(make_SceneCheckJob, mocker):
+    is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock(
+        return_value=SceneCheckResult.true,
+    ))
     is_mixed_scene_release_mock = mocker.patch('upsies.utils.scene.is_mixed_scene_release', AsyncMock(
         return_value=False,
     ))
@@ -119,10 +171,13 @@ async def test_verify_asks_user_if_there_are_multiple_search_results(make_SceneC
     ))
 
     job = make_SceneCheckJob(content_path='path/to/foo')
+    mocker.patch.object(job, 'finalize', Mock())
     ask_release_name = Mock()
     job.signal.register('ask_release_name', ask_release_name)
     await job._verify()
 
+    assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
+    assert job.finalize.call_args_list == []
     assert is_mixed_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert ask_release_name.call_args_list == [call(('first mock release', 'second mock release'))]
     assert search_mock.call_args_list == [call('path/to/foo', only_existing_releases=False)]
@@ -130,6 +185,9 @@ async def test_verify_asks_user_if_there_are_multiple_search_results(make_SceneC
 
 @pytest.mark.asyncio
 async def test_verify_verifies_release_if_there_is_one_search_result(make_SceneCheckJob, mocker):
+    is_scene_release_mock = mocker.patch('upsies.utils.scene.is_scene_release', AsyncMock(
+        return_value=SceneCheckResult.true,
+    ))
     is_mixed_scene_release_mock = mocker.patch('upsies.utils.scene.is_mixed_scene_release', AsyncMock(
         return_value=False,
     ))
@@ -141,10 +199,13 @@ async def test_verify_verifies_release_if_there_is_one_search_result(make_SceneC
     ))
 
     job = make_SceneCheckJob(content_path='path/to/foo')
+    mocker.patch.object(job, 'finalize', Mock())
     ask_release_name = Mock()
     job.signal.register('ask_release_name', ask_release_name)
     await job._verify()
 
+    assert is_scene_release_mock.call_args_list == [call('path/to/foo')]
+    assert job.finalize.call_args_list == []
     assert is_mixed_scene_release_mock.call_args_list == [call('path/to/foo')]
     assert ask_release_name.call_args_list == []
     assert search_mock.call_args_list == [call('path/to/foo', only_existing_releases=False)]
