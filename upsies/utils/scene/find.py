@@ -201,7 +201,7 @@ class SceneQuery:
             `(keywords, group)` that returns a sequence of release names
         :param bool only_existing_releases: If this is truthy (the default), the
             results contain all episodes for every season pack in
-            :attr:`keywords`.  Otherwise, fake season pack release names are
+            :attr:`keywords`. Otherwise, fake season pack release names are
             included in the returned results.
         """
         if only_existing_releases is None:
