@@ -912,11 +912,17 @@ class ReleaseInfo(collections.abc.MutableMapping):
         return _guessit.default_api.advanced_config
 
     def _get_type(self):
-        # guessit doesn't differentiate between episodes and season packs.
-        # Check if at least one episode is specified.
-        if self['episodes']:
+        if self['date']:
+            # We interpret a date as an air date, which should mean it's an
+            # episode.
+            return ReleaseType.episode
+
+        elif self['episodes']:
+            # guessit doesn't differentiate between episodes and season packs.
+            # Does any season specify an episode?
             if any(episodes for episodes in self['episodes'].values()):
                 return ReleaseType.episode
+            # No single episode means it's one or more season packs.
             else:
                 return ReleaseType.season
         else:

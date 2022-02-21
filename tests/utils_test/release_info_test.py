@@ -212,6 +212,14 @@ def assert_info(release_name,
      {'type': ReleaseType.episode, 'title': 'The Foo', 'episodes': {'1': ['2']},
       'resolution': '1080p', 'service': 'NF', 'source': 'WEB-DL',
       'audio_codec': 'AAC', 'audio_channels': '2.0', 'video_codec': 'H.264', 'group': 'ASDF'}),
+    ('The Foo 1984-09-23 1080p BluRay DTS x264-ASDF',
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'date': '1984-09-23',
+      'resolution': '1080p', 'source': 'BluRay',
+      'audio_codec': 'DTS', 'video_codec': 'x264', 'group': 'ASDF'}),
+    ('The Foo 23.09.1984 1080p BluRay DTS x264-ASDF',
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'date': '1984-09-23',
+      'resolution': '1080p', 'source': 'BluRay',
+      'audio_codec': 'DTS', 'video_codec': 'x264', 'group': 'ASDF'}),
 ))
 def test_type_and_year_season_and_episode(release_name, expected):
     assert_info(release_name, **expected)
@@ -237,7 +245,7 @@ def test_title_and_year(release_name, expected):
 
 @pytest.mark.parametrize('release_name, expected', (
     ('The Foo 1984-05-25 1080p BluRay DTS-ASDF',
-     {'type': ReleaseType.movie, 'title': 'The Foo', 'date': '1984-05-25',
+     {'type': ReleaseType.episode, 'title': 'The Foo', 'date': '1984-05-25',
       'resolution': '1080p', 'service': '', 'source': 'BluRay',
       'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
 ))
