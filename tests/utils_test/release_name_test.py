@@ -61,7 +61,7 @@ def test_str(ReleaseInfo_mock):
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 def test_len(ReleaseInfo_mock):
     rn = ReleaseName('path/to/something')
-    assert len(rn) == 23
+    assert len(rn) == 24
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
 @pytest.mark.parametrize(
@@ -562,6 +562,43 @@ def test_episode_title_is_translated(ReleaseInfo_mock):
     assert rn.episode_title == 'That Episode'
     rn.episode_title = 'foo'
     assert rn.episode_title == 'foo'
+
+
+@pytest.mark.parametrize(
+    argnames='release_type, date, exp_date',
+    argvalues=(
+        (ReleaseType.unknown, '2000-10-20', ''),
+        (ReleaseType.movie, '2000-10-20', ''),
+        (ReleaseType.season, '2000-10-20', ''),
+        (ReleaseType.episode, '2000-10-20', '2000-10-20'),
+        (ReleaseType.episode, None, ''),
+    ),
+)
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_date_getter(ReleaseInfo_mock, release_type, date, exp_date):
+    ReleaseInfo_mock.return_value = {'type': release_type, 'date': date}
+    assert ReleaseName('path/to/something').date == exp_date
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_date_setter(ReleaseInfo_mock):
+    rn = ReleaseName('path/to/something')
+    rn.type = ReleaseType.episode
+    assert rn.date == ''
+    rn.date = '1234-56-78'
+    assert rn.date == '1234-56-78'
+
+@patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))
+def test_date_is_translated(ReleaseInfo_mock):
+    ReleaseInfo_mock.return_value = {'type': ReleaseType.episode}
+    translation = {
+        'date': {
+            re.compile(r'(\d{4})-(\d{2})-(\d{2})'): r'\3-\2-\1',
+            re.compile(r'-'): r'.',
+        },
+    }
+    rn = ReleaseName('path/to/something', translate=translation)
+    rn.date = '1234-56-78'
+    assert rn.date == '78.56.1234'
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))

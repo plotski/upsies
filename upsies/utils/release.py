@@ -385,6 +385,24 @@ class ReleaseName(collections.abc.Mapping):
         self._info['episode_title'] = str(value)
 
     @_translated_property
+    def date(self):
+        """
+        Date (YYYY-MM-DD)
+
+        For episodes, this should be the air date or an empty string.
+
+        For anything that isn't an episode, this is an empty string.
+        """
+        if self.type is ReleaseType.episode:
+            return self._info.get('date') or ''
+        else:
+            return ''
+
+    @date.setter
+    def date(self, value):
+        self._info['date'] = str(value)
+
+    @_translated_property
     def service(self):
         """Streaming service abbreviation (e.g. "AMZN", "NF") or empty string"""
         return self._info.get('service') or ''
