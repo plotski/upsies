@@ -248,12 +248,12 @@ class ReleaseName(collections.abc.Mapping):
     @_translated_property
     def title_with_aka_and_year(self):
         """
-        Combination of :attr:`title`, :attr:`title_aka` and :attr:`year`
+        Combination of :attr:`title_with_aka` with :attr:`country` and :attr:`year`
+        if appropriate
 
         If :attr:`year_required` is `True`, :attr:`year` is appended.
-        If :attr:`country_required` is `True`, :attr:`country` is appended.
 
-        :attr:`title_aka` is appended if it is truthy.
+        If :attr:`country_required` is `True`, :attr:`country` is appended.
         """
         title = [self.title_with_aka]
         if self.country_required:
