@@ -766,7 +766,10 @@ class ReleaseName(collections.abc.Mapping):
         parts = [self.title_with_aka_and_year]
 
         if self.type in (ReleaseType.season, ReleaseType.episode):
-            parts.append(str(self.episodes))
+            if self.date:
+                parts.append(self.date)
+            else:
+                parts.append(str(self.episodes))
 
         parts.append(self.resolution)
 
