@@ -51,6 +51,13 @@ def is_abbreviated_filename(filepath):
         return False
 
 
+_nogroup_regexs = (
+    re.compile(r'^$'),
+    re.compile(r'^(?i:nogroup)$'),
+    re.compile(r'^(?i:nogrp)$'),
+)
+
+
 @utils.asyncmemoize
 async def is_scene_release(release):
     """
@@ -65,6 +72,16 @@ async def is_scene_release(release):
         release_info = utils.release.ReleaseInfo(release)
     else:
         release_info = release
+
+    # Empty group or names like "NOGROUP" are non-scene
+    if (
+        # Abbreviated file names also have an empty group, but we handle that
+        # after doing a search
+        not is_abbreviated_filename(release_info.path)
+        # Any NOGROUP-equivalent means it's not scene
+        and any(regex.search(release_info['group']) for regex in _nogroup_regexs)
+    ):
+        return SceneCheckResult.false
 
     # NOTE: Simply searching for the group does not work because some scene
     #       groups make non-scene releases and vice versa.

@@ -60,6 +60,22 @@ def test_assert_not_abbreviated_filename_and_is_abbreviated_filename(filename, s
     argnames='release_name, exp_return_value',
     argvalues=(
         pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264.mkv',
+            SceneCheckResult.false,
+            id='Movie: NOGROUP',
+        ),
+        pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-NOGROUP.mkv',
+            SceneCheckResult.false,
+            id='Movie: NOGROUP',
+        ),
+        pytest.param(
+            'Dellamorte.Dellamore.1994.1080p.BluRay.x264-NoGrp.mkv',
+            SceneCheckResult.false,
+            id='Movie: NOGROUP',
+        ),
+
+        pytest.param(
             'Dellamorte.Dellamore.1994.1080p.BluRay.x264-LiViDiTY.mkv',
             SceneCheckResult.true,
             id='Movie: Properly named file',
@@ -206,14 +222,14 @@ async def test_is_scene_release_with_insufficient_needed_keys(mocker):
     mocker.patch('upsies.utils.scene.common.get_needed_keys', Mock(
         return_value=('year', 'resolution'),
     ))
-    assert await verify.is_scene_release('Title.2015-ASDF') is SceneCheckResult.unknown
-    assert await verify.is_scene_release('Title.1080p-ASDF') is SceneCheckResult.unknown
+    assert await verify.is_scene_release('Title.2015.x264-ASDF') is SceneCheckResult.unknown
+    assert await verify.is_scene_release('Title.1080p.x264-ASDF') is SceneCheckResult.unknown
 
 @pytest.mark.asyncio
 async def test_is_scene_release_with_no_needed_keys(mocker):
     mocker.patch('upsies.utils.scene.find.search', AsyncMock(return_value=('a', 'b')))
     mocker.patch('upsies.utils.scene.common.get_needed_keys', Mock(return_value=()))
-    assert await verify.is_scene_release('Some.Release-NAME') is SceneCheckResult.unknown
+    assert await verify.is_scene_release('Some.Release.x264-NAME') is SceneCheckResult.unknown
 
 
 @pytest.mark.parametrize(
