@@ -75,6 +75,7 @@ def test_iter():
         'title',
         'aka',
         'country',
+        'date',
         'year',
         'episodes',
         'episode_title',
@@ -91,7 +92,7 @@ def test_iter():
 
 def test_len():
     ri = release.ReleaseInfo('foo.mkv')
-    assert len(ri) == 16
+    assert len(ri) == 17
 
 
 def test_repr():
@@ -140,7 +141,7 @@ def test_release_name_params_default():
 
 
 def assert_info(release_name,
-                type=ReleaseType.unknown, title='', aka='', country='', year='', episodes={},
+                type=ReleaseType.unknown, title='', aka='', country='', year='', episodes={}, date='',
                 edition=[], resolution='', service='', source='',
                 audio_codec='', audio_channels='', video_codec='', group='', has_commentary=False):
     # Test space- and dot-separated release name
@@ -160,6 +161,7 @@ def assert_info(release_name,
             assert info['aka'] == aka
             assert info['country'] == country
             assert info['year'] == year
+            assert info['date'] == date
             assert info['episodes'] == episodes
             assert info['edition'] == edition
             assert info['resolution'] == resolution
@@ -230,6 +232,16 @@ def test_type_and_year_season_and_episode(release_name, expected):
       'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
 ))
 def test_title_and_year(release_name, expected):
+    assert_info(release_name, **expected)
+
+
+@pytest.mark.parametrize('release_name, expected', (
+    ('The Foo 1984-05-25 1080p BluRay DTS-ASDF',
+     {'type': ReleaseType.movie, 'title': 'The Foo', 'date': '1984-05-25',
+      'resolution': '1080p', 'service': '', 'source': 'BluRay',
+      'audio_codec': 'DTS', 'audio_channels': '', 'group': 'ASDF'}),
+))
+def test_date(release_name, expected):
     assert_info(release_name, **expected)
 
 

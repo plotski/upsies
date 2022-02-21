@@ -793,6 +793,7 @@ class ReleaseInfo(collections.abc.MutableMapping):
       - ``year``
       - ``episodes`` (:class:`~.Episodes` instance)
       - ``episode_title``
+      - ``date``
       - ``edition`` (:class:`list` of "Extended", "Uncut", etc)
       - ``resolution``
       - ``service`` (Streaming service abbreviation)
@@ -1033,6 +1034,9 @@ class ReleaseInfo(collections.abc.MutableMapping):
         'HDR': re.compile(rf'(?:{DELIM}|^)(?i:HDR)(?:[^10\+]|$)'),
     }
     _remastered_regex = re.compile(rf'(?:{DELIM}|^)((?i:4k{DELIM}+|)(?i:remaster(?:ed|)|restored))(?:{DELIM}|$)')
+
+    def _get_date(self):
+        return _as_string(self._guess.get('date', ''))
 
     def _get_edition(self):
         edition = _as_list(self._guess.get('edition'))
