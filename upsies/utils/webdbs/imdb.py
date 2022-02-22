@@ -332,6 +332,7 @@ class ImdbApi(WebDbApiBase):
 
     def _normalize_title(self, title):
         """Return casefolded `title` without punctuation and deduplicated whitespace"""
+        title = title.replace('&', 'and')
         title = unidecode.unidecode(title)
         title = title.translate(self._normalize_title_translation)
         title = title.casefold()

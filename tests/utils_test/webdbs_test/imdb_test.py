@@ -666,6 +666,7 @@ async def test_summary(id, exp_summary, api, store_response):
         ('tt0076759', '', 'Star Wars: Episode IV - A New Hope'),
         ('tt0078243', 'The 36th Chamber of Shaolin', 'Shao Lin san shi liu fang'),
         ('tt0080455', '', 'The Blues Brothers'),
+        ('tt0082242', '', 'Dead & Buried'),
         ('tt0097138', '', 'Cyborg'),
         ('tt0102984', '', 'Stone Cold'),
         ('tt0104684', 'Hard Boiled', 'Lat sau san taam'),
