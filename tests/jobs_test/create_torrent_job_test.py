@@ -372,7 +372,7 @@ def test_CreateTorrentJob_finish(torrent_process, job):
         assert job._torrent_process is None
 
 
-def test_handle_file_tree(job):
+def test_CreateTorrentJob_handle_file_tree(job):
     cb = Mock()
     job.signal.register('file_tree', cb)
     assert cb.call_args_list == []
@@ -380,7 +380,7 @@ def test_handle_file_tree(job):
     assert cb.call_args_list == [call('nested file tree sequence')]
 
 
-def test_handle_info_update(job):
+def test_CreateTorrentJob_handle_info_update_handles_CreateTorrentProgress(job):
     cb = Mock()
     job.signal.register('progress_update', cb)
     job._handle_info_update(CreateTorrentProgress(
@@ -436,13 +436,13 @@ def test_handle_info_update(job):
         ('foo/bar.torrent', ('foo/bar.torrent',),),
     ),
 )
-def test_handle_torrent_created(torrent_path, exp_output, job):
+def test_CreateTorrentJob_handle_torrent_created(torrent_path, exp_output, job):
     assert job.output == ()
     job._handle_torrent_created(torrent_path)
     assert job.output == exp_output
 
 
-def test_handle_error(job, mocker):
+def test_CreateTorrentJob_handle_error(job, mocker):
     mocker.patch.object(job, 'exception')
     mocker.patch.object(job, 'error')
     job._handle_error('message')
