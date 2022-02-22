@@ -148,8 +148,14 @@ class SceneQuery:
         episodes = tuple(episode
                          for episodes in release.get('episodes', {}).values()
                          for episode in episodes)
-        if len(seasons) == 1 and len(episodes) == 1:
-            keywords.append(f'S{int(seasons[0]):02d}E{int(episodes[0]):02d}')
+        if len(seasons) == 1 and len(episodes) == 1 and seasons[0] and episodes[0]:
+            try:
+                season = int(seasons[0])
+                episode = int(episodes[0])
+            except (ValueError, TypeError):
+                pass
+            else:
+                keywords.append(f'S{season:02d}E{episode:02d}')
 
         query = cls(
             *keywords,

@@ -298,11 +298,20 @@ def test_SceneQuery_from_release_separates_group_and_episodes(release, needed_ke
     argnames='episodes, exp_keyword',
     argvalues=(
         ({'1': ('2',)}, 'S01E02'),
+        ({'1': ('2',)}, 'S01E02'),
         ({'1': ('2', '3')}, None),
+        ({}, None),
         ({'1': ()}, None),
         ({'1': ('2',), '3': ()}, None),
         ({'1': ('2',), '3': ('4',)}, None),
+        ({'': ('2',)}, None),
+        ({'': ('2', '3')}, None),
+        ({'': ('2',), '3': ('4',)}, None),
+        ({'foo': ('2',)}, None),
+        ({range(123): ('2',)}, None),
+        ({'1': (range(123),)}, None),
     ),
+    ids=lambda v: str(v),
 )
 def test_SceneQuery_from_release_includes_single_episodes_only(episodes, exp_keyword, mocker):
     mocker.patch('upsies.utils.scene.common.get_needed_keys', return_value=('episodes',))
