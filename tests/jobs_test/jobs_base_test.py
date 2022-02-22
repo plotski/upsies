@@ -681,26 +681,26 @@ def test_cache_file_when_cache_id_is_None(tmp_path, mocker):
 def test_cache_file_when_cache_id_is_falsy(cache_id_value, tmp_path, mocker):
     job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value=cache_id_value))
-    assert job.cache_file == str(tmp_path / f'{job.name}.json')
+    assert job.cache_file == str(tmp_path / f'{job.name}.out')
 
 def test_cache_file_when_cache_id_is_too_long(tmp_path, mocker):
     job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     job._max_filename_len = 20
-    too_long = ''.join(str(n) for n in range(50))
-    mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value=too_long))
-    mocker.patch.object(type(job), '_cache_id_as_string', Mock(return_value=too_long))
-    assert job.cache_file == str(tmp_path / f'{job.name}.0123…4849.json')
+    long_cache_id = ''.join(str(n % 10) for n in range(job._max_filename_len))
+    mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value=long_cache_id))
+    mocker.patch.object(type(job), '_cache_id_as_string', Mock(return_value=long_cache_id))
+    assert job.cache_file == str(tmp_path / f'{job.name}.01234…56789.out')
 
 def test_cache_file_when_cache_id_is_not_too_long(tmp_path, mocker):
     job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value='something'))
-    assert job.cache_file == str(tmp_path / f'{job.name}.something.json')
+    assert job.cache_file == str(tmp_path / f'{job.name}.something.out')
 
 def test_cache_file_masks_illegal_characters(tmp_path, mocker):
     job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value='hey you there'))
     mocker.patch('upsies.utils.fs.sanitize_filename', side_effect=lambda path: path.replace(' ', '#'))
-    assert job.cache_file == str(tmp_path / f'{job.name}.hey#you#there.json')
+    assert job.cache_file == str(tmp_path / f'{job.name}.hey#you#there.out')
 
 
 def test_cache_id(tmp_path):
@@ -753,4 +753,4 @@ def test_cache_id_as_string_normalizes_existing_paths(tmp_path):
 def test_cache_id_as_string_normalizes_multibyte_characters(tmp_path, mocker):
     job = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     mocker.patch.object(type(job), 'cache_id', PropertyMock(return_value='kožušček'))
-    assert job.cache_file == str(tmp_path / f'{job.name}.kozuscek.json')
+    assert job.cache_file == str(tmp_path / f'{job.name}.kozuscek.out')

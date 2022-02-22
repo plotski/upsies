@@ -534,11 +534,11 @@ class JobBase(abc.ABC):
         if cache_id is None:
             return None
         elif not cache_id:
-            filename = f'{self.name}.json'
+            filename = f'{self.name}.out'
         else:
             # Avoid file name being too long. 255 bytes seems common.
             # https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits
-            max_len = self._max_filename_len - len(self.name) - len('..json')
+            max_len = self._max_filename_len - len(self.name) - len('..out')
             cache_id_str = self._cache_id_as_string(cache_id)
             if len(cache_id_str) > max_len:
                 cache_id_str = ''.join((
@@ -546,7 +546,7 @@ class JobBase(abc.ABC):
                     '…',
                     cache_id_str[-int(max_len / 2 - 1):],
                 ))
-            filename = f'{self.name}.{cache_id_str}.json'
+            filename = f'{self.name}.{cache_id_str}.out'
             filename = fs.sanitize_filename(filename)
         return os.path.join(self.cache_directory, filename)
 
