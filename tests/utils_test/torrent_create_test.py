@@ -50,23 +50,27 @@ def test_create_validates_arguments(announce, source, exp_error, mocker, tmp_pat
     argvalues=(
         pytest.param(False, False, None, Mock(is_ready=True), id='a'),
         pytest.param(False, False, None, Mock(is_ready=False), id='b'),
-        pytest.param(False, False, Mock(is_ready=True), None, id='c'),
-        pytest.param(False, False, Mock(is_ready=False), None, id='c'),
+        pytest.param(False, False, False, None, id='c'),
+        pytest.param(False, False, Mock(is_ready=True), None, id='d'),
+        pytest.param(False, False, Mock(is_ready=False), None, id='e'),
 
-        pytest.param(False, True, None, Mock(is_ready=True), id='d'),
-        pytest.param(False, True, None, Mock(is_ready=False), id='e'),
-        pytest.param(False, True, Mock(is_ready=True), None, id='f'),
-        pytest.param(False, True, Mock(is_ready=False), None, id='g'),
+        pytest.param(False, True, None, Mock(is_ready=True), id='f'),
+        pytest.param(False, True, None, Mock(is_ready=False), id='g'),
+        pytest.param(False, True, False, None, id='h'),
+        pytest.param(False, True, Mock(is_ready=True), None, id='i'),
+        pytest.param(False, True, Mock(is_ready=False), None, id='j'),
 
-        pytest.param(True, False, None, Mock(is_ready=True), id=''),
-        pytest.param(True, False, None, Mock(is_ready=False), id=''),
-        pytest.param(True, False, Mock(is_ready=True), None, id=''),
-        pytest.param(True, False, Mock(is_ready=False), None, id=''),
+        pytest.param(True, False, None, Mock(is_ready=True), id='k'),
+        pytest.param(True, False, None, Mock(is_ready=False), id='l'),
+        pytest.param(True, False, False, None, id='m'),
+        pytest.param(True, False, Mock(is_ready=True), None, id='n'),
+        pytest.param(True, False, Mock(is_ready=False), None, id='o'),
 
-        pytest.param(True, True, None, Mock(is_ready=True), id='h'),
-        pytest.param(True, True, None, Mock(is_ready=False), id='i'),
-        pytest.param(True, True, Mock(is_ready=True), None, id='j'),
-        pytest.param(True, True, Mock(is_ready=False), None, id='k'),
+        pytest.param(True, True, None, Mock(is_ready=True), id='p'),
+        pytest.param(True, True, None, Mock(is_ready=False), id='q'),
+        pytest.param(True, True, False, None, id='r'),
+        pytest.param(True, True, Mock(is_ready=True), None, id='s'),
+        pytest.param(True, True, Mock(is_ready=False), None, id='t'),
     ),
 )
 def test_create(overwrite, torrent_exists, cached_torrent, generated_torrent,
@@ -124,7 +128,7 @@ def test_create(overwrite, torrent_exists, cached_torrent, generated_torrent,
             info_callback=info_callback,
         )]
 
-        if not cached_torrent:
+        if cached_torrent is None:
             assert torrent._get_generated_torrent.call_args_list == [call(
                 content_path=content_path,
                 announce=announce,
@@ -292,7 +296,7 @@ def test_get_cached_torrent_when_info_callback_cancels(mocker):
         metadata={'tracker': ('http://localhost:123',), 'source': 'ASDF'},
         info_callback=info_callback,
     )
-    assert t is None
+    assert t is False
     assert Torrent_mock.call_args_list == [call(path='path/to/content', exclude_regexs=exclude)]
     assert get_generic_torrent_path_mock.call_args_list == [
         call(torrent=Torrent_mock.return_value, create_directory=False),

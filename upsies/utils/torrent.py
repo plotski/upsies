@@ -95,7 +95,9 @@ def create(*, content_path, announce, source, torrent_path,
             info_callback=info_callback,
         )
 
-        if not torrent:
+        # `torrent` is `None` if we couldn't find a cached torrent.
+        # `torrent` is `False` if the generation process was cancelled.
+        if torrent is None:
             # Create pieces hashes
             torrent = _get_generated_torrent(
                 content_path=content_path,
@@ -152,7 +154,7 @@ def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, inf
         for torrent_path in fs.file_list(path, extensions=('torrent',)):
             cancelled = info_callback(torrent_path)
             if cancelled:
-                return None
+                return False
             else:
                 torrent = _read_torrent(
                     content_path=content_path,
