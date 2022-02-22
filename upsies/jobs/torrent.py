@@ -5,6 +5,7 @@ Create torrent file
 import fnmatch
 import os
 import queue
+import time
 
 from .. import errors
 from ..utils import btclients, daemon, fs, is_regex_pattern, torrent
@@ -140,6 +141,16 @@ class CreateTorrentJob(base.JobBase):
     def _handle_info_update(self, info):
         if isinstance(info, torrent.CreateTorrentProgress):
             self.signal.emit('progress_update', info)
+        elif isinstance(info, str):
+            # Display current filename as JobBase.info, but because it's very
+            # inefficient to update the terminal for every file name (the actual
+            # scanning process is much faster than the display), we only update
+            # in intervals.
+            now = time.monotonic()
+            prev_info_update = getattr(self, '_prev_info_update', 0)
+            if now - prev_info_update >= 0.5:
+                setattr(self, '_prev_info_update', now)
+                self.info = fs.basename(info)
 
     def _handle_torrent_created(self, torrent_path=None):
         _log.debug('Torrent created: %r', torrent_path)

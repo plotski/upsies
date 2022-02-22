@@ -383,7 +383,7 @@ def test_CreateTorrentJob_handle_file_tree(job):
 def test_CreateTorrentJob_handle_info_update_handles_CreateTorrentProgress(job):
     cb = Mock()
     job.signal.register('progress_update', cb)
-    job._handle_info_update(CreateTorrentProgress(
+    progress = CreateTorrentProgress(
         bytes_per_second='mock bytes_per_second',
         filepath='mock filepath',
         percent_done='mock percent_done',
@@ -396,36 +396,36 @@ def test_CreateTorrentJob_handle_info_update_handles_CreateTorrentProgress(job):
         time_finished='mock time_finished',
         time_started='mock time_started',
         total_size='mock total_size',
-    ))
-    assert cb.call_args_list == [call(CreateTorrentProgress(
-        bytes_per_second='mock bytes_per_second',
-        filepath='mock filepath',
-        percent_done='mock percent_done',
-        piece_size='mock piece_size',
-        pieces_done='mock pieces_done',
-        pieces_total='mock pieces_total',
-        seconds_elapsed='mock seconds_elapsed',
-        seconds_remaining='mock seconds_remaining',
-        seconds_total='mock seconds_total',
-        time_finished='mock time_finished',
-        time_started='mock time_started',
-        total_size='mock total_size',
-    ))]
-    job._handle_info_update('This is a message.')
-    assert cb.call_args_list == [call(CreateTorrentProgress(
-        bytes_per_second='mock bytes_per_second',
-        filepath='mock filepath',
-        percent_done='mock percent_done',
-        piece_size='mock piece_size',
-        pieces_done='mock pieces_done',
-        pieces_total='mock pieces_total',
-        seconds_elapsed='mock seconds_elapsed',
-        seconds_remaining='mock seconds_remaining',
-        seconds_total='mock seconds_total',
-        time_finished='mock time_finished',
-        time_started='mock time_started',
-        total_size='mock total_size',
-    ))]
+    )
+    job._handle_info_update(progress)
+    assert cb.call_args_list == [call(progress)]
+    assert job.info == ''
+
+def test_CreateTorrentJob_handle_info_update_handles_current_filename(job, mocker):
+    cb = Mock()
+    job.signal.register('progress_update', cb)
+
+    mocker.patch('time.monotonic', return_value=100.0)
+    job._handle_info_update('first/path/to/file1.torrent')
+    assert job.info == 'file1.torrent'
+    assert cb.call_args_list == []
+
+    mocker.patch('time.monotonic', return_value=100.01)
+    job._handle_info_update('second/path/to/file2.torrent')
+    assert job.info == 'file1.torrent'
+    assert cb.call_args_list == []
+
+    mocker.patch('time.monotonic', return_value=100.5)
+    job._handle_info_update('third/path/to/file3.torrent')
+    assert job.info == 'file3.torrent'
+    assert cb.call_args_list == []
+
+def test_CreateTorrentJob_handle_info_update_ignores_unknown_types(job, mocker):
+    cb = Mock()
+    job.signal.register('progress_update', cb)
+    job._handle_info_update([1, 2, 3])
+    assert job.info == ''
+    assert cb.call_args_list == []
 
 
 @pytest.mark.parametrize(
