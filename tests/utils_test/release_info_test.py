@@ -284,10 +284,8 @@ edition_samples = (
     ('The Foo 2000 Alternative 1080p BluRay DTS x264-ASDF', {'edition': ['Alternative Cut']}),
     ("The Foo 2000 Collector's Edition 1080p BluRay DTS x264-ASDF", {'edition': ["Collector's Edition"]}),
     ('The Foo 2000 Collector 1080p BluRay DTS x264-ASDF', {'edition': ["Collector's Edition"]}),
-    # TODO: Enable when support was added to guessit:
-    #       https://github.com/guessit-io/guessit/pull/697
-    # ('The Foo 2000 Criterion Collection 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion Collection']}),
-    # ('The Foo 2000 Criterion 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion Collection']}),
+    ('The Foo 2000 Criterion Collection 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion Collection']}),
+    ('The Foo 2000 Criterion 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion Collection']}),
     ('The Foo 2000 CC 1080p BluRay DTS x264-ASDF', {'edition': ['Criterion Collection']}),
     ('The Foo 2000 Deluxe 1080p BluRay DTS x264-ASDF', {'edition': ['Deluxe Edition']}),
     ("The Foo 2000 Director's Cut 1080p BluRay DTS x264-ASDF", {'edition': ["Director's Cut"]}),
