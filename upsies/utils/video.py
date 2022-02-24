@@ -684,7 +684,16 @@ def filter_similar_duration(video_file_paths):
     if len(paths) < 2:
         return paths
     else:
-        durations = {fp: _duration(fp) for fp in video_file_paths}
+        # There is no guarantee that video files have a duration, especially VOB
+        # files can be weird.
+        def maybe_duration(filepath):
+            try:
+                return _duration(filepath)
+            except RuntimeError:
+                return None
+
+        durations = {fp: maybe_duration(fp) for fp in video_file_paths}
+        durations = {fp: duration for fp, duration in durations.items() if duration}
         avg = sum(durations.values()) / len(durations)
         min_duration = avg * 0.5
         return tuple(fp for fp,l in durations.items()

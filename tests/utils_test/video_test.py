@@ -1089,7 +1089,7 @@ def test_filter_similar_duration_gets_multiple_files(mocker):
     durations = {
         'a.mkv': 50,
         'b.mkv': 500,
-        'c.mkv': 20,
+        'c.mkv': RuntimeError('NAY'),
         'd.mkv': 10000,
         'e.mkv': 11000,
         'f.mkv': 0,
