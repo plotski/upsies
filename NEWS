@@ -5,8 +5,8 @@
     episode air dates and used as default value for the usual "SxxExx"
   * IMDb: Remove "and" from query because searching for "Foo and Bar" doesn't
     find "Foo & Bar"
-  * Fix RuntimeError when finding appropriate screenshot source file from a
-    bunch of VOBs where one has no playback length
+  * Improve finding of an appropriate screenshot source file from a VIDEO_TS
+    directory (Thanks, L4G!)
 
 
 2022.02.08
