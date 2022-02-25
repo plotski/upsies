@@ -64,9 +64,9 @@ async def test_handle_input_call_order(make_AddTorrentJob):
 @pytest.mark.asyncio
 async def test_handle_input_complains_about_large_torrent_file(make_AddTorrentJob, tmp_path):
     torrent_file = tmp_path / 'foo.torrent'
-    f = open(torrent_file, 'wb')
-    f.truncate(AddTorrentJob.MAX_TORRENT_SIZE + 1)  # Sparse file
-    f.close()
+    with open(torrent_file, 'wb') as f:
+        f.truncate(AddTorrentJob.MAX_TORRENT_SIZE + 1)  # Sparse file
+
     job = make_AddTorrentJob()
     await job.handle_input(torrent_file)
     assert job.errors == (f'{torrent_file}: File is too large',)

@@ -776,9 +776,8 @@ async def test_verify_release_files(content_path, release_name, file_sizes, exp_
         parent = tmp_path / os.path.dirname(filepath)
         if not parent.exists():
             parent.mkdir(parents=True)
-        f = (tmp_path / filepath).open('wb')
-        f.truncate(filesize)  # Sparse file
-        f.close()
+        with (tmp_path / filepath).open('wb') as f:
+            f.truncate(filesize)  # Sparse file
         assert os.path.getsize(tmp_path / filepath) == filesize
 
     exceptions = await verify.verify_release_files(str(tmp_path / content_path), release_name)

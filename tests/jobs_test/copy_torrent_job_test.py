@@ -63,9 +63,8 @@ async def test_copy_too_large_file(make_CopyTorrentJob, mocker, tmp_path):
     job = make_CopyTorrentJob(destination='foo')
 
     filepath = tmp_path / 'foo.torrent'
-    f = open(filepath, 'wb')
-    f.truncate(CopyTorrentJob.MAX_FILE_SIZE + 1)  # Sparse file
-    f.close()
+    with open(filepath, 'wb') as f:
+        f.truncate(CopyTorrentJob.MAX_FILE_SIZE + 1)  # Sparse file
 
     mocks = Mock()
     job.signal.register('copying', mocks.copying)
