@@ -710,7 +710,10 @@ def filter_similar_duration(video_file_paths):
 
         durations = {fp: maybe_duration(fp) for fp in video_file_paths}
         durations = {fp: duration for fp, duration in durations.items() if duration}
-        avg = sum(durations.values()) / len(durations)
+        if durations:
+            avg = sum(durations.values()) / len(durations)
+        else:
+            avg = 0
         min_duration = avg * 0.5
         return tuple(fp for fp,l in durations.items()
                      if l >= min_duration)

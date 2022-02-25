@@ -1130,6 +1130,23 @@ def test_filter_similar_duration_gets_multiple_files(mocker):
         call('h.mkv'),
     ]
 
+def test_filter_similar_duration_gets_only_crap_files(mocker):
+    durations = {
+        'a.mkv': RuntimeError('A'),
+        'b.mkv': RuntimeError('B'),
+        'c.mkv': RuntimeError('C'),
+    }
+    duration_mock = mocker.patch(
+        'upsies.utils.video._duration',
+        side_effect=tuple(durations.values()),
+    )
+    assert video.filter_similar_duration(tuple(durations.keys())) == ()
+    assert duration_mock.call_args_list == [
+        call('a.mkv'),
+        call('b.mkv'),
+        call('c.mkv'),
+    ]
+
 def test_filter_similar_duration_gets_single_file(mocker):
     duration_mock = mocker.patch('upsies.utils.video._duration', return_value=12345)
     assert video.filter_similar_duration(('foo.mkv',)) == ('foo.mkv',)
