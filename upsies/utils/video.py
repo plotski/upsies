@@ -637,9 +637,25 @@ def first_video(path):
     if os.path.isdir(path) and os.path.isdir(os.path.join(path, 'BDMV')):
         # Blu-ray image; ffmpeg can read that with the "bluray:" protocol
         return str(path)
+
     elif os.path.isdir(path) and os.path.isdir(os.path.join(path, 'VIDEO_TS')):
-        # DVD image; ffmpeg can't read that so we get a list of .VOBs
-        files = fs.file_list(path, extensions=('VOB',))
+        # DVD image; ffmpeg can't read that properly so we get a list of .VOBs,
+        # find the largest set (e.g. VTS_02_*.VOB) and use that. We go by file
+        # size instead of duration because we don't want to pick the VOB that is
+        # 20 hours of black (yes, that happened). The largest files should be
+        # those with the most complexity, i.e. the main feature.
+        vob_sets = collections.defaultdict(lambda: [])
+        for filepath in fs.file_list(path, extensions=('VOB',)):
+            set_name = re.sub(r'^(\w+_\d+)_\d+\.VOB$', r'\1', fs.basename(filepath))
+            vob_sets[set_name].append(filepath)
+
+        # Reverse sort set of VOB files by combined size and pick the first set
+        files = tuple(sorted(
+            vob_sets.values(),
+            key=lambda vobs: sum(fs.file_size(vob) for vob in vobs),
+            reverse=True,
+        )[0])
+
     else:
         files = fs.file_list(path, extensions=constants.VIDEO_FILE_EXTENSIONS)
 
@@ -654,8 +670,8 @@ def first_video(path):
     if not files:
         raise errors.ContentError(f'{path}: No video file found')
     else:
-        # To avoid using samples or very short .VOBs, remove any videos that are
-        # very short compared to the average duration.
+        # To avoid using samples, extras, very short .VOBs (e.g. menus), remove
+        # any videos that are very short compared to the average duration.
         considered_files = filter_similar_duration(files)
         first_file = str(considered_files[0])
         return first_file

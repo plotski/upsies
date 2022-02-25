@@ -1054,34 +1054,47 @@ def test_first_video_gets_bluray_image(tmp_path, mocker):
     assert video.first_video(path) == str(path)
 
 def test_first_video_gets_dvd_image(tmp_path, mocker):
-    file_list_mock = mocker.patch(
-        'upsies.utils.fs.file_list',
-        return_value=(
-            'path/to/VIDEO_TS/VTS_01_0.VOB',
-            'path/to/VIDEO_TS/VTS_01_1.VOB',
-            'path/to/VIDEO_TS/VTS_02_0.VOB',
-            'path/to/VIDEO_TS/VTS_02_1.VOB',
-            'path/to/VIDEO_TS/VTS_02_2.VOB',
-            'path/to/VIDEO_TS/VTS_02_3.VOB',
-        )
-    )
+    content_path = tmp_path / 'The Foo 2000 DVD'
+    files = {
+        content_path / 'VIDEO_TS/VTS_01_0.VOB': 150,
+        content_path / 'VIDEO_TS/VTS_01_1.VOB': 200,
+
+        content_path / 'VIDEO_TS/VTS_02_0.VOB': 100,
+        content_path / 'VIDEO_TS/VTS_02_1.VOB': 20000,
+        content_path / 'VIDEO_TS/VTS_02_2.VOB': 25400,
+        content_path / 'VIDEO_TS/VTS_02_3.VOB': 19900,
+        content_path / 'VIDEO_TS/VTS_02_4.VOB': 400,
+
+        content_path / 'VIDEO_TS/VTS_03_0.VOB': 800,
+        content_path / 'VIDEO_TS/VTS_03_1.VOB': 1500,
+        content_path / 'VIDEO_TS/VTS_03_2.VOB': 900,
+        content_path / 'VIDEO_TS/VTS_03_3.VOB': 1000,
+        content_path / 'VIDEO_TS/VTS_03_4.VOB': 10,
+    }
+    for filepath, filesize in files.items():
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        with filepath.open('wb') as f:
+            f.truncate(filesize)  # Sparse file
+
     filter_similar_duration_mock = mocker.patch(
         'upsies.utils.video.filter_similar_duration',
         return_value=(
-            'path/to/VIDEO_TS/VTS_02_0.VOB',
-            'path/to/VIDEO_TS/VTS_02_1.VOB',
-            'path/to/VIDEO_TS/VTS_02_2.VOB',
-            'path/to/VIDEO_TS/VTS_02_3.VOB',
-        )
+            content_path / 'VIDEO_TS/VTS_02_1.VOB',
+            content_path / 'VIDEO_TS/VTS_02_2.VOB',
+            content_path / 'VIDEO_TS/VTS_02_3.VOB',
+        ),
     )
-    path = tmp_path / 'foo'
-    (path / 'VIDEO_TS').mkdir(parents=True)
-    assert video.first_video(path) == 'path/to/VIDEO_TS/VTS_02_0.VOB'
-    assert file_list_mock.call_args_list == [
-        call(path, extensions=('VOB',)),
-    ]
+
+    assert video.first_video(content_path) == str(content_path / 'VIDEO_TS/VTS_02_1.VOB')
+
     assert filter_similar_duration_mock.call_args_list == [
-        call(file_list_mock.return_value),
+        call((
+            str(content_path / 'VIDEO_TS/VTS_02_0.VOB'),
+            str(content_path / 'VIDEO_TS/VTS_02_1.VOB'),
+            str(content_path / 'VIDEO_TS/VTS_02_2.VOB'),
+            str(content_path / 'VIDEO_TS/VTS_02_3.VOB'),
+            str(content_path / 'VIDEO_TS/VTS_02_4.VOB'),
+        )),
     ]
 
 
