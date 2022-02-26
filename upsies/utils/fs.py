@@ -104,8 +104,6 @@ def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
         else:
             filepaths = get_filepaths(path)
 
-    prune_empty(path, files=True, directories=True)
-
 
 def prune_empty(path, files=False, directories=True):
     """

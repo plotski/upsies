@@ -32,9 +32,17 @@ def application_shutdown(config):
 
     from . import utils
 
+    # Maintain maximum cache size
     utils.fs.limit_directory_size(
         path=config['config']['main']['cache_directory'],
         max_total_size=config['config']['main']['max_cache_size'],
+    )
+
+    # Remove empty files and directories
+    utils.fs.prune_empty(
+        path=config['config']['main']['cache_directory'],
+        files=True,
+        directories=True,
     )
 
     utils.get_aioloop().run_until_complete(utils.http.close())
