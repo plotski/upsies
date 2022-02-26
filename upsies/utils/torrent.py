@@ -122,11 +122,6 @@ def create(*, content_path, announce, source, torrent_path,
 
 
 def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, info_callback):
-    def with_updated_metadata(torrent):
-        for name, value in metadata.items():
-            setattr(torrent, name, value)
-        return torrent
-
     if not reuse_torrent_path:
         reuse_torrent_paths = []
     elif isinstance(reuse_torrent_path, str):
@@ -146,6 +141,11 @@ def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, inf
             torrent=torrent,
             create_directory=False,
         ))
+
+    def with_updated_metadata(torrent):
+        for name, value in metadata.items():
+            setattr(torrent, name, value)
+        return torrent
 
     # Iterate over .torrent files in each path in `reuse_torrent_paths`.
     # If `reuse_torrent_path` is not a directory, it's iterated over by
