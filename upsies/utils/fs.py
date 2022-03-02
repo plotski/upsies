@@ -78,8 +78,12 @@ def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
     :param max_age: Preserve files that are older than this
     :type max_age: Unix timestamp
     """
+    @functools.lru_cache(maxsize=None)
+    def cached_file_size(f):
+        return file_size(f)
+
     def combined_size(filepaths):
-        return sum(file_size(f) for f in filepaths
+        return sum(cached_file_size(f) for f in filepaths
                    if os.path.exists(f) and not os.path.islink(f))
 
     # This should return mtime if file system was mounted with noatime.
