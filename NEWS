@@ -9,6 +9,7 @@
     directory (Thanks, L4G!)
   * download-location: Only try the best matching file in the file system for
     each file in the torrent, not all of them
+  * Clear old cached files more quickly
 
 
 2022.02.08
