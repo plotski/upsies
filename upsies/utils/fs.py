@@ -74,9 +74,9 @@ def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
     :param max_total_size: Maximum combined size of all files in `path` and its
         subdirectories
     :param min_age: Preserve files that are younger than this
-    :type min_age: int or float
+    :type min_age: Unix timestamp
     :param max_age: Preserve files that are older than this
-    :type max_age: int or float
+    :type max_age: Unix timestamp
     """
     def combined_size(filepaths):
         return sum(file_size(f) for f in filepaths
