@@ -84,8 +84,10 @@ def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
 
     # This should return mtime if file system was mounted with noatime.
     def atime(filepath):
-        statinfo = os.stat(filepath, follow_symlinks=False)
-        return statinfo.st_atime
+        try:
+            return os.stat(filepath, follow_symlinks=False).st_atime
+        except OSError:
+            return 0
 
     def get_filepaths(dirpath):
         return file_list(dirpath, min_age=min_age, max_age=max_age, follow_dirlinks=False)
@@ -349,9 +351,13 @@ def file_list(path, extensions=(), min_age=None, max_age=None, follow_dirlinks=F
         return not extensions or file_extension(filename).casefold() in extensions
 
     def age_ok(filepath, now=time.time()):
-        statinfo = os.stat(filepath, follow_symlinks=False)
-        age = round(now - statinfo.st_atime)
-        return (min_age or age) <= age <= (max_age or age)
+        try:
+            statinfo = os.stat(filepath, follow_symlinks=False)
+        except OSError:
+            return False
+        else:
+            age = round(now - statinfo.st_atime)
+            return (min_age or age) <= age <= (max_age or age)
 
     if not path:
         # Handle any false value, e.g. "" or `None`
