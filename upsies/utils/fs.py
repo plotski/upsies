@@ -92,19 +92,20 @@ def limit_directory_size(path, max_total_size, min_age=None, max_age=None):
     def get_filepaths(dirpath):
         return file_list(dirpath, min_age=min_age, max_age=max_age, follow_dirlinks=False)
 
-    # Keep removing oldest file until `path` size is small enough
+    # How much space do we have to free up?
     filepaths = get_filepaths(path)
-    while combined_size(filepaths) > max_total_size:
-        oldest_file = sorted(filepaths, key=atime)[0]
-        try:
-            os.unlink(oldest_file)
-        except OSError as e:
-            if e.strerror:
-                raise RuntimeError(f'{oldest_file}: Failed to prune: {e.strerror}')
-            else:
-                raise RuntimeError(f'{oldest_file}: Failed to prune: {e}')
-        else:
-            filepaths = get_filepaths(path)
+    total_size = combined_size(filepaths)
+    size_diff = total_size - max_total_size
+    if size_diff > 0:
+        # Collect old files until they free up enough space when removed
+        oldest_files = sorted(filepaths, key=atime)
+        files_to_remove = [oldest_files.pop(0)]
+        while combined_size(files_to_remove) < size_diff:
+            files_to_remove.append(oldest_files.pop(0))
+
+        # Actually remove the files
+        for file_to_remove in files_to_remove:
+            os.unlink(file_to_remove)
 
 
 def prune_empty(path, files=False, directories=True):
