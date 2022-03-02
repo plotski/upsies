@@ -10,20 +10,21 @@ class download_location(CommandBase):
     """
     Hard-link existing files as TORRENT expects them and print their location
 
-    Recursively find all files beneath each LOCATION that have the same size as
-    those specified in TORRENT and hash two pieces of each size-matching file to
-    be extra sure.
+    1. Find files from TORRENT in the file system.
 
-    For each file in TORRENT, hard-link the first match to the file path
-    specified in TORRENT, prepending LOCATION to the relative path from the
-    torrent.
+       1.1 Beneath each LOCATION, find a file with the same size as the one
+           specified in TORRENT.
 
-    Print the first LOCATION beneath which a file from TORRENT is found. This is
-    the download path of the TORRENT you should pass to your client when adding
-    the torrent.
+       1.2 Keep the file with the most similar name.
 
-    If no matching files are found, print the location passed to --default or
-    the first LOCATION if there is no --default location.
+       1.3 Hash two pieces to confirm matching file content.
+
+    2. If necessary, create hard links beneath the first LOCATION a matching
+       file was found and print that LOCATION. This is the download path you
+       should pass to your client when adding TORRENT.
+
+       If no matching files are found, print the location passed to --default or
+       the first LOCATION if there is no --default.
     """
 
     names = ('download-location', 'dloc')

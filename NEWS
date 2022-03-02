@@ -7,6 +7,8 @@
     find "Foo & Bar"
   * Improve finding of an appropriate screenshot source file from a VIDEO_TS
     directory (Thanks, L4G!)
+  * download-location: Only try the best matching file in the file system for
+    each file in the torrent, not all of them
 
 
 2022.02.08

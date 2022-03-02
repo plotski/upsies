@@ -3,6 +3,7 @@ Find download path for a torrent, hardlinking existing files
 """
 
 import collections
+import difflib
 import functools
 import os
 
@@ -137,21 +138,47 @@ class DownloadLocationJob(JobBase):
         # Map relative file paths expected by torrent to lists of files that
         # have the same size. A candidate is a dictionary that stores relevant
         # paths (see below).
-        size_matching_files = collections.defaultdict(lambda: [])
+        file_candidates = collections.defaultdict(lambda: [])
         torrent_files = tuple(self._torrent.files)
         for filepath, location in self._each_file(*self._locations):
             for file in torrent_files:
                 if self._is_size_match(file, filepath):
-                    _log.debug('Size match for %r: %r', file, filepath)
-                    #     file: Relative path within torrent
-                    # location: Download path to give to the BitTorrent client
-                    #           along with the torrent file
-                    # filepath: Existing file path with same size as `file`
-                    size_matching_files[file].append({
+                    #         file: torf.File object (relative file path in torrent)
+                    #     location: Download path to pass to the BitTorrent
+                    #               client along with the torrent file
+                    #     filepath: Existing file path with same size as `file`
+                    # filepath_rel: `filepath` without `location`
+                    #               (`location` / `filepath` is the same as `filepath`)
+                    #   similarity: How close `file` is to `filepath_rel` as
+                    #               float from 0.0 to 1.0
+
+                    def get_similarity(filepath_fs, filepath_torrent=str(file)):
+                        return self._get_path_similarity(filepath_fs, filepath_torrent)
+
+                    filepath_rel = filepath[len(location):].lstrip(os.sep)
+                    file_candidates[file].append({
                         'location': location,
                         'filepath': filepath,
+                        'filepath_rel': filepath_rel,
+                        'similarity': get_similarity(filepath_rel),
                     })
-        return size_matching_files
+
+        # Sort size-matching files by file path similarity
+        for file in file_candidates:
+            file_candidates[file].sort(key=lambda c: c['similarity'], reverse=True)
+
+            _log.debug('Size match: %r', file)
+            for cand in file_candidates[file]:
+                _log.debug('  %.2f: %s', cand['similarity'], cand['filepath'])
+
+            # Keep only the best match
+            del file_candidates[file][1:]
+
+        return file_candidates
+
+    @staticmethod
+    def _get_path_similarity(a, b, _is_junk=lambda x: x in '. -/'):
+        return difflib.SequenceMatcher(_is_junk, a, b, autojunk=False).ratio()
 
     def _each_file(self, *paths):
         # Yield (filepath, path) tuples where the first item is a file (more

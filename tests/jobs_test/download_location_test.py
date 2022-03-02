@@ -255,29 +255,44 @@ def test_DownloadLocationJob_get_file_candidates(mocker, tmp_path):
         ),
     )
     mocker.patch.object(dlj, '_torrent', Mock(files=(
-        MockFile('foo/1', size=1),
-        MockFile('foo/bar/2', size=2),
-        MockFile('foo/baz/3', size=3),
-        MockFile('foo/4', size=4),
+        # Same path
+        MockFile('a/a1', size=1),
+        # Same path, different file name
+        MockFile('a/b/ab.2', size=2),
+        # Different path, different file name
+        MockFile('c/d/c3', size=3),
+        # No matches
+        MockFile('foo/bar0', size=0),
+        MockFile('foo/baz4', size=4),
     )))
 
-    assert dlj._get_file_candidates() == {
-        str('foo/1'): [
-            {'filepath': str(tmp_path / 'a' / 'a1'), 'location': str(tmp_path / 'a')},
-            {'filepath': str(tmp_path / 'a' / 'b' / 'ab1'), 'location': str(tmp_path / 'a')},
-            {'filepath': str(tmp_path / 'c' / 'c1'), 'location': str(tmp_path / 'c')},
+    exp_file_candidates = {
+        str('a/a1'): [
+            {'location': str(tmp_path / 'a'), 'filepath': str(tmp_path / 'a/a1'),
+             'filepath_rel': 'a1', 'similarity': 0.6666666666666666},
         ],
-        str('foo/bar/2'): [
-            {'filepath': str(tmp_path / 'a' / 'a2'), 'location': str(tmp_path / 'a')},
-            {'filepath': str(tmp_path / 'a' / 'b' / 'ab2'), 'location': str(tmp_path / 'a')},
-            {'filepath': str(tmp_path / 'c' / 'c2'), 'location': str(tmp_path / 'c')},
+        str('a/b/ab.2'): [
+            {'location': str(tmp_path / 'a'), 'filepath': str(tmp_path / 'a/b/ab2'),
+             'filepath_rel': 'b/ab2', 'similarity': 0.7692307692307693},
         ],
-        str('foo/baz/3'): [
-            {'filepath': str(tmp_path / 'a' / 'a3'), 'location': str(tmp_path / 'a')},
-            {'filepath': str(tmp_path / 'a' / 'b' / 'ab3'), 'location': str(tmp_path / 'a')},
-            {'filepath': str(tmp_path / 'c' / 'c3'), 'location': str(tmp_path / 'c')},
+        str('c/d/c3'): [
+            {'location': str(tmp_path / 'c'), 'filepath': str(tmp_path / 'c/c3'),
+             'filepath_rel': 'c3', 'similarity': 0.5},
         ],
     }
+    file_candidates = dlj._get_file_candidates()
+
+    # for file, cands in file_candidates.items():
+    #     print(file)
+    #     for c in cands:
+    #         print('  ', c)
+    # print('--------------')
+    # for file, cands in exp_file_candidates.items():
+    #     print(file)
+    #     for c in cands:
+    #         print('  ', c)
+
+    assert file_candidates == exp_file_candidates
 
 
 def test_DownloadLocationJob_each_file(tmp_path):
