@@ -159,19 +159,23 @@ class NblTracker(base.TrackerBase):
         if self.options.get('announce_url'):
             return self.options['announce_url']
         else:
-            url = urllib.parse.urljoin(
-                self.options['base_url'],
-                self._url_path['upload'],
-            )
-            _log.debug('%s: Getting announce URL from %s', self.name, url)
-            response = await http.get(url, cache=False, user_agent=True)
-            doc = html.parse(response)
-            announce_url_tag = doc.find('input', value=re.compile(r'^https?://.*/announce$'))
-            if announce_url_tag:
-                return announce_url_tag['value']
-            else:
-                cmd = f'{__project_name__} set trackers.{self.name}.announce_url <YOUR URL>'
-                raise errors.RequestError(f'Failed to find announce URL - set it manually: {cmd}')
+            await self.login()
+            try:
+                url = urllib.parse.urljoin(
+                    self.options['base_url'],
+                    self._url_path['upload'],
+                )
+                _log.debug('%s: Getting announce URL from %s', self.name, url)
+                response = await http.get(url, cache=False, user_agent=True)
+                doc = html.parse(response)
+                announce_url_tag = doc.find('input', value=re.compile(r'^https?://.*/announce$'))
+                if announce_url_tag:
+                    return announce_url_tag['value']
+                else:
+                    cmd = f'{__project_name__} set trackers.{self.name}.announce_url <YOUR URL>'
+                    raise errors.RequestError(f'Failed to find announce URL - set it manually: {cmd}')
+            finally:
+                await self.logout()
 
     async def upload(self, tracker_jobs):
         if not self.is_logged_in:

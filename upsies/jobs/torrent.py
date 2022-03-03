@@ -94,7 +94,6 @@ class CreateTorrentJob(base.JobBase):
         self.info = 'Getting announce URL'
         self.signal.emit('announce_url', Ellipsis)
         try:
-            await self._tracker.login()
             announce_url = await self._tracker.get_announce_url()
         except errors.RequestError as e:
             self.error(e)
@@ -103,10 +102,6 @@ class CreateTorrentJob(base.JobBase):
             return announce_url
         finally:
             self.info = ''
-            try:
-                await self._tracker.logout()
-            except errors.RequestError as e:
-                self.warn(e)
 
     def _start_torrent_creation_process(self, announce_url):
         self._torrent_process = daemon.DaemonProcess(

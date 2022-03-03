@@ -372,47 +372,74 @@ async def test_logout(auth_token, mocker):
 
 @pytest.mark.asyncio
 async def test_get_announce_url_from_options(mocker):
-    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(
-        return_value='you should never get this response',
-    ))
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     tracker = BbTracker(options={'base_url': 'http://bb.local',
                                  'announce_url': 'https://bb.local:123/d34db33f/announce'})
+
+    mocks = AsyncMock(
+        get=mocker.patch('upsies.utils.http.get', AsyncMock(
+            return_value='you should never get this response',
+        )),
+        post=mocker.patch('upsies.utils.http.post', AsyncMock()),
+        login=AsyncMock(),
+        logout=AsyncMock(),
+    )
+    mocker.patch.object(tracker, 'login', mocks.login)
+    mocker.patch.object(tracker, 'logout', mocks.logout)
+
     announce_url = await tracker.get_announce_url()
     assert announce_url == 'https://bb.local:123/d34db33f/announce'
-    assert get_mock.call_args_list == []
-    assert post_mock.call_args_list == []
+    assert mocks.mock_calls == []
 
 @pytest.mark.asyncio
 async def test_get_announce_url_succeeds(mocker):
-    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(
-        return_value='''
-        <html>
-            <input type="text" value="https://bb.local:123/d34db33f/announce">
-        </html>
-    ''',
-    ))
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     tracker = BbTracker(options={'base_url': 'http://bb.local'})
+
+    mocks = AsyncMock(
+        get=mocker.patch('upsies.utils.http.get', AsyncMock(
+            return_value='''
+            <html>
+                <input type="text" value="https://bb.local:123/l33tb34f/announce">
+            </html>
+            ''',
+        )),
+        post=mocker.patch('upsies.utils.http.post', AsyncMock()),
+        login=AsyncMock(),
+        logout=AsyncMock(),
+    )
+    mocker.patch.object(tracker, 'login', mocks.login)
+    mocker.patch.object(tracker, 'logout', mocks.logout)
+
     announce_url = await tracker.get_announce_url()
-    assert announce_url == 'https://bb.local:123/d34db33f/announce'
-    assert get_mock.call_args_list == [
-        call('http://bb.local' + BbTracker._url_path['upload'], cache=False, user_agent=True),
+    assert announce_url == 'https://bb.local:123/l33tb34f/announce'
+    assert mocks.mock_calls == [
+        call.login(),
+        call.get('http://bb.local' + BbTracker._url_path['upload'], cache=False, user_agent=True),
+        call.logout(),
     ]
-    assert post_mock.call_args_list == []
 
 @pytest.mark.asyncio
 async def test_get_announce_url_fails(mocker):
-    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(return_value='<html>foo</html> '))
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     tracker = BbTracker(options={'base_url': 'http://bb.local'})
+
+    mocks = AsyncMock(
+        get=mocker.patch('upsies.utils.http.get', AsyncMock(
+            return_value='<html>foo</html>',
+        )),
+        post=mocker.patch('upsies.utils.http.post', AsyncMock()),
+        login=AsyncMock(),
+        logout=AsyncMock(),
+    )
+    mocker.patch.object(tracker, 'login', mocks.login)
+    mocker.patch.object(tracker, 'logout', mocks.logout)
+
     exp_cmd = f'{__project_name__} set trackers.{tracker.name}.announce_url <YOUR URL>'
     with pytest.raises(errors.RequestError, match=rf'^Failed to find announce URL - set it manually: {exp_cmd}$'):
         await tracker.get_announce_url()
-    assert get_mock.call_args_list == [
-        call('http://bb.local' + BbTracker._url_path['upload'], cache=False, user_agent=True),
+    assert mocks.mock_calls == [
+        call.login(),
+        call.get('http://bb.local' + BbTracker._url_path['upload'], cache=False, user_agent=True),
+        call.logout(),
     ]
-    assert post_mock.call_args_list == []
 
 
 @pytest.mark.asyncio
