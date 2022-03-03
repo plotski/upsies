@@ -10,6 +10,8 @@
   * download-location: Only try the best matching file in the file system for
     each file in the torrent, not all of them
   * Clear old cached files more quickly
+  * New options trackers.bb.announce_url and trackers.nbl.announce_url for
+    manually setting your announce URL
 
 
 2022.02.08
