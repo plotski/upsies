@@ -7,7 +7,7 @@ import base64
 import re
 import urllib
 
-from .. import errors, jobs
+from .. import __project_name__, errors, jobs
 from ..utils import cached_property, html, http, release
 from . import base
 
@@ -17,11 +17,12 @@ _log = logging.getLogger(__name__)
 
 class NblTrackerConfig(base.TrackerConfigBase):
     defaults = {
-        'base_url'   : base64.b64decode('aHR0cHM6Ly9uZWJ1bGFuY2UuaW8=').decode('ascii'),
-        'username'   : '',
-        'password'   : '',
-        'exclude'    : [],
-        'source'     : 'NBL',
+        'base_url'     : base64.b64decode('aHR0cHM6Ly9uZWJ1bGFuY2UuaW8=').decode('ascii'),
+        'username'     : '',
+        'password'     : '',
+        'exclude'      : [],
+        'source'       : 'NBL',
+        'announce_url' : '',
     }
 
     argument_definitions = {
@@ -155,17 +156,22 @@ class NblTracker(base.TrackerBase):
             await http.get(logout_url, user_agent=True)
 
     async def get_announce_url(self):
-        url = urllib.parse.urljoin(
-            self.options['base_url'],
-            self._url_path['upload'],
-        )
-        _log.debug('%s: Getting announce URL from %s', self.name, url)
-        response = await http.get(url, cache=False, user_agent=True)
-        doc = html.parse(response)
-        announce_url_tag = doc.find('input', value=re.compile(r'^https?://.*/announce$'))
-        if announce_url_tag:
-            _log.debug('%s: Announce URL: %s', self.name, announce_url_tag['value'])
-            return announce_url_tag['value']
+        if self.options.get('announce_url'):
+            return self.options['announce_url']
+        else:
+            url = urllib.parse.urljoin(
+                self.options['base_url'],
+                self._url_path['upload'],
+            )
+            _log.debug('%s: Getting announce URL from %s', self.name, url)
+            response = await http.get(url, cache=False, user_agent=True)
+            doc = html.parse(response)
+            announce_url_tag = doc.find('input', value=re.compile(r'^https?://.*/announce$'))
+            if announce_url_tag:
+                return announce_url_tag['value']
+            else:
+                cmd = f'{__project_name__} set trackers.{self.name}.announce_url <YOUR URL>'
+                raise errors.RequestError(f'Failed to find announce URL - set it manually: {cmd}')
 
     async def upload(self, tracker_jobs):
         if not self.is_logged_in:
