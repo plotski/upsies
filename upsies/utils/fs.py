@@ -13,7 +13,6 @@ from . import LazyModule, os_family, types
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
-tempfile = LazyModule(module='tempfile', namespace=globals())
 natsort = LazyModule(module='natsort', namespace=globals())
 
 
