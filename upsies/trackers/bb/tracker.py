@@ -6,7 +6,7 @@ import asyncio
 import re
 import urllib
 
-from ... import errors
+from ... import __project_name__, errors
 from ...utils import html, http
 from ..base import TrackerBase
 from .config import BbTrackerConfig
@@ -128,18 +128,22 @@ class BbTracker(TrackerBase):
             await http.get(url=logout_url, params=params, user_agent=True)
 
     async def get_announce_url(self):
-        url = urllib.parse.urljoin(
-            self.options['base_url'],
-            self._url_path['upload'],
-        )
-        _log.debug('%s: Getting announce URL from %s', self.name, url)
-        response = await http.get(url, cache=False, user_agent=True)
-        doc = html.parse(response)
-        announce_url_tag = doc.find('input', value=re.compile(r'^https?://.*/announce$'))
-        if announce_url_tag:
-            return announce_url_tag['value']
+        if self.options.get('announce_url'):
+            return self.options['announce_url']
         else:
-            _log.debug('%s: Failed to find announce URL', self.name)
+            url = urllib.parse.urljoin(
+                self.options['base_url'],
+                self._url_path['upload'],
+            )
+            _log.debug('%s: Getting announce URL from %s', self.name, url)
+            response = await http.get(url, cache=False, user_agent=True)
+            doc = html.parse(response)
+            announce_url_tag = doc.find('input', value=re.compile(r'^https?://.*/announce$'))
+            if announce_url_tag:
+                return announce_url_tag['value']
+            else:
+                cmd = f'{__project_name__} set trackers.{self.name}.announce_url <YOUR URL>'
+                raise errors.RequestError(f'Failed to find announce URL - set it manually: {cmd}')
 
     async def upload(self, tracker_jobs):
         _log.debug('Uploading %r', tracker_jobs.post_data)

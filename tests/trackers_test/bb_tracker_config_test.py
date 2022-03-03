@@ -9,15 +9,16 @@ from upsies.utils import imghosts
 
 def test_defaults():
     assert BbTrackerConfig() == {
-        'base_url'    : base64.b64decode('aHR0cHM6Ly9iYWNvbmJpdHMub3Jn').decode('ascii'),
-        'username'    : '',
-        'password'    : '',
-        'source'      : 'bB',
-        'image_host'  : 'imgbox',
-        'screenshots' : 2,
-        'add_to'      : '',
-        'copy_to'     : '',
-        'exclude'     : [
+        'base_url'     : base64.b64decode('aHR0cHM6Ly9iYWNvbmJpdHMub3Jn').decode('ascii'),
+        'username'     : '',
+        'password'     : '',
+        'source'       : 'bB',
+        'announce_url' : '',
+        'image_host'   : 'imgbox',
+        'screenshots'  : 2,
+        'add_to'       : '',
+        'copy_to'      : '',
+        'exclude'      : [
             r'\.(?i:nfo|txt|jpg|jpeg|png|sfv|md5)$',
             r'/(?i:sample|extra|bonus|feature)',
             r'(?i:sample\.[a-z]+)$',

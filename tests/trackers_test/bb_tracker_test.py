@@ -4,7 +4,7 @@ from unittest.mock import Mock, call
 import bs4
 import pytest
 
-from upsies import errors
+from upsies import __project_name__, errors
 from upsies.trackers.bb import BbTracker, BbTrackerConfig, BbTrackerJobs
 from upsies.utils.http import Result
 
@@ -371,6 +371,19 @@ async def test_logout(auth_token, mocker):
 
 
 @pytest.mark.asyncio
+async def test_get_announce_url_from_options(mocker):
+    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(
+        return_value='you should never get this response',
+    ))
+    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
+    tracker = BbTracker(options={'base_url': 'http://bb.local',
+                                 'announce_url': 'https://bb.local:123/d34db33f/announce'})
+    announce_url = await tracker.get_announce_url()
+    assert announce_url == 'https://bb.local:123/d34db33f/announce'
+    assert get_mock.call_args_list == []
+    assert post_mock.call_args_list == []
+
+@pytest.mark.asyncio
 async def test_get_announce_url_succeeds(mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(
         return_value='''
@@ -393,7 +406,9 @@ async def test_get_announce_url_fails(mocker):
     get_mock = mocker.patch('upsies.utils.http.get', AsyncMock(return_value='<html>foo</html> '))
     post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
     tracker = BbTracker(options={'base_url': 'http://bb.local'})
-    assert await tracker.get_announce_url() is None
+    exp_cmd = f'{__project_name__} set trackers.{tracker.name}.announce_url <YOUR URL>'
+    with pytest.raises(errors.RequestError, match=rf'^Failed to find announce URL - set it manually: {exp_cmd}$'):
+        await tracker.get_announce_url()
     assert get_mock.call_args_list == [
         call('http://bb.local' + BbTracker._url_path['upload'], cache=False, user_agent=True),
     ]

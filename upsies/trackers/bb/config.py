@@ -13,6 +13,10 @@ class BbTrackerConfig(TrackerConfigBase):
         'base_url': base64.b64decode('aHR0cHM6Ly9iYWNvbmJpdHMub3Jn').decode('ascii'),
         'username': '',
         'password': '',
+        'announce_url': configfiles.config_value(
+            value='',
+            description='Your personal announce URL. This is usually fetched automatically on demand.',
+        ),
         'source': 'bB',
         'image_host': types.Choice('imgbox', options=(imghost.name for imghost in imghosts.imghosts())),
         'screenshots': configfiles.config_value(
