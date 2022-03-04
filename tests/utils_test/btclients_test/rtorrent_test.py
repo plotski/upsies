@@ -1,11 +1,10 @@
 import copy
-import http
 import os
+import re
 import types
-import urllib
-import xmlrpc
 from unittest.mock import Mock, PropertyMock, call, patch
 
+import aiobtclientrpc
 import pytest
 
 from upsies import errors
@@ -23,85 +22,30 @@ def test_name():
     assert rtorrent.RtorrentClientApi.name == 'rtorrent'
 
 
-def test_proxy_with_empty_url(mocker):
-    client = rtorrent.RtorrentClientApi()
-    mocker.patch.object(type(client), 'config', PropertyMock(return_value={'url': ''}))
-    with pytest.raises(errors.RequestError, match=r'^No URL provided$'):
-        client._proxy
-
-@pytest.mark.parametrize(
-    argnames='url, exp_uri, exp_transport, exp_socket_path',
-    argvalues=(
-        ('HTTP://localhost:5000/', 'http://localhost:5000/', None, None),
-        ('scgi://localhost:5000/', 'http://localhost:5000/', 'ScgiTransport', None),
-        ('scgi:///path/to/socket', 'http://1', 'ScgiTransport', '/path/to/socket'),
-        ('SCGI://path/to/socket', 'http://1', 'ScgiTransport', 'path/to/socket'),
-    ),
-    ids=lambda v: str(v),
-)
-def test_proxy_returns_ServerProxy_object(url, exp_uri, exp_transport, exp_socket_path, mocker):
-    client = rtorrent.RtorrentClientApi()
-    mocker.patch.object(type(client), 'config', PropertyMock(return_value={'url': url}))
-    ScgiTransport_mock = mocker.patch('upsies.utils.btclients.rtorrent._scgi.ScgiTransport')
-    ServerProxy_mock = mocker.patch('xmlrpc.client.ServerProxy')
-    proxy = client._proxy
-
-    if exp_transport == 'ScgiTransport':
-        if exp_socket_path:
-            assert ScgiTransport_mock.call_args_list == [call(socket_path=exp_socket_path)]
-            exp_serverproxy_kwargs = {
-                'uri': 'http://1',
-                'transport': ScgiTransport_mock.return_value,
-            }
-        else:
-            assert ScgiTransport_mock.call_args_list == [call()]
-            exp_serverproxy_kwargs = {
-                'uri': 'http://' + urllib.parse.urlsplit(url).netloc,
-                'transport': ScgiTransport_mock.return_value,
-            }
-    else:
-        assert ScgiTransport_mock.call_args_list == []
-        exp_serverproxy_kwargs = {
-            'uri': url,
-        }
-
-    assert ServerProxy_mock.call_args_list == [call(**exp_serverproxy_kwargs)]
-    # Test if client._proxy is singleton
-    assert client._proxy is proxy
+def test_label():
+    assert rtorrent.RtorrentClientApi.label == 'rTorrent'
 
 
-def test_request_succeeds():
-    client = rtorrent.RtorrentClientApi()
-    client._proxy = Mock()
-    return_value = client._request('foo.bar.baz', 'a', 'b', 'c')
-    assert client._proxy.foo.bar.baz.call_args_list == [call('a', 'b', 'c')]
-    assert return_value == client._proxy.foo.bar.baz.return_value
-
-@pytest.mark.parametrize(
-    argnames='exception',
-    argvalues=(
-        http.client.HTTPException('nope'),
-        xmlrpc.client.ProtocolError('host:8080', 123, 'nope', {'foo': 'bar'}),
-        OSError('nope'),
-        OSError(123, 'nope'),
-    ),
-    ids=lambda v: str(v),
-)
-def test_request_fails(exception):
-    client = rtorrent.RtorrentClientApi()
-    client._proxy = Mock()
-    client._proxy.foo.bar.baz.side_effect = exception
-    with pytest.raises(errors.RequestError, match=r'^nope$'):
-        client._request('foo.bar.baz', 'a', 'b', 'c')
-    assert client._proxy.foo.bar.baz.call_args_list == [call('a', 'b', 'c')]
+def test_default_config():
+    assert rtorrent.RtorrentClientApi.default_config == {
+        'url': 'scgi://localhost:5000',
+        'username': '',
+        'password': '',
+        'check_after_add': False,
+    }
 
 
-def test_get_torrent_hashes(mocker):
-    client = rtorrent.RtorrentClientApi()
-    mocker.patch.object(client, '_request', return_value=['D34D', 'B33F'])
-    hashes = client._get_torrent_hashes()
-    assert hashes == ('d34d', 'b33f')
-    assert client._request.call_args_list == [call('download_list')]
+def test_rpc(mocker):
+    RtorrentRPC_mock = mocker.patch('aiobtclientrpc.RtorrentRPC', Mock())
+    api = rtorrent.RtorrentClientApi()
+    rpc = api._rpc
+    assert rpc is RtorrentRPC_mock.return_value
+    assert RtorrentRPC_mock.call_args_list == [call(
+        url=api.config['url'],
+        username=api.config['username'],
+        password=api.config['password'],
+    )]
+    assert rpc is api._rpc  # Singleton property
 
 
 @pytest.mark.parametrize(
@@ -109,102 +53,186 @@ def test_get_torrent_hashes(mocker):
     argvalues=(
         (None, None),
         ('', None),
-        ('path/to/downloads/', 'd.directory.set="{escaped_absolute_download_path}"'),
-        ('path/to/"down"loads/', r'd.directory.set="{escaped_absolute_download_path}"'),
+        ('/"absolute"/path', r'd.directory.set="/\"absolute\"/path"'),
+        ('"relative"/path/', r'd.directory.set="{cwd}/\"relative\"/path"'),
+
     ),
 )
 @pytest.mark.asyncio
-async def test_add_torrent_succeeds(download_path, exp_directory_set, mocker):
+async def test_add_torrent(download_path, exp_directory_set, mocker):
+    torrent_path = 'file.torrent'
     client = rtorrent.RtorrentClientApi()
-    mocker.patch.object(client, '_get_load_command', AsyncMock(return_value='load.raw_start_verbose'))
-    mocker.patch.object(client, '_get_torrent_data', return_value='mock torrent data')
-    mocker.patch.object(client, 'read_torrent', return_value=Mock(infohash='D34DB33F'))
-    mocker.patch.object(client, '_request')
-    mocker.patch.object(client, '_get_torrent_hashes', side_effect=[
-        ['C0FF33', 'B4B3'],
-        ['C0FF33', 'B4B3'],
-        ['C0FF33', 'B4B3', 'D34DB33F'],
-    ])
-    mocker.patch.object(type(client), 'add_torrent_check_delay', 0)
+    mocker.patch.object(client, '_get_torrent_data', return_value='torrent data')
+    mocker.patch.object(client, 'read_torrent', return_value=Mock(infohash='d34db33f'))
+    mocker.patch.object(client._rpc, 'call', AsyncMock())
+    mocker.patch.object(client, '_get_load_command', AsyncMock())
+    mocker.patch.object(client, '_wait_for_added_torrent', AsyncMock())
 
-    torrent_path = 'path/to/file.torrent'
-    torrent_path_abs = os.path.abspath(torrent_path)
-    download_path_abs = os.path.abspath(download_path) if download_path else download_path
-    await client.add_torrent(torrent_path, download_path=download_path)
-
-    assert client._get_torrent_data.call_args_list == [call(torrent_path_abs, download_path_abs)]
-    exp_request_args = ['', 'mock torrent data']
+    exp_args = ['', client._get_torrent_data.return_value]
     if exp_directory_set:
-        exp_request_args.append(exp_directory_set.format(
-            escaped_absolute_download_path=download_path_abs.replace('"', r'\"'),
-        ))
-    assert client._request.call_args_list == [call('load.raw_start_verbose', *exp_request_args)]
-    assert client.read_torrent.call_args_list == [call(torrent_path_abs)]
-    assert client._get_torrent_hashes.call_args_list == [call(), call(), call()]
+        exp_args.append(exp_directory_set.format(cwd=os.getcwd()))
+
+    return_value = await client.add_torrent(torrent_path, download_path)
+    assert return_value == 'd34db33f'
+    if download_path:
+        assert client._get_torrent_data.call_args_list == [call(os.path.abspath(torrent_path),
+                                                                os.path.abspath(download_path))]
+    else:
+        assert client._get_torrent_data.call_args_list == [call(os.path.abspath(torrent_path),
+                                                                download_path)]
+    assert client.read_torrent.call_args_list == [call(os.path.abspath(torrent_path))]
+    assert client._get_load_command.call_args_list == [call()]
+    assert client._rpc.call.call_args_list == [call(client._get_load_command.return_value, *exp_args)]
+    assert client._wait_for_added_torrent.call_args_list == [call('d34db33f')]
 
 @pytest.mark.asyncio
-async def test_add_torrent_fails_to_get_torrent_data(mocker):
+async def test_add_torrent_catches_torrent_error_from_getting_torrent_data(mocker):
+    torrent_path = 'file.torrent'
     client = rtorrent.RtorrentClientApi()
-    mocker.patch.object(client, '_get_torrent_data', side_effect=errors.TorrentError('no'))
-    mocker.patch.object(client, 'read_torrent')
-    mocker.patch.object(client, '_request')
-    mocker.patch.object(client, '_get_torrent_hashes', return_value=[])
-    mocker.patch.object(type(client), 'add_torrent_check_delay', 0)
+    mocker.patch.object(client, '_get_torrent_data', side_effect=errors.TorrentError('huh'))
+    mocker.patch.object(client, 'read_torrent', return_value=Mock(infohash='d34db33f'))
+    mocker.patch.object(client._rpc, 'call', AsyncMock())
+    mocker.patch.object(client, '_get_load_command', AsyncMock())
+    mocker.patch.object(client, '_wait_for_added_torrent', AsyncMock())
 
-    with pytest.raises(errors.RequestError, match=r'^no$'):
-        await client.add_torrent('/path/to/file.torrent', download_path='/path/to/downloads/')
+    with pytest.raises(errors.RequestError, match=r'^huh$'):
+        await client.add_torrent(torrent_path)
 
-    assert client._get_torrent_data.call_args_list == [call('/path/to/file.torrent', '/path/to/downloads')]
-    assert client._request.call_args_list == []
+    assert client._get_torrent_data.call_args_list == [call(os.path.abspath(torrent_path), None)]
     assert client.read_torrent.call_args_list == []
-    assert client._get_torrent_hashes.call_args_list == []
+    assert client._get_load_command.call_args_list == []
+    assert client._rpc.call.call_args_list == []
+    assert client._wait_for_added_torrent.call_args_list == []
 
 @pytest.mark.asyncio
-async def test_add_torrent_fails_to_read_torrent(mocker):
+async def test_add_torrent_catches_torrent_error_from_reading_infohash(mocker):
+    torrent_path = 'file.torrent'
     client = rtorrent.RtorrentClientApi()
-    mocker.patch.object(client, '_get_load_command', AsyncMock(return_value='load.raw_start_verbose'))
-    mocker.patch.object(client, '_get_torrent_data', return_value='mock torrent data')
-    mocker.patch.object(client, 'read_torrent', side_effect=errors.TorrentError('no'))
-    mocker.patch.object(client, '_request')
-    mocker.patch.object(client, '_get_torrent_hashes', return_value=[])
-    mocker.patch.object(type(client), 'add_torrent_check_delay', 0)
+    mocker.patch.object(client, '_get_torrent_data', return_value='torrent data')
+    mocker.patch.object(client, 'read_torrent', side_effect=errors.TorrentError('huh'))
+    mocker.patch.object(client._rpc, 'call', AsyncMock())
+    mocker.patch.object(client, '_get_load_command', AsyncMock())
+    mocker.patch.object(client, '_wait_for_added_torrent', AsyncMock())
 
-    with pytest.raises(errors.RequestError, match=r'^no$'):
-        await client.add_torrent('/path/to/file.torrent', download_path='/path/to/downloads/')
+    with pytest.raises(errors.RequestError, match=r'^huh$'):
+        await client.add_torrent(torrent_path)
 
-    assert client._get_torrent_data.call_args_list == [call('/path/to/file.torrent', '/path/to/downloads')]
-    assert client._request.call_args_list == [call(
-        'load.raw_start_verbose',
-        '', 'mock torrent data', 'd.directory.set="/path/to/downloads"',
-    )]
-    assert client.read_torrent.call_args_list == [call('/path/to/file.torrent')]
-    assert client._get_torrent_hashes.call_args_list == []
+    assert client._get_torrent_data.call_args_list == [call(os.path.abspath(torrent_path), None)]
+    assert client.read_torrent.call_args_list == [call(os.path.abspath(torrent_path))]
+    assert client._get_load_command.call_args_list == []
+    assert client._rpc.call.call_args_list == []
+    assert client._wait_for_added_torrent.call_args_list == []
 
 @pytest.mark.asyncio
-async def test_add_torrent_fails_after_timeout(mocker):
+async def test_add_torrent_catches_request_error_from_getting_load_command(mocker):
+    torrent_path = 'file.torrent'
     client = rtorrent.RtorrentClientApi()
-    mocker.patch.object(client, '_get_load_command', AsyncMock(return_value='load.raw_start_verbose'))
-    mocker.patch.object(client, '_get_torrent_data', return_value='mock torrent data')
-    mocker.patch.object(client, 'read_torrent', return_value=Mock(infohash='D34DB33F'))
-    mocker.patch.object(client, '_request')
-    mocker.patch.object(type(client), 'add_torrent_check_delay', 0.01)
-    mocker.patch.object(type(client), 'add_torrent_timeout', 0.03)
-    exp_attempts = int(client.add_torrent_timeout / client.add_torrent_check_delay)
-    mocker.patch.object(client, '_get_torrent_hashes', side_effect=(
-        ([['C0FF33', 'B4B3']] * exp_attempts)
-        + [['C0FF33', 'B4B3', 'D34DB33F']]
-    ))
+    mocker.patch.object(client, '_get_torrent_data', return_value='torrent data')
+    mocker.patch.object(client, 'read_torrent', return_value=Mock(infohash='d34db33f'))
+    mocker.patch.object(client._rpc, 'call', AsyncMock())
+    mocker.patch.object(client, '_get_load_command', AsyncMock(side_effect=aiobtclientrpc.Error('wat')))
+    mocker.patch.object(client, '_wait_for_added_torrent', AsyncMock())
 
-    with pytest.raises(errors.RequestError, match=r'^Unknown error$'):
-        await client.add_torrent('/path/to/file.torrent', download_path='/path/to/downloads/')
+    with pytest.raises(errors.RequestError, match=r'^wat$'):
+        await client.add_torrent(torrent_path)
 
-    assert client._get_torrent_data.call_args_list == [call('/path/to/file.torrent', '/path/to/downloads')]
-    assert client._request.call_args_list == [call(
-        'load.raw_start_verbose',
-        '', 'mock torrent data', 'd.directory.set="/path/to/downloads"',
-    )]
-    assert client.read_torrent.call_args_list == [call('/path/to/file.torrent')]
-    assert client._get_torrent_hashes.call_args_list == [call()] * exp_attempts
+    assert client._get_torrent_data.call_args_list == [call(os.path.abspath(torrent_path), None)]
+    assert client.read_torrent.call_args_list == [call(os.path.abspath(torrent_path))]
+    assert client._get_load_command.call_args_list == [call()]
+    assert client._rpc.call.call_args_list == []
+    assert client._wait_for_added_torrent.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_add_torrent_catches_request_error_from_calling_load_command(mocker):
+    torrent_path = 'file.torrent'
+    client = rtorrent.RtorrentClientApi()
+    mocker.patch.object(client, '_get_torrent_data', return_value='torrent data')
+    mocker.patch.object(client, 'read_torrent', return_value=Mock(infohash='d34db33f'))
+    mocker.patch.object(client._rpc, 'call', AsyncMock(side_effect=aiobtclientrpc.Error('wat')))
+    mocker.patch.object(client, '_get_load_command', AsyncMock())
+    mocker.patch.object(client, '_wait_for_added_torrent', AsyncMock())
+
+    with pytest.raises(errors.RequestError, match=r'^wat$'):
+        await client.add_torrent(torrent_path)
+
+    assert client._get_torrent_data.call_args_list == [call(os.path.abspath(torrent_path), None)]
+    assert client.read_torrent.call_args_list == [call(os.path.abspath(torrent_path))]
+    assert client._get_load_command.call_args_list == [call()]
+    assert client._rpc.call.call_args_list == [call(client._get_load_command.return_value, '', 'torrent data')]
+    assert client._wait_for_added_torrent.call_args_list == []
+
+@pytest.mark.asyncio
+async def test_add_torrent_catches_request_error_from_waiting_for_torrent(mocker):
+    torrent_path = 'file.torrent'
+    client = rtorrent.RtorrentClientApi()
+    mocker.patch.object(client, '_get_torrent_data', return_value='torrent data')
+    mocker.patch.object(client, 'read_torrent', return_value=Mock(infohash='d34db33f'))
+    mocker.patch.object(client._rpc, 'call', AsyncMock())
+    mocker.patch.object(client, '_get_load_command', AsyncMock())
+    mocker.patch.object(client, '_wait_for_added_torrent', AsyncMock(side_effect=aiobtclientrpc.Error('wat')))
+
+    with pytest.raises(errors.RequestError, match=r'^wat$'):
+        await client.add_torrent(torrent_path)
+
+    assert client._get_torrent_data.call_args_list == [call(os.path.abspath(torrent_path), None)]
+    assert client.read_torrent.call_args_list == [call(os.path.abspath(torrent_path))]
+    assert client._get_load_command.call_args_list == [call()]
+    assert client._rpc.call.call_args_list == [call(client._get_load_command.return_value, '', 'torrent data')]
+    assert client._wait_for_added_torrent.call_args_list == [call('d34db33f')]
+
+
+@pytest.mark.parametrize(
+    argnames='infohash, torrent_hashes, exp_exception',
+    argvalues=(
+        (
+            'c0ff33',
+            (['d34db33f'], ['d34db33f'], ['d34db33f'], ['d34db33f'], ['d34db33f']),
+            errors.RequestError('Unknown error'),
+        ),
+        (
+            'c0ff33',
+            (['d34db33f'], ['d34db33f'], ['d34db33f', 'c0ff33']),
+            None,
+        ),
+    ),
+    ids=lambda v: str(v),
+)
+@pytest.mark.asyncio
+async def test_wait_for_added_torrent(infohash, torrent_hashes, exp_exception, mocker):
+    client = rtorrent.RtorrentClientApi()
+    mocker.patch.object(client, '_add_torrent_timeout', 0.5)
+    mocker.patch.object(client, '_add_torrent_check_delay', 0.1)
+    mocker.patch.object(client, '_get_torrent_hashes', AsyncMock(side_effect=torrent_hashes))
+
+    if exp_exception:
+        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+            await client._wait_for_added_torrent(infohash)
+    else:
+        return_value = await client._wait_for_added_torrent(infohash)
+        assert return_value is None
+
+
+@pytest.mark.parametrize(
+    argnames='methods, exp_command, exp_exception',
+    argvalues=(
+        (['load.raw_start'], 'load.raw_start', None),
+        (['load.raw_start', 'load.raw_start_verbose'], 'load.raw_start_verbose', None),
+        (['load.raw_start_verbose', 'load.raw_start'], 'load.raw_start_verbose', None),
+        ([], None, RuntimeError('Failed to find load command')),
+    ),
+    ids=lambda v: str(v),
+)
+@pytest.mark.asyncio
+async def test_get_load_command(methods, exp_command, exp_exception, mocker):
+    client = rtorrent.RtorrentClientApi()
+    mocker.patch.object(client._rpc, 'call', AsyncMock(return_value=methods))
+
+    if exp_exception:
+        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+            await client._get_load_command()
+    else:
+        return_value = await client._get_load_command()
+        assert return_value == exp_command
 
 
 @pytest.mark.parametrize('download_path', (None, '', 'path/to/downloads/'))
@@ -324,3 +352,12 @@ def test_get_mtime_catches_OSError(exception):
         with pytest.raises(errors.TorrentError, match=r'^nope$'):
             client._get_mtime('some/path')
         assert stat_mock.call_args_list == [call('some/path')]
+
+
+@pytest.mark.asyncio
+async def test_get_torrent_hashes(mocker):
+    client = rtorrent.RtorrentClientApi()
+    mocker.patch.object(client._rpc, 'call', AsyncMock(return_value=['D34D', 'B33F']))
+    hashes = await client._get_torrent_hashes()
+    assert hashes == ('d34d', 'b33f')
+    assert client._rpc.call.call_args_list == [call('download_list')]
