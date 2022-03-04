@@ -39,6 +39,7 @@ setuptools.setup(
         'chardet==4.*',
         'country-converter==0.7.*',
         'deluge-client==1.*',
+        'aio-btclient-rpc==0.*',
         'guessit==3.*,>=3.4.0',
         'httpx==0.*,>=0.20.0',
         'natsort==8.*',

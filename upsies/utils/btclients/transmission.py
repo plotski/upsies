@@ -3,11 +3,11 @@ Client API for the Transmission daemon
 """
 
 import base64
-import json
 import os
 
-from ... import errors
-from .. import http
+import aiobtclientrpc
+
+from ... import errors, utils
 from .base import ClientApiBase
 
 import logging  # isort:skip
@@ -21,77 +21,53 @@ class TransmissionClientApi(ClientApiBase):
     Reference: https://github.com/transmission/transmission/blob/master/extras/rpc-spec.txt
     """
 
-    DEFAULT_URL = 'http://localhost:9091/transmission/rpc'
-    AUTH_ERROR_CODE = 401
-    CSRF_ERROR_CODE = 409
-    CSRF_HEADER = 'X-Transmission-Session-Id'
-    HEADERS = {
-        'Content-Type': 'application/json',
-    }
-
     name = 'transmission'
     label = 'Transmission'
 
     default_config = {
-        'url': DEFAULT_URL,
+        'url': 'http://localhost:9091/transmission/rpc',
         'username': '',
         'password': '',
     }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._headers = self.HEADERS.copy()
-
-    async def _request(self, data):
-        if self.config['username'] or self.config['password']:
-            auth = (self.config['username'], self.config['password'])
-        else:
-            auth = None
-
-        try:
-            response = await http.post(
-                url=self.config['url'],
-                headers=self._headers,
-                auth=auth,
-                data=data,
-            )
-        except errors.RequestError as e:
-            if e.status_code == self.CSRF_ERROR_CODE:
-                # Send same request again with CSRF header
-                self._headers[self.CSRF_HEADER] = e.headers[self.CSRF_HEADER]
-                return await self._request(data)
-            elif e.status_code == self.AUTH_ERROR_CODE:
-                raise errors.RequestError('Authentication failed')
-            else:
-                raise errors.RequestError(e)
-        else:
-            return response.json()
+    @utils.cached_property
+    def _rpc(self):
+        return aiobtclientrpc.TransmissionRPC(
+            url=self.config['url'],
+            username=self.config['username'],
+            password=self.config['password'],
+        )
 
     async def add_torrent(self, torrent_path, download_path=None):
+        args = {}
+
+        # Read torrent file
         try:
-            torrent_data = str(
+            args['metainfo'] = str(
                 base64.b64encode(self.read_torrent_file(torrent_path)),
                 encoding='ascii',
             )
         except errors.TorrentError as e:
             raise errors.RequestError(e)
 
-        request = {
-            'method' : 'torrent-add',
-            'arguments' : {
-                'metainfo': torrent_data,
-            },
-        }
+        # Non-default download path
         if download_path:
-            request['arguments']['download-dir'] = str(os.path.abspath(download_path))
+            args['download-dir'] = str(os.path.abspath(download_path))
 
-        info = await self._request(json.dumps(request))
-        arguments = info.get('arguments', {})
+        # Add torrent
+        try:
+            async with self._rpc:
+                response = await self._rpc.call('torrent-add', args)
+        except aiobtclientrpc.Error as e:
+            raise errors.RequestError(e)
+
+        print('response:', response)
+
+        # Get torrent hash or error message
+        arguments = response.get('arguments', {})
         if 'torrent-added' in arguments:
             return arguments['torrent-added']['hashString']
         elif 'torrent-duplicate' in arguments:
             return arguments['torrent-duplicate']['hashString']
-        elif 'result' in info:
-            raise errors.RequestError(str(info['result']).capitalize())
         else:
-            raise RuntimeError(f'Unexpected response: {info}')
+            raise RuntimeError(f'Unexpected response: {response}')
