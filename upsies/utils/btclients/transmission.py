@@ -61,8 +61,6 @@ class TransmissionClientApi(ClientApiBase):
         except aiobtclientrpc.Error as e:
             raise errors.RequestError(e)
 
-        print('response:', response)
-
         # Get torrent hash or error message
         arguments = response.get('arguments', {})
         if 'torrent-added' in arguments:
