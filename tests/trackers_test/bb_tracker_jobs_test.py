@@ -1295,6 +1295,18 @@ def test_release_info_remastered(editions, exp_text, bb_tracker_jobs, mocker):
     argnames='editions, exp_text',
     argvalues=(
         (('Foo',), None),
+        (('Open Matte',), 'Open Matte'),
+    ),
+)
+def test_release_info_open_matte(editions, exp_text, bb_tracker_jobs, mocker):
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'edition', PropertyMock(return_value=editions))
+    assert bb_tracker_jobs.release_info_open_matte == exp_text
+
+
+@pytest.mark.parametrize(
+    argnames='editions, exp_text',
+    argvalues=(
+        (('Foo',), None),
         (("Director's Cut",), "Director's Cut"),
     ),
 )
@@ -1557,6 +1569,7 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_limited_edition', PropertyMock(return_value='Limited'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_2in1', PropertyMock(return_value='2in1'))
 
+    mocker.patch.object(type(bb_tracker_jobs), 'release_info_open_matte', PropertyMock(return_value='Open Matte'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_dual_audio', PropertyMock(return_value='Dual Audio'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_commentary', PropertyMock(return_value='w. Commentary'))
     mocker.patch.object(type(bb_tracker_jobs), 'release_info_subtitles', PropertyMock(return_value='w. Subtitles'))
@@ -1567,7 +1580,7 @@ async def test_get_series_title_and_release_info_has_release_info(bb_tracker_job
                 'REMUX / 10-bit / HDR10 / '
                 "Uncensored / Uncut / Unrated / Remastered / Director's Cut / Theatrical Cut / IMAX / "
                 'Extended Edition / Anniversary Edition / Criterion Edition / Special Edition / Limited / 2in1 / '
-                'Dual Audio / w. Commentary / w. Subtitles]')
+                'Open Matte / Dual Audio / w. Commentary / w. Subtitles]')
     assert title.endswith(exp_info)
 
 
@@ -1774,6 +1787,7 @@ def test_get_movie_release_info(bb_tracker_jobs, mocker):
         'release_info_2in1': '2in1',
 
         # Features
+        'release_info_open_matte': 'Open Matte',
         'release_info_dual_audio': 'Dual Audio',
         'release_info_commentary': 'w. Commentary',
         'release_info_subtitles': 'w. Subtitles',

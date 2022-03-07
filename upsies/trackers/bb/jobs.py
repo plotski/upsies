@@ -707,6 +707,11 @@ class BbTrackerJobs(TrackerJobsBase):
             return 'Restored'
 
     @property
+    def release_info_open_matte(self):
+        if 'Open Matte' in self.release_name.edition:
+            return 'Open Matte'
+
+    @property
     def release_info_directors_cut(self):
         if "Director's Cut" in self.release_name.edition:
             return "Director's Cut"
@@ -820,6 +825,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_2in1,
 
             # Features
+            self.release_info_open_matte,
             self.release_info_dual_audio,
             self.release_info_commentary,
             self.release_info_subtitles,
@@ -920,6 +926,7 @@ class BbTrackerJobs(TrackerJobsBase):
             self.release_info_2in1,
 
             # Features
+            self.release_info_open_matte,
             self.release_info_dual_audio,
             self.release_info_commentary,
             self.release_info_subtitles,
