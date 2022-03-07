@@ -220,13 +220,10 @@ class CommandBase(abc.ABC):
             subparsers = parser.add_subparsers(
                 metavar=cls.subcommand_name,
                 help='Valid values: ' + ', '.join(sorted(cls.subcommands)),
+                # Generate the expected error message instead of the cryptic
+                # AttributeError: 'Namespace' object has no attribute 'subcommand'
+                required=True,
             )
-            # FIXME: When Python 3.6 is not supported anymore, `required=True`
-            #        should be passed to add_subparsers() instead.
-            #        https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_subparsers
-            #        https://bugs.python.org/issue26510
-            #        https://bugs.python.org/issue9253
-            subparsers.required = True
             for subcmd_name, subcmd_info in cls.subcommands.items():
                 description = subcmd_info.get('description', '')
                 args = subcmd_info.get('cli', {})

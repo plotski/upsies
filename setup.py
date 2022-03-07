@@ -26,7 +26,6 @@ setuptools.setup(
     url=get_var('__homepage__'),
     packages=setuptools.find_packages(),
     classifiers=[
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -49,8 +48,6 @@ setuptools.setup(
         'pyxdg',
         'torf==3.*',
         'Unidecode==1.3.*',
-        # Needed for asynccontextmanager backport for Python 3.6
-        'async_generator==1.10; python_version<"3.7"',
     ],
     entry_points={'console_scripts': ['upsies = upsies.uis.tui:main']},
 )

@@ -25,9 +25,6 @@ def get_aioloop():
         # This mimics get_event_loop(), but that is going to be an alias for
         # get_running_loop() in future Python releases.
         return asyncio.get_event_loop_policy().get_event_loop()
-    except AttributeError:
-        # Python 3.6 doesn't have get_running_loop()
-        return asyncio.get_event_loop()
 
 
 def os_family():
