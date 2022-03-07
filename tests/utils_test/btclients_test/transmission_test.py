@@ -1,6 +1,7 @@
 import base64
 import os
 import re
+import sys
 from unittest.mock import Mock, PropertyMock, call
 
 import aiobtclientrpc
@@ -62,6 +63,7 @@ async def test_add_torrent_fails_to_read_torrent_file(mocker):
 
     assert api.read_torrent_file.call_args_list == [call('file.torrent')]
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason='No support for __aenter__ and __aexit__')
 @pytest.mark.parametrize('download_path', (None, '', '/absolute/path', 'relative/path'))
 @pytest.mark.asyncio
 async def test_add_torrent_calls_rpc_method(download_path, mocker):
@@ -105,6 +107,7 @@ async def test_add_torrent_calls_rpc_method(download_path, mocker):
         )]
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason='No support for __aenter__ and __aexit__')
 @pytest.mark.parametrize(
     argnames='exception',
     argvalues=(
@@ -140,6 +143,7 @@ async def test_add_torrent_catches_error_from_rpc_method_call(exception, mocker)
     )]
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason='No support for __aenter__ and __aexit__')
 @pytest.mark.parametrize(
     argnames='response, exp_return_value, exp_exception',
     argvalues=(
