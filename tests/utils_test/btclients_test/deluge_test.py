@@ -35,15 +35,18 @@ def test_default_config(tmp_path):
     }
 
 
-def test_rpc(mocker):
+@pytest.mark.parametrize('username', (None, '', 'foo'))
+@pytest.mark.parametrize('password', (None, '', 'bar'))
+def test_rpc(username, password, mocker):
     DelugeRPC_mock = mocker.patch('aiobtclientrpc.DelugeRPC', Mock())
     api = deluge.DelugeClientApi()
+    mocker.patch.dict(api.config, username=username, password=password)
     rpc = api._rpc
     assert rpc is DelugeRPC_mock.return_value
     assert DelugeRPC_mock.call_args_list == [call(
         url=api.config['url'],
-        username=api.config['username'],
-        password=api.config['password'],
+        username=api.config['username'] if username else None,
+        password=api.config['password'] if password else None,
     )]
     assert rpc is api._rpc  # Singleton property
 

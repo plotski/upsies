@@ -41,8 +41,8 @@ class DelugeClientApi(ClientApiBase):
     def _rpc(self):
         return aiobtclientrpc.DelugeRPC(
             url=self.config['url'],
-            username=self.config['username'],
-            password=self.config['password'],
+            username=self.config['username'] or None,
+            password=self.config['password'] or None,
         )
 
     async def add_torrent(self, torrent_path, download_path=None):
