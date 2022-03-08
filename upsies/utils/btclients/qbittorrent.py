@@ -2,11 +2,12 @@
 Client API for qBittorrent
 """
 
+import asyncio
 import os
-import urllib
+
+import aiobtclientrpc
 
 from ... import errors, utils
-from .. import asynccontextmanager, http
 from .base import ClientApiBase
 
 import logging  # isort:skip
@@ -33,73 +34,62 @@ class QbittorrentClientApi(ClientApiBase):
         ),
     }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        url = urllib.parse.urlparse(self.config['url'])
-        self._headers = {
-            'Referer': f'{url.scheme}://{url.netloc}',
-        }
-
-    async def _request(self, path, data=None, files={}):
-        url = '/'.join((
-            self.config['url'].rstrip('/'),
-            'api/v2',
-            path.lstrip('/'),
-        ))
-        return await http.post(
-            url=url,
-            headers=self._headers,
-            data=data,
-            files=files
+    @utils.cached_property
+    def _rpc(self):
+        return aiobtclientrpc.QbittorrentRPC(
+            url=self.config['url'],
+            username=self.config['username'],
+            password=self.config['password'],
         )
 
-    async def _login(self):
-        credentials = {
-            'username': self.config['username'],
-            'password': self.config['password'],
-        }
-        response = await self._request(path='auth/login', data=credentials)
-        if response != 'Ok.':
-            raise errors.RequestError('Authentication failed')
-
-    async def _logout(self):
-        await self._request(path='auth/logout')
-
-    @asynccontextmanager
-    async def _session(self):
-        await self._login()
-        try:
-            yield
-        finally:
-            await self._logout()
-
     async def add_torrent(self, torrent_path, download_path=None):
-        files = {
-            'torrents': {
-                'file': torrent_path,
-                'mimetype': 'application/x-bittorrent',
-            },
-        }
+        # Read torrent file
+        try:
+            files = [
+                ('filename', (
+                    os.path.basename(torrent_path),        # File name
+                    self.read_torrent_file(torrent_path),  # File content
+                    'application/x-bittorrent',            # MIME type
+                )),
+            ]
+            # TODO: Get the info hash from `response` when this is closed:
+            #       https://github.com/qbittorrent/qBittorrent/issues/4879
+            #       For older versions of qBittorrent, default to getting the
+            #       hash from the torrent file.
+            infohash = self.read_torrent(torrent_path).infohash
+        except errors.TorrentError as e:
+            raise errors.RequestError(e)
 
-        data = {
+        # Options
+        options = {
             'skip_checking': 'false' if self.config['check_after_add'] else 'true',
         }
         if download_path:
-            data['savepath'] = str(os.path.abspath(download_path))
+            options['savepath'] = str(os.path.abspath(download_path))
 
-        async with self._session():
-            response = await self._request('torrents/add', files=files, data=data)
-            if response == 'Ok.':
-                return self._get_torrent_hash(torrent_path)
-            else:
-                raise errors.RequestError('Unknown error')
-
-    def _get_torrent_hash(self, torrent_path):
-        # TODO: Get the info hash from `response` when this is closed:
-        #       https://github.com/qbittorrent/qBittorrent/issues/4879
-        #       For older versions of qBittorrent, default to getting the hash
-        #       from the torrent file.
+        # Add torrent
         try:
-            return self.read_torrent(torrent_path).infohash
-        except errors.TorrentError as e:
+            async with self._rpc:
+                await self._rpc.call('torrents/add', files=files, **options)
+                await self._wait_for_added_torrent(infohash)
+                return infohash
+        except aiobtclientrpc.Error as e:
             raise errors.RequestError(e)
+
+    _add_torrent_timeout = 10
+    _add_torrent_check_delay = 0.5
+
+    async def _wait_for_added_torrent(self, infohash):
+        aioloop = asyncio.get_event_loop()
+        start_time = aioloop.time()
+        while aioloop.time() - start_time < self._add_torrent_timeout:
+            infohashes = await self._get_torrent_hashes(infohash)
+            if infohash in infohashes:
+                return
+            else:
+                await asyncio.sleep(self._add_torrent_check_delay)
+        raise errors.RequestError('Unknown error')
+
+    async def _get_torrent_hashes(self, *infohashes):
+        infohashes = await self._rpc.call('torrents/info', hashes=infohashes)
+        return tuple(infohash['hash'].lower() for infohash in infohashes)

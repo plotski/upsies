@@ -1,10 +1,12 @@
 import os
 import re
-from unittest.mock import Mock, call
+import sys
+from unittest.mock import Mock, PropertyMock, call
 
+import aiobtclientrpc
 import pytest
 
-from upsies import errors, utils
+from upsies import errors
 from upsies.utils.btclients import qbittorrent
 
 
@@ -25,211 +27,254 @@ def test_name():
     assert qbittorrent.QbittorrentClientApi.name == 'qbittorrent'
 
 
+def test_label():
+    assert qbittorrent.QbittorrentClientApi.label == 'qBittorrent'
+
+
 def test_default_config():
     assert qbittorrent.QbittorrentClientApi.default_config == {
         'url': 'http://localhost:8080',
         'username': '',
         'password': '',
-        'check_after_add': utils.types.Bool(False),
+        'check_after_add': False,
     }
 
 
-@pytest.mark.parametrize(
-    argnames='config, exp_headers',
-    argvalues=(
-        ({'url': 'http://localhost'}, {'Referer': 'http://localhost'}),
-        ({'url': 'http://localhost:8080'}, {'Referer': 'http://localhost:8080'}),
-        ({'url': 'http://localhost:8080/api'}, {'Referer': 'http://localhost:8080'}),
-    ),
-    ids=lambda v: str(v),
-)
-def test_attributes(config, exp_headers):
-    client = qbittorrent.QbittorrentClientApi(config=config)
-    assert client._headers == exp_headers
-
-
-@pytest.mark.parametrize(
-    argnames='config_url, path, exp_request_url',
-    argvalues=(
-        ('http://localhost:8080', '/foo', 'http://localhost:8080/api/v2/foo'),
-        ('http://localhost:8080', 'foo', 'http://localhost:8080/api/v2/foo'),
-        ('http://localhost:8080/', '/foo', 'http://localhost:8080/api/v2/foo'),
-        ('http://localhost:8080/', 'foo', 'http://localhost:8080/api/v2/foo'),
-    ),
-    ids=lambda v: str(v),
-)
-@pytest.mark.asyncio
-async def test_request(config_url, path, exp_request_url, mocker):
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    client = qbittorrent.QbittorrentClientApi(config={'url': config_url})
-    data = 'mock data'
-    files = 'mock files'
-    await client._request(path, data=data, files=files)
-    assert post_mock.call_args_list == [call(
-        url=exp_request_url,
-        headers=client._headers,
-        data=data,
-        files=files
+def test_rpc(mocker):
+    QbittorrentRPC_mock = mocker.patch('aiobtclientrpc.QbittorrentRPC', Mock())
+    api = qbittorrent.QbittorrentClientApi()
+    rpc = api._rpc
+    assert rpc is QbittorrentRPC_mock.return_value
+    assert QbittorrentRPC_mock.call_args_list == [call(
+        url=api.config['url'],
+        username=api.config['username'],
+        password=api.config['password'],
     )]
-
-
-@pytest.mark.parametrize(
-    argnames='response, exception, exp_exception',
-    argvalues=(
-        ('Ok.', None, None),
-        ('Fails.', None, errors.RequestError('Authentication failed')),
-        (None, errors.RequestError('qBittorrent: Bad request'), errors.RequestError('qBittorrent: Bad request')),
-    ),
-    ids=lambda v: str(v),
-)
-@pytest.mark.asyncio
-async def test_login(response, exception, exp_exception, mocker):
-    client = qbittorrent.QbittorrentClientApi(config={
-        'username': 'me',
-        'password': 'moo',
-        'foo': 'bar',
-    })
-    if exception:
-        mocker.patch.object(client, '_request', AsyncMock(side_effect=exception))
-    else:
-        mocker.patch.object(client, '_request', AsyncMock(return_value=response))
-
-    if exp_exception:
-        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
-            await client._login()
-    else:
-        await client._login()
-
-    assert client._request.call_args_list == [call(
-        path='auth/login',
-        data={'username': 'me', 'password': 'moo'},
-    )]
+    assert rpc is api._rpc  # Singleton property
 
 
 @pytest.mark.asyncio
-async def test_logout(mocker):
-    client = qbittorrent.QbittorrentClientApi()
-    mocker.patch.object(client, '_request', AsyncMock())
-    await client._logout()
-    assert client._request.call_args_list == [call(path='auth/logout')]
+async def test_add_torrent_fails_to_read_torrent_file(mocker):
+    api = qbittorrent.QbittorrentClientApi()
+
+    mocker.patch.object(api, 'read_torrent_file', Mock(
+        side_effect=errors.TorrentError('Unable to read torrent file'),
+    ))
+    mocker.patch.object(api, 'read_torrent', Mock())
+    mocker.patch.object(type(api), '_rpc', PropertyMock(
+        return_value="This is not an async context manager, but I don't care.",
+    ))
+
+    with pytest.raises(errors.RequestError, match=r'^Unable to read torrent file$'):
+        await api.add_torrent(torrent_path='file.torrent')
+
+    assert api.read_torrent_file.call_args_list == [call('file.torrent')]
 
 
 @pytest.mark.asyncio
-async def test_session(mocker):
-    client = qbittorrent.QbittorrentClientApi()
-    mocker.patch.object(client, '_login', AsyncMock())
-    mocker.patch.object(client, '_logout', AsyncMock())
-    assert client._login.call_args_list == []
-    assert client._logout.call_args_list == []
-    async with client._session():
-        assert client._login.call_args_list == [call()]
-        assert client._logout.call_args_list == []
-    assert client._login.call_args_list == [call()]
-    assert client._logout.call_args_list == [call()]
+async def test_add_torrent_fails_to_read_torrent(mocker):
+    api = qbittorrent.QbittorrentClientApi()
+
+    mocker.patch.object(api, 'read_torrent_file', Mock())
+    mocker.patch.object(api, 'read_torrent', Mock(
+        side_effect=errors.TorrentError('Unable to read torrent'),
+    ))
+    mocker.patch.object(type(api), '_rpc', PropertyMock(
+        return_value="This is not an async context manager, but that's OK.",
+    ))
+
+    with pytest.raises(errors.RequestError, match=r'^Unable to read torrent$'):
+        await api.add_torrent(torrent_path='file.torrent')
+
+    assert api.read_torrent_file.call_args_list == [call('file.torrent')]
 
 
-@pytest.mark.parametrize(
-    argnames='login_exception, logout_exception, exp_exception',
-    argvalues=(
-        (None, None, None),
-        (errors.RequestError('Login failed'), None, errors.RequestError('Login failed')),
-        (None, errors.RequestError('Logout failed'), errors.RequestError('Logout failed')),
-    ),
-    ids=lambda v: str(v),
-)
+@pytest.mark.skipif(sys.version_info < (3, 8), reason='No support for __aenter__ and __aexit__')
+@pytest.mark.parametrize('download_path', (None, '', '/absolute/path', 'relative/path'))
+@pytest.mark.parametrize('check_after_add', (True, False))
 @pytest.mark.asyncio
-async def test_add_torrent_handles_RequestError_from_authentication(login_exception, logout_exception, exp_exception, mocker):
-    client = qbittorrent.QbittorrentClientApi()
-    mocker.patch.object(client, '_login', AsyncMock(side_effect=login_exception))
-    mocker.patch.object(client, '_logout', AsyncMock(side_effect=logout_exception))
-    mocker.patch.object(client, '_request', AsyncMock(return_value='Ok.'))
-    mocker.patch.object(client, '_get_torrent_hash', Mock(return_value='D34DB33F'))
+async def test_add_torrent_calls_rpc_method(check_after_add, download_path, mocker):
+    api = qbittorrent.QbittorrentClientApi()
 
-    coro = client.add_torrent('path/to/file.torrent')
-    if exp_exception:
-        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
-            await coro
-    else:
-        assert await coro == 'D34DB33F'
+    mocks = Mock()
+    mocks.attach_mock(
+        mocker.patch.object(api, 'read_torrent_file', Mock(return_value=b'torrent metainfo')),
+        'read_torrent_file',
+    )
+    mocks.attach_mock(
+        mocker.patch.object(api, 'read_torrent', return_value=Mock(infohash='torrent infohash')),
+        'read_torrent',
+    )
+    mocks.attach_mock(
+        mocker.patch.object(api, '_wait_for_added_torrent', AsyncMock()),
+        '_wait_for_added_torrent',
+    )
+    mocks.attach_mock(
+        mocker.patch.object(api._rpc, '__aenter__', AsyncMock()),
+        'aenter',
+    )
+    mocks.attach_mock(
+        # Return False to indicate exception must propagate
+        mocker.patch.object(api._rpc, '__aexit__', AsyncMock(return_value=False)),
+        'aexit',
+    )
+    mocks.attach_mock(
+        mocker.patch.object(api._rpc, 'call', AsyncMock()),
+        'call',
+    )
+    mocker.patch.dict(api.config, check_after_add=check_after_add)
 
-    assert client._login.call_args_list == [call()]
-    if not login_exception:
-        assert client._logout.call_args_list == [call()]
-    else:
-        assert client._logout.call_args_list == []
-
-
-@pytest.mark.parametrize(
-    argnames='response, exception, exp_exception',
-    argvalues=(
-        (None, errors.RequestError('qBittorrent: No'), errors.RequestError('qBittorrent: No')),
-        ('Fails.', None, errors.RequestError('Unknown error')),
-        ('Ok.', None, None),
-    ),
-    ids=lambda v: repr(v),
-)
-@pytest.mark.parametrize('download_path', (None, '', 'path/to/downloads'))
-@pytest.mark.parametrize('check_after_add', (True, False, None, 'truthy'))
-@pytest.mark.asyncio
-async def test_add_torrent_handles_RequestError_from_adding(check_after_add, download_path,
-                                                            response, exception, exp_exception, mocker):
     torrent_path = 'path/to/file.torrent'
-    torrent_hash = 'D34DB33F'
-    client = qbittorrent.QbittorrentClientApi(config={'check_after_add': check_after_add})
-
-    mocker.patch.object(client, '_login', AsyncMock())
-    mocker.patch.object(client, '_logout', AsyncMock())
-
-    if exception:
-        mocker.patch.object(client, '_request', AsyncMock(side_effect=exception))
-    else:
-        mocker.patch.object(client, '_request', AsyncMock(return_value=response))
-    mocker.patch.object(client, '_get_torrent_hash', Mock(return_value=torrent_hash))
-
-    coro = client.add_torrent(torrent_path, download_path=download_path)
-    if exp_exception:
-        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
-            await coro
-        assert client._get_torrent_hash.call_args_list == []
-    else:
-        assert await coro == torrent_hash
-        assert client._get_torrent_hash.call_args_list == [call(torrent_path)]
-
-    exp_files = {
-        'torrents': {
-            'file': 'path/to/file.torrent',
-            'mimetype': 'application/x-bittorrent',
-        },
-    }
-    exp_data = {
-        'skip_checking': 'false' if check_after_add else 'true',
+    exp_files = [
+        ('filename', (
+            os.path.basename(torrent_path),  # File name
+            b'torrent metainfo',             # File content
+            'application/x-bittorrent',      # MIME type
+        )),
+    ]
+    exp_options = {
+        'skip_checking': str(not check_after_add).lower(),
     }
     if download_path:
-        exp_data['savepath'] = os.path.abspath(download_path)
-    assert client._request.call_args_list == [call('torrents/add', files=exp_files, data=exp_data)]
+        exp_options['savepath'] = os.path.abspath(download_path)
+
+    torrent_hash = await api.add_torrent(
+        torrent_path=torrent_path,
+        download_path=download_path,
+    )
+    assert torrent_hash == 'torrent infohash'
+    assert mocks.mock_calls == [
+        call.read_torrent_file(torrent_path),
+        call.read_torrent(torrent_path),
+        call.call('torrents/add', files=exp_files, **exp_options),
+        call._wait_for_added_torrent('torrent infohash'),
+    ]
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason='No support for __aenter__ and __aexit__')
 @pytest.mark.parametrize(
-    argnames='exception, exp_exception',
+    argnames='exception',
     argvalues=(
-        (None, None),
-        (errors.TorrentError('Permission denied'), errors.RequestError('Permission denied')),
+        aiobtclientrpc.ConnectionError('no connection'),
+        aiobtclientrpc.AuthenticationError('authentication failed'),
+        aiobtclientrpc.TimeoutError('timeout'),
+        aiobtclientrpc.ValueError('invalid value'),
+        aiobtclientrpc.RPCError('wat'),
     ),
     ids=lambda v: repr(v),
 )
 @pytest.mark.asyncio
-async def test_get_torrent_hash(exception, exp_exception, mocker):
+async def test_add_torrent_catches_error_from_rpc_method_call(exception, mocker):
+    api = qbittorrent.QbittorrentClientApi()
+
+    mocker.patch.object(api, 'read_torrent_file', Mock(return_value=b'torrent metainfo')),
+    mocker.patch.object(api, 'read_torrent', return_value=Mock(infohash='torrent infohash')),
+    mocker.patch.object(api, '_wait_for_added_torrent', AsyncMock()),
+    mocker.patch.object(api._rpc, '__aenter__', AsyncMock()),
+    # Return False to indicate exception must propagate
+    mocker.patch.object(api._rpc, '__aexit__', AsyncMock(return_value=False)),
+    mocker.patch.object(api._rpc, 'call', AsyncMock(side_effect=exception)),
+
     torrent_path = 'path/to/file.torrent'
-    torrent_hash = 'D34DB33F'
-    client = qbittorrent.QbittorrentClientApi()
-    mocker.patch.object(
-        client, 'read_torrent',
-        side_effect=exception,
-        return_value=Mock(infohash=torrent_hash),
-    )
+    exp_files = [
+        ('filename', (
+            os.path.basename(torrent_path),  # File name
+            b'torrent metainfo',             # File content
+            'application/x-bittorrent',      # MIME type
+        )),
+    ]
+
+    with pytest.raises(errors.RequestError, match=rf'^{re.escape(str(exception))}$'):
+        await api.add_torrent(torrent_path=torrent_path)
+
+    assert api.read_torrent_file.call_args_list == [call(torrent_path)]
+    assert api.read_torrent.call_args_list == [call(torrent_path)]
+    assert api._rpc.call.call_args_list == [call('torrents/add', files=exp_files, skip_checking='true')]
+    assert api._wait_for_added_torrent.call_args_list == []
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason='No support for __aenter__ and __aexit__')
+@pytest.mark.parametrize(
+    argnames='exception',
+    argvalues=(
+        aiobtclientrpc.ConnectionError('no connection'),
+        aiobtclientrpc.AuthenticationError('authentication failed'),
+        aiobtclientrpc.TimeoutError('timeout'),
+        aiobtclientrpc.ValueError('invalid value'),
+        aiobtclientrpc.RPCError('wat'),
+    ),
+    ids=lambda v: repr(v),
+)
+@pytest.mark.asyncio
+async def test_add_torrent_catches_error_from_wait_for_added_torrent(exception, mocker):
+    api = qbittorrent.QbittorrentClientApi()
+
+    mocker.patch.object(api, 'read_torrent_file', Mock(return_value=b'torrent metainfo')),
+    mocker.patch.object(api, 'read_torrent', return_value=Mock(infohash='torrent infohash')),
+    mocker.patch.object(api, '_wait_for_added_torrent', AsyncMock(side_effect=exception)),
+    mocker.patch.object(api._rpc, '__aenter__', AsyncMock()),
+    # Return False to indicate exception must propagate
+    mocker.patch.object(api._rpc, '__aexit__', AsyncMock(return_value=False)),
+    mocker.patch.object(api._rpc, 'call', AsyncMock()),
+
+    torrent_path = 'path/to/file.torrent'
+    exp_files = [
+        ('filename', (
+            os.path.basename(torrent_path),  # File name
+            b'torrent metainfo',             # File content
+            'application/x-bittorrent',      # MIME type
+        )),
+    ]
+
+    with pytest.raises(errors.RequestError, match=rf'^{re.escape(str(exception))}$'):
+        await api.add_torrent(torrent_path=torrent_path)
+
+    assert api.read_torrent_file.call_args_list == [call(torrent_path)]
+    assert api.read_torrent.call_args_list == [call(torrent_path)]
+    assert api._rpc.call.call_args_list == [call('torrents/add', files=exp_files, skip_checking='true')]
+    assert api._wait_for_added_torrent.call_args_list == [call('torrent infohash')]
+
+
+@pytest.mark.parametrize(
+    argnames='infohash, torrent_hashes, exp_exception',
+    argvalues=(
+        (
+            'c0ff33',
+            (['d34db33f'], ['d34db33f'], ['d34db33f'], ['d34db33f'], ['d34db33f']),
+            errors.RequestError('Unknown error'),
+        ),
+        (
+            'c0ff33',
+            (['d34db33f'], ['d34db33f'], ['d34db33f', 'c0ff33']),
+            None,
+        ),
+    ),
+    ids=lambda v: str(v),
+)
+@pytest.mark.asyncio
+async def test_wait_for_added_torrent(infohash, torrent_hashes, exp_exception, mocker):
+    api = qbittorrent.QbittorrentClientApi()
+    mocker.patch.object(api, '_add_torrent_timeout', 0.5)
+    mocker.patch.object(api, '_add_torrent_check_delay', 0.1)
+    mocker.patch.object(api, '_get_torrent_hashes', AsyncMock(side_effect=torrent_hashes))
+
     if exp_exception:
         with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
-            client._get_torrent_hash(torrent_path)
+            await api._wait_for_added_torrent(infohash)
     else:
-        assert client._get_torrent_hash(torrent_path) == torrent_hash
-    assert client.read_torrent.call_args_list == [call(torrent_path)]
+        return_value = await api._wait_for_added_torrent(infohash)
+        assert return_value is None
+
+
+@pytest.mark.asyncio
+async def test_get_torrent_hashes(mocker):
+    api = qbittorrent.QbittorrentClientApi()
+    mocker.patch.object(api._rpc, 'call', AsyncMock(return_value=[
+        {'hash': 'D34D'},
+        {'hash': 'B33F'},
+    ]))
+    hashes = await api._get_torrent_hashes('foo', 'bar', 'baz')
+    assert hashes == ('d34d', 'b33f')
+    assert api._rpc.call.call_args_list == [
+        call('torrents/info', hashes=('foo', 'bar', 'baz')),
+    ]
