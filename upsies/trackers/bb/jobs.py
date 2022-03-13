@@ -790,7 +790,13 @@ class BbTrackerJobs(TrackerJobsBase):
 
         # "SxxEyy"
         elif self.is_episode_release:
-            title.append(str(self.release_name.episodes))
+            if self.release_name.date:
+                # Episodes may have a date (e.g. "2001-03-24") instead of the
+                # usual "SxxEyy" string
+                title.append(str(self.release_name.date))
+            else:
+                # Use "SxxEyy" string or default to "UNKNOWN_EPISODE"
+                title.append(str(self.release_name.episodes))
 
         info = [
             # [Source / VideoCodec / AudioCodec / Container / Resolution]

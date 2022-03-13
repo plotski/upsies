@@ -1512,27 +1512,37 @@ async def test_get_series_title_and_release_info_season(is_season_release, seaso
         assert ' - Season 5 [UNKNOWN' not in title
 
 @pytest.mark.parametrize(
-    argnames='is_episode_release, episodes, exp_episode_in_string',
+    argnames='is_episode_release, date, episodes, exp_episode_info',
     argvalues=(
-        (True, utils.release.Episodes.from_string('S05E10'), True),
-        (True, '', False),
-        (True, None, False),
-        (False, utils.release.Episodes.from_string('S05E10'), False),
-        (False, '', False),
-        (False, None, False),
+        (True, '', utils.release.Episodes.from_string('S05E10'), 'episode'),
+        (True, '', 'UNKNOWN_EPISODE', 'episode'),
+        (True, '2010-09-08', 'UNKNOWN_EPISODE', 'date'),
+        (True, '2010-09-08', utils.release.Episodes.from_string('S05E10'), 'date'),
+
+        (False, '', utils.release.Episodes.from_string('S05E10'), None),
+        (False, '', 'UNKNOWN_EPISODE', None),
+        (False, '2010-09-08', 'UNKNOWN_EPISODE', None),
+        (False, '2010-09-08', utils.release.Episodes.from_string('S05E10'), None),
     ),
 )
 @pytest.mark.asyncio
-async def test_get_series_title_and_release_info_episode(is_episode_release, episodes, exp_episode_in_string, bb_tracker_jobs, mocker):
+async def test_get_series_title_and_release_info_episode(
+        is_episode_release, date, episodes, exp_episode_info, bb_tracker_jobs, mocker):
     mocker.patch.object(bb_tracker_jobs.release_name, 'fetch_info', AsyncMock())
     mocker.patch.object(bb_tracker_jobs, 'get_imdb_id', AsyncMock(return_value='imdb id'))
     mocker.patch.object(type(bb_tracker_jobs), 'is_episode_release', PropertyMock(return_value=is_episode_release))
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'title', PropertyMock(return_value='The Foo'))
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'year_required', PropertyMock(return_value=False))
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'date', PropertyMock(return_value=date))
     mocker.patch.object(type(bb_tracker_jobs.release_name), 'episodes', PropertyMock(return_value=episodes))
+    mocker.patch.object(type(bb_tracker_jobs.release_name), 'source', PropertyMock(return_value='WEB-DL'))
     title = await bb_tracker_jobs.get_series_title_and_release_info()
-    if exp_episode_in_string:
-        assert ' S05E10 [UNKNOWN' in title
+    if exp_episode_info == 'episode':
+        assert f'The Foo {episodes} [WEB-DL' in title
+    elif exp_episode_info == 'date':
+        assert f'The Foo {date} [WEB-DL' in title
     else:
-        assert ' S05E10 [UNKNOWN' not in title
+        assert f'The Foo [WEB-DL' in title
 
 @pytest.mark.asyncio
 async def test_get_series_title_and_release_info_has_release_info(bb_tracker_jobs, mocker):
