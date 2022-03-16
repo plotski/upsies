@@ -1,4 +1,5 @@
 2022.??.??
+  * IMDb: Adapt to website changes
   * scene-check: Don't ask to pick a release name for releases with no release
     group
   * release-name: Dates in release names (e.g. "2015-09-25"), are interpreted as
