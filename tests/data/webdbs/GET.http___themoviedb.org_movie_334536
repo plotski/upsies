@@ -10,6 +10,7 @@
 <meta content="yes" name="mobile-web-app-capable"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="Two young students at a prestigious prep school for girls are assailed by an evil, invisible power when they are stranded at the school over winter break." name="description"/>
 <meta content="/assets/2/v4/icons/mstile-144x144-30e7905a8315a080978ad6aeb71c69222b72c2f75d26dab1224173a96fecc962.png" name="msapplication-TileImage"/>
 <meta content="#032541" name="msapplication-TileColor"/>
 <meta content="#032541" name="theme-color"/>
@@ -17,8 +18,8 @@
 <link href="/assets/2/favicon-32x32-543a21832c8931d3494a68881f6afcafc58e96c5d324345377f3197a37b367b5.png" rel="icon" sizes="32x32" type="image/png"/>
 <link href="/assets/2/favicon-16x16-b362d267873ce9c5a39f686a11fe67fec2a72ed25fa8396c11b71aa43c938b11.png" rel="icon" sizes="16x16" type="image/png"/>
 <link href="/manifest.json?version=3" rel="manifest"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter" rel="canonical"/>
-<link href="/opensearch.xml" rel="search" title="TMDb Search" type="application/opensearchdescription+xml"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter" rel="canonical"/>
+<link href="/opensearch.xml" rel="search" title="TMDB Search" type="application/opensearchdescription+xml"/>
 <link as="font" crossorigin="" href="/assets/2/Consensus-3cba2c4d050ea63dbf7783173d288faf9ecb2942515a5e7f6e1beecabb2eaf72.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular-f38472b9e378b8c936f55a92677f575ab69e414d7cc3706ecfefeacd994b7975.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-italic-48273a74acbc1611b6ef1d0a771bb8ef042b9922b51d5bff560571dddcb5542a.woff2" rel="preload" type="font/woff2"/>
@@ -26,48 +27,47 @@
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" rel="preload" type="font/woff2"/>
 <link href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/application-6ea79f646cbe1a36f79bf37e01f2bbfdd193812b71988942c2bcd42c34cec8d0.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/media-7b01183c64a6819c82ef4f23a3087f1ff79f8de786653d6ffb10a07d2a5b70ef.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/application-a8e56dc9b9064086646f2f8bcd562ce7e39a07396bea8dbb7bc37a0cb427ed08.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/media-43f59393eeec00930b7a9c437a522faee8b8fa0e9ba16bcb7ffabe6f94d84afd.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/v4/ott-c7e13d5e748448c22fa3b72eea0a7b474e24ef18e75f7658b5c6a2ce43dbd790.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/v4/image-f92aec523e5c3b68d56abad962cf2e30934fa774ebaca9d06cf8584d5a464c09.css" media="screen" rel="stylesheet"/>
 <meta content="The Blackcoat's Daughter" property="og:title"/>
-<meta content="In the dead of winter, Kat and Rose, two very different girls, find themselves spending winter break at their prestigious prep school. What they don't know is that Kat is being stalked by an evil entity, and their lives are about to change forever. Meanwhile, Joan, a young, troubled woman, makes her way across a frozen landscape towards the school. But why?" property="og:description"/>
+<meta content="Two young students at a prestigious prep school for girls are assailed by an evil, invisible power when they are stranded at the school over winter break." property="og:description"/>
 <meta content="/t/p/w500/1XClORu9OKD0uiHqDcBy3mXr5mZ.jpg" property="og:image"/>
 <meta content="/t/p/w780/sQMts3InFfqd9NNzwISwLoOn6KN.jpg" property="og:image"/>
 <meta content="movie" property="og:type"/>
-<meta content="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter" property="og:url"/>
+<meta content="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter" property="og:url"/>
 <meta content="The Movie Database" property="og:site_name"/>
 <meta content="141280979243998" property="fb:app_id"/>
 <meta content="photo" name="twitter:card"/>
 <meta content="The Blackcoat's Daughter" name="twitter:title"/>
-<meta content="In the dead of winter, Kat and Rose, two very different girls, find themselves spending winter break at their prestigious prep school. What they don't know is that Kat is being stalked by an evil entity, and their lives are about to change forever. Meanwhile, Joan, a young, troubled woman, makes her way across a frozen landscape towards the school. But why?" name="twitter:description"/>
+<meta content="Two young students at a prestigious prep school for girls are assailed by an evil, invisible power when they are stranded at the school over winter break." name="twitter:description"/>
 <meta content="/t/p/w780/sQMts3InFfqd9NNzwISwLoOn6KN.jpg" name="twitter:image"/>
 <meta content="780" name="twitter:image:width"/>
 <meta content="439" name="twitter:image:height"/>
 <meta content="@themoviedb" name="twitter:site"/>
-<meta content="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter" name="twitter:url"/>
-<meta content="In the dead of winter, Kat and Rose, two very different girls, find themselves spending winter break at their prestigious prep school. What they don't know is that Kat is being stalked by an evil entity, and their lives are about to change forever. Meanwhile, Joan, a young, troubled woman, makes her way across a frozen landscape towards the school. But why?" name="description"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter" hreflang="x-default" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=da-DK" hreflang="da-DK" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=de-DE" hreflang="de-DE" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=el-GR" hreflang="el-GR" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=en-US" hreflang="en-US" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=es-ES" hreflang="es-ES" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=fi-FI" hreflang="fi-FI" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=fr-FR" hreflang="fr-FR" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=he-IL" hreflang="he-IL" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=hu-HU" hreflang="hu-HU" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=it-IT" hreflang="it-IT" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=ko-KR" hreflang="ko-KR" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=nl-NL" hreflang="nl-NL" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=pl-PL" hreflang="pl-PL" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=pt-BR" hreflang="pt-BR" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=ru-RU" hreflang="ru-RU" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=sv-SE" hreflang="sv-SE" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=tr-TR" hreflang="tr-TR" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=uk-UA" hreflang="uk-UA" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=zh-CN" hreflang="zh-CN" rel="alternate"/>
-<link href="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=zh-TW" hreflang="zh-TW" rel="alternate"/>
+<meta content="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter" name="twitter:url"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter" hreflang="x-default" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=da-DK" hreflang="da-DK" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=de-DE" hreflang="de-DE" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=el-GR" hreflang="el-GR" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=en-US" hreflang="en-US" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=es-ES" hreflang="es-ES" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=fi-FI" hreflang="fi-FI" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=fr-FR" hreflang="fr-FR" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=he-IL" hreflang="he-IL" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=hu-HU" hreflang="hu-HU" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=it-IT" hreflang="it-IT" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=ko-KR" hreflang="ko-KR" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=nl-NL" hreflang="nl-NL" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=pl-PL" hreflang="pl-PL" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=pt-BR" hreflang="pt-BR" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=ru-RU" hreflang="ru-RU" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=sv-SE" hreflang="sv-SE" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=tr-TR" hreflang="tr-TR" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=uk-UA" hreflang="uk-UA" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=zh-CN" hreflang="zh-CN" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter?language=zh-TW" hreflang="zh-TW" rel="alternate"/>
 
 
 
@@ -162,12 +162,12 @@
 <style>
   
     html {
-      --primaryColor: #060202;
+      --primaryColor: rgba(31.5, 10.5, 10.5, 1);
       --primaryColorContrast: #ffffff;
     }
 
     div.header {
-      background: linear-gradient(to bottom right, rgba(2.35%, 0.78%, 0.78%, 1.00), rgba(2.35%, 0.78%, 0.78%, 0.84));
+      background: linear-gradient(to bottom right, rgba(31.5, 10.5, 10.5, 1), rgba(31.5, 10.5, 10.5, 0.84));
     }
 
     div.column_wrapper div.settings_panel h3 {
@@ -235,7 +235,7 @@
 
     
       section.inner_content div.custom_bg {
-        background-image: linear-gradient(to right, rgba(2.35%, 0.78%, 0.78%, 1.00) 150px, rgba(2.35%, 0.78%, 0.78%, 0.84) 100%);
+        background-image: linear-gradient(to right, rgba(31.5, 10.5, 10.5, 1) 150px, rgba(31.5, 10.5, 10.5, 0.84) 100%);
       }
     
   
@@ -292,8 +292,8 @@
 
       <ul class="media">
 <li><a class="no_click" href="#" id="share" title="Share">Share Link</a></li>
-<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fwww.themoviedb.org%2Fmovie%2F334536-the-blackcoat-s-daughter" rel="noopener" target="_blank">Facebook</a></li>
-<li><a href="https://twitter.com/intent/tweet?url=http%3A%2F%2Fwww.themoviedb.org%2Fmovie%2F334536-the-blackcoat-s-daughter&amp;text=The Blackcoat's Daughter @themoviedb&amp;related=themoviedb" rel="noopener" target="_blank">Tweet</a></li>
+<li><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.themoviedb.org%2Fmovie%2F334536-the-blackcoat-s-daughter" rel="noopener" target="_blank">Facebook</a></li>
+<li><a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.themoviedb.org%2Fmovie%2F334536-the-blackcoat-s-daughter&amp;text=The Blackcoat's Daughter @themoviedb&amp;related=themoviedb" rel="noopener" target="_blank">Tweet</a></li>
 </ul>
 </li>
 </ul>
@@ -323,12 +323,12 @@
 </div>
 <div class="button">
 <div class="provider">
-<img alt="Now Streaming on EntertainTV" height="36" src="/t/p/original/6QfNLK9toSu2bvsWN7A0sEsTz3j.jpg" width="36"/>
+<img alt="Now Streaming on Joyn Plus" height="36" src="/t/p/original/2joD3S2goOB6lmepX35A8dmaqgM.jpg" width="36"/>
 </div>
 <div class="text">
 <span>
 <h4>Now Streaming</h4>
-<h3><a class="no_click" href="/movie/334536-the-blackcoat-s-daughter/watch" title="Now Streaming on EntertainTV">Watch Now</a></h3>
+<h3><a class="no_click" href="/movie/334536-the-blackcoat-s-daughter/watch" title="Now Streaming on Joyn Plus">Watch Now</a></h3>
 </span>
 </div>
 </div>
@@ -363,9 +363,9 @@
 <li class="chart">
 <div class="consensus details">
 <div class="outer_ring">
-<div class="user_score_chart" data-bar-color="#d2d531" data-percent="57.0" data-track-color="#423d0f">
+<div class="user_score_chart" data-bar-color="#d2d531" data-percent="58.0" data-track-color="#423d0f">
 <div class="percent">
-<span class="icon icon-r57"></span>
+<span class="icon icon-r58"></span>
 </div>
 </div>
 </div>
@@ -392,7 +392,7 @@
 <h3 class="tagline" dir="auto">Abandoned as a child. Raised by the dark.</h3>
 <h3 dir="auto">Overview</h3>
 <div class="overview" dir="auto">
-<p>In the dead of winter, Kat and Rose, two very different girls, find themselves spending winter break at their prestigious prep school. What they don't know is that Kat is being stalked by an evil entity, and their lives are about to change forever. Meanwhile, Joan, a young, troubled woman, makes her way across a frozen landscape towards the school. But why?</p>
+<p>Two young students at a prestigious prep school for girls are assailed by an evil, invisible power when they are stranded at the school over winter break.</p>
 </div>
 <ol class="people no_image">
 <li class="profile">
@@ -421,7 +421,7 @@
 <ol class="people scroller">
 <li class="card">
 <a href="/person/34847-emma-roberts">
-<img alt="Emma Roberts" class="profile" loading="lazy" src="/t/p/w138_and_h175_face/f3x47JEO4gsyymjUASGl0tIrdX0.jpg" srcset="/t/p/w138_and_h175_face/f3x47JEO4gsyymjUASGl0tIrdX0.jpg 1x, /t/p/w276_and_h350_face/f3x47JEO4gsyymjUASGl0tIrdX0.jpg 2x"/>
+<img alt="Emma Roberts" class="profile" loading="lazy" src="/t/p/w138_and_h175_face/87w6fTvmJTQScgKKJFS91hYJ33a.jpg" srcset="/t/p/w138_and_h175_face/87w6fTvmJTQScgKKJFS91hYJ33a.jpg 1x, /t/p/w276_and_h350_face/87w6fTvmJTQScgKKJFS91hYJ33a.jpg 2x"/>
 </a>
 <p><a href="/person/34847-emma-roberts">Emma Roberts</a></p>
 <p class="character">Joan Marsh</p>
@@ -435,7 +435,7 @@
 </li>
 <li class="card">
 <a href="/person/86232-lucy-boynton">
-<img alt="Lucy Boynton" class="profile" loading="lazy" src="/t/p/w138_and_h175_face/9BSm1WVa6t0aj1cIHuVudkGVVy2.jpg" srcset="/t/p/w138_and_h175_face/9BSm1WVa6t0aj1cIHuVudkGVVy2.jpg 1x, /t/p/w276_and_h350_face/9BSm1WVa6t0aj1cIHuVudkGVVy2.jpg 2x"/>
+<img alt="Lucy Boynton" class="profile" loading="lazy" src="/t/p/w138_and_h175_face/wKNUTqAfi3QW2t2MwMotwOXKkZx.jpg" srcset="/t/p/w138_and_h175_face/wKNUTqAfi3QW2t2MwMotwOXKkZx.jpg 1x, /t/p/w276_and_h350_face/wKNUTqAfi3QW2t2MwMotwOXKkZx.jpg 2x"/>
 </a>
 <p><a href="/person/86232-lucy-boynton">Lucy Boynton</a></p>
 <p class="character">Rose</p>
@@ -609,12 +609,12 @@
 <li><a href="/keyword/9957-loneliness/movie">loneliness</a></li>
 <li><a href="/keyword/10093-priest/movie">priest</a></li>
 <li><a href="/keyword/11181-decapitation/movie">decapitation</a></li>
+<li><a href="/keyword/40865-new-york-state/movie">new york state</a></li>
 <li><a href="/keyword/157418-boiler-room/movie">boiler room</a></li>
 <li><a href="/keyword/189414-furnace/movie">furnace</a></li>
 <li><a href="/keyword/191527-phone-call/movie">phone call</a></li>
 <li><a href="/keyword/197104-all-girls-school/movie">all girls school</a></li>
 <li><a href="/keyword/219950-good-samaritan/movie">good samaritan</a></li>
-<li><a href="/keyword/223545-upstate-new-york/movie">upstate new york</a></li>
 <li><a href="/keyword/241827-demonic/movie">demonic</a></li>
 </ul>
 </section>
@@ -648,21 +648,8 @@
 </div>
 <div class="edit_leader">
 <div class="avatar">
-<a href="/u/ottobud">
-<img alt="ottobud" class="avatar" loading="lazy" src="https://secure.gravatar.com/avatar/c139f47c9c3c5980ecb226315c0797c2.jpg?s=45" srcset="https://secure.gravatar.com/avatar/c139f47c9c3c5980ecb226315c0797c2.jpg?s=45 1x, https://secure.gravatar.com/avatar/c139f47c9c3c5980ecb226315c0797c2.jpg?s=90 2x"/>
-</a>
-</div>
-<div class="info">
-<p class="edit_count">
-            23<br/>
-<a href="/u/ottobud">ottobud</a>
-</p>
-</div>
-</div>
-<div class="edit_leader">
-<div class="avatar">
 <a href="/u/lineker">
-<img alt="lineker" class="avatar" loading="lazy" src="/t/p/w45_and_h45_face/5fNIitOamsKMy70ZACR8InS7Iy1.jpg" srcset="/t/p/w45_and_h45_face/5fNIitOamsKMy70ZACR8InS7Iy1.jpg 1x, /t/p/w90_and_h90_face/5fNIitOamsKMy70ZACR8InS7Iy1.jpg 2x"/>
+<img alt="lineker" class="avatar" loading="lazy" src="/t/p/w45_and_h45_face/uJngdDd0WzNYGwlmBGYrDxp1akP.jpg" srcset="/t/p/w45_and_h45_face/uJngdDd0WzNYGwlmBGYrDxp1akP.jpg 1x, /t/p/w90_and_h90_face/uJngdDd0WzNYGwlmBGYrDxp1akP.jpg 2x"/>
 </a>
 </div>
 <div class="info">
@@ -674,8 +661,21 @@
 </div>
 <div class="edit_leader">
 <div class="avatar">
+<a href="/u/ottobud">
+<img alt="ottobud" class="avatar" loading="lazy" src="https://www.gravatar.com/avatar/c139f47c9c3c5980ecb226315c0797c2.jpg?s=45" srcset="https://www.gravatar.com/avatar/c139f47c9c3c5980ecb226315c0797c2.jpg?s=45 1x, https://www.gravatar.com/avatar/c139f47c9c3c5980ecb226315c0797c2.jpg?s=90 2x"/>
+</a>
+</div>
+<div class="info">
+<p class="edit_count">
+            23<br/>
+<a href="/u/ottobud">ottobud</a>
+</p>
+</div>
+</div>
+<div class="edit_leader">
+<div class="avatar">
 <a href="/u/Negan">
-<img alt="Negan" class="avatar" loading="lazy" src="https://secure.gravatar.com/avatar/06121baecf6f17298a04df62ec8709a0.jpg?s=45" srcset="https://secure.gravatar.com/avatar/06121baecf6f17298a04df62ec8709a0.jpg?s=45 1x, https://secure.gravatar.com/avatar/06121baecf6f17298a04df62ec8709a0.jpg?s=90 2x"/>
+<img alt="Negan" class="avatar" loading="lazy" src="https://www.gravatar.com/avatar/06121baecf6f17298a04df62ec8709a0.jpg?s=45" srcset="https://www.gravatar.com/avatar/06121baecf6f17298a04df62ec8709a0.jpg?s=45 1x, https://www.gravatar.com/avatar/06121baecf6f17298a04df62ec8709a0.jpg?s=90 2x"/>
 </a>
 </div>
 <div class="info">
@@ -730,7 +730,7 @@
 <fieldset>
 <label class="k-form-field" for="short_url">
 <span><span class="glyphicon_v2 link"></span> URL</span>
-<input class="k-textbox" name="short_url" onclick="this.select()" type="text" value="http://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter"/>
+<input class="k-textbox" name="short_url" onclick="this.select()" type="text" value="https://www.themoviedb.org/movie/334536-the-blackcoat-s-daughter"/>
 </label>
 </fieldset>
 </form>
@@ -763,7 +763,6 @@
 <h3>Get Involved</h3>
 <ul>
 <li><a href="/bible"><span class="glyphicons glyphicons-asterisk"></span> Contribution Bible</a></li>
-<li><a href="/apps">3rd Party Applications</a></li>
 <li><a href="/movie/new">Add New Movie</a></li>
 <li><a href="/tv/new">Add New TV Show</a></li>
 </ul>
@@ -786,7 +785,7 @@
 </ul>
 </div>
 </nav>
-<section>Build eb771e1 (2761)</section>
+<section>Build adf2d4d (3501)</section>
 </footer>
 <div id="cookie_notice">
 <p>We use cookies to help give you a better experience on TMDB. You can review our <a href="https://www.tivo.com/legal/cookies" rel="noopener" target="_blank">cookie policy</a> to learn more. By continuing to use TMDB, you are agreeing to this policy.</p>

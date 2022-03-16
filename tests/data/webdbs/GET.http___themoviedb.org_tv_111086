@@ -10,6 +10,7 @@
 <meta content="yes" name="mobile-web-app-capable"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="This investigative docuseries explores the greed, fraud and corruption that built up - and ultimately brought down - India's most infamous tycoons." name="description"/>
 <meta content="/assets/2/v4/icons/mstile-144x144-30e7905a8315a080978ad6aeb71c69222b72c2f75d26dab1224173a96fecc962.png" name="msapplication-TileImage"/>
 <meta content="#032541" name="msapplication-TileColor"/>
 <meta content="#032541" name="theme-color"/>
@@ -17,8 +18,8 @@
 <link href="/assets/2/favicon-32x32-543a21832c8931d3494a68881f6afcafc58e96c5d324345377f3197a37b367b5.png" rel="icon" sizes="32x32" type="image/png"/>
 <link href="/assets/2/favicon-16x16-b362d267873ce9c5a39f686a11fe67fec2a72ed25fa8396c11b71aa43c938b11.png" rel="icon" sizes="16x16" type="image/png"/>
 <link href="/manifest.json?version=3" rel="manifest"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires" rel="canonical"/>
-<link href="/opensearch.xml" rel="search" title="TMDb Search" type="application/opensearchdescription+xml"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires" rel="canonical"/>
+<link href="/opensearch.xml" rel="search" title="TMDB Search" type="application/opensearchdescription+xml"/>
 <link as="font" crossorigin="" href="/assets/2/Consensus-3cba2c4d050ea63dbf7783173d288faf9ecb2942515a5e7f6e1beecabb2eaf72.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular-f38472b9e378b8c936f55a92677f575ab69e414d7cc3706ecfefeacd994b7975.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-italic-48273a74acbc1611b6ef1d0a771bb8ef042b9922b51d5bff560571dddcb5542a.woff2" rel="preload" type="font/woff2"/>
@@ -26,8 +27,8 @@
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" rel="preload" type="font/woff2"/>
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" rel="preload" type="font/woff2"/>
 <link href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/application-6ea79f646cbe1a36f79bf37e01f2bbfdd193812b71988942c2bcd42c34cec8d0.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/media-7b01183c64a6819c82ef4f23a3087f1ff79f8de786653d6ffb10a07d2a5b70ef.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/application-a8e56dc9b9064086646f2f8bcd562ce7e39a07396bea8dbb7bc37a0cb427ed08.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/media-43f59393eeec00930b7a9c437a522faee8b8fa0e9ba16bcb7ffabe6f94d84afd.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/v4/ott-c7e13d5e748448c22fa3b72eea0a7b474e24ef18e75f7658b5c6a2ce43dbd790.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/v4/image-f92aec523e5c3b68d56abad962cf2e30934fa774ebaca9d06cf8584d5a464c09.css" media="screen" rel="stylesheet"/>
 <meta content="Bad Boy Billionaires: India" property="og:title"/>
@@ -35,7 +36,7 @@
 <meta content="/t/p/w500/dosaLkSyo4S98wjWgKsEaf1v5zQ.jpg" property="og:image"/>
 <meta content="/t/p/w780/kPVMCvZWmOWumIfZHdIU0Hl3GHc.jpg" property="og:image"/>
 <meta content="tv" property="og:type"/>
-<meta content="http://www.themoviedb.org/tv/111086-bad-boy-billionaires-india" property="og:url"/>
+<meta content="https://www.themoviedb.org/tv/111086-bad-boy-billionaires-india" property="og:url"/>
 <meta content="The Movie Database" property="og:site_name"/>
 <meta content="141280979243998" property="fb:app_id"/>
 <meta content="photo" name="twitter:card"/>
@@ -45,18 +46,18 @@
 <meta content="780" name="twitter:image:width"/>
 <meta content="439" name="twitter:image:height"/>
 <meta content="@themoviedb" name="twitter:site"/>
-<meta content="http://www.themoviedb.org/tv/111086-bad-boy-billionaires-india" name="twitter:url"/>
-<meta content="This investigative docuseries explores the greed, fraud and corruption that built up - and ultimately brought down - India's most infamous tycoons." name="description"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires" hreflang="x-default" rel="alternate"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=cs-CZ" hreflang="cs-CZ" rel="alternate"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=en-US" hreflang="en-US" rel="alternate"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=es-ES" hreflang="es-ES" rel="alternate"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=he-IL" hreflang="he-IL" rel="alternate"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=ja-JP" hreflang="ja-JP" rel="alternate"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=ko-KR" hreflang="ko-KR" rel="alternate"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=pt-BR" hreflang="pt-BR" rel="alternate"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=zh-CN" hreflang="zh-CN" rel="alternate"/>
-<link href="http://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=zh-TW" hreflang="zh-TW" rel="alternate"/>
+<meta content="https://www.themoviedb.org/tv/111086-bad-boy-billionaires-india" name="twitter:url"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires" hreflang="x-default" rel="alternate"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=cs-CZ" hreflang="cs-CZ" rel="alternate"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=el-GR" hreflang="el-GR" rel="alternate"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=en-US" hreflang="en-US" rel="alternate"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=es-ES" hreflang="es-ES" rel="alternate"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=he-IL" hreflang="he-IL" rel="alternate"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=ja-JP" hreflang="ja-JP" rel="alternate"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=ko-KR" hreflang="ko-KR" rel="alternate"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=pt-BR" hreflang="pt-BR" rel="alternate"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=zh-CN" hreflang="zh-CN" rel="alternate"/>
+<link href="https://www.themoviedb.org/tv/111086-bad-boy-billionaires?language=zh-TW" hreflang="zh-TW" rel="alternate"/>
 
 
 
@@ -151,12 +152,12 @@
 <style>
   
     html {
-      --primaryColor: #0b0706;
+      --primaryColor: rgba(31.5, 10.5, 10.5, 1);
       --primaryColorContrast: #ffffff;
     }
 
     div.header {
-      background: linear-gradient(to bottom right, rgba(4.31%, 2.75%, 2.35%, 1.00), rgba(4.31%, 2.75%, 2.35%, 0.84));
+      background: linear-gradient(to bottom right, rgba(31.5, 10.5, 10.5, 1), rgba(31.5, 10.5, 10.5, 0.84));
     }
 
     div.column_wrapper div.settings_panel h3 {
@@ -224,7 +225,7 @@
 
     
       section.inner_content div.custom_bg {
-        background-image: linear-gradient(to right, rgba(4.31%, 2.75%, 2.35%, 1.00) 150px, rgba(4.31%, 2.75%, 2.35%, 0.84) 100%);
+        background-image: linear-gradient(to right, rgba(31.5, 10.5, 10.5, 1) 150px, rgba(31.5, 10.5, 10.5, 0.84) 100%);
       }
     
   
@@ -281,8 +282,8 @@
 
       <ul class="media">
 <li><a class="no_click" href="#" id="share" title="Share">Share Link</a></li>
-<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fwww.themoviedb.org%2Ftv%2F111086-bad-boy-billionaires" rel="noopener" target="_blank">Facebook</a></li>
-<li><a href="https://twitter.com/intent/tweet?url=http%3A%2F%2Fwww.themoviedb.org%2Ftv%2F111086-bad-boy-billionaires&amp;text=Bad Boy Billionaires: India @themoviedb&amp;related=themoviedb" rel="noopener" target="_blank">Tweet</a></li>
+<li><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.themoviedb.org%2Ftv%2F111086-bad-boy-billionaires" rel="noopener" target="_blank">Facebook</a></li>
+<li><a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.themoviedb.org%2Ftv%2F111086-bad-boy-billionaires&amp;text=Bad Boy Billionaires: India @themoviedb&amp;related=themoviedb" rel="noopener" target="_blank">Tweet</a></li>
 </ul>
 </li>
 </ul>
@@ -312,7 +313,7 @@
 </div>
 <div class="button">
 <div class="provider">
-<img alt="Now Streaming on Netflix" height="36" src="/t/p/original/9A1JSVmSxsyaBK4SUFsYVqbAYfW.jpg" width="36"/>
+<img alt="Now Streaming on Netflix" height="36" src="/t/p/original/t2yyOv40HZeVlLjYsCsPHnWLk4W.jpg" width="36"/>
 </div>
 <div class="text">
 <span>
@@ -502,7 +503,11 @@
 </section>
 <section class="keywords right_column">
 <h4><bdi>Keywords</bdi></h4>
-<p>No keywords have been added.</p>
+<ul>
+<li><a class="rounded" href="/keyword/10594-money/tv">money</a></li>
+<li><a class="rounded" href="/keyword/12547-billionaire/tv">billionaire</a></li>
+<li><a class="rounded" href="/keyword/14636-india/tv">india</a></li>
+</ul>
 </section>
 </div>
 </div>
@@ -535,40 +540,40 @@
 </div>
 <div class="edit_leader">
 <div class="avatar">
+<a href="/u/RuiZafon">
+<span class="round initials background_color yellow">R</span>
+</a>
+</div>
+<div class="info">
+<p class="edit_count">
+            13<br/>
+<a href="/u/RuiZafon">RuiZafon</a>
+</p>
+</div>
+</div>
+<div class="edit_leader">
+<div class="avatar">
 <a href="/u/WardenclyffeTower">
-<img alt="Classic Loki" class="avatar" loading="lazy" src="/t/p/w45_and_h45_face/7Se3nmcpnhEaG8LPiQOa7UqzGTZ.jpg" srcset="/t/p/w45_and_h45_face/7Se3nmcpnhEaG8LPiQOa7UqzGTZ.jpg 1x, /t/p/w90_and_h90_face/7Se3nmcpnhEaG8LPiQOa7UqzGTZ.jpg 2x"/>
+<img alt="The Jackal" class="avatar" loading="lazy" src="/t/p/w45_and_h45_face/9UhDsDZYJZdtiyPz5CCfiDgh0kk.jpg" srcset="/t/p/w45_and_h45_face/9UhDsDZYJZdtiyPz5CCfiDgh0kk.jpg 1x, /t/p/w90_and_h90_face/9UhDsDZYJZdtiyPz5CCfiDgh0kk.jpg 2x"/>
 </a>
 </div>
 <div class="info">
 <p class="edit_count">
             5<br/>
-<a href="/u/WardenclyffeTower">Classic Loki</a>
+<a href="/u/WardenclyffeTower">The Jackal</a>
 </p>
 </div>
 </div>
 <div class="edit_leader">
 <div class="avatar">
-<a href="/u/supertlo888">
-<span class="round initials background_color green">s</span>
+<a href="/u/talestalker">
+<img alt="talestalker" class="avatar" loading="lazy" src="/t/p/w45_and_h45_face/hjvyN4SrXqXy316GkbOshW8sGXJ.jpg" srcset="/t/p/w45_and_h45_face/hjvyN4SrXqXy316GkbOshW8sGXJ.jpg 1x, /t/p/w90_and_h90_face/hjvyN4SrXqXy316GkbOshW8sGXJ.jpg 2x"/>
 </a>
 </div>
 <div class="info">
 <p class="edit_count">
             4<br/>
-<a href="/u/supertlo888">supertlo888</a>
-</p>
-</div>
-</div>
-<div class="edit_leader">
-<div class="avatar">
-<a href="/u/michl1">
-<span class="round initials background_color silver">m</span>
-</a>
-</div>
-<div class="info">
-<p class="edit_count">
-            4<br/>
-<a href="/u/michl1">michl1</a>
+<a href="/u/talestalker">talestalker</a>
 </p>
 </div>
 </div>
@@ -618,7 +623,7 @@
 <fieldset>
 <label class="k-form-field" for="short_url">
 <span><span class="glyphicon_v2 link"></span> URL</span>
-<input class="k-textbox" name="short_url" onclick="this.select()" type="text" value="http://www.themoviedb.org/tv/111086-bad-boy-billionaires-india"/>
+<input class="k-textbox" name="short_url" onclick="this.select()" type="text" value="https://www.themoviedb.org/tv/111086-bad-boy-billionaires-india"/>
 </label>
 </fieldset>
 </form>
@@ -651,7 +656,6 @@
 <h3>Get Involved</h3>
 <ul>
 <li><a href="/bible"><span class="glyphicons glyphicons-asterisk"></span> Contribution Bible</a></li>
-<li><a href="/apps">3rd Party Applications</a></li>
 <li><a href="/movie/new">Add New Movie</a></li>
 <li><a href="/tv/new">Add New TV Show</a></li>
 </ul>
@@ -674,7 +678,7 @@
 </ul>
 </div>
 </nav>
-<section>Build eb771e1 (2761)</section>
+<section>Build adf2d4d (3501)</section>
 </footer>
 <div id="cookie_notice">
 <p>We use cookies to help give you a better experience on TMDB. You can review our <a href="https://www.tivo.com/legal/cookies" rel="noopener" target="_blank">cookie policy</a> to learn more. By continuing to use TMDB, you are agreeing to this policy.</p>
