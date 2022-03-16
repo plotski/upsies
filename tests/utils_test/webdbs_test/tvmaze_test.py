@@ -58,7 +58,7 @@ async def test_search_returns_list_of_SearchResults(api, store_response):
     argvalues=(
         (Query('Star Wars', year=2003), ('Star Wars: Clone Wars',)),
         (Query('Star Wars', year='2003'), ('Star Wars: Clone Wars',)),
-        (Query('Star Wars', year=2014), ('Star Wars Rebels',)),
+        (Query('Star Wars', year=2014), ('Star Wars: Rebels',)),
         (Query('Star Wars', year='1990'), ()),
     ),
     ids=lambda value: str(value),
@@ -102,7 +102,7 @@ async def test_search_for_movie(query, exp_titles, api, store_response):
     argnames=('title', 'exp_cast'),
     argvalues=(
         ('Star Wars: Clone Wars', ('André Sogliuzzo', 'John DiMaggio')),
-        ('Star Wars Rebels', ('Taylor Gray', 'Vanessa Marshall')),
+        ('Star Wars: Rebels', ('Taylor Gray', 'Vanessa Marshall')),
         ('Star Wars Resistance', ('Christopher Sean', 'Suzie McGrath')),
     ),
     ids=lambda value: str(value),
@@ -136,7 +136,7 @@ async def test_search_result_countries(title, exp_countries, api, store_response
     argnames=('title', 'exp_id'),
     argvalues=(
         ('Star Wars: Clone Wars', 1259),
-        ('Star Wars Rebels', 117),
+        ('Star Wars: Rebels', 117),
         ('Star Wars Resistance', 36483),
     ),
 )
@@ -174,7 +174,7 @@ async def test_search_result_genres(title, exp_genres, api, store_response):
     argnames=('title', 'summary'),
     argvalues=(
         ('Star Wars: Clone Wars', 'downfall of the Jedi'),
-        ('Star Wars Rebels', 'set five years before the events of Star Wars: Episode IV'),
+        ('Star Wars: Rebels', 'set five years before the events of Star Wars: Episode IV'),
         ('Star Wars Resistance', 'Kazuda Xiono'),
     ),
 )
@@ -215,7 +215,7 @@ async def test_search_result_title_original(api, store_response, mocker):
     argnames=('id', 'exp_title'),
     argvalues=(
         (1259, 'Star Wars: Clone Wars'),
-        (117, 'Star Wars Rebels'),
+        (117, 'Star Wars: Rebels'),
         (36483, 'Star Wars Resistance'),
     ),
 )
@@ -237,7 +237,7 @@ async def test_search_result_type(api, store_response):
     argnames=('title', 'exp_url'),
     argvalues=(
         ('Star Wars: Clone Wars', 'https://www.tvmaze.com/shows/1259/star-wars-clone-wars'),
-        ('Star Wars Rebels', 'https://www.tvmaze.com/shows/117/star-wars-rebels'),
+        ('Star Wars: Rebels', 'https://www.tvmaze.com/shows/117/star-wars-rebels'),
         ('Star Wars Resistance', 'https://www.tvmaze.com/shows/36483/star-wars-resistance'),
     ),
 )
@@ -252,7 +252,7 @@ async def test_search_result_url(title, exp_url, api, store_response):
     argnames=('title', 'exp_year'),
     argvalues=(
         ('Star Wars: Clone Wars', '2003'),
-        ('Star Wars Rebels', '2014'),
+        ('Star Wars: Rebels', '2014'),
         ('Star Wars Resistance', '2018'),
     ),
 )
@@ -365,12 +365,12 @@ async def test_genres(id, exp_genres, api, store_response):
 @pytest.mark.parametrize(
     argnames='id, season, exp_url',
     argvalues=(
-        (1259, None, 'https://static.tvmaze.com/uploads/images/medium_portrait/7/18007.jpg'),
+        (1259, None, 'https://static.tvmaze.com/uploads/images/medium_portrait/393/983792.jpg'),
         (35256, None, 'https://static.tvmaze.com/uploads/images/medium_portrait/149/374799.jpg'),
         (36072, None, 'https://static.tvmaze.com/uploads/images/medium_portrait/201/504665.jpg'),
-        (1259, 3, 'https://static.tvmaze.com/uploads/images/medium_portrait/7/18007.jpg'),
+        (1259, 3, 'https://static.tvmaze.com/uploads/images/medium_portrait/393/983792.jpg'),
         (1910, 2, 'https://static.tvmaze.com/uploads/images/medium_portrait/252/631184.jpg'),
-        (117, 1, 'https://static.tvmaze.com/uploads/images/medium_portrait/51/127565.jpg'),
+        (117, 1, 'https://static.tvmaze.com/uploads/images/medium_portrait/393/983692.jpg'),
         (None, None, ''),
     ),
 )
