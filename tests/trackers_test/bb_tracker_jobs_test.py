@@ -1542,7 +1542,7 @@ async def test_get_series_title_and_release_info_episode(
     elif exp_episode_info == 'date':
         assert f'The Foo {date} [WEB-DL' in title
     else:
-        assert f'The Foo [WEB-DL' in title
+        assert 'The Foo [WEB-DL' in title
 
 @pytest.mark.asyncio
 async def test_get_series_title_and_release_info_has_release_info(bb_tracker_jobs, mocker):
