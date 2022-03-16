@@ -170,9 +170,9 @@ async def test_search_result_genres(query, exp_genres, api, store_response):
     argnames=('query', 'exp_summary'),
     argvalues=(
         (Query('The Blues Brothers', year=1980), 'released from prison'),
-        (Query('February', year='2017'), 'spending winter break at their prestigious prep school'),
+        (Query('February', year='2017'), 'Two young students at a prestigious prep school for girls'),
         (Query('Deadwood', year=2004), 'woven around actual historic events'),
-        (Query('Lost & Found Music Studios', year=2015), ''),
+        (Query('Lost & Found Music Studios', year=2015), 'singers-songwriters in an elite music program form bonds of friendship'),
         (Query('Anyone Can Play', year=1968), ''),
     ),
     ids=lambda value: str(value),
@@ -352,8 +352,8 @@ async def test_creators(id, exp_creators, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_directors'),
     argvalues=(
-        ('movie/125244', (('Jack Kinney', 'http://themoviedb.org/person/74565-jack-kinney'),
-                          ('James Algar', 'http://themoviedb.org/person/5690-james-algar'))),
+        ('movie/125244', (('James Algar', 'http://themoviedb.org/person/5690-james-algar'),
+                          ('Jack Kinney', 'http://themoviedb.org/person/74565-jack-kinney'))),
         ('movie/334536', (('Oz Perkins', 'http://themoviedb.org/person/90609-oz-perkins'),)),
         ('tv/1406', ()),
         ('tv/74802', ()),
@@ -396,11 +396,11 @@ async def test_genres(id, exp_genres, api, store_response):
 @pytest.mark.parametrize(
     argnames='id, exp_url',
     argvalues=(
-        ('movie/525', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/b0hq1d2d7FIvRGNLewKLm79JNTK.jpg'),
+        ('movie/525', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg'),
         ('movie/334536', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/1XClORu9OKD0uiHqDcBy3mXr5mZ.jpg'),
         ('tv/1406', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/4Yp35DVbVOAWkfQUIQ7pbh3u0aN.jpg'),
         ('tv/74802', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/cUKqWS2v7D6DVKQze2Iz2netwRH.jpg'),
-        ('tv/66260', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/1VaaYENYc8SHsyeudATNZVVfzyx.jpg'),
+        ('tv/66260', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/hlOWMr80oB0uNbp3eUYxUoCrwfJ.jpg'),
         ('movie/3405', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/sf31ob8bHZsgCH01J8PutaOnaTA.jpg'),
         (None, ''),
     ),
@@ -436,11 +436,11 @@ async def test_runtimes(id, exp_runtimes, api, store_response):
     argnames=('id', 'exp_rating'),
     argvalues=(
         ('movie/525', 77.0),
-        ('movie/334536', 57.0),
-        ('tv/1406', 82.0),
+        ('movie/334536', 58.0),
+        ('tv/1406', 81.0),
         ('tv/74802', 68.0),
         ('tv/66260', 88.0),
-        ('movie/3405', 5.0),
+        ('movie/3405', 13.0),
         (None, None),
     ),
     ids=lambda value: str(value),
@@ -455,7 +455,7 @@ async def test_rating(id, exp_rating, api, store_response):
     argnames=('id', 'exp_summary'),
     argvalues=(
         ('movie/525', 'released from prison'),
-        ('movie/334536', 'spending winter break at their prestigious prep school'),
+        ('movie/334536', 'Two young students at a prestigious prep school for girls'),
         ('tv/1406', 'woven around actual historic events'),
         ('tv/74802', 'the body of a young woman on a construction site'),
         ('tv/66260', ''),
