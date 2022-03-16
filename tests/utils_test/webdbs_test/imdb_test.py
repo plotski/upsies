@@ -42,7 +42,7 @@ def test_sanitize_query(query, exp_query, api, store_response):
             ReleaseType.movie,
             '2015',
             ('Emma Roberts', 'Kiernan Shipka', 'Lucy Boynton'),
-            ('Canada',),
+            ('Canada', 'United States'),
             ('Oz Perkins',),
             ('horror', 'mystery', 'thriller'),
             ('Two girls must battle a mysterious evil force when they get left behind '
@@ -109,7 +109,7 @@ async def test_search_returns_list_of_SearchResults(api, store_response):
         (Query('Blues Brothers', year='1998'), 'Blues Brothers 2000'),
         (Query('Blues Brothers', year=1950), ''),
         (Query('Star Wars', year=2008), 'Star Wars: The Clone Wars'),
-        (Query('Star Wars', year=2014), 'Star Wars Rebels'),
+        (Query('Star Wars', year=2014), 'Star Wars: Rebels'),
         (Query('Star Wars', year=1950), ''),
     ),
     ids=lambda value: str(value),
@@ -147,7 +147,7 @@ async def test_search_for_series(query, exp_titles, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
     argvalues=(
-        (Query('star wars', type=ReleaseType.movie), ('Star Wars: Episode IV - A New Hope', 'Star Wars: Episode I - The Phantom Menace')),
+        (Query('blues brothers', type=ReleaseType.movie), ('The Blue Brothers', 'Blues Brothers 2000', 'Brothers in Blue')),
         (Query('rampage', type=ReleaseType.movie), ('Rampage: Capital Punishment', 'American Rampage')),
         (Query('balada triste trompeta', type=ReleaseType.movie), ('The Last Circus',)),
         (Query('time traveling bong', type=ReleaseType.movie), ()),
@@ -184,7 +184,7 @@ async def test_search_result_cast(query, exp_cast, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_countries'),
     argvalues=(
-        (Query('Star Wars', type=ReleaseType.movie, year=1977), ('United States', 'United Kingdom')),
+        (Query('Blues Brothers', type=ReleaseType.movie, year=1980), ('United States',)),
         (Query('Bron Broen', type=ReleaseType.series, year=2011), ('Sweden', 'Denmark', 'Germany')),
         (Query('The Forest', type=ReleaseType.series, year=2017), ('France',)),
         (Query('Karppi', type=ReleaseType.series, year=2018), ('Finland', 'Germany', 'France')),
@@ -291,7 +291,7 @@ async def test_search_result_summary(query, exp_summary, api, store_response):
         (Query('Blues Brothers', year=1980), 'The Blues Brothers'),
         (Query('Blues Brothers', year=1998), 'Blues Brothers 2000'),
         (Query('Star Wars', year=2008), 'Star Wars: The Clone Wars'),
-        (Query('Star Wars', year=2014), 'Star Wars Rebels'),
+        (Query('Star Wars', year=2014), 'Star Wars: Rebels'),
     ),
     ids=lambda value: str(value),
 )
@@ -315,7 +315,6 @@ async def test_search_result_title(query, exp_title, api, store_response):
         (Query('Karppi', type=ReleaseType.series, year=2018), 'Deadwind', 'Karppi'),
         (Query('Olympus Has Fallen', type=ReleaseType.movie, year=2013), '', 'Olympus Has Fallen'),
         (Query('Sin Nombre', type=ReleaseType.movie, year=2009), '', 'Sin Nombre'),
-        (Query('Star Wars', type=ReleaseType.movie, year=1977), '', 'Star Wars: Episode IV - A New Hope'),
         (Query('Stone Cold', type=ReleaseType.movie, year=1991), '', 'Stone Cold'),
         (Query('The Forest', type=ReleaseType.series, year=2017), 'The Forest', 'La forêt'),
         (Query('The Nest', type=ReleaseType.movie, year=2002), 'The Nest', 'Nid de guêpes'),
@@ -449,7 +448,7 @@ async def test_cast(id, exp_cast, api, store_response):
     argnames=('id', 'exp_countries'),
     argvalues=(
         ('tt0080455', ('United States',)),  # Blues Brothers (movie)
-        ('tt3286052', ('Canada',)),  # February (movie)
+        ('tt3286052', ('Canada', 'United States')),  # February (movie)
         ('tt0192802', ('United Kingdom',)),  # Wind in the Willows (TV movie)
         ('tt0471711', ('United States',)),  # Bender's Big Score (Video)
         ('tt0097270', ('United Kingdom',)),  # Elephant (TV Short)
@@ -569,9 +568,9 @@ async def test_poster_url(id, exp_poster_url, api, store_response):
     argnames=('id', 'exp_rating'),
     argvalues=(
         ('tt0080455', 7.9),  # Blues Brothers (movie)
-        ('tt0192802', 7.6),  # Wind in the Willows (TV movie)
+        ('tt0192802', 7.5),  # Wind in the Willows (TV movie)
         ('tt0471711', 7.6),  # Bender's Big Score (Video)
-        ('tt0097270', 7.2),  # Elephant (TV movie)
+        ('tt0097270', 7.1),  # Elephant (TV movie)
         ('tt3472226', 8.0),  # Kung Fury (Short)
         ('tt6560040', 7.2),  # The Forest (mini series)
         ('tt0348914', 8.6),  # Deadwood (series)
@@ -663,7 +662,6 @@ async def test_summary(id, exp_summary, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_title_english', 'exp_title_original'),
     argvalues=(
-        ('tt0076759', '', 'Star Wars: Episode IV - A New Hope'),
         ('tt0078243', 'The 36th Chamber of Shaolin', 'Shao Lin san shi liu fang'),
         ('tt0080455', '', 'The Blues Brothers'),
         ('tt0082242', '', 'Dead & Buried'),

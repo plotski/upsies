@@ -189,8 +189,13 @@ class ImdbApi(WebDbApiBase):
                 soup = await self._get_soup(a_tag['href'])
                 img_tags = [
                     tag
-                    for tag in soup.find_all('img', class_=re.compile(r'^MediaViewerImagestyles__PortraitImage'))
-                    if 'peek' not in tag['class']
+                    for tag in soup.find_all('img', src=re.compile(r'^https?://m.media-amazon.com/images/.*?\.jpg$'))
+                    if (
+                        # Only the main poster has no "peek" class
+                        'peek' not in tag['class']
+                        # Episodes (still images) have the "kJatiV" class
+                        and 'kJatiV' not in tag['class']
+                    )
                 ]
                 if img_tags:
                     url = img_tags[0].get('src')
@@ -204,14 +209,22 @@ class ImdbApi(WebDbApiBase):
     async def rating(self, id):
         if id:
             soup = await self._get_soup(f'title/{id}/')
+
+            # Old website design
             rating_tag = soup.find(itemprop='ratingValue')
+
             if not rating_tag:
-                rating_tag = soup.find(class_=re.compile(r'^AggregateRatingButton__RatingScore.*'))
+                # New website design
+                rating_tag = soup.find(attrs={'data-testid': 'hero-rating-bar__aggregate-rating__score'})
+                if rating_tag and rating_tag.children:
+                    rating_tag = rating_tag.contents[0]
+
             if rating_tag:
                 try:
                     return float(rating_tag.string)
                 except (ValueError, TypeError):
                     pass
+
         return None
 
     _ignored_runtimes_keys = (
@@ -245,7 +258,7 @@ class ImdbApi(WebDbApiBase):
                 # Old website design
                 soup.find(class_='summary_text'),
                 # New website design
-                soup.find(class_=re.compile(r'GenresAndPlot__TextContainerBreakpointXL.*')),
+                soup.find(attrs={'data-testid': 'plot-xl'}),
             )
             for tag in candidates:
                 if tag:
@@ -265,7 +278,7 @@ class ImdbApi(WebDbApiBase):
 
             # Get summary from the "Storyline" section (new website design)
             try:
-                tag = soup.find(class_=re.compile(r'^Storyline__StorylineWrapper.*')).div.div.div
+                tag = soup.find(attrs={'data-testid': 'storyline-plot-summary'})
             except AttributeError:
                 pass
             else:
@@ -396,7 +409,7 @@ class ImdbApi(WebDbApiBase):
 
             else:
                 # New website design
-                subtext_tag = soup.find(class_=re.compile(r'^TitleBlockMetaData__MetaDataList'))
+                subtext_tag = soup.find(class_=re.compile(r'^ipc-inline-list$'))
                 if subtext_tag:
                     subtext = ' '.join(subtext_tag.stripped_strings).lower()
 
@@ -442,7 +455,7 @@ class ImdbApi(WebDbApiBase):
                 subtext = ' '.join(reversed(tuple(subtext_tag.stripped_strings)))
             else:
                 # Series (new website design)
-                subtext_tag = soup.find(class_=re.compile(r'^TitleBlock__TitleMetaDataContainer'))
+                subtext_tag = soup.find(class_=re.compile(r'^ipc-inline-list$'))
                 if subtext_tag:
                     subtext = ' '.join(subtext_tag.stripped_strings)
 
