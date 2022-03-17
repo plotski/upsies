@@ -9,6 +9,7 @@ from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout import Layout
 from prompt_toolkit.layout.containers import HSplit, Window, to_container
+from prompt_toolkit.output import create_output
 
 from ... import utils
 from . import jobwidgets, style
@@ -60,6 +61,11 @@ class TUI:
                 self._exit()
 
         app = Application(
+            # Write TUI to stderr if stdout is redirected. This is useful for
+            # allowing the user to make decisions in the TUI (e.g. selecting an
+            # item from search results) while redirecting the final output
+            # (e.g. an IMDb ID).
+            output=create_output(always_prefer_tty=True),
             layout=self._layout,
             key_bindings=kb,
             style=style.style,
