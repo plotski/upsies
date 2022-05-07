@@ -9,6 +9,8 @@ from .base import ClientApiBase
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
+torf = utils.LazyModule(module='torf', namespace=globals())
+
 
 class RtorrentClientApi(ClientApiBase):
     """
@@ -118,13 +120,13 @@ class RtorrentClientApi(ClientApiBase):
         _log.debug('Adding libtorrent_resume fields')
         torrent = self.read_torrent(torrent_path)
         files = []
-        with utils.torrent.TorrentFileStream(torrent, download_path) as filestream:
+        with torf.TorrentFileStream(torrent, content_path=download_path) as filestream:
             for file in torrent.files:
                 filepath = os.path.join(download_path, file)
                 files.append({
                     'mtime': self._get_mtime(filepath),
                     # Number of chunks in this file
-                    'completed': len(filestream.get_piece_indexes_for_file(file)),
+                    'completed': len(filestream.get_piece_indexes_of_file(file)),
                     # rtorrent_fast_resume.pl sets priority to 0 while autotorrent
                     # sets it to 1. Not sure what's better or if this matters at
                     # all.

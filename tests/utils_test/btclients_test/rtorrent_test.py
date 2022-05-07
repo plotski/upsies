@@ -295,11 +295,11 @@ def test_get_torrent_data_with_resume_fields(mocker):
     )
     mocks.attach_mock(
         mocker.patch(
-            'upsies.utils.torrent.TorrentFileStream',
+            'torf.TorrentFileStream',
         ),
         'TorrentFileStream',
     )
-    mocks.TorrentFileStream.return_value.__enter__.return_value.get_piece_indexes_for_file.side_effect = [
+    mocks.TorrentFileStream.return_value.__enter__.return_value.get_piece_indexes_of_file.side_effect = [
         fd['piece_indexes'] for fd in file_data]
     mocks.attach_mock(
         mocker.patch.object(client, '_get_mtime', side_effect=[
@@ -325,13 +325,13 @@ def test_get_torrent_data_with_resume_fields(mocker):
 
     exp_mock_calls = [
         call.read_torrent('path/to/file.torrent'),
-        call.TorrentFileStream(mocks.read_torrent.return_value, 'path/to/content'),
+        call.TorrentFileStream(mocks.read_torrent.return_value, content_path='path/to/content'),
         call.TorrentFileStream().__enter__(),
     ]
     for fd in file_data:
         exp_mock_calls.extend((
             call._get_mtime(os.path.join('path/to/content', fd['path'])),
-            call.TorrentFileStream().__enter__().get_piece_indexes_for_file(fd['path']),
+            call.TorrentFileStream().__enter__().get_piece_indexes_of_file(fd['path']),
         ))
     exp_mock_calls.append(call.TorrentFileStream().__exit__(None, None, None))
     assert mocks.mock_calls == exp_mock_calls
