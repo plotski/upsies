@@ -5,10 +5,9 @@ Base class for client APIs
 import abc
 import copy
 
-import torf
+from ... import errors, utils
 
-from ... import errors
-
+torf = utils.LazyModule(module='torf', namespace=globals())
 
 class ClientApiBase(abc.ABC):
     """
