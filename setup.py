@@ -45,7 +45,7 @@ setuptools.setup(
         'prompt_toolkit==3.*,>=3.0.6',
         'pyimgbox==1.*',
         'pyxdg',
-        'torf==3.*',
+        'torf==4.*',
         'Unidecode==1.3.*',
     ],
     entry_points={'console_scripts': ['upsies = upsies.uis.tui:main']},
