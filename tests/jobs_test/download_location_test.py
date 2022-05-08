@@ -138,14 +138,15 @@ def test_DownloadLocationJob_verify_file(piece_indexes, verify_piece_return_valu
                                          exp_return_value, mocker, tmp_path):
     dlj = download_location.DownloadLocationJob(torrent='mock.torrent', locations=('a', 'b', 'c'))
     mocker.patch.object(dlj, '_torrent')
-    TorrentFileStream_mock = mocker.patch('upsies.utils.torrent.TorrentFileStream')
+    TorrentFileStream_mock = mocker.patch('torf.TorrentFileStream')
     tfs_mock = TorrentFileStream_mock.return_value.__enter__.return_value
     tfs_mock.get_absolute_piece_indexes.return_value = piece_indexes
     tfs_mock.verify_piece.side_effect = verify_piece_return_values
 
     assert dlj._verify_file('mock/file/path') is exp_return_value
 
-    assert TorrentFileStream_mock.call_args_list == [call(dlj._torrent, dlj._check_location)]
+    exp_content_path = os.path.join(dlj._check_location, dlj._torrent.name)
+    assert TorrentFileStream_mock.call_args_list == [call(dlj._torrent, content_path=exp_content_path)]
     assert tfs_mock.get_absolute_piece_indexes.call_args_list == [call('mock/file/path', (1, -2))]
     assert tfs_mock.verify_piece.call_args_list == exp_verify_piece_calls
 

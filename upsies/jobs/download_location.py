@@ -7,7 +7,7 @@ import difflib
 import functools
 import os
 
-from ..utils import LazyModule, fs, torrent
+from ..utils import LazyModule, fs
 from . import JobBase
 
 import logging  # isort:skip
@@ -100,7 +100,8 @@ class DownloadLocationJob(JobBase):
 
     def _verify_file(self, file):
         _log.debug('Verifying content of %r at %r', file, self._check_location)
-        with torrent.TorrentFileStream(self._torrent, self._check_location) as tfs:
+        content_path = os.path.join(self._check_location, self._torrent.name)
+        with torf.TorrentFileStream(self._torrent, content_path=content_path) as tfs:
             # Don't check the first and the last piece of a file as they likely
             # overlap with another file that might be either invalid or missing
             file_piece_indexes = tfs.get_absolute_piece_indexes(file, (1, -2))
