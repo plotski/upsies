@@ -69,10 +69,6 @@ class DownloadLocationJob(JobBase):
 
     def _get_target_location(self):
         file_candidates = self._get_file_candidates()
-        if file_candidates:
-            _log.debug('### Finding piece-matching files')
-        else:
-            _log.debug('### Failed to find any size-matching files')
 
         links = {}
         target_location = None
@@ -211,7 +207,6 @@ class DownloadLocationJob(JobBase):
             # Create parent directory if it doesn't exist
             target_parent = os.path.dirname(target)
             try:
-                # _log.debug(f'os.makedirs({target_parent!r}, exist_ok=True)')
                 os.makedirs(target_parent, exist_ok=True)
             except OSError as e:
                 msg = e.strerror if e.strerror else e
