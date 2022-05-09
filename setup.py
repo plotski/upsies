@@ -32,7 +32,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3.10',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     install_requires=[
         'beautifulsoup4==4.*',
         'chardet==4.*',
