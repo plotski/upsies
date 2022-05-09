@@ -4,6 +4,7 @@ Find download path for a torrent, hardlinking existing files
 
 import collections
 import difflib
+import errno
 import functools
 import os
 
@@ -197,7 +198,19 @@ class DownloadLocationJob(JobBase):
         return torrentfile.size == fs.file_size(filepath)
 
     def _create_hardlink(self, source, target):
-        return self._create_link(os.link, source, target)
+        return self._create_link(self._hardlink_or_symlink, source, target)
+
+    def _hardlink_or_symlink(self, source, target):
+        # Try hard link and default to symlink
+        try:
+            os.link(source, target)
+        except OSError as e:
+            if e.errno == errno.EXDEV:
+                # Invalid cross-device link (`source` and `target` are on
+                # different file systems)
+                os.symlink(source, target)
+            else:
+                raise
 
     def _create_symlink(self, source, target):
         return self._create_link(os.symlink, source, target)

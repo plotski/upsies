@@ -1,4 +1,6 @@
+import errno
 import os
+import re
 from unittest.mock import Mock, PropertyMock, call
 
 import pytest
@@ -361,8 +363,36 @@ def test_DownloadLocationJob_create_hardlink(mocker):
     dlj = download_location.DownloadLocationJob(torrent='mock.torrent', locations=('a', 'b', 'c'))
     mocker.patch.object(dlj, '_create_link', Mock(return_value='foo'))
     assert dlj._create_hardlink('path/to/source', 'path/to/target') == 'foo'
-    import os
-    assert dlj._create_link.call_args_list == [call(os.link, 'path/to/source', 'path/to/target')]
+    assert dlj._create_link.call_args_list == [
+        call(dlj._hardlink_or_symlink, 'path/to/source', 'path/to/target'),
+    ]
+
+
+@pytest.mark.parametrize(
+    argnames='hardlink_exception, symlink_exception, exp_exception',
+    argvalues=(
+        (None, None, None),
+        (None, OSError(errno.EACCES, 'Permission'), None),
+        (OSError(errno.EACCES, 'Permission'), None, OSError(errno.EACCES, 'Permission')),
+        (OSError(errno.EXDEV, 'Cross-device'), None, None),
+        (OSError(errno.EXDEV, 'Cross-device'), OSError(errno.EACCES, 'Permission'), OSError(errno.EACCES, 'Permission')),
+    ),
+)
+def test_DownloadLocationJob_hardlink_or_symlink(hardlink_exception, symlink_exception, exp_exception, mocker):
+    dlj = download_location.DownloadLocationJob(torrent='mock.torrent', locations=('a', 'b', 'c'))
+    hardlink_mock = mocker.patch('os.link', Mock(side_effect=hardlink_exception))
+    symlink_mock = mocker.patch('os.symlink', Mock(side_effect=symlink_exception))
+    if exp_exception:
+        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+            dlj._hardlink_or_symlink('path/to/source', 'path/to/target')
+    else:
+        assert dlj._hardlink_or_symlink('path/to/source', 'path/to/target') is None
+
+    assert hardlink_mock.call_args_list == [call('path/to/source', 'path/to/target')]
+    if hardlink_exception and hardlink_exception.errno == errno.EXDEV:
+        assert symlink_mock.call_args_list == [call('path/to/source', 'path/to/target')]
+    else:
+        assert symlink_mock.call_args_list == []
 
 
 def test_DownloadLocationJob_create_symlink(mocker):
