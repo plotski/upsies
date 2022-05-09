@@ -42,4 +42,4 @@ Features
 
 The latest release is available on `PyPI <https://pypi.org/project/upsies>`_.
 
-Documentation is hosted on `Read the Docs <https://upsies.readthedocs.io/en/latest/>`_.
+Documentation is hosted on `Read the Docs <https://upsies.readthedocs.io/en/stable/>`_.
