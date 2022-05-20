@@ -1,12 +1,11 @@
 import re
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call
 
-import bs4
 import pytest
-from pytest_httpserver.httpserver import Response
 
-from upsies import __project_name__, __version__, errors
-from upsies.trackers.nbl import NblTracker
+from upsies import errors
+from upsies.trackers import nbl
+from upsies.utils.http import Result
 
 
 class AsyncMock(Mock):
@@ -16,539 +15,179 @@ class AsyncMock(Mock):
         return coro()
 
 
-class RequestHandler:
-    def __init__(self):
-        self.requests_seen = []
-
-    def __call__(self, request):
-        # `request` is a Request object from werkzeug
-        # https://werkzeug.palletsprojects.com/en/1.0.x/wrappers/#werkzeug.wrappers.BaseRequest
-        try:
-            return self.handle(request)
-        except Exception as e:
-            # pytest-httpserver doesn't show the traceback if we call
-            # raise_for_status() on the response.
-            import traceback
-            traceback.print_exception(type(e), e, e.__traceback__)
-            raise
-
-    def handle(self, request):
-        raise NotImplementedError()
-
-
 def test_name_attribute():
-    assert NblTracker.name == 'nbl'
+    assert nbl.NblTracker.name == 'nbl'
 
 
 def test_label_attribute():
-    assert NblTracker.label == 'NBL'
+    assert nbl.NblTracker.label == 'NBL'
 
 
 @pytest.mark.asyncio
-async def test_login_does_nothing_if_already_logged_in(mocker):
-    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-    tracker._logout_url = 'anything'
-    tracker._auth_key = 'something'
-    assert tracker.is_logged_in
-    await tracker.login()
-    assert tracker.is_logged_in
-    assert get_mock.call_args_list == []
-    assert post_mock.call_args_list == []
-    assert tracker._logout_url == 'anything'
-    assert tracker._auth_key == 'something'
-
-@pytest.mark.parametrize(
-    argnames='credentials, exp_error',
-    argvalues=(
-        ({}, 'No username configured'),
-        ({'username': 'foo'}, 'No password configured'),
-        ({'password': 'bar'}, 'No username configured'),
-    ),
-    ids=lambda v: str(v),
-)
-@pytest.mark.asyncio
-async def test_login_with_incomplete_login_credentials(credentials, exp_error, mocker):
-    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = NblTracker(
-        options={
-            **{
-                'base_url': 'http://nbl.local',
-                'announce': 'http://nbl.local/announce',
-                'exclude': 'some files',
-            },
-            **credentials,
-        },
-    )
-    assert not tracker.is_logged_in
-    with pytest.raises(errors.RequestError, match=rf'^Login failed: {exp_error}$'):
-        await tracker.login()
-    assert not tracker.is_logged_in
-    assert get_mock.call_args_list == []
-    assert post_mock.call_args_list == []
-    assert not hasattr(tracker, '_logout_url')
-    assert not hasattr(tracker, '_auth_key')
-
-@pytest.mark.asyncio
-async def test_login_succeeds(mocker):
-    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(
-        return_value='''
-            <html>
-                <input name="auth" value="12345" />
-                <a href="logout.php?asdfasdf">logout</a>
-            </html>
-        ''',
-    ))
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-    await tracker.login()
-    assert get_mock.call_args_list == []
-    assert post_mock.call_args_list == [call(
-        url='http://nbl.local' + tracker._url_path['login'],
-        user_agent=True,
-        data={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'twofa': '',
-            'login': 'Login',
-        },
-    )]
-    assert tracker.is_logged_in
-    assert tracker._logout_url == 'http://nbl.local/logout.php?asdfasdf'
-    assert tracker._auth_key == '12345'
-
-@pytest.mark.parametrize(
-    argnames='method_name',
-    argvalues=(
-        '_report_login_error',
-        '_store_auth_key',
-        '_store_logout_url',
-    ),
-)
-@pytest.mark.asyncio
-async def test_login_dumps_html_if_handling_response_fails(method_name, mocker):
-    response = '''
-    <html>
-        <input name="auth" value="12345" />
-        <a href="logout.php?asdfasdf">logout</a>
-    </html>
-    '''
-    html_dump_mock = mocker.patch('upsies.utils.html.dump')
-    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock(return_value=response))
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-    with patch.object(tracker, method_name) as method_mock:
-        method_mock.side_effect = Exception('Oooph!')
-        with pytest.raises(Exception, match=r'^Oooph!$'):
-            await tracker.login()
-    assert not tracker.is_logged_in
-    assert get_mock.call_args_list == []
-    assert post_mock.call_args_list == [call(
-        url='http://nbl.local' + tracker._url_path['login'],
-        user_agent=True,
-        data={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'twofa': '',
-            'login': 'Login',
-        }
-    )]
-    assert not tracker.is_logged_in
-    assert html_dump_mock.call_args_list == [
-        call(response, 'login.html'),
-    ]
-
-
-@pytest.mark.parametrize(
-    argnames='page, exp_message',
-    argvalues=(
-        pytest.param(
-            'login.auth-failed',
-            r'Your username or password was incorrect\.',
-            id='login.auth-failed',
-        ),
-        pytest.param(
-            'login.banned',
-            (r'Your account has been disabled\. This is either due '
-             r'to inactivity or rule violation\.'),
-            id='login.banned',
-        ),
-    ),
-)
-def test_report_login_error(page, exp_message, get_html_page):
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-    html = bs4.BeautifulSoup(
-        markup=get_html_page('nbl', page),
-        features='html.parser',
-    )
-    with pytest.raises(errors.RequestError, match=rf'^Login failed: {exp_message}$'):
-        tracker._report_login_error(html)
-
-
-def test_is_logged_in():
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-    # tracker.logged_in must be True if "_logout_url" and "_auth_key" are set
-    assert tracker.is_logged_in is False
-    tracker._logout_url = 'asdf'
-    assert tracker.is_logged_in is False
-    tracker._auth_key = 'asdf'
+async def test_login_logout(mocker):
+    tracker = nbl.NblTracker(options={})
     assert tracker.is_logged_in is True
-    delattr(tracker, '_logout_url')
-    assert tracker.is_logged_in is False
-    tracker._logout_url = 'asdf'
+    await tracker.login()
     assert tracker.is_logged_in is True
-    delattr(tracker, '_auth_key')
-    assert tracker.is_logged_in is False
-
-@pytest.mark.parametrize(
-    argnames=('logout_url', 'auth_key'),
-    argvalues=(
-        ('http://localhost/logout.php', '12345'),
-        ('http://localhost/logout.php', None),
-        (None, '12345'),
-        (None, None),
-    ),
-)
-@pytest.mark.asyncio
-async def test_logout(logout_url, auth_key, mocker):
-    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-    if logout_url is not None:
-        tracker._logout_url = logout_url
-    if auth_key is not None:
-        tracker._auth_key = auth_key
     await tracker.logout()
-    if logout_url is not None:
-        assert get_mock.call_args_list == [
-            call(logout_url, user_agent=True),
-        ]
-    else:
-        assert get_mock.call_args_list == []
-    assert post_mock.call_args_list == []
-    assert not hasattr(tracker, '_logout_url')
-    assert not hasattr(tracker, '_auth_key')
+    assert tracker.is_logged_in is True
 
 
 @pytest.mark.asyncio
-async def test_get_announce_url_from_options(mocker):
-    tracker = NblTracker(options={'base_url': 'http://nbl.local',
-                                  'announce_url': 'https://nbl.local:123/d34db33f/announce'})
-
-    mocks = AsyncMock(
-        get=mocker.patch('upsies.utils.http.get', AsyncMock(
-            return_value='you should never get this response',
-        )),
-        post=mocker.patch('upsies.utils.http.post', AsyncMock()),
-        login=AsyncMock(),
-        logout=AsyncMock(),
-    )
-    mocker.patch.object(tracker, 'login', mocks.login)
-    mocker.patch.object(tracker, 'logout', mocks.logout)
-
+async def test_get_announce_url(mocker):
+    tracker = nbl.NblTracker(options={'announce_url': 'https://nbl.local:123/d34db33f/announce'})
     announce_url = await tracker.get_announce_url()
     assert announce_url == 'https://nbl.local:123/d34db33f/announce'
-    assert mocks.mock_calls == []
+
+
+def test_get_upload_url(mocker):
+    tracker = nbl.NblTracker(options={'upload_url': 'https://nbl.local/upload'})
+    upload_url = tracker.get_upload_url()
+    assert upload_url == 'https://nbl.local/upload'
+
 
 @pytest.mark.asyncio
-async def test_get_announce_url_succeeds(mocker):
-    tracker = NblTracker(
+async def test_upload_without_api_key(mocker):
+    tracker = nbl.NblTracker(
         options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
+            'apikey': '',
+            'upload_url': 'http://nbl.local/upload',
             'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
         },
     )
+    http_mock = mocker.patch('upsies.utils.http', Mock(
+        get=AsyncMock(),
+        post=AsyncMock(),
+    ))
+    get_upload_url_mock = mocker.patch.object(tracker, 'get_upload_url')
+    tracker_jobs_mock = Mock()
 
-    mocks = AsyncMock(
-        get=mocker.patch('upsies.utils.http.get', AsyncMock(
-            return_value='''
-            <html>
-                <input type="text" value="https://nbl.local:123/l33tb34f/announce">
-            </html>
-            ''',
-        )),
-        post=mocker.patch('upsies.utils.http.post', AsyncMock()),
-        login=AsyncMock(),
-        logout=AsyncMock(),
-    )
-    mocker.patch.object(tracker, 'login', mocks.login)
-    mocker.patch.object(tracker, 'logout', mocks.logout)
+    with pytest.raises(errors.RequestError, match=r'^No API key configured$'):
+        await tracker.upload(tracker_jobs_mock)
 
-    announce_url = await tracker.get_announce_url()
-    assert announce_url == 'https://nbl.local:123/l33tb34f/announce'
-    assert mocks.mock_calls == [
-        call.login(),
-        call.get('http://nbl.local' + NblTracker._url_path['upload'], cache=False, user_agent=True),
-        call.logout(),
-    ]
-
-@pytest.mark.asyncio
-async def test_get_announce_url_fails(mocker):
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-
-    mocks = AsyncMock(
-        get=mocker.patch('upsies.utils.http.get', AsyncMock(
-            return_value='<html>foo</html>',
-        )),
-        post=mocker.patch('upsies.utils.http.post', AsyncMock()),
-        login=AsyncMock(),
-        logout=AsyncMock(),
-    )
-    mocker.patch.object(tracker, 'login', mocks.login)
-    mocker.patch.object(tracker, 'logout', mocks.logout)
-
-    exp_cmd = f'{__project_name__} set trackers.{tracker.name}.announce_url <YOUR URL>'
-    with pytest.raises(errors.RequestError, match=rf'^Failed to find announce URL - set it manually: {exp_cmd}$'):
-        await tracker.get_announce_url()
-    assert mocks.mock_calls == [
-        call.login(),
-        call.get('http://nbl.local' + NblTracker._url_path['upload'], cache=False, user_agent=True),
-        call.logout(),
-    ]
+    assert get_upload_url_mock.call_args_list == []
+    assert http_mock.get.call_args_list == []
+    assert http_mock.post.call_args_list == []
 
 
 @pytest.mark.asyncio
-async def test_upload_without_being_logged_in(mocker):
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': 'http://nbl.local',
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-    get_mock = mocker.patch('upsies.utils.http.get', AsyncMock())
-    post_mock = mocker.patch('upsies.utils.http.post', AsyncMock())
-    metadata_mock = {'torrent': '/path/to/torrent'}
-    with pytest.raises(RuntimeError, match=r'^upload\(\) called before login\(\)$'):
-        await tracker.upload(metadata_mock)
-    assert get_mock.call_args_list == []
-    assert post_mock.call_args_list == []
-
-
-@pytest.mark.parametrize(
-    argnames='ignore_dupes, exp_data',
-    argvalues=(
-        (False, {}),
-        (True, {'ignoredupes': '1'}),
-    ),
-    ids=lambda v: str(v),
-)
-@pytest.mark.parametrize(
-    argnames='category, exp_category_code',
-    argvalues=(('Season', '3'), ('Episode', '1')),
-    ids=lambda v: str(v),
-)
-@pytest.mark.asyncio
-async def test_upload_succeeds(category, exp_category_code, ignore_dupes, exp_data, tmp_path, mocker, httpserver):
-    class Handler(RequestHandler):
-        def handle(self, request):
-            request_seen = {
-                'method': request.method,
-                'User-Agent': request.headers.get('User-Agent', ''),
-                'multipart/form-data': dict(request.form),
+async def test_upload_succeeds(mocker):
+    tracker = nbl.NblTracker(options={'apikey': 'thisismyapikey'})
+    http_mock = mocker.patch('upsies.trackers.nbl.http', Mock(
+        get=AsyncMock(),
+        post=AsyncMock(return_value=Result(
+            text='''
+            {
+                "status": "success"
             }
-            # werkzeug.Request stores files in the `files` property
-            for field, filestorage in request.files.items():
-                request_seen['multipart/form-data'][field] = filestorage.read()
-            self.requests_seen.append(request_seen)
-            # Upload form redirects to torrent page
-            return Response(
-                status=307,
-                headers={'Location': '/torrents.php?id=123'},
-            )
-
-    handler = Handler()
-    httpserver.expect_request(
-        uri='/upload.php',
-        method='POST',
-    ).respond_with_handler(
-        handler,
-    )
-
-    torrent_file = tmp_path / 'foo.torrent'
-    torrent_file.write_bytes(b'mocked torrent metainfo')
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': httpserver.url_for(''),
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-            'ignore_dupes': ignore_dupes,
-        },
-    )
-    tracker._logout_url = 'logout.php'
-    tracker._auth_key = 'mocked auth key'
+            ''',
+            bytes=b'irrelevant',
+        )),
+    ))
+    mocker.patch.object(tracker, 'get_upload_url', return_value='http://upload.url')
     tracker_jobs_mock = Mock(
-        create_torrent_job=Mock(output=(str(torrent_file),)),
-        mediainfo_job=Mock(output=('mocked mediainfo',)),
-        tvmaze_job=Mock(output=('12345',)),
-        category_job=Mock(output=(category,)),
+        post_data={
+            'one': 'Hello',
+            'two': '',
+            'three': 123,
+            'four': None,
+            'five': 'World',
+        },
+        torrent_filepath='path/to/file.torrent',
     )
-    torrent_page_url = await tracker.upload(tracker_jobs_mock)
-    assert torrent_page_url == httpserver.url_for('/torrents.php?id=123')
-    exp_form_data = {
-        'MAX_FILE_SIZE': '1048576',
-        'auth': 'mocked auth key',
-        'category': exp_category_code,
-        'desc': 'mocked mediainfo',
-        'file_input': b'mocked torrent metainfo',
-        'fontfont': '-1',
-        'fontsize': '-1',
-        'genre_tags': '',
-        'image': '',
-        'media': 'mocked mediainfo',
-        'mediaclean': '[mediainfo]mocked mediainfo[/mediainfo]',
-        'submit': 'true',
-        'tags': '',
-        'title': '',
-        'tvmazeid': '12345',
-    }
-    exp_form_data.update(exp_data)
-    assert handler.requests_seen == [{
-        'method': 'POST',
-        'User-Agent': f'{__project_name__}/{__version__}',
-        'multipart/form-data': exp_form_data,
-    }]
+
+    return_value = await tracker.upload(tracker_jobs_mock)
+    assert return_value == tracker_jobs_mock.torrent_filepath
+
+    assert http_mock.get.call_args_list == []
+    assert http_mock.post.call_args_list == [call(
+        url='http://upload.url',
+        cache=False,
+        user_agent=True,
+        data={
+            'one': 'Hello',
+            'three': '123',
+            'five': 'World',
+        },
+        files={
+            'file_input': {
+                'file': 'path/to/file.torrent',
+                'mimetype': 'application/x-bittorrent',
+            },
+        },
+    )]
+
 
 @pytest.mark.parametrize(
-    argnames='message, exp_error',
+    argnames='response, exp_exception',
     argvalues=(
-        ('Something went wrong', 'Upload failed: Something went wrong'),
-        ('The torrent contained one or more possible dupes. Please check carefully!',
-         ('Upload failed: The torrent contained one or more possible dupes. Please check carefully!\n'
-          'Use --ignore-dupes to force the upload.')),
+        (Result(text='{"status": "success"}', bytes=b'irrelevant'),
+         None),
+        (Result(text='{"status": "success?"}', bytes=b'irrelevant'),
+         RuntimeError("Unexpected response: {'status': 'success?'}")),
+
+        # NOTE: We expect error messages as JSON in error responses
+        #       (RequestError) and success responses (Result).
+
+        (errors.RequestError(msg='irrelevant', text='{"message": "Maybe!"}'),
+         errors.RequestError('Upload failed: Maybe!')),
+        (Result(text='{"message": "Maybe!"}', bytes=b'irrelevant'),
+         errors.RequestError('Upload failed: Maybe!')),
+
+        (errors.RequestError(msg='irrelevant', text='{"error": "No!"}'),
+         errors.RequestError('Upload failed: No!')),
+        (Result(text='{"error": "No!"}', bytes=b'irrelevant'),
+         errors.RequestError('Upload failed: No!')),
+
+        (errors.RequestError(msg='irrelevant', text='{"invalid": json]'),
+         errors.RequestError('Upload failed: {"invalid": json]')),
+        (Result(text='{"invalid": json]', bytes=b'irrelevant'),
+         errors.RequestError('Malformed JSON: {"invalid": json]: Expecting value: line 1 column 13 (char 12)')),
+
+        (errors.RequestError(msg='irrelevant', text='{"foo": "Bar!"}'),
+         RuntimeError("Unexpected response: {'foo': 'Bar!'}")),
+        (Result(text='{"foo": "Bar!"}', bytes=b'irrelevant'),
+         RuntimeError("Unexpected response: {'foo': 'Bar!'}")),
     ),
 )
 @pytest.mark.asyncio
-async def test_upload_finds_error_message(message, exp_error, tmp_path, mocker, httpserver):
-    html_dump_mock = mocker.patch('upsies.utils.html.dump')
-
-    httpserver.expect_request(
-        uri='/upload.php',
-        method='POST',
-    ).respond_with_data(f'''
-        <html>
-            <div id="messagebar">{message}</div>
-        </html>
-    ''')
-
-    torrent_file = tmp_path / 'foo.torrent'
-    torrent_file.write_bytes(b'mocked torrent metainfo')
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': httpserver.url_for(''),
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
-        },
-    )
-    tracker._logout_url = 'logout.php'
-    tracker._auth_key = 'mocked auth key'
+async def test_upload_handles_errors(response, exp_exception, mocker):
+    tracker = nbl.NblTracker(options={'apikey': 'thisismyapikey'})
+    upload_url = 'http://mock.url/upload.php'
+    http_mock = mocker.patch('upsies.trackers.nbl.http', Mock(
+        get=AsyncMock(),
+        post=AsyncMock(),
+    ))
+    if isinstance(response, Exception):
+        http_mock.post.side_effect = response
+    else:
+        http_mock.post.return_value = response
+    mocker.patch.object(tracker, 'get_upload_url', return_value=upload_url)
     tracker_jobs_mock = Mock(
-        create_torrent_job=Mock(output=(str(torrent_file),)),
-        mediainfo_job=Mock(output=('mocked mediainfo',)),
-        tvmaze_job=Mock(output=('12345',)),
-        category_job=Mock(output=('Season',)),
+        post_data={'one': 'Hello', 'two': 'World'},
+        torrent_filepath='path/to/file.torrent',
     )
-    with pytest.raises(errors.RequestError, match=rf'^{re.escape(exp_error)}$'):
-        await tracker.upload(tracker_jobs_mock)
-    assert html_dump_mock.call_args_list == []
 
-@pytest.mark.asyncio
-async def test_upload_fails_to_find_error_message(tmp_path, mocker, httpserver):
-    html_dump_mock = mocker.patch('upsies.utils.html.dump')
-    response = 'unexpected html'
-    httpserver.expect_request(
-        uri='/upload.php',
-        method='POST',
-    ).respond_with_data(response)
+    if exp_exception:
+        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+            await tracker.upload(tracker_jobs_mock)
+    else:
+        return_value = await tracker.upload(tracker_jobs_mock)
+        assert return_value is tracker_jobs_mock.torrent_filepath
 
-    torrent_file = tmp_path / 'foo.torrent'
-    torrent_file.write_bytes(b'mocked torrent metainfo')
-    tracker = NblTracker(
-        options={
-            'username': 'bunny',
-            'password': 'hunter2',
-            'base_url': httpserver.url_for(''),
-            'announce': 'http://nbl.local/announce',
-            'exclude': 'some files',
+    assert http_mock.get.call_args_list == []
+    assert http_mock.post.call_args_list == [call(
+        url=upload_url,
+        cache=False,
+        user_agent=True,
+        data={
+            'one': 'Hello',
+            'two': 'World',
         },
-
-    )
-    tracker._logout_url = 'logout.php'
-    tracker._auth_key = 'mocked auth key'
-    tracker_jobs_mock = Mock(
-        create_torrent_job=Mock(output=(str(torrent_file),)),
-        mediainfo_job=Mock(output=('mocked mediainfo',)),
-        tvmaze_job=Mock(output=('12345',)),
-        category_job=Mock(output=('Season',)),
-    )
-    with pytest.raises(RuntimeError, match=(r'^Failed to find error message. '
-                                            r'See upload.html for more information.$')):
-        await tracker.upload(tracker_jobs_mock)
-    assert html_dump_mock.call_args_list == [call(response, 'upload.html')]
+        files={
+            'file_input': {
+                'file': 'path/to/file.torrent',
+                'mimetype': 'application/x-bittorrent',
+            },
+        },
+    )]
