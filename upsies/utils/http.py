@@ -259,8 +259,7 @@ class Result(str):
         """
         Parse the response text as JSON
 
-        :return: JSON as a `dict`
-        :raise Requesterror: if parsing fails
+        :raise RequestError: if parsing fails
         """
         try:
             return json.loads(self)
