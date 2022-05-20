@@ -11,6 +11,9 @@ regardless of which library is used or what went wrong, except when something
 like caching fails, which is most likely due to a bug.
 """
 
+import json
+
+
 class UpsiesError(Exception):
     """Base class for all exceptions raised by upsies"""
 
@@ -71,6 +74,17 @@ class RequestError(UpsiesError):
     def text(self):
         """Response string if available"""
         return self._text
+
+    def json(self, default=None):
+        """
+        Parse the :attr:`text` as JSON
+
+        :param default: Return value if :attr:`text` is not valid JSON
+        """
+        try:
+            return json.loads(self.text)
+        except ValueError:
+            return default
 
 
 class ScreenshotError(UpsiesError):

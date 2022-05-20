@@ -43,6 +43,20 @@ def test_RequestError_text():
     e = errors.RequestError('foo', text='Error 404')
     assert e.text == 'Error 404'
 
+@pytest.mark.parametrize(
+    argnames='text, default, exp_return_value',
+    argvalues=(
+        ('foo', None, None),
+        ('foo', 'asdf', 'asdf'),
+        ('"foo"', None, 'foo'),
+        ('["foo", "bar"]', 'asdf', ['foo', 'bar']),
+        ('["foo", "bar", baz]', 'asdf', 'asdf'),
+    ),
+)
+def test_RequestError_json(text, default, exp_return_value):
+    e = errors.RequestError('foo', text=text)
+    assert e.json(default=default) == exp_return_value
+
 
 def test_SubprocessError():
     e = TypeError('foo')
