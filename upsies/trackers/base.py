@@ -539,9 +539,9 @@ class TrackerJobsBase(abc.ABC):
             user-interaction
         """
         def is_autodetected(option):
-            regex = option.get('regex')
-            match = option.get('match')
             if autodetected:
+                regex = option.get('regex')
+                match = option.get('match')
                 if regex and regex.search(str(autodetected)):
                     return True
                 elif match and match(autodetected):
