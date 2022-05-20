@@ -26,12 +26,7 @@ class NblTrackerConfig(base.TrackerConfigBase):
     }
 
     argument_definitions = {
-        'submit': {
-            ('--ignore-dupes', '-D'): {
-                'help': 'Force submission even if the tracker reports duplicates',
-                'action': 'store_true',
-            },
-        },
+        # Custom arguments, e.g. "upsies submit nbl --foo bar"
     }
 
 

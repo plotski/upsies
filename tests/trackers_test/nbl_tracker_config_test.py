@@ -18,10 +18,4 @@ def test_defaults():
 
 def test_argument_definitions():
     assert NblTrackerConfig.argument_definitions == {
-        'submit': {
-            ('--ignore-dupes', '-D'): {
-                'help': 'Force submission even if the tracker reports duplicates',
-                'action': 'store_true',
-            },
-        },
     }
