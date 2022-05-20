@@ -19,14 +19,14 @@ class BhdTrackerConfig(TrackerConfigBase):
             value='',
             description=(
                 'The private part of the announce URL.\n'
-                'Get it from the website: "My Security" -> "Passkey"'
+                'Get it from the website: My Security -> Passkey'
             ),
         ),
         'apikey': configfiles.config_value(
             value='',
             description=(
                 'Your personal private API key.\n'
-                'Get it from the website: "My Security" -> "API key"'
+                'Get it from the website: My Security -> API key'
             ),
         ),
         'source': 'BHD',
@@ -37,7 +37,7 @@ class BhdTrackerConfig(TrackerConfigBase):
         'draft': configfiles.config_value(
             value=types.Bool('no'),
             description=(
-                'Whether your uploads are stashed under "Torrents" -> "Drafts" '
+                'Whether your uploads are stashed under Torrents -> Drafts '
                 'after the upload instead of going live.'
             ),
         ),
