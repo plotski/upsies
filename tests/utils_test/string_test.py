@@ -79,3 +79,20 @@ def test_remove_prefix():
 def test_remove_suffix():
     assert string.remove_suffix('www.domain.com', '.com') == 'www.domain'
     assert string.remove_suffix('www.domain.com', '.moc') == 'www.domain.com'
+
+
+@pytest.mark.parametrize(
+    argnames='fstring, local_objects, exp_result',
+    argvalues=(
+        ('foo {add(1, 2, 3) * 2} bar', {'add': lambda *n: sum(n)}, 'foo 12 bar'),
+        ('foo {add(1, 2, 3) * 2} bar', {}, NameError("name 'add' is not defined")),
+    ),
+)
+def test_evaluate_fstring(fstring, local_objects, exp_result):
+    locals().update(local_objects)
+
+    if isinstance(exp_result, Exception):
+        with pytest.raises(type(exp_result), match=rf'^{re.escape(str(exp_result))}$'):
+            string.evaluate_fstring(fstring)
+    else:
+        assert string.evaluate_fstring(fstring) == exp_result

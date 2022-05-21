@@ -3,6 +3,7 @@ String formatting and parsing
 """
 
 import importlib
+import inspect
 import re
 import sys
 
@@ -104,3 +105,23 @@ else:
             return string[:-len(suffix)]
         else:
             return string
+
+
+def evaluate_fstring(template):
+    """
+    Deferred f-string evaluation
+
+    Example:
+
+    >>> template = 'Evaluate this: {sum((1, 2, 3)) * 2}'
+    >>> evaluate_fstring(template)
+    12
+
+    References:
+
+        https://pypi.org/project/f-yeah/
+        https://stackoverflow.com/a/42497694
+    """
+    parent_frame = inspect.stack()[1].frame
+    fstring = 'f' + repr(template)
+    return eval(fstring, parent_frame.f_globals, parent_frame.f_locals)
