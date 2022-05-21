@@ -64,7 +64,7 @@ pipx (recommended)
 
    .. code-block:: sh
 
-      $ pipx upgrade upsies
+      $ pipx upgrade upsies --include-injected
 
 5. Uninstall ``upsies``:
 
