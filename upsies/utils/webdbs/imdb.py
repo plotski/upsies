@@ -235,7 +235,7 @@ class ImdbApi(WebDbApiBase):
         runtimes = {}
         if id:
             soup = await self._get_soup(f'title/{id}/technical')
-            runtimes_label_tag = soup.find('td', class_='label', text=re.compile(r'\s*Runtime\s*'))
+            runtimes_label_tag = soup.find('td', class_='label', string=re.compile(r'\s*Runtime\s*'))
             try:
                 text = str(runtimes_label_tag.next_sibling.next_sibling)
             except AttributeError:
@@ -534,7 +534,7 @@ class _ImdbSearchResult(common.SearchResult):
 
         # Look for "See full summary" link. Preceding text is summary.
         if not summary:
-            summary_link = soup.find('a', text=re.compile(r'(?i:full\s+summary)'))
+            summary_link = soup.find('a', string=re.compile(r'(?i:full\s+summary)'))
             if summary_link:
                 summary_tag = summary_link.parent
                 if summary_tag:

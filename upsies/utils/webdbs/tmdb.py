@@ -119,7 +119,7 @@ class TmdbApi(WebDbApiBase):
             soup = await self._get_soup(id)
             profiles = soup.select('.people > .profile')
             for profile in profiles:
-                if profile.find('p', text=re.compile(r'(?i:Creator)')):
+                if profile.find('p', string=re.compile(r'(?i:Creator)')):
                     creators.extend(self._get_persons(profile))
         return tuple(creators)
 
@@ -129,7 +129,7 @@ class TmdbApi(WebDbApiBase):
             soup = await self._get_soup(id)
             profiles = soup.select('.people > .profile')
             for profile in profiles:
-                if profile.find('p', text=re.compile(r'(?i:Director)')):
+                if profile.find('p', string=re.compile(r'(?i:Director)')):
                     directors.extend(self._get_persons(profile))
         return tuple(directors)
 
