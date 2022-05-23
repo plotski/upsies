@@ -17,6 +17,28 @@ class BhdTracker(TrackerBase):
     name = 'bhd'
     label = 'BHD'
 
+    setup_howto_template = (
+        '{howto.introduction}\n'
+        '\n'
+        '{howto.current_section}. Announce Passkey\n'
+        '\n'
+        '   {howto.current_section}.1 On the website, go to My Security -> Passkey and copy\n'
+        '       your personal PASSKEY.\n'
+        '   {howto.current_section}.2 $ upsies set trackers.bhd.announce_passkey PASSKEY\n'
+        '{howto.bump_section}'
+        '\n'
+        '{howto.current_section}. API key\n'
+        '\n'
+        '   {howto.current_section}.1 On the website, go to My Security -> API Key and copy\n'
+        '       your personal API_KEY.\n'
+        '   {howto.current_section}.2 $ upsies set trackers.bhd.apikey API_KEY\n'
+        '{howto.bump_section}'
+        '\n'
+        '{howto.autoseed}\n'
+        '\n'
+        '{howto.upload}\n'
+    )
+
     TrackerConfig = BhdTrackerConfig
     TrackerJobs = BhdTrackerJobs
 
