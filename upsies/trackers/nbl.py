@@ -80,6 +80,30 @@ class NblTracker(base.TrackerBase):
     name = 'nbl'
     label = 'NBL'
 
+    setup_howto_template = (
+        '{howto.introduction}\n'
+        '\n'
+        '{howto.current_section}. Announce URL\n'
+        '\n'
+        '   {howto.current_section}.1 On the website, go to Shows -> Upload and copy the ANNOUNCE_URL.\n'
+        '   {howto.current_section}.2 $ upsies set trackers.nbl.announce_url ANNOUNCE_URL\n'
+        '{howto.bump_section}'
+        '\n'
+        '{howto.current_section}. API key\n'
+        '\n'
+        '   {howto.current_section}.1 On the website, go to USERNAME -> Settings and scroll down\n'
+        '       to "API keys".\n'
+        '   {howto.current_section}.2 Tick the "New Key" and the "Upload" boxes.\n'
+        '   {howto.current_section}.3 Click on "Save Profile".\n'
+        '   {howto.current_section}.4 Scroll down to "API keys" again and copy the new API_KEY.\n'
+        '   {howto.current_section}.5 $ upsies set trackers.nbl.apikey API_KEY\n'
+        '{howto.bump_section}'
+        '\n'
+        '{howto.autoseed}\n'
+        '\n'
+        '{howto.upload}\n'
+    )
+
     TrackerConfig = NblTrackerConfig
     TrackerJobs = NblTrackerJobs
 
