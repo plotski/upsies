@@ -59,6 +59,28 @@ class _MyHelpFormatter(argparse.HelpFormatter):
                 for line in wrap(paragraph)]
 
 
+def PrintText(text_getter):
+    """
+    Print text returned by callable and exit with exit code 0
+
+    :param text_getter: Callable that takes no arguments and returns the text to
+        print
+    """
+    class PrintText(argparse.Action):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._text_getter = text_getter
+
+        def __call__(self, *args, **kwargs):
+            sys.stdout.write(str(self._text_getter()).strip() + '\n')
+            sys.exit(0)
+
+        def __repr__(self):
+            return f'{type(self).__name__}({self._text_getter!r})'
+
+    return PrintText
+
+
 class CommandBase(abc.ABC):
     """
     Base class for all commands
