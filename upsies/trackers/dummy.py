@@ -91,6 +91,10 @@ class DummyTracker(base.TrackerBase):
     name = 'dummy'
     label = 'DuMmY'
 
+    setup_howto_template = (
+        'This is just a no-op tracker for testing and demonstration.'
+    )
+
     TrackerJobs = DummyTrackerJobs
     TrackerConfig = DummyTrackerConfig
 
