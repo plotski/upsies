@@ -7,7 +7,7 @@ import builtins
 
 from .. import jobs
 from ..utils import (btclients, cached_property, configfiles, fs, release,
-                     signal, types, webdbs)
+                     signal, string, types, webdbs)
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -642,6 +642,22 @@ class TrackerBase(abc.ABC):
     def label(self):
         """User-facing tracker name abbreviation"""
 
+    setup_howto_template = 'Nobody has written a setup howto yet.'
+    """
+    Step-by-step guide that explains how to make your first upload
+
+    .. note:: This MUST be a class attribute and not a property.
+    """
+
+    @classmethod
+    def generate_setup_howto(cls):
+        # `howto` is now in the local namespace (see `locals()`) and
+        # `evalute_fstring()` can access its properties to replace, for example,
+        # "{howto.current}" in `setup_howto_template` with the current section
+        # number.
+        howto = _Howto(tracker_cls=cls)  # noqa: F841 local variable 'howto' is assigned to but never used
+        return string.evaluate_fstring(cls.setup_howto_template)
+
     @property
     def options(self):
         """
@@ -711,3 +727,65 @@ class TrackerBase(abc.ABC):
         reported as a bug.
         """
         self.signal.emit('exception', exception)
+
+
+class _Howto:
+    def __init__(self, tracker_cls):
+        self._tracker_cls = tracker_cls
+        self._section = 0
+
+    def _autobump(self, sections):
+        self._section += len(sections)
+        return '\n'.join(sections).strip()
+
+    @property
+    def current_section(self):
+        return self._section
+
+    @property
+    def bump_section(self):
+        self._section += 1
+        return ''
+
+    @property
+    def introduction(self):
+        return self._autobump((
+            (
+                f'{self._section}. How To Read This Howto\n'
+                '\n'
+                f'   {self._section}.1 Words in ALL_CAPS_AND_WITH_UNDERSCORES are placeholders.\n'
+                f'   {self._section}.2 Everything after "$" is a terminal command.\n'
+            ),
+        ))
+
+    @property
+    def autoseed(self):
+        return self._autobump((
+            (
+                f'{self._section}. Add Uploaded Torrents To Client (Optional)\n'
+                '\n'
+                f'   {self._section}.1 Specify which client to add uploaded torrents to.\n'
+                '       See --add-to below for a list of CLIENT_NAMEs.\n'
+                f'       $ upsies set trackers.{self._tracker_cls.name}.add-to CLIENT_NAME\n'
+            ),
+            (
+                f'   {self._section}.2 Specify your client connection.\n'
+                '       $ upsies set clients.CLIENT_NAME.url URL\n'
+                '       $ upsies set clients.CLIENT_NAME.username USERNAME\n'
+                '       $ upsies set clients.CLIENT_NAME.password PASSWORD\n'
+                '\n'
+                f'{self._section + 1}. Copy Uploaded Torrents To Directory (Optional)\n'
+                '\n'
+                f'   $ upsies set trackers.{self._tracker_cls.name}.copy-to /path/to/directory\n'
+            ),
+        ))
+
+    @property
+    def upload(self):
+        return self._autobump((
+            (
+                f'{self._section}. Upload\n'
+                '\n'
+                f'   $ upsies submit {self._tracker_cls.name} /path/to/content\n'
+            ),
+        ))
