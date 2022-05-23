@@ -1,6 +1,9 @@
 2022.??.??
   * download-location: Default to symbolic link if hard link fails due to source
     and target being on different file systems
+  * NBL: Use upload API (run "upsies submit nbl --howto-setup" for more
+    information)
+  * submit: Display tracker-specific setup instructions with --howto-setup
 
 
 2022.03.17
