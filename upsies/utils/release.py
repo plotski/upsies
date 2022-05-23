@@ -740,8 +740,8 @@ class ReleaseName(collections.abc.Mapping):
                 if title_normalized == normalize_title(result.title)
             ]
 
-            def has_duplicates(seq):
-                tupl = tuple(seq)
+            def has_duplicates(it):
+                tupl = tuple(it)
                 for item in tupl:
                     if tupl.count(item) > 1:
                         return True
