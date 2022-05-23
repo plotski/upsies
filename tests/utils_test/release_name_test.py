@@ -1300,7 +1300,7 @@ async def test_update_type(guessed_type, db_type, exp_type, mocker):
             ('The FOO', '2000', ['US']),
             ('the Föö', '2020', ['UK']),
             ('The Foe', '2000', ['US']),
-        ), None, True),
+        ), True, None),
 
         # Series: same name, same year, different countries
         ((ReleaseType.season, ReleaseType.episode), (

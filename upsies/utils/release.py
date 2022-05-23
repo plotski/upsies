@@ -756,10 +756,10 @@ class ReleaseName(collections.abc.Mapping):
                 return parts
 
             if has_duplicates(make_title(r) for r in results):
-                if not has_duplicates(make_title(r, country=True) for r in results):
-                    self.country_required = True
-                elif not has_duplicates(make_title(r, year=True) for r in results):
+                if not has_duplicates(make_title(r, year=True) for r in results):
                     self.year_required = True
+                elif not has_duplicates(make_title(r, country=True) for r in results):
+                    self.country_required = True
 
     def format(self, sep=' '):
         """Assemble all parts into string"""
