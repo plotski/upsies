@@ -21,6 +21,7 @@ Help
 
    $ upsies -h
    $ upsies <command> -h
+   $ upsies submit <tracker> --howto-setup
 
 Configuration
 -------------

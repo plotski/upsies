@@ -2,11 +2,11 @@
 Generate all required metadata and upload to tracker
 """
 
-from .... import constants, jobs, trackers, utils
-from .base import CommandBase
+from .... import __project_name__, constants, jobs, trackers, utils
+from . import base
 
 
-class submit(CommandBase):
+class submit(base.CommandBase):
     """Generate all required metadata and upload to TRACKER"""
 
     names = ('submit',)
@@ -16,7 +16,13 @@ class submit(CommandBase):
     subcommand_name = 'TRACKER'
     subcommands = {
         tracker.name: {
-            'description': f'Generate all required metadata and upload it to {tracker.label}.',
+            'description': (
+                f'Generate all required metadata and upload it to {tracker.label}.\n'
+                '\n'
+                f'For step-by-step instructions run this command:\n'
+                '\n'
+                f'    $ {__project_name__} submit {tracker.name} --howto-setup\n'
+            ),
             'cli': {
                 # Default arguments for all tackers
                 **{
@@ -60,6 +66,11 @@ class submit(CommandBase):
                     ('--copy-to', '-c'): {
                         'metavar': 'PATH',
                         'help': 'Copy the created torrent to PATH (file or directory)',
+                    },
+                    ('--howto-setup',): {
+                        'action': base.PrintText(text_getter=tracker.generate_setup_howto),
+                        'nargs': 0,
+                        'help': 'Show detailed instructions on how to do your first upload',
                     },
                 },
                 # Custom arguments defined by tracker for this command
