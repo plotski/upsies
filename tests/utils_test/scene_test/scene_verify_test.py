@@ -34,8 +34,8 @@ class AsyncMock(Mock):
         ('group-the_title_x264_bluray.mkv', True),
         ('ttl.720p-group.mkv', True),
         ('GR0up1080pAsDf.mkv', True),
+        ('grpthetitle.mkv', True),
         ('title.2017.720p.bluray.x264-group.mkv', False),
-        ('asdf.mkv', False),
     ),
 )
 def test_assert_not_abbreviated_filename_and_is_abbreviated_filename(filename, should_raise):
