@@ -753,7 +753,7 @@ class ReleaseName(collections.abc.Mapping):
                     parts.append(result['countries'][0])
                 if year and result['year']:
                     parts.append(result['year'])
-                return ','.join(parts)
+                return parts
 
             if has_duplicates(make_title(r) for r in results):
                 if not has_duplicates(make_title(r, country=True) for r in results):
