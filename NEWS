@@ -1,3 +1,8 @@
+2022.??.??
+  * submit: Added --is-scene argument to allow manual override of
+    broken/unavailable DBs
+
+
 2022.05.24
   * download-location: Default to symbolic link if hard link fails due to source
     and target being on different file systems
