@@ -102,14 +102,17 @@ class SceneCheckJob(JobBase):
         """
         return self._is_scene_release
 
-    def initialize(self, *, content_path):
+    def initialize(self, *, content_path, force=None):
         """
         Set internal state
 
         :param content_path: Path to video file or directory that contains a
             video file or release name
+        :param bool force: Predetermined check result; `True` (is scene),
+            `False` (is not scene) or `None` (autodetect)
         """
         self._content_path = content_path
+        self._predetermined_result = None if force is None else bool(force)
         self._is_scene_release = None
         self.signal.add('ask_release_name')
         self.signal.add('ask_is_scene_release')
@@ -128,11 +131,18 @@ class SceneCheckJob(JobBase):
 
     def execute(self):
         """Start asynchronous background worker task"""
-        self.add_task(
-            self._catch_errors(
-                self._verify(),
-            ),
-        )
+        if self._predetermined_result is None:
+            self.add_task(
+                self._catch_errors(
+                    self._verify(),
+                ),
+            )
+        elif self._predetermined_result is True:
+            self.finalize(types.SceneCheckResult.true)
+        elif self._predetermined_result is False:
+            self.finalize(types.SceneCheckResult.false)
+        else:
+            raise RuntimeError(f'Unexpected predetermined_result: {self._predetermined_result!r}')
 
     async def _verify(self):
         _log.debug('Verifying release: %r', self._content_path)

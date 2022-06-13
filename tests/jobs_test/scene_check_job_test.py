@@ -16,8 +16,9 @@ class AsyncMock(Mock):
 
 @pytest.fixture
 def make_SceneCheckJob(tmp_path):
-    def make_SceneCheckJob(content_path=tmp_path, ignore_cache=False):
+    def make_SceneCheckJob(force=None, content_path=tmp_path, ignore_cache=False):
         return SceneCheckJob(
+            force=force,
             home_directory=tmp_path,
             cache_directory=tmp_path,
             ignore_cache=ignore_cache,
@@ -29,6 +30,24 @@ def make_SceneCheckJob(tmp_path):
 def test_cache_id(make_SceneCheckJob):
     job = make_SceneCheckJob(content_path='path/to/Foo/')
     assert job.cache_id == 'Foo'
+
+
+@pytest.mark.parametrize(
+    argnames='kwargs, exp_attributes',
+    argvalues=(
+        ({}, {'_predetermined_result': None}),
+        ({'force': None}, {'_predetermined_result': None}),
+        ({'force': True}, {'_predetermined_result': True}),
+        ({'force': 'false'}, {'_predetermined_result': True}),
+        ({'force': False}, {'_predetermined_result': False}),
+        ({'force': 0}, {'_predetermined_result': False}),
+    ),
+    ids=lambda v: str(v),
+)
+def test_initialize(kwargs, exp_attributes, make_SceneCheckJob, mocker, event_loop):
+    job = make_SceneCheckJob(**kwargs)
+    for name, value in exp_attributes.items():
+        assert getattr(job, name) == value
 
 
 @pytest.mark.parametrize(
@@ -73,15 +92,37 @@ async def test_catch_errors_warns_about_RequestError(make_SceneCheckJob, mocker)
     assert not job.is_finished
 
 
+@pytest.mark.parametrize(
+    argnames='predetermined_result, exp_catch_errors_called, exp_verify_calls, exp_finalize_calls',
+    argvalues=(
+        (None, True, [call()], []),
+        (True, False, [], [call(SceneCheckResult.true)]),
+        (False, False, [], [call(SceneCheckResult.false)]),
+        ('asdf', False, [], []),
+    ),
+)
 @pytest.mark.asyncio
-async def test_execute(make_SceneCheckJob, mocker):
+async def test_execute(predetermined_result,
+                       exp_catch_errors_called, exp_verify_calls, exp_finalize_calls,
+                       make_SceneCheckJob, mocker):
     mocker.patch('upsies.jobs.scene.SceneCheckJob._catch_errors', AsyncMock())
     mocker.patch('upsies.jobs.scene.SceneCheckJob._verify', Mock())
+    mocker.patch('upsies.jobs.scene.SceneCheckJob.finalize', Mock())
     job = make_SceneCheckJob()
-    job.execute()
-    await job.await_tasks()
-    assert job._catch_errors.call_args_list == [call(job._verify.return_value)]
-    assert job._verify.call_args_list == [call()]
+    job._predetermined_result = predetermined_result
+
+    if not exp_catch_errors_called and not exp_verify_calls and not exp_finalize_calls:
+        with pytest.raises(RuntimeError, match=rf'^Unexpected predetermined_result: {predetermined_result!r}'):
+            job.execute()
+    else:
+        job.execute()
+        await job.await_tasks()
+        assert job.finalize.call_args_list == exp_finalize_calls
+        assert job._verify.call_args_list == exp_verify_calls
+        if exp_catch_errors_called:
+            assert job._catch_errors.call_args_list == [call(job._verify.return_value)]
+        else:
+            assert job._catch_errors.call_args_list == []
 
 
 @pytest.mark.parametrize(
