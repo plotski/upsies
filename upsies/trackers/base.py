@@ -17,7 +17,7 @@ class TrackerConfigBase(dict):
     """
     Dictionary with default values that are defined by the subclass
 
-    The keys ``announce``, ``source`` and ``exclude`` always exist.
+    Some keys defined by this base class always exist.
     """
 
     _defaults = {
