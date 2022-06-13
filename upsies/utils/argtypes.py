@@ -116,6 +116,22 @@ def scenedb(value):
         raise argparse.ArgumentTypeError(f'Unsupported scene release database: {value}')
 
 
+def is_scene(value):
+    """
+    User-predetermined scene check result
+
+    Convert `value` to :class:`~.types.Bool` or return `None` if `value` is
+    `None` (autodetect).
+    """
+    if value is None:
+        return None
+    else:
+        try:
+            return types.Bool(value)
+        except ValueError as e:
+            raise argparse.ArgumentTypeError(e)
+
+
 def timestamp(value):
     """See :func:`.timestamp.parse`"""
     from . import timestamp

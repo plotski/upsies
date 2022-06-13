@@ -161,6 +161,24 @@ def test_scenedb_invalid_value():
         argtypes.scenedb('foo')
 
 
+@pytest.mark.parametrize(
+    argnames='value, exp_result',
+    argvalues=(
+        (None, None),
+        ('true', True),
+        ('false', False),
+        ('maybe', argparse.ArgumentTypeError("Invalid boolean value: 'maybe'")),
+    ),
+)
+def test_is_scene(value, exp_result):
+    if isinstance(exp_result, Exception):
+        with pytest.raises(type(exp_result), match=rf'^{re.escape(str(exp_result))}$'):
+            argtypes.is_scene(value)
+    else:
+        return_value = argtypes.is_scene(value)
+        assert return_value == exp_result
+
+
 @patch('upsies.utils.timestamp.parse')
 def test_timestamp_valid_value(parse_mock):
     assert argtypes.timestamp('foo') is parse_mock.return_value
