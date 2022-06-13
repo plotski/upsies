@@ -137,7 +137,7 @@ class SceneCheckJob(JobBase):
     async def _verify(self):
         _log.debug('Verifying release: %r', self._content_path)
         if await scene.is_scene_release(self._content_path) is types.SceneCheckResult.false:
-            # Try to get a true negative as fast as positive
+            # Try to get a true negative as fast as possible
             self.finalize(types.SceneCheckResult.false)
 
         elif await scene.is_mixed_scene_release(self._content_path):
