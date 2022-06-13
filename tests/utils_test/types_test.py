@@ -119,8 +119,7 @@ def test_Choice_repr():
         ('yes', True), ('no', False),
         ('1', True), ('0', False),
         ('on', True), ('off', False),
-        ('yup', True), ('nope', False),
-        ('yay', True), ('nay', False), ('nah', False),
+        ('aye', True), ('nay', False),
     ),
 )
 def test_Bool_valid_values(string, exp_bool):
@@ -160,6 +159,10 @@ def test_Bool_equality(a, b):
 def test_Bool_inequality(a, b):
     assert a != b
     assert b != a
+
+def test_Bool_attributes():
+    assert types.Bool.truthy == ('true', 'yes', '1', 'on', 'aye')
+    assert types.Bool.falsy == ('false', 'no', '0', 'off', 'nay')
 
 
 @pytest.mark.parametrize('number', ('0', '1', '10', '11.5', '11.05', '99', '9999'))

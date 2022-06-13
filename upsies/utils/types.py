@@ -98,8 +98,14 @@ class Bool(str):
     Falsy strings: ``false``, ``no``, ``off``, ``0``
     """
 
-    _truthy = re.compile(r'^(?:true|yes|on|1|yup|yay)$', flags=re.IGNORECASE)
-    _falsy = re.compile(r'^(?:false|no|off|0|nope|nay|nah)$', flags=re.IGNORECASE)
+    truthy = ('true', 'yes', '1', 'on', 'aye')
+    """Valid `True` values (case-insensitive)"""
+
+    falsy = ('false', 'no', '0', 'off', 'nay')
+    """Valid `False` values (case-insensitive)"""
+
+    _truthy = re.compile(r'^(?:' + '|'.join(truthy) + ')$', flags=re.IGNORECASE)
+    _falsy = re.compile(r'^(?:' + '|'.join(falsy) + ')$', flags=re.IGNORECASE)
 
     def __new__(cls, value):
         self = super().__new__(cls, value)
