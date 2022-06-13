@@ -765,8 +765,8 @@ class _Howto:
                 f'{self._section}. Add Uploaded Torrents To Client (Optional)\n'
                 '\n'
                 f'   {self._section}.1 Specify which client to add uploaded torrents to.\n'
-                '       See --add-to below for a list of CLIENT_NAMEs.\n'
                 f'       $ upsies set trackers.{self._tracker_cls.name}.add-to CLIENT_NAME\n'
+                f'       Supported clients: ' + ', '.join(btclients.client_names()) + '\n'
             ),
             (
                 f'   {self._section}.2 Specify your client connection.\n'
