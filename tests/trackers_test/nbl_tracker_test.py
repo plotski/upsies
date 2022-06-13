@@ -73,7 +73,7 @@ async def test_upload_without_api_key(mocker):
 @pytest.mark.asyncio
 async def test_upload_succeeds(mocker):
     tracker = nbl.NblTracker(options={'apikey': 'thisismyapikey'})
-    http_mock = mocker.patch('upsies.trackers.nbl.http', Mock(
+    http_mock = mocker.patch('upsies.trackers.nbl.tracker.http', Mock(
         get=AsyncMock(),
         post=AsyncMock(return_value=Result(
             text='''
@@ -154,7 +154,7 @@ async def test_upload_succeeds(mocker):
 async def test_upload_handles_errors(response, exp_exception, mocker):
     tracker = nbl.NblTracker(options={'apikey': 'thisismyapikey'})
     upload_url = 'http://mock.url/upload.php'
-    http_mock = mocker.patch('upsies.trackers.nbl.http', Mock(
+    http_mock = mocker.patch('upsies.trackers.nbl.tracker.http', Mock(
         get=AsyncMock(),
         post=AsyncMock(),
     ))

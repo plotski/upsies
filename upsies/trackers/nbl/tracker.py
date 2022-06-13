@@ -1,79 +1,15 @@
 """
-Concrete :class:`~.base.TrackerConfigBase`, :class:`~.base.TrackerJobsBase`
-and :class:`~.base.TrackerBase` subclasses for NBL
+Concrete :class:`~.base.TrackerBase` subclass for NBL
 """
 
-import base64
-import re
-
-from .. import errors
-from ..utils import cached_property, configfiles, http
-from . import base
+from ... import errors
+from ...utils import http
+from .. import base
+from .config import NblTrackerConfig
+from .jobs import NblTrackerJobs
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
-
-
-class NblTrackerConfig(base.TrackerConfigBase):
-    defaults = {
-        'upload_url': base64.b64decode('aHR0cHM6Ly9uZWJ1bGFuY2UuaW8vdXBsb2FkLnBocA==').decode('ascii'),
-        'announce_url': configfiles.config_value(
-            value='',
-            description=(
-                'The complete announce URL with your private passkey.\n'
-                'Get it from the website: Shows -> Upload -> Your personal announce URL'
-            ),
-        ),
-        'apikey': configfiles.config_value(
-            value='',
-            description=(
-                'Your personal private API key.\n'
-                'Get it from the website: <USERNAME> -> Settings -> API keys'
-            ),
-        ),
-        'source': 'NBL',
-        'exclude': [],
-    }
-
-    argument_definitions = {
-        # Custom arguments, e.g. "upsies submit nbl --foo bar"
-    }
-
-
-class NblTrackerJobs(base.TrackerJobsBase):
-    @cached_property
-    def jobs_before_upload(self):
-        return (
-            self.create_torrent_job,
-            self.mediainfo_job,
-            self.tvmaze_job,
-            self.category_job,
-        )
-
-    @cached_property
-    def category_job(self):
-        return self.make_choice_job(
-            name=self.get_job_name('category'),
-            label='Category',
-            autodetected=str(self.release_name.type),
-            options=(
-                {'label': 'Season', 'value': '3', 'regex': re.compile(r'^(?i:season)$')},
-                {'label': 'Episode', 'value': '1', 'regex': re.compile(r'^(?i:episode)$')},
-            ),
-        )
-
-    @property
-    def post_data(self):
-        return {
-            'api_key': self.options['apikey'],
-            'category': self.get_job_attribute(self.category_job, 'choice'),
-            'tvmazeid': self.get_job_output(self.tvmaze_job, slice=0),
-            'mediainfo': self.get_job_output(self.mediainfo_job, slice=0),
-        }
-
-    @property
-    def torrent_filepath(self):
-        return self.get_job_output(self.create_torrent_job, slice=0)
 
 
 class NblTracker(base.TrackerBase):
