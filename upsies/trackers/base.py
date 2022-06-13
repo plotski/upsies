@@ -33,7 +33,7 @@ class TrackerConfigBase(dict):
             value=types.Choice(
                 value='',
                 empty_ok=True,
-                options=(client.name for client in btclients.clients()),
+                options=btclients.client_names(),
             ),
             description=('BitTorrent client to add torrent to after submission.'),
         ),
