@@ -30,6 +30,16 @@ class submit(base.CommandBase):
                         'type': utils.argtypes.content,
                         'help': 'Path to release content',
                     },
+                    ('--is-scene',): {
+                        'type': utils.argtypes.is_scene,
+                        'default': None,
+                        'help': ('Whether this is a scene release (usually autodetected)\n'
+                                 'Valid values: '
+                                 + ', '.join(
+                                     f'{true}/{false}'
+                                     for true, false in zip(utils.types.Bool.truthy, utils.types.Bool.falsy)
+                                 )),
+                    },
                     ('--exclude-files', '--ef'): {
                         'nargs': '+',
                         'metavar': 'PATTERN',
