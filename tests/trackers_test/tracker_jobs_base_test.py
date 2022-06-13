@@ -563,20 +563,31 @@ def test_mediainfo_job_is_singleton(mocker):
     assert tracker_jobs.mediainfo_job is tracker_jobs.mediainfo_job
 
 
-def test_scene_check_job(mocker):
+@pytest.mark.parametrize(
+    argnames='options, common_job_args, exp_kwargs',
+    argvalues=(
+        ({}, {'ignore_cache': True}, {'ignore_cache': True}),
+        ({}, {'ignore_cache': False}, {'ignore_cache': False}),
+        ({'is_scene': None}, {'ignore_cache': True}, {'ignore_cache': True}),
+        ({'is_scene': None}, {'ignore_cache': False}, {'ignore_cache': False}),
+        ({'is_scene': True}, {'ignore_cache': True}, {'ignore_cache': True, 'force': True}),
+        ({'is_scene': True}, {'ignore_cache': False}, {'ignore_cache': True, 'force': True}),
+        ({'is_scene': False}, {'ignore_cache': True}, {'ignore_cache': True, 'force': False}),
+        ({'is_scene': False}, {'ignore_cache': False}, {'ignore_cache': True, 'force': False}),
+    ),
+)
+def test_scene_check_job(options, common_job_args, exp_kwargs, mocker):
     SceneCheckJob_mock = mocker.patch('upsies.jobs.scene.SceneCheckJob')
     tracker_jobs = make_TestTrackerJobs(
         content_path='path/to/content',
-        common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
+        common_job_args=common_job_args,
     )
+    mocker.patch.object(type(tracker_jobs), 'options', PropertyMock(return_value=options))
     assert tracker_jobs.scene_check_job is SceneCheckJob_mock.return_value
-    assert SceneCheckJob_mock.call_args_list == [
-        call(
-            content_path='path/to/content',
-            home_directory='path/to/home',
-            ignore_cache='mock bool',
-        ),
-    ]
+    assert SceneCheckJob_mock.call_args_list == [call(
+        content_path='path/to/content',
+        **exp_kwargs,
+    )]
 
 def test_scene_check_job_is_singleton(mocker):
     mocker.patch('upsies.jobs.scene.SceneCheckJob', side_effect=(Mock(), Mock()))

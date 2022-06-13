@@ -505,9 +505,14 @@ class TrackerJobsBase(abc.ABC):
     @cached_property
     def scene_check_job(self):
         """:class:`~.jobs.scene.SceneCheckJob` instance"""
+        kwargs = self.common_job_args.copy()
+        if self.options.get('is_scene') is not None:
+            kwargs['force'] = self.options.get('is_scene')
+            # Don't use cached value if the user made a choice
+            kwargs['ignore_cache'] = True
         return jobs.scene.SceneCheckJob(
             content_path=self.content_path,
-            **self.common_job_args,
+            **kwargs,
         )
 
     def make_choice_job(self, name, label, options, condition=None,
