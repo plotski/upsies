@@ -11,7 +11,6 @@ import logging  # isort:skip
 _log = logging.getLogger(__name__)
 
 
-
 class NblTrackerJobs(base.TrackerJobsBase):
     @cached_property
     def jobs_before_upload(self):

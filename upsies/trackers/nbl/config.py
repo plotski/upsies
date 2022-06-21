@@ -4,7 +4,6 @@ Concrete :class:`~.base.TrackerConfigBase` subclass for NBL
 
 import base64
 
-from ... import errors
 from ...utils import configfiles
 from .. import base
 
