@@ -1,6 +1,7 @@
 from unittest.mock import Mock, PropertyMock, call
 
 from upsies.trackers import base
+from upsies.utils import btclients
 
 
 class AsyncMock(Mock):
@@ -88,8 +89,8 @@ def test_Howto_autoseed():
         '7. Add Uploaded Torrents To Client (Optional)\n'
         '\n'
         '   7.1 Specify which client to add uploaded torrents to.\n'
-        '       See --add-to for a list of CLIENT_NAMEs.\n'
         f'       $ upsies set trackers.{tracker_cls.name}.add-to CLIENT_NAME\n'
+        f'       Supported clients: {", ".join(n for n in btclients.client_names())}\n'
         '\n'
         '   7.2 Specify your client connection.\n'
         '       $ upsies set clients.CLIENT_NAME.url URL\n'
