@@ -318,7 +318,8 @@ async def _request(
     elif not user_agent:
         del request.headers['User-Agent']
 
-    # Block when requesting the same URL simultaneously
+    # Block when requesting the same URL multiple times simultaneously so the
+    # first response can be loaded from cache by the other requests
     request_lock_key = (request.url, await request.aread())
     # _log.debug('Request lock key: %r', request_lock_key)
     request_lock = _request_locks[request_lock_key]
