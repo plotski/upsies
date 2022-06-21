@@ -15,11 +15,6 @@ from upsies import __project_name__, __version__, errors
 from upsies.utils import http, semantic_hash
 
 
-@pytest.fixture(autouse=True)
-def clear_global_client_cookies():
-    http._client.cookies.clear()
-
-
 @pytest.fixture
 def mock_cache(mocker):
     parent = Mock(
@@ -580,19 +575,29 @@ async def test_request_with_follow_redirects(status_code, method, follow_redirec
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
 async def test_request_preserves_session_cookies_between_requests(method, mock_cache, httpserver):
+    from werkzeug.datastructures import Headers, ImmutableMultiDict
+
     class Handler(RequestHandler):
+        expected_cookies = ImmutableMultiDict({})
+
         def handle(self, request):
-            from werkzeug.datastructures import ImmutableMultiDict
-            request_cookies = getattr(self, 'request_cookies', ImmutableMultiDict())
-            assert request.cookies == request_cookies
+            print('SERVER: Got cookies:', request.cookies)
+            assert request.cookies == self.expected_cookies
 
-            bar = int(request_cookies.get('bar', 0))
-            self.request_cookies = ImmutableMultiDict({'bar': str(bar + 1)})
+            bar = int(request.cookies.get('bar', 0))
+            self.expected_cookies = ImmutableMultiDict({'bar': str(bar + 1), 'baz': 'asdf'})
 
-            if request_cookies:
-                headers = {'Set-Cookie': f'bar={bar + 1}'}
+            if not request.cookies:
+                # First request
+                headers = Headers((
+                    ('Set-Cookie', f'bar={bar + 1}'),
+                    ('Set-Cookie', 'baz=asdf'),
+                ))
             else:
-                headers = {'Set-Cookie': 'bar=1'}
+                headers = Headers((
+                    ('Set-Cookie', f'bar={bar + 1}'),
+                ))
+            print('SERVER: Sending cookies:', headers)
 
             return Response(response=f'bar is currently {bar}', headers=headers)
 
@@ -603,14 +608,16 @@ async def test_request_preserves_session_cookies_between_requests(method, mock_c
         Handler(),
     )
 
-    for i in range(3):
-        response = await http._request(
-            method=method,
-            url=httpserver.url_for('/foo'),
-            cache=False,
-        )
-        assert response == f'bar is currently {i}'
-
+    try:
+        for i in range(3):
+            response = await http._request(
+                method=method,
+                url=httpserver.url_for('/foo'),
+                cache=False,
+            )
+            assert response == f'bar is currently {i}'
+    finally:
+        http.clear_session_cookies()
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -637,27 +644,31 @@ async def test_request_uses_separate_cookie_jar_per_domain(method, mock_cache, h
 
     hosts = ('foo.localhost', 'bar.localhost', 'baz.localhost')
 
-    # Fill cookie jar with some subdomain-specific cookies
-    handler.set_cookie = True
-    for host in hosts:
-        httpserver.host = host
-        response = await http._request(
-            method=method,
-            url=httpserver.url_for('/foo'),
-            cache=False,
-        )
-        assert response == 'current cookies: '
+    try:
+        # Fill cookie jar with some subdomain-specific cookies
+        handler.set_cookie = True
+        for host in hosts:
+            httpserver.host = host
+            response = await http._request(
+                method=method,
+                url=httpserver.url_for('/foo'),
+                cache=False,
+            )
+            assert response == 'current cookies: '
 
-    # Check if we get the same cookies back for each subdomain
-    handler.set_cookie = False
-    for host in hosts:
-        httpserver.host = host
-        response = await http._request(
-            method=method,
-            url=httpserver.url_for('/foo'),
-            cache=False,
-        )
-        assert response == f'current cookies: cookie_domain={host}:{httpserver.port}'
+        # Check if we get the same cookies back for each subdomain
+        handler.set_cookie = False
+        for host in hosts:
+            httpserver.host = host
+            response = await http._request(
+                method=method,
+                url=httpserver.url_for('/foo'),
+                cache=False,
+            )
+            assert response == f'current cookies: cookie_domain={host}:{httpserver.port}'
+
+    finally:
+        http.clear_session_cookies()
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -691,21 +702,25 @@ async def test_request_with_custom_cookies(method, mock_cache, httpserver):
         handler,
     )
 
-    response = await http._request(
-        method=method,
-        url=httpserver.url_for('/foo'),
-        cache=False,
-        cookies=custom_cookies,
-    )
-    assert response == 'got cookies: ' + ', '.join(f'{k}={v}' for k, v in custom_cookies.items())
+    try:
+        response = await http._request(
+            method=method,
+            url=httpserver.url_for('/foo'),
+            cache=False,
+            cookies=custom_cookies,
+        )
+        assert response == 'got cookies: ' + ', '.join(f'{k}={v}' for k, v in custom_cookies.items())
 
-    response = await http._request(
-        method=method,
-        url=httpserver.url_for('/foo'),
-        cache=False,
-        cookies=custom_cookies,
-    )
-    assert response == 'got cookies: ' + ', '.join(f'{k}={v}' for k, v in {**custom_cookies, **server_cookies}.items())
+        response = await http._request(
+            method=method,
+            url=httpserver.url_for('/foo'),
+            cache=False,
+            cookies=custom_cookies,
+        )
+        assert response == 'got cookies: ' + ', '.join(f'{k}={v}' for k, v in {**custom_cookies, **server_cookies}.items())
+
+    finally:
+        http.clear_session_cookies()
 
 @pytest.mark.parametrize('method', ('GET', 'POST'))
 @pytest.mark.asyncio
@@ -749,7 +764,7 @@ async def test_request_with_cookies_file(method, mock_cache, httpserver, tmp_pat
         assert response == f'got cookies on {subdomain}.localhost:{httpserver.port}: '
 
     # Remove in-memory cookies; only send cookies from file
-    http._client.cookies.clear()
+    http.clear_session_cookies()
 
     for subdomain in ('foo', 'bar'):
         httpserver.host = f'{subdomain}.localhost'
@@ -856,7 +871,7 @@ async def test_request_catches_TimeoutException(method, mock_cache, mocker):
         message='Some error',
         request='mock request',
     )
-    mocker.patch.object(http._client, 'send', AsyncMock(side_effect=exc))
+    mocker.patch('httpx.AsyncClient.send', AsyncMock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
     with pytest.raises(errors.RequestError, match=rf'^{url}: Timeout$') as excinfo:
         await http._request(method=method, url=url)
@@ -867,7 +882,7 @@ async def test_request_catches_TimeoutException(method, mock_cache, mocker):
 @pytest.mark.asyncio
 async def test_request_catches_HTTPError(method, mock_cache, mocker):
     exc = httpx.HTTPError('Some error')
-    mocker.patch.object(http._client, 'send', AsyncMock(side_effect=exc))
+    mocker.patch('httpx.AsyncClient.send', AsyncMock(side_effect=exc))
     url = 'http://localhost:12345/foo/bar/baz'
     with pytest.raises(errors.RequestError, match=rf'^{url}: Some error$') as excinfo:
         await http._request(method=method, url=url)

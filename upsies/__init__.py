@@ -44,5 +44,3 @@ def application_shutdown(config):
         files=True,
         directories=True,
     )
-
-    utils.get_aioloop().run_until_complete(utils.http.close())

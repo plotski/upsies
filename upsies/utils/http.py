@@ -30,13 +30,8 @@ _default_headers = {
 # requests concurrently without bugging the server.
 _request_locks = collections.defaultdict(lambda: asyncio.Lock())
 
-# Use one single client session for all connections to benefit from re-using
-# connections for multiple requests. The downside is that we have to remember to
-# close the client before the application terminates.
-_client = httpx.AsyncClient(
-    timeout=_default_timeout,
-    headers=_default_headers,
-)
+# Map domain names to dictionaries of session cookies
+_session_cookies = collections.defaultdict(lambda: {})
 
 
 cache_directory = None
@@ -49,17 +44,6 @@ If this is set to a falsy value, default to
 
 def _get_cache_directory():
     return cache_directory or constants.DEFAULT_CACHE_DIRECTORY
-
-
-async def close():
-    """
-    Close the global client session used for all requests
-
-    This coroutine function must be called before the application terminates.
-    """
-    _log.debug('Closing client: %r', _client)
-    await _client.aclose()
-    _log.debug('Closed client: %r', _client)
 
 
 async def get(
@@ -96,7 +80,7 @@ async def get(
           exists), perform the request, and save the new set of cookies to the
           same path.
 
-        .. note:: Session cookies are not saved.
+        .. note:: Session cookies are handled separately and automatically.
 
     :return: Response text
     :rtype: Response
@@ -296,86 +280,115 @@ async def _request(
     if method.upper() not in ('GET', 'POST'):
         raise ValueError(f'Invalid method: {method}')
 
-    # Create request object
-    if isinstance(data, (bytes, str)):
-        build_request_args = {'content': data}
-    else:
-        build_request_args = {'data': data}
-    request = _client.build_request(
-        method=str(method),
-        url=str(url),
+    client = httpx.AsyncClient(
         headers={**_default_headers, **headers},
-        cookies=_load_cookies(cookies),
-        params=params,
-        files=_open_files(files),
-        timeout=timeout,
-        **build_request_args,
+        cookies=_load_permanent_cookies(cookies),
     )
-
-    # Adjust User-Agent
-    if isinstance(user_agent, str):
-        request.headers['User-Agent'] = user_agent
-    elif not user_agent:
-        del request.headers['User-Agent']
-
-    # Block when requesting the same URL multiple times simultaneously so the
-    # first response can be loaded from cache by the other requests
-    request_lock_key = (request.url, await request.aread())
-    # _log.debug('Request lock key: %r', request_lock_key)
-    request_lock = _request_locks[request_lock_key]
-    async with request_lock:
-        if cache:
-            cache_file = _cache_file(method, url, params)
-            result = _from_cache(cache_file, max_age=max_cache_age)
-            if result is not None:
-                return result
-
-        _log.debug('Sending request: %r', request)
-        # _log.debug('Request headers: %r', request.headers)
-        # _log.debug('Request data: %r', await request.aread())
-        try:
-            response = await _client.send(
-                request=request,
-                auth=auth,
-                follow_redirects=follow_redirects,
-            )
-            try:
-                response.raise_for_status()
-            except httpx.HTTPStatusError:
-                if response.status_code not in (301, 302, 303, 307, 308):
-                    raise errors.RequestError(
-                        f'{url}: {html.as_text(response.text)}',
-                        url=url,
-                        text=response.text,
-                        headers=response.headers,
-                        status_code=response.status_code,
-                    )
-        except httpx.TimeoutException:
-            raise errors.RequestError(f'{url}: Timeout')
-        except httpx.HTTPError as e:
-            _log.debug(f'Unexpected HTTP error: {e!r}')
-            raise errors.RequestError(f'{url}: {e}')
+    async with client:
+        # Create request object
+        if isinstance(data, (bytes, str)):
+            build_request_args = {'content': data}
         else:
-            if cookies and isinstance(cookies, (str, pathlib.Path)):
-                _save_cookies(filepath=cookies, domain=response.url.host)
+            build_request_args = {'data': data}
+        request = client.build_request(
+            method=str(method),
+            url=str(url),
+            cookies=_load_session_cookies(httpx.URL(url).host),
+            params=params,
+            files=_open_files(files),
+            timeout=timeout,
+            **build_request_args,
+        )
+        _log.debug('Sending headers: %r', request.headers)
 
+        # Adjust User-Agent
+        if isinstance(user_agent, str):
+            request.headers['User-Agent'] = user_agent
+        elif not user_agent:
+            del request.headers['User-Agent']
+
+        # Block when requesting the same URL multiple times simultaneously so the
+        # first response can be loaded from cache by the other requests
+        request_lock_key = (request.url, await request.aread())
+        # _log.debug('Request lock key: %r', request_lock_key)
+        request_lock = _request_locks[request_lock_key]
+        async with request_lock:
             if cache:
                 cache_file = _cache_file(method, url, params)
-                _to_cache(cache_file, response.content)
+                result = _from_cache(cache_file, max_age=max_cache_age)
+                if result is not None:
+                    return result
 
-            # _log.debug('Response content: %r', response.content)
-            # _log.debug('Response headers: %r', response.headers)
-            return Result(
-                text=response.text,
-                bytes=response.content,
-                headers=response.headers,
-                status_code=response.status_code,
-            )
+            _log.debug('Sending request: %r', request)
+            # _log.debug('Request headers: %r', request.headers)
+            # _log.debug('Request data: %r', await request.aread())
+            try:
+                response = await client.send(
+                    request=request,
+                    auth=auth,
+                    follow_redirects=follow_redirects,
+                )
+                try:
+                    response.raise_for_status()
+                except httpx.HTTPStatusError:
+                    if response.status_code not in (301, 302, 303, 307, 308):
+                        raise errors.RequestError(
+                            f'{url}: {html.as_text(response.text)}',
+                            url=url,
+                            text=response.text,
+                            headers=response.headers,
+                            status_code=response.status_code,
+                        )
+            except httpx.TimeoutException:
+                raise errors.RequestError(f'{url}: Timeout')
+            except httpx.HTTPError as e:
+                _log.debug(f'Unexpected HTTP error: {e!r}')
+                raise errors.RequestError(f'{url}: {e}')
+            else:
+                _save_session_cookies(cookies=response.cookies, domain=response.url.host)
+                if cookies and isinstance(cookies, (str, pathlib.Path)):
+                    _save_permanent_cookies(client=client, filepath=cookies, domain=response.url.host)
+
+                if cache:
+                    cache_file = _cache_file(method, url, params)
+                    _to_cache(cache_file, response.content)
+
+                # _log.debug('Response content: %r', response.content)
+                # _log.debug('Response headers: %r', response.headers)
+                return Result(
+                    text=response.text,
+                    bytes=response.content,
+                    headers=response.headers,
+                    status_code=response.status_code,
+                )
 
 
-def _load_cookies(cookies):
+def _load_session_cookies(domain):
+    _log.debug('Loading session cookies for %r: %r', domain, _session_cookies[domain])
+    return _session_cookies[domain]
+
+
+def _save_session_cookies(cookies, domain):
+    _session_cookies[domain].update(cookies)
+    _log.debug('Saved session cookies for %r: %r: %r', domain, cookies, _session_cookies[domain])
+
+
+def clear_session_cookies(domain=None):
+    """
+    Delete all session cookies for `domain`
+
+    If `domain` is `None`, delete all session cookies.
+    """
+    if domain:
+        _session_cookies[domain].clear()
+    else:
+        for domain in _session_cookies:
+            _session_cookies[domain].clear()
+
+
+def _load_permanent_cookies(cookies):
     if cookies:
-        _log.debug('Loading cookies from %r', cookies)
+        _log.debug('Loading permanent cookies from %r', cookies)
     if isinstance(cookies, (collections.abc.Mapping, http.cookiejar.CookieJar)):
         return cookies
     elif cookies and isinstance(cookies, (str, pathlib.Path)):
@@ -390,19 +403,19 @@ def _load_cookies(cookies):
             msg = e.strerror if e.strerror else str(e)
             raise errors.RequestError(f'Failed to read {cookie_jar.filename}: {msg}')
         else:
-            _log.debug('Loaded cookie jar: %r', cookie_jar)
+            _log.debug('Loaded permanent cookies: %r', cookie_jar)
         return cookie_jar
     elif cookies is not None:
         raise RuntimeError(f'Unsupported cookies type: {cookies!r}')
 
 
-def _save_cookies(filepath, domain):
+def _save_permanent_cookies(client, filepath, domain):
     filepath_abs = os.path.join(_get_cache_directory(), filepath)
-    _log.debug('Saving cookies for %r to %r', domain, filepath_abs)
+    _log.debug('Saving permanent cookies for %r to %r', domain, filepath_abs)
     file_cookie_jar = http.cookiejar.LWPCookieJar(filepath_abs)
-    for cookie in _client.cookies.jar:
+    for cookie in client.cookies.jar:
         if cookie.domain.endswith(domain):
-            _log.debug('Saving cookie: %r', cookie)
+            _log.debug('Saving permanent cookie: %r', cookie)
             file_cookie_jar.set_cookie(cookie)
         else:
             _log.debug('Ignoring cookie because %r does not end with %r: %r', cookie.domain, domain, cookie)
@@ -414,7 +427,7 @@ def _save_cookies(filepath, domain):
             msg = e.strerror if e.strerror else str(e)
             raise errors.RequestError(f'Failed to write {filepath_abs}: {msg}')
         else:
-            _log.debug('Saved file cookie jar: %r', file_cookie_jar)
+            _log.debug('Saved permanent cookies: %r', file_cookie_jar)
 
 
 def _open_files(files):

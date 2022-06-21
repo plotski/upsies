@@ -48,5 +48,4 @@ def event_loop():
     )
     loop = asyncio.new_event_loop()
     yield loop
-    loop.run_until_complete(http.close())
     loop.close()
