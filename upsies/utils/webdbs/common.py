@@ -321,3 +321,9 @@ class Person(str):
         obj = super().__new__(cls, name)
         obj.url = url
         return obj
+
+    def __repr__(self):
+        args = repr(str(self))
+        if self.url:
+            args += f', url={self.url}'
+        return f'{type(self).__name__}({args})'

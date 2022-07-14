@@ -380,3 +380,14 @@ def test_Person():
     assert isinstance(webdbs.Person('Foo Bar'), str)
     assert webdbs.Person('Foo Bar').url == ''
     assert webdbs.Person('Foo Bar', url='http://foo').url == 'http://foo'
+
+@pytest.mark.parametrize(
+    argnames='args, kwargs, exp_repr',
+    argvalues=(
+        (('Hey Ho',), {}, "Person('Hey Ho')"),
+        (('Hey Ho',), {'url': 'http://localhost/hey'}, "Person('Hey Ho', url='http://localhost/hey')"),
+        (('Hey Ho', 'http://localhost/hey'), {}, "Person('Hey Ho', url='http://localhost/hey')"),
+    ),
+)
+def test_Person_repr(args, kwargs, exp_repr):
+    assert repr(webdbs.Person(*args, **kwargs)), exp_repr
