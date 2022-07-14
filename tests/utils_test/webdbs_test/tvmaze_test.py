@@ -383,7 +383,7 @@ async def test_poster_url(id, season, exp_url, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_rating'),
     argvalues=(
-        (1259, 8.3),
+        (1259, 8.1),
         (35256, 7.9),
         (36072, 7.6),
         (None, None),
