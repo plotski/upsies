@@ -141,6 +141,49 @@ def test_Query_update():
         assert cb.call_args_list == [call(q), call(q), call(q), call(q)]
 
 
+def test_Query_copy():
+    q = webdbs.Query('The Title', year='2010', type=ReleaseType.series, id='1234')
+    cb = Mock()
+    q.signal.register('changed', cb)
+    assert cb.call_args_list == []
+
+    assert q.copy() == webdbs.Query(
+        title='The Title',
+        year='2010',
+        type=ReleaseType.series,
+        id='1234',
+    )
+
+    assert q.copy(title='Foo') == webdbs.Query(
+        title='Foo',
+        year='2010',
+        type=ReleaseType.series,
+        id='1234',
+    )
+
+    assert q.copy(year='2020') == webdbs.Query(
+        title='The Title',
+        year='2020',
+        type=ReleaseType.series,
+        id='1234',
+    )
+
+    assert q.copy(type=ReleaseType.movie) == webdbs.Query(
+        title='The Title',
+        year='2010',
+        type=ReleaseType.movie,
+        id='1234',
+    )
+
+    assert q.copy(id='4321') == webdbs.Query(
+        title='The Title',
+        year='2010',
+        type=ReleaseType.series,
+        id='4321',
+    )
+
+    assert cb.call_args_list == []
+
 @pytest.mark.parametrize(
     argnames=('a', 'b'),
     argvalues=(

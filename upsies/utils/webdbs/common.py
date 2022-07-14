@@ -134,6 +134,21 @@ class Query:
         if str(self) != before:
             self.signal.emit('changed', self)
 
+    def copy(self, **updates):
+        """
+        Return new :class:`Query` instance with updated attributes
+
+        :param updates: Updated attributes
+        """
+        kwargs = {
+            'title': self.title,
+            'type': self.type,
+            'year': self.year,
+            'id': self.id,
+        }
+        kwargs.update(updates)
+        return type(self)(**kwargs)
+
     _types = {
         ReleaseType.movie: ('movie', 'film'),
         ReleaseType.season: ('season', 'series', 'tv', 'show', 'tvshow'),
