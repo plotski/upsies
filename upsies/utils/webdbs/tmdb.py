@@ -78,7 +78,9 @@ class TmdbApi(WebDbApiBase):
             elif query.type in (ReleaseType.season, ReleaseType.episode):
                 soup = await self._get_soup('/search/tv', params=params)
             else:
-                soup = await self._get_soup('/search', params=params)
+                movie_results = await self.search(query.copy(type=ReleaseType.movie))
+                series_results = await self.search(query.copy(type=ReleaseType.series))
+                return movie_results + series_results
 
             # When search for year, unmatching results are included but hidden.
             for tag in soup.find_all('div', class_='hide'):
@@ -96,8 +98,12 @@ class TmdbApi(WebDbApiBase):
         for a_tag in a_tags:
             if a_tag.string:
                 name = a_tag.string.strip()
-                url_path = self._person_url_path_regex.match(a_tag["href"]).group(1)
-                url = f'{self._url_base.rstrip("/")}/{url_path.lstrip("/")}'
+                url_match = self._person_url_path_regex.match(a_tag["href"])
+                if url_match:
+                    url_path = url_match.group(1)
+                    url = f'{self._url_base.rstrip("/")}/{url_path.lstrip("/")}'
+                else:
+                    url = ''
                 persons.append(common.Person(name, url))
         return tuple(persons)
 

@@ -59,8 +59,10 @@ async def test_search_returns_list_of_SearchResults(api, store_response):
     argnames=('query', 'exp_top_result'),
     argvalues=(
         (Query('alien', year='1979'), {'title': 'Alien', 'year': '1979'}),
-        (Query('aliens', year='1986'), {'title': 'Aliens', 'year': '1986'}),
-        (Query('alien', year='1992'), {'title': 'Alien³', 'year': '1992'}),
+        (Query('alien', year='1986'), {'title': 'Aliens', 'year': '1986'}),
+        (Query('alien', year='1986'), {'title': 'Aliens', 'year': '1986'}),
+        (Query('january', year='2012'), {'title': 'One Day in January', 'year': '2012'}),
+        (Query('january', year='2015'), {'title': 'January Hymn', 'year': '2015'}),
     ),
     ids=lambda value: str(value),
 )
@@ -74,8 +76,8 @@ async def test_search_for_year(query, exp_top_result, api, store_response):
 @pytest.mark.parametrize(
     argnames=('query', 'exp_titles'),
     argvalues=(
-        (Query('wooster', type=ReleaseType.series), ('Jeeves and Wooster', 'The World of Wooster')),
-        (Query('wooster', type=ReleaseType.movie), ()),
+        (Query('Ash vs Evil Dead', type=ReleaseType.series), ('Ash vs Evil Dead',)),
+        (Query('Ash vs Evil Dead', type=ReleaseType.movie), ()),
         (Query('Deadwood', type=ReleaseType.movie), ('Deadwood: The Movie',)),
         (Query('Deadwood', type=ReleaseType.series), ('Deadwood',)),
     ),
@@ -96,7 +98,7 @@ async def test_search_for_type(query, exp_titles, api, store_response):
     argnames=('query', 'exp_cast'),
     argvalues=(
         (Query('The Blues Brothers', year=1980), ('Dan Aykroyd', 'John Belushi')),
-        (Query('February', year=2017), ('Emma Roberts', 'Kiernan Shipka')),
+        (Query('February', year=2017), ('Ana Sofrenović', 'Aleksandar Đurica', 'Sonja Kolačarić')),
         (Query('Deadwood', year=2004), ('Timothy Olyphant', 'Ian McShane')),
     ),
     ids=lambda value: str(value),
@@ -104,7 +106,8 @@ async def test_search_for_type(query, exp_titles, api, store_response):
 @pytest.mark.asyncio
 async def test_search_result_cast(query, exp_cast, api, store_response):
     results = await api.search(query)
-    cast = await results[0].cast()
+    result = [r for r in results if r.title == query.title][0]
+    cast = await result.cast()
     for member in exp_cast:
         assert member in cast
 
@@ -120,7 +123,7 @@ async def test_search_result_countries(api, store_response):
     argnames=('query', 'exp_id'),
     argvalues=(
         (Query('The Blues Brothers', year=1980), 'movie/525'),
-        (Query('February', year=2017), 'movie/334536'),
+        (Query('February', year=2017), 'movie/700711'),
         (Query('Deadwood', year=2004), 'tv/1406'),
     ),
     ids=lambda value: str(value),
@@ -128,7 +131,8 @@ async def test_search_result_countries(api, store_response):
 @pytest.mark.asyncio
 async def test_search_result_id(query, exp_id, api, store_response):
     results = await api.search(query)
-    assert results[0].id == exp_id
+    result = [r for r in results if r.title == query.title][0]
+    assert result.id == exp_id
 
 
 @pytest.mark.parametrize(
@@ -149,7 +153,7 @@ async def test_search_result_directors(query, exp_directors, api, store_response
     argnames=('query', 'exp_genres'),
     argvalues=(
         (Query('The Blues Brothers', year=1980), ('music', 'comedy', 'action', 'crime')),
-        (Query('February', year=2017), ('horror', 'thriller')),
+        (Query('February', year=2017), ('drama',)),
         (Query('Deadwood', year=2004), ('crime', 'western')),
         (Query('Farang', year=2017), ('drama',)),
     ),
@@ -158,7 +162,8 @@ async def test_search_result_directors(query, exp_directors, api, store_response
 @pytest.mark.asyncio
 async def test_search_result_genres(query, exp_genres, api, store_response):
     results = await api.search(query)
-    genres = await results[0].genres()
+    result = [r for r in results if r.title == query.title][0]
+    genres = await result.genres()
     if exp_genres:
         for kw in exp_genres:
             assert kw in genres
@@ -170,17 +175,18 @@ async def test_search_result_genres(query, exp_genres, api, store_response):
     argnames=('query', 'exp_summary'),
     argvalues=(
         (Query('The Blues Brothers', year=1980), 'released from prison'),
-        (Query('February', year='2017'), 'Two young students at a prestigious prep school for girls'),
+        (Query('February', year='2017'), 'Husband and wife are going to their vacation cottage to overcome marriage crises'),
         (Query('Deadwood', year=2004), 'woven around actual historic events'),
         (Query('Lost & Found Music Studios', year=2015), 'singers-songwriters in an elite music program form bonds of friendship'),
-        (Query('Anyone Can Play', year=1968), ''),
+        (Query('January', year=1973), ''),
     ),
     ids=lambda value: str(value),
 )
 @pytest.mark.asyncio
 async def test_search_result_summary(query, exp_summary, api, store_response):
     results = await api.search(query)
-    summary = await results[0].summary()
+    result = [r for r in results if r.title == query.title][0]
+    summary = await result.summary()
     if exp_summary:
         assert exp_summary in summary
     else:
@@ -251,7 +257,7 @@ async def test_search_result_type(query, exp_type, api, store_response):
     argnames=('query', 'exp_url'),
     argvalues=(
         (Query('The Blues Brothers', year=1980), 'http://themoviedb.org/movie/525'),
-        (Query('February', year=2017), 'http://themoviedb.org/movie/334536'),
+        (Query('February', year=2017), 'http://themoviedb.org/movie/700711'),
         (Query('Deadwood', year=2004), 'http://themoviedb.org/tv/1406'),
     ),
     ids=lambda value: str(value),
@@ -352,8 +358,7 @@ async def test_creators(id, exp_creators, api, store_response):
 @pytest.mark.parametrize(
     argnames=('id', 'exp_directors'),
     argvalues=(
-        ('movie/125244', (('James Algar', 'http://themoviedb.org/person/5690-james-algar'),
-                          ('Jack Kinney', 'http://themoviedb.org/person/74565-jack-kinney'))),
+        ('movie/125244', (('James Algar', 'http://themoviedb.org/person/5690-james-algar'),)),
         ('movie/334536', (('Oz Perkins', 'http://themoviedb.org/person/90609-oz-perkins'),)),
         ('tv/1406', ()),
         ('tv/74802', ()),
@@ -396,8 +401,8 @@ async def test_genres(id, exp_genres, api, store_response):
 @pytest.mark.parametrize(
     argnames='id, exp_url',
     argvalues=(
-        ('movie/525', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg'),
-        ('movie/334536', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/1XClORu9OKD0uiHqDcBy3mXr5mZ.jpg'),
+        ('movie/525', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg'),
+        ('movie/334536', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/zvcdDfwxn0F3Rky3m3Dl2eSVX5X.jpg'),
         ('tv/1406', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/4Yp35DVbVOAWkfQUIQ7pbh3u0aN.jpg'),
         ('tv/74802', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/cUKqWS2v7D6DVKQze2Iz2netwRH.jpg'),
         ('tv/66260', 'http://themoviedb.org/t/p/w300_and_h450_bestv2/hlOWMr80oB0uNbp3eUYxUoCrwfJ.jpg'),
@@ -436,9 +441,9 @@ async def test_runtimes(id, exp_runtimes, api, store_response):
     argnames=('id', 'exp_rating'),
     argvalues=(
         ('movie/525', 77.0),
-        ('movie/334536', 58.0),
+        ('movie/334536', 57.0),
         ('tv/1406', 81.0),
-        ('tv/74802', 68.0),
+        ('tv/74802', 67.0),
         ('tv/66260', 88.0),
         ('movie/3405', 13.0),
         (None, None),
