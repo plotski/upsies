@@ -1,6 +1,9 @@
 2022.??.??
+  * Fixed the obnoxious error: "The connection pool was closed while n HTTP
+    requests/responses were still in-flight."
   * submit: Added --is-scene argument to allow manual override of
     broken/unavailable DBs
+  * IMDb/TMDb minor fixes
 
 
 2022.05.24
