@@ -234,7 +234,7 @@ async def test_search_result_directors(query, exp_directors, api, store_response
     argnames=('query', 'exp_genres'),
     argvalues=(
         (Query('star wars', type=ReleaseType.movie, year=1977), ('action', 'adventure', 'fantasy')),
-        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ('comedy', 'drama', 'horror')),
+        (Query('balada triste trompeta', type=ReleaseType.movie, year=2010), ('adventure', 'comedy', 'drama')),
         (Query('The Forest', type=ReleaseType.series, year=2017), ('crime', 'drama')),
         (Query('Deadwood', type=ReleaseType.series, year=2004), ('crime', 'drama', 'history')),
         (Query('The Believer', type=ReleaseType.movie, year=2001), ('drama',)),
@@ -568,13 +568,13 @@ async def test_poster_url(id, exp_poster_url, api, store_response):
     argnames=('id', 'exp_rating'),
     argvalues=(
         ('tt0080455', 7.9),  # Blues Brothers (movie)
-        ('tt0192802', 7.5),  # Wind in the Willows (TV movie)
+        ('tt0192802', 7.4),  # Wind in the Willows (TV movie)
         ('tt0471711', 7.6),  # Bender's Big Score (Video)
         ('tt0097270', 7.1),  # Elephant (TV movie)
         ('tt3472226', 8.0),  # Kung Fury (Short)
         ('tt6560040', 7.2),  # The Forest (mini series)
         ('tt0348914', 8.6),  # Deadwood (series)
-        ('tt0556307', 8.3),  # Deadwood - S02E04 (episode)
+        ('tt0556307', 8.2),  # Deadwood - S02E04 (episode)
         (None, None),
     ),
     ids=lambda value: str(value),

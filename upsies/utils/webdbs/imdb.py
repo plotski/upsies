@@ -267,23 +267,12 @@ class ImdbApi(WebDbApiBase):
                     if all(not string.endswith(text) for text in link_texts):
                         return string
 
-            # Get summary from the "Storyline" section (old website design)
+            # Get summary from dedicated page
+            soup = await self._get_soup(f'title/{id}/plotsummary')
             try:
-                tag = soup.find(id='titleStoryLine').div.p.span
+                return ''.join(soup.find(id='plot-summaries-content').li.p.strings)
             except AttributeError:
                 pass
-            else:
-                # Remove "Written by [Author]" signature
-                return re.sub(r'\s*(?i:Written\s+by).*?$', '', ''.join(tag.strings)).strip()
-
-            # Get summary from the "Storyline" section (new website design)
-            try:
-                tag = soup.find(attrs={'data-testid': 'storyline-plot-summary'})
-            except AttributeError:
-                pass
-            else:
-                # Remove "—[Author]" signature
-                return re.sub(r'\s*—.*?$', '', ''.join(tag.strings)).strip()
 
         return ''
 
@@ -409,7 +398,7 @@ class ImdbApi(WebDbApiBase):
 
             else:
                 # New website design
-                subtext_tag = soup.find(class_=re.compile(r'^ipc-inline-list$'))
+                subtext_tag = soup.find(attrs={'data-testid': 'hero-title-block__metadata'})
                 if subtext_tag:
                     subtext = ' '.join(subtext_tag.stripped_strings).lower()
 
@@ -455,7 +444,7 @@ class ImdbApi(WebDbApiBase):
                 subtext = ' '.join(reversed(tuple(subtext_tag.stripped_strings)))
             else:
                 # Series (new website design)
-                subtext_tag = soup.find(class_=re.compile(r'^ipc-inline-list$'))
+                subtext_tag = soup.find(attrs={'data-testid': 'hero-title-block__metadata'})
                 if subtext_tag:
                     subtext = ' '.join(subtext_tag.stripped_strings)
 
