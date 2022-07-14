@@ -37,6 +37,9 @@ class Query:
     }
 
     def __init__(self, title='', **kwargs):
+        for k in kwargs:
+            if k not in self._kwarg_defaults:
+                raise TypeError(f'Unkown argument: {k!r}')
         self._kwargs_order = tuple(kwargs)
         self._signal = signal.Signal()
         self._signal.add('changed')
