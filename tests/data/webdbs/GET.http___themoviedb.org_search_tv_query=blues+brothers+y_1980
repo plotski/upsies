@@ -2,7 +2,7 @@
 
 <html class="no-js" lang="en">
 <head>
-<title>wooster — The Movie Database (TMDB)</title>
+<title>blues brothers y:1980 — The Movie Database (TMDB)</title>
 <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
 <meta content="on" http-equiv="cleartype"/>
 <meta charset="utf-8"/>
@@ -28,7 +28,7 @@
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" rel="preload" type="font/woff2"/>
 <link href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/application-a8e56dc9b9064086646f2f8bcd562ce7e39a07396bea8dbb7bc37a0cb427ed08.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/media-43f59393eeec00930b7a9c437a522faee8b8fa0e9ba16bcb7ffabe6f94d84afd.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/media-e5da667c10afeebc04aaa589fb851ae5c624ba6d321769982aaccdcea9fe24af.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/v4/account-3a7e7607340c2ba9de9204b09ee40d73a687e5df2b2f7f6194e034fa8fd869c7.css" media="screen" rel="stylesheet"/>
 <link href="https://www.themoviedb.org/search/tv" hreflang="x-default" rel="alternate"/>
 <link href="https://www.themoviedb.org/search/tv?language=af-ZA" hreflang="af-ZA" rel="alternate"/>
@@ -192,7 +192,7 @@
 <div class="sub_media">
 <form accept-charset="utf-8" action="/search" id="search_form" method="get">
 <label>
-<input autocomplete="off" autocorrect="off" autofill="off" dir="auto" id="search_v4" name="query" placeholder="Search for a movie, tv show, person..." spellcheck="false" tabindex="1" type="text" value="wooster"/>
+<input autocomplete="off" autocorrect="off" autofill="off" dir="auto" id="search_v4" name="query" placeholder="Search for a movie, tv show, person..." spellcheck="false" tabindex="1" type="text" value="blues brothers y:1980"/>
 </label>
 <input disabled="" type="submit"/>
 </form>
@@ -210,32 +210,32 @@
 <h3 class="background_color light_blue">Search Results</h3>
 <div class="" id="search_menu_scroller">
 <ul class="settings panel with_counts scroller">
-<li class="selected">
-<a alt="TV Shows" class="search_tab active" href="/search/tv?query=wooster" id="tv" title="TV Shows">TV Shows</a>
-<span>2</span>
-</li>
 <li class="">
-<a alt="People" class="search_tab" href="/search/person?query=wooster" id="person" title="People">People</a>
-<span>10</span>
-</li>
-<li class="">
-<a alt="Keywords" class="search_tab" href="/search/keyword?query=wooster" id="keyword" title="Keywords">Keywords</a>
-<span>2</span>
-</li>
-<li class="">
-<a alt="Companies" class="search_tab" href="/search/company?query=wooster" id="company" title="Companies">Companies</a>
+<a alt="Movies" class="search_tab" href="/search/movie?query=blues brothers y:1980" id="movie" title="Movies">Movies</a>
 <span>1</span>
 </li>
 <li class="">
-<a alt="Movies" class="search_tab" href="/search/movie?query=wooster" id="movie" title="Movies">Movies</a>
+<a alt="People" class="search_tab" href="/search/person?query=blues brothers y:1980" id="person" title="People">People</a>
+<span>2</span>
+</li>
+<li class="">
+<a alt="Collections" class="search_tab" href="/search/collection?query=blues brothers y:1980" id="collection" title="Collections">Collections</a>
+<span>1</span>
+</li>
+<li class="selected">
+<a alt="TV Shows" class="search_tab active" href="/search/tv?query=blues brothers y:1980" id="tv" title="TV Shows">TV Shows</a>
 <span>0</span>
 </li>
 <li class="">
-<a alt="Collections" class="search_tab" href="/search/collection?query=wooster" id="collection" title="Collections">Collections</a>
+<a alt="Companies" class="search_tab" href="/search/company?query=blues brothers y:1980" id="company" title="Companies">Companies</a>
 <span>0</span>
 </li>
 <li class="">
-<a alt="Networks" class="search_tab" href="/search/network?query=wooster" id="network" title="Networks">Networks</a>
+<a alt="Keywords" class="search_tab" href="/search/keyword?query=blues brothers y:1980" id="keyword" title="Keywords">Keywords</a>
+<span>0</span>
+</li>
+<li class="">
+<a alt="Networks" class="search_tab" href="/search/network?query=blues brothers y:1980" id="network" title="Networks">Networks</a>
 <span>0</span>
 </li>
 </ul>
@@ -245,14 +245,14 @@
 </div>
 <div class="white_column">
 <section class="panel">
-<div class="search_results tv">
+<div class="search_results movie hide">
 <div class="results flex">
-<div class="card v4 tight" id="card_tv_525414b219c295794036adb9">
+<div class="card v4 tight" id="card_movie_4bc88f88017a3c122d008c6b">
 <div class="wrapper">
 <div class="image">
 <div class="poster">
-<a class="result" data-id="525414b219c295794036adb9" data-media-adult="false" data-media-type="tv" href="/tv/1060">
-<img alt="Jeeves and Wooster" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/hmtXqHGMGeDkCg0ORbzgZkCs5u9.jpg" srcset="/t/p/w94_and_h141_bestv2/hmtXqHGMGeDkCg0ORbzgZkCs5u9.jpg 1x, /t/p/w188_and_h282_bestv2/hmtXqHGMGeDkCg0ORbzgZkCs5u9.jpg 2x"/>
+<a class="result" data-id="4bc88f88017a3c122d008c6b" data-media-adult="false" data-media-type="movie" href="/movie/525">
+<img alt="The Blues Brothers" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg" srcset="/t/p/w94_and_h141_bestv2/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg 1x, /t/p/w188_and_h282_bestv2/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg 2x"/>
 </a>
 </div>
 </div>
@@ -260,42 +260,96 @@
 <div class="wrapper">
 <div class="title">
 <div>
-<a class="result" data-id="525414b219c295794036adb9" data-media-adult="false" data-media-type="tv" href="/tv/1060"><h2>Jeeves and Wooster</h2></a>
+<a class="result" data-id="4bc88f88017a3c122d008c6b" data-media-adult="false" data-media-type="movie" href="/movie/525"><h2>The Blues Brothers</h2></a>
 </div>
-<span class="release_date">April 22, 1990</span>
-</div>
-</div>
-<div class="overview">
-<p>Jeeves and Wooster is a British comedy-drama series adapted by Clive Exton from P.G. Wodehouse's "Jeeves" stories. The series was a collaboration between Brian Eastman of Picture Partnership Productions and Granada Television.</p><p></p><p>It aired on the ITV network from 1990 to 1993, with the last series nominated for a British Academy Television Award for Best Drama Series. It starred Hugh Laurie as Bertie Wooster, a young gentleman with a "distinctive blend of airy nonchalance and refined gormlessness", and Stephen Fry as Jeeves, his improbably well-informed and talented valet. Wooster is a bachelor, a minor aristocrat and member of the idle rich. He and his friends, who are mainly members of The Drones Club, are extricated from all manner of societal misadventures by the indispensable valet, Jeeves. The stories are set in the United Kingdom and the United States in the 1930s.</p><p></p><p>When Fry and Laurie began the series they were already a popular double act due to regular appearances on Channel 4's Friday Night Live and their own show A Bit of Fry &amp; Laurie.</p><p></p><p>In the television documentary, Fry and Laurie Reunited, upon reminiscing about their involvement in the series, it was revealed that they were initially reluctant to play the part of Jeeves and Wooster but decided to do so in the end because they felt no one else would do the parts justice.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="card v4 tight" id="card_tv_52587784760ee346612bdbc5">
-<div class="wrapper">
-<div class="image">
-<div class="poster">
-<a class="result" data-id="52587784760ee346612bdbc5" data-media-adult="false" data-media-type="tv" href="/tv/24314">
-<div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
-</a>
-</div>
-</div>
-<div class="details">
-<div class="wrapper">
-<div class="title">
-<div>
-<a class="result" data-id="52587784760ee346612bdbc5" data-media-adult="false" data-media-type="tv" href="/tv/24314"><h2>The World of Wooster</h2></a>
-</div>
-<span class="release_date">May 30, 1965</span>
+<span class="release_date">June 16, 1980</span>
 </div>
 </div>
 <div class="overview">
+<p>Jake Blues, just released from prison, puts his old band back togther to save the Catholic home where he and his brother Elwood were raised.</p>
 </div>
 </div>
 </div>
 </div>
 <div class="pagination_wrapper">
 </div>
+</div>
+</div>
+<div class="search_results person hide">
+<div class="results flex">
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Brother Blue" class="result" data-id="4e1007637b9aa16062001195" data-media-adult="false" data-media-type="person" href="/person/552624" id="person_552624" title="Brother Blue">
+<div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 zero profile"></div>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Brother Blue" class="result" data-id="4e1007637b9aa16062001195" data-media-adult="false" data-media-type="person" href="/person/552624" id="person_552624" title="Brother Blue">Brother Blue</a></p>
+<p class="sub"><span>Acting</span> • <a alt="Knightriders" href="/movie/22167" title="Knightriders">Knightriders</a>, <a alt="Street Music" href="/movie/879160" title="Street Music">Street Music</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Tom Scott" class="result" data-id="4bc8a51b017a3c122d03dbda" data-media-adult="false" data-media-type="person" href="/person/18663" id="person_18663" title="Tom Scott">
+<div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 two profile"></div>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Tom Scott" class="result" data-id="4bc8a51b017a3c122d03dbda" data-media-adult="false" data-media-type="person" href="/person/18663" id="person_18663" title="Tom Scott">Tom Scott</a></p>
+<p class="sub"><span>Sound</span> • <a alt="Conquest of the Planet of the Apes" href="/movie/1688" title="Conquest of the Planet of the Apes">Conquest of the Planet of the Apes</a>, <a alt="Stir Crazy" href="/movie/21629" title="Stir Crazy">Stir Crazy</a>, <a alt="Just One of the Guys" href="/movie/24548" title="Just One of the Guys">Just One of the Guys</a></p>
+</div>
+</div>
+<div class="pagination_wrapper">
+</div>
+</div>
+</div>
+<div class="search_results collection hide">
+<div class="results flex">
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/112636">
+<img alt="The Blues Brothers Collection" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/pQf9LzCokihzlLmgQlPG7yBpZ1o.jpg" srcset="/t/p/w94_and_h141_bestv2/pQf9LzCokihzlLmgQlPG7yBpZ1o.jpg 1x, /t/p/w188_and_h282_bestv2/pQf9LzCokihzlLmgQlPG7yBpZ1o.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/112636"><h2>The Blues Brothers Collection</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+<p>The Blues Brothers is a 1980 American musical crime comedy film directed by John Landis. It stars John Belushi and Dan Aykroyd as "Joliet" Jake and Elwood Blues, characters developed from "The Blues Brothers" musical sketch on the NBC variety series Saturday Night Live. The 1998 sequel, Blues Brothers 2000, had similar traits to the original, including large car-chase scenes and musical numbers. Landis returned to direct the film and Aykroyd reprised his role, joining John Goodman, Joe Morton, and 10-year-old J. Evan Bonifant as the new Blues Brothers.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="pagination_wrapper">
+</div>
+</div>
+</div>
+<div class="search_results tv">
+<div class="results flex">
+<p>There are no TV shows that matched your query.</p>
+</div>
+</div>
+<div class="search_results company hide">
+<div class="results">
+<p>There are no companies that matched your query.</p>
+</div>
+</div>
+<div class="search_results keyword hide">
+<div class="results">
+<p>There are no keywords that matched your query.</p>
+</div>
+</div>
+<div class="search_results network hide">
+<div class="results">
+<p>There are no networks that matched your query.</p>
 </div>
 </div>
 </section>
@@ -347,7 +401,7 @@
 </ul>
 </div>
 </nav>
-<section>Build adf2d4d (3501)</section>
+<section>Build 609dac4 (3965)</section>
 </footer>
 <div id="cookie_notice">
 <p>We use cookies to help give you a better experience on TMDB. You can review our <a href="https://www.tivo.com/legal/cookies" rel="noopener" target="_blank">cookie policy</a> to learn more. By continuing to use TMDB, you are agreeing to this policy.</p>

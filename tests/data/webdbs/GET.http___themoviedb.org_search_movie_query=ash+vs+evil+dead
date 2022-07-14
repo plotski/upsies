@@ -2,7 +2,7 @@
 
 <html class="no-js" lang="en">
 <head>
-<title>wooster — The Movie Database (TMDB)</title>
+<title>ash vs evil dead — The Movie Database (TMDB)</title>
 <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
 <meta content="on" http-equiv="cleartype"/>
 <meta charset="utf-8"/>
@@ -28,7 +28,7 @@
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" rel="preload" type="font/woff2"/>
 <link href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/application-a8e56dc9b9064086646f2f8bcd562ce7e39a07396bea8dbb7bc37a0cb427ed08.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/media-43f59393eeec00930b7a9c437a522faee8b8fa0e9ba16bcb7ffabe6f94d84afd.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/media-e5da667c10afeebc04aaa589fb851ae5c624ba6d321769982aaccdcea9fe24af.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/v4/account-3a7e7607340c2ba9de9204b09ee40d73a687e5df2b2f7f6194e034fa8fd869c7.css" media="screen" rel="stylesheet"/>
 <link href="https://www.themoviedb.org/search/movie" hreflang="x-default" rel="alternate"/>
 <link href="https://www.themoviedb.org/search/movie?language=af-ZA" hreflang="af-ZA" rel="alternate"/>
@@ -192,7 +192,7 @@
 <div class="sub_media">
 <form accept-charset="utf-8" action="/search" id="search_form" method="get">
 <label>
-<input autocomplete="off" autocorrect="off" autofill="off" dir="auto" id="search_v4" name="query" placeholder="Search for a movie, tv show, person..." spellcheck="false" tabindex="1" type="text" value="wooster"/>
+<input autocomplete="off" autocorrect="off" autofill="off" dir="auto" id="search_v4" name="query" placeholder="Search for a movie, tv show, person..." spellcheck="false" tabindex="1" type="text" value="ash vs evil dead"/>
 </label>
 <input disabled="" type="submit"/>
 </form>
@@ -211,31 +211,31 @@
 <div class="" id="search_menu_scroller">
 <ul class="settings panel with_counts scroller">
 <li class="">
-<a alt="TV Shows" class="search_tab" href="/search/tv?query=wooster" id="tv" title="TV Shows">TV Shows</a>
-<span>2</span>
-</li>
-<li class="">
-<a alt="People" class="search_tab" href="/search/person?query=wooster" id="person" title="People">People</a>
-<span>10</span>
-</li>
-<li class="">
-<a alt="Keywords" class="search_tab" href="/search/keyword?query=wooster" id="keyword" title="Keywords">Keywords</a>
-<span>2</span>
-</li>
-<li class="">
-<a alt="Companies" class="search_tab" href="/search/company?query=wooster" id="company" title="Companies">Companies</a>
+<a alt="TV Shows" class="search_tab" href="/search/tv?query=ash vs evil dead" id="tv" title="TV Shows">TV Shows</a>
 <span>1</span>
 </li>
 <li class="selected">
-<a alt="Movies" class="search_tab active" href="/search/movie?query=wooster" id="movie" title="Movies">Movies</a>
+<a alt="Movies" class="search_tab active" href="/search/movie?query=ash vs evil dead" id="movie" title="Movies">Movies</a>
 <span>0</span>
 </li>
 <li class="">
-<a alt="Collections" class="search_tab" href="/search/collection?query=wooster" id="collection" title="Collections">Collections</a>
+<a alt="People" class="search_tab" href="/search/person?query=ash vs evil dead" id="person" title="People">People</a>
 <span>0</span>
 </li>
 <li class="">
-<a alt="Networks" class="search_tab" href="/search/network?query=wooster" id="network" title="Networks">Networks</a>
+<a alt="Collections" class="search_tab" href="/search/collection?query=ash vs evil dead" id="collection" title="Collections">Collections</a>
+<span>0</span>
+</li>
+<li class="">
+<a alt="Companies" class="search_tab" href="/search/company?query=ash vs evil dead" id="company" title="Companies">Companies</a>
+<span>0</span>
+</li>
+<li class="">
+<a alt="Keywords" class="search_tab" href="/search/keyword?query=ash vs evil dead" id="keyword" title="Keywords">Keywords</a>
+<span>0</span>
+</li>
+<li class="">
+<a alt="Networks" class="search_tab" href="/search/network?query=ash vs evil dead" id="network" title="Networks">Networks</a>
 <span>0</span>
 </li>
 </ul>
@@ -245,9 +245,64 @@
 </div>
 <div class="white_column">
 <section class="panel">
+<div class="search_results tv hide">
+<div class="results flex">
+<div class="card v4 tight" id="card_tv_551e558ac3a3683a180028c4">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="551e558ac3a3683a180028c4" data-media-adult="false" data-media-type="tv" href="/tv/62264">
+<img alt="Ash vs Evil Dead" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/9tNtSk46s3f1ePr59p0JG6uacc8.jpg" srcset="/t/p/w94_and_h141_bestv2/9tNtSk46s3f1ePr59p0JG6uacc8.jpg 1x, /t/p/w188_and_h282_bestv2/9tNtSk46s3f1ePr59p0JG6uacc8.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="551e558ac3a3683a180028c4" data-media-adult="false" data-media-type="tv" href="/tv/62264"><h2>Ash vs Evil Dead</h2></a>
+</div>
+<span class="release_date">October 31, 2015</span>
+</div>
+</div>
+<div class="overview">
+<p>Bruce Campbell reprises his role as Ash Williams, an aging lothario and chainsaw-handed monster hunter who’s spent the last three decades avoiding maturity, and the terrors of the Evil Dead. But when a Deadite plague threatens to destroy all of mankind, he’s forced to face his demons — both metaphorical and literal.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="pagination_wrapper">
+</div>
+</div>
+</div>
 <div class="search_results movie">
 <div class="results flex">
 <p>There are no movies that matched your query.</p>
+</div>
+</div>
+<div class="search_results person hide">
+<div class="results flex">
+<p>There are no people that matched your query.</p>
+</div>
+</div>
+<div class="search_results collection hide">
+<div class="results flex">
+<p>There are no collections that matched your query.</p>
+</div>
+</div>
+<div class="search_results company hide">
+<div class="results">
+<p>There are no companies that matched your query.</p>
+</div>
+</div>
+<div class="search_results keyword hide">
+<div class="results">
+<p>There are no keywords that matched your query.</p>
+</div>
+</div>
+<div class="search_results network hide">
+<div class="results">
+<p>There are no networks that matched your query.</p>
 </div>
 </div>
 </section>
@@ -299,7 +354,7 @@
 </ul>
 </div>
 </nav>
-<section>Build adf2d4d (3501)</section>
+<section>Build 609dac4 (3965)</section>
 </footer>
 <div id="cookie_notice">
 <p>We use cookies to help give you a better experience on TMDB. You can review our <a href="https://www.tivo.com/legal/cookies" rel="noopener" target="_blank">cookie policy</a> to learn more. By continuing to use TMDB, you are agreeing to this policy.</p>

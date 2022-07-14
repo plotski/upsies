@@ -28,13 +28,13 @@
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" rel="preload" type="font/woff2"/>
 <link href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/application-a8e56dc9b9064086646f2f8bcd562ce7e39a07396bea8dbb7bc37a0cb427ed08.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/media-43f59393eeec00930b7a9c437a522faee8b8fa0e9ba16bcb7ffabe6f94d84afd.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/ott-c7e13d5e748448c22fa3b72eea0a7b474e24ef18e75f7658b5c6a2ce43dbd790.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/image-f92aec523e5c3b68d56abad962cf2e30934fa774ebaca9d06cf8584d5a464c09.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/media-e5da667c10afeebc04aaa589fb851ae5c624ba6d321769982aaccdcea9fe24af.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/ott-b8b69dbd53c017590f67d501b757ba25beeadf2936c91ca145dee028b3516989.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/image-4000ae5b554d5befd66f06e550c09a366625d933642eca63e7c30471ef365115.css" media="screen" rel="stylesheet"/>
 <meta content="The Blues Brothers" property="og:title"/>
 <meta content="Jake Blues, just released from prison, puts his old band back togther to save the Catholic home where he and his brother Elwood were raised." property="og:description"/>
-<meta content="/t/p/w500/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg" property="og:image"/>
-<meta content="/t/p/w780/kGhcSrwLgj4kJAFy8iSzqjwRPwj.jpg" property="og:image"/>
+<meta content="/t/p/w500/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg" property="og:image"/>
+<meta content="/t/p/w780/bk2fTuIhQIvdAA3RbnrnvLvuaTc.jpg" property="og:image"/>
 <meta content="movie" property="og:type"/>
 <meta content="https://www.themoviedb.org/movie/525-the-blues-brothers" property="og:url"/>
 <meta content="The Movie Database" property="og:site_name"/>
@@ -42,7 +42,7 @@
 <meta content="photo" name="twitter:card"/>
 <meta content="The Blues Brothers" name="twitter:title"/>
 <meta content="Jake Blues, just released from prison, puts his old band back togther to save the Catholic home where he and his brother Elwood were raised." name="twitter:description"/>
-<meta content="/t/p/w780/kGhcSrwLgj4kJAFy8iSzqjwRPwj.jpg" name="twitter:image"/>
+<meta content="/t/p/w780/bk2fTuIhQIvdAA3RbnrnvLvuaTc.jpg" name="twitter:image"/>
 <meta content="780" name="twitter:image:width"/>
 <meta content="439" name="twitter:image:height"/>
 <meta content="@themoviedb" name="twitter:site"/>
@@ -62,6 +62,7 @@
 <link href="https://www.themoviedb.org/movie/525-the-blues-brothers?language=fr-CA" hreflang="fr-CA" rel="alternate"/>
 <link href="https://www.themoviedb.org/movie/525-the-blues-brothers?language=fr-FR" hreflang="fr-FR" rel="alternate"/>
 <link href="https://www.themoviedb.org/movie/525-the-blues-brothers?language=he-IL" hreflang="he-IL" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/525-the-blues-brothers?language=hr-HR" hreflang="hr-HR" rel="alternate"/>
 <link href="https://www.themoviedb.org/movie/525-the-blues-brothers?language=hu-HU" hreflang="hu-HU" rel="alternate"/>
 <link href="https://www.themoviedb.org/movie/525-the-blues-brothers?language=id-ID" hreflang="id-ID" rel="alternate"/>
 <link href="https://www.themoviedb.org/movie/525-the-blues-brothers?language=it-IT" hreflang="it-IT" rel="alternate"/>
@@ -173,14 +174,13 @@
 <main class="smaller subtle show_search_false" id="main">
 <section class="inner_content movie_content backdrop poster">
 <style>
-  
     html {
-      --primaryColor: rgba(31.5, 31.5, 31.5, 1);
+      --primaryColor: rgba(52.5, 136.5, 178.5, 1);
       --primaryColorContrast: #ffffff;
     }
 
     div.header {
-      background: linear-gradient(to bottom right, rgba(31.5, 31.5, 31.5, 1), rgba(31.5, 31.5, 31.5, 0.84));
+      background: linear-gradient(to bottom right, rgba(52.5, 136.5, 178.5, 1), rgba(52.5, 136.5, 178.5, 0.84));
     }
 
     div.column_wrapper div.settings_panel h3 {
@@ -207,7 +207,6 @@
       border-bottom: 1px solid var(--primaryColor);
     }
 
-    
       section.inner_content div.header div.single_column *, section.inner_content div.header div.single_column a {
         color: #fff;
       }
@@ -224,7 +223,6 @@
       p.new_button.rounded a span, section.inner_content section.header ul.actions li.video span, div.column_wrapper div.settings_panel h3 span.glyphicons_v2, section.inner_content section.header div.trailer a span {
         filter: invert(1);
       }
-    
 
     p.new_button.rounded, section.content_score div.content_score div, div.leaderboard div.histogram div.bar span {
       border-color: var(--primaryColor);
@@ -236,23 +234,19 @@
       color: var(--primaryColorContrast);
     }
 
-    
       div.header.large.first {
         border-bottom: 1px solid var(--primaryColor);
         background-position: right -200px top;
         background-size: cover;
         background-repeat: no-repeat;
-        background-image: url('/t/p/w1920_and_h800_multi_faces/kGhcSrwLgj4kJAFy8iSzqjwRPwj.jpg');
+        background-image: url('/t/p/w1920_and_h800_multi_faces/bk2fTuIhQIvdAA3RbnrnvLvuaTc.jpg');
       }
-    
 
-    
       section.inner_content div.custom_bg {
-        background-image: linear-gradient(to right, rgba(31.5, 31.5, 31.5, 1) 150px, rgba(31.5, 31.5, 31.5, 0.84) 100%);
+        background-image: linear-gradient(to right, rgba(52.5, 136.5, 178.5, 1) 150px, rgba(52.5, 136.5, 178.5, 0.84) 100%);
       }
-    
-  
-</style><div class="scroller_wrap shortcut_bar_wrapper should_fade is_fading" id="shortcut_bar_scroller">
+</style>
+<div class="scroller_wrap shortcut_bar_wrapper should_fade is_fading" id="shortcut_bar_scroller">
 <ul class="dropdown_menu scroller" id="new_shortcut_bar">
 <li class="true">
       Overview
@@ -273,12 +267,15 @@
       <ul class="media number_group">
 <li><a href="/movie/525-the-blues-brothers/images/backdrops">Backdrops <span class="count">18</span></a></li>
 <li><a href="/movie/525-the-blues-brothers/images/logos">Logos <span class="count">0</span></a></li>
-<li><a href="/movie/525-the-blues-brothers/images/posters">Posters <span class="count">47</span></a></li>
+<li><a href="/movie/525-the-blues-brothers/images/posters">Posters <span class="count">51</span></a></li>
 <li>
           Videos
 
           <ul class="number_group">
 <li><a href="/movie/525-the-blues-brothers/videos?active_nav_item=Trailers">Trailers <span class="count">2</span></a></li>
+<li><a href="/movie/525-the-blues-brothers/videos?active_nav_item=Teasers">Teasers <span class="count">1</span></a></li>
+<li><a href="/movie/525-the-blues-brothers/videos?active_nav_item=Clips">Clips <span class="count">1</span></a></li>
+<li><a href="/movie/525-the-blues-brothers/videos?active_nav_item=Featurettes">Featurettes <span class="count">1</span></a></li>
 </ul>
 </li>
 </ul>
@@ -318,7 +315,7 @@
 <div class="poster_wrapper true">
 <div class="poster">
 <div class="image_content backdrop">
-<img alt="The Blues Brothers" class="poster lazyload" data-src="/t/p/w300_and_h450_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg" data-srcset="/t/p/w300_and_h450_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 1x, /t/p/w600_and_h900_bestv2/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 2x" src="/t/p/w300_and_h450_bestv2_filter(blur)/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg"/>
+<img alt="The Blues Brothers" class="poster lazyload" data-src="/t/p/w300_and_h450_bestv2/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg" data-srcset="/t/p/w300_and_h450_bestv2/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg 1x, /t/p/w600_and_h900_bestv2/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg 2x" src="/t/p/w300_and_h450_bestv2_filter(blur)/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg"/>
 </div>
 <div class="zoom">
 <a class="no_click" href="#"><span class="glyphicons_v2 fullscreen white"></span> Expand</a>
@@ -365,9 +362,7 @@
 <a href="/genre/10402-music/movie">Music</a>, <a href="/genre/35-comedy/movie">Comedy</a>, <a href="/genre/28-action/movie">Action</a>, <a href="/genre/80-crime/movie">Crime</a>
 </span>
 <span class="runtime">
-      
         2h 13m
-      
     </span>
 </div>
 </div>
@@ -397,7 +392,7 @@
 <a class="no_click rating" href="#" id="rate_it"><span class="glyphicons_v2 star white false"></span></a>
 </li>
 <li class="video none">
-<a class="no_click play_trailer" data-id="2HCR4c1zPyk" data-site="YouTube" data-title="Play Trailer" href="#"><span class="glyphicons_v2 play"></span> Play Trailer</a>
+<a class="no_click play_trailer" data-id="FFFC5GG2Hg4" data-site="YouTube" data-title="Play Trailer" href="#"><span class="glyphicons_v2 play"></span> Play Trailer</a>
 </li>
 </ul>
 <div class="header_info">
@@ -556,9 +551,9 @@
 <h3 dir="auto">Media</h3>
 <ul>
 <li class="active" dir="auto"><a class="media_panel" href="#" id="popular">Most Popular</a></li>
-<li dir="auto"><a class="media_panel" href="#" id="videos">Videos <span>2</span></a></li>
+<li dir="auto"><a class="media_panel" href="#" id="videos">Videos <span>5</span></a></li>
 <li dir="auto"><a class="media_panel" href="#" id="backdrops">Backdrops <span>18</span></a></li>
-<li dir="auto"><a class="media_panel" href="#" id="posters">Posters <span>47</span></a></li>
+<li dir="auto"><a class="media_panel" href="#" id="posters">Posters <span>51</span></a></li>
 <li class="view_all"></li>
 </ul>
 </div>
@@ -570,10 +565,10 @@
 </div>
 </div>
 <div class="backdrop">
-<img alt="The Blues Brothers" class="backdrop" loading="lazy" src="/t/p/w533_and_h300_bestv2/kGhcSrwLgj4kJAFy8iSzqjwRPwj.jpg" srcset="/t/p/w533_and_h300_bestv2/kGhcSrwLgj4kJAFy8iSzqjwRPwj.jpg 1x, /t/p/w1066_and_h600_bestv2/kGhcSrwLgj4kJAFy8iSzqjwRPwj.jpg 2x"/>
+<img alt="The Blues Brothers" class="backdrop" loading="lazy" src="/t/p/w533_and_h300_bestv2/bk2fTuIhQIvdAA3RbnrnvLvuaTc.jpg" srcset="/t/p/w533_and_h300_bestv2/bk2fTuIhQIvdAA3RbnrnvLvuaTc.jpg 1x, /t/p/w1066_and_h600_bestv2/bk2fTuIhQIvdAA3RbnrnvLvuaTc.jpg 2x"/>
 </div>
 <div class="poster">
-<img alt="The Blues Brothers" class="poster" src="/t/p/w220_and_h330_face/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg" srcset="/t/p/w220_and_h330_face/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 1x, /t/p/w440_and_h660_face/3DiSrcYELCLkwnjl9EZp2pkKGep.jpg 2x"/>
+<img alt="The Blues Brothers" class="poster" src="/t/p/w220_and_h330_face/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg" srcset="/t/p/w220_and_h330_face/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg 1x, /t/p/w440_and_h660_face/rhYJKOt6UrQq7JQgLyQcSWW5R86.jpg 2x"/>
 </div>
 </div>
 </div>
@@ -793,7 +788,7 @@
 </ul>
 </div>
 </nav>
-<section>Build adf2d4d (3501)</section>
+<section>Build 609dac4 (3965)</section>
 </footer>
 <div id="cookie_notice">
 <p>We use cookies to help give you a better experience on TMDB. You can review our <a href="https://www.tivo.com/legal/cookies" rel="noopener" target="_blank">cookie policy</a> to learn more. By continuing to use TMDB, you are agreeing to this policy.</p>

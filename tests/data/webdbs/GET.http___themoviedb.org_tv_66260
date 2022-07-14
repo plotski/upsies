@@ -28,9 +28,9 @@
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" rel="preload" type="font/woff2"/>
 <link href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/application-a8e56dc9b9064086646f2f8bcd562ce7e39a07396bea8dbb7bc37a0cb427ed08.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/media-43f59393eeec00930b7a9c437a522faee8b8fa0e9ba16bcb7ffabe6f94d84afd.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/ott-c7e13d5e748448c22fa3b72eea0a7b474e24ef18e75f7658b5c6a2ce43dbd790.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/image-f92aec523e5c3b68d56abad962cf2e30934fa774ebaca9d06cf8584d5a464c09.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/media-e5da667c10afeebc04aaa589fb851ae5c624ba6d321769982aaccdcea9fe24af.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/ott-b8b69dbd53c017590f67d501b757ba25beeadf2936c91ca145dee028b3516989.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/image-4000ae5b554d5befd66f06e550c09a366625d933642eca63e7c30471ef365115.css" media="screen" rel="stylesheet"/>
 <meta content="Lost &amp; Found Music Studios" property="og:title"/>
 <meta content="Teen singers-songwriters in an elite music program form bonds of friendship, creativity and romance while turning their passion into their profession." property="og:description"/>
 <meta content="/t/p/w500/hlOWMr80oB0uNbp3eUYxUoCrwfJ.jpg" property="og:image"/>
@@ -171,7 +171,6 @@
 <main class="smaller subtle show_search_false" id="main">
 <section class="inner_content tv_content backdrop poster">
 <style>
-  
     html {
       --primaryColor: rgba(31.5, 10.5, 10.5, 1);
       --primaryColorContrast: #ffffff;
@@ -205,7 +204,6 @@
       border-bottom: 1px solid var(--primaryColor);
     }
 
-    
       section.inner_content div.header div.single_column *, section.inner_content div.header div.single_column a {
         color: #fff;
       }
@@ -222,7 +220,6 @@
       p.new_button.rounded a span, section.inner_content section.header ul.actions li.video span, div.column_wrapper div.settings_panel h3 span.glyphicons_v2, section.inner_content section.header div.trailer a span {
         filter: invert(1);
       }
-    
 
     p.new_button.rounded, section.content_score div.content_score div, div.leaderboard div.histogram div.bar span {
       border-color: var(--primaryColor);
@@ -234,7 +231,6 @@
       color: var(--primaryColorContrast);
     }
 
-    
       div.header.large.first {
         border-bottom: 1px solid var(--primaryColor);
         background-position: right -200px top;
@@ -242,15 +238,12 @@
         background-repeat: no-repeat;
         background-image: url('/t/p/w1920_and_h800_multi_faces/wjJJefpfOGw6vZ3bpsJN0tVR97x.jpg');
       }
-    
 
-    
       section.inner_content div.custom_bg {
         background-image: linear-gradient(to right, rgba(31.5, 10.5, 10.5, 1) 150px, rgba(31.5, 10.5, 10.5, 0.84) 100%);
       }
-    
-  
-</style><div class="scroller_wrap shortcut_bar_wrapper should_fade is_fading" id="shortcut_bar_scroller">
+</style>
+<div class="scroller_wrap shortcut_bar_wrapper should_fade is_fading" id="shortcut_bar_scroller">
 <ul class="dropdown_menu scroller" id="new_shortcut_bar">
 <li class="true">
       Overview
@@ -338,9 +331,7 @@
 <a href="/genre/10751-family/tv">Family</a>
 </span>
 <span class="runtime">
-      
         23m
-      
     </span>
 </div>
 </div>
@@ -406,9 +397,7 @@
 </a>
 <p><a href="/person/1997234-levi-randall">Levi Randall</a></p>
 <p class="character">
-                      
                         Theo
-                      
                     </p>
 <p class="episode_count">27 Episodes</p>
 </li>
@@ -418,9 +407,7 @@
 </a>
 <p><a href="/person/1997236-alex-zaichkowski">Alex Zaichkowski</a></p>
 <p class="character">
-                      
                         John
-                      
                     </p>
 <p class="episode_count">27 Episodes</p>
 </li>
@@ -430,9 +417,7 @@
 </a>
 <p><a href="/person/1997237-keara-graves">Keara Graves</a></p>
 <p class="character">
-                      
                         Leia
-                      
                     </p>
 <p class="episode_count">27 Episodes</p>
 </li>
@@ -442,9 +427,7 @@
 </a>
 <p><a href="/person/1800832-shane-harte">Shane Harte</a></p>
 <p class="character">
-                      
                         Luke
-                      
                     </p>
 <p class="episode_count">27 Episodes</p>
 </li>
@@ -454,9 +437,7 @@
 </a>
 <p><a href="/person/1397603-trevor-tordjman">Trevor Tordjman</a></p>
 <p class="character">
-                      
                         James
-                      
                     </p>
 <p class="episode_count">18 Episodes</p>
 </li>
@@ -466,9 +447,7 @@
 </a>
 <p><a href="/person/1911639-maranda-thomas">Maranda Thomas</a></p>
 <p class="character">
-                      
                         Mary
-                      
                     </p>
 <p class="episode_count">13 Episodes</p>
 </li>
@@ -478,9 +457,7 @@
 </a>
 <p><a href="/person/210221-ian-matthews">Ian Matthews</a></p>
 <p class="character">
-                      
                         Thomas
-                      
                     </p>
 <p class="episode_count">1 Episode</p>
 </li>
@@ -629,13 +606,13 @@
 <div class="edit_leader">
 <div class="avatar">
 <a href="/u/WardenclyffeTower">
-<img alt="The Jackal" class="avatar" loading="lazy" src="/t/p/w45_and_h45_face/9UhDsDZYJZdtiyPz5CCfiDgh0kk.jpg" srcset="/t/p/w45_and_h45_face/9UhDsDZYJZdtiyPz5CCfiDgh0kk.jpg 1x, /t/p/w90_and_h90_face/9UhDsDZYJZdtiyPz5CCfiDgh0kk.jpg 2x"/>
+<img alt="MC Clap Yo Handz" class="avatar" loading="lazy" src="/t/p/w45_and_h45_face/9UhDsDZYJZdtiyPz5CCfiDgh0kk.jpg" srcset="/t/p/w45_and_h45_face/9UhDsDZYJZdtiyPz5CCfiDgh0kk.jpg 1x, /t/p/w90_and_h90_face/9UhDsDZYJZdtiyPz5CCfiDgh0kk.jpg 2x"/>
 </a>
 </div>
 <div class="info">
 <p class="edit_count">
             32<br/>
-<a href="/u/WardenclyffeTower">The Jackal</a>
+<a href="/u/WardenclyffeTower">MC Clap Yo Handz</a>
 </p>
 </div>
 </div>
@@ -766,7 +743,7 @@
 </ul>
 </div>
 </nav>
-<section>Build adf2d4d (3501)</section>
+<section>Build 609dac4 (3965)</section>
 </footer>
 <div id="cookie_notice">
 <p>We use cookies to help give you a better experience on TMDB. You can review our <a href="https://www.tivo.com/legal/cookies" rel="noopener" target="_blank">cookie policy</a> to learn more. By continuing to use TMDB, you are agreeing to this policy.</p>

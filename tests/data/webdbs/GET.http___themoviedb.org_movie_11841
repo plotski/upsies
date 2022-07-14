@@ -28,9 +28,9 @@
 <link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" rel="preload" type="font/woff2"/>
 <link href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen" rel="stylesheet"/>
 <link href="/assets/2/application-a8e56dc9b9064086646f2f8bcd562ce7e39a07396bea8dbb7bc37a0cb427ed08.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/media-43f59393eeec00930b7a9c437a522faee8b8fa0e9ba16bcb7ffabe6f94d84afd.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/ott-c7e13d5e748448c22fa3b72eea0a7b474e24ef18e75f7658b5c6a2ce43dbd790.css" media="screen" rel="stylesheet"/>
-<link href="/assets/2/v4/image-f92aec523e5c3b68d56abad962cf2e30934fa774ebaca9d06cf8584d5a464c09.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/media-e5da667c10afeebc04aaa589fb851ae5c624ba6d321769982aaccdcea9fe24af.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/ott-b8b69dbd53c017590f67d501b757ba25beeadf2936c91ca145dee028b3516989.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/image-4000ae5b554d5befd66f06e550c09a366625d933642eca63e7c30471ef365115.css" media="screen" rel="stylesheet"/>
 <meta content="The 36th Chamber of Shaolin" property="og:title"/>
 <meta content="The anti-Ching patriots, under the guidance of Ho Kuang-han, have secretly set up their base in Canton, disguised as school masters. During a brutal Manchu attack, Lui manages to escape, and devotes himself to learning the martial arts in order to seek revenge." property="og:description"/>
 <meta content="/t/p/w500/j2VLZw4E6qmzM3m0MIvY9F3PpDe.jpg" property="og:image"/>
@@ -67,6 +67,7 @@
 <link href="https://www.themoviedb.org/movie/11841-shao-lin-san-shi-liu-fang?language=pt-BR" hreflang="pt-BR" rel="alternate"/>
 <link href="https://www.themoviedb.org/movie/11841-shao-lin-san-shi-liu-fang?language=pt-PT" hreflang="pt-PT" rel="alternate"/>
 <link href="https://www.themoviedb.org/movie/11841-shao-lin-san-shi-liu-fang?language=ru-RU" hreflang="ru-RU" rel="alternate"/>
+<link href="https://www.themoviedb.org/movie/11841-shao-lin-san-shi-liu-fang?language=sk-SK" hreflang="sk-SK" rel="alternate"/>
 <link href="https://www.themoviedb.org/movie/11841-shao-lin-san-shi-liu-fang?language=sv-SE" hreflang="sv-SE" rel="alternate"/>
 <link href="https://www.themoviedb.org/movie/11841-shao-lin-san-shi-liu-fang?language=zh-CN" hreflang="zh-CN" rel="alternate"/>
 <link href="https://www.themoviedb.org/movie/11841-shao-lin-san-shi-liu-fang?language=zh-HK" hreflang="zh-HK" rel="alternate"/>
@@ -163,7 +164,6 @@
 <main class="smaller subtle show_search_false" id="main">
 <section class="inner_content movie_content backdrop poster">
 <style>
-  
     html {
       --primaryColor: rgba(31.5, 31.5, 31.5, 1);
       --primaryColorContrast: #ffffff;
@@ -197,7 +197,6 @@
       border-bottom: 1px solid var(--primaryColor);
     }
 
-    
       section.inner_content div.header div.single_column *, section.inner_content div.header div.single_column a {
         color: #fff;
       }
@@ -214,7 +213,6 @@
       p.new_button.rounded a span, section.inner_content section.header ul.actions li.video span, div.column_wrapper div.settings_panel h3 span.glyphicons_v2, section.inner_content section.header div.trailer a span {
         filter: invert(1);
       }
-    
 
     p.new_button.rounded, section.content_score div.content_score div, div.leaderboard div.histogram div.bar span {
       border-color: var(--primaryColor);
@@ -226,7 +224,6 @@
       color: var(--primaryColorContrast);
     }
 
-    
       div.header.large.first {
         border-bottom: 1px solid var(--primaryColor);
         background-position: right -200px top;
@@ -234,15 +231,12 @@
         background-repeat: no-repeat;
         background-image: url('/t/p/w1920_and_h800_multi_faces/7LjGL04PpDzAb3XYHmjyL38rUde.jpg');
       }
-    
 
-    
       section.inner_content div.custom_bg {
         background-image: linear-gradient(to right, rgba(31.5, 31.5, 31.5, 1) 150px, rgba(31.5, 31.5, 31.5, 0.84) 100%);
       }
-    
-  
-</style><div class="scroller_wrap shortcut_bar_wrapper should_fade is_fading" id="shortcut_bar_scroller">
+</style>
+<div class="scroller_wrap shortcut_bar_wrapper should_fade is_fading" id="shortcut_bar_scroller">
 <ul class="dropdown_menu scroller" id="new_shortcut_bar">
 <li class="true">
       Overview
@@ -326,12 +320,12 @@
 </div>
 <div class="button">
 <div class="provider">
-<img alt="Available to Rent or Buy on Apple iTunes" height="36" src="/t/p/original/peURlLlr8jggOwK53fJ5wdQl05y.jpg" width="36"/>
+<img alt="Now Streaming on Amazon Prime Video" height="36" src="/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg" width="36"/>
 </div>
 <div class="text">
 <span>
-<h4>Available to Rent or Buy</h4>
-<h3><a class="no_click" href="/movie/11841/watch" title="Available to Rent or Buy on Apple iTunes">Watch Now</a></h3>
+<h4>Now Streaming</h4>
+<h3><a class="no_click" href="/movie/11841/watch" title="Now Streaming on Amazon Prime Video">Watch Now</a></h3>
 </span>
 </div>
 </div>
@@ -356,9 +350,7 @@
 <a href="/genre/28-action/movie">Action</a>, <a href="/genre/12-adventure/movie">Adventure</a>
 </span>
 <span class="runtime">
-      
         1h 55m
-      
     </span>
 </div>
 </div>
@@ -392,6 +384,7 @@
 </li>
 </ul>
 <div class="header_info">
+<h3 class="tagline" dir="auto">He who struggles initially, might succeed eventually, and even finally.</h3>
 <h3 dir="auto">Overview</h3>
 <div class="overview" dir="auto">
 <p>The anti-Ching patriots, under the guidance of Ho Kuang-han, have secretly set up their base in Canton, disguised as school masters. During a brutal Manchu attack, Lui manages to escape, and devotes himself to learning the martial arts in order to seek revenge.</p>
@@ -402,7 +395,7 @@
 <p class="character">Director</p>
 </li>
 <li class="profile">
-<p><a href="/person/70675-ni-kuang">Ni Kuang</a></p>
+<p><a href="/person/70675-kuang-ni">Kuang Ni</a></p>
 <p class="character">Screenplay</p>
 </li>
 </ol>
@@ -468,10 +461,10 @@
 <p class="character">Lin Zhen</p>
 </li>
 <li class="card">
-<a href="/person/131955-bruce-lau-kar-wing">
-<img alt="Bruce Lau Kar-Wing" class="profile" loading="lazy" src="/t/p/w138_and_h175_face/8MS3njcVG5LcWWeMUoD9YXWWYJA.jpg" srcset="/t/p/w138_and_h175_face/8MS3njcVG5LcWWeMUoD9YXWWYJA.jpg 1x, /t/p/w276_and_h350_face/8MS3njcVG5LcWWeMUoD9YXWWYJA.jpg 2x"/>
+<a href="/person/131955-lau-kar-wing">
+<img alt="Lau Kar-Wing" class="profile" loading="lazy" src="/t/p/w138_and_h175_face/8MS3njcVG5LcWWeMUoD9YXWWYJA.jpg" srcset="/t/p/w138_and_h175_face/8MS3njcVG5LcWWeMUoD9YXWWYJA.jpg 1x, /t/p/w276_and_h350_face/8MS3njcVG5LcWWeMUoD9YXWWYJA.jpg 2x"/>
 </a>
-<p><a href="/person/131955-bruce-lau-kar-wing">Bruce Lau Kar-Wing</a></p>
+<p><a href="/person/131955-lau-kar-wing">Lau Kar-Wing</a></p>
 <p class="character">General Yin</p>
 </li>
 <li class="card">
@@ -516,7 +509,7 @@
 <div class="grouped">
 <div class="avatar">
 <a href="/u/nosuchagency">
-<img alt="No Such Agency" class="avatar" loading="lazy" src="https://secure.gravatar.com/avatar/6dba01f451e5d4029d75d2b3ca73b95f.jpg?s=64" srcset="https://secure.gravatar.com/avatar/6dba01f451e5d4029d75d2b3ca73b95f.jpg?s=64 1x, https://secure.gravatar.com/avatar/6dba01f451e5d4029d75d2b3ca73b95f.jpg?s=128 2x"/>
+<img alt="No Such Agency" class="avatar" loading="lazy" src="https://www.gravatar.com/avatar/6dba01f451e5d4029d75d2b3ca73b95f.jpg?s=64" srcset="https://www.gravatar.com/avatar/6dba01f451e5d4029d75d2b3ca73b95f.jpg?s=64 1x, https://www.gravatar.com/avatar/6dba01f451e5d4029d75d2b3ca73b95f.jpg?s=128 2x"/>
 </a>
 </div>
 <div class="info">
@@ -667,14 +660,14 @@ This is the film to watch if you would like to watch classical martial arts weap
 </div>
 <div class="edit_leader">
 <div class="avatar">
-<a href="/u/oracle7">
-<span class="round initials background_color red">o</span>
+<a href="/u/Budda_Pest">
+<span class="round initials background_color teal">B</span>
 </a>
 </div>
 <div class="info">
 <p class="edit_count">
-            16<br/>
-<a href="/u/oracle7">oracle7</a>
+            17<br/>
+<a href="/u/Budda_Pest">Budda_Pest</a>
 </p>
 </div>
 </div>
@@ -778,7 +771,7 @@ This is the film to watch if you would like to watch classical martial arts weap
 </ul>
 </div>
 </nav>
-<section>Build adf2d4d (3501)</section>
+<section>Build 609dac4 (3965)</section>
 </footer>
 <div id="cookie_notice">
 <p>We use cookies to help give you a better experience on TMDB. You can review our <a href="https://www.tivo.com/legal/cookies" rel="noopener" target="_blank">cookie policy</a> to learn more. By continuing to use TMDB, you are agreeing to this policy.</p>

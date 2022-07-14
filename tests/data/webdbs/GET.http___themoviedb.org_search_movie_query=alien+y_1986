@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<title>alien y:1986 — The Movie Database (TMDB)</title>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="on" http-equiv="cleartype"/>
+<meta charset="utf-8"/>
+<meta content="Movies, TV Shows, Streaming, Reviews, API, Actors, Actresses, Photos, User Ratings, Synopsis, Trailers, Teasers, Credits, Cast" name="keywords"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="The Movie Database (TMDB) is a popular, user editable database for movies and TV shows." name="description"/>
+<meta content="/assets/2/v4/icons/mstile-144x144-30e7905a8315a080978ad6aeb71c69222b72c2f75d26dab1224173a96fecc962.png" name="msapplication-TileImage"/>
+<meta content="#032541" name="msapplication-TileColor"/>
+<meta content="#032541" name="theme-color"/>
+<link href="/assets/2/apple-touch-icon-57ed4b3b0450fd5e9a0c20f34e814b82adaa1085c79bdde2f00ca8787b63d2c4.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="/assets/2/favicon-32x32-543a21832c8931d3494a68881f6afcafc58e96c5d324345377f3197a37b367b5.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/assets/2/favicon-16x16-b362d267873ce9c5a39f686a11fe67fec2a72ed25fa8396c11b71aa43c938b11.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="/manifest.json?version=3" rel="manifest"/>
+<link href="https://www.themoviedb.org/search/movie" rel="canonical"/>
+<link href="/opensearch.xml" rel="search" title="TMDB Search" type="application/opensearchdescription+xml"/>
+<link as="font" crossorigin="" href="/assets/2/Consensus-3cba2c4d050ea63dbf7783173d288faf9ecb2942515a5e7f6e1beecabb2eaf72.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular-f38472b9e378b8c936f55a92677f575ab69e414d7cc3706ecfefeacd994b7975.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-italic-48273a74acbc1611b6ef1d0a771bb8ef042b9922b51d5bff560571dddcb5542a.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300-db9f15a13a9f8b8bc46db7756ab863e8834bd20a7a1124c4c0a5a8f7892f3e99.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-600-6a087a74d78fc7d7b97fa1b0911c4ff3be4ff0bd5144618fd7ddc63ef1777f3a.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="" href="/assets/2/source-sans-pro-v14-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700-d67f7dff97d105f4ac5616b00fc7822ce2c33f653ece2f547995e6a71bb7b993.woff2" rel="preload" type="font/woff2"/>
+<link href="/assets/2/v4/fonts-36ddd04013299b102c5aa8b9f8098a1cb925ca0e8e037e557f7e65870703a6bb.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/application-a8e56dc9b9064086646f2f8bcd562ce7e39a07396bea8dbb7bc37a0cb427ed08.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/media-e5da667c10afeebc04aaa589fb851ae5c624ba6d321769982aaccdcea9fe24af.css" media="screen" rel="stylesheet"/>
+<link href="/assets/2/v4/account-3a7e7607340c2ba9de9204b09ee40d73a687e5df2b2f7f6194e034fa8fd869c7.css" media="screen" rel="stylesheet"/>
+<link href="https://www.themoviedb.org/search/movie" hreflang="x-default" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=af-ZA" hreflang="af-ZA" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ar-SA" hreflang="ar-SA" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=be-BY" hreflang="be-BY" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=bg-BG" hreflang="bg-BG" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=bn-BD" hreflang="bn-BD" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ca-ES" hreflang="ca-ES" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ch-GU" hreflang="ch-GU" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=cn-CN" hreflang="cn-CN" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=cs-CZ" hreflang="cs-CZ" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=cy-GB" hreflang="cy-GB" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=da-DK" hreflang="da-DK" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=de-DE" hreflang="de-DE" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=el-GR" hreflang="el-GR" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=en-US" hreflang="en-US" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=eo-EO" hreflang="eo-EO" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=es-ES" hreflang="es-ES" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=et-EE" hreflang="et-EE" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=eu-ES" hreflang="eu-ES" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=fa-IR" hreflang="fa-IR" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=fi-FI" hreflang="fi-FI" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=fr-FR" hreflang="fr-FR" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ga-IE" hreflang="ga-IE" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=gd-GB" hreflang="gd-GB" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=gl-ES" hreflang="gl-ES" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=he-IL" hreflang="he-IL" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=hi-IN" hreflang="hi-IN" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=hr-HR" hreflang="hr-HR" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=hu-HU" hreflang="hu-HU" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=id-ID" hreflang="id-ID" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=it-IT" hreflang="it-IT" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ja-JP" hreflang="ja-JP" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ka-GE" hreflang="ka-GE" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=kk-KZ" hreflang="kk-KZ" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=kn-IN" hreflang="kn-IN" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ko-KR" hreflang="ko-KR" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ky-KG" hreflang="ky-KG" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=lt-LT" hreflang="lt-LT" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=lv-LV" hreflang="lv-LV" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ml-IN" hreflang="ml-IN" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=mr-IN" hreflang="mr-IN" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ms-MY" hreflang="ms-MY" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=nb-NO" hreflang="nb-NO" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=nl-NL" hreflang="nl-NL" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=no-NO" hreflang="no-NO" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=pa-IN" hreflang="pa-IN" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=pl-PL" hreflang="pl-PL" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=pt-PT" hreflang="pt-PT" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ro-RO" hreflang="ro-RO" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ru-RU" hreflang="ru-RU" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=si-LK" hreflang="si-LK" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=sk-SK" hreflang="sk-SK" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=sl-SI" hreflang="sl-SI" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=sq-AL" hreflang="sq-AL" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=sr-RS" hreflang="sr-RS" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=sv-SE" hreflang="sv-SE" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ta-IN" hreflang="ta-IN" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=te-IN" hreflang="te-IN" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=tl-PH" hreflang="tl-PH" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=th-TH" hreflang="th-TH" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=tr-TR" hreflang="tr-TR" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=uk-UA" hreflang="uk-UA" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=vi-VN" hreflang="vi-VN" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=zh-CN" hreflang="zh-CN" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=zu-ZA" hreflang="zu-ZA" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ar-AE" hreflang="ar-AE" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=de-AT" hreflang="de-AT" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=de-CH" hreflang="de-CH" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=en-AU" hreflang="en-AU" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=en-CA" hreflang="en-CA" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=en-GB" hreflang="en-GB" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=en-IE" hreflang="en-IE" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=en-NZ" hreflang="en-NZ" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=es-MX" hreflang="es-MX" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=fr-CA" hreflang="fr-CA" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=ms-SG" hreflang="ms-SG" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=nl-BE" hreflang="nl-BE" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=pt-BR" hreflang="pt-BR" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=zh-HK" hreflang="zh-HK" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=zh-SG" hreflang="zh-SG" rel="alternate"/>
+<link href="https://www.themoviedb.org/search/movie?language=zh-TW" hreflang="zh-TW" rel="alternate"/>
+
+
+
+
+
+
+</head>
+<body class="en v4">
+<noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-5QWVXV" style="display:none;visibility:hidden" width="0"></iframe></noscript>
+
+
+
+<div class="page_wrap _wrap">
+<header class="normal smaller no_animation smaller subtle">
+<div class="content">
+<div class="sub_media">
+<div class="nav_wrapper">
+<a class="logo" href="/">
+<img alt="The Movie Database (TMDB)" height="20" src="/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" width="154"/>
+</a>
+<ul class="dropdown_menu navigation">
+<li>
+<a class="no_click" href="/movie">Movies</a>
+<ul>
+<li><a href="/movie">Popular</a></li>
+<li><a href="/movie/now-playing">Now Playing</a></li>
+<li><a href="/movie/upcoming">Upcoming</a></li>
+<li><a href="/movie/top-rated">Top Rated</a></li>
+</ul>
+</li>
+<li>
+<a class="no_click" href="/tv">TV Shows</a>
+<ul>
+<li><a href="/tv">Popular</a></li>
+<li><a href="/tv/airing-today">Airing Today</a></li>
+<li><a href="/tv/on-the-air">On TV</a></li>
+<li><a href="/tv/top-rated">Top Rated</a></li>
+</ul>
+</li>
+<li>
+<a class="no_click" href="/person">People</a>
+<ul>
+<li><a href="/person">Popular People</a></li>
+</ul>
+</li>
+<li>
+<a class="no_click" href="#">More</a>
+<ul>
+<li><a href="/discuss">Discussions</a></li>
+<li><a href="/leaderboard">Leaderboard</a></li>
+<li><a href="/talk">Support</a></li>
+<li><a href="/documentation/api">API</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="flex">
+<ul class="primary">
+<li class="glyph new_buttons">
+<a class="new_icon no_click" href="#">
+<span class="glyphicons_v2 plus white"></span>
+</a>
+</li>
+<li class="translate">
+<div>en</div>
+</li>
+<li><a href="/login">Login</a></li>
+<li><a href="/signup">Join TMDB</a></li>
+<li class="glyph search_buttons">
+<a class="search" href="/search"><span class="glyphicons_v2 search blue"></span></a>
+<a class="close hide" href="/search"><span class="glyphicons_v2 menu-close invert svg"></span></a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="search_bar">
+<section class="search show_search_true">
+<div class="sub_media">
+<form accept-charset="utf-8" action="/search" id="search_form" method="get">
+<label>
+<input autocomplete="off" autocorrect="off" autofill="off" dir="auto" id="search_v4" name="query" placeholder="Search for a movie, tv show, person..." spellcheck="false" tabindex="1" type="text" value="alien y:1986"/>
+</label>
+<input disabled="" type="submit"/>
+</form>
+</div>
+</section>
+</div>
+</header>
+<main class="smaller subtle show_search_true" id="main">
+
+<section class="main_content search_results">
+<div class="column_wrapper reverse">
+<div class="content_wrapper">
+<div class="grey_column">
+<div class="settings_panel no_margin">
+<h3 class="background_color light_blue">Search Results</h3>
+<div class="" id="search_menu_scroller">
+<ul class="settings panel with_counts scroller">
+<li class="">
+<a alt="Keywords" class="search_tab" href="/search/keyword?query=alien y:1986" id="keyword" title="Keywords">Keywords</a>
+<span>68</span>
+</li>
+<li class="selected">
+<a alt="Movies" class="search_tab active" href="/search/movie?query=alien y:1986" id="movie" title="Movies">Movies</a>
+<span>13</span>
+</li>
+<li class="">
+<a alt="Companies" class="search_tab" href="/search/company?query=alien y:1986" id="company" title="Companies">Companies</a>
+<span>62</span>
+</li>
+<li class="">
+<a alt="Collections" class="search_tab" href="/search/collection?query=alien y:1986" id="collection" title="Collections">Collections</a>
+<span>11</span>
+</li>
+<li class="">
+<a alt="People" class="search_tab" href="/search/person?query=alien y:1986" id="person" title="People">People</a>
+<span>3,591</span>
+</li>
+<li class="">
+<a alt="TV Shows" class="search_tab" href="/search/tv?query=alien y:1986" id="tv" title="TV Shows">TV Shows</a>
+<span>0</span>
+</li>
+<li class="">
+<a alt="Networks" class="search_tab" href="/search/network?query=alien y:1986" id="network" title="Networks">Networks</a>
+<span>0</span>
+</li>
+</ul>
+</div>
+</div>
+<p class="search_tip"><span class="glyphicons_v2 circle-info"></span> Tip: You can use the 'y:' filter to narrow your results by year. Example: 'star wars y:1977'.</p>
+</div>
+<div class="white_column">
+<section class="panel">
+<div class="search_results keyword hide">
+<div class="results">
+<ul class="results">
+<li><a href="/keyword/4862">alien life-form</a></li>
+<li><a href="/keyword/9951">alien</a></li>
+<li><a href="/keyword/160515">alien contact</a></li>
+<li><a href="/keyword/183787">alien monster</a></li>
+<li><a href="/keyword/197194">alien friendship</a></li>
+<li><a href="/keyword/206281">alien fugitive</a></li>
+<li><a href="/keyword/220392">alien parasites</a></li>
+<li><a href="/keyword/227719">alien civilization</a></li>
+<li><a href="/keyword/229652">alien encounter</a></li>
+<li><a href="/keyword/230857">alien creature</a></li>
+<li><a href="/keyword/231277">alien technology</a></li>
+<li><a href="/keyword/234846">alien ship</a></li>
+<li><a href="/keyword/238759">alien hostility</a></li>
+<li><a href="/keyword/251827">alien conspiracy</a></li>
+<li><a href="/keyword/251829">alien spaceship</a></li>
+<li><a href="/keyword/252741">alien agenda</a></li>
+<li><a href="/keyword/273439">aliens</a></li>
+<li><a href="/keyword/288935">alien blood</a></li>
+<li><a href="/keyword/293589">alien arrival</a></li>
+<li><a href="/keyword/297362">alien surgeons</a></li>
+</ul>
+<div class="pagination_wrapper">
+<div aria-label="Pagination" class="pagination" custom_path_info="/search/keyword" role="navigation"><span aria-disabled="true" class="previous_page disabled">← Previous</span> <em aria-current="page" aria-label="Page 1" class="current">1</em> <a aria-label="Page 2" href="/search/keyword?page=2&amp;query=alien+y%3A1986" rel="next">2</a> <a aria-label="Page 3" href="/search/keyword?page=3&amp;query=alien+y%3A1986">3</a> <a aria-label="Page 4" href="/search/keyword?page=4&amp;query=alien+y%3A1986">4</a> <a class="next_page" href="/search/keyword?page=2&amp;query=alien+y%3A1986" rel="next">Next →</a></div>
+</div>
+</div>
+</div>
+<div class="search_results movie">
+<div class="results flex">
+<div class="card v4 tight" id="card_movie_4bc8917b017a3c122d00c594">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="4bc8917b017a3c122d00c594" data-media-adult="false" data-media-type="movie" href="/movie/679">
+<img alt="Aliens" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/r1x5JGpyqZU8PYhbs4UcrO1Xb6x.jpg" srcset="/t/p/w94_and_h141_bestv2/r1x5JGpyqZU8PYhbs4UcrO1Xb6x.jpg 1x, /t/p/w188_and_h282_bestv2/r1x5JGpyqZU8PYhbs4UcrO1Xb6x.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="4bc8917b017a3c122d00c594" data-media-adult="false" data-media-type="movie" href="/movie/679"><h2>Aliens</h2></a>
+</div>
+<span class="release_date">July 18, 1986</span>
+</div>
+</div>
+<div class="overview">
+<p>When Ripley's lifepod is found by a salvage crew over 50 years later, she finds that terra-formers are on the very planet they found the alien species. When the company sends a family of colonists out to investigate her story—all contact is lost with the planet and colonists. They enlist Ripley and the colonial marines to return and search for answers.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_4fb9abe4760ee35ec8000cd6">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="4fb9abe4760ee35ec8000cd6" data-media-adult="false" data-media-type="movie" href="/movie/110175">
+<img alt="Twisted" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/c12A6RIDhF3mbcHVOfOfTB7hmPJ.jpg" srcset="/t/p/w94_and_h141_bestv2/c12A6RIDhF3mbcHVOfOfTB7hmPJ.jpg 1x, /t/p/w188_and_h282_bestv2/c12A6RIDhF3mbcHVOfOfTB7hmPJ.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="4fb9abe4760ee35ec8000cd6" data-media-adult="false" data-media-type="movie" href="/movie/110175"><h2>Twisted</h2></a>
+</div>
+<span class="release_date">January  1, 1986</span>
+</div>
+</div>
+<div class="overview">
+<p>One evening the Collins find their maid Mrs. Murdock at the end of their steps: dead, neck broken. Obviously she had an accident. Consequently they need a new babysitter for an upcoming big party. The sensible Helen meets little Susan Collins at the discount market and likes her, so she offers to do the job. She doesn't know Susan's teenage brother Mark - technically skilled and good in school, but restive and cunning. As soon as the parents have left, he starts psychologically terrorizing Helen and his sister with electronic tricks.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_4fff38e4760ee30abc00049e">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="4fff38e4760ee30abc00049e" data-media-adult="false" data-media-type="movie" href="/movie/119525">
+<img alt="Alien Warrior" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/q2Uqa6HxZlvIMIgilgNgB47tJSx.jpg" srcset="/t/p/w94_and_h141_bestv2/q2Uqa6HxZlvIMIgilgNgB47tJSx.jpg 1x, /t/p/w188_and_h282_bestv2/q2Uqa6HxZlvIMIgilgNgB47tJSx.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="4fff38e4760ee30abc00049e" data-media-adult="false" data-media-type="movie" href="/movie/119525"><h2>Alien Warrior</h2></a>
+</div>
+<span class="release_date">November 10, 1986</span>
+</div>
+</div>
+<div class="overview">
+<p>An alien being is sent to Earth from his home planet with the assignment of stopping Great Evil. Great Evil turns out to be Mr. One, a Black drug dealer with a gang of Hispanic minions, whose hobby is raping White women. The alien, who decides to use the name Buddy on Earth, makes it his personal mission to rescue all the White people he can find, while putting an end to Mr. One's life of crime</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_599774059251417c870005ce">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="599774059251417c870005ce" data-media-adult="false" data-media-type="movie" href="/movie/471511">
+<img alt="Aliens, Dragons, Monsters &amp; Me" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/yV1tLv7kJxZRRZY9qaAEaQ1QoFv.jpg" srcset="/t/p/w94_and_h141_bestv2/yV1tLv7kJxZRRZY9qaAEaQ1QoFv.jpg 1x, /t/p/w188_and_h282_bestv2/yV1tLv7kJxZRRZY9qaAEaQ1QoFv.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="599774059251417c870005ce" data-media-adult="false" data-media-type="movie" href="/movie/471511"><h2>Aliens, Dragons, Monsters &amp; Me</h2></a>
+</div>
+<span class="release_date">January  1, 1983</span>
+</div>
+</div>
+<div class="overview">
+<p>Documentary about the life and work of Ray Harryhausen.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_4d1859dc5e73d60842009870">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="4d1859dc5e73d60842009870" data-media-adult="false" data-media-type="movie" href="/movie/52318">
+<img alt="The Falling" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/6OKyeQ8mscbOXD4Hy0QZTruL5Oz.jpg" srcset="/t/p/w94_and_h141_bestv2/6OKyeQ8mscbOXD4Hy0QZTruL5Oz.jpg 1x, /t/p/w188_and_h282_bestv2/6OKyeQ8mscbOXD4Hy0QZTruL5Oz.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="4d1859dc5e73d60842009870" data-media-adult="false" data-media-type="movie" href="/movie/52318"><h2>The Falling</h2></a>
+</div>
+<span class="release_date">January  1, 1985</span>
+</div>
+</div>
+<div class="overview">
+<p>Three young friends who are on vacation in Spain and a NASA scientist must join forces to save themselves and the rest of the world from an alien menace.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_4c2f50895e73d63cd0000131">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="4c2f50895e73d63cd0000131" data-media-adult="false" data-media-type="movie" href="/movie/40078">
+<img alt="Breeders" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/6KsmmjZYqk0t3Go93EgcqmjI06e.jpg" srcset="/t/p/w94_and_h141_bestv2/6KsmmjZYqk0t3Go93EgcqmjI06e.jpg 1x, /t/p/w188_and_h282_bestv2/6KsmmjZYqk0t3Go93EgcqmjI06e.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="4c2f50895e73d63cd0000131" data-media-adult="false" data-media-type="movie" href="/movie/40078"><h2>Breeders</h2></a>
+</div>
+<span class="release_date">January  1, 1986</span>
+</div>
+</div>
+<div class="overview">
+<p>An otherwordly perpetrator has been attacking female virgins in Manhattan. As Dr. Pace and Detective Andriotti work together to identify the strange organic materials found on the women, the victims begin arising in a trance and leaving the hospital.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_4d7ba40e7b9aa12e1d00c26d">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="4d7ba40e7b9aa12e1d00c26d" data-media-adult="false" data-media-type="movie" href="/movie/58903">
+<img alt="Creature" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/tv4xMEUqYvfJAW9BtUF25JnCHqS.jpg" srcset="/t/p/w94_and_h141_bestv2/tv4xMEUqYvfJAW9BtUF25JnCHqS.jpg 1x, /t/p/w188_and_h282_bestv2/tv4xMEUqYvfJAW9BtUF25JnCHqS.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="4d7ba40e7b9aa12e1d00c26d" data-media-adult="false" data-media-type="movie" href="/movie/58903"><h2>Creature</h2></a>
+</div>
+<span class="release_date">May  8, 1985</span>
+</div>
+</div>
+<div class="overview">
+<p>A crew of scientists arrives on a far, cold planet to examine archaic artifacts of unknown origin. They discover that their German enemies already have a ship there. When they seek their help after a failed landing, they only find the Germans’ bodies, obviously slaughtered by one of the archaic creatures, awoken to new life. Now the alien is after them.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_4bc8be24017a3c122d0756d6">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="4bc8be24017a3c122d0756d6" data-media-adult="false" data-media-type="movie" href="/movie/17790">
+<img alt="Zone Troopers" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/eaDxKJfvWeMLxtiwoSnGekVDdBm.jpg" srcset="/t/p/w94_and_h141_bestv2/eaDxKJfvWeMLxtiwoSnGekVDdBm.jpg 1x, /t/p/w188_and_h282_bestv2/eaDxKJfvWeMLxtiwoSnGekVDdBm.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="4bc8be24017a3c122d0756d6" data-media-adult="false" data-media-type="movie" href="/movie/17790"><h2>Zone Troopers</h2></a>
+</div>
+<span class="release_date">October  1, 1985</span>
+</div>
+</div>
+<div class="overview">
+<p>American soldiers, led by The Sarge, are stuck behind Nazi enemy lines. As they make their way across the Italian countryside, they come across an alien spaceship that has crash-landed in the woods. The alien pilot is dead, but one of the ship's passengers is on the loose. As the GIs hunt down the alien by splitting into smaller groups, they're not only tracked by the Nazis, but also a whole host of other aliens come to save their stranded party.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_4bc8b9ac017a3c122d06a95e">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="4bc8b9ac017a3c122d06a95e" data-media-adult="false" data-media-type="movie" href="/movie/14510">
+<img alt="From Beyond" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/6hHJ9c1WgZXTHDN2t77phxzLO7V.jpg" srcset="/t/p/w94_and_h141_bestv2/6hHJ9c1WgZXTHDN2t77phxzLO7V.jpg 1x, /t/p/w188_and_h282_bestv2/6hHJ9c1WgZXTHDN2t77phxzLO7V.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="4bc8b9ac017a3c122d06a95e" data-media-adult="false" data-media-type="movie" href="/movie/14510"><h2>From Beyond</h2></a>
+</div>
+<span class="release_date">October 24, 1986</span>
+</div>
+</div>
+<div class="overview">
+<p>A group of scientists have developed the Resonator, a machine which allows whoever is within range to see beyond normal perceptible reality. But when the experiment succeeds, they are immediately attacked by terrible life forms.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_5d8f1283109cd000294248f1">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="5d8f1283109cd000294248f1" data-media-adult="false" data-media-type="movie" href="/movie/634818">
+<img alt="Alın Yazım" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/1wcTCjXsgjdAAlegxp0HAS2iic9.jpg" srcset="/t/p/w94_and_h141_bestv2/1wcTCjXsgjdAAlegxp0HAS2iic9.jpg 1x, /t/p/w188_and_h282_bestv2/1wcTCjXsgjdAAlegxp0HAS2iic9.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="5d8f1283109cd000294248f1" data-media-adult="false" data-media-type="movie" href="/movie/634818"><h2>Alın Yazım</h2></a>
+</div>
+<span class="release_date">September  5, 1986</span>
+</div>
+</div>
+<div class="overview">
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_627299a5c044290055c0f3d0">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="627299a5c044290055c0f3d0" data-media-adult="false" data-media-type="movie" href="/movie/971456">
+<img alt="Alpen Rose OVA" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/3khzQBRtNdKKuqlMbyYdd1XeErV.jpg" srcset="/t/p/w94_and_h141_bestv2/3khzQBRtNdKKuqlMbyYdd1XeErV.jpg 1x, /t/p/w188_and_h282_bestv2/3khzQBRtNdKKuqlMbyYdd1XeErV.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="627299a5c044290055c0f3d0" data-media-adult="false" data-media-type="movie" href="/movie/971456"><h2>Alpen Rose OVA</h2></a>
+</div>
+<span class="release_date">February 15, 1986</span>
+</div>
+</div>
+<div class="overview">
+<p>Two-part OVA that sumarizes the entire Alpen Rose TV series featuring a new dubbing and reworked scenes.  While walking through the Swiss countryside, Randy finds a small girl who seems to be the only surviving person from an airplane crash. The little girl doesn't remember anything, so Randy decides to take care of her and names her Judy. Both of them go through their childhood together. A few years later, Judy, now 16 years old, wants to discover her past. With the help of Randy, she leaves to search for her origins. Her single clue is a song that she keeps hearing in her head, a song called Alpine Rose. In this time World War, these two young people will have to overcome many obstacles to reach their goal, while having only each other for comfort and support.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_58e7d2b6c3a3684aa4043dd2">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="58e7d2b6c3a3684aa4043dd2" data-media-adult="false" data-media-type="movie" href="/movie/451076">
+<img alt="Aus den Algen" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/8FcIYiyJK49cTR8wsVhT3RAVcWm.jpg" srcset="/t/p/w94_and_h141_bestv2/8FcIYiyJK49cTR8wsVhT3RAVcWm.jpg 1x, /t/p/w188_and_h282_bestv2/8FcIYiyJK49cTR8wsVhT3RAVcWm.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="58e7d2b6c3a3684aa4043dd2" data-media-adult="false" data-media-type="movie" href="/movie/451076"><h2>Aus den Algen</h2></a>
+</div>
+<span class="release_date">January  1, 1986</span>
+</div>
+</div>
+<div class="overview">
+<p>In 1985, I threw a reel in the small pond of my garden. I think it was Ali Baba and the Forty Thieves. I got it back a year later. This experiment is described in Aus den Algen. After the comments, we see the filmed material recovered. From the original copy, only the support survived: seaweed cultures have settled there, which now provide the content of the images.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_movie_5c11ca280e0a2638bc1107da">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="5c11ca280e0a2638bc1107da" data-media-adult="false" data-media-type="movie" href="/movie/568128">
+<img alt="Lien de parenté" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/2LleQUhC93ohGXSbqRwAiBxq6QM.jpg" srcset="/t/p/w94_and_h141_bestv2/2LleQUhC93ohGXSbqRwAiBxq6QM.jpg 1x, /t/p/w188_and_h282_bestv2/2LleQUhC93ohGXSbqRwAiBxq6QM.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="5c11ca280e0a2638bc1107da" data-media-adult="false" data-media-type="movie" href="/movie/568128"><h2>Lien de parenté</h2></a>
+</div>
+<span class="release_date">March 19, 1986</span>
+</div>
+</div>
+<div class="overview">
+<p>In this drama, the popular French film star of the '30s and '40s Jean Marais plays Victor, a disgruntled, cranky old man who is forced to come to terms with the fact that he is now the guardian of his mulatto grandson Clem (Serge Ubrette). Victor is shocked to discover his grandson's mixed heritage when he travels to London to pick him up, but resigns himself to the situation. Once at home in France, the brash Clem manages to steal the heart of the most coveted young woman in town, but that only gets him into trouble with her tough-guy boyfriend and his buddies. Meanwhile, Grandpa is trying to come to grips with his own biases as best he can.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="pagination_wrapper">
+</div>
+</div>
+</div>
+<div class="search_results company hide">
+<div class="results">
+<ul class="results">
+<li>
+<a href="/company/23465">
+<div>
+              Alienor Productions
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/62631">
+<div>
+              Alien Productions
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/77324">
+<div>
+              Aliento Cinematográfico
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/86427">
+<div>
+              AlienGrey Zone-X 1B
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/87088">
+<div>
+              Simple Alien
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/89208">
+<div>
+<img src="/t/p/h30/lezxTTwr5XkGPXAtezDymPumXD9.png" srcset="/t/p/h30/lezxTTwr5XkGPXAtezDymPumXD9.png 1x, /t/p/h60/lezxTTwr5XkGPXAtezDymPumXD9.png 2x"/>
+<span>US</span>
+</div>
+</a>
+</li>
+<li>
+<a href="/company/91688">
+<div>
+              Alien Rock Productions
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/92208">
+<div>
+              Alien Pictures
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/93926">
+<div>
+              Alien Workshop
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/94921">
+<div>
+              Alien Film
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/111775">
+<div>
+              Big Green Alien (BGA Productions)
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/119182">
+<div>
+              Alien Films
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/120626">
+<div>
+              Alien Voices
+            <span>US</span>
+</div>
+</a>
+</li>
+<li>
+<a href="/company/124003">
+<div>
+              Extraordinary Alien
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/125561">
+<div>
+              Alien Produzioni
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/146594">
+<div>
+              ALIEN Society Films
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/151757">
+<div>
+              alienside studio
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/161336">
+<div>
+              Lonely Alien
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/164854">
+<div>
+              AlienSharkBoy
+            
+          </div>
+</a>
+</li>
+<li>
+<a href="/company/177031">
+<div>
+              Align
+            
+          </div>
+</a>
+</li>
+</ul>
+<div class="pagination_wrapper">
+<div aria-label="Pagination" class="pagination" custom_path_info="/search/company" role="navigation"><span aria-disabled="true" class="previous_page disabled">← Previous</span> <em aria-current="page" aria-label="Page 1" class="current">1</em> <a aria-label="Page 2" href="/search/company?page=2&amp;query=alien+y%3A1986" rel="next">2</a> <a aria-label="Page 3" href="/search/company?page=3&amp;query=alien+y%3A1986">3</a> <a aria-label="Page 4" href="/search/company?page=4&amp;query=alien+y%3A1986">4</a> <a class="next_page" href="/search/company?page=2&amp;query=alien+y%3A1986" rel="next">Next →</a></div>
+</div>
+</div>
+</div>
+<div class="search_results collection hide">
+<div class="results flex">
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/697022">
+<img alt="Alien: Covenant Short Film Collection" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/jdet2eJNjA7EXFtrNCIjU95R51f.jpg" srcset="/t/p/w94_and_h141_bestv2/jdet2eJNjA7EXFtrNCIjU95R51f.jpg 1x, /t/p/w188_and_h282_bestv2/jdet2eJNjA7EXFtrNCIjU95R51f.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/697022"><h2>Alien: Covenant Short Film Collection</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+<p>The Prometheus short films are a series of short films created to promote the 2017 film Alien: Covenant, as well as various related events and media releases. A total of 9 films were produced, predominantly as part of the viral marketing campaign for Alien: Covenant, although some of the shorts were created to promote merchandise following the film's release.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/8091">
+<img alt="Alien Collection" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/iVzIeC3PbG9BtDAudpwSNdKAgh6.jpg" srcset="/t/p/w94_and_h141_bestv2/iVzIeC3PbG9BtDAudpwSNdKAgh6.jpg 1x, /t/p/w188_and_h282_bestv2/iVzIeC3PbG9BtDAudpwSNdKAgh6.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/8091"><h2>Alien Collection</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+<p>A science fiction horror film franchise, focusing on Lieutenant Ellen Ripley (Sigourney Weaver) and her battle with an extraterrestrial life-form, commonly referred to as "the Alien". Produced by 20th Century Fox, the series started with the 1979 film Alien, then Aliens in 1986, Alien³ in 1992, and Alien: Resurrection in 1997.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/627527">
+<div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/627527"><h2>Alien Factor Collection</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/949949">
+<img alt="Alien Sex Files" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/ijXJCGbiYnjeRKDvGSW4PZccuAi.jpg" srcset="/t/p/w94_and_h141_bestv2/ijXJCGbiYnjeRKDvGSW4PZccuAi.jpg 1x, /t/p/w188_and_h282_bestv2/ijXJCGbiYnjeRKDvGSW4PZccuAi.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/949949"><h2>Alien Sex Files</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+<p>Milos Twilight's Erotic Mini Series</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/174245">
+<img alt="Alien Nation Collection" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/sXdKjBbdBimtARvWdVFEsxc4kxu.jpg" srcset="/t/p/w94_and_h141_bestv2/sXdKjBbdBimtARvWdVFEsxc4kxu.jpg 1x, /t/p/w188_and_h282_bestv2/sXdKjBbdBimtARvWdVFEsxc4kxu.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/174245"><h2>Alien Nation Collection</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+<p>A few years from now, Earth will have the first contact with an alien civilization. These aliens, known as Newcomers, slowly begin to be integrated into human society after years of quarantine but are victims of a new type of discrimination. When the first Newcomer police officer, Sam Francisco is assigned his new partner, he is given Matthew Sykes, a mildly racist veteran.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/482721">
+<div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/482721"><h2>Alien Avengers Collection</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+<p>Alien Avengers (Welcome to Planet Earth) and Alien Avengers II (Aliens Among Us)</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/730742">
+<img alt="Aliens Ate My Homework Collection" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/rozsLQXS4t47Xljohc4khzUdphn.jpg" srcset="/t/p/w94_and_h141_bestv2/rozsLQXS4t47Xljohc4khzUdphn.jpg 1x, /t/p/w188_and_h282_bestv2/rozsLQXS4t47Xljohc4khzUdphn.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/730742"><h2>Aliens Ate My Homework Collection</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+<p>Based on the popular book series by Bruce Coville.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/912264">
+<div class="glyphicons_v2 picture grey poster no_image_holder w94_and_h141"></div>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/912264"><h2>My Alien Girlfriend Collection</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+<p>Series of films in the "My Alien Girlfriend" franchise.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/706507">
+<img alt="Symbols of an Alien Sky" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/epZSMKupDcu3SbH07ouA5xsUZZZ.jpg" srcset="/t/p/w94_and_h141_bestv2/epZSMKupDcu3SbH07ouA5xsUZZZ.jpg 1x, /t/p/w188_and_h282_bestv2/epZSMKupDcu3SbH07ouA5xsUZZZ.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/706507"><h2>Symbols of an Alien Sky</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+<p>David Talbott's first glimpses of celestial dramas in ancient times. Just a few thousand years ago a gathering of planets hung as towering forms in the ancient sky close to the earth, provoking spectacular electric discharge formations above our forebears and inspiring the vast complex of world myths and symbols.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="card v4 tight" id="card_collection_">
+<div class="wrapper">
+<div class="image">
+<div class="poster">
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/115762">
+<img alt="AVP Collection" class="poster" loading="lazy" src="/t/p/w94_and_h141_bestv2/zrApSsUX9i0qVntcCD0Pp55TdCy.jpg" srcset="/t/p/w94_and_h141_bestv2/zrApSsUX9i0qVntcCD0Pp55TdCy.jpg 1x, /t/p/w188_and_h282_bestv2/zrApSsUX9i0qVntcCD0Pp55TdCy.jpg 2x"/>
+</a>
+</div>
+</div>
+<div class="details">
+<div class="wrapper">
+<div class="title">
+<div>
+<a class="result" data-id="" data-media-adult="false" data-media-type="collection" href="/collection/115762"><h2>AVP Collection</h2></a>
+</div>
+</div>
+</div>
+<div class="overview">
+<p>The Alien vs. Predator (also known as AVP) collection is a science fiction film series bringing together the eponymous creatures of the Alien and Predator series.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="pagination_wrapper">
+</div>
+</div>
+</div>
+<div class="search_results person hide">
+<div class="results flex">
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Krista Allen" class="result" data-id="4bc89897017a3c122d01b08d" data-media-adult="false" data-media-type="person" href="/person/21858" id="person_21858" title="Krista Allen">
+<img alt="Krista Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/AfPWJ6Dg5C1gH51dOSB1fqKHuTX.jpg" srcset="/t/p/w90_and_h90_face/AfPWJ6Dg5C1gH51dOSB1fqKHuTX.jpg 1x, /t/p/w180_and_h180_face/AfPWJ6Dg5C1gH51dOSB1fqKHuTX.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Krista Allen" class="result" data-id="4bc89897017a3c122d01b08d" data-media-adult="false" data-media-type="person" href="/person/21858" id="person_21858" title="Krista Allen">Krista Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="Friends" href="/tv/1668" title="Friends">Friends</a>, <a alt="Liar Liar" href="/movie/1624" title="Liar Liar">Liar Liar</a>, <a alt="Smallville" href="/tv/4604" title="Smallville">Smallville</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Tim Allen" class="result" data-id="4bc8934c017a3c122d00fb64" data-media-adult="false" data-media-type="person" href="/person/12898" id="person_12898" title="Tim Allen">
+<img alt="Tim Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/woWhZzFILVhYMAvsPL171HjMY0y.jpg" srcset="/t/p/w90_and_h90_face/woWhZzFILVhYMAvsPL171HjMY0y.jpg 1x, /t/p/w180_and_h180_face/woWhZzFILVhYMAvsPL171HjMY0y.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Tim Allen" class="result" data-id="4bc8934c017a3c122d00fb64" data-media-adult="false" data-media-type="person" href="/person/12898" id="person_12898" title="Tim Allen">Tim Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="Toy Story" href="/movie/862" title="Toy Story">Toy Story</a>, <a alt="Toy Story 3" href="/movie/10193" title="Toy Story 3">Toy Story 3</a>, <a alt="Cars" href="/movie/920" title="Cars">Cars</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Karen Allen" class="result" data-id="4bc88b4b017a3c122d0015b9" data-media-adult="false" data-media-type="person" href="/person/650" id="person_650" title="Karen Allen">
+<img alt="Karen Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/eJszpndpRzrXbSlz7RUlApoTykn.jpg" srcset="/t/p/w90_and_h90_face/eJszpndpRzrXbSlz7RUlApoTykn.jpg 1x, /t/p/w180_and_h180_face/eJszpndpRzrXbSlz7RUlApoTykn.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Karen Allen" class="result" data-id="4bc88b4b017a3c122d0015b9" data-media-adult="false" data-media-type="person" href="/person/650" id="person_650" title="Karen Allen">Karen Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="Raiders of the Lost Ark" href="/movie/85" title="Raiders of the Lost Ark">Raiders of the Lost Ark</a>, <a alt="Indiana Jones and the Kingdom of the Crystal Skull" href="/movie/217" title="Indiana Jones and the Kingdom of the Crystal Skull">Indiana Jones and the Kingdom of the Crystal Skull</a>, <a alt="Law &amp; Order: Special Victims Unit" href="/tv/2734" title="Law &amp; Order: Special Victims Unit">Law &amp; Order: Special Victims Unit</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Joan Allen" class="result" data-id="4bc89215017a3c122d00d6ba" data-media-adult="false" data-media-type="person" href="/person/11148" id="person_11148" title="Joan Allen">
+<img alt="Joan Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/2w40UhN3WoW9G9EkLzhDcfF3t9W.jpg" srcset="/t/p/w90_and_h90_face/2w40UhN3WoW9G9EkLzhDcfF3t9W.jpg 1x, /t/p/w180_and_h180_face/2w40UhN3WoW9G9EkLzhDcfF3t9W.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Joan Allen" class="result" data-id="4bc89215017a3c122d00d6ba" data-media-adult="false" data-media-type="person" href="/person/11148" id="person_11148" title="Joan Allen">Joan Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="The Notebook" href="/movie/11036" title="The Notebook">The Notebook</a>, <a alt="Room" href="/movie/264644" title="Room">Room</a>, <a alt="The Bourne Ultimatum" href="/movie/2503" title="The Bourne Ultimatum">The Bourne Ultimatum</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Jeremy Allen White" class="result" data-id="4d3e8afe5e73d672b80ba876" data-media-adult="false" data-media-type="person" href="/person/206905" id="person_206905" title="Jeremy Allen White">
+<img alt="Jeremy Allen White" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/blKnjxUrOvXn6HbNKsza1CZOFsW.jpg" srcset="/t/p/w90_and_h90_face/blKnjxUrOvXn6HbNKsza1CZOFsW.jpg 1x, /t/p/w180_and_h180_face/blKnjxUrOvXn6HbNKsza1CZOFsW.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Jeremy Allen White" class="result" data-id="4d3e8afe5e73d672b80ba876" data-media-adult="false" data-media-type="person" href="/person/206905" id="person_206905" title="Jeremy Allen White">Jeremy Allen White</a></p>
+<p class="sub"><span>Acting</span> • <a alt="Law &amp; Order: Special Victims Unit" href="/tv/2734" title="Law &amp; Order: Special Victims Unit">Law &amp; Order: Special Victims Unit</a>, <a alt="Movie 43" href="/movie/87818" title="Movie 43">Movie 43</a>, <a alt="Shameless" href="/tv/34307" title="Shameless">Shameless</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Alfie Allen" class="result" data-id="4bc8b4db017a3c122d05f2a7" data-media-adult="false" data-media-type="person" href="/person/71586" id="person_71586" title="Alfie Allen">
+<img alt="Alfie Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/zmhO4Awjf7naHPXkbJWwjQpojwq.jpg" srcset="/t/p/w90_and_h90_face/zmhO4Awjf7naHPXkbJWwjQpojwq.jpg 1x, /t/p/w180_and_h180_face/zmhO4Awjf7naHPXkbJWwjQpojwq.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Alfie Allen" class="result" data-id="4bc8b4db017a3c122d05f2a7" data-media-adult="false" data-media-type="person" href="/person/71586" id="person_71586" title="Alfie Allen">Alfie Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="Game of Thrones" href="/tv/1399" title="Game of Thrones">Game of Thrones</a>, <a alt="John Wick" href="/movie/245891" title="John Wick">John Wick</a>, <a alt="Jojo Rabbit" href="/movie/515001" title="Jojo Rabbit">Jojo Rabbit</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Kyle Allen" class="result" data-id="5693ccd09251415c2100006b" data-media-adult="false" data-media-type="person" href="/person/1562074" id="person_1562074" title="Kyle Allen">
+<img alt="Kyle Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/utHUARepKhbw4JyDVZLhcJyKYxj.jpg" srcset="/t/p/w90_and_h90_face/utHUARepKhbw4JyDVZLhcJyKYxj.jpg 1x, /t/p/w180_and_h180_face/utHUARepKhbw4JyDVZLhcJyKYxj.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Kyle Allen" class="result" data-id="5693ccd09251415c2100006b" data-media-adult="false" data-media-type="person" href="/person/1562074" id="person_1562074" title="Kyle Allen">Kyle Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="American Horror Story" href="/tv/1413" title="American Horror Story">American Horror Story</a>, <a alt="West Side Story" href="/movie/511809" title="West Side Story">West Side Story</a>, <a alt="The Map of Tiny Perfect Things" href="/movie/672647" title="The Map of Tiny Perfect Things">The Map of Tiny Perfect Things</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Alien Workshop" class="result" data-id="4f7c2df2760ee30c2d002577" data-media-adult="false" data-media-type="person" href="/person/1023562" id="person_1023562" title="Alien Workshop">
+<div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 zero profile"></div>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Alien Workshop" class="result" data-id="4f7c2df2760ee30c2d002577" data-media-adult="false" data-media-type="person" href="/person/1023562" id="person_1023562" title="Alien Workshop">Alien Workshop</a></p>
+<p class="sub"><span>Directing</span> • <a alt="The Cinematographer Project" href="/movie/100137" title="The Cinematographer Project">The Cinematographer Project</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Zibby Allen" class="result" data-id="4d3e846a5e73d672b80b2bb9" data-media-adult="false" data-media-type="person" href="/person/204239" id="person_204239" title="Zibby Allen">
+<img alt="Zibby Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/uPvugIWF4tqpt99MXVcnBnw4fRv.jpg" srcset="/t/p/w90_and_h90_face/uPvugIWF4tqpt99MXVcnBnw4fRv.jpg 1x, /t/p/w180_and_h180_face/uPvugIWF4tqpt99MXVcnBnw4fRv.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Zibby Allen" class="result" data-id="4d3e846a5e73d672b80b2bb9" data-media-adult="false" data-media-type="person" href="/person/204239" id="person_204239" title="Zibby Allen">Zibby Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="The Good Doctor" href="/tv/71712" title="The Good Doctor">The Good Doctor</a>, <a alt="The Flash" href="/tv/60735" title="The Flash">The Flash</a>, <a alt="Marvel's Agents of S.H.I.E.L.D." href="/tv/1403" title="Marvel's Agents of S.H.I.E.L.D.">Marvel's Agents of S.H.I.E.L.D.</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Brittany Allen" class="result" data-id="4f46f2b30e7a007b6900a671" data-media-adult="false" data-media-type="person" href="/person/943913" id="person_943913" title="Brittany Allen">
+<img alt="Brittany Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/f2K0XePjRlSoAXuvZqOUoE7Bkfl.jpg" srcset="/t/p/w90_and_h90_face/f2K0XePjRlSoAXuvZqOUoE7Bkfl.jpg 1x, /t/p/w180_and_h180_face/f2K0XePjRlSoAXuvZqOUoE7Bkfl.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Brittany Allen" class="result" data-id="4f46f2b30e7a007b6900a671" data-media-adult="false" data-media-type="person" href="/person/943913" id="person_943913" title="Brittany Allen">Brittany Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="The Boys" href="/tv/76479" title="The Boys">The Boys</a>, <a alt="Jigsaw" href="/movie/298250" title="Jigsaw">Jigsaw</a>, <a alt="The Prodigy" href="/movie/532671" title="The Prodigy">The Prodigy</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Allen Leech" class="result" data-id="4bc8c0fe017a3c122d07c0c3" data-media-adult="false" data-media-type="person" href="/person/85718" id="person_85718" title="Allen Leech">
+<img alt="Allen Leech" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/cJZSyKNUKwdNPEgkt2ocXohtUBH.jpg" srcset="/t/p/w90_and_h90_face/cJZSyKNUKwdNPEgkt2ocXohtUBH.jpg 1x, /t/p/w180_and_h180_face/cJZSyKNUKwdNPEgkt2ocXohtUBH.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Allen Leech" class="result" data-id="4bc8c0fe017a3c122d07c0c3" data-media-adult="false" data-media-type="person" href="/person/85718" id="person_85718" title="Allen Leech">Allen Leech</a></p>
+<p class="sub"><span>Acting</span> • <a alt="Bohemian Rhapsody" href="/movie/424694" title="Bohemian Rhapsody">Bohemian Rhapsody</a>, <a alt="The Imitation Game" href="/movie/205596" title="The Imitation Game">The Imitation Game</a>, <a alt="The Good Doctor" href="/tv/71712" title="The Good Doctor">The Good Doctor</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Alden Ehrenreich" class="result" data-id="4bc8b40f017a3c122d05db1d" data-media-adult="false" data-media-type="person" href="/person/71375" id="person_71375" title="Alden Ehrenreich">
+<img alt="Alden Ehrenreich" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/bx86TPUmeHp0QkijQb16r2qIwEr.jpg" srcset="/t/p/w90_and_h90_face/bx86TPUmeHp0QkijQb16r2qIwEr.jpg 1x, /t/p/w180_and_h180_face/bx86TPUmeHp0QkijQb16r2qIwEr.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Alden Ehrenreich" class="result" data-id="4bc8b40f017a3c122d05db1d" data-media-adult="false" data-media-type="person" href="/person/71375" id="person_71375" title="Alden Ehrenreich">Alden Ehrenreich</a></p>
+<p class="sub"><span>Acting</span> • <a alt="Solo: A Star Wars Story" href="/movie/348350" title="Solo: A Star Wars Story">Solo: A Star Wars Story</a>, <a alt="Supernatural" href="/tv/1622" title="Supernatural">Supernatural</a>, <a alt="Hail, Caesar!" href="/movie/270487" title="Hail, Caesar!">Hail, Caesar!</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Nancy Allen" class="result" data-id="4bc8a0c7017a3c122d032573" data-media-adult="false" data-media-type="person" href="/person/44038" id="person_44038" title="Nancy Allen">
+<img alt="Nancy Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/tASmSzMcMzhZXvashsW5ny9EzLq.jpg" srcset="/t/p/w90_and_h90_face/tASmSzMcMzhZXvashsW5ny9EzLq.jpg 1x, /t/p/w180_and_h180_face/tASmSzMcMzhZXvashsW5ny9EzLq.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Nancy Allen" class="result" data-id="4bc8a0c7017a3c122d032573" data-media-adult="false" data-media-type="person" href="/person/44038" id="person_44038" title="Nancy Allen">Nancy Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="RoboCop" href="/movie/5548" title="RoboCop">RoboCop</a>, <a alt="Carrie" href="/movie/7340" title="Carrie">Carrie</a>, <a alt="Law &amp; Order: Special Victims Unit" href="/tv/2734" title="Law &amp; Order: Special Victims Unit">Law &amp; Order: Special Victims Unit</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Woody Allen" class="result" data-id="4bc88ba8017a3c122d0020ce" data-media-adult="false" data-media-type="person" href="/person/1243" id="person_1243" title="Woody Allen">
+<img alt="Woody Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/wcPQgZLDibuej1RwNTy1R2U2ZJw.jpg" srcset="/t/p/w90_and_h90_face/wcPQgZLDibuej1RwNTy1R2U2ZJw.jpg 1x, /t/p/w180_and_h180_face/wcPQgZLDibuej1RwNTy1R2U2ZJw.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Woody Allen" class="result" data-id="4bc88ba8017a3c122d0020ce" data-media-adult="false" data-media-type="person" href="/person/1243" id="person_1243" title="Woody Allen">Woody Allen</a></p>
+<p class="sub"><span>Directing</span> • <a alt="Midnight in Paris" href="/movie/59436" title="Midnight in Paris">Midnight in Paris</a>, <a alt="Match Point" href="/movie/116" title="Match Point">Match Point</a>, <a alt="Annie Hall" href="/movie/703" title="Annie Hall">Annie Hall</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Aleisha Allen" class="result" data-id="4bc8ac19017a3c122d04ebe4" data-media-adult="false" data-media-type="person" href="/person/64064" id="person_64064" title="Aleisha Allen">
+<img alt="Aleisha Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/au0ZlSoGKlZAWkrweTpVa7kYBTQ.jpg" srcset="/t/p/w90_and_h90_face/au0ZlSoGKlZAWkrweTpVa7kYBTQ.jpg 1x, /t/p/w180_and_h180_face/au0ZlSoGKlZAWkrweTpVa7kYBTQ.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Aleisha Allen" class="result" data-id="4bc8ac19017a3c122d04ebe4" data-media-adult="false" data-media-type="person" href="/person/64064" id="person_64064" title="Aleisha Allen">Aleisha Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="School of Rock" href="/movie/1584" title="School of Rock">School of Rock</a>, <a alt="Young Adult" href="/movie/57157" title="Young Adult">Young Adult</a>, <a alt="Are We There Yet?" href="/movie/11637" title="Are We There Yet?">Are We There Yet?</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Alien Castle" class="result" data-id="4cd5d9ce7b9aa11b240001af" data-media-adult="false" data-media-type="person" href="/person/141795" id="person_141795" title="Alien Castle">
+<div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 zero profile"></div>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Alien Castle" class="result" data-id="4cd5d9ce7b9aa11b240001af" data-media-adult="false" data-media-type="person" href="/person/141795" id="person_141795" title="Alien Castle">Alien Castle</a></p>
+<p class="sub"><span>Writing</span> • <a alt="Desire and Hell at Sunset Motel" href="/movie/41788" title="Desire and Hell at Sunset Motel">Desire and Hell at Sunset Motel</a>, <a alt="Jailbait" href="/movie/271173" title="Jailbait">Jailbait</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Keegan Allen" class="result" data-id="51f2f89119c2957f30077468" data-media-adult="false" data-media-type="person" href="/person/1193605" id="person_1193605" title="Keegan Allen">
+<img alt="Keegan Allen" class="profile" loading="lazy" src="/t/p/w90_and_h90_face/jgfovzyywuJ5Y3o5A1HrYHTvN0.jpg" srcset="/t/p/w90_and_h90_face/jgfovzyywuJ5Y3o5A1HrYHTvN0.jpg 1x, /t/p/w180_and_h180_face/jgfovzyywuJ5Y3o5A1HrYHTvN0.jpg 2x"/>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Keegan Allen" class="result" data-id="51f2f89119c2957f30077468" data-media-adult="false" data-media-type="person" href="/person/1193605" id="person_1193605" title="Keegan Allen">Keegan Allen</a></p>
+<p class="sub"><span>Acting</span> • <a alt="Rick and Morty" href="/tv/60625" title="Rick and Morty">Rick and Morty</a>, <a alt="Pretty Little Liars" href="/tv/31917" title="Pretty Little Liars">Pretty Little Liars</a>, <a alt="CSI: Crime Scene Investigation" href="/tv/1431" title="CSI: Crime Scene Investigation">CSI: Crime Scene Investigation</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Alien Jourgensen" class="result" data-id="4d3b136d7b9aa161410068b2" data-media-adult="false" data-media-type="person" href="/person/151001" id="person_151001" title="Alien Jourgensen">
+<div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 zero profile"></div>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Alien Jourgensen" class="result" data-id="4d3b136d7b9aa161410068b2" data-media-adult="false" data-media-type="person" href="/person/151001" id="person_151001" title="Alien Jourgensen">Alien Jourgensen</a></p>
+<p class="sub"><span>Art</span> • <a alt="Ministry: In Case You Didn't Feel Like Showing Up" href="/movie/54691" title="Ministry: In Case You Didn't Feel Like Showing Up">Ministry: In Case You Didn't Feel Like Showing Up</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Ellen Alien" class="result" data-id="5e3701a9091e620d424dcaa0" data-media-adult="false" data-media-type="person" href="/person/2527782" id="person_2527782" title="Ellen Alien">
+<div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 zero profile"></div>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Ellen Alien" class="result" data-id="5e3701a9091e620d424dcaa0" data-media-adult="false" data-media-type="person" href="/person/2527782" id="person_2527782" title="Ellen Alien">Ellen Alien</a></p>
+<p class="sub"><span>Sound</span> • <a alt="Cevapcici" href="/movie/669213" title="Cevapcici">Cevapcici</a></p>
+</div>
+</div>
+<div class="item profile list_item">
+<div class="image_content profile">
+<a alt="Alien Tong" class="result" data-id="5e64eec2151c5c0015ff9b04" data-media-adult="false" data-media-type="person" href="/person/2560163" id="person_2560163" title="Alien Tong">
+<div class="glyphicons_v2 picture grey profile no_image_holder w90_and_h90 zero profile"></div>
+</a>
+</div>
+<div class="content">
+<p class="name"><a alt="Alien Tong" class="result" data-id="5e64eec2151c5c0015ff9b04" data-media-adult="false" data-media-type="person" href="/person/2560163" id="person_2560163" title="Alien Tong">Alien Tong</a></p>
+<p class="sub"><span>Production</span> • <a alt="Go Back to China" href="/movie/563489" title="Go Back to China">Go Back to China</a></p>
+</div>
+</div>
+<div class="pagination_wrapper">
+<div aria-label="Pagination" class="pagination" custom_path_info="/search/person" role="navigation"><span aria-disabled="true" class="previous_page disabled">← Previous</span> <em aria-current="page" aria-label="Page 1" class="current">1</em> <a aria-label="Page 2" href="/search/person?page=2&amp;query=alien+y%3A1986" rel="next">2</a> <a aria-label="Page 3" href="/search/person?page=3&amp;query=alien+y%3A1986">3</a> <a aria-label="Page 4" href="/search/person?page=4&amp;query=alien+y%3A1986">4</a> <a aria-label="Page 5" href="/search/person?page=5&amp;query=alien+y%3A1986">5</a> <a aria-label="Page 6" href="/search/person?page=6&amp;query=alien+y%3A1986">6</a> <a aria-label="Page 7" href="/search/person?page=7&amp;query=alien+y%3A1986">7</a> <span class="gap">…</span> <a aria-label="Page 179" href="/search/person?page=179&amp;query=alien+y%3A1986">179</a> <a aria-label="Page 180" href="/search/person?page=180&amp;query=alien+y%3A1986">180</a> <a class="next_page" href="/search/person?page=2&amp;query=alien+y%3A1986" rel="next">Next →</a></div>
+</div>
+</div>
+</div>
+<div class="search_results tv hide">
+<div class="results flex">
+<p>There are no TV shows that matched your query.</p>
+</div>
+</div>
+<div class="search_results network hide">
+<div class="results">
+<p>There are no networks that matched your query.</p>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div> <!-- page_wrap opened in html_head -->
+<footer class="single_column">
+<nav>
+<div class="join">
+<img alt="The Movie Database (TMDB)" height="94" src="/assets/2/v4/logos/v2/blue_square_2-d537fb228cf3ded904ef09b136fe3fec72548ebc1fea3fbbd1ad9e36364db38b.svg" width="130"/>
+<a class="rounded" href="/signup">Join the Community</a>
+</div>
+<div>
+<h3>The Basics</h3>
+<ul>
+<li><a href="/about">About TMDB</a></li>
+<li><a href="/about/staying-in-touch">Contact Us</a></li>
+<li><a href="/talk">Support Forums</a></li>
+<li><a href="/documentation/api">API</a></li>
+<li><a href="https://status.themoviedb.org/" rel="noopener" target="_blank">System Status</a></li>
+</ul>
+</div>
+<div>
+<h3>Get Involved</h3>
+<ul>
+<li><a href="/bible"><span class="glyphicons glyphicons-asterisk"></span> Contribution Bible</a></li>
+<li><a href="/movie/new">Add New Movie</a></li>
+<li><a href="/tv/new">Add New TV Show</a></li>
+</ul>
+</div>
+<div>
+<h3>Community</h3>
+<ul>
+<li><a href="/documentation/community/guidelines">Guidelines</a></li>
+<li><a href="/discuss">Discussions</a></li>
+<li><a href="/leaderboard">Leaderboard</a></li>
+<li><a href="https://twitter.com/themoviedb" rel="noopener" target="_blank">Twitter</a></li>
+</ul>
+</div>
+<div>
+<h3>Legal</h3>
+<ul>
+<li><a href="/documentation/website/terms-of-use">Terms of Use</a></li>
+<li><a href="/documentation/api/terms-of-use">API Terms of Use</a></li>
+<li><a href="/privacy-policy">Privacy Policy</a></li>
+</ul>
+</div>
+</nav>
+<section>Build 609dac4 (3965)</section>
+</footer>
+<div id="cookie_notice">
+<p>We use cookies to help give you a better experience on TMDB. You can review our <a href="https://www.tivo.com/legal/cookies" rel="noopener" target="_blank">cookie policy</a> to learn more. By continuing to use TMDB, you are agreeing to this policy.</p>
+<p><a class="accept" href="#">Ok</a></p>
+</div>
+<div class="hide" id="new_media_template">
+<div class="settings_content">
+<p>Can't find a movie or TV show? Login to create it.</p>
+</div>
+</div>
+<div class="hide" id="settings_tooltip">
+<div class="settings_content">
+<div class="group no_pad">
+<p><a href="/login">Login</a></p>
+</div>
+<div class="group">
+<p><a href="/signup">Sign Up</a></p>
+</div>
+</div>
+</div>
+<div class="hide" id="keyboard_shortcuts_popup">
+<div class="content keyboard_shortcuts">
+<div class="column">
+<h3>Global</h3>
+<div><span>s</span> focus the search bar</div>
+<div><span>p</span> open profile menu</div>
+<div><span>esc</span> close an open window</div>
+<div><span>?</span> open keyboard shortcut window</div>
+<h3>On media pages</h3>
+<div><span>b</span> go back (or to parent when applicable)</div>
+<div><span>e</span> go to edit page</div>
+<h3>On TV season pages</h3>
+<div><span>→</span> (right arrow) go to next season</div>
+<div><span>←</span> (left arrow) go to previous season</div>
+<h3>On TV episode pages</h3>
+<div><span>→</span> (right arrow) go to next episode</div>
+<div><span>←</span> (left arrow) go to previous episode</div>
+<h3>On all image pages</h3>
+<div><span>a</span> open add image window</div>
+</div>
+<div class="column">
+<h3>On all edit pages</h3>
+<div><span>t</span> open translation selector</div>
+<div><span>ctrl</span>+ <span>s</span> submit form</div>
+<h3>On discussion pages</h3>
+<div><span>n</span> create new discussion</div>
+<div><span>w</span> toggle watching status</div>
+<div><span>p</span> toggle public/private</div>
+<div><span>c</span> toggle close/open</div>
+<div><span>a</span> open activity</div>
+<div><span>r</span> reply to discussion</div>
+<div><span>l</span> go to last reply</div>
+<div><span>ctrl</span>+ <span>enter</span> submit your message</div>
+<div><span>→</span> (right arrow) next page</div>
+<div><span>←</span> (left arrow) previous page</div>
+</div>
+</div>
+</div>
+<div class="hide">
+<div id="options_tooltip">
+<div class="settings_content">
+<div class="group no_pad">
+<p class="no_hover">Want to rate or add this item to a list?</p>
+<p><a href="/login">Login <span class="glyphicons_v2 chevron-right blue pad_left"></span></a></p>
+</div>
+<div class="group">
+<p class="no_hover">Not a member?</p>
+<p><a href="/signup">Sign up and join the community <span class="glyphicons_v2 chevron-right blue pad_left"></span></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="hide">
+<div id="video_popup"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="dialog_window"></div>
+<span class="hide" id="notification"></span>
+
+
+
+
+
+</body>
+</html>
