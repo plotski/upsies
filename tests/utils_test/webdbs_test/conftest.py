@@ -19,8 +19,7 @@ def disable_http_requests(pytestconfig, module_mocker):
         # We can't patch utils.http._request() because we want it to return
         # cached requests. utils.http._request() only uses
         # httpx.AsyncClient.send() so we can patch that.
-        from upsies.utils import http
-        module_mocker.patch.object(http._client, 'send', Mock(side_effect=exc))
+        module_mocker.patch('httpx.AsyncClient.send', Mock(side_effect=exc))
 
 
 # When HTTP requests are allowed, store responses tests/data/webdbs.
