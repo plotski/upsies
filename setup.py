@@ -35,7 +35,7 @@ setuptools.setup(
     python_requires='>=3.7',
     install_requires=[
         'beautifulsoup4==4.*',
-        'chardet==4.*',
+        'chardet==5.*',
         'country-converter==0.7.*',
         'aio-btclient-rpc==0.*',
         'guessit==3.*,>=3.4.0',
