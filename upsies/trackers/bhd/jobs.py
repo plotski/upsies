@@ -275,9 +275,9 @@ class BhdTrackerJobs(TrackerJobsBase):
             rows.append('   '.join(cells))
         screenshots = '[center]\n' + '\n\n'.join(rows) + '\n[/center]'
         promotion = (
-            '[right][size=1]'
+            '[align=right][size=1]'
             f'Shared with [url={__homepage__}]{__project_name__}[/url]'
-            '[/size][/right]'
+            '[/size][/align]'
         )
         return screenshots + '\n\n' + promotion
 
