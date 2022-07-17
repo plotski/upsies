@@ -404,7 +404,7 @@ class ImageUrl(str):
                 '[url=c.png][img]thumb_c.png[/img][/url]\n'
                 '[/center]\n'
                 '\n'
-                f'[right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/right]'
+                f'[align=right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/align]'
             ),
         ),
         (
@@ -416,7 +416,7 @@ class ImageUrl(str):
                 '[url=c.png][img]thumb_c.png[/img][/url]   [url=d.png][img]thumb_d.png[/img][/url]\n'
                 '[/center]\n'
                 '\n'
-                f'[right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/right]'
+                f'[align=right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/align]'
             ),
         ),
         (
@@ -430,7 +430,7 @@ class ImageUrl(str):
                 '[url=e.png][img]thumb_e.png[/img][/url]\n'
                 '[/center]\n'
                 '\n'
-                f'[right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/right]'
+                f'[align=right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/align]'
             ),
         ),
         (
@@ -444,7 +444,7 @@ class ImageUrl(str):
                 '[url=e.png][img]thumb_e.png[/img][/url]   [url=f.png][img]thumb_f.png[/img][/url]\n'
                 '[/center]\n'
                 '\n'
-                f'[right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/right]'
+                f'[align=right][size=1]Shared with [url={__homepage__}]{__project_name__}[/url][/size][/align]'
             ),
         ),
     ),
