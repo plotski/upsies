@@ -3,7 +3,7 @@
     requests/responses were still in-flight."
   * submit: Added --is-scene argument to allow manual override of
     broken/unavailable DBs
-  * IMDb/TMDb minor fixes
+  * Minor fixes for IMDb and TMDb scrapers
 
 
 2022.05.24
