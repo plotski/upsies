@@ -338,7 +338,7 @@ class ImdbApi(WebDbApiBase):
         title = unidecode.unidecode(title)
         title = title.translate(self._normalize_title_translation)
         title = title.casefold()
-        title = ' '.join(title.split())
+        title = ''.join(title.split())
         return title
 
     _ignored_akas_keys = (
