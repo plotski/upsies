@@ -37,7 +37,7 @@ setuptools.setup(
         'beautifulsoup4==4.*',
         'chardet==5.*',
         'country-converter==0.7.*',
-        'aio-btclient-rpc==0.*',
+        'aiobtclientrpc==3.*',
         'guessit==3.*,>=3.4.0',
         'httpx==0.*,>=0.20.0',
         'natsort==8.*',
