@@ -213,7 +213,7 @@ async def test_fetch_text_finishes_only_if_coro_returns_text(fetched_text, make_
     assert not job.is_finished
     await job.fetch_text(fetcher, default_text='Default text', finish_on_success=True)
     assert job.text == ('Default text' if fetched_text is None else fetched_text)
-    assert job.output == ((fetched_text,) if fetched_text is not None else())
+    assert job.output == ((fetched_text,) if fetched_text is not None else ())
     assert job.errors == ()
     assert job.warnings == ()
     assert job.is_finished is (True if fetched_text is not None else False)
