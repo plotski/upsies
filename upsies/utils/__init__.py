@@ -145,7 +145,7 @@ def submodules(package):
     Return list of submodules and subpackages in `package`
 
     :param str package: Fully qualified name of parent package,
-        e.g. "upsies.utils.btclients"
+        e.g. "upsies.utils.imghosts"
     """
     # Get absolute path to parent directory of top-level package
     own_path = os.path.dirname(__file__)
@@ -435,6 +435,6 @@ def semantic_hash(obj):
     return hashlib.sha256(bytes(as_str(obj), 'utf-8')).hexdigest()
 
 
-from . import (argtypes, browser, btclients, configfiles, daemon, fs, html,
-               http, image, imghosts, iso, release, scene, signal, string,
-               subproc, timestamp, torrent, types, update, video, webdbs)
+from . import (argtypes, browser, configfiles, daemon, fs, html, http, image,
+               imghosts, iso, release, scene, signal, string, subproc,
+               timestamp, torrent, types, update, video, webdbs)
