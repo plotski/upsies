@@ -163,7 +163,9 @@ class torrent_create(CommandBase):
             )
             # Pass CreateTorrentJob output to AddTorrentJob input.
             self.create_torrent_job.signal.register('output', add_torrent_job.enqueue)
-            # Tell AddTorrentJob to finish the current upload and then finish.
+            # Finish AddTorrentJob when CreateTorrentJob is finished. The
+            # torrent will be enqueued and AddTorrentJob will finish after
+            # adding the enqueued torrent.
             self.create_torrent_job.signal.register('finished', lambda _: add_torrent_job.finalize())
             return add_torrent_job
 
