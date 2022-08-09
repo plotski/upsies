@@ -5,7 +5,6 @@ import pytest
 from upsies import errors
 from upsies.jobs.submit import SubmitJob
 from upsies.trackers import TrackerBase, TrackerConfigBase, TrackerJobsBase
-from upsies.utils.btclients import ClientApiBase
 
 
 class AsyncMock(Mock):
@@ -41,13 +40,14 @@ def tracker():
     return TestTracker()
 
 @pytest.fixture
-def tracker_jobs(btclient, tracker):
+def tracker_jobs(tracker):
     kwargs = {
         'content_path': 'content/path',
         'tracker': tracker,
         'image_host': 'image host',
-        'bittorrent_client': btclient,
+        'bittorrent_client': Mock(),
         'torrent_destination': 'torrent/destination',
+        'check_after_add': '<check_after_add>',
         'common_job_args': {},
     }
 
@@ -60,23 +60,6 @@ def tracker_jobs(btclient, tracker):
         submission_ok = PropertyMock(return_value=True)
 
     return TestTrackerJobs()
-
-@pytest.fixture
-def tracker_config():
-    class TestTrackerConfig(TrackerConfigBase):
-        defaults = {'username': 'foo', 'password': 'bar'}
-
-    return TestTrackerConfig()
-
-@pytest.fixture
-def btclient():
-    class TestClient(ClientApiBase):
-        name = 'mock client'
-        label = 'Mock Client'
-        default_config = {}
-        add_torrent = AsyncMock()
-
-    return TestClient()
 
 
 def test_cache_id(job):
