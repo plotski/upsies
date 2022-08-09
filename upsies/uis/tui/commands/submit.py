@@ -2,6 +2,8 @@
 Generate all required metadata and upload to tracker
 """
 
+import aiobtclientapi
+
 from .... import __project_name__, constants, jobs, trackers, utils
 from . import base
 
@@ -71,7 +73,7 @@ class submit(base.CommandBase):
                         'type': utils.argtypes.client,
                         'metavar': 'CLIENT',
                         'help': ('Case-insensitive BitTorrent client name\n'
-                                 'Supported clients: ' + ', '.join(utils.btclients.client_names())),
+                                 'Supported clients: ' + ', '.join(aiobtclientapi.client_names())),
                     },
                     ('--copy-to', '-c'): {
                         'metavar': 'PATH',
@@ -147,6 +149,7 @@ class submit(base.CommandBase):
             image_host=self._get_imghost(),
             bittorrent_client=self._get_btclient(),
             torrent_destination=self._get_torrent_destination(),
+            check_after_add=self._get_check_after_add(),
             exclude_files=(
                 tuple(self.args.exclude_files)
                 + tuple(self.args.exclude_files_regex)
@@ -175,17 +178,28 @@ class submit(base.CommandBase):
                 options=options,
             )
 
+    def _get_btclient_name(self):
+        return (getattr(self.args, 'add_to', None)
+                or self.tracker_options.get('add_to', None)
+                or None)
+
     def _get_btclient(self):
-        btclient_name = (getattr(self.args, 'add_to', None)
-                         or self.tracker_options.get('add_to', None)
-                         or None)
+        btclient_name = self._get_btclient_name()
         if btclient_name:
-            return utils.btclients.client(
+            options = self.get_options('clients', btclient_name)
+            return aiobtclientapi.api(
                 name=btclient_name,
-                config=self.config['clients'][btclient_name],
+                url=options['url'],
+                username=options['username'],
+                password=options['password'],
             )
 
     def _get_torrent_destination(self):
         return (getattr(self.args, 'copy_to', None)
                 or self.tracker_options.get('copy_to', None)
                 or None)
+
+    def _get_check_after_add(self):
+        btclient_config = self.config['clients'].get(self._get_btclient_name())
+        if btclient_config:
+            return btclient_config['check_after_add']
