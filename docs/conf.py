@@ -18,4 +18,5 @@ templates_path = ['_templates']
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
+    "aiobtclientapi": ("https://aiobtclientapi.readthedocs.io/en/stable/", None),
 }
