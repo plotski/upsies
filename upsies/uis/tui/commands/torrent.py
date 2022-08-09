@@ -2,6 +2,8 @@
 Commands related to torrent files
 """
 
+import aiobtclientapi
+
 from .... import constants, jobs, trackers, utils
 from .base import CommandBase
 
@@ -15,7 +17,7 @@ class torrent_add(CommandBase):
         'CLIENT': {
             'type': utils.argtypes.client,
             'help': ('Case-insensitive BitTorrent client name\n'
-                     'Supported clients: ' + ', '.join(utils.btclients.client_names())),
+                     'Supported clients: ' + ', '.join(aiobtclientapi.client_names())),
         },
         'TORRENT': {
             'nargs': '+',
@@ -29,16 +31,21 @@ class torrent_add(CommandBase):
 
     @utils.cached_property
     def jobs(self):
+        client_name = self.args.CLIENT
+        options = self.get_options('clients', client_name)
         return (
             jobs.torrent.AddTorrentJob(
                 home_directory=self.home_directory,
                 cache_directory=self.cache_directory,
                 ignore_cache=self.args.ignore_cache,
-                client=utils.btclients.client(
-                    name=self.args.CLIENT,
-                    config=self.config['clients'][self.args.CLIENT],
+                client_api=aiobtclientapi.api(
+                    name=client_name,
+                    url=options['url'],
+                    username=options['username'],
+                    password=options['password'],
                 ),
                 download_path=self.args.download_path,
+                check_after_add=options['check_after_add'],
                 enqueue=self.args.TORRENT,
             ),
         )
