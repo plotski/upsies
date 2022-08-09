@@ -8,7 +8,7 @@ import queue
 import time
 
 from .. import errors
-from ..utils import btclients, daemon, fs, is_regex_pattern, torrent
+from ..utils import daemon, fs, is_regex_pattern, torrent
 from . import base
 
 import logging  # isort:skip
@@ -222,21 +222,24 @@ class AddTorrentJob(base.QueueJobBase):
     label = 'Add Torrent'
     cache_id = None  # Don't cache output
 
-    def initialize(self, *, client, download_path=None, enqueue=()):
+    def initialize(self, *, client_api, download_path=None, check_after_add=False, enqueue=()):
         """
         Set internal state
 
-        :param client: Return value of :func:`.btclients.client`
+        :param client_api: :class:`aiobtclientapi.clients.APIBase` subclass
+            instance
         :param download_path: Path to the torrent's download location or `None`
             to use the client's default path
+        :param bool check_after_add: Whether to hash torrent's existing files
+            after torrent is added
         :param enqueue: Sequence of torrent file paths to add
 
         If `enqueue` is given and not empty, this job is finished as soon as its
         last item is added.
         """
-        assert isinstance(client, btclients.ClientApiBase), f'Not a ClientApiBase: {client!r}'
-        self._client = client
+        self._client_api = client_api
         self._download_path = download_path
+        self._check_after_add = check_after_add
         self.signal.add('adding')
         self.signal.add('added')
         self.signal.register('adding', lambda tp: setattr(self, 'info', f'Adding {fs.basename(tp)}'))
@@ -244,28 +247,26 @@ class AddTorrentJob(base.QueueJobBase):
         self.signal.register('finished', lambda _: setattr(self, 'info', ''))
         self.signal.register('error', lambda _: setattr(self, 'info', ''))
 
-    MAX_TORRENT_SIZE = 10 * 2**20  # 10 MiB
-    """Upper limit of acceptable size of `.torrent` files"""
-
     async def handle_input(self, torrent_path):
-        _log.debug('Adding %s to %s', torrent_path, self._client.name)
+        _log.debug('Adding %s to %s', torrent_path, self._client_api.name)
         self.signal.emit('adding', torrent_path)
 
-        if os.path.exists(torrent_path) and os.path.getsize(torrent_path) > self.MAX_TORRENT_SIZE:
-            self.error(f'{torrent_path}: File is too large')
-            return
+        response = await self._client_api.add(
+            torrent_path,
+            location=self._download_path,
+            verify=self._check_after_add,
+        )
 
-        try:
-            torrent_hash = await self._client.add_torrent(
-                torrent_path=torrent_path,
-                download_path=self._download_path,
-            )
-        except errors.RequestError as e:
-            self.error(f'Failed to add {torrent_path} to {self._client.name}: {e}')
-        else:
-            if torrent_hash:
-                self.send(torrent_hash)
-                self.signal.emit('added', torrent_hash)
+        for warning in response.warnings:
+            self.warn(warning)
+
+        for error in response.errors:
+            self.error(error)
+
+        if response.success:
+            infohash = (response.added + response.already_added)[0]
+            self.send(infohash)
+            self.signal.emit('added', infohash)
 
 
 class CopyTorrentJob(base.QueueJobBase):
