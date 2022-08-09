@@ -110,7 +110,7 @@ class torrent_create(CommandBase):
                         'type': utils.argtypes.client,
                         'metavar': 'CLIENT',
                         'help': ('Case-insensitive BitTorrent client name\n'
-                                 'Supported clients: ' + ', '.join(utils.btclients.client_names())),
+                                 'Supported clients: ' + ', '.join(aiobtclientapi.client_names())),
                     },
                     ('--copy-to', '-c'): {
                         'metavar': 'PATH',
@@ -158,15 +158,20 @@ class torrent_create(CommandBase):
     @utils.cached_property
     def add_torrent_job(self):
         if self.args.add_to:
+            client_name = self.args.add_to
+            config = self.config['clients'][client_name]
             add_torrent_job = jobs.torrent.AddTorrentJob(
                 home_directory=self.home_directory,
                 cache_directory=self.cache_directory,
                 ignore_cache=self.args.ignore_cache,
-                client=utils.btclients.client(
-                    name=self.args.add_to,
-                    config=self.config['clients'][self.args.add_to],
+                client_api=aiobtclientapi.api(
+                    name=client_name,
+                    url=config['url'],
+                    username=config['username'],
+                    password=config['password'],
                 ),
                 download_path=utils.fs.dirname(self.args.CONTENT),
+                check_after_add=config['check_after_add'],
             )
             # Pass CreateTorrentJob output to AddTorrentJob input.
             self.create_torrent_job.signal.register('output', add_torrent_job.enqueue)
