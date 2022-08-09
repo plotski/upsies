@@ -5,9 +5,11 @@ Abstract base class for tracker APIs
 import abc
 import builtins
 
+import aiobtclientapi
+
 from .. import jobs
-from ..utils import (btclients, cached_property, configfiles, fs, release,
-                     signal, string, types, webdbs)
+from ..utils import (cached_property, configfiles, fs, release, signal, string,
+                     types, webdbs)
 
 import logging  # isort:skip
 _log = logging.getLogger(__name__)
@@ -33,7 +35,7 @@ class TrackerConfigBase(dict):
             value=types.Choice(
                 value='',
                 empty_ok=True,
-                options=btclients.client_names(),
+                options=aiobtclientapi.client_names(),
             ),
             description=('BitTorrent client to add torrent to after submission.'),
         ),
@@ -108,7 +110,7 @@ class TrackerJobsBase(abc.ABC):
     """
 
     def __init__(self, *, content_path, tracker,
-                 reuse_torrent_path=None, torrent_destination=None,
+                 reuse_torrent_path=None, torrent_destination=None, check_after_add=False,
                  exclude_files=(), options=None, image_host=None,
                  bittorrent_client=None, common_job_args=None):
         self._content_path = content_path
@@ -117,6 +119,7 @@ class TrackerJobsBase(abc.ABC):
         self._image_host = image_host
         self._bittorrent_client = bittorrent_client
         self._torrent_destination = torrent_destination
+        self._check_after_add = check_after_add
         self._exclude_files = exclude_files
         self._common_job_args = common_job_args or {}
         self._options = options or {}
@@ -158,6 +161,11 @@ class TrackerJobsBase(abc.ABC):
         This is the same object that was passed as a initialization argument.
         """
         return self._torrent_destination
+
+    @property
+    def check_after_add(self):
+        """Whether to hash existing files after adding the torrent to a client"""
+        return self._check_after_add
 
     @property
     def exclude_files(self):
@@ -339,8 +347,9 @@ class TrackerJobsBase(abc.ABC):
         if self.bittorrent_client and self.create_torrent_job:
             add_torrent_job = jobs.torrent.AddTorrentJob(
                 autostart=False,
-                client=self.bittorrent_client,
+                client_api=self.bittorrent_client,
                 download_path=fs.dirname(self.content_path),
+                check_after_add=self._check_after_add,
                 **self.common_job_args,
             )
             # Pass CreateTorrentJob output to AddTorrentJob input.
@@ -771,7 +780,7 @@ class _Howto:
                 '\n'
                 f'   {self._section}.1 Specify which client to add uploaded torrents to.\n'
                 f'       $ upsies set trackers.{self._tracker_cls.name}.add-to CLIENT_NAME\n'
-                f'       Supported clients: ' + ', '.join(btclients.client_names()) + '\n'
+                f'       Supported clients: ' + ', '.join(aiobtclientapi.client_names()) + '\n'
             ),
             (
                 f'   {self._section}.2 Specify your client connection.\n'

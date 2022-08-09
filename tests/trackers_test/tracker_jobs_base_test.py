@@ -44,6 +44,7 @@ def make_TestTrackerJobs(**kwargs):
         'image_host': '',
         'bittorrent_client': Mock(),
         'torrent_destination': '',
+        'check_after_add': False,
         'exclude_files': (),
         'common_job_args': {},
     }
@@ -58,6 +59,7 @@ def test_arguments():
         'image_host': Mock(),
         'bittorrent_client': Mock(),
         'torrent_destination': Mock(),
+        'check_after_add': Mock(),
         'exclude_files': Mock(),
         'common_job_args': Mock(),
         'options': {'mock': 'config'},
@@ -191,6 +193,7 @@ def test_add_torrent_job(bittorrent_client, create_torrent_job, exp_add_torrent_
         tracker='mock tracker',
         common_job_args={'home_directory': 'path/to/home', 'ignore_cache': 'mock bool'},
         bittorrent_client=bittorrent_client,
+        check_after_add='<check_after_add>',
     )
     mocker.patch.object(type(tracker_jobs), 'create_torrent_job', PropertyMock(return_value=create_torrent_job))
     if exp_add_torrent_job_is_None:
@@ -201,8 +204,9 @@ def test_add_torrent_job(bittorrent_client, create_torrent_job, exp_add_torrent_
         assert AddTorrentJob_mock.call_args_list == [
             call(
                 autostart=False,
-                client=bittorrent_client,
+                client_api=bittorrent_client,
                 download_path='path/to/content/dir',
+                check_after_add='<check_after_add>',
                 home_directory='path/to/home',
                 ignore_cache='mock bool',
             ),
