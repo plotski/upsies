@@ -1,5 +1,7 @@
 import functools
 
+import aiobtclientapi
+
 from . import constants, trackers, utils
 
 defaults = {
@@ -40,11 +42,19 @@ defaults = {
     },
 
     'clients': {
-        client.name: client.default_config
-        for client in utils.btclients.clients()
+        client.name: {
+            'url': client.URL('').without_auth,
+            'username': client.URL('').username or '',
+            'password': client.URL('').password or '',
+            'check_after_add': utils.types.Bool('no'),
+        }
+        for client in aiobtclientapi.api_classes()
     },
 }
 """Defaults for configuration options"""
+
+# Transmission cannot add torrent without verifying it
+defaults['clients']['transmission']['check_after_add'] = utils.types.Bool('yes')
 
 
 @functools.lru_cache(maxsize=None)
