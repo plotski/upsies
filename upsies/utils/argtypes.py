@@ -15,10 +15,11 @@ from . import types
 
 
 def client(value):
-    """Name of a BitTorrent client from :mod:`~.utils.btclients`"""
-    from . import btclients
-    if value in btclients.client_names():
-        return value.lower()
+    """Name of a BitTorrent client supported by :mod:`aiobtclientapi`"""
+    import aiobtclientapi
+    name = value.lower()
+    if name in aiobtclientapi.client_names():
+        return name
     else:
         raise argparse.ArgumentTypeError(f'Unsupported client: {value}')
 

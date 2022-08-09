@@ -9,15 +9,13 @@ from upsies import defaults, errors, trackers, utils
 from upsies.utils import argtypes
 
 
-@pytest.mark.parametrize('client', utils.btclients.client_names())
-def test_client_valid_value(client):
-    assert argtypes.client(client) == client
-    assert argtypes.client(client.upper()) == client
-    assert argtypes.client(client.capitalize()) == client
-
-def test_client_invalid_value():
-    with pytest.raises(argparse.ArgumentTypeError, match=r'^Unsupported client: foo$'):
-        argtypes.client('foo')
+def test_client_valid_value(mocker):
+    mocker.patch('aiobtclientapi.client_names', return_value=('foo', 'bar', 'baz'))
+    assert argtypes.client('foo') == 'foo'
+    assert argtypes.client('Bar') == 'bar'
+    assert argtypes.client('BAZ') == 'baz'
+    with pytest.raises(argparse.ArgumentTypeError, match=r'^Unsupported client: asdf$'):
+        argtypes.client('asdf')
 
 
 def test_content(mocker):
