@@ -1,5 +1,5 @@
 import queue
-from unittest.mock import PropertyMock, Mock, call, patch
+from unittest.mock import Mock, PropertyMock, call, patch
 
 import pytest
 

@@ -240,7 +240,8 @@ def test_submodules_finds_modules_and_packages(mocker):
 
 
 def test_subclasses():
-    from aiobtclientapi.clients import APIBase, deluge, qbittorrent, rtorrent, transmission
+    from aiobtclientapi.clients import (APIBase, deluge, qbittorrent, rtorrent,
+                                        transmission)
     subclses = utils.subclasses(
         basecls=APIBase,
         modules={deluge, qbittorrent, rtorrent, transmission},

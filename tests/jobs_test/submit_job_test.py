@@ -4,7 +4,7 @@ import pytest
 
 from upsies import errors
 from upsies.jobs.submit import SubmitJob
-from upsies.trackers import TrackerBase, TrackerConfigBase, TrackerJobsBase
+from upsies.trackers import TrackerBase, TrackerJobsBase
 
 
 class AsyncMock(Mock):
