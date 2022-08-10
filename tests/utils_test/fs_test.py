@@ -71,6 +71,10 @@ def test_assert_dir_usable_with_unexecutable_directory(tmp_path):
     finally:
         os.chmod(path, mode=0o700)
 
+def test_assert_dir_usable_with_usable_directory(tmp_path):
+    return_value = fs.assert_dir_usable(tmp_path)
+    assert return_value is None
+
 
 @pytest.mark.parametrize(
     argnames='content_path, base, exp_projectdir',
