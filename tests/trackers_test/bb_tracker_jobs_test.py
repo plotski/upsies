@@ -36,26 +36,13 @@ def imghost():
 
 
 @pytest.fixture
-def btclient():
-    class MockClientApi(utils.btclients.base.ClientApiBase):
-        name = 'mock bittorrent client'
-        label = 'Mock BitTorrent Client'
-        default_config = {}
-
-        async def add_torrent(self, torrent_path, download_path=None):
-            pass
-
-    return MockClientApi()
-
-
-@pytest.fixture
-def bb_tracker_jobs(imghost, btclient, tmp_path, tracker, mocker):
+def bb_tracker_jobs(imghost, tmp_path, tracker, mocker):
     content_path = tmp_path / 'content.mkv'
     bb_tracker_jobs = bb.BbTrackerJobs(
         content_path=str(content_path),
         tracker=tracker,
         image_host=imghost,
-        bittorrent_client=btclient,
+        bittorrent_client=Mock(),
         torrent_destination=str(tmp_path / 'destination'),
         common_job_args={
             'home_directory': str(tmp_path / 'home_directory'),
