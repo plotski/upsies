@@ -21,10 +21,7 @@ def assert_file_readable(filepath):
     try:
         open(filepath).close()
     except OSError as e:
-        if e.strerror:
-            raise errors.ContentError(f'{filepath}: {e.strerror}')
-        else:
-            raise errors.ContentError(f'{filepath}: {e}')
+        raise errors.ContentError(f'{filepath}: {e.strerror or e}')
 
 
 def assert_dir_usable(path):
@@ -127,10 +124,7 @@ def prune_empty(path, files=False, directories=True):
         return
 
     def raise_error(e, path):
-        if e.strerror:
-            raise RuntimeError(f'{path}: Failed to prune: {e.strerror}')
-        else:
-            raise RuntimeError(f'{path}: Failed to prune: {e}')
+        raise RuntimeError(f'{path}: Failed to prune: {e.strerror or e}')
 
     # Prune empty files
     if files:
@@ -183,8 +177,7 @@ def mkdir(path):
     try:
         os.makedirs(path, exist_ok=True)
     except OSError as e:
-        msg = e.strerror if e.strerror else str(e)
-        raise errors.ContentError(f'{path}: {msg}')
+        raise errors.ContentError(f'{path}: {e.strerror or e}')
     else:
         assert_dir_usable(path)
 
