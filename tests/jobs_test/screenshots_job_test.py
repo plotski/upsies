@@ -1,5 +1,5 @@
 import queue
-from unittest.mock import Mock, call, patch
+from unittest.mock import PropertyMock, Mock, call, patch
 
 import pytest
 
@@ -387,30 +387,54 @@ def test_ScreenshotsJob_finish(job, tmp_path):
     assert job._screenshots_process.stop.call_args_list == [call()]
 
 
-def test_ScreenshotsJob_handle_info_sets_video_file(job):
+@pytest.mark.parametrize('is_finished', (False, True))
+def test_ScreenshotsJob_handle_info_sets_video_file(is_finished, job, mocker):
+    mocker.patch.object(type(job), 'is_finished', PropertyMock(return_value=is_finished))
     cb = Mock()
     job.signal.register('video_file', cb)
     assert job.video_file == ''
     job._handle_info(('video_file', 'foo.mkv'))
-    assert job.video_file == 'foo.mkv'
-    assert cb.call_args_list == [call('foo.mkv')]
+    if is_finished:
+        assert job.video_file == ''
+        assert cb.call_args_list == []
+    else:
+        assert job.video_file == 'foo.mkv'
+        assert cb.call_args_list == [call('foo.mkv')]
 
-def test_ScreenshotsJob_handle_info_sets_timestamps(job):
+@pytest.mark.parametrize('is_finished', (False, True))
+def test_ScreenshotsJob_handle_info_sets_timestamps(is_finished, job, mocker):
+    mocker.patch.object(type(job), 'is_finished', PropertyMock(return_value=is_finished))
     cb = Mock()
     job.signal.register('timestamps', cb)
     assert job.timestamps == ()
     job._handle_info(('timestamps', ('1', '2', '3')))
-    assert job.timestamps == ('1', '2', '3')
-    assert cb.call_args_list == [call(('1', '2', '3'))]
+    if is_finished:
+        assert job.timestamps == ()
+        assert cb.call_args_list == []
+    else:
+        assert job.timestamps == ('1', '2', '3')
+        assert cb.call_args_list == [call(('1', '2', '3'))]
 
-def test_ScreenshotsJob_handle_info_sends_screenshot_paths(job):
+@pytest.mark.parametrize('is_finished', (False, True))
+def test_ScreenshotsJob_handle_info_sends_screenshot_paths(is_finished, job, mocker):
+    mocker.patch.object(type(job), 'is_finished', PropertyMock(return_value=is_finished))
     assert job.output == ()
     job._handle_info(('screenshot', 'path/to/foo.png'))
-    assert job.output == ('path/to/foo.png',)
+    assert job.output == (('path/to/foo.png',) if not is_finished else ())
     job._handle_info(('screenshot', 'path/to/bar.png'))
-    assert job.output == ('path/to/foo.png', 'path/to/bar.png')
+    assert job.output == (('path/to/foo.png', 'path/to/bar.png') if not is_finished else ())
     job._handle_info(('screenshot', 'path/to/baz.png'))
-    assert job.output == ('path/to/foo.png', 'path/to/bar.png', 'path/to/baz.png')
+    assert job.output == (('path/to/foo.png', 'path/to/bar.png', 'path/to/baz.png') if not is_finished else ())
+
+@pytest.mark.parametrize('is_finished', (False, True))
+def test_ScreenshotsJob_handle_info_ignores_unknown_info(is_finished, job, mocker):
+    mocker.patch.object(type(job), 'is_finished', PropertyMock(return_value=is_finished))
+    cb = Mock()
+    job.signal.register('video_file', cb)
+    job.signal.register('timestamps', cb)
+    job._handle_info(('foo', 'bar'))
+    assert job.output == ()
+    assert cb.call_args_list == []
 
 
 def test_ScreenshotsJob_handle_error_with_exception(job):
