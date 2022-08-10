@@ -43,9 +43,9 @@ defaults = {
 
     'clients': {
         client.name: {
-            'url': client.URL('').without_auth,
-            'username': client.URL('').username or '',
-            'password': client.URL('').password or '',
+            'url': client.URL.default,
+            'username': '',
+            'password': '',
             'check_after_add': utils.types.Bool('no'),
         }
         for client in aiobtclientapi.api_classes()
