@@ -1035,6 +1035,25 @@ async def test_download_catches_OSError_when_opening_filepath(mocker, tmp_path):
         await http.download('mock url', filepath)
 
 
+@pytest.mark.parametrize('domain', (None, 'example.org'))
+def test_clear_session_cookies(domain, mocker):
+    mocker.patch.object(http, '_session_cookies', {
+        'foo.net': {'cookie1': 'bar', 'cookie2': 'baz'},
+        'example.org': {'cookie2': 'this', 'cookie3': 'that'},
+    })
+    http.clear_session_cookies(domain)
+    if domain:
+        assert http._session_cookies == {
+            'foo.net': {'cookie1': 'bar', 'cookie2': 'baz'},
+            'example.org': {},
+        }
+    else:
+        assert http._session_cookies == {
+            'foo.net': {},
+            'example.org': {},
+        }
+
+
 def test_open_files_opens_files(mocker):
     mocker.patch(
         'upsies.utils.http._get_file_object',
