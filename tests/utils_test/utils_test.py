@@ -240,15 +240,16 @@ def test_submodules_finds_modules_and_packages(mocker):
 
 
 def test_subclasses():
-    from upsies.utils import btclients
-    from upsies.utils.btclients import dummy, transmission
+    from aiobtclientapi.clients import APIBase, deluge, qbittorrent, rtorrent, transmission
     subclses = utils.subclasses(
-        basecls=btclients.ClientApiBase,
-        modules={dummy, transmission},
+        basecls=APIBase,
+        modules={deluge, qbittorrent, rtorrent, transmission},
     )
     assert subclses == {
-        dummy.DummyClientApi,
-        transmission.TransmissionClientApi,
+        deluge.DelugeAPI,
+        qbittorrent.QbittorrentAPI,
+        rtorrent.RtorrentAPI,
+        transmission.TransmissionAPI,
     }
 
 
