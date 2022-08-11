@@ -102,7 +102,7 @@ class TrackerJobsBase(abc.ABC):
     are created only once per session.
 
     Subclasses that need to run background tasks (e.g. with
-    :func:`asyncio.ensure_future`) should attach a callback to them with
+    :func:`asyncio.create_task`) should attach a callback to them with
     :meth:`~.asyncio.Task.add_done_callback` that catches expected exceptions
     and pass them to :meth:`warn`, :meth:`error` or :meth:`exception`.
 

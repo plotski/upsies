@@ -416,7 +416,7 @@ class JobBase(abc.ABC):
 
         async def wrapper(coro, callback, finish_when_done):
             try:
-                result = await asyncio.ensure_future(coro)
+                result = await asyncio.create_task(coro)
             except asyncio.CancelledError:
                 pass
             except BaseException as e:
@@ -436,11 +436,11 @@ class JobBase(abc.ABC):
 
         async def catch_cancelled_error(coro):
             try:
-                return await asyncio.ensure_future(coro)
+                return await asyncio.create_task(coro)
             except asyncio.CancelledError:
                 _log.debug('%s: Cancelled: %r', self.name, coro)
 
-        wrapped = asyncio.ensure_future(
+        wrapped = asyncio.create_task(
             catch_cancelled_error(
                 wrapper(coro, callback, finish_when_done),
             ),
@@ -614,7 +614,7 @@ class QueueJobBase(JobBase):
         self._enqueue_args = kwargs.get('enqueue', ())
 
     def execute(self):
-        self._read_queue_task = asyncio.ensure_future(self._read_queue())
+        self._read_queue_task = asyncio.create_task(self._read_queue())
         if self._enqueue_args:
             for value in self._enqueue_args:
                 self.enqueue(value)

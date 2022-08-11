@@ -555,7 +555,7 @@ async def test_InfoUpdater_cancel_while_not_updating(info_updater):
 
 @pytest.mark.asyncio
 async def test_InfoUpdater_cancel_while_updating(info_updater):
-    info_updater._update_task = asyncio.ensure_future(asyncio.sleep(10))
+    info_updater._update_task = asyncio.create_task(asyncio.sleep(10))
     info_updater.cancel()
     await info_updater.wait()
     assert info_updater._update_task.cancelled()
@@ -569,7 +569,7 @@ async def test_InfoUpdater_wait_while_not_updating(info_updater):
 
 @pytest.mark.asyncio
 async def test_InfoUpdater_wait_while_updating(info_updater):
-    info_updater._update_task = asyncio.ensure_future(asyncio.sleep(0.1))
+    info_updater._update_task = asyncio.create_task(asyncio.sleep(0.1))
     await info_updater.wait()
     assert info_updater._update_task.done()
 
@@ -584,7 +584,7 @@ async def test_InfoUpdater_set_result_reports_exception(info_updater, mocker):
 
 @pytest.mark.asyncio
 async def test_InfoUpdater_set_result_cancels_previous_update_task(info_updater, mocker):
-    old_update_task = info_updater._update_task = asyncio.ensure_future(asyncio.sleep(10))
+    old_update_task = info_updater._update_task = asyncio.create_task(asyncio.sleep(10))
     info_updater.set_result('mock result')
     await asyncio.sleep(0)  # _update_task.cancel() to propagate
     assert old_update_task.cancelled()
