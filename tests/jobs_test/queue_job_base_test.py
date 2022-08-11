@@ -1,17 +1,10 @@
 import asyncio
 import inspect
-from unittest.mock import Mock, PropertyMock, call
+from unittest.mock import AsyncMock, Mock, PropertyMock, call
 
 import pytest
 
 from upsies.jobs import JobBase, QueueJobBase
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 class FooJob(QueueJobBase):

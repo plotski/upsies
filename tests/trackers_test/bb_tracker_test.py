@@ -1,5 +1,5 @@
 import re
-from unittest.mock import Mock, call
+from unittest.mock import AsyncMock, Mock, call
 
 import bs4
 import pytest
@@ -7,13 +7,6 @@ import pytest
 from upsies import __project_name__, errors
 from upsies.trackers.bb import BbTracker, BbTrackerConfig, BbTrackerJobs
 from upsies.utils.http import Result
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 def test_name_attribute():

@@ -1,22 +1,12 @@
 import asyncio
 import sys
-from unittest.mock import Mock, PropertyMock, call
+from unittest.mock import AsyncMock, Mock, PropertyMock, call
 
 import pytest
 
 from upsies import errors
 from upsies.jobs import webdb
 from upsies.utils.webdbs import Query, WebDbApiBase
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
-
-    def __await__(self):
-        return self().__await__()
 
 
 @pytest.fixture
@@ -418,15 +408,16 @@ async def test_Searcher_wait_while_not_searching(searcher):
 
 @pytest.mark.asyncio
 async def test_Searcher_wait_while_searching(searcher):
-    searcher._search_task = asyncio.ensure_future(AsyncMock())
+    searcher._search_task = asyncio.create_task(AsyncMock()())
     await searcher.wait()
     assert searcher._search_task.done()
 
 
 def test_Searcher_cancel_while_searching(searcher):
-    searcher._search_task = AsyncMock(cancel=Mock())
+    cancel_mock = Mock()
+    searcher._search_task = Mock(cancel=cancel_mock)
     searcher.cancel()
-    assert searcher._search_task.cancel.call_args_list == [call()]
+    assert cancel_mock.call_args_list == [call()]
 
 def test_Searcher_cancel_while_not_searching(searcher):
     searcher._search_task = None
@@ -635,7 +626,7 @@ async def test_InfoUpdater_set_result_calls_targets_with_no_result_set(info_upda
 
 @pytest.mark.asyncio
 async def test_InfoUpdater_set_result_calls_targets_with_result_set(info_updater, mocker):
-    mock_update = Mock(return_value=AsyncMock())
+    mock_update = AsyncMock()
     mocker.patch.object(info_updater, '_update', mock_update)
     cbs = Mock()
     info_updater._targets = {
@@ -676,8 +667,8 @@ async def test_InfoUpdater_update(info_updater, mocker):
         summary=AsyncMock(return_value='Something happens.'),
     )
     info_updater._call_callback.side_effect = (
-        info_updater._result.genre,
-        info_updater._result.summary,
+        info_updater._result.genre(),
+        info_updater._result.summary(),
     )
     await info_updater._update()
     assert info_updater._call_callback.call_args_list == [

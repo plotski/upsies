@@ -5,7 +5,7 @@ import itertools
 import os
 import re
 import time
-from unittest.mock import Mock, call
+from unittest.mock import AsyncMock, Mock, call
 
 import httpx
 import pytest
@@ -46,13 +46,6 @@ class RequestHandler:
 
     def handle(self, request):
         raise NotImplementedError()
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 @pytest.mark.parametrize(

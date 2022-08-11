@@ -1,6 +1,6 @@
 import asyncio
 from types import SimpleNamespace
-from unittest.mock import Mock, PropertyMock, call, patch
+from unittest.mock import AsyncMock, Mock, PropertyMock, call, patch
 
 import pytest
 from prompt_toolkit.application import Application
@@ -9,13 +9,6 @@ from prompt_toolkit.layout.containers import Window
 from prompt_toolkit.output import DummyOutput
 
 from upsies.uis.tui.tui import TUI
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 @pytest.fixture(autouse='module')

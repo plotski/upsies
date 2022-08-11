@@ -3,23 +3,13 @@ import collections
 import errno
 import os
 import re
-from unittest.mock import Mock, PropertyMock, call
+from unittest.mock import AsyncMock, Mock, PropertyMock, call
 
 import pytest
 
 from upsies import errors
 from upsies.jobs import JobBase
 from upsies.utils import signal
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
-
-    def __await__(self):
-        return self().__await__()
 
 
 class FooJob(JobBase):
@@ -486,7 +476,7 @@ async def test_exception_finishes_job(job):
 @pytest.mark.asyncio
 async def test_added_task_returns_return_value(job, mocker):
     job.start()
-    coro = AsyncMock(return_value='foo')
+    coro = AsyncMock(return_value='foo')()
     job.add_task(coro)
     assert await job._tasks[0] == 'foo'
     assert not job.is_finished
@@ -496,7 +486,7 @@ async def test_added_task_returns_return_value(job, mocker):
 async def test_added_task_passes_return_value_to_callback(job, mocker):
     job.start()
     callback = Mock()
-    coro = AsyncMock(return_value='foo')
+    coro = AsyncMock(return_value='foo')()
     job.add_task(coro, callback=callback)
     assert await job._tasks[0] == 'foo'
     assert not job.is_finished
@@ -507,7 +497,7 @@ async def test_added_task_passes_return_value_to_callback(job, mocker):
 async def test_added_task_catches_exceptions_from_coro(job, mocker):
     job.start()
     callback = Mock()
-    coro = AsyncMock(side_effect=TypeError('foo'))
+    coro = AsyncMock(side_effect=TypeError('foo'))()
     job.add_task(coro, callback=callback)
     await job._tasks[0]
     assert job.is_finished
@@ -519,7 +509,7 @@ async def test_added_task_catches_exceptions_from_coro(job, mocker):
 async def test_added_task_catches_exceptions_from_callback(job, mocker):
     job.start()
     callback = Mock(side_effect=TypeError('foo'))
-    coro = AsyncMock(return_value='foo')
+    coro = AsyncMock(return_value='foo')()
     job.add_task(coro, callback=callback)
     await job._tasks[0]
     assert job.is_finished
@@ -532,7 +522,7 @@ async def test_added_task_catches_exceptions_from_callback(job, mocker):
 async def test_added_task_ignores_CancelledError(finish_when_done, job, mocker):
     job.start()
     callback = Mock()
-    coro = AsyncMock(side_effect=asyncio.CancelledError())
+    coro = AsyncMock(side_effect=asyncio.CancelledError())()
     job.add_task(coro, callback=callback, finish_when_done=finish_when_done)
     await job._tasks[0]  # No CancelledError raised
     assert job.is_finished == finish_when_done
@@ -541,12 +531,15 @@ async def test_added_task_ignores_CancelledError(finish_when_done, job, mocker):
 
 @pytest.mark.asyncio
 async def test_await_tasks(job, mocker):
-    job._tasks = [AsyncMock(), AsyncMock(), AsyncMock()]
+    job._tasks = [
+        asyncio.create_task(AsyncMock()())
+        for i in range(3)
+    ]
     for task in job._tasks:
-        assert task.mock_calls == []
+        assert not task.done()
     await job.await_tasks()
     for task in job._tasks:
-        assert task.mock_calls == [call()]
+        assert task.done()
 
 
 @pytest.mark.parametrize(

@@ -1,18 +1,11 @@
 import re
-from unittest.mock import Mock, PropertyMock, call
+from unittest.mock import AsyncMock, Mock, PropertyMock, call
 
 import pytest
 
 from upsies import __homepage__, __project_name__, __version__, errors, utils
 from upsies.trackers import TrackerConfigBase, bb
 from upsies.utils.types import ReleaseType
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 @pytest.fixture

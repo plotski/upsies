@@ -1,19 +1,12 @@
 import re
 import time
-from unittest.mock import Mock, PropertyMock, call, patch
+from unittest.mock import AsyncMock, Mock, PropertyMock, call, patch
 
 import pytest
 
 from upsies.utils import webdbs
 from upsies.utils.release import Episodes, ReleaseName
 from upsies.utils.types import ReleaseType
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 @patch('upsies.utils.release.ReleaseInfo', new_callable=lambda: Mock(return_value={}))

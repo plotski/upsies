@@ -1,16 +1,9 @@
 import re
-from unittest.mock import Mock, call
+from unittest.mock import AsyncMock, Mock, call
 
 import pytest
 
 from upsies import utils
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 def test_cached_property_caches_return_value_of_decorated_function():

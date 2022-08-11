@@ -1,5 +1,5 @@
 import queue
-from unittest.mock import Mock, PropertyMock, call, patch
+from unittest.mock import AsyncMock, Mock, PropertyMock, call, patch
 
 import pytest
 
@@ -7,13 +7,6 @@ from upsies import errors
 from upsies.jobs.screenshots import (ScreenshotsJob, _normalize_timestamps,
                                      _screenshots_process, _shall_terminate)
 from upsies.utils.daemon import MsgType
-
-try:
-    from unittest.mock import AsyncMock
-except ImportError:
-    class AsyncMock(Mock):
-        async def __call__(self, *args, **kwargs):
-            return super().__call__(*args, **kwargs)
 
 
 @patch('upsies.utils.video.duration')

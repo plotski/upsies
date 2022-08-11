@@ -1,18 +1,11 @@
 import re
-from unittest.mock import Mock, call
+from unittest.mock import AsyncMock, Mock, call
 
 import pytest
 
 from upsies import errors
 from upsies.trackers import nbl
 from upsies.utils.http import Result
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 def test_name_attribute():

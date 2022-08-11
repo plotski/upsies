@@ -3,7 +3,7 @@ import multiprocessing
 import os
 import re
 import time
-from unittest.mock import Mock, PropertyMock, call, patch
+from unittest.mock import AsyncMock, Mock, PropertyMock, call, patch
 
 import pytest
 
@@ -11,13 +11,6 @@ from upsies import errors
 from upsies.jobs.torrent import CreateTorrentJob, _torrent_process
 from upsies.utils.daemon import MsgType
 from upsies.utils.torrent import CreateTorrentProgress
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 class Callable:

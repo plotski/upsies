@@ -1,16 +1,9 @@
-from unittest.mock import Mock, call
+from unittest.mock import AsyncMock, Mock, call
 
 import pytest
 
 from upsies.utils.webdbs.base import WebDbApiBase
 from upsies.utils.webdbs.common import Query
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 def make_TestWebDbApi(default_config=None, **kwargs):

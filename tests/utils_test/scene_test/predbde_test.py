@@ -1,17 +1,10 @@
 import re
-from unittest.mock import Mock, call
+from unittest.mock import AsyncMock, Mock, call
 
 import pytest
 
 from upsies import errors
 from upsies.utils.scene import predbde
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 @pytest.fixture

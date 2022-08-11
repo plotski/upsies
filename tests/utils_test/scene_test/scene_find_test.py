@@ -1,18 +1,11 @@
 import re
-from unittest.mock import Mock, call
+from unittest.mock import AsyncMock, Mock, call
 
 import pytest
 
 from upsies import constants, errors
 from upsies.utils import release
 from upsies.utils.scene import find
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
 
 
 def make_db_class(name, exception):

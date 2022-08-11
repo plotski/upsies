@@ -1,19 +1,9 @@
-from unittest.mock import Mock, call
+from unittest.mock import AsyncMock, Mock, call
 
 import pytest
 
 from upsies import errors
 from upsies.jobs.dialog import TextFieldJob
-
-
-class AsyncMock(Mock):
-    def __call__(self, *args, **kwargs):
-        async def coro(_sup=super()):
-            return _sup.__call__(*args, **kwargs)
-        return coro()
-
-    def __await__(self):
-        return self().__await__()
 
 
 @pytest.fixture
@@ -164,7 +154,7 @@ async def test_fetch_text_sets_read_only_while_fetching(finish_on_success, make_
 @pytest.mark.parametrize('default_text', (None, '', 'Default text'))
 @pytest.mark.asyncio
 async def test_fetch_text_catches_fatal_error(default_text, finish_on_success, make_TextFieldJob):
-    fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))
+    fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))()
     job = make_TextFieldJob(name='foo', label='Foo', text='Original text')
     assert not job.is_finished
     await job.fetch_text(fetcher, default_text=default_text, finish_on_success=finish_on_success, error_is_fatal=True)
@@ -179,7 +169,7 @@ async def test_fetch_text_catches_fatal_error(default_text, finish_on_success, m
 @pytest.mark.parametrize('default_text', (None, '', 'Default text'))
 @pytest.mark.asyncio
 async def test_fetch_text_catches_nonfatal_error(default_text, finish_on_success, make_TextFieldJob):
-    fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))
+    fetcher = AsyncMock(side_effect=errors.RequestError('connection failed'))()
     job = make_TextFieldJob(name='foo', label='Foo', text='Original text')
     assert not job.is_finished
     await job.fetch_text(fetcher, default_text=default_text, finish_on_success=finish_on_success, error_is_fatal=False)
@@ -194,7 +184,7 @@ async def test_fetch_text_catches_nonfatal_error(default_text, finish_on_success
 @pytest.mark.parametrize('default_text', (None, '', 'Default text'))
 @pytest.mark.asyncio
 async def test_fetch_text_sets_default_text_if_coro_returns_None(default_text, finish_on_success, make_TextFieldJob):
-    fetcher = AsyncMock(return_value=None)
+    fetcher = AsyncMock(return_value=None)()
     job = make_TextFieldJob(name='foo', label='Foo', text='Original text')
     assert not job.is_finished
     await job.fetch_text(fetcher, default_text=default_text)
@@ -208,7 +198,7 @@ async def test_fetch_text_sets_default_text_if_coro_returns_None(default_text, f
 @pytest.mark.parametrize('fetched_text', (None, '', 'Fetched text'))
 @pytest.mark.asyncio
 async def test_fetch_text_finishes_only_if_coro_returns_text(fetched_text, make_TextFieldJob):
-    fetcher = AsyncMock(return_value=fetched_text)
+    fetcher = AsyncMock(return_value=fetched_text)()
     job = make_TextFieldJob(name='foo', label='Foo', text='Original text')
     assert not job.is_finished
     await job.fetch_text(fetcher, default_text='Default text', finish_on_success=True)
@@ -223,7 +213,7 @@ async def test_fetch_text_finishes_only_if_coro_returns_text(fetched_text, make_
 @pytest.mark.parametrize('default_text', (None, '', 'Default text'))
 @pytest.mark.asyncio
 async def test_fetch_text_succeeds(default_text, finish_on_success, make_TextFieldJob):
-    fetcher = AsyncMock(return_value='Fetched text')
+    fetcher = AsyncMock(return_value='Fetched text')()
     job = make_TextFieldJob(name='foo', label='Foo', text='Original text')
     assert not job.is_finished
     await job.fetch_text(fetcher, default_text=default_text, finish_on_success=finish_on_success)
