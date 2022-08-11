@@ -124,7 +124,6 @@ class TrackerJobsBase(abc.ABC):
         self._common_job_args = common_job_args or {}
         self._options = options or {}
         self._signal = signal.Signal('warning', 'error', 'exception')
-        self._background_tasks = []
 
     @property
     def content_path(self):
