@@ -1,7 +1,7 @@
 import builtins
 import random
 import re
-from unittest.mock import AsyncMock, Mock, PropertyMock, call
+from unittest.mock import Mock, PropertyMock, call
 
 import pytest
 
