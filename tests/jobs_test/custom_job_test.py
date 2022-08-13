@@ -125,7 +125,7 @@ async def test_finish_before_job_was_executed(mocker, make_CustomJob):
 
 @pytest.mark.asyncio
 async def test_finish_after_job_was_executed(mocker, make_CustomJob):
-    worker = asyncio.create_task(asyncio.sleep(100))
+    worker = asyncio.ensure_future(asyncio.sleep(100))
     job = make_CustomJob(name='foo', label='Foo', worker=lambda job: worker)
     job.execute()
     # Allow worker to start

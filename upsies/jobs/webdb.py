@@ -333,7 +333,7 @@ class _InfoUpdater:
         else:
             # Schedule calls of SearchResult attributes that are coroutine
             # functions
-            self._update_task = asyncio.create_task(self._update())
+            self._update_task = asyncio.ensure_future(self._update())
             self._update_task.add_done_callback(self._handle_update_task)
 
             # Update plain, non-callable values immediately

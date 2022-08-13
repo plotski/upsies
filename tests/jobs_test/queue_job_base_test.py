@@ -57,13 +57,13 @@ def test_execute_with_enqueue_argument(mocker, tmp_path):
     mocker.patch('upsies.jobs.base.QueueJobBase.enqueue', mocks.enqueue)
     mocker.patch('upsies.jobs.base.QueueJobBase.finalize', mocks.finalize)
     mocker.patch('upsies.jobs.base.QueueJobBase._read_queue', Mock())
-    mocker.patch('asyncio.create_task')
+    mocker.patch('asyncio.ensure_future')
     qjob = FooJob(home_directory=tmp_path, cache_directory=tmp_path, enqueue=(1, 2, 3))
     assert qjob._read_queue_task is None
     qjob.execute()
     assert qjob._read_queue.call_args_list == [call()]
-    assert asyncio.create_task.call_args_list == [call(qjob._read_queue.return_value)]
-    assert qjob._read_queue_task == asyncio.create_task.return_value
+    assert asyncio.ensure_future.call_args_list == [call(qjob._read_queue.return_value)]
+    assert qjob._read_queue_task == asyncio.ensure_future.return_value
     assert mocks.mock_calls == [
         call.enqueue(1),
         call.enqueue(2),
@@ -76,13 +76,13 @@ def test_execute_without_enqueue_argument(mocker, tmp_path):
     mocker.patch('upsies.jobs.base.QueueJobBase.enqueue', mocks.enqueue)
     mocker.patch('upsies.jobs.base.QueueJobBase.finalize', mocks.finalize)
     mocker.patch('upsies.jobs.base.QueueJobBase._read_queue', Mock())
-    mocker.patch('asyncio.create_task')
+    mocker.patch('asyncio.ensure_future')
     qjob = FooJob(home_directory=tmp_path, cache_directory=tmp_path)
     assert qjob._read_queue_task is None
     qjob.execute()
     assert qjob._read_queue.call_args_list == [call()]
-    assert asyncio.create_task.call_args_list == [call(qjob._read_queue.return_value)]
-    assert qjob._read_queue_task == asyncio.create_task.return_value
+    assert asyncio.ensure_future.call_args_list == [call(qjob._read_queue.return_value)]
+    assert qjob._read_queue_task == asyncio.ensure_future.return_value
     assert mocks.mock_calls == []
 
 
