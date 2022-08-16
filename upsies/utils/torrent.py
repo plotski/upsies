@@ -4,11 +4,11 @@ Create torrent file
 
 import collections
 import datetime
+import errno
 import hashlib
 import math
 import os
 import time
-from os.path import exists as _path_exists
 
 from .. import __project_name__, __version__, constants, errors, utils
 from . import LazyModule, fs, types
@@ -17,8 +17,8 @@ torf = LazyModule(module='torf', namespace=globals())
 
 
 def create(*, content_path, announce, source, torrent_path,
-           init_callback, progress_callback, info_callback,
-           overwrite=False, exclude=(), reuse_torrent_path=None):
+           use_cache=True, exclude=(), reuse_torrent_path=None,
+           init_callback, progress_callback):
     """
     Generate and write torrent file
 
@@ -53,139 +53,131 @@ def create(*, content_path, announce, source, torrent_path,
                )),
            )
     :param progress_callback: Callable that is called at regular intervals with
-        a :class:`CreateTorrentProgress` object as a positional argument
-    :param info_callback: Callable that is called with an informational message
-    :param bool overwrite: Whether to overwrite `torrent_path` if it exists
+        a :class:`CreateTorrentProgress` or :class:`FindTorrentProgress` object
+        as a positional argument
     :param exclude: Sequence of regular expressions that are matched against
         file system paths. Matching files are not included in the torrent.
+    :param bool use_cache: Whether to get piece hashes from previously created
+        torrents or from `reuse_torrent_path`
     :param reuse_torrent_path: Path to existing torrent file to get hashed
-        pieces and piece size from.
+        pieces and piece size from. If the given torrent file doesn't match the
+        files in the torrent we want to create, hash the pieces normally.
 
         If this is a directory, search it recursively for ``*.torrent`` files
-        and use the first one (in natural sort order) that matches.
+        and use the first one that matches.
 
         Non-existing or otherwise unreadable paths as well as falsy values
         (e.g. ``""`` or `None`) are silently ignored.
 
-        If this is a sequence, its items are handled as described above.
+        If this is a sequence, its items are expected to be directory or file
+        paths and handled as described above.
 
     Callbacks can cancel the torrent creation by returning `True` or any other
     truthy value.
 
     :raise TorrentError: if anything goes wrong
 
-    :return: `torrent_path`
+    :return: `torrent_path` or `None` if cancelled
     """
     if not announce:
         raise errors.TorrentError('Announce URL is empty')
     if not source:
         raise errors.TorrentError('Source is empty')
 
-    torrent = None
-    if overwrite or not _path_exists(torrent_path):
-        # Try to get existing torrent from global cache or `reuse_torrent_path`
-        torrent = _get_cached_torrent(
-            content_path=content_path,
-            exclude=exclude,
-            metadata={
-                'trackers': (announce,),
-                'source': source,
-            },
-            reuse_torrent_path=reuse_torrent_path,
-            info_callback=info_callback,
-        )
+    # Create Torrent object
+    torrent = _get_torrent(
+        content_path=content_path,
+        exclude=exclude,
+        announce=announce,
+        source=source,
+    )
+    # Report files with `exclude` applied
+    cancelled = init_callback(_make_file_tree(torrent.filetree))
+    if cancelled:
+        return None
 
-        # `torrent` is `None` if we couldn't find a cached torrent.
-        # `torrent` is `False` if the generation process was cancelled.
-        if torrent is None:
-            # Create pieces hashes
-            torrent = _get_generated_torrent(
-                content_path=content_path,
-                announce=announce,
-                source=source,
-                exclude=exclude,
-                progress_callback=progress_callback,
-                init_callback=init_callback,
-            )
-
-    if torrent and torrent.is_ready:
-        # Write generic torrent
-        _store_generic_torrent(torrent)
-
-        # Write torrent to `torrent_path`
-        try:
-            torrent.write(torrent_path, overwrite=True)
-        except torf.TorfError as e:
-            raise errors.TorrentError(e)
-        else:
-            return torrent_path
-
-
-def _get_cached_torrent(content_path, exclude, metadata, reuse_torrent_path, info_callback):
-    if not reuse_torrent_path:
-        reuse_torrent_paths = []
-    elif isinstance(reuse_torrent_path, str):
-        reuse_torrent_paths = [reuse_torrent_path]
-    elif isinstance(reuse_torrent_path, collections.abc.Iterable):
-        reuse_torrent_paths = [p for p in reuse_torrent_path if p]
-    else:
-        raise ValueError(f'Invalid reuse_torrent_path value: {reuse_torrent_path!r}')
-
-    # Try generic torrent first
-    try:
-        torrent = torf.Torrent(path=content_path, exclude_regexs=exclude)
-    except torf.TorfError:
-        pass
-    else:
-        reuse_torrent_paths.insert(0, _get_generic_torrent_path(
+    if use_cache:
+        # Try to get piece hashes from existing torrent
+        cancelled = _find_hashes(
             torrent=torrent,
-            create_directory=False,
-        ))
+            reuse_torrent_path=reuse_torrent_path,
+            callback=progress_callback,
+        )
+        if cancelled:
+            return None
 
-    def with_updated_metadata(torrent):
-        for name, value in metadata.items():
-            setattr(torrent, name, value)
-        return torrent
+    if not torrent.is_ready:
+        # Hash pieces
+        cancelled = _generate_hashes(
+            torrent=torrent,
+            callback=progress_callback,
+        )
+        if cancelled:
+            return None
 
-    # Iterate over .torrent files in each path in `reuse_torrent_paths`.
-    # If `reuse_torrent_path` is not a directory, it's iterated over by
-    # fs.file_list().
-    for path in reuse_torrent_paths:
-        for torrent_path in fs.file_list(path, extensions=('torrent',)):
-            cancelled = info_callback(torrent_path)
-            if cancelled:
-                return False
-            else:
-                torrent = _read_torrent(
-                    content_path=content_path,
-                    exclude=exclude,
-                    torrent_path=torrent_path,
-                )
-                if torrent:
-                    return with_updated_metadata(torrent)
+    # Write generic torrent so we can reuse the hashes in the future
+    _store_generic_torrent(torrent)
+
+    # Write torrent to `torrent_path`
+    _write_torrent_path(torrent, torrent_path)
+    return torrent_path
 
 
-def _get_generated_torrent(*, content_path, announce, source, exclude, init_callback, progress_callback):
-    callback = _CreateTorrentCallbackWrapper(progress_callback)
+def _get_torrent(*, content_path, exclude, announce, source):
     try:
-        torrent = torf.Torrent(
+        return torf.Torrent(
             path=content_path,
             exclude_regexs=exclude,
             trackers=((announce,),),
-            private=True,
             source=source,
+            private=True,
             created_by=f'{__project_name__} {__version__}',
             creation_date=time.time(),
         )
-        cancelled = init_callback(_make_file_tree(torrent.filetree))
-        if cancelled:
-            return None
-        else:
-            torrent.generate(callback=callback, interval=1.0)
     except torf.TorfError as e:
-        raise errors.TorrentError(e)
+        raise errors.TorrentError(str(e))
+
+
+def _generate_hashes(*, torrent, callback):
+    wrapped_callback = _CreateTorrentCallback(callback)
+    try:
+        torrent.generate(
+            callback=wrapped_callback,
+            interval=1.0,
+        )
+    except torf.TorfError as e:
+        raise errors.TorrentError(str(e))
     else:
-        return torrent
+        return wrapped_callback.return_value
+
+
+def _find_hashes(*, torrent, reuse_torrent_path, callback):
+    wrapped_callback = _FindTorrentCallback(callback)
+    try:
+        torrent.reuse(
+            _get_reuse_torrent_paths(torrent, reuse_torrent_path),
+            callback=wrapped_callback,
+            interval=1.0,
+        )
+    except torf.TorfError as e:
+        raise errors.TorrentError(str(e))
+    else:
+        return wrapped_callback.return_value
+
+
+def _get_reuse_torrent_paths(torrent, reuse_torrent_path):
+    reuse_torrent_paths = []
+    if reuse_torrent_path:
+        if isinstance(reuse_torrent_path, str):
+            reuse_torrent_paths.append(reuse_torrent_path)
+        elif isinstance(reuse_torrent_path, collections.abc.Iterable):
+            reuse_torrent_paths.extend(p for p in reuse_torrent_path if p)
+        else:
+            raise ValueError(f'Invalid reuse_torrent_path: {reuse_torrent_path!r}')
+
+    generic_torrent_path = _get_generic_torrent_path(torrent=torrent, create_directory=False)
+    reuse_torrent_paths.insert(0, generic_torrent_path)
+    return reuse_torrent_paths
 
 
 def _store_generic_torrent(torrent):
@@ -200,27 +192,11 @@ def _store_generic_torrent(torrent):
     generic_torrent.write(generic_torrent_path, overwrite=True)
 
 
-def _read_torrent(content_path, exclude, torrent_path):
+def _write_torrent_path(torrent, torrent_path):
     try:
-        # Create the Torrent we're going to use, but it's missing the hashes
-        new_torrent = torf.Torrent(
-            path=content_path,
-            exclude_regexs=exclude,
-            private=True,
-            created_by=f'{__project_name__} {__version__}',
-            creation_date=time.time(),
-        )
-        # Read existing torrent
-        old_torrent = torf.Torrent.read(torrent_path)
-    except torf.TorfError:
-        pass
-    else:
-        # If both torrents match, we can copy the hashes
-        id_new = _get_torrent_id(new_torrent)
-        id_old = _get_torrent_id(old_torrent)
-        if id_old == id_new:
-            _copy_torrent_info(old_torrent, new_torrent)
-            return new_torrent
+        torrent.write(torrent_path, overwrite=True)
+    except torf.TorfError as e:
+        raise errors.TorrentError(str(e))
 
 
 def _get_generic_torrent_path(torrent, create_directory=True):
@@ -236,12 +212,15 @@ def _get_generic_torrent_path(torrent, create_directory=True):
     return os.path.join(directory, filename)
 
 
-def _get_torrent_id(torrent):
-    id_info = {
+def _get_torrent_id_info(torrent):
+    return {
         'name': torrent.name,
         'files': tuple((str(f), f.size) for f in torrent.files),
     }
-    return utils.semantic_hash(id_info)
+
+
+def _get_torrent_id(torrent):
+    return utils.semantic_hash(_get_torrent_id_info(torrent))
 
 
 def _copy_torrent_info(from_torrent, to_torrent):
@@ -255,9 +234,9 @@ def _copy_torrent_info(from_torrent, to_torrent):
         to_info['files'] = from_info['files']
 
 
-def _make_file_tree(tree):
+def _make_file_tree(filetree):
     files = []
-    for name,file in tree.items():
+    for name,file in filetree.items():
         if isinstance(file, collections.abc.Mapping):
             subtree = _make_file_tree(file)
             files.append((name, subtree))
@@ -266,61 +245,64 @@ def _make_file_tree(tree):
     return tuple(files)
 
 
-class _CreateTorrentCallbackWrapper:
+class _CallbackBase:
     def __init__(self, callback):
         self._callback = callback
         self._progress_samples = []
         self._time_started = time.time()
+        self.return_value = None
 
-    def __call__(self, torrent, filepath, pieces_done, pieces_total):
+    def __call__(self, progress):
+        self.return_value = return_value = self._callback(progress)
+        return return_value
+
+    def _calculate_info(self, items_done, items_total):
         time_now = time.time()
-        percent_done = pieces_done / pieces_total * 100
+        percent_done = items_done / items_total * 100
         seconds_elapsed = time_now - self._time_started
+        items_per_second = 0
+        items_remaining = items_total - items_done
+        seconds_remaining = 0
 
-        def get_sample_age(sample):
-            time_sample = sample[0]
-            return time_now - time_sample
-
-        # Limit number of samples to use for estimates
-        samples = self._progress_samples
-        samples.append((time_now, pieces_done))
-        while samples and get_sample_age(samples[0]) > 10:
-            del samples[0]
+        self._add_sample(time_now, items_done)
 
         # Estimate how long torrent creation will take
-        if len(self._progress_samples) >= 2:
+        samples = self._progress_samples
+        if len(samples) >= 2:
             # Calculate the difference between each pair of samples
             diffs = [
                 b[1] - a[1]
-                for a, b in zip(self._progress_samples[:-1], self._progress_samples[1:])
+                for a, b in zip(samples[:-1], samples[1:])
             ]
-            pieces_per_second = self._get_average(diffs, weight_factor=1.1)
-            bytes_per_second = types.Bytes(pieces_per_second * torrent.piece_size)
-            pieces_remaining = pieces_total - pieces_done
-            bytes_remaining = pieces_remaining * torrent.piece_size
-            seconds_remaining = bytes_remaining / bytes_per_second
-        else:
-            bytes_per_second = types.Bytes(0)
-            seconds_remaining = 0
+            items_per_second = self._get_average(diffs, weight_factor=1.1)
+            if items_per_second > 0:
+                seconds_remaining = items_remaining / items_per_second
 
         seconds_total = seconds_elapsed + seconds_remaining
         time_finished = self._time_started + seconds_total
 
-        progress = CreateTorrentProgress(
-            bytes_per_second=bytes_per_second,
-            filepath=filepath,
-            percent_done=percent_done,
-            piece_size=torrent.piece_size,
-            pieces_done=pieces_done,
-            pieces_total=pieces_total,
-            seconds_elapsed=datetime.timedelta(seconds=seconds_elapsed),
-            seconds_remaining=datetime.timedelta(seconds=seconds_remaining),
-            seconds_total=datetime.timedelta(seconds=seconds_total),
-            time_finished=datetime.datetime.fromtimestamp(time_finished),
-            time_started=datetime.datetime.fromtimestamp(self._time_started),
-            total_size=torrent.size,
-        )
-        return self._callback(progress)
+        return {
+            'percent_done': percent_done,
+            'items_remaining': items_remaining,
+            'items_per_second': items_per_second,
+            'seconds_elapsed': datetime.timedelta(seconds=seconds_elapsed),
+            'seconds_remaining': datetime.timedelta(seconds=seconds_remaining),
+            'seconds_total': datetime.timedelta(seconds=seconds_total),
+            'time_finished': datetime.datetime.fromtimestamp(time_finished),
+            'time_started': datetime.datetime.fromtimestamp(self._time_started),
+        }
+
+    def _add_sample(self, time_now, items_done):
+        def get_sample_age(sample):
+            time_sample = sample[0]
+            return time_now - time_sample
+
+        samples = self._progress_samples
+        samples.append((time_now, items_done))
+
+        # Prune samples older than 10 seconds
+        while samples and get_sample_age(samples[0]) > 10:
+            del samples[0]
 
     def _get_average(self, samples, weight_factor, get_value=lambda sample: sample):
         # Give recent samples more weight than older samples
@@ -339,6 +321,55 @@ class _CreateTorrentCallbackWrapper:
         ) / sum(weights)
 
 
+class _CreateTorrentCallback(_CallbackBase):
+    def __call__(self, torrent, filepath, pieces_done, pieces_total):
+        info = self._calculate_info(pieces_done, pieces_total)
+        piece_size = torrent.piece_size
+        bytes_per_second = types.Bytes(info['items_per_second'] * piece_size)
+        progress = CreateTorrentProgress(
+            pieces_done=pieces_done,
+            pieces_total=pieces_total,
+            percent_done=info['percent_done'],
+            bytes_per_second=bytes_per_second,
+            piece_size=piece_size,
+            total_size=torrent.size,
+            filepath=filepath,
+            seconds_elapsed=info['seconds_elapsed'],
+            seconds_remaining=info['seconds_remaining'],
+            seconds_total=info['seconds_total'],
+            time_finished=info['time_finished'],
+            time_started=info['time_started'],
+        )
+        return super().__call__(progress)
+
+
+class _FindTorrentCallback(_CallbackBase):
+    def __call__(self, torrent, filepath, files_done, files_total, status, exception):
+        info = self._calculate_info(files_done, files_total)
+
+        # Ignore "No such file or directory". This should only happen if the
+        # generic torrent does not exist yet. For all other paths, torrent files
+        # are collected from traversing directories.
+        if isinstance(exception, torf.ReadError) and exception.errno == errno.ENOENT:
+            exception = None
+
+        progress = FindTorrentProgress(
+            files_done=files_done,
+            files_total=files_total,
+            percent_done=info['percent_done'],
+            files_per_second=info['items_per_second'],
+            filepath=filepath,
+            status=status,
+            exception=errors.TorrentError(str(exception)) if exception else None,
+            seconds_elapsed=info['seconds_elapsed'],
+            seconds_remaining=info['seconds_remaining'],
+            seconds_total=info['seconds_total'],
+            time_finished=info['time_finished'],
+            time_started=info['time_started'],
+        )
+        return super().__call__(progress)
+
+
 class CreateTorrentProgress(collections.namedtuple(
     typename='CreateTorrentProgress',
     field_names=(
@@ -351,8 +382,8 @@ class CreateTorrentProgress(collections.namedtuple(
         'seconds_elapsed',
         'seconds_remaining',
         'seconds_total',
-        'time_started',
         'time_finished',
+        'time_started',
         'total_size',
     ),
 )):
@@ -365,12 +396,47 @@ class CreateTorrentProgress(collections.namedtuple(
         - ``piece_size`` (:class:`~.types.Bytes`)
         - ``pieces_done`` (:class:`int`)
         - ``pieces_total`` (:class:`int`)
-        - ``seconds_elapsed`` (:class:`float`)
-        - ``seconds_remaining`` (:class:`float`)
-        - ``seconds_total`` (:class:`float`)
-        - ``time_started`` (:class:`float`)
-        - ``time_finished`` (:class:`float`)
+        - ``seconds_elapsed`` (:class:`~.datetime.datetime.timedelta`)
+        - ``seconds_remaining`` (:class:`~.datetime.datetime.timedelta`)
+        - ``seconds_total`` (:class:`~.datetime.datetime.timedelta`)
+        - ``time_finished`` (:class:`~.datetime.datetime.datetime`)
+        - ``time_started`` (:class:`~.datetime.datetime.datetime`)
         - ``total_size`` (:class:`~.types.Bytes`)
+    """
+
+
+class FindTorrentProgress(collections.namedtuple(
+    typename='CreateTorrentProgress',
+    field_names=(
+        'exception',
+        'filepath',
+        'files_done',
+        'files_per_second',
+        'files_total',
+        'percent_done',
+        'seconds_elapsed',
+        'seconds_remaining',
+        'seconds_total',
+        'status',
+        'time_finished',
+        'time_started',
+    ),
+)):
+    """
+    :func:`~.collections.namedtuple` with these attributes:
+
+        - ``exception`` (:class:`~.errors.TorrentError` or `None`)
+        - ``filepath`` (:class:`str`)
+        - ``files_done`` (:class:`int`)
+        - ``files_per_second` (:class:`int`)
+        - ``files_total`` (:class:`int`)
+        - ``percent_done`` (:class:`float`)
+        - ``seconds_elapsed`` (:class:`~.datetime.datetime.timedelta`)
+        - ``seconds_remaining`` (:class:`~.datetime.datetime.timedelta`)
+        - ``seconds_total`` (:class:`~.datetime.datetime.timedelta`)
+        - ``status`` (``hit``, ``miss`` or ``verifying``)
+        - ``time_finished`` (:class:`~.datetime.datetime.datetime`)
+        - ``time_started`` (:class:`~.datetime.datetime.datetime`)
     """
 
 
