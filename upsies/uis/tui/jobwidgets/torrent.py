@@ -5,7 +5,7 @@ from prompt_toolkit.layout.containers import (ConditionalContainer,
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.dimension import Dimension
 
-from ....utils import cached_property, fs
+from ....utils import cached_property, fs, torrent
 from .. import utils, widgets
 from . import JobWidgetBase
 
@@ -17,35 +17,44 @@ class CreateTorrentJobWidget(JobWidgetBase):
     def setup(self):
         self._progress = widgets.ProgressBar()
         self._file_tree = FormattedTextControl()
-        self._bytes_per_second = FormattedTextControl()
+        self._throughput = FormattedTextControl()
+        self._throughput_unit = ''
         self._percent_done = FormattedTextControl()
         self._seconds_elapsed = FormattedTextControl()
         self._seconds_remaining = FormattedTextControl()
         self._seconds_total = FormattedTextControl()
         self._time_started = FormattedTextControl()
         self._time_finished = FormattedTextControl()
+        self._current_file_status = ''
+        self._current_file_name = FormattedTextControl()
 
         status_column1 = HSplit(
             children=[
-                self.make_readout(' Started:', '_time_started', align='left', width=8),
-                self.make_readout('Finished:', '_time_finished', align='left', width=8),
+                self.make_readout(' Started:', '_time_started', width=8),
+                self.make_readout('Finished:', '_time_finished', width=8),
             ],
         )
         status_column2 = HSplit(
             children=[
-                self.make_readout('  Elapsed:', '_seconds_elapsed', align='center', width=8),
-                self.make_readout('Remaining:', '_seconds_remaining', align='center', width=8),
-                self.make_readout('    Total:', '_seconds_total', align='center', width=8),
+                self.make_readout('  Elapsed:', '_seconds_elapsed', width=8),
+                self.make_readout('Remaining:', '_seconds_remaining', width=8),
+                self.make_readout('    Total:', '_seconds_total', width=8),
             ],
         )
         status_column3 = HSplit(
             children=[
-                self.make_readout('%'.ljust(5), '_percent_done', align='right', width=6, label_side='right'),
                 self.make_readout(
-                    lambda: (self._bytes_per_second_string.split(' ')[1] + '/s').ljust(5),
-                    '_bytes_per_second',
-                    align='right',
+                    lambda: '%'.ljust(len(self._throughput_unit)),
+                    '_percent_done',
                     width=6,
+                    value_align='right',
+                    label_side='right',
+                ),
+                self.make_readout(
+                    lambda: self._throughput_unit.ljust(len(self._throughput_unit)),
+                    '_throughput',
+                    width=6,
+                    value_align='right',
                     label_side='right',
                 ),
             ],
@@ -57,7 +66,14 @@ class CreateTorrentJobWidget(JobWidgetBase):
                 self._progress,
                 ConditionalContainer(
                     filter=Condition(lambda: self._progress.percent > 0),
-                    content=HSplit([status, Window(self._file_tree)]),
+                    content=HSplit([
+                        status,
+                        self.make_readout(
+                            lambda: self._current_file_status,
+                            '_current_file_name',
+                        ),
+                        Window(self._file_tree),
+                    ]),
                 ),
             ],
             style='class:info',
@@ -73,14 +89,14 @@ class CreateTorrentJobWidget(JobWidgetBase):
         self.job.signal.register('progress_update', self.handle_progress_update)
         self.job.signal.register('finished', lambda _: self.invalidate())
 
-    def make_readout(self, label, attribute, align, width, label_side='left'):
+    def make_readout(self, label, attribute, value_align='left', width=None, label_side='left'):
         readout_widget = Window(
             getattr(self, attribute),
             dont_extend_width=True,
             dont_extend_height=True,
             style='class:info.readout',
             width=width,
-            align=WindowAlign.RIGHT,
+            align=getattr(WindowAlign, value_align.upper()),
         )
         label_widget = Window(FormattedTextControl(label), dont_extend_width=True)
 
@@ -92,7 +108,7 @@ class CreateTorrentJobWidget(JobWidgetBase):
         return VSplit(
             children=children,
             padding=1,
-            align=getattr(HorizontalAlign, align.upper()),
+            align=HorizontalAlign.CENTER,
         )
 
     def handle_activity_indicator_state(self, state):
@@ -108,29 +124,48 @@ class CreateTorrentJobWidget(JobWidgetBase):
         else:
             self._activity_indicator.active = False
 
-    def handle_progress_update(self, status):
-        self._progress.percent = status.percent_done
+    def handle_progress_update(self, info):
+        self._progress.percent = info.percent_done
+        self._percent_done.text = f'{info.percent_done:.2f}'
 
-        self._bytes_per_second_string = status.bytes_per_second.format(
-            prefix='binary',
-            decimal_places=2,
-            trailing_zeros=True,
-        )
-        self._bytes_per_second.text = self._bytes_per_second_string.split(' ')[0]
-
-        self._percent_done.text = f'{status.percent_done:.2f}'
-
-        self._time_started.text = status.time_started.strftime('%H:%M:%S')
-        self._time_finished.text = status.time_finished.strftime('%H:%M:%S')
+        self._time_started.text = info.time_started.strftime('%H:%M:%S')
+        self._time_finished.text = info.time_finished.strftime('%H:%M:%S')
 
         def timedelta_string(delta):
             hours, rest = divmod(delta.total_seconds(), 3600)
             minutes, seconds = divmod(rest, 60)
             return f'{hours:02.0f}:{minutes:02.0f}:{seconds:02.0f}'
 
-        self._seconds_elapsed.text = timedelta_string(status.seconds_elapsed)
-        self._seconds_remaining.text = timedelta_string(status.seconds_remaining)
-        self._seconds_total.text = timedelta_string(status.seconds_total)
+        self._seconds_elapsed.text = timedelta_string(info.seconds_elapsed)
+        self._seconds_remaining.text = timedelta_string(info.seconds_remaining)
+        self._seconds_total.text = timedelta_string(info.seconds_total)
+
+        if isinstance(info, torrent.CreateTorrentProgress):
+            # Torrent is hashed from fresh files - yummy!
+            throughput = info.bytes_per_second.format(
+                prefix='binary',
+                decimal_places=2,
+                trailing_zeros=True,
+            )
+            self._throughput.text, self._throughput_unit = throughput.split(' ')
+            self._throughput_unit += '/s'
+            self._current_file_status = 'Hashing'
+            self._current_file_name.text = fs.basename(info.filepath)
+
+        elif isinstance(info, torrent.FindTorrentProgress):
+            # Torrent hashes are searched for in existing torrents
+            if info.exception:
+                self.job.warn(info.exception)
+
+            self._throughput.text = f'{info.files_per_second}'
+            self._throughput_unit = 'files/s'
+            self._current_file_name.text = fs.basename(info.filepath)
+            if info.status is False:
+                self._current_file_status = 'Cache miss:'
+            elif info.status is None:
+                self._current_file_status = 'Verifying:'
+            elif info.status is True:
+                self._current_file_status = 'Cache hit:'
 
         self.invalidate()
 
