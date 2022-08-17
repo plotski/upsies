@@ -3,14 +3,14 @@ import multiprocessing
 import os
 import re
 import time
-from unittest.mock import AsyncMock, Mock, PropertyMock, call, patch
+from unittest.mock import AsyncMock, Mock, call, patch
 
 import pytest
 
 from upsies import errors
 from upsies.jobs.torrent import CreateTorrentJob, _torrent_process
-from upsies.utils.daemon import MsgType
 from upsies.utils import torrent
+from upsies.utils.daemon import MsgType
 
 
 @pytest.fixture
