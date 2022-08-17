@@ -28,6 +28,7 @@ def tracker():
     )
     return tracker
 
+
 def test_CreateTorrentJob_cache_id(tmp_path, tracker):
     job = CreateTorrentJob(
         home_directory=tmp_path,
@@ -54,6 +55,7 @@ def test_CreateTorrentJob_initialize(tracker, tmp_path):
     assert job._reuse_torrent_path == 'path/to/existing.torrent'
     assert job.info == ''
     assert job._torrent_process is None
+
 
 @pytest.mark.parametrize(
     argnames='exclude_defaults, exclude_files, exp_exclude_files',
@@ -310,12 +312,13 @@ def test_torrent_process_creates_torrent(create_mock, queues):
     assert queues.output.empty()
     assert queues.input.empty()
     assert create_mock.call_args_list == [call(
+        some='argument',
+        another='one',
         init_callback=Callable(),
         progress_callback=Callable(),
         info_callback=Callable(),
-        some='argument',
-        another='one',
     )]
+
 
 @patch('upsies.utils.torrent.create')
 def test_torrent_process_catches_TorrentError(create_mock, queues):
@@ -325,6 +328,7 @@ def test_torrent_process_catches_TorrentError(create_mock, queues):
     assert queues.output.empty()
     assert queues.input.empty()
 
+
 def test_torrent_process_initializes_with_file_tree(mocker, queues):
     def create_mock(init_callback, **kwargs):
         init_callback('this is not a file tree')
@@ -332,6 +336,7 @@ def test_torrent_process_initializes_with_file_tree(mocker, queues):
     mocker.patch('upsies.utils.torrent.create', create_mock)
     _torrent_process(queues.output, queues.input, some='argument')
     assert queues.output.get() == (MsgType.init, 'this is not a file tree')
+
 
 def test_torrent_process_sends_progress(mocker, queues):
     def create_mock(progress_callback, **kwargs):
@@ -344,6 +349,7 @@ def test_torrent_process_sends_progress(mocker, queues):
     assert queues.output.get() == (MsgType.info, 50)
     assert queues.output.get() == (MsgType.info, 100)
 
+
 def test_torrent_process_sends_info(mocker, queues):
     def create_mock(info_callback, **kwargs):
         for msg in ('a', 'b', 'c'):
@@ -354,6 +360,7 @@ def test_torrent_process_sends_info(mocker, queues):
     assert queues.output.get() == (MsgType.info, 'a')
     assert queues.output.get() == (MsgType.info, 'b')
     assert queues.output.get() == (MsgType.info, 'c')
+
 
 @pytest.mark.parametrize(
     argnames='callback_name, exp_msg_type',
