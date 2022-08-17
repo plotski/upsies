@@ -5,7 +5,6 @@ Create torrent file
 import fnmatch
 import os
 import queue
-import time
 
 from .. import errors
 from ..utils import daemon, fs, is_regex_pattern, torrent
@@ -37,7 +36,8 @@ class CreateTorrentJob(base.JobBase):
         ``progress_update``
             Emitted at roughly equal intervals to provide information about the
             torrent creation progress. Registered callbacks get a
-            :class:`~.torrent.CreateTorrentProgress` instance as a positional
+            :class:`~.torrent.CreateTorrentProgress` or
+            :class:`~.torrent.FindTorrentProgress` instance as a positional
             argument.
     """
 
@@ -81,14 +81,10 @@ class CreateTorrentJob(base.JobBase):
 
     def execute(self):
         """Get announce URL from `tracker`, then execute torrent creation subprocess"""
-        if not self.ignore_cache and os.path.exists(self._torrent_path):
-            self._handle_torrent_created(self._torrent_path)
-            self.finish()
-        else:
-            self._get_announce_url_task = self.add_task(self._get_announce_url())
-            self._get_announce_url_task.add_done_callback(
-                lambda task: self._start_torrent_creation_process(task.result())
-            )
+        self._get_announce_url_task = self.add_task(self._get_announce_url())
+        self._get_announce_url_task.add_done_callback(
+            lambda task: self._start_torrent_creation_process(task.result())
+        )
 
     async def _get_announce_url(self):
         self.info = 'Getting announce URL'
@@ -111,7 +107,7 @@ class CreateTorrentJob(base.JobBase):
                 'content_path': self._content_path,
                 'torrent_path': self._torrent_path,
                 'reuse_torrent_path': self._reuse_torrent_path,
-                'overwrite': self.ignore_cache,
+                'use_cache': not self.ignore_cache,
                 'announce': announce_url,
                 'source': self._tracker.options['source'],
                 'exclude': self._exclude_files,
@@ -134,18 +130,10 @@ class CreateTorrentJob(base.JobBase):
         self.signal.emit('file_tree', file_tree)
 
     def _handle_info_update(self, info):
-        if isinstance(info, torrent.CreateTorrentProgress):
+        if isinstance(info, (torrent.CreateTorrentProgress, torrent.FindTorrentProgress)):
             self.signal.emit('progress_update', info)
-        elif isinstance(info, str):
-            # Display current filename as JobBase.info, but because it's very
-            # inefficient to update the terminal for every file name (the actual
-            # scanning process is much faster than the display), we only update
-            # in intervals.
-            now = time.monotonic()
-            prev_info_update = getattr(self, '_prev_info_update', 0)
-            if now - prev_info_update >= 0.5:
-                setattr(self, '_prev_info_update', now)
-                self.info = fs.basename(info)
+        else:
+            raise RuntimeError('Unexpected info update: {info!r}')
 
     def _handle_torrent_created(self, torrent_path=None):
         _log.debug('Torrent created: %r', torrent_path)
@@ -184,15 +172,8 @@ def _torrent_process(output_queue, input_queue, *args, **kwargs):
         else:
             output_queue.put((daemon.MsgType.info, progress))
 
-    def info_callback(message):
-        if terminate_signal_sent():
-            return 'cancel'
-        else:
-            output_queue.put((daemon.MsgType.info, message))
-
     kwargs['init_callback'] = init_callback
     kwargs['progress_callback'] = progress_callback
-    kwargs['info_callback'] = info_callback
     try:
         torrent_path = torrent.create(*args, **kwargs)
     except errors.TorrentError as e:

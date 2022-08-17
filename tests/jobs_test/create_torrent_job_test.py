@@ -10,7 +10,7 @@ import pytest
 from upsies import errors
 from upsies.jobs.torrent import CreateTorrentJob, _torrent_process
 from upsies.utils.daemon import MsgType
-from upsies.utils.torrent import CreateTorrentProgress
+from upsies.utils import torrent
 
 
 @pytest.fixture
@@ -89,39 +89,19 @@ def job(tmp_path, tracker):
         tracker=tracker,
     )
 
-@pytest.mark.parametrize(
-    argnames='ignore_cache, path_exists, exp_torrent_created',
-    argvalues=(
-        (False, False, True),
-        (False, True, False),
-        (True, False, True),
-        (True, True, True),
-    ),
-)
 @pytest.mark.asyncio
-async def test_CreateTorrentJob_execute(ignore_cache, path_exists, exp_torrent_created, job, mocker, tmp_path):
+async def test_CreateTorrentJob_execute(job, mocker):
     mocker.patch.object(job, '_get_announce_url', AsyncMock())
     mocker.patch.object(job, '_handle_torrent_created', Mock())
     mocker.patch.object(job, '_start_torrent_creation_process', Mock())
-    mocker.patch.object(type(job), 'ignore_cache', PropertyMock(return_value=ignore_cache))
-
-    if path_exists:
-        (tmp_path / job._torrent_path).write_bytes(b'mock torrent data')
 
     job.execute()
-    if hasattr(job, '_get_announce_url_task'):
-        await job._get_announce_url_task
+    await job._get_announce_url_task
 
-    if exp_torrent_created:
-        assert job._get_announce_url.call_args_list == [call()]
-        assert job._handle_torrent_created.call_args_list == []
-        assert job._start_torrent_creation_process.call_args_list == [call(job._get_announce_url.return_value)]
-        assert not job.is_finished
-    else:
-        assert job._get_announce_url.call_args_list == []
-        assert job._handle_torrent_created.call_args_list == [call(job._torrent_path)]
-        assert job._start_torrent_creation_process.call_args_list == []
-        assert job.is_finished
+    assert job._get_announce_url.call_args_list == [call()]
+    assert job._handle_torrent_created.call_args_list == []
+    assert job._start_torrent_creation_process.call_args_list == [call(job._get_announce_url.return_value)]
+    assert not job.is_finished
 
 
 @pytest.mark.asyncio
@@ -180,7 +160,7 @@ def test_CreateTorrentJob_start_torrent_creation_process(job, mocker):
                 f'foo.{job._tracker.options["source"].lower()}.torrent',
             ),
             'reuse_torrent_path': job._reuse_torrent_path,
-            'overwrite': False,
+            'use_cache': not job.ignore_cache,
             'announce': announce_url,
             'source': job._tracker.options['source'],
             'exclude': job._exclude_files,
@@ -214,52 +194,59 @@ def test_CreateTorrentJob_handle_file_tree(job):
     assert cb.call_args_list == [call('nested file tree sequence')]
 
 
-def test_CreateTorrentJob_handle_info_update_handles_CreateTorrentProgress(job):
-    cb = Mock()
-    job.signal.register('progress_update', cb)
-    progress = CreateTorrentProgress(
-        bytes_per_second='mock bytes_per_second',
-        filepath='mock filepath',
-        percent_done='mock percent_done',
-        piece_size='mock piece_size',
-        pieces_done='mock pieces_done',
-        pieces_total='mock pieces_total',
-        seconds_elapsed='mock seconds_elapsed',
-        seconds_remaining='mock seconds_remaining',
-        seconds_total='mock seconds_total',
-        time_finished='mock time_finished',
-        time_started='mock time_started',
-        total_size='mock total_size',
-    )
-    job._handle_info_update(progress)
-    assert cb.call_args_list == [call(progress)]
-    assert job.info == ''
-
-def test_CreateTorrentJob_handle_info_update_handles_current_filename(job, mocker):
-    cb = Mock()
-    job.signal.register('progress_update', cb)
-
-    mocker.patch('time.monotonic', return_value=100.0)
-    job._handle_info_update('first/path/to/file1.torrent')
-    assert job.info == 'file1.torrent'
-    assert cb.call_args_list == []
-
-    mocker.patch('time.monotonic', return_value=100.01)
-    job._handle_info_update('second/path/to/file2.torrent')
-    assert job.info == 'file1.torrent'
-    assert cb.call_args_list == []
-
-    mocker.patch('time.monotonic', return_value=100.5)
-    job._handle_info_update('third/path/to/file3.torrent')
-    assert job.info == 'file3.torrent'
-    assert cb.call_args_list == []
-
-def test_CreateTorrentJob_handle_info_update_ignores_unknown_types(job, mocker):
-    cb = Mock()
-    job.signal.register('progress_update', cb)
-    job._handle_info_update([1, 2, 3])
-    assert job.info == ''
-    assert cb.call_args_list == []
+@pytest.mark.parametrize(
+    argnames='progress, exp_exception',
+    argvalues=(
+        (
+            torrent.CreateTorrentProgress(
+                bytes_per_second='mock bytes_per_second',
+                filepath='mock filepath',
+                percent_done='mock percent_done',
+                piece_size='mock piece_size',
+                pieces_done='mock pieces_done',
+                pieces_total='mock pieces_total',
+                seconds_elapsed='mock seconds_elapsed',
+                seconds_remaining='mock seconds_remaining',
+                seconds_total='mock seconds_total',
+                time_finished='mock time_finished',
+                time_started='mock time_started',
+                total_size='mock total_size',
+            ),
+            None,
+        ),
+        (
+            torrent.FindTorrentProgress(
+                exception='mock exception',
+                filepath='mock filepath',
+                files_done='mock files_done',
+                files_per_second='mock files_per_second',
+                files_total='mock files_total',
+                percent_done='mock percent_done',
+                seconds_elapsed='mock seconds_elapsed',
+                seconds_remaining='mock seconds_remaining',
+                seconds_total='mock seconds_total',
+                status='mock status',
+                time_finished='mock time_finished',
+                time_started='mock time_started',
+            ),
+            None,
+        ),
+        (
+            'invalid progress object',
+            RuntimeError('Unexpected info update: {info!r}'),
+        ),
+    ),
+    ids=lambda v: type(v).__name__,
+)
+def test_CreateTorrentJob_handle_info_update(progress, exp_exception, job, mocker):
+    mocker.patch.object(job.signal, 'emit')
+    if exp_exception:
+        with pytest.raises(type(exp_exception), match=rf'^{re.escape(str(exp_exception))}$'):
+            job._handle_info_update(progress)
+        assert job.signal.emit.call_args_list == []
+    else:
+        job._handle_info_update(progress)
+        assert job.signal.emit.call_args_list == [call('progress_update', progress)]
 
 
 @pytest.mark.parametrize(
@@ -316,7 +303,6 @@ def test_torrent_process_creates_torrent(create_mock, queues):
         another='one',
         init_callback=Callable(),
         progress_callback=Callable(),
-        info_callback=Callable(),
     )]
 
 
@@ -350,24 +336,11 @@ def test_torrent_process_sends_progress(mocker, queues):
     assert queues.output.get() == (MsgType.info, 100)
 
 
-def test_torrent_process_sends_info(mocker, queues):
-    def create_mock(info_callback, **kwargs):
-        for msg in ('a', 'b', 'c'):
-            info_callback(msg)
-
-    mocker.patch('upsies.utils.torrent.create', create_mock)
-    _torrent_process(queues.output, queues.input, some='argument')
-    assert queues.output.get() == (MsgType.info, 'a')
-    assert queues.output.get() == (MsgType.info, 'b')
-    assert queues.output.get() == (MsgType.info, 'c')
-
-
 @pytest.mark.parametrize(
     argnames='callback_name, exp_msg_type',
     argvalues=(
         ('init_callback', MsgType.init),
         ('progress_callback', MsgType.info),
-        ('info_callback', MsgType.info),
     ),
 )
 def test_torrent_process_cancels_when_terminator_is_in_input_queue(callback_name, exp_msg_type, mocker, queues):
