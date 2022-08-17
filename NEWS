@@ -1,3 +1,7 @@
+2022.??.??
+  * Always generate torrent hashes if --ignore-cache/-C is given
+
+
 2022.08.05
   * Maintenance release because of renamed dependency
     (aio-btclient-rpc -> aiobtclientrpc)
