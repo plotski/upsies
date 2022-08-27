@@ -428,7 +428,7 @@ class FindTorrentProgress(collections.namedtuple(
         - ``exception`` (:class:`~.errors.TorrentError` or `None`)
         - ``filepath`` (:class:`str`)
         - ``files_done`` (:class:`int`)
-        - ``files_per_second` (:class:`int`)
+        - ``files_per_second`` (:class:`int`)
         - ``files_total`` (:class:`int`)
         - ``percent_done`` (:class:`float`)
         - ``seconds_elapsed`` (:class:`~.datetime.datetime.timedelta`)
